@@ -49,4 +49,3 @@ Things to check often :
 Pre-release checklist :
 - Update version # in configure.in.
 - Verify that example configs are up-to-date.
-
