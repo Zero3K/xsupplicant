@@ -1,0 +1,578 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Xsupplicant UI Help</title>
+</head>
+
+<body>
+<a name="xsupuserguide" id="xsupuserguide"></a>
+<a name="xsuploginmain" id="xsuploginmain"></a>
+<a name="xsuploginstatus" id="xsuploginstatus"></a>
+<h1>Introduction</h1>
+<p>XSupplicant is an 802.1X supplicant and wireless manager developed by the
+Open1X group for multiple operating systems.  It supports many authentication
+ and encryption methods that are in use on networks today.</p>
+
+<p>In early 2007, the Open1X group became one of the founding members, and
+initial projects of, the OpenSEA Alliance.  Please see 
+http://www.openseaalliance.com for more information on the OpenSEA alliance.
+</p>
+
+
+
+
+<a name="xsupintro" id="xsupintro"></a>
+<a name="xsupusing" id="xsupusing"></a>
+<h1>Using XSupplicant</h1>
+
+<p>All of the controls for XSupplicant can be found via the OpenSEA icon that
+is found in your tray.  Right clicking this icon will bring up a menu that
+allows you to login to networks, configure the supplicant, view log information
+or other operations.</p>
+<br>
+
+
+
+<h2>Connecting to the Network</h2>
+<p>In order to connect to a network, you must first have one configured.
+Please see the network configuration section for more information on how to
+configure a network.</p>
+
+<p>Once you have a network connection defined, you can right click on the
+OpenSEA icon in your tray, and select "Login..." to being the login process.
+If you are already connected to a network via any of your interfaces, you will
+find that the login window will take you directly to a status screen indicating
+various pieces of information about your current connection.  If you are not
+currently connected to a network, you will be taken to the initial login
+window.</p>
+
+<p>If you are taken to the status screen, there are a couple of different
+operations that can be taken.  If you have more than one interface in your
+machine, you can select a different connection that uses that interface, and
+establish a second 802.1X connection by logging in.  At any time, if you
+select a connection that is currently connected you will be taken to the status
+screen.</p>
+
+<p>If you are taken to the login screen, you will notice that the first
+connection (alphabetically) will be selected in the "Connection" drop-down
+box.  You should select the connection you want to use from this drop-down
+box, enter any information that is requested, and click connect to connect
+to that network.</p>
+<br>
+
+<h2>Disconnecting from the Network</h2>
+
+<p>To disconnect from a network, right click on the OpenSEA icon in your tray
+ and select "Login...".   From the login window, select the connection you
+ want to disconnect from via the "Connection" drop-down box near the top of
+ the login window.  If this connection is currently connected, you will be
+ presented with a status window indicating the current state of the connected
+ interface.  At the bottom left corner of the login window will be a button
+ labeled "Disconnect".   Clicking this button will cause the supplicant to
+ disconnect from the network, and return you to the login prompt.</p>
+ <br>
+
+
+
+
+
+<h1><a name="xsupconfigwindow" id="xsupconfigwindow"></a>Configuring XSupplicant</h1>
+<p>There are two ways to get to the configuration window.  The first is to
+right-click on the OpenSEA icon in your tray, and select "Configure...".
+ The second is to click on the "Configure" button located at the bottom of
+ the login window.  Both methods will take you to the same configuration
+ window.
+
+<p>The configuration window is divided in to two pieces.  On the left is
+ a tree that contains all of your Connections, Profiles, Trusted Servers,
+ Globals, and Advanced settings.  Expanding any of those options will
+ show you information about the current configuration of the supplicant.
+ On the right is where you will edit the configuration options that are
+ available for the selected type.</p>
+
+<p>Note : The Globals and Advanced sections have a static set of options
+ below them.  The Connections, Profiles, and Trusted Servers will have
+ everything that you have configured for that type under them.</p>
+
+
+
+
+
+<h2><a name="xsupconnmain" id="xsupconnmain"></a>Connections List</h2>
+<p>Expanding the connections list on the left side of the configuration window
+ will display all of the configurations that you currently have configured.  If
+ you don't have any connections configured, you can select the "Connections"
+ item from the list, and click on the "New" button located at the bottom of
+ the left section, to create a new connection.
+</p>
+
+<p>Selecting, or creating, a connection will change the display on the right
+ side of the window, and show all of the configuration options that are
+ available to you.  At the top of the Connections section, you will see a
+ "Connection Name".  The connection name should be set to something that you
+ can use to identify this network connection.  As an example, if you are
+ setting up a connection to use on a WPA-PSK network in your house you might
+ want to name the connection "House WPA-PSK Network".</p>
+
+<p>Below the Connection name is a series of tabs.  Each tab configures a
+different aspect of the connection that is being used.</p>
+
+
+
+
+<a name="xsupadapter" id="xsupadapter"></a>
+<h2><a name="xsupconnections" id="xsupconnections"></a>Connections: Adapter Tab</h2>
+<p>The first tab that you will come to is the adapter tab.  The adapter
+tab allows you to select the network adapter that you want to use with this
+connection.  By selecting an adapter from the "Adapter :" drop-down box, the
+contents of the window below it may change.  There are two different
+display sets that you can see in the adapter tab depending on if the adapter
+is a wireless adapter, or a wired adapter.
+</p>
+
+<h2>Connections: Adapter Tab (Wired)</h2>
+<p>If the adapter that you have selected from the "Adapter" drop-down is a
+ wired adapter, you will be presented with a fairly simple set of options.
+ For wired adapters you need only specify the 802.1X profile that you want
+ to use to authenticate this connection.  By default there is no profile
+ set.  If you do not have any profiles configured you need to do that and
+ then come back and set the profile for the connection configuration.
+ Failure to set a profile will result in the connection not being usable to
+ connect to your network.</p>
+
+<h2>Connections: Adapter Tab (Wireless)</h2>
+<p>If the adapter that you have selected from the "Adapter" drop-down is a
+ wireless adapter, you will be presented with two different panes in the tab.</p>
+
+ <p>
+ The first pane, titled "Wireless Network" is used to select the Service
+ Set Identifier (SSID) that is used to identify the wireless network you want
+ to configure.   If the SSID is broadcast, then you should be able to select
+ it from the drop-down box to the left of the "Broadcast" radio button.  If
+ the network you are looking for is not in that list, you can click the
+ "Rescan" button to have your computer search for any networks it may not have
+ found yet.</p>
+
+ <p>If your network is a hidden network, then you won't be able to find it in
+  the scan information provided in the Broadcast drop-down box.  In these
+  cases, you should select the "Hidden" radio button, and enter the name of
+  the hidden network in the edit box to the left of the radio button.
+  </p>
+
+ <p>The second pane, titled "Wireless Association Settings" is where you
+  define the type of wireless network that this is.  If you are unsure of how
+  the wireless network is configured, you should ask the network administrator
+  what settings should be used.  (If you are the network administrator, you
+  should consult the manual that came with your wireless equipment.)</p>
+
+  <p>The association mode drop-down is used to select the type of network that
+  you are connecting to.  XSupplicant supports all of the common network
+  association methods that most people would use.  Depending on the Association
+  Mode selected, the bottom half of the pane will change to display different
+  information.</p>
+
+  <p>If you select WPA-Personal (PSK) or WPA2-Personal (PSK) you will be
+  presented with the option to enter the pre-shared key that is configured on
+  your wireless access point.  This key must be at least 8 characters long,
+  although you are encouraged to make it longer.  You are only required to
+  store the preshared key in your configuration if you intend to use this
+  connection as an automatic connection.  For manual connections you will be
+  prompted for the preshared key when you attempt to connect to the network.</p>
+
+  <p>If you select Dynamic WEP 802.1X, WPA Enterprise, or WPA2 Enterprise you
+  will be presented with the option to select a Profile from a drop-down box.
+  You are required to specify a profile here.  If you do not yet have a profile
+  created, you can save the changes you have made so far, create a profile, and
+  come back to finish the configuration.  Failure to specify a profile will
+  prevent you from being able to connect to this network.</p>
+
+  <p>If you select Static WEP you will be presented with the option to select
+  a 40 bit, or 104 bit hexidecimal key.  You should select the key length that
+  you are using, and enter your network key in the field provided.</p>
+
+  <p>If you select Open, you will not have to enter any additional information.
+  The open setting is used to connect to unencrypted and unauthenticated networks.
+  Such as those often found at hotels or coffee shops.</p>
+
+  <p><b><i><u>NOTE :</u> Any traffic sent on an open network can be viewed by
+  anyone else near enough to pick up the signal.  (Which may be a longer
+  distance than you would think.)  Where possible you should ALWAYS use
+  encryption on your wireless networks.  WEP networks (static or dynamic) are a little bit
+  more secure than an open network, but even the strongest keys can be cracked
+  in a very short period of time.  Where possible you should ALWAYS use a WPA2
+  or WPA enabled network for maximum protection of your data!</i></b></p>
+
+
+
+
+
+<h2><a name="xsupnetwork" id="xsupnetwork"></a>Connections: Network Tab</h2>
+<p>The network tab is where you can manage the IP address settings for
+ the connection you are editing.  The default value is to "Obtain network
+ settings automatically".  When this option is selected, the supplicant will
+ ask the operating system to do a DHCP release and then a DHCP renew on the
+ first time you authenticate using the connection.</p>
+
+<p>Below the "Obtain network settings automatically" is a checkbox that allows
+ you to specify that you want to issue a DHCP renew each time the network
+ challenges you for a reauthentication.  In most circumstances you will want
+ to leave this box unchecked.  DHCP's default behavior is to attempt to renew
+ the IP address when it believes it needs to.  This option is provided for
+ situations where the DHCP client may not be acting as desired.</p>
+
+<p>In the connection setting, you also have the option of using a static IP
+ address.  If you select this option, then the "Static IP Address Settings"
+ section of the tab will become available.  You should populate the IP address,
+ netmask, and gateway with the values that you were given by your network
+ administrator.</p>
+
+
+
+
+
+<h2><a name="xsupdns" id="xsupdns"></a>Connections: DNS Tab</h2>
+<p>The DNS tab will allow you to set DNS settings for this connection.  You
+may select "Obtain DNS settings automatically" if in the Network tab you
+have selected "Obtain network settings automatically".  If, in the network tab,
+you selected to set a static IP, you will be forced to provide static DNS
+settings.</p>
+
+<p>If you select "Use static DNS server settings" (or it is selected for you)
+you should populate the Primary setting at a minmum.  You should speak to your
+network administrator to determine the proper settings to use.</p>
+
+
+
+
+
+<h2><a name="xsupprofmain" id="xsupprofmain"></a>Profiles List</h2>
+<p>Expanding the profiles selection on the left side of the configuration 
+window will display all of the currently configured profiles.  If you don't
+have any profiles configured, you can select the "Profiles" item from the
+list and click on the "New button located at the bottom of the left section,
+to create a new profile.</p>
+
+<p>Selecting, or creating, a profile will change the display on the
+right side of the window, and show all of the configuration options that
+are available to you.  At the top of the right side window you will see
+settings for the "Profile Name" and "Protocol".</p>
+
+<p>The "Profile Name" is a free form string that will uniquely identify
+this profile.  The resulting profile name will be displayed in the profile
+drop-down boxes located in the connections configuration.  It is
+recommended that you use a descriptive profile name such as "Office Profile"
+for the 802.1X profile that you use in your office.</p>
+
+<p>The "Protocol" drop-down box at the top of this window indicates that
+EAP protocol methods that you can use for this profile.  The EAP protocol
+method that is used on your network is selected by your network administrator.
+You should contact your network administator to find out which EAP protocol
+you should use.</p>
+
+
+
+
+<a name="xsupprotocol" id="xsupprotocol"></a>
+<h2><a name="xsupprofiles" id="xsupprofiles"></a>Profiles Panel: Protocol Settings Tab</h2>
+<p>Depending on the EAP protocol that you use, there may be a Protocol
+Settings tab that is displayed on the right hand side of the configuration
+window.</p>
+
+<p>At the top of the Protocol settings tab is settings to configured a
+trusted server.  The "Validate Server Certificate" checkbox will enable
+the validation of the RADIUS server's certificate during the authentication
+process.  Unchecking this box increases the risk that someone could
+pretend to be the RADIUS server and gather your username and password
+information.  Because of this, you should only disable checking if you
+understand the risks.   Below the checkbox, you will find a drop-down box
+that you can use to set the trusted server that you want to use.  Trusted
+Servers are configured by using the "Trusted Servers" item in the left
+side of the configuration dialog.  Although the option is provided to set
+the trusted server to "<None>" this option is only a place holder.  If you
+do not set a valid trusted server your authentication attempts will fail.</p>
+
+<p>Below the trusted server section there is an area labeled "Outer Identity".
+ Some authentication methods will send the username to the server twice.  The
+first time (sometimes called the "Phase 1 username", or "Outer Identity") is
+sent across the network with no encryption.  Because of this, you can often
+send the initial username as "Anonymous".  There are cases where using the
+anonymous outer identity will not work.  If the network you are connecting
+to makes use of any form of proxy authentication system, you will probably
+have to manually enter an identity using the "Use this identity" option.
+The other case where the anonymous outer identity may not work is if the
+network administrator has disabled this functionality.  If this has been
+done, then you should select "Use this identity" and enter your username in
+the field provided.  <b>NOTE : <u><i>Using an Anonymous outer identity does
+not mean that the network operator does not know who you are!  The server
+that is doing authentication will still log your real username since it is
+required once an encrypted tunnel has been established.</i></u></b></p>
+
+<p>At the bottom of this tab, there will be a section to configure the
+tunneled protocol.  Like the EAP protocol, the tunneled protocol is defined
+by your network administartor.  You should contact your network administrator
+to determine the proper setting to use here.</p>
+
+
+
+
+
+<h2><a name="xsupuser" id="xsupuser"></a>Profiles Panel: User Credentials Tab</h2>
+<p>The User Credentials tab is where you can decide if you want the
+supplicant to store your user credentials for you, or ask you each time
+you attempt to connect to the network.  Selecting "Prompt for both username
+ and password" will result in none of your credentials being stored.  You
+ will need to enter them each time you attempt to use a connection that
+ relies on this profile.  If you select "Prompt for password only" then
+ you will be required to enter a username in the "Username" field located
+ at the bottom of the tab.  When you attempt to use a connection that
+ relies on this profile, the username will already be populated, and you
+ will be required to enter a valid password.  If you select "Don't prompt
+ for anything." then you must enter a username and password in the "Username"
+ and "Password" fields at the bottom of the tab. When you use a connection
+ that references this profile, the username and password fields will be
+ populated for you.</p>
+
+
+
+
+
+
+<h2><a name="xsupservermain" id="xsupservermain"></a>Trusted Servers List</h2>
+<p>The Trusted Servers section is where you will set up "trusted servers"
+ that can be used when configuring a profile.  A "trusted server" consists
+ of a few pieces of information that are used to verify that the server you
+ are authenticating against is valid.  Configuring a trusted server is
+ important to the security of your username and password during the 802.1X
+ authentication.</p>
+
+<p>If no trusted servers currently exist, you can select the "Trusted Servers"
+ selection from the left panel, and click the "New" button to create a new
+ trusted server.  If a trusted server already exists, selecting it's name
+ will cause the configuration panel on the right to display the trusted
+ server's configuration information.</p>
+
+
+
+
+
+<h2><a name="xsuptrustedservers" id="xsuptrustedservers"></a>Trusted Servers Editing Panel</h2>
+<p>At the top of the trusted servers editing panel is a field where you
+ can enter a name for the trusted server.  This name will be displayed in the
+ trusted servers drop-down box when you are configuring a profile.  It is a
+ good idea to name the trusted server something descriptive such as "Work
+ Trusted Server".</p>
+
+<p>The majority of the fields that are shown in the lower part of the trusted
+ server configuration panel are informational, and cannot be changed.  They
+ will be populated as the result of selecting a root CA certificate by
+ clicking the "Browse" button.</p>
+
+<p>If you enable the checkbox for "Verify Common Name" the "Common Name"
+ field will become editable.  In the common name field you can enter a
+ portion of a DNS domain name that will be matched against the certificate
+ that is provided by the server.  This provides an extra measure of security
+ for networks were public certificate authorities are in use.  You should
+ contact your network administrator to verify if you should enable this
+ setting.</p>
+
+
+
+
+
+<h2><a name="xsupservercert" id="xsupservercert"></a>Trusted Root Certificate Servers Window</h2>
+<p>Trusted certificates - text to come</p>
+
+
+
+
+
+<h2><a name="xsupglobals" id="xsupglobals"></a>Globals Panel</h2>
+<p>Main globals - text to come</p>
+
+
+
+
+
+
+<h2><a name="xsuplogging" id="xsuplogging"></a>Globals: Logging</h2>
+<p>In the current release, the logging selections are fairly simple.  If
+ you want to enable logging to a file, check the box marked "Enable
+ Logging to a File".  This will make the "Log Directory" and "Log Level"
+ selections available for you to change.</p>
+
+<p>The "Log Directory" option is where you specify the directory that you
+ want your log files written to.  Selecting the browse button on the right
+ will allow you to graphically select the directory that the files should
+ be saved to.  <b><i>NOTE:</i></b> The log files will be created with default
+ log file names.  There is currently no way to change the name of the log files
+ that are written.  By default, two old logs will also be kept in this directory.
+ </p>
+
+<p>The "Log Level" option will allow you to determine how detailed the log
+ file should be.  Currently, you are presented with three options.  The
+ "Normal" log option will show you basic status of the supplicant.  This
+ will include things such as authentication successes and failures, interface insertions
+ or removals, and any errors encountered during the normal operation of the
+ supplicant.   The "Verbose" log option will show you all of the information
+ that is included in the "Normal" log level, along with some additional
+ information about the supplicant.  This additional information will include
+ things such as basic state machine transitions.  In general, you will want
+ to use "Normal" mode.</p>
+
+<p>The "Debug" mode of the "Log Level" behaves differently than the other two.
+ In debug mode, every possible piece of log data is written to the log file.
+ You will only want to use this mode when you have been asked to by an Open1X
+ developer or support person.  <b><i>NOTE:</i></b> We make every effort to
+ avoid having sensative data in the log files.  However, things such as
+ usernames and password hashes used in the authentications WILL be written
+ to the log file.  Cleartext versions of passwords should NEVER be written to
+ the log files.  However, we suggest that people exercise caution when giving
+ anyone a copy of a log file.  You should do a search through the log for
+ any information that you consider sensative, and replace it with something
+ such as Xs.  If, in your searching, you find something that you believe shouldn't
+ be included in the log file, please report it to the project list, or one
+ of the project developers so that it can be considered for removal from
+ future log files.</p>
+
+<p>The "View Log" button will, by default, display the log file that is
+ currently being written.  In general, it will display the same log data
+ as all of the other log windows you will find available in the supplicant.
+ However, if full debug logging is enabled, the normal log windows will NOT
+ display the extra debug information, but this log file view will. <b><i>NOTE:
+ </i></b> The log file that is displayed through this button is a snapshot
+ in time of the log file.  As new log lines are added to the file they will not
+ be added to this window.  You will need to close, and reopen the window in
+ order to get an updated snapshot of the log file.</p>
+
+<p>The "Include Friendly Warnings" check box enables messages to be written
+to the log file that don't necessarily indicate that there is a problem with
+the supplicant.  These warnings include things such as a warning when a WEP
+key has been in use long enough that it could have been compromised by an
+outside attack.  In general, these friendly warnings add very little to the
+size of a log file, and should be left enabled.</p>
+
+<p>The "Roll Logs by Size" option changes how logs are stored on disk.  If this
+option is unchecked a log file will be created each time the supplicant service
+is started, and all log messages will be written to it until the supplicant
+service terminates.  If you run the supplicant for long stretches of time, or in
+a verbose or debug mode, the log files can grow rather large.  If this box
+is checked, then you can use the "Log Size to Roll Files at" setting to
+determine how large log files should be allowed to get.  <b><i>NOTE :</b></i>
+The size specified in the "Log Size to Roll Files at" is a boundry case.  It
+does not mean that the logs will be rolled at exactly that size.  To avoid
+disk thrashing, the log file size is checked once a minute.  If the log file
+exceeds the size specified, it is rolled.</p>
+
+<p>The "Number of Logs to Keep" specifies the number of old logs that the
+supplicant should keep around.  There are two ways that a log file can be
+generated.  One is on startup of the supplicant engine.  Any existing log
+files will be rolled, and a fresh one started.  The second way is for the
+log size limit specified by "Roll Logs by Size" to be exceeded.</p>
+
+
+
+
+
+<h2><a name="xsupadvanced" id="xsupadvanced"></a>Advanced Panel</h2>
+<p>The Advanced panels contain settings that should only be used by more
+advanced users.  Unless you have a solid understanding of 802.1X you should
+probably avoid changing any of the advanced settings, since the defaults
+are valid for most users.</p>
+
+
+
+
+
+
+<h2><a name="xsupsettings" id="xsupsettings"></a>Advanced Settings Panel</h2>
+<p>The Advanced Settings panel contains various settings that can be used
+to manipulate the behavior of certain supplicant components.  These settings
+have less of a major impact on the operation of the supplicant, so a
+moderately advanced user should be able to change them without getting the
+supplicant in to a non-functional state.</p>
+
+<p>The 'Scan Timeout' setting is the amount of time that a wireless interface
+is allowed to complete a scan for wireless networks.  If the scan timeout value
+is exceeded, the supplicant will notify the user that a scan has failed, and
+try again later.</p>
+
+<p>The 'Association Timeout' is the amount of time that the supplicant waits
+before assuming that a wireless interface will be unable to associate to a
+network.  Setting this to a lower value may increase the ability of the
+supplicant to recover from failed associations.  However, if the timer is
+set too low, the supplicant many not be able to complete an association.</p>
+
+<p>The 'Wired Default' setting allows the user to select a default wired
+authentication to use when the supplicant initially starts up.  Since a
+connection has a binding to an interface, the selection of the connection to
+use also designates the interface that will be used.  This setting can be used
+in conjunction with a stored username and password to create an auto login to
+a wired network.</p>
+
+<p>The 'Run Other Supplicant Check on Startup' setting specifies if the UI
+should spawn a process to check for the existance of other supplicants and
+wireless managers.  The process that is run is the same process that is used
+during the installation.  If other supplicants or wireless managers are
+discovered, then detection tool will allow you to attempt to disable the
+other programs that could cause issues.  Turning off this check is only
+suggested if understand that installing new interfaces may result in the
+supplicant not being able to perform properly.</p>
+
+
+
+
+
+<h2><a name="xsupinternals" id="xsupinternals"></a>Advanced Internals Panel</h2>
+<p>The Advanced Internals panel contains timer settings that modify the
+behavior of the supplicant.  These settings should only be modified by
+advanced users that understand how changing these timers will impact the
+operation of the supplicant.</p>
+
+<p>The 'Auth Period' timer is the amount of time that the supplicant will wait,
+during an authentication, before assuming that the authentication has timed out.</p>
+
+<p>The 'Held Period' timer is the amount of time that the supplicant will wait
+after a failed authentication before attempting to start a new authentication.
+ NOTE: Modifying this timer won't allow you to authenticate any faster.  There
+ is also a held timer on the authenticator that will prevent you from authenticating
+ any faster than the network allows!</p>
+
+<p>The 'Idle Period' is the amount of time that the state machine waits before
+retransmitting an EAP message.</p>
+
+<p>The 'Stale WEP Key Timeout' is the amount of time that a dynamic WEP key should
+be in use before the supplicant warns the user that the key could have been cracked.
+ NOTE: This timer has no functional impact on the operation of the supplicant.
+ The Stale WEP key warning is a 'Friendly' message that is only there to help
+ the user understand the insecurity of using WEP based networks.</p>
+
+<p>The 'Maximum Starts' counter is the number of EAPoL-Starts the supplicant
+should send before it assumes the authenticator doesn't speak 802.1X.  Once
+this number of starts has been sent, the connection will default to
+authenticated state.</p>
+
+
+
+
+
+<h2><a name="xsupissues" id="xsupissues"></a>Known Issues</h2>
+<p>The following are issues that people have run in to with XSupplicant :</p>
+<p>1. The priority settings only have meaning on boot up.  Once you have told
+ the supplicant to connect to a specific wireless network it will continue to
+ try to maintain a connection to the network until the user tells it to do
+ otherwise.</p>
+
+<p>2. Priority settings have no control over which interface the OS uses to
+ send traffic out.  They are only useful for determining with wireless
+ network to automatically connect to at boot up.</p>
+
+<p>3. Changing the log level without having a log directory defined doesn't result
+ in the higher log level messages being displayed in the UI's log window.  You
+ can work around this by defining a value log directory and pressing the Save
+ button.  This will result in a log file being written, and the log level in
+ the UI's log window to be changed.</p>
+
+
+</body>
+</html>
