@@ -1,0 +1,80 @@
+AUTHORS:
+========
+Bryan D. Payne (bdpayne@cs.umd.edu)
+Nick L. Petroni Jr. (npetroni@cs.umd.edu)
+
+Certificates with EAP/TLS and Open 802.1x
+-----------------------------------------
+In order to authenticate with the RADIUS server on a target network
+using EAP/TLS, you will need a valid client certificate and the corresponding
+private key in ASN1 DER  and PEM formats respectively. These need to be
+stored in readable files on the client system and must be referred to 
+properly in the configuration file being used (defaule /etc/1x/1x.conf).
+For more information on how to create these settings in the configuration file,
+see REAME.config.
+
+Using a certificate from Microsoft Windows CA
+---------------------------------------------
+It is possible to use any valid x509 certificate with EAP/TLS
+for client authentication, however, the certificate and associated
+private key must be in the above specified file formats to use
+with this software. Openssl, a required package for this software, provides
+a convenient interface for extracting and converting x509 information. If
+you are starting from scratch with a MS Windows CA, do the following to 
+obtain the proper files:
+
+1. Obtain a certificate (if you already have a certificate with an exportable
+   key go to step 2)
+   a. Direct your web browser to the MS certsrv page to request a certificate
+      (http://<server name or IP>/certsrv/) from IE on a Windows machine.
+   b. Choose "Request a certificate" and click "Next"
+   c. Choose "Advanced request" and click "Next"
+   d. Choose "Submit a certificate request to this CA using a form"
+      and click "Next"
+   e. Fill out the form by setting the following fields as specified,
+      all other fields are optional and should be set only if you know
+      what they mean.
+             Template "User"
+             CSP "Microsoft Base Cryptographic Provider v1.0"
+             Key Usage: "Both"
+             * Create a new key set
+             x Mark keys as exportable
+      Click "Next"
+   f. After a screen saying "Waiting for response" disappears, another
+      page offering to "Install this certificate" will appear. Choose this
+      option and Click "OK" when the dialog appears.
+
+2. Export the certificate
+   a. While in Internet Explorer, go to the menu marked "Tools" and choose
+      "Internet options..."
+   b. Click the tab marked "Content" and choose the button "Certificates"
+   c. Choose the newly created certificate (or other exportable certificate
+      you want to use). If there are a number of certificates available, 
+      try using the date as a clue for which one to choose. 
+   d. Click "Export..."
+   e. When the dialog appears, choose "Yes, export the private key" and
+      click "Next". If this
+      option is not available to you it will be necessary to create a new 
+      certificate with an exportable key (as described in step 1).
+   f. Choose "PKS #12 (.pfx) format and clear all
+      of the option boxes under this choice (i.e. none of them should be
+      checked). Click "Next"
+   g. When the password dialog comes up, click "Next" without entering
+      a password. This will aid in the conversion of formats.
+   h. Choose a filename and path under which the certificate will be saved.
+   i. Move/copy the file to the Linux system so that it can be converted.
+**NOTE** This file is a certificate AND PRIVATE KEY. Be careful not to
+  leave a copy in an insecure location and be sure to set the appropriate
+  file permissions in Linux.
+
+3. Convert the certificate
+  a. Use the provided script to turn the PKS #12 file into two
+     files of the appropriate formats.
+   e.g. ./pkcs12toDERandPEM.sh testusercert.pfx
+   will create two files called cert.cer and key.pem
+   that contain the certificate in DER format and key in PEM format
+   repsectively.
+  b. When running this script, you will be prompted to enter a password.
+     This password will be used to protect the private key file and must
+     be entered every time you bring up the interface with the provided
+     ifup script.

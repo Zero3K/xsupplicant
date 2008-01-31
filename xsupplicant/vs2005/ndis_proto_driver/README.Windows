@@ -1,0 +1,18 @@
+In order for Xsupplicant to be able to use the network cards, a protocol
+handler is required.  Since Microsoft includes a sample protocol handler
+in their DDK that will work, it seemed there was no reason to reinvent the
+wheel.  Instead, I have opted to include a binary version in CVS, and a
+patch file that can be applied to the DDK code to create the version needed
+for Xsupplicant.
+
+The reason that the entire source for the protocol handler is not included is
+because the license for the Microsoft DDK only allows object code to be
+redistributed.  So, by providing a binary version, and a patch to create the
+source version, we are in compliance with the license requirements set forth
+by Microsoft.  At the same time, we are providing a way for people to do
+work on the driver component, if they wish to do so.
+
+The patch file is created using WinMerge. (http://www.winmerge.org)
+
+  -- Chris
+

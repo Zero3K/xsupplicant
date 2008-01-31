@@ -1,0 +1,189 @@
+How to use Xsupplicant with EAP-FAST on a WPA/WPA2 network and Mac OS X
+
+You will need :
+
+OpenSSL 0.9.8 source (I used OpenSSL 0.9.8c)
+OpenSSL TLS extensions patch (should be included)
+
+
+Building OpenSSL
+----------------
+
+Untar the OpenSSL tar-ball in to a temporary directory for building.  
+Please note that the everything up to (and including) the "%" is the system
+prompt, and should not be entered.  Also, the commands may not be literal.
+As an example, below OpenSSL 0.9.8c is used.  If you are using a different
+version, you should use the name of it's tarball instead.
+
+*** NOTE ***  The example below will replace the OpenSSL that shipped with
+   your system with the one that is being built.  This shouldn't cause any 
+   problems with your system, but it may.
+
+Example :
+------------
+my-mac:~/ user% mkdir temp
+my-mac:~/ user% cd temp
+my-mac:~/temp user% tar xvf ../openssl-0.9.8c.tar
+my-mac:~/temp user% cd openssl-0.9.8c
+my-mac:~/temp/openssl-0.9.8c user% patch -p1 < openssl-tls-extensions.patch
+
+<You should see a bunch of output from the patch command.  Make sure that there
+  are no failures in the patch.  If there are, you will need to hand patch that
+  section, or acquire a new patch. >
+
+my-mac:~/temp/openssl-0.9.8c user% ./config shared --prefix=/usr
+
+<You should see a bunch of output as OpenSSL prepares to be built.>
+
+my-mac:~/temp/openssl-0.9.8c user% make
+
+<You will see a *LOT* of output while OpenSSL is built.  When it is done, there
+ should be no errors listed.>
+
+--------------
+
+Once the build is complete, you will need to become root, and run "make install".
+Once "make install" has completed, you should be ready to configure and start
+Xsupplicant.
+
+
+Configuring Xsupplicant
+-----------------------
+
+By default, Xsupplicant expects is configuration file to reside in the /etc
+directory.  The name of the file should be "xsupplicant.conf".
+
+*** NOTE *** You can put the configuration file in a different location.  You
+	will just have to use the -c command line switch to specify it's 
+	location.
+
+An example configuration for Xsupplicant using EAP-FAST with anonymous
+provisioning allowed, and EAP-MSCHAPv2 for the inner method is below.
+
+------------------------
+
+network_list = all
+
+default_netname = not_so_default
+
+not_so_default
+{
+}
+
+my_eap_fast_ssid_name
+{
+        allow_types = all
+        identity = testUser
+        priority = 1
+
+        # The line below is only needed if this SSID is non-broadcast.
+        # If it is, then uncomment the line.
+    
+        # hidden = yes
+
+        eap-fast
+        {
+                allow_provision = yes
+                allow_types = all
+                pacfile = /path/to/my/xsup-pac.xml
+
+		# To use an anonymous outer ID, uncomment the following.
+		
+		# inner_id = myid
+
+		# If you are using provisioning, you *MUST* define EAP-MSCHAPv2.
+                eap-mschapv2
+                {
+                        username = testUser
+                        password = test
+                }
+
+		# If you are using EAP-GTC for the authentication, uncomment
+		# below, and fill in the proper values.
+		# eap-gtc
+		# {
+		#	password = test
+		# }
+        }
+}
+
+
+--------------------------
+
+You should replace all of the "identity" values, and "username" values with 
+your username.  The "password" value should be set to the password used with
+your username.
+
+*** NOTE ***  Future versions of Xsupplicant will use an XML based configuration
+  file.
+
+
+Starting Xsupplicant
+--------------------
+
+The first time you start Xsupplicant, it will connect to your network, and
+attempt to establish a PAC.  (Assuming "allow_provision = yes".)
+
+You may see some error messages about not being able to locate an EAP-FAST
+PAC file.  This is normal, and is nothing to be concerned about on the first
+authentication.  (Should you see this in future authentications, it means that
+your PAC file was deleted, or something is wrong with it.)
+
+Following the provisioning of your PAC file, Xsupplicant will likely get a
+Failure from the authenticator.  This is normal.  If you allow Xsupplicant
+to continue to run, it should eventually authenticate successfully.
+
+At this time, you will need to be root to run Xsupplicant.  So, you should
+become root before entering the command below.
+
+To run Xsupplicant, you will need to enter a line similar to this :
+
+./xsupplicant -i en1 -f -s
+
+Where "-i" specifies the interface you want to use.  "-f" specifies to run in
+the foreground.  And "-s" specifies to delete any stale control sockets that
+may be hanging around from a previous run.  (NOTE: -s should only be used if
+you are sure there is no other version of Xsupplicant running!  If you have
+two copies running at the same time, you will get very strange results!)
+
+Once it is running, Xsupplicant should output some information indicating the
+state of the authentication.  When the authentication displays a success, you
+should be able to see that you have a valid IP address in the network control
+panel.
+
+
+If things go wrong
+------------------
+
+If something goes wrong, there are a few things to check.
+
+1.  If you get an error that the socket could not be established, then it is
+   likely that you are connected to an existing network that is using the
+   native supplicant.  If this is the case, you will need to connect to a 
+   different (non-802.1X) network, and then try again.   (NOTE:  I am working
+   on a solution to this problem.)
+
+   You should also be able to disable the active client by going to the Internet
+   Connect panel, and using the "Disconnect" or "Cancel" buttons that are
+   provided.
+
+   If that doesn't work, you can achieve the same result by 
+   killing all instances of "eapolclient" that may have started.
+
+   Another way to achieve the same result without killing "eapolclient" is to 
+   go to the Airport menu, select "Other.." and enter a network name that doesn't
+   exist.  After attempting to associate, you will be presented with the option
+   to try again, or cancel.  Canceling should result in a disassocated connection.
+
+2.  If you end up provisioning a PAC file over and over, check that the path to
+   the PAC file is valid, and that you have rights to write there.
+
+3.  If other weird stuff happens.  Make sure you are running as root.
+
+4.  If all else fails.  Run Xsupplicant in full debug mode (add "-d A" to the
+   command line), and e-mail all of the results to Chris.Hessing@utah.edu.
+   (NOTE : Passwords may be shown in clear text!!!  You may want to search the
+   output for your password, and block it out!  Passwords may also be displayed
+   as their hex values.  If you remove the hex, please replace it with 00s
+   so that the offsets are still correct.  You should keep this in mind when
+   sending output to a public mailing list!)

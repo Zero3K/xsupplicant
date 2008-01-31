@@ -1,0 +1,1711 @@
+
+
+Point-to-Point Extensions Working Group           H. Haverinen (editor) 
+Internet Draft                                                    Nokia 
+                                                              June 2002 
+                                                                        
+ 
+ 
+                         EAP SIM Authentication 
+                 draft-haverinen-pppext-eap-sim-05.txt 
+ 
+ 
+Status of this Memo 
+
+   This document is an Internet-Draft and is in full conformance with 
+   all provisions of Section 10 of RFC2026. 
+
+   Internet-Drafts are working documents of the Internet Engineering 
+   Task Force (IETF), its areas, and its working groups. Note that 
+   other groups may also distribute working documents as Internet-
+   Drafts. 
+
+   Internet-Drafts are draft documents valid for a maximum of six 
+   months and may be updated, replaced, or obsoleted by other documents 
+   at any time. It is inappropriate to use Internet- Drafts as 
+   reference material or to cite them other than as "work in progress." 
+
+   The list of current Internet-Drafts can be accessed at: 
+        http://www.ietf.org/ietf/1id-abstracts.txt 
+
+   The list of Internet-Draft Shadow Directories can be accessed at: 
+        http://www.ietf.org/shadow.html. 
+
+   This document is an individual submission for the Point-to-Point 
+   Extensions Working Group of the Internet Engineering Task Force 
+   (IETF).  Comments should be submitted to the ietf-ppp@merit.edu 
+   mailing list. 
+
+   Distribution of this memo is unlimited. 
+
+Abstract 
+
+   This document specifies an Extensible Authentication Protocol (EAP) 
+   mechanism for authentication and session key distribution using the 
+   GSM Subscriber Identity Module (SIM). The mechanism specifies 
+   enhancements to GSM authentication and key agreement whereby 
+   multiple authentication triplets can be combined to create 
+   authentication responses and encryption keys of greater strength 
+   than the individual GSM triplets. The mechanism also includes 
+   network authentication. 
+
+
+
+
+
+
+  
+Haverinen               Expires in six months                [Page 1] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+Table of Contents 
+
+    
+   Status of this Memo.........................................1 
+   Abstract....................................................1 
+   Table of Contents...........................................2 
+   1. Introduction.............................................2 
+   2. Terms....................................................3 
+   3. Overview.................................................4 
+   4. Obtaining Subscriber Identity via EAP/SIM Messages.......5 
+   5. Identity Privacy Support.................................6 
+   6. Message Format...........................................9 
+   7. Message Integrity and Privacy Protection................11 
+   7.1. AT_MAC Attribute......................................11 
+   7.2. AT_IV and AT_ENCR_DATA Attributes.....................11 
+   8. EAP-Response/Identity...................................12 
+   9. EAP-Request/SIM/Start...................................14 
+   10. EAP-Response/SIM/Start.................................15 
+   11. EAP-Request/SIM/Challenge..............................17 
+   12. EAP-Response/SIM/Challenge.............................19 
+   13. Unsuccessful Cases.....................................21 
+   14. EAP/SIM Notifications..................................21 
+   15. Calculation of Cryptographic Values....................23 
+   16. IANA Considerations....................................25 
+   17. Security Considerations................................26 
+   18. Intellectual Property Right Notice.....................27 
+   19. Acknowledgements and Contributions.....................27 
+   References.................................................27 
+   Editor's Address...........................................29 
+    
+1. Introduction 
+
+   This document specifies an Extensible Authentication Protocol (EAP) 
+   [1] mechanism for authentication and session key distribution using 
+   the GSM Subscriber Identity Module (SIM). 
+
+   GSM authentication is based on a challenge-response mechanism. The 
+   authentication algorithm that runs on the SIM can be given a 128-bit 
+   random number (RAND) as a challenge. The SIM runs an operator-
+   specific confidential algorithm which takes the RAND and a secret 
+   key Ki stored on the SIM as input, and produces a 32-bit response 
+   (SRES) and a 64-bit long key Kc as output. The Kc key is originally 
+   intended to be used as an encryption key over the air interface. 
+   Please find more information about GSM authentication in [2]. 
+
+   In EAP/SIM, several RAND challenges are used for generating several 
+   64-bit Kc keys, which are combined to constitute a longer session 
+   key. EAP/SIM also enhances the basic GSM authentication mechanism by 
+   accompanying the RAND challenges with a message authentication code 
+   in order to provide mutual authentication. 
+
+   EAP/SIM specifies optional support for protecting the privacy of 
+   subscriber identity. 
+  
+Haverinen               Expires in six months                [Page 2] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+2. Terms 
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", 
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this 
+   document are to be interpreted as described in RFC 2119 [3]. 
+
+   This document frequently uses the following terms and abbreviations: 
+
+   AAA protocol 
+
+      Authentication, Authorization and Accounting protocol 
+
+   AAA server 
+
+      In this document, AAA server refers to the network element that 
+      resides on the border of Internet AAA network and GSM network. 
+      Cf. EAP server 
+
+   AuC 
+
+      Authentication Centre. The GSM network element that can 
+      authenticate the subscriber. 
+
+   EAP 
+
+      Extensible Authentication Protocol. 
+
+   EAP Server 
+
+      The network element that terminates the EAP protocol. Typically, 
+      the EAP server functionality is implemented in a AAA server. 
+
+   GSM 
+
+      Global System for Mobile communications. 
+
+   IMSI 
+
+      International Mobile Subscriber Identifier, used in GSM to 
+      identify subscribers. 
+
+   NAI 
+
+      Network Access Identifier 
+
+   SIM 
+
+      Subscriber Identity Module. The SIM is an application 
+      traditionally resident on smart cards distributed by GSM 
+      operators. 
+
+
+
+  
+Haverinen               Expires in six months                [Page 3] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+3. Overview 
+
+   Figure 1 shows an overview of the EAP/SIM authentication procedure. 
+   This version of EAP/SIM exchange uses three roundtrips to 
+   authenticate the user and generate session keys. In this document, 
+   the term EAP Server refers to the network element that terminates 
+   the EAP protocol. The Authenticator typically communicates with the 
+   user's EAP server using an AAA protocol. The AAA communications is 
+   not shown in the figure. 
+
+   The first EAP Request issued by the Authenticator is EAP-
+   Request/Identity. The clients response includes either the user's 
+   International Mobile Subscriber Identity (IMSI) or a temporary 
+   identity (pseudonym), as specified in Section 8. 
+
+   Following the client's EAP-Response/Identity packet, the client 
+   receives EAP Requests of type 18 (SIM) from the Authenticator and 
+   sends the corresponding EAP Responses. The EAP packets that are of 
+   the Type SIM also have a Subtype field. The first EAP-Request/SIM 
+   packet is of the Subtype 10 (Start). Usually this packet contains no 
+   attributes. (However, see Section 5 for an exception.) The client 
+   responds with the EAP-Response/SIM/Start packet, which includes the 
+   AT_NONCE_MT attribute that contains a random number NONCE_MT, chosen 
+   by the client. The client MUST NOT reuse the NONCE_MT value from 
+   previous sessions but the client MUST choose it freshly for each 
+   EAP/SIM authentication exchange. The client SHOULD use a good source 
+   of randomness to generate NONCE_MT. 
+
+   In this document, we assume that the EAP server has an interface to 
+   the GSM network and it operates as a gateway between the Internet 
+   AAA network and the GSM authentication infrastructure. After 
+   receiving the EAP Response/SIM/Start, the EAP server obtains n GSM 
+   triplets from the user's home operator's Authentication Centre (AuC) 
+   on the GSM network, where n = 2 or n = 3. From the triplets, the EAP 
+   server derives the keying material. Section 15 specifies how these 
+   cryptographic values are calculated. 
+
+   The next EAP Request the Authenticator issues is of the type SIM and 
+   subtype Challenge (11). It contains the RAND challenges and a 
+   message authentication code attribute AT_MAC to cover the 
+   challenges. On receipt of this message, the client runs the GSM 
+   authentication algorithm and calculates a copy of the message 
+   authentication code. The client then verifies that the calculated 
+   MAC equals the received MAC. If the MAC's do not match, then the 
+   client silently ignores the EAP packet and does not send any 
+   authentication values to the network. Eventually, if another EAP-
+   Request/SIM/Challenge packet with a valid AT_MAC is not received, 
+   the connection establishment will time out. 
+
+   Since the RAND's given to a client are accompanied with the message 
+   authentication code AT_MAC, the client is able to verify that the 
+   RAND's are fresh and they have been generated by the GSM network. 
+
+  
+Haverinen               Expires in six months                [Page 4] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   If all checks out, the client responds with the EAP-
+   Response/SIM/Challenge, containing the client's response MAC_SRES 
+   (Section 15). The EAP server verifies that the MAC_SRES is correct 
+   and sends the EAP-Success packet, indicating that the authentication 
+   was successful. The EAP server may also include derived keying 
+   material in the message it sends to the Authenticator. 
+
+     Client                                               Authenticator 
+       |                                                          | 
+       |                               EAP-Request/Identity       | 
+       |<---------------------------------------------------------| 
+       |                                                          | 
+       | EAP-Response/Identity                                    | 
+       |--------------------------------------------------------->| 
+       |                                                          | 
+       |                        EAP-Request/SIM/Start             | 
+       |<---------------------------------------------------------| 
+       |                                                          | 
+       | EAP-Response/SIM/Start                                   | 
+       | (AT_NONCE_MT)                                            | 
+       |--------------------------------------------------------->| 
+       |                                                          | 
+       |               EAP-Request/SIM/Challenge                  | 
+       |               (AT_RAND, AT_MAC)                          | 
+       |<---------------------------------------------------------| 
+       |                                                          | 
+   +-------------------------------------+                        | 
+   | Client runs GSM algorithms,         |                        | 
+   | verifies AT_MAC, derives AT_MAC_SRES|                        | 
+   | and session key                     |                        | 
+   +-------------------------------------+                        | 
+       |                                                          | 
+       | EAP-Response/SIM/Challenge                               | 
+       | (AT_MAC_SRES)                                            | 
+       |--------------------------------------------------------->| 
+       |                                                          | 
+       |                                                          | 
+       |                                             EAP-Success  | 
+       |<---------------------------------------------------------| 
+       |                                                          | 
+
+   Figure 1 EAP/SIM authentication procedure 
+
+4. Obtaining Subscriber Identity via EAP/SIM Messages 
+
+   It may be useful to obtain the identity of the subscriber through 
+   means other than EAP Request/Identity. This can eliminate the need 
+   for an identity request when using EAP method negotiation. If this 
+   was not possible then it might not be possible to negotiate EAP/SIM 
+   as the second method since it is not specified how to deal with a 
+   new EAP Request/Identity. 
+
+
+  
+Haverinen               Expires in six months                [Page 5] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   If the EAP server does not have any identity (IMSI or pseudonym) 
+   available when sending the first EAP/SIM request (EAP-
+   Request/SIM/Start), then the EAP server includes the AT_IDENTITY_REQ 
+   attribute (specified in Section 9) in the EAP-Request/SIM/Start 
+   packet. This attribute does not contain any data. It requests the 
+   client to include the AT_IDENTITY attribute (specified in Section 
+   10) in the EAP-Response/SIM/Start packet. The AT_IDENTITY attribute 
+   contains the current identity of the subscriber (IMSI or pseudonym). 
+   The use of pseudonyms for anonymity is specified in Section 5. 
+
+   This case is illustrated in the figure below. 
+
+   Client                                             Authenticator 
+          |                                                       | 
+          |                            +------------------------------+ 
+          |                            | Server does not have any     | 
+          |                            | Subscriber identity available| 
+          |                            | When starting EAP/SIM        | 
+          |                            +------------------------------+ 
+          |                                                       | 
+          |                            EAP-Request/SIM/Start      | 
+          |                            (Includes AT_IDENTITY_REQ) | 
+          |<------------------------------------------------------| 
+          |                                                       | 
+          |                                                       | 
+          | EAP-Response/SIM/Start                                | 
+          | (Includes AT_IDENTITY and AT_NONCE_MT)                | 
+          |------------------------------------------------------>| 
+          |                                                       | 
+    
+   If the AT_IDENTITY attribute contains a valid cleartext identity or 
+   a pseudonym identity that the EAP server is able to decode to the 
+   cleartext identity, then the authentication sequence proceeds as 
+   usual with the EAP Server issuing the EAP-Request/SIM/Challenge 
+   message. The operation in the case when the AT_IDENTITY attribute 
+   contains a pseudonym that the EAP server fails to decode is 
+   specified in Section 5. 
+
+5. Identity Privacy Support 
+
+   In the very first connection to an EAP server, the client always 
+   transmits the cleartext identity (IMSI) in the EAP-Response/Identity 
+   packet or in the AT_IDENTITY attribute. In subsequent connections, 
+   the optional identity privacy (anonymity) support can be used to 
+   hide the IMSI and to make the connections unlinkable to a passive 
+   eavesdropper. 
+
+   The EAP-Request/SIM/Challenge message MAY include an encrypted 
+   pseudonym in the value field of the AT_ENCR_DATA attribute. The 
+   AT_IV and AT_MAC attributes are also used to transport the pseudonym 
+   to the client, as described in Section 11. Because the identity 
+   privacy support is optional to implement, the client MAY ignore the 
+   AT_IV, AT_ENCR_DATA, and AT_MAC attributes and always transmit the 
+  
+Haverinen               Expires in six months                [Page 6] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   IMSI in the EAP-Response/Identity packet and in the AT_IDENTITY 
+   attribute. 
+
+   On receipt of the EAP-Request/SIM/Challenge, the client verifies the 
+   AT_MAC attribute before looking at the AT_ENCR_DATA attribute. If 
+   the AT_MAC is invalid, then the client MUST silently discard the EAP 
+   packet. If the AT_MAC attribute is valid, then the client MAY 
+   decrypt the encrypted data in AT_ENCR_DATA and use the obtained 
+   pseudonym used in the next authentication. 
+
+   The EAP server produces pseudonyms in an implementation-dependent 
+   manner. Please see [4] for examples on how to produce pseudonyms. 
+   Only the EAP server needs to be able to map the pseudonym to the 
+   cleartext identity. Regardless of construction method, the pseudonym 
+   MUST conform to the grammar specified for the username portion of an 
+   NAI. The EAP SIM server MAY produce pseudonyms that begin with a 
+   leading "1" character in order to be able to use the leading 
+   character as a hint in EAP method negotiation during next 
+   authentication. 
+
+   On the next connection to the EAP server, the client MAY transmit 
+   the received pseudonym in the first EAP-Response/Identity packet. 
+   The client concatenates the received pseudonym with the "@" 
+   character and the NAI realm portion. The client MUST use the same 
+   realm portion that it used in the connection when it received the 
+   pseudonym. If the EAP server successfully decodes the pseudonym 
+   received in the EAP-Response/Identity packet to a known client 
+   identity (IMSI), the authentication proceeds with the EAP-
+   Request/SIM/Start message as usual. 
+
+   If the EAP server requests the client to include the AT_IDENTITY 
+   attribute in the EAP-Response/SIM/Start packet, as specified in 
+   Section 4, the client MAY transmit the received pseudonym in the 
+   AT_IDENTITY packet. If the EAP server successfully decodes the 
+   pseudonym to a known identity, then the authentication proceeds with 
+   the EAP-Request/SIM/Challenge packet as usual. 
+
+   If the EAP server fails to decode the pseudonym to a known identity, 
+   then the EAP server requests the regular IMSI (non-pseudonym 
+   identity) by including the AT_PERMANENT_IDENTITY_REQ attribute 
+   (Section 9) in the EAP-Request/SIM/Start message. 
+
+   The EAP server issues the EAP-Request/SIM/Start message also in the 
+   case when it received the undecodable pseudonym in AT_IDENTITY 
+   included the EAP-Response/SIM/Start packet. In this case, there are 
+   two EAP/SIM/Start round trips. The authentication sequence proceeds 
+   similarly in both cases. For example, AT_NONCE_MT is always included 
+   in the EAP-Response/SIM/Start packet, even if it was already 
+   transmitted in the previous EAP-Response/SIM/Start. The first 
+   EAP/SIM/Start round trip is ignored. The NONCE_MT value included in 
+   the second EAP-Response/SIM/Start packet is used in all 
+   calculations. The EAP/SIM client MAY use the same NONCE_MT value in 
+   both EAP-Response/SIM/Start packets. 
+  
+Haverinen               Expires in six months                [Page 7] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   The value field of the AT_PERMANENT_IDENTITY_REQ does not contain 
+   any data but the attribute is included to request the client to 
+   include the AT_PERMANENT_IDENTITY attribute (Section 10) in the EAP-
+   Response/SIM/Start message. The AT_PERMANENT_IDENTITY attribute 
+   contains the client's identity in the clear.  
+
+   Please note that the EAP/SIM client and the EAP/SIM server only 
+   process the AT_PERMANENT_IDENTITY_REQ and AT_PERMANENT_IDENTITY 
+   attributes and entities that only pass through EAP packets do not 
+   process these attributes. Hence, if the EAP server is not co-located 
+   in the authenticator, then the authenticator and other intermediate 
+   AAA elements (such as possible AAA proxy servers) will continue to 
+   refer to the client with the original pseudonym identity from the 
+   EAP-Response/Identity packet regardless if the decoding fails in the 
+   EAP server. 
+
+   The figure below illustrates the case when the EAP server fails to 
+   decode the pseudonym included in the EAP-Response/Identity packet. 
+
+   Client                                             Authenticator 
+          |                                                       | 
+          |                               EAP-Request/Identity    | 
+          |<------------------------------------------------------| 
+          |                                                       | 
+          | EAP-Response/Identity                                 | 
+          | (Includes a pseudonym)                                | 
+          |------------------------------------------------------>| 
+          |                                                       | 
+          |                            +------------------------------+ 
+          |                            | Server fails to decode the   | 
+          |                            | Pseudonym.                   | 
+          |                            +------------------------------+ 
+          |                                                       | 
+          |                  EAP-Request/SIM/Start                | 
+          |                  (Includes AT_PERMANENT_IDENTITY_REQ) | 
+          |<------------------------------------------------------| 
+          |                                                       | 
+          |                                                       | 
+          | EAP-Response/SIM/Start                                | 
+          | (Includes AT_PERMANENT_IDENTITY and AT_NONCE_MT)      | 
+          |------------------------------------------------------>| 
+          |                                                       | 
+    
+   After the EAP-Response/SIM/Start message, the authentication 
+   sequence proceeds as usual with the EAP Server issuing the EAP-
+   Request/SIM/Challenge message. 
+
+   The figure below illustrates the case when the EAP server fails to 
+   decode the pseudonym included in the AT_IDENTITY attribute. 
+
+
+
+
+  
+Haverinen               Expires in six months                [Page 8] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   Client                                             Authenticator 
+          |                                                       | 
+          |                            +------------------------------+ 
+          |                            | Server does not have any     | 
+          |                            | Subscriber identity available| 
+          |                            | When starting EAP/SIM        | 
+          |                            +------------------------------+ 
+          |                                                       | 
+          |                            EAP-Request/SIM/Start      | 
+          |                            (Includes AT_IDENTITY_REQ) | 
+          |<------------------------------------------------------| 
+          |                                                       | 
+          |                                                       | 
+          |EAP-Response/SIM/Start                                 | 
+          |(Includes a pseudonym AT_IDENTITY and AT_NONCE_MT)     | 
+          |------------------------------------------------------>| 
+          |                                                       | 
+          |                                                       | 
+          |                            +------------------------------+ 
+          |                            | Server fails to decode the   | 
+          |                            | Pseudonym in AT_IDENTITY     | 
+          |                            +------------------------------+ 
+          |                                                       | 
+          |                  EAP-Request/SIM/Start                | 
+          |                  (Includes AT_PERMANENT_IDENTITY_REQ) | 
+          |<------------------------------------------------------| 
+          |                                                       | 
+          |                                                       | 
+          | EAP-Response/SIM/Start                                | 
+          | (Includes AT_PERMANENT_IDENTITY and AT_NONCE_MT)      | 
+          |------------------------------------------------------>| 
+          |                                                       | 
+    
+   After the latter EAP-Response/SIM/Start message, the authentication 
+   sequence proceeds as usual with the EAP Server issuing the EAP-
+   Request/SIM/Challenge message. 
+
+   If the client believes that the server should be able to decode the 
+   pseudonym identity, the client MAY refuse to send a clear text 
+   identity. In this case, the client silently ignores the EAP-
+   Request/SIM/Start packet that contains AT_PERMANENT_IDENTITY_REQ. 
+   This is necessary in some environments to prevent Man-in-the-Middle 
+   attackers from claiming to be servers that do not recognize the 
+   pseudonym, in an effort to find out the true identity of the user. 
+
+6. Message Format 
+
+   The Type-Data of the EAP/SIM packets begins with a 1-octet Subtype 
+   field, which is followed by a 2-octet reserved field. The rest of 
+   the Type-Data consists of attributes that are encoded in Type, 
+   Length, Value format. The figure below shows the generic format of 
+   an attribute. 
+
+  
+Haverinen               Expires in six months                [Page 9] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+       0                   1                   2                   3 
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |      Type     |    Length     |  Value... 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+    
+
+   Attribute Type 
+
+      Indicates the particular type of attribute. The attribute type 
+      values are listed in Section 16. 
+
+   Length 
+
+      Indicates the length of this attribute in multiples of four 
+      bytes. The maximum length of an attribute is 1024 bytes. The 
+      length includes the Attribute Type and Length bytes. 
+
+   Value 
+
+      The particular data associated with this attribute. This field is 
+      always included and it may be two or more bytes in length. The 
+      type and length fields determine the format and length of the 
+      value field. 
+
+   When an attribute numbered within the range 0 through 127 is 
+   encountered but not recognized, the EAP/SIM message containing that 
+   attribute MUST be silently discarded. These attributes are called 
+   non-skippable attributes. 
+
+   When an attribute numbered in the range 128 through 255 is 
+   encountered but not recognized that particular attribute is ignored, 
+   but the rest of the attributes and message data MUST still be 
+   processed. The Length field of the attribute is used to skip the 
+   attribute value in searching for the next attribute. These 
+   attributes are called skippable attributes. 
+
+   EAP/SIM packets do not include a version field. However, should 
+   there be reason to revise this protocol in the future, new non-
+   skippable or skippable attributes could be specified in order to 
+   implement revised EAP/SIM versions in a backward-compatible manner.  
+
+   Unless otherwise specified, the order of the attributes in an 
+   EAP/SIM message is insignificant, and an EAP/SIM implementation 
+   should not assume a certain order to be used. 
+
+   Attributes can be encapsulated within other attributes. In other 
+   words, the value field of an attribute type can be specified to 
+   contain other attributes. 
+
+
+
+  
+Haverinen               Expires in six months               [Page 10] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+7. Message Integrity and Privacy Protection 
+
+   This section specifies EAP/SIM attributes for attribute encryption 
+   and EAP/SIM message integrity protection. 
+
+   Because the K_encr and K_int keys derived from the RAND challenges 
+   (as specified in Section 15) are required to process the integrity 
+   protection and encryption attributes, these attributes can only be 
+   used in the EAP-Request/SIM/Challenge message and any EAP/SIM 
+   messages sent after EAP-Requets/SIM/Challenge. For example, these 
+   attributes cannot be used in EAP-Request/SIM/Start. 
+
+7.1. AT_MAC Attribute 
+
+   The AT_MAC attribute can be used for EAP/SIM message integrity 
+   protection. Whenever AT_ENCR_DATA (Section 7.2) is included in an 
+   EAP message, it MUST be followed (not necessarily immediately) by an 
+   AT_MAC attribute. Messages that do not meet this condition MUST be 
+   silently discarded. 
+
+   The value field of the AT_MAC attribute contains two reserved bytes 
+   followed by a message authentication code (MAC). The MAC is 
+   calculated over the whole EAP packet with the exception that the 
+   value field of the MAC attribute is set to zero when calculating the 
+   MAC. The reserved bytes are set to zero when sending and ignored on 
+   reception. The format of the AT_MAC attribute is shown below. 
+
+    0                   1                   2                   3 
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   |     AT_MAC    | Length = 5    |           Reserved            | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   |                                                               | 
+   |                           MAC                                 | 
+   |                                                               | 
+   |                                                               | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+
+   The MAC algorithm is HMAC-SHA1-128 [11] keyed hash value. (The HMAC-
+   SHA1-128 value is obtained from the 20-byte HMAC-SHA1 value by 
+   truncating the output to 16 bytes. Hence, the length of the MAC is 
+   16 bytes.) The derivation of the integrity protection key (K_int) 
+   used in the calculation of the MAC is specified in Section 15.  
+
+7.2. AT_IV and AT_ENCR_DATA Attributes 
+
+   AT_IV and AT_ENCR_DATA attributes can be optionally used to transmit 
+   encrypted information between the EAP/SIM client and server.  
+
+   The value field of AT_IV contains two reserved bytes followed by a 
+   16-byte initialization vector required by the AT_ENCR_DATA 
+   attribute. The reserved bytes are set to zero when sending and 
+  
+Haverinen               Expires in six months               [Page 11] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   ignored on reception. The AT_IV attribute MUST be included if and 
+   only if the AT_ENCR_DATA is included. Messages that do not meet this 
+   condition MUST be silently discarded.  
+
+   The sender of the AT_IV attribute chooses the initialization vector 
+   by random. The sender MUST NOT reuse the initialization vector value 
+   from previous EAP SIM packets but the sender MUST choose it freshly 
+   for each AT_IV attribute. The sends SHOULD use a good source of 
+   randomness to generate the initialization vector. The format of 
+   AT_IV is shown below. 
+
+    0                   1                   2                   3 
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   |     AT_IV     | Length = 5    |           Reserved            | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   |                                                               | 
+   |                 Initialization Vector                         | 
+   |                                                               | 
+   |                                                               | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+
+   The value field of the AT_ENCR_DATA attribute consists of two 
+   reserved bytes followed by bytes encrypted using the Advanced 
+   Encryption Standard (AES) [5] in the Cipher Block Chaining (CBC) 
+   mode of operation, using the initialization vector from the AT_IV 
+   attribute. The reserved bytes are set to zero when sending and 
+   ignored on reception. Please see [6] for a description of the CBC 
+   mode. The format of the AT_ENCR_DATA attribute is shown below. 
+
+    0                   1                   2                   3 
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   | AT_ENCR_DATA  | Length        |           Reserved            | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   |                                                               | 
+   .                    Encrypted Data                             . 
+   .                                                               . 
+   |                                                               | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+
+   The derivation of the encryption key (K_encr) is specified in 
+   Section 15. 
+
+   The plaintext consists of nested EAP/SIM attributes. 
+
+8. EAP-Response/Identity 
+
+   In the beginning of EAP authentication, the Authenticator issues the 
+   EAP-Request/Identity packet to the client. The client responds with 
+
+  
+Haverinen               Expires in six months               [Page 12] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   EAP-Response/Identity, which contains the user's identity. The 
+   formats of these packets are specified in [1]. 
+
+   GSM subscribers are identified with the International Mobile 
+   Subscriber Identity (IMSI) [7]. The IMSI is composed of a three 
+   digit Mobile Country Code (MCC), a two or three digit Mobile Network 
+   Code (MNC) and a not more than 10 digit Mobile Subscriber 
+   Identification Number (MSIN). In other words, the IMSI is a string 
+   of not more than 15 digits. MCC and MNC uniquely identify the GSM 
+   operator. 
+
+   Internet AAA protocols identify users with the Network Access 
+   Identifier (NAI) [8]. When used in a roaming environment, the NAI is 
+   composed of a username and a realm, separated with "@" 
+   (username@realm). The username portion identifies the subscriber 
+   within the realm. The AAA nodes use the realm portion of the NAI to 
+   route AAA requests to the correct AAA server. The realm name used in 
+   this protocol MAY be chosen by the operator and it MAY a 
+   configurable parameter in the EAP/SIM client implementation. In this 
+   case, the client is typically configured with the NAI realm of the 
+   home operator. Operators MAY reserve a specific realm name  for 
+   EAP/SIM users. This convention makes it easy to recognize that the 
+   NAI identifies a GSM subscriber. Such reserved NAI realm may be 
+   useful as a hint as to the first authentication method to use during 
+   method negotiation. 
+
+   There are two types of NAI username portions in EAP/SIM: non-
+   pseudonym permanent usernames and pseudonym usernames. When the 
+   optional IMSI privacy support is not used, the non-pseudonym 
+   permanent username is used. The non-pseudonym permanent username is 
+   of the format "1imsi". In other words, the first character of the 
+   username is the digit one (ASCII value 0x31), followed by the IMSI. 
+   The IMSI is an ASCII string that consists of not more than 15 
+   decimal digits (ASCII values between 0x30 and 0x39) as specified in 
+   [7]. 
+
+   The EAP server MAY use the leading "1" as a hint to try EAP/SIM as 
+   the first authentication method during method negotiation, rather 
+   than for example EAP/AKA. The EAP/SIM server MAY propose EAP/SIM 
+   even if the leading character was not "1". 
+
+   When the optional identity privacy support is used, the client MAY 
+   use the pseudonym received as part of the previous authentication 
+   sequence as the username portion of the NAI, as specified in Section 
+   5. The client MUST NOT modify the pseudonym received in 
+   AT_PSEUDONYM. For example, the client MUST NOT append any leading 
+   characters in the pseudonym. 
+
+   If no configured realm name is available, the client MAY derive the 
+   realm name from the MCC and MNC portions of the IMSI. In this case, 
+   the realm name is obtained by concatenating "mnc", the MNC digits of 
+   IMSI, ".mcc", the MCC digits of IMSI and ".owlan.org". For example, 
+
+  
+Haverinen               Expires in six months               [Page 13] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   if the IMSI is 123456789098765, and the MNC is three digits long, 
+   then the derived realm name is "mnc456.mcc123.owlan.org". 
+
+   If the client is not able to determine whether the MNC is two or 
+   three digits long, the client MAY use a 3-digit MNC. If the correct 
+   length of the MNC is two, then the MNC used in the realm name will 
+   include the first digit of MSIN. Hence, when configuring AAA 
+   networks for operators that have 2-digit MNC's, the network SHOULD 
+   also be prepared for realm names with incorrect 3-digit MNC's. 
+
+9. EAP-Request/SIM/Start 
+
+   The first SIM specific EAP Request is of subtype Start. The format 
+   of the EAP Request/SIM/Start packet is shown below. 
+
+    
+
+       0                   1                   2                   3 
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |     Code      |  Identifier   |            Length             | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |     Type      |    Subtype    |           Reserved            | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |AT_PERM..._REQ | Length = 1    |           Reserved            | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |AT_ID..._REQ   | Length = 1    |           Reserved            | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+   Code 
+
+      1 for Request  
+
+   Identifier 
+
+      See [1]. 
+
+   Length 
+
+      The length of the EAP packet. 
+
+   Type 
+
+      18 
+
+   Subtype 
+
+      10 
+
+   Reserved 
+
+      Set to zero on sending, ignored on reception 
+
+  
+Haverinen               Expires in six months               [Page 14] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   AT_PERMANENT_IDENTITY_REQ 
+
+      The AT_PERMANENT_IDENTITY_REQ attribute is optional and it is 
+      included in the cases defined in Section 5. It MUST NOT be 
+      included if AT_IDENTITY_REQ is included. The value field only 
+      contains two reserved bytes, which are set to zero on sending and 
+      ignored on reception. 
+
+   AT_IDENTITY_REQ 
+
+      The AT_IDENTITY_REQ attribute is optional and it is included in 
+      the cases defined in Section 4. It MUST NOT be included if 
+      AT_PERMANENT_IDENTITY_REQ is included. The value field only 
+      contains two reserved bytes, which are set to zero on sending and 
+      ignored on reception. 
+
+10. EAP-Response/SIM/Start 
+
+   The format of the EAP Response/SIM/Start packet is shown below. 
+
+       0                   1                   2                   3 
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |     Code      |  Identifier   |            Length             | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |     Type      |    Subtype    |           Reserved            | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |AT_NONCE_MT    | Length = 5    |           Reserved            | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |                                                               | 
+      |                           NONCE_MT                            | 
+      |                                                               | 
+      |                                                               | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      | AT_PERM...    | Length        | Actual Identity Length        | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |                                                               | 
+      .               Cleartext Identity (optional)                   . 
+      .                                                               . 
+      |                                                               | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      | AT_IDENTITY   | Length        | Actual Identity Length        | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+      |                                                               | 
+      .                 Current Identity (optional)                   . 
+      .                                                               . 
+      |                                                               | 
+      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+
+   Code 
+
+      2 for Response 
+  
+Haverinen               Expires in six months               [Page 15] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   Identifier 
+
+      See [1]. 
+
+   Length 
+
+      The length of the EAP packet. 
+
+   Type 
+
+      18 
+
+   Subtype 
+
+      10 
+
+   Reserved 
+
+      Set to zero when sending, ignored on reception. 
+
+   AT_NONCE_MT 
+
+      The AT_NONCE_MT attribute MUST be included. The value field 
+      contains two reserved bytes followed by a random number generated 
+      by the client (16 bytes) freshly for this EAP/SIM authentication. 
+      The random number is used as a seed value for the new keying 
+      material. The reserved bytes are set to zero upon sending and 
+      ignored upon reception. 
+
+   AT_PERMANENT_IDENTITY 
+
+      The AT_PERMANENT_IDENTITY attribute is optional and it is 
+      included in cases defined in Section 5. It MUST NOT be included 
+      if AT_IDENTITY is included. The value field of this attribute 
+      begins with 2-byte actual identity length, which specifies the 
+      length of the identity in bytes. This field is followed by the 
+      non-pseudonym permanent Network Access Identifier username 
+      portion of the indicated actual length. The username format is 
+      specified in Section 8. The username does not include any 
+      terminating null characters. Because the length of the attribute 
+      must be a multiple of 4 bytes, the sender pads the identity with 
+      zero bytes when necessary. 
+
+   AT_IDENTITY 
+
+      The AT_IDENTITY attribute is optional and it is included in cases 
+      defined in Section 4. It MUST NOT be included if 
+      AT_PERMANENT_IDENTITY is included. The value field of this 
+      attribute begins with 2-byte actual identity length, which 
+      specifies the length of the identity in bytes. This field is 
+      followed by the Network Access Identifier username portion of the 
+      indicated actual length. The username format is specified in 
+      Section 8. The username is either the non-pseudonym permanent 
+  
+Haverinen               Expires in six months               [Page 16] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+      username or a pseudonym username. The username does not include 
+      any terminating null characters. Because the length of the 
+      attribute must be a multiple of 4 bytes, the sender pads the 
+      identity with zero bytes when necessary. 
+
+11. EAP-Request/SIM/Challenge 
+
+   The format of the EAP-Request/SIM/Challenge packet is shown below. 
+
+      0                   1                   2                   3 
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     |     Code      |  Identifier   |            Length             | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     |     Type      |    Subtype    |           Reserved            | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     | AT_RAND       | Length        |           Reserved            | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     |                                                               | 
+     .                            n*RAND                             . 
+     .                                                               . 
+     |                                                               | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     | AT_IV         | Length = 5    |           Reserved            | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     |                                                               | 
+     |                 Initialization Vector (optional)              | 
+     |                                                               | 
+     |                                                               | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     | AT_ENCR_DATA  | Length        |           Reserved            | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     |                                                               | 
+     .                    Encrypted Data (optional)                  . 
+     .                                                               . 
+     |                                                               | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     | AT_MAC        | Length = 5    |           Reserved            | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+     |                                                               | 
+     |                           MAC                                 | 
+     |                                                               | 
+     |                                                               | 
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+
+   Code 
+
+      1 for Request  
+
+   Identifier 
+
+      See [1] 
+
+  
+Haverinen               Expires in six months               [Page 17] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   Length 
+
+      The length of the EAP packet. 
+
+   Type 
+
+      18 
+
+   Subtype 
+
+      11 
+
+   Reserved 
+
+      Set to zero when sending, ignored on reception. 
+
+   AT_RAND 
+
+      The AT_RAND attribute MUST be included. The value field of this 
+      attribute contains two reserved bytes followed by n GSM RANDs 
+      (each 16 bytes long). The reserved bytes are set to zero upon 
+      sending and ignored upon reception.  
+       
+
+      The number of RAND challenges MUST be two or three. The client 
+      MAY silently ignore the EAP-Request/SIM/Challenge message, if the 
+      number of RAND challenges is two while the client's local policy 
+      requires three challenges to be used. 
+
+   AT_IV 
+
+      The AT_IV attribute is optional. See section 7.2. 
+
+   AT_ENCR_DATA 
+
+      The AT_ENCR_DATA attribute is optional. See section 7.2. The 
+      plaintext consists of nested attributes as described below. 
+
+   AT_MAC 
+
+      AT_MAC MUST be included in EAP-Request/SIM/Challenge for network 
+      authentication. See Section 7.1. 
+
+   The AT_IV, AT_ENCR_DATA and AT_MAC attributes are used for identity 
+   privacy. The plaintext of the AT_ENCR_DATA value field consists of 
+   nested attributes, which are shown below. 
+
+
+
+
+
+
+
+  
+Haverinen               Expires in six months               [Page 18] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+    
+    0                   1                   2                   3 
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   | AT_PSEUDONYM  | Length        | Actual Pseudonym Length       | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   |                                                               | 
+   .                           Pseudonym                           . 
+   .                                                               . 
+   |                                                               | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+   |  AT_PADDING   | Length        | Padding...                    | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               | 
+   |                                                               | 
+   |                                                               | 
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+
+   AT_PSEUDONYM 
+
+      The AT_PSEUDONYM attribute is optional. The value field of this 
+      attribute begins with 2-byte actual pseudonym length, which 
+      specifies the length of the pseudonym in bytes. This field is 
+      followed by a pseudonym username, of the indicated actual length, 
+      that the client can use in the next authentication, as described 
+      in Section 5. The username does not include any terminating null 
+      characters. Because the length of the attribute must be a 
+      multiple of 4 bytes, the sender pads the pseudonym with zero 
+      bytes when necessary.  
+
+   AT_PADDING 
+
+      The encryption algorithm requires the length of the plaintext to 
+      be a multiple of 16 bytes. The sender may need to include the 
+      AT_PADDING attribute as the last attribute within AT_ENCR_DATA. 
+      The AT_PADDING attribute is not included if the total length of 
+      other nested attributes within the AT_ENCR_DATA attribute is a 
+      multiple of 16 bytes. As usual, the Length of the Padding 
+      attribute includes the Attribute Type and Attribute Length 
+      fields. The Length of the Padding attribute is 4, 8 or 12 bytes. 
+      It is chosen so that the length of the value field of the 
+      AT_ENCR_DATA attribute becomes a multiple of 16 bytes. The actual 
+      pad bytes in the value field are set to zero (0x00) on sending. 
+      The recipient of the message MUST verify that the pad bytes are 
+      set to zero, and silently drop the message if this verification 
+      fails. 
+
+12. EAP-Response/SIM/Challenge 
+
+   The format of the EAP-Response/SIM/Challenge packet is shown below. 
+
+   As specified in Section 7, EAP-Response/SIM/Challenge MAY include 
+   the AT_MAC attribute to integrity protect the EAP packet. Later 
+  
+Haverinen               Expires in six months               [Page 19] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   versions of this protocol MAY make use of the AT_ENCR_DATA and AT_IV 
+   attributes in this message to include encrypted (skippable) 
+   attributes. AT_MAC, AT_ENCR_DATA and AT_IV attributes are not shown 
+   in the figure below. If present, they are processed as in EAP-
+   Request/SIM/Challenge packet. The EAP server MUST process EAP-
+   Response/SIM/Challenge messages that include these attributes even 
+   if the server did not implement these optional attributes. 
+
+     0                   1                   2                   3 
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |     Code      |  Identifier   |            Length             | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |     Type      |    Subtype    |           Reserved            | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |  AT_MAC_SRES  | Length = 5    |           Reserved            | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |                                                               | 
+    |                                                               | 
+    |                           MAC_SRES                            | 
+    |                                                               | 
+    |                                                               | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+
+   Code 
+
+      2 for Response 
+
+   Identifier 
+
+      See [1]. 
+
+   Length 
+
+      The length of the EAP packet. 
+
+   Type 
+
+      18 
+
+   Subtype 
+
+      11 
+
+   Reserved 
+
+      Set to zero when sending, ignored on reception. 
+
+   AT_MAC_SRES 
+
+      The AT_MAC_SRES attribute MUST be included. The value field of 
+      this attribute contains two reserved bytes followed by the 
+  
+Haverinen               Expires in six months               [Page 20] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+      MAC_SRES response calculated by the client (Section 15), 16 
+      bytes. The reserved bytes are set to zero upon sending and 
+      ignored upon reception. 
+
+13. Unsuccessful Cases 
+
+   As normally in EAP, the client is sent the EAP-Failure packet when 
+   the authentication procedure fails on the EAP Server. In EAP/SIM, 
+   this may occur for example if the EAP server is not able to obtain 
+   the GSM triplets for the subscriber or the EAP server receives an 
+   incorrect MAC_SRES. 
+
+   In general, if an error occurs on the client while processing a 
+   received EAP-Request packet, the client silently ignores the EAP 
+   packet and does not send any EAP messages to the network. Examples 
+   of such errors, specified in detail elsewhere in this document, are 
+   an invalid AT_MAC value, insufficient number of RAND challenges 
+   included in AT_RAND, and an unrecognized non-skippable attribute. 
+
+   As specified in [1], the EAP client must respond with EAP-
+   Response/Nak when it receives an EAP Request of an undesired or 
+   unrecognized authentication type. 
+
+14. EAP/SIM Notifications 
+
+   The EAP-Request/Notification, specified in [1], can be used to 
+   convey a displayable message from the authenticator to the client. 
+   Because these messages are textual messages, it may be hard for the 
+   client to present them in the userÆs preferred language. Therefore, 
+   EAP/SIM uses a separate EAP/SIM message subtype to transmit 
+   localizable notification codes instead of the EAP-
+   Request/Notification packet. 
+
+   The EAP server MAY issue an EAP-Request/SIM/Notification packet to 
+   the client. The client MAY delay the processing of EAP-
+   Request/SIM/Notification and wait for other EAP/SIM requests. If a 
+   valid EAP/SIM request of another subtype is received, the client MAY 
+   silently ignore the EAP-Request/SIM notification and process the 
+   other EAP/SIM request instead. If the client decides to process the 
+   EAP-Request/SIM/Notification, then the client MAY show a 
+   notification message to the user and the client MUST respond to the 
+   EAP server with an EAP-Response/SIM/Notification packet.  
+
+   Some of the notification codes are authorization related and hence 
+   not usually considered as part of the responsibility of an EAP 
+   method. However, they are included as part of EAP/SIM because there 
+   are currently no other ways to convey this information to the user 
+   in a localizable way, and the information is potentially useful for 
+   the user. An EAP/SIM server implementation may decide never to send 
+   these EAP/SIM notifications. 
+
+   The format of the EAP-Request/SIM/Notification packet is shown 
+   below. 
+  
+Haverinen               Expires in six months               [Page 21] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+     0                   1                   2                   3 
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |     Code      |  Identifier   |            Length             | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |     Type      |    Subtype    |           Reserved            | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |AT_NOTIFICATION| Length = 1    |      Notification Code        | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+
+   Code 
+
+      1 for Request 
+
+   Identifier 
+
+      See [1]. 
+
+   Length 
+
+      The length of the EAP packet. 
+
+   Type 
+
+      18 
+
+   Subtype 
+
+      12 
+
+   Reserved 
+
+      Set to zero when sending, ignored on reception. 
+
+   AT_NOTIFICATION 
+
+      The AT_NOTIFICATION attribute MUST be included. The value field 
+      of this attribute contains a two-byte notification code. The 
+      following code values have been reserved. The descriptions below 
+      illustrate the semantics of the notifications. The client 
+      implementation MAY use different wordings when presenting the 
+      notifications to the user. The "requested service" depends on the 
+      environment where EAP/SIM is applied. 
+
+      1024 - Visited network does not have a roaming agreement with 
+      user's home operator or a suitable roaming broker 
+
+      1026 û User has been temporarily denied access to the requested 
+      service  
+
+      1031 - User has not subscribed to the requested service 
+
+  
+Haverinen               Expires in six months               [Page 22] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   The format of the EAP-Response/SIM/Notification packet is shown 
+   below. Because this packet is only an acknowledgement of EAP-
+   Request/SIM/Notification, it does not contain any mandatory 
+   attributes. 
+
+     0                   1                   2                   3 
+     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |     Code      |  Identifier   |            Length             | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    |     Type      |    Subtype    |           Reserved            | 
+    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+    
+
+   Code 
+
+      2 for Response 
+
+   Identifier 
+
+      See [1]. 
+
+   Length 
+
+      The length of the EAP packet. 
+
+   Type 
+
+      18 
+
+   Subtype 
+
+      12 
+
+   Reserved 
+
+      Set to zero when sending, ignored on reception. 
+
+15. Calculation of Cryptographic Values 
+
+   This section specifies how keying material is generated and how the 
+   message authentication code MAC_SRES is calculated. 
+
+   EAP SIM requires three keys for its own purposes, the integrity 
+   protection keys K_sres and K_int, and the encryption key K_encr, to 
+   be used with the AT_MAC_SRES, AT_MAC and AT_ENCR_DATA attributes. In 
+   addition, it is possible to derive additional key material, such as 
+   a master key to be used with IEEE 802.11i. 
+    
+   Key derivation is based on the random number generation specified in 
+   NIST Federal Information Processing Standards (FIPS) Publication 
+   186-2 [9]. The random number generator is specified in the change 
+   notice 1 (2001 October 5) of [9] (Algorithm 1). As specified in the 
+  
+Haverinen               Expires in six months               [Page 23] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   change notice (page 74), when Algorithm 1 is used as a general-
+   purpose random number generator, the "mod q" term in step 3.3 is 
+   omitted. The function G used in the algorithm is constructed via 
+   Secure Hash Standard as specified in Appendix 3.3 of the standard. 
+    
+   160-bit XKEY and XVAL values are used, so b = 160. The initial 
+   secret seed value XKEY is computed from the n GSM Kc keys and the 
+   NONCE_MT with the following formula: 
+
+      XKEY = SHA1(n*Kc| NONCE_MT) 
+
+   The notation n*Kc| NONCE_MT denotes the n Kc keys and the NONCE_MT 
+   value concatenated. The hash function SHA1 is specified in [10]. 
+    
+   The optional user input values (XSEED_j) are set to zero.  
+    
+   The resulting 160-bit random numbers x_0, x_1, ..., x_m-1 are 
+   concatenated and partitioned into suitable-sized chunks and used as 
+   keys in the following order: K_sres (128 bits), K_encr (128 bits), 
+   K_int (128 bits), EAP application specific keys. The number of 
+   random number generator iterations (m) depends on the amount of 
+   required keying material. 
+    
+   Even if K_encr or K_int were not used in the particular 
+   authentication sequence, they are derived and the EAP application 
+   specific material begins after K_int. 
+    
+   For example, the EAP application specific material can be used for 
+   packet security between the client and the authenticator. Because 
+   the required keying material depends on the EAP application and the 
+   EAP key derivation standardization has not been finalized yet, exact 
+   rules of key derivation cannot be given here. As a guideline, the 
+   EAP application specific keys resulting from the key expansion 
+   scheme is used in the following order: 
+
+      any master session keys required, 
+      any encryption keys required, 
+      any integrity protection keys required, 
+      any initialization vectors required 
+
+   If separate keys or IV's are required for each direction, then the 
+   downlink material (to protect traffic to user) is taken before the 
+   uplink material (to protect traffic from user). 
+       
+
+   K_sres is used in the calculation of MAC_SRES as follows: 
+
+   MAC_SRES 
+
+      HMAC-SHA1-128 (K_sres, n*SRES | Message Subtype) 
+
+   The keyed message authentication code function HMAC-SHA1-128 is 
+   specified in [11]. Message subtype above contains the contents of 
+  
+Haverinen               Expires in six months               [Page 24] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   the Subtype field of the EAP/SIM message (one octet), in which 
+   MAC_SRES parameter is included. 
+
+   When generating the initial seed value XKEY, the hash function is 
+   used as a mixing function to combine several session keys (Kc's) 
+   generated by the GSM authentication procedure and the random number 
+   NONCE_MT into a single session key. There are several reasons for 
+   this. The current GSM session keys are at most 64 bits, so two or 
+   more of them are needed to generate a longer key. By using a one-way 
+   function to combine the keys, we are assured that even if an 
+   attacker managed to learn one of the EAP/SIM session keys, it 
+   wouldnÆt help him in learning the original GSM Kc's. In addition, 
+   since we include the random number NONCE_MT in the calculation, the 
+   client is able to verify that the SIM authentication values it 
+   receives from the network are fresh and not a replay. (Please see 
+   also Section 17.) 
+
+16. IANA Considerations 
+
+   The realm name "owlan.org" has been reserved for NAI realm names 
+   generated from the IMSI. 
+
+   IANA has assigned the EAP type number 18 for this protocol. 
+
+   EAP/SIM messages include a Subtype field. The following Subtypes are 
+   specified: 
+
+        Start..........................................10 
+        Challenge......................................11 
+        Notification...................................12 
+    
+   The Subtype-specific data is composed of attributes, which have 
+   attribute type numbers. The following attribute types are specified: 
+
+        AT_RAND.........................................1 
+        AT_PERMANENT_IDENTITY...........................5 
+        AT_PADDING......................................6 
+        AT_NONCE_MT.....................................7 
+        AT_MAC_SRES.....................................9 
+        AT_PERMANENT_IDENTITY_REQ......................10 
+        AT_MAC.........................................11 
+        AT_NOTIFICATION................................12 
+        AT_IDENTITY_REQ................................13 
+        AT_IDENTITY....................................14 
+    
+        AT_IV.........................................129 
+        AT_ENCR_DATA..................................130 
+        AT_PSEUDONYM..................................132 
+
+   The AT_NOTIFICATION attribute contains a notification code value. 
+   Values 1024, 1026 and 1031 have been specified in Section 14 of this 
+   document. 
+
+  
+Haverinen               Expires in six months               [Page 25] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   All requests for value assignment from the various number spaces 
+   described in this document require proper documentation, according 
+   to the "Specification Required" policy described in [12]. Requests 
+   must be specified in sufficient detail so that interoperability 
+   between independent implementations is possible. Possible forms of 
+   documentation include, but are not limited to, RFCs, the products of 
+   another standards body (e.g. 3GPP), or permanently and readily 
+   available vendor design notes. 
+
+17. Security Considerations 
+
+   The protocol in this document is intended to provide the appropriate 
+   level of security to operate Extensible Authentication Protocol 
+   using the GSM SIM application. 
+
+   EAP/SIM includes optional IMSI privacy support that protects the 
+   privacy of the subscriber identity against passive eavesdropping. 
+   The mechanism cannot be used on the first connection with a given 
+   server, when the IMSI will have to be sent in the clear. EAP/SIM 
+   does not protect the privacy of the IMSI against active attacks. An 
+   active attacker that impersonates the network can easily learn the 
+   subscriber's IMSI. This is the same level of protection as in the 
+   GSM and UMTS cellular networks. 
+
+   In EAP/SIM, the client believes that the network is authentic 
+   because the network can calculate a correct AT_MAC value in the EAP-
+   Request/SIM/Challenge packet. To calculate AT_MAC, it is sufficient 
+   to know the complete GSM triplets (RAND, SRES, Kc) used in the 
+   authentication. Because the network selects the RAND challenges and 
+   hereby the triplets, an attacker that knows two or three GSM 
+   triplets for the subscriber is able to impersonate a valid network 
+   to the client. Given physical access to the SIM card, it is easy to 
+   obtain any number of GSM triplets. Another way to obtain a RAND 
+   challenge and the corresponding SRES response of a GSM triplet is to 
+   eavesdrop on the GSM network. For these reasons, network 
+   authentication of EAP/SIM SHOULD NOT be used exclusively if strong 
+   network authentication is a concern. 
+
+   There is no known way to obtain complete GSM triplets by mounting an 
+   attack against EAP/SIM. A passive eavesdropper can learn n*RAND, 
+   AT_MAC and AT_MAC_SRES, and may be able to link this information to 
+   the subscriber identity. An active attacker that impersonates a GSM 
+   subscriber can easily obtain n*RAND and AT_MAC values from the EAP 
+   server for any given subscriber identity. However, calculating the 
+   Kc and SRES values from AT_MAC and MAC_SRES would require the 
+   attacker to reverse the keyed message authentication code function 
+   HMAC-SHA1-128. 
+
+   EAP/SIM combines several GSM triplets in order to generate a 
+   stronger session key and stronger AT_MAC and AT_MAC_SRES values. The 
+   actual strength of the resulting key depends, among other things, on 
+   the operator-specific authentication algorithms, the strength of the 
+   Ki key, and the quality of the RAND challenges, which is also 
+  
+Haverinen               Expires in six months               [Page 26] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+   operator specific. For example, some SIM cards generate Kc keys with 
+   10 bits set to zero. Such restrictions may prevent the concatenation 
+   technique from yielding strong session keys. Because the strength of 
+   the Ki key is 128 bits, the ultimate strength of any derived secret 
+   key material is never more than 128 bits. 
+
+   An EAP/SIM implementation SHOULD use a good source of randomness to 
+   generate the random numbers required in the protocol. Please see 
+   [13] for more information on generating random numbers for security 
+   applications. 
+
+18. Intellectual Property Right Notice 
+
+   On IPR related issues, Nokia refers to the Nokia Statement on Patent 
+   licensing, see http://www.ietf.org/ietf/IPR/NOKIA. 
+
+19. Acknowledgements and Contributions 
+
+   The editor thanks Juha Ala-Laurila, N. Asokan, Simon Blake-Wilson, 
+   Jan-Erik Ekberg, Patrik Flykt, Mark Grayson, Jukka-Pekka Honkanen, 
+   Antti Kuikka, Jukka Latva, Lassi Lehtinen, Valtteri Niemi, Kaisa 
+   Nyberg, Jyri Rinnemaa, Joe Salowey, Timo Takam„ki and Raimo Vuonnala 
+   for theirs contributions and critiques. 
+
+   Thanks to Greg Rose of Qualcomm for his most valuable comments [14]. 
+
+   The IMSI privacy support is based on the identity privacy support of 
+   [4]. The attribute format is based on the extension format of Mobile 
+   IPv4 [15]. 
+
+   This protocol has been partly developed in parallel with EAP AKA 
+   [16], and hence this specification incorporates many ideas from Jari 
+   Arkko. 
+
+References 
+
+    
+ 
+   [1]   L. Blunk, J. Vollbrecht, "PPP Extensible Authentication 
+         Protocol (EAP)", RFC 2284, March 1998. (NORMATIVE) 
+
+   [2]   GSM Technical Specification GSM 03.20 (ETS 300 534): "Digital 
+         cellular telecommunication system (Phase 2); Security related 
+         network functions", European Telecommunications Standards 
+         Institute, August 1997. (NORMATIVE) 
+
+   [3]   S. Bradner, "Key words for use in RFCs to indicate Requirement 
+         Levels", RFC 2119, March 1997. (NORMATIVE) 
+
+   [4]   J. Carlson, B. Aboba, H. Haverinen, "EAP SRP-SHA1 
+         Authentication Protocol", draft-ietf-pppext-eap-srp-03.txt, 
+         July 2001 (work-in-progress). (INFORMATIVE) 
+ 
+  
+Haverinen               Expires in six months               [Page 27] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+ 
+   [5]   Federal Information Processing Standard (FIPS) draft standard, 
+         "Advanced Encryption Standard (AES)", 
+         http://csrc.nist.gov/publications/drafts/dfips-AES.pdf, 
+         September 2001. (NORMATIVE) 
+
+   [6]   US National Bureau of Standards, "DES Modes of Operation", 
+         Federal Information Processing Standard (FIPS) Publication 81, 
+         December 1980. (NORMATIVE) 
+
+   [7]   GSM Technical Specification GSM 03.03 (ETS 300 523): "Digital 
+         cellular telecommunication system (Phase 2); Numbering, 
+         addressing and identification", European Telecommunications 
+         Standards Institute, April 1997. (NORMATIVE) 
+
+   [8]   Aboba, B. and M. Beadles, "The Network Access Identifier", RFC 
+         2486, January 1999. (NORMATIVE) 
+
+   [9]   Federal Information Processing Standards (FIPS) Publication 
+         186-2 (with change notice), "Digital Signature Standard 
+         (DSS)", National Institute of Standards and Technology, 
+         January 27, 2000. (NORMATIVE) 
+         Available on-line at:  
+         http://csrc.nist.gov/publications/fips/fips186-2/ 
+         fips186-2-change1.pdf 
+           
+
+   [10]   Federal Information Processing Standard (FIPS) Publication 
+         180-1, "Secure Hash Standard," National Institute of Standards 
+         and Technology, U.S. Department of Commerce, April 17, 1995. 
+         (NORMATIVE) 
+
+   [11]   H. Krawczyk, M. Bellare, R. Canetti, "HMAC: Keyed-Hashing for 
+         Message Authentication", RFC 2104, February 1997. (NORMATIVE) 
+
+   [12]  T. Narten, H. Alvestrand, "Guidelines for Writing an IANA 
+         Considerations Section in RFCs", RFC 2434, October 1998. 
+         (NORMATIVE) 
+
+   [13]  D. Eastlake, 3rd, S. Crocker, J. Schiller, "Randomness 
+         Recommendations for Security",  RFC 1750 (Informational), 
+         December 1994. (INFORMATIVE) 
+
+   [14]  Qualcomm, "Comments on draft EAP/SIM", 3rd Generation 
+         Partnership Project document 3GPP TSG SA WG3 Security ù S3#22, 
+         S3-020125, February 2002. (INFORMATIVE) 
+
+   [15]  C. Perkins (editor), "IP Mobility Support", RFC 2002, October 
+         1996. (INFORMATIVE) 
+
+ 
+
+
+  
+Haverinen               Expires in six months               [Page 28] 
+
+Internet Draft          EAP SIM Authentication               June 2002 
+ 
+ 
+ 
+   [16]  J. Arkko, H. Haverinen, "EAP AKA Authentication", draft-arkko-
+         pppext-eap-aka-04.txt, June 2002 (work in progress). 
+         (INFORMATIVE) 
+
+Editor's Address 
+
+   Henry Haverinen 
+   Nokia Mobile Phones 
+   P.O. Box 88 
+   FIN-33721 Tampere 
+   Finland 
+   E-mail: henry.haverinen@nokia.com 
+   Phone: +358 50 594 4899 
+   Fax:   +358 3 318 3690 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+Haverinen               Expires in six months               [Page 29] 
+

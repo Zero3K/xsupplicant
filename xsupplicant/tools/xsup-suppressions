@@ -1,0 +1,263 @@
+{
+   Ignore Bind Warning
+   Memcheck:Param
+   socketcall.bind(my_addr.)
+   fun:bind
+   fun:xsup_driver_init_interface
+   fun:global_init
+   fun:main
+}
+{
+   Ignore Enc Capabilities
+   Memcheck:Cond
+   fun:cardif_linux_wext_enc_capabilities
+   fun:xsup_driver_init_interface
+   fun:global_init
+   fun:main
+}
+{
+   Ignore Invalid Read of 4
+   Memcheck:Value4
+   fun:debug_hex_dump
+}
+{
+   Ignore bad conditional.
+   Memcheck:Cond
+   fun:vfprintf
+   fun:printf
+   fun:ufprintf
+}
+{
+   Ignore write complaint
+   Memcheck:Param
+   write(buf)
+   fun:write
+   obj:/lib/libc-2.4.so
+   fun:_IO_do_write
+   fun:_IO_file_overflow
+   fun:_IO_file_xsputn
+   fun:vfprintf
+   fun:printf
+   fun:ufprintf
+   fun:debug_hex_dump
+}
+{
+   Ignore extract event stream conditional
+   Memcheck:Cond
+   fun:iw_extract_event_stream
+}
+{
+   Ignore invalid value of 4.
+   Memcheck:Value4
+   fun:debug_hex_printf
+}
+{
+   Ignore Invalid value of 4.
+   Memcheck:Value4
+   fun:iw_extract_event_stream
+}
+{
+   Ignore conditional
+   Memcheck:Cond
+   fun:cardif_linux_rtnetlink_process_token
+}
+{
+   Ignore conditional
+   Memcheck:Cond
+   fun:memcpy
+}
+{
+   Ignore value4
+   Memcheck:Value4
+   fun:memcpy
+}
+{
+   Ignore conditional   
+   Memcheck:Cond
+   fun:vfprintf
+   fun:vsnprintf
+}
+{
+   Ignore debug_printf strcat
+   Memcheck:Cond
+   fun:strcat
+   fun:debug_printf
+}
+{
+   Invalid check of value 4
+   Memcheck:Value4
+   fun:cardif_linux_rtnetlink_process_SIOCGIWESSID
+}
+{
+   Ignore conditional
+   Memcheck:Cond
+   fun:strdup
+}
+{
+   Ignore value4
+   Memcheck:Value4
+   obj:/lib/libc-2.4.so
+   fun:vfprintf
+   fun:vsnprintf
+   fun:debug_printf
+}
+{
+   Ignore conditional
+   Memcheck:Cond
+   obj:/lib/libc-2.4.so
+   fun:vfprintf
+   fun:vsnprintf
+}
+{
+   Ignore conditional
+   Memcheck:Cond
+   fun:strncpy
+   fun:Strncpy
+}
+{
+   Ignore value4
+   Memcheck:Value4
+   fun:strncpy
+   fun:Strncpy
+}
+{
+   Ignore value4
+   Memcheck:Value4
+   fun:Strncpy
+}
+{
+   Ignore IWEVCUSTOM conditional
+   Memcheck:Cond
+   fun:cardif_linux_rtnetlink_process_IWEVCUSTOM
+}
+{
+   Add BSSID conditional ignore
+   Memcheck:Cond
+   fun:config_ssid_add_bssid
+}
+{
+   Ignore conditional
+   Memcheck:Cond
+   fun:debug_hex_printf
+}
+{
+   Ignore value4
+   Memcheck:Value4
+   fun:vfprintf
+   fun:printf
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:_IO_file_xsputn
+   fun:vfprintf
+   fun:printf
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:mempcpy
+   fun:vfprintf
+}
+{
+   <insert a suppression name here>
+   Memcheck:Value4
+   fun:_IO_file_xsputn
+   fun:vfprintf
+}
+{
+   <insert a suppression name here>
+   Memcheck:Value4
+   fun:mempcpy
+   fun:vfprintf
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:xsup_assert_long
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:cardif_linux_rtnetlink_parse_ies
+}
+{
+   <insert a suppression name here>
+   Memcheck:Value4
+   fun:cardif_linux_rtnetlink_parse_ies
+}
+{
+   <insert a suppression name here>
+   Memcheck:Value4
+   fun:wpa_parse_ie
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:wpa_parse_ie
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:wpa_print_cipher_suite
+}
+{
+   <insert a suppression name here>
+   Memcheck:Value4
+   fun:wpa_print_cipher_suite
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:wpa_print_auth_suite
+}
+{
+   <insert a suppression name here>
+   Memcheck:Value4
+   fun:wpa2_parse_ie
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:wpa2_parse_ie
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:strcmp
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:config_get_network_priority
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:config_ssid_find_best_ssid
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:config_ssid_best_signal
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:config_find_network
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:strcpy
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:cardif_linux_wext_set_ssid
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:strlen
+}

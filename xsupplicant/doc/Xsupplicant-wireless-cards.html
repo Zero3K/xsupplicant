@@ -1,0 +1,292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Xsupplicant Wireless Card Information</title>
+</head>
+<body>
+Not all wireless cards that are supported by Linux will work with
+XSupplicant.<br>
+There are several reasons for this, but most are related to issues with
+drivers.<br>
+<br>
+DRIVER MAINTAINERS :&nbsp; Please see the section at the end of this
+document for<br>
+information on what needs to be implemented in order to allow your
+driver to<br>
+work with 802.1x, and dynamic keying!<br>
+<br>
+We (the Open1x developers) have tested all of the cards Linux supports,
+that<br>
+we have been able to get our hands on.&nbsp; Below are the cards that
+we have<br>
+tested, and the results we found.<br>
+<br>
+<br>
+<b><i><u>Linux Based</u></i></b>
+<br>
+<br>
+<table style="width: 100%; text-align: left;" border="1" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="background-color: rgb(204, 204, 204);">Card Name<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Chipset<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Auth<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">dWEP<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">WPA<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">WPA2/802.11i<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Wireless
+Extensions 18 (or higher)<br>
+      </td>
+      <td
+ style="vertical-align: top; background-color: rgb(204, 204, 204);">Notes<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Orioco WaveLAN 802.11b Cards<br>
+      </td>
+      <td style="vertical-align: top;">Agere Hermes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">Use 0.15rc1 or newer
+driver.&nbsp; Use -z when attempting to use dynamic WEP.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">SMC SMC2635W<br>
+      </td>
+      <td style="vertical-align: top;">ADMTek<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">Authenticates, but cannot pass
+traffic.&nbsp; Tested version 1.0.5.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Linksys WPC11 Ver. 3<br>
+      </td>
+      <td style="vertical-align: top;">Prism<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Use hostap driver, and -a
+command line switch.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">SMC SMC2632W Version 3<br>
+      </td>
+      <td style="vertical-align: top;">Atmel<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">Use version 3.4.1.0.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Atheros-based MADwifi Cards<br>
+      </td>
+      <td style="vertical-align: top;">Atheros<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">Use the -z command line option
+for dynamic WEP.&nbsp; Tested with latest CVS as of 04/07/05<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Cisco 340/350 cards<br>
+      </td>
+      <td style="vertical-align: top;">Cisco<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">Use kernel driver with temp
+keying patch.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Intel Pro 2100<br>
+      </td>
+      <td style="vertical-align: top;">Intel<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">Use latest driver version.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Intel Pro 2200<br>
+      </td>
+      <td style="vertical-align: top;">Intel<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">Use latest driver version.&nbsp;
+Use -z option when doing dynamic WEP.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">ndiswrapper<br>
+      </td>
+      <td style="vertical-align: top;">Various*<br>
+      </td>
+      <td style="vertical-align: top;">Yes*<br>
+      </td>
+      <td style="vertical-align: top;">Yes*<br>
+      </td>
+      <td style="vertical-align: top;">Yes*<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top;">Tested with Version 1.1 of the
+driver.<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+* See the appropriate section below for more information on this driver<br>
+wrapper.<br>
+<br>
+<br>
+<br>
+-- Getting a driver to work with 802.1x, dynamic WEP, and Linux --<br>
+------------------------------------------------------------------<br>
+<br>
+In most cases, getting a wireless card driver to work correctly with
+802.1x,<br>
+and Linux is fairly simple.&nbsp; Current driver implementations will
+issue a card<br>
+reset when the WEP keys are set.&nbsp; When the card is reset, it will
+start a new<br>
+802.11 authentication/association.&nbsp; This in turn causes a new
+802.1x<br>
+authentication to happen.&nbsp; Once the 802.1x authentication is
+complete, and a<br>
+WEP key is set, the card is again reset.<br>
+<br>
+As you can see, this behavior will cause the card to reset itself
+constantly,<br>
+and keep the card from passing traffic correctly.&nbsp; The solution to
+this problem<br>
+is as simple as *NOT* having the card reset when a WEP key is set! It
+should<br>
+be noted that driver resets which do not cause re-association should not<br>
+exhibit this problem, since "reset" might mean different things under
+the<br>
+hood to different drivers.<br>
+<br>
+One other issue that seems to be common among wireless card drivers is
+the<br>
+assumption that the last WEP key set should be the WEP key used to
+transmit.<br>
+Prior to 802.1x, this made some amount of sense, and would work with no<br>
+problems.&nbsp; However, because 802.1x enables the use of more than
+one key (one<br>
+for transmit, one for recieve, one for broadcast, etc.) the assumption
+that<br>
+the last key set is the transmit key generally doesn't work.&nbsp;
+Instead, when<br>
+the IOCTL to set the key is made, the only time that the index for the<br>
+transmit key should change, is when the key length is zero.<br>
+<br>
+<br>
+-- Driver wrappers for Windows driver compatibility --<br>
+<br>
+There are currently two projects that we are aware of that attempt to
+provide<br>
+the ability to load and use Windows wireless card drivers under Linux -<br>
+DriverLoader, a commercial product, and ndiswrapper, an Open Source
+product.<br>
+<br>
+We have tested with some cards and ndiswrapper, and when the Windows
+driver <br>
+supports the needed functionality, Xsupplicant should be able to use it.<br>
+<br>
+<br>
+<br>
+</body>
+</html>

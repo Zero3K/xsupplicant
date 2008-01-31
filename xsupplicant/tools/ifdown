@@ -1,0 +1,37 @@
+#!/bin/sh
+#script to bring up the specified interface and run xsupplicant
+#authentication on that interface
+
+if [ $# -ne 1 ]; then
+  echo "Usage ifup <interface>"
+  exit 
+fi
+
+XSUPPLICANT=/usr/local/bin/xsupplicant
+DHCP=/sbin/dhcpcd
+PUMP=/sbin/pump
+DHCLIENT=/sbin/dhclient
+IFCONFIG=ifconfig
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+PIDPATH=/var/run
+DHCP_PID="${PIDPATH}/dhcpcd-$1.pid"
+XSUP_PID="${PIDPATH}/xsupplicant-$1"
+DHCLIENT_PID="${PIDPATH}/dhclient-$1.pid"
+
+if [ -r $DHCP_PID ]; then
+   $DHCP -k $1
+elif [ -x $PUMP ]; then
+   $PUMP -k -i $1
+elif [ -r $DHCLIENT_PID ]; then
+   kill `cat $DHCLIENT_PID`
+   rm $DHCLIENT_PID
+fi
+
+if [ -r $XSUP_PID ]; then
+   kill `cat $XSUP_PID`
+fi
+
+#bring down
+$IFCONFIG $1 down
+
+

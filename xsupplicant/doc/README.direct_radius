@@ -1,0 +1,81 @@
+Starting with version 1.3.1, Xsupplicant has the ability to communicate 
+directly with a RADIUS server for testing authentication methods.  The 
+intended purpose of this implementation is to allow for easy development and
+testing of Xsupplicant when you are in an area that makes it diffcult to set
+up a full 802.1X chain.  (i.e. An airplane, or hotel.)
+
+Building
+========
+
+Configuring and using this functionality is quite simple.  When running
+configure, add the --enable-direct-radius command line option.  You will also
+want to edit src/cardif/radius/cardif_radius.c and change the values of 
+RAD_SERVER and RAD_PORT to point to the proper server and port of the RADIUS
+server you will be speaking to.
+
+Once this is done, build Xsupplicant using a "make clean" followed by a 
+normal "make".
+
+Once this is complete, you will have a modified version of Xsupplicant that can
+be run directly against your RADIUS server.  However, when you start
+Xsupplicant, you will still need to specify an interface to use.  The
+name of the interface can be whatever you choose.  It just needs to have a
+value to keep Xsupplicant from showing you the usage screen.
+
+Configuring
+===========
+
+Configuration of Xsupplicant in direct RADIUS mode basically the same as 
+configuring Xsupplicant in it's normal 802.1X mode.  You will create an
+/etc/xsupplicant.conf file, with a default network configuration section. 
+Then, you will create a network configuration with the name of "radius".  The
+"radius" network is the configuration that will be used for direct RADIUS 
+mode.  From there, the configuration is exactly the same as the configuration
+for any other network.  And example of a direct RADIUS configuration using
+PEAP with MS-CHAPv2 is below :
+
+--- Begin Example Config ---
+
+network_list = all
+default_netname = nonetname
+
+logfile = /var/log/xsupplicant.log
+
+nonetname
+{
+}
+
+#dot1x
+radius
+{
+        allow_types = all
+
+        identity = testuser
+
+        eap-peap
+        {
+                root_cert = /home/chris/root.pem
+                allow_types = all
+
+                eap-mschapv2
+                {
+                        username = testuser
+                        password = test
+                }
+        }
+}
+
+--- End Example Config ---
+
+
+Bugs
+====
+
+Please note that the code for direct RADIUS communication isn't very tolerant
+of errors.  It was designed with the idea that the people using it would be
+able to figure out for themselves what is wrong when something breaks.  
+Strange results should not be surprising!
+
+That said, for RADIUS servers that actually check the authentic value in the
+RADIUS packet header, this code will not work.  Currently, we are sending
+all 0s for this value.

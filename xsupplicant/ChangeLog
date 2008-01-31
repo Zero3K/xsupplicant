@@ -1,0 +1,90 @@
+Version 1.3.1
+	- Implemented new EAP state machine as defined by RFCs 3748/4137.
+	- Updated EAP methods to match the requirements of the new EAP
+	  state machine.
+	- Begin adding support for using GNU-TLS for the TLS engine instead of
+	  OpenSSL. 
+	- Moved the ias_quirk option to the EAP-MSCHAPv2 where it really
+	  belonged.
+	- Added support for EAP-FAST.
+	- Added support for Mac OS X.
+
+Version 1.2.8
+	- Fixed a problem that kept wired authentication from working.
+	- Fixed an issue that would cause authentication to be slow.
+	- Fixed a bug that would prevent some Linux OS versions from compiling.
+	- Misc. other fixes
+	- Updated documentation to show that iwlib is required on Linux.
+	- Added the ability to associate using methods other than 'open system'.
+
+Version 1.2.7
+	- Added a copy of the latest wireless.h for Linux, so we no longer have
+	  to worry about missing #ifdefs when writing wext version specific
+	  code.
+	- Added interface operational state setting following successful or
+	  failed authentication.  Using a DHCP client that supports this will
+	  allow Xsupplicant to notify it that it needs to get/renew an 
+	  address.
+	- Fixed some endianness problems with WPA/WPA2 IEs where 16 bit values
+	  were used.
+
+Version 1.2.6
+	- As promised, the madwifi specific driver code is now gone.  Madwifi
+	  users should use the regular wireless extensions calls from now
+  	  on.
+	- Added support for TTLS-EAP-MD5
+	- Fixed a bug from 1.2.5 that caused a segfault when a reauthentication
+	  took place.
+	- Clean up some memory leaks.
+	- Clean up some potential buffer overflows.
+
+Version 1.2.5
+	- Fixed PEAP so that it handles getting a success inside of the
+	  TLS tunnel.  PEAP now works correctly with Funk SBR.
+	- Fixed up madwifi driver so that it shouldn't cause compiler problems
+	  when IOCTLs get renamed/changed around.
+	- Added driver capabilities support for madwifi driver.
+	- Fixed WPA2 support for madwifi driver.
+	- Added initial TNC support via patch from Mike McCauley.  (Requires
+          libtnc to work.)
+	- Fixed a crash under certain circumstances when the SSID name was 
+          NULL.  (Such as non broadcast SSID names with certain drivers.)
+	- Changed the core event handling system to make things a little 
+	  faster, and to suck less CPU time.
+	- Fixed a bug in WPA/WPA2 that would often cause the 4 way handshake
+	  to fail.  (Or, when it succeeded, the keys were invalid.)
+	- Added status messages so that the user can see that Xsupplicant
+	  is doing something.
+	- Added the start of a GUI monitor/configuration interface.
+	- Removed old OS specific event core functionality.  (There are better 
+	  ways to handle such things.)
+	- When an SSID is set outside of Xsupplicant, keys and the WPA IE are
+	  cleared.  (This may cause a problem if you want to connect to a
+	  static WEP enabled SSID.  You may need to set the SSID, then
+	  set the key with a second command.)
+	- WPA IE information is now cleared from the the interface, so that
+	  the interface should behave as expected.
+
+Version 1.2.4
+	- On startup, we display the capabilities that a card reports having.
+	  This can be used to verify that the driver is behaving in the right
+	  way to support associating to WPA/WPA2 networks without configuring
+	  encryption methods in the config file.
+	- Added the ability to associate to WPA/WPA2 networks without setting
+	  "wpa_pairwise_cipher" or "wpa_group_cipher" settings.  (Requires that
+	  card driver supports returning of proper encryption capabilities.)
+	- Added support for a group cipher type of 0.  This indicates that 
+	  the group cipher should be the same as the pairwise cipher.
+	- Added support for large scan results.  (Scan results > 8192 bytes,
+	  which would be more than 20 SSIDs on most cards.)
+	- Fixed setting BSSID and clearing keys on some cards.
+	- Numerous fixes and updates to WPA2/IEEE 802.11i code.
+	- BSSID is now selected using signal strength/quality information 
+	  returned during a scan.
+	- Added option to enable firmware based roaming.  (Current default is 
+	  for firmware to make roaming decisions.  Will probably change in the 
+	  future.)
+	- We can now use EAP hints included in the Request Identity messages
+	  to determine the network we are on.  This can be helpful for wired
+ 	  networks that don't have an SSID to key the configuration from.
+	- Fixes to EAP-AKA implementation to correctly support resync.

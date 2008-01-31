@@ -1,0 +1,21 @@
+WPA support in Xsupplicant
+
+In the version of wireless extensions that is distributed with the current
+kernel, there is no support for WPA or WPA2/802.11i.  Because of this, driver
+writers had to implement private IOCTL calls to provide the needed support 
+for WPA/WPA2/802.11i.  As a result, there is some additional command line
+switches that need to be passed to Xsupplicant in order to tell it which 
+driver is in use.  The command line switch is -D with one of the following
+driver names :
+
+wext : Standard Linux wireless extensions (default)
+        Requires Wireless Extensions 18 or higher for WPA support.
+hostap : HostAP driver WPA calls.  (Will probably also require -a.)
+atmel : atmelwlandriver WPA calls.
+ndiswrapper : ndiswrapper WPA calls.
+ipw : IPW2100/2200 WPA calls
+madwifi : Madwifi WPA calls (Requires that driver source directory be passed
+	   during the configuration process.)
+
+Executing Xsupplicant with the --help command will list all available drivers
+that Xsupplicant is built to support.

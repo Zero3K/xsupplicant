@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# Modify XSUP_ARGS below to include and command line arguments that you
+# need when starting Xsupplicant.
+XSUP_ARGS=""
+
+#script to bring up the specified interface and run xsupplicant
+#authentication on that interface
+
+if [ $# -ne 1 ]; then
+  echo "Usage ifup <interface>"
+fi
+
+XSUPPLICANT=/usr/local/bin/xsupplicant
+DHCP=/sbin/dhcpcd
+PUMP=/sbin/pump
+DHCLIENT=/sbin/dhclient
+IFCONFIG=ifconfig
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+PIDPATH=/var/run
+DHCP_PID="${PIDPATH}/dhcpcd-$1.pid"
+XSUP_PID="${PIDPATH}/xsupplicant-$1"
+DHCLIENT_PID="${PIDPATH}/dhclient-$1.pid"
+
+
+if [ -f $DHCP_PID ]; then
+  echo "DHCP already running for interface $1"
+  exit
+fi
+
+if [ -f $DHCLIENT_PID ]; then
+  echo "DHCLIENT already running for interface $1"
+  exit
+fi
+
+if [ -f $XSUP_PID ]; then
+  echo "xsupplicant already running for interface $1"
+  echo "If this is not true, remove $XSUP_PID"
+  exit
+fi
+
+
+#bring up the interface
+$IFCONFIG $1 up
+
+#start xsupplicant in daemon mode
+if $XSUPPLICANT -i $1 $XSUP_ARGS ; then
+  echo "started 802.1x supplicant"
+else
+  echo "failed to start supplicant"
+  exit
+fi
+
+#start dhcpd
+echo "Bringing up $1..."
+if [ -x $DHCP ] &&  $DHCP $1 ; then
+ echo done
+elif [ -x $PUMP ] && $PUMP -i $1; then
+ echo done
+elif [ -x $DHCLIENT ] && $DHCLIENT -pf $DHCLIENT_PID an0; then
+ echo done
+else
+ echo failed
+fi
+

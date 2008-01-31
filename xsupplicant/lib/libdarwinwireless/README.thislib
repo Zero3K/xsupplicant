@@ -1,0 +1,13 @@
+This library falls under a different license than the other libraries in 
+Xsupplicant.  It is not BSD or GPL.
+
+Instead, the license is that you may use this library with Xsupplicant only.
+When this library is included with the source of Xsupplicant, or as part of a
+binary distribution, you are free to distribute it as you see fit.  Use of
+this library in any program that is not Xsupplicant is illegal.
+
+--------------
+
+Release of this library is currently be discussed with Apple.  Once we have
+Apple's blessing on releasing the library, it will be in this directory.  Until
+then, please use one of the binary builds of Xsupplicant for OS X.

@@ -1,0 +1,14 @@
+#!/bin/csh
+
+# update a directory full of certificates to make a directory
+# full of hashes for lookup
+# useage: updatedir <ROOT CERT DER (PEM FORMAT)> <HASH DIR>
+
+echo "Creating hash directory" $2 " from root certificate directory" $1
+mkdir -p $2
+set cdir = `pwd`
+foreach root ($1/*)
+    set hash = `openssl x509 -in $root -inform PEM -noout -hash`
+    echo "Processing" $root "Hash is:" $hash
+    ln -s $cdir/$root $cdir/$2/$hash.0
+end

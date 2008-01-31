@@ -1,0 +1,90 @@
+;-------------------------------------------------------------------------
+; OPEN1X.INF -- Installer for Open1X 802.1X layer.
+;
+; Derived from :
+; NDISPROT.INF -- Sample NDIS Protocol Driver
+;
+; Copyright (c) 2003, Microsoft Corporation
+;-------------------------------------------------------------------------
+[version]
+Signature   = "$Windows NT$"
+Class       = NetTrans
+ClassGUID   = {4d36e975-e325-11ce-bfc1-08002be10318}
+Provider    = %Open1X%
+;LayoutFile  = layout.inf
+DriverVer   = 10/01/2002,6.0.4063.0
+
+[Manufacturer]
+%Open1X%=O1X,NTx86,NTia64,NTamd64
+
+; For Win2k
+[O1X]
+%Open1X_Desc%=Install, O1X_NDISPROT
+
+; For XP and later
+[O1X.NTx86]
+%Open1X_Desc%=Install, O1X_NDISPROT
+
+[O1X.NTia64]
+%Open1X_Desc%=Install, O1X_NDISPROT
+
+[O1X.NTamd64]
+%Open1X_Desc%=Install, O1X_NDISPROT
+
+;-------------------------------------------------------------------------
+; Installation Section
+;-------------------------------------------------------------------------
+[Install]
+AddReg=Inst_Ndi
+Characteristics=0x0 ; 
+CopyFiles=CpyFiles_Sys
+
+;-------------------------------------------------------------------------
+; Ndi installation support
+;-------------------------------------------------------------------------
+[Inst_Ndi]
+HKR,Ndi,Service,,"Open1X"
+HKR,Ndi,HelpText,,%Open1X_HelpText%
+HKR, Ndi\Interfaces, UpperRange,, noupper
+HKR,"Ndi\Interfaces","LowerRange",,"ndis5,ndis4,ndis5_prot"
+
+;-------------------------------------------------------------------------
+; Service installation support
+;-------------------------------------------------------------------------
+[Install.Services]
+AddService=Open1X,,Open1X_Service_Inst
+
+[Open1X_Service_Inst]
+DisplayName     = %Open1X_Desc%
+ServiceType     = 1 ;SERVICE_KERNEL_DRIVER
+StartType       = 1 ;SERVICE_BOOT_START
+ErrorControl    = 1 ;SERVICE_ERROR_NORMAL
+ServiceBinary   = %12%\open1x.sys
+LoadOrderGroup  = NDIS
+Description     = %Open1X_Desc%
+
+[Install.Remove.Services]
+DelService=Open1X,0x200
+
+;-------------------------------------------------------------------------
+; Declare Destination Directories for file copy/deletion
+;-------------------------------------------------------------------------
+[DestinationDirs]
+CpyFiles_Sys    = 12    ; DIRID_DRIVERS
+
+
+;-------------------------------------------------------------------------
+; Files to Copy/Delete - Referenced by Install and Remove sections above
+;-------------------------------------------------------------------------
+[CpyFiles_Sys]
+Open1X.sys,,,2
+
+[Strings]
+Open1X = "Open1X"
+Open1X_Desc = "Open1X 802.1X Protocol Layer"
+Open1X_HelpText = "A driver to provide 802.1X services."
+
+
+
+
+
