@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Untitled Document</title>
+<style type="text/css">
+<!--
+.style4 {
+	font-size: 18px;
+	font-weight: bold;
+}
+-->
+</style>
+</head>
+
+<body>
+<p>The Open1X project is dedicated to bringing a free, open source 802.1X/WPA/WPA2/IEEE802.11i implementation to as many target platforms as possible.</p>
+<p><A HREF="http://sourceforge.net/project/showfiles.php?group_id=60236"><IMG SRC="images/blue-button.JPG"></A></p><br>
+<p><img src="images/projectnews.gif" alt="Project News" width="181" height="38" align="left" /></p>
+<p>&nbsp;</p>
+<p><br />
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>14 Dec 2007</b></span><br />
+   The Open1X group is pleased to announce the release of the 2.0.0 version.
+   The 2.0.0 release marks the point that we have frozen the development on
+   this branch and find it stable for our use.  All new development will now
+   be taking place on the next release with is code named "SeaMonkey".  We do
+   expect to release additional versions of 2.0, but they will only be bug
+   fix releases, there will be no additional functionality added to 2.0.
+</p>
+<p>
+   That said, there were a couple of new features added between the 1.9.8
+   release and the 2.0 release.  They were generally small additions that
+   addressed usability and clarity issues.  Some of these additions include
+   a plug-in that can be used to gather data to help us solve problems that
+   people may have.  By right-clicking the tray icon, you can new select
+   "Create Trouble Ticket".  This will create a zip file that contains
+   information that you should attach to any bugs that get filed.  Another
+   addition is the ability to import trusted root certificates in to the
+   proper certificate store, and some fixes to how certificate chains are
+   handled.  We have also added a significant number of wireless utilities
+   that we are able to detect and help users disable.
+</p>
+<p>
+   Because the work in this development cycle has been focused on getting
+   a working version for Windows, we suggest that Linux users continue to use
+   the 1.2.8 version.  However, Linux users should also be aware that getting
+   the Linux version caught up with the changes that were added to Windows is
+   at the top of our priority list.  Once we have something that is working
+   for us, we will start to put out development releases again.
+</p>
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>03 Dec 2007</b></span><br />
+   XSupplicant 1.9.8 has been unleashed.  As with the other 1.9 versions the
+   latest development release comes complete with a bunch of bug fixes.  Notable
+   bugs that have been fixed include a protocol driver fix that could cause a
+   blue screen when used with really old network interface drivers.  And removal
+   of the EKU restrictions on root CA certificates.  (In English : You can use
+   ANY root CA certificate now.  Even if it doesn't have the special attributes
+   that the Microsoft supplicant requires.)  The on-line help file has also been
+   finished.  Other issues that have been resolved are listed in the changelog.
+</p>
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>21 Nov 2007</b></span><br />
+   It has been a few weeks since the last development release.  But, it is time for
+   another one.  Along with the usual set of small bugs that were fixed, there
+   are a few larger more noteworthy bugs that are fixed in this version.  This
+   development release brings us a fix for running on Windows XP Home, control
+   over how and when log files get rolled, and better support for hidden
+   networks.  Check out the change log for a better list of what has changed.
+</p>
+
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>29 Oct 2007</b></span><br />
+   There have been a few changes over the last week, all leading up to this latest
+   release.  First, we added the ugly button at the top of the web page to help people
+   get to the download area more easily.  Our web designer is working on something
+   that blends in to the over-all look of the site, but until then the ugly button
+   should do the trick.  Second, the new version has a <b><i><u>VERY</u></i></b>
+   important fix in it.  This version should be able to properly do PEAP authentication
+   again the Microsoft IAS server that is included with Windows 2003 Server.  So,
+   if you have had problems authenticating against IAS, please give this latest
+   build a try and let us know if you have any problems.
+</p>
+
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>15 Oct 2007</b></span><br />
+   A new development release was put out on the servers a couple of days ago, but
+   I am just now getting around to updating the web site.   This release includes
+   several bug fixes for issues that people have reported, and one new feature.
+   The new feature is a change in how priorities work on different types of
+   adapters.  Wired adapters are no longer listed in the priorities window, since
+   the priorities didn't do anything on wired anyway.  An a new option is
+   available in Advanced Settings.  The "Wired Default" setting allows you to
+   select a wired Connection to always try to connect to whenever the service is
+   started.  You should check out the changelog to see most of the bug fixes
+   that were made. 
+</p>
+
+<p>There has also been a lot of work going on in CVS HEAD on the next version.
+   The next version is code named "Sea Monkey".  The feature set for Sea Monkey
+   is still unclear.  But, there has been work done already to port the UI to
+   Linux, and Mac OS X.   There are still some issues to hammer out before it
+   is usable on those platforms, but we are getting there.
+</p>
+
+<p>Which brings me to one of the things we are working on behind the scenes.
+   We are starting work on developing a wish list of features.  We will be
+   soliciting feature requests from <A HREF="http://www.openseaalliance.org">OpenSEA
+   </A> members directly, but we also want to hear from the rest of the
+   community.  What features would you like to see added to the supplicant?
+   We plan to compile the list of requested features on a web site, and then
+   scratch them off the list as we go.
+</p>
+
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>07 Oct 2007</b></span><br />
+   We have started to get feedback on the various development releases that we
+   have put out so far.  As a result, we have some additional work to do.  To
+   this end, we have decided not to put out a new release this week.  However,
+   today we released the source code to the UI.  We plan to resume weekly releases
+   next week.
+</p>
+
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>01 Oct 2007</b></span><br />
+   This release is a little late in coming, but it is finally here.  The
+   latest development release contains additional bug fixes, and stability
+   improvements.  In addition to the normal weekly release, we have released
+   the promised test sheet.  Please take a moment to fill out all of the
+   information you can about your test scenario.  The information will be used
+   to help us develop a matrix of tested configuations, and help us continue to
+   improve the supplicant.
+</p>
+
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>22 Sept 2007</b></span><br />
+   In keeping with the "roughly once a week" development releases, we have
+   released the latest development refresh.  This refresh has some important
+   stability fixes in it.  Most of the people that have been using early versions
+   of this release report that it has solved many of the early problems they had
+   seen.  Grab the latest version <A HREF="http://sourceforge.net/project/showfiles.php?group_id=60236&package_id=245124&release_id=541472">here</A>.
+</p>
+
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>16 Sept 2007</b></span><br />
+   The latest development refresh of the supplicant has been released.  This refresh
+   includes bug fixes for various issues we discovered during the last week of
+   testing.  It is also now aware of Windows going to sleep, and waking up.  This
+   awareness gets rid of some error messages that could pop up when a machine was put
+   to sleep, or brought out of sleep.  Please download the latest version, give it a try, and
+   report any issues that you may find.   The latest development release can be found
+   <A HREF="https://sourceforge.net/project/showfiles.php?group_id=60236&package_id=245124&release_id=539967">here</A>.
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>10 Sept 2007</b></span><br />
+   An issue with the installer for the latest development version has been discovered.  This issue will prevent anyone from being able to install the supplicant on a machine that doesn't already have the latest Visual C++ redistributable package on it.  This issue has been fixed, and the offending installer has been replaced with a new one.  If you downloaded the file
+   xsupinst-v1.9.1.exe you have the installer with the bug.  Please download xsupinst-v1.9.1.070910.exe to get the fixed version.
+</p>
+
+<p>
+   <img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>08 Sept 2007</b></span><br />
+The Open1X group is proud to announce the latest development version of XSupplicant.  There has been a lot of work taking place on the project over the last 11 months, and we are now at a point where we need testers.  So, if you have any form of 802.1X/WPA/WPA2/IEEE 802.11i device, and a few minutes to spare, please try this version out and let us know what you think.
+  In the next day or so, there will also be the release of a test document that indicates tests that we would like people to perform.  Please note that this is a <b><i><u>development</u></i></b> release, and should not be used in a production environment!  When a stable release is ready it will be announced on both the Open1X site, and the OpenSEA Alliance site.  If you
+  hope to use XSupplicant in a production environment please wait for that release!  <br /><br />
+
+  This development release is currently a binary only, and only for Windows.  However, the source for the engine component of the supplicant can still be found in the CVS tree.  This development release also includes an extensive GUI to control and configure the supplicant.  The UI is not yet open source, but we have been promised that it will be made open source.  (Hopefully
+  within the next few weeks.)
+</p>
+<p><img src="images/bullet.gif" alt="*" width="21" height="21" align="left" /><span class="style4"><b>14 May 2007</b></span><br />
+It has been a while since an update was last posted, but that doesn't mean that work has not been happening. Quite the opposite. Today, the OpenSEA Alliance was made public, and Open1X is the first project it is supporting. You can see the web site for the new alliance <a href="http://www.openseaalliance.org" target="_parent">here</a>. What does this mean for you? It means that the supplicant is undergoing some major changes. Anyone that has been following the development branch has probably noticed some of these changes. But, in a nutshell the next release of the supplicant will run on Linux, Windows XP, and Mac OS X. (With Windows Vista, and *BSD support on the short list.) In addition to that, there will be a multi-platform UI that will available for people to use. If you want to see what is going on with the supplicant, and talk to people about it's future come see us at <a href="http://www.interop.com/" target="_parent">Interop Las Vegas</a>. There will be demos of the supplicant (with the UI) at the Identity Engines, Extreme Networks, and iLabs booths on the show floor. Many of the Open1X Project Management comittee members will be hanging out around the iLabs booth, and we would love to talk to you about the future!</p>
+<p>&nbsp;</p>
+<p><img src="images/about.gif" alt="About 802.1X" width="186" height="33" align="left" /></p>
+<p>&nbsp;</p>
+<p>IEEE 802.1x is a port based authentication protocol. It can be used in <strong>*any*</strong> scenario where one can abstract out the notion of a port. It requires entitie(s) to play three roles in the authentication process: that of an supplicant, an authenticator and an authentication server. The diagram below shows the basic scenario.</p>
+<p><center>
+  <p><img src="images/1x-diagram.png" width="586" height="243" /></p>
+  <p align="left">A Port Access Entity (PAE) is an entity that has access or is capable of gaining or controlling access to some port which offers some services. When applied to IEEE 802.11, the Access Point acts as an authenticator, while a wireless station (laptop etc) is the supplicant which is authenticated by the RADIUS server (Authentication Server).</p>
+</center></p>
+</body>
+</html>
