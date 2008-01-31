@@ -1,0 +1,2161 @@
+<ui version="4.0" >
+ <author>Bret Jordan</author>
+ <class>uiAbtDlg</class>
+ <widget class="QDialog" name="uiAbtDlg" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>500</width>
+    <height>439</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy>
+    <hsizetype>0</hsizetype>
+    <vsizetype>0</vsizetype>
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize" >
+   <size>
+    <width>500</width>
+    <height>439</height>
+   </size>
+  </property>
+  <property name="maximumSize" >
+   <size>
+    <width>500</width>
+    <height>439</height>
+   </size>
+  </property>
+  <property name="windowTitle" >
+   <string>About - XSupplicant</string>
+  </property>
+  <property name="windowIcon" >
+   <iconset>icons/prod_color.png</iconset>
+  </property>
+  <widget class="QLabel" name="uiBannerGraphicLeft" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>250</width>
+     <height>70</height>
+    </rect>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy>
+     <hsizetype>0</hsizetype>
+     <vsizetype>0</vsizetype>
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize" >
+    <size>
+     <width>250</width>
+     <height>70</height>
+    </size>
+   </property>
+   <property name="maximumSize" >
+    <size>
+     <width>250</width>
+     <height>70</height>
+    </size>
+   </property>
+   <property name="lineWidth" >
+    <number>0</number>
+   </property>
+   <property name="text" >
+    <string/>
+   </property>
+   <property name="pixmap" >
+    <pixmap>images/banner_left_short.png</pixmap>
+   </property>
+   <property name="scaledContents" >
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="uiBannerGraphicRight" >
+   <property name="geometry" >
+    <rect>
+     <x>250</x>
+     <y>0</y>
+     <width>250</width>
+     <height>70</height>
+    </rect>
+   </property>
+   <property name="minimumSize" >
+    <size>
+     <width>250</width>
+     <height>70</height>
+    </size>
+   </property>
+   <property name="maximumSize" >
+    <size>
+     <width>250</width>
+     <height>70</height>
+    </size>
+   </property>
+   <property name="lineWidth" >
+    <number>0</number>
+   </property>
+   <property name="text" >
+    <string/>
+   </property>
+   <property name="pixmap" >
+    <pixmap>images/banner_right_short.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QFrame" name="frame_2" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>70</y>
+     <width>500</width>
+     <height>369</height>
+    </rect>
+   </property>
+   <property name="minimumSize" >
+    <size>
+     <width>500</width>
+     <height>369</height>
+    </size>
+   </property>
+   <property name="maximumSize" >
+    <size>
+     <width>500</width>
+     <height>369</height>
+    </size>
+   </property>
+   <property name="palette" >
+    <palette>
+     <active>
+      <colorrole role="Base" >
+       <brush brushstyle="SolidPattern" >
+        <color alpha="255" >
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Window" >
+       <brush brushstyle="SolidPattern" >
+        <color alpha="255" >
+         <red>206</red>
+         <green>207</green>
+         <blue>210</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </active>
+     <inactive>
+      <colorrole role="Base" >
+       <brush brushstyle="SolidPattern" >
+        <color alpha="255" >
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Window" >
+       <brush brushstyle="SolidPattern" >
+        <color alpha="255" >
+         <red>206</red>
+         <green>207</green>
+         <blue>210</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </inactive>
+     <disabled>
+      <colorrole role="Base" >
+       <brush brushstyle="SolidPattern" >
+        <color alpha="255" >
+         <red>206</red>
+         <green>207</green>
+         <blue>210</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="Window" >
+       <brush brushstyle="SolidPattern" >
+        <color alpha="255" >
+         <red>206</red>
+         <green>207</green>
+         <blue>210</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </disabled>
+    </palette>
+   </property>
+   <property name="autoFillBackground" >
+    <bool>true</bool>
+   </property>
+   <property name="frameShape" >
+    <enum>QFrame::NoFrame</enum>
+   </property>
+   <property name="frameShadow" >
+    <enum>QFrame::Plain</enum>
+   </property>
+   <property name="lineWidth" >
+    <number>0</number>
+   </property>
+   <widget class="QFrame" name="hLineLight" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>302</y>
+      <width>480</width>
+      <height>2</height>
+     </rect>
+    </property>
+    <property name="minimumSize" >
+     <size>
+      <width>480</width>
+      <height>2</height>
+     </size>
+    </property>
+    <property name="maximumSize" >
+     <size>
+      <width>480</width>
+      <height>2</height>
+     </size>
+    </property>
+    <property name="palette" >
+     <palette>
+      <active>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>218</red>
+          <green>219</green>
+          <blue>221</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>218</red>
+          <green>219</green>
+          <blue>221</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </active>
+      <inactive>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>218</red>
+          <green>219</green>
+          <blue>221</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>218</red>
+          <green>219</green>
+          <blue>221</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </inactive>
+      <disabled>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>119</red>
+          <green>119</green>
+          <blue>119</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>218</red>
+          <green>219</green>
+          <blue>221</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>218</red>
+          <green>219</green>
+          <blue>221</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </disabled>
+     </palette>
+    </property>
+    <property name="frameShape" >
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow" >
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="lineWidth" >
+     <number>1</number>
+    </property>
+   </widget>
+   <widget class="QFrame" name="hLineDark" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>300</y>
+      <width>480</width>
+      <height>2</height>
+     </rect>
+    </property>
+    <property name="sizePolicy" >
+     <sizepolicy>
+      <hsizetype>0</hsizetype>
+      <vsizetype>0</vsizetype>
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize" >
+     <size>
+      <width>480</width>
+      <height>2</height>
+     </size>
+    </property>
+    <property name="maximumSize" >
+     <size>
+      <width>480</width>
+      <height>2</height>
+     </size>
+    </property>
+    <property name="palette" >
+     <palette>
+      <active>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>162</red>
+          <green>162</green>
+          <blue>165</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>162</red>
+          <green>162</green>
+          <blue>165</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </active>
+      <inactive>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>162</red>
+          <green>162</green>
+          <blue>165</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>162</red>
+          <green>162</green>
+          <blue>165</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </inactive>
+      <disabled>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>119</red>
+          <green>119</green>
+          <blue>119</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>162</red>
+          <green>162</green>
+          <blue>165</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>162</red>
+          <green>162</green>
+          <blue>165</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </disabled>
+     </palette>
+    </property>
+    <property name="frameShape" >
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow" >
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="lineWidth" >
+     <number>1</number>
+    </property>
+   </widget>
+   <widget class="QFrame" name="frame_3" >
+    <property name="geometry" >
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>480</width>
+      <height>270</height>
+     </rect>
+    </property>
+    <property name="minimumSize" >
+     <size>
+      <width>480</width>
+      <height>240</height>
+     </size>
+    </property>
+    <property name="maximumSize" >
+     <size>
+      <width>480</width>
+      <height>300</height>
+     </size>
+    </property>
+    <property name="palette" >
+     <palette>
+      <active>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>127</red>
+          <green>157</green>
+          <blue>185</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Shadow" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>0</red>
+          <green>0</green>
+          <blue>0</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </active>
+      <inactive>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>127</red>
+          <green>157</green>
+          <blue>185</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Shadow" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>0</red>
+          <green>0</green>
+          <blue>0</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </inactive>
+      <disabled>
+       <colorrole role="WindowText" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>119</red>
+          <green>119</green>
+          <blue>119</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Base" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Window" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>255</red>
+          <green>255</green>
+          <blue>255</blue>
+         </color>
+        </brush>
+       </colorrole>
+       <colorrole role="Shadow" >
+        <brush brushstyle="SolidPattern" >
+         <color alpha="255" >
+          <red>0</red>
+          <green>0</green>
+          <blue>0</blue>
+         </color>
+        </brush>
+       </colorrole>
+      </disabled>
+     </palette>
+    </property>
+    <property name="autoFillBackground" >
+     <bool>true</bool>
+    </property>
+    <property name="frameShape" >
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow" >
+     <enum>QFrame::Plain</enum>
+    </property>
+    <property name="lineWidth" >
+     <number>1</number>
+    </property>
+    <widget class="QFrame" name="Product_Info_Box" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>460</width>
+       <height>120</height>
+      </rect>
+     </property>
+     <property name="minimumSize" >
+      <size>
+       <width>460</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>460</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="palette" >
+      <palette>
+       <active>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>208</red>
+           <green>208</green>
+           <blue>191</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>208</red>
+           <green>208</green>
+           <blue>191</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>119</red>
+           <green>119</green>
+           <blue>119</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
+     </property>
+     <property name="autoFillBackground" >
+      <bool>true</bool>
+     </property>
+     <property name="frameShape" >
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Plain</enum>
+     </property>
+     <widget class="QLabel" name="Product_Info_Label" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>460</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>144</red>
+            <green>141</green>
+            <blue>124</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>144</red>
+            <green>141</green>
+            <blue>124</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text" >
+       <string>Product Information</string>
+      </property>
+      <property name="margin" >
+       <number>0</number>
+      </property>
+      <property name="indent" >
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_7" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>74</y>
+        <width>460</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>The XSupplicant GUI was developed by Identity Engines, please contact</string>
+      </property>
+      <property name="indent" >
+       <number>20</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>92</y>
+        <width>460</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>Identity Engines (info@idengines.com) for availability and licensing information.</string>
+      </property>
+      <property name="indent" >
+       <number>20</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="pluginsLabel" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>56</y>
+        <width>460</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>This shouldn't be seen.  It should be blank, or a list of plugins.</string>
+      </property>
+      <property name="indent" >
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>38</y>
+        <width>460</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="sizePolicy" >
+       <sizepolicy>
+        <hsizetype>5</hsizetype>
+        <vsizetype>0</vsizetype>
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>460</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>OpenSEA XSupplicant</string>
+      </property>
+      <property name="indent" >
+       <number>10</number>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="Version_Info_Box" >
+     <property name="geometry" >
+      <rect>
+       <x>10</x>
+       <y>140</y>
+       <width>225</width>
+       <height>120</height>
+      </rect>
+     </property>
+     <property name="minimumSize" >
+      <size>
+       <width>225</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>225</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="palette" >
+      <palette>
+       <active>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>208</red>
+           <green>208</green>
+           <blue>191</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>208</red>
+           <green>208</green>
+           <blue>191</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>119</red>
+           <green>119</green>
+           <blue>119</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
+     </property>
+     <property name="autoFillBackground" >
+      <bool>true</bool>
+     </property>
+     <property name="frameShape" >
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Plain</enum>
+     </property>
+     <widget class="QLabel" name="Version_Info_Label" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>225</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>144</red>
+            <green>141</green>
+            <blue>124</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>144</red>
+            <green>141</green>
+            <blue>124</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>Version Information</string>
+      </property>
+      <property name="margin" >
+       <number>0</number>
+      </property>
+      <property name="indent" >
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="uiEngineVer" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>56</y>
+        <width>110</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>110</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>110</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>Engine Version :</string>
+      </property>
+      <property name="indent" >
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="engVersionLabel" >
+      <property name="geometry" >
+       <rect>
+        <x>100</x>
+        <y>56</y>
+        <width>125</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>125</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>125</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>Unknown</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="uiVersionLabel" >
+      <property name="geometry" >
+       <rect>
+        <x>100</x>
+        <y>38</y>
+        <width>125</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>125</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>125</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>Unknown</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="uiGUIVer" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>38</y>
+        <width>110</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>110</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>110</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>GUI Version :</string>
+      </property>
+      <property name="indent" >
+       <number>10</number>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QFrame" name="Contact_Info_Box" >
+     <property name="geometry" >
+      <rect>
+       <x>245</x>
+       <y>140</y>
+       <width>225</width>
+       <height>120</height>
+      </rect>
+     </property>
+     <property name="minimumSize" >
+      <size>
+       <width>225</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="maximumSize" >
+      <size>
+       <width>225</width>
+       <height>120</height>
+      </size>
+     </property>
+     <property name="palette" >
+      <palette>
+       <active>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>208</red>
+           <green>208</green>
+           <blue>191</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </active>
+       <inactive>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>208</red>
+           <green>208</green>
+           <blue>191</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>255</red>
+           <green>255</green>
+           <blue>255</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </inactive>
+       <disabled>
+        <colorrole role="WindowText" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>119</red>
+           <green>119</green>
+           <blue>119</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Base" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+        <colorrole role="Window" >
+         <brush brushstyle="SolidPattern" >
+          <color alpha="255" >
+           <red>236</red>
+           <green>234</green>
+           <blue>223</blue>
+          </color>
+         </brush>
+        </colorrole>
+       </disabled>
+      </palette>
+     </property>
+     <property name="autoFillBackground" >
+      <bool>true</bool>
+     </property>
+     <property name="frameShape" >
+      <enum>QFrame::Box</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Plain</enum>
+     </property>
+     <widget class="QLabel" name="Contact_Info_Label" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>225</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>144</red>
+            <green>141</green>
+            <blue>124</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>144</red>
+            <green>141</green>
+            <blue>124</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>9</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>Contact Information</string>
+      </property>
+      <property name="margin" >
+       <number>0</number>
+      </property>
+      <property name="indent" >
+       <number>10</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_4" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>92</y>
+        <width>225</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="toolTip" >
+       <string/>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>http://www.open1x.org</string>
+      </property>
+      <property name="indent" >
+       <number>20</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_3" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>74</y>
+        <width>225</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>http://www.idengines.com</string>
+      </property>
+      <property name="indent" >
+       <number>20</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_2" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>56</y>
+        <width>225</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>228</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>http://www.openseaalliance.org</string>
+      </property>
+      <property name="indent" >
+       <number>20</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label" >
+      <property name="geometry" >
+       <rect>
+        <x>0</x>
+        <y>38</y>
+        <width>225</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="minimumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>225</width>
+        <height>18</height>
+       </size>
+      </property>
+      <property name="palette" >
+       <palette>
+        <active>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="WindowText" >
+          <brush brushstyle="SolidPattern" >
+           <color alpha="255" >
+            <red>119</red>
+            <green>119</green>
+            <blue>119</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font" >
+       <font>
+        <family>Sans Serif</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="lineWidth" >
+       <number>0</number>
+      </property>
+      <property name="text" >
+       <string>For more information, please visit :</string>
+      </property>
+      <property name="indent" >
+       <number>10</number>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="clsBtn" >
+    <property name="geometry" >
+     <rect>
+      <x>212</x>
+      <y>324</y>
+      <width>75</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="sizePolicy" >
+     <sizepolicy>
+      <hsizetype>0</hsizetype>
+      <vsizetype>0</vsizetype>
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize" >
+     <size>
+      <width>75</width>
+      <height>25</height>
+     </size>
+    </property>
+    <property name="maximumSize" >
+     <size>
+      <width>75</width>
+      <height>25</height>
+     </size>
+    </property>
+    <property name="text" >
+     <string>Close</string>
+    </property>
+    <property name="shortcut" >
+     <string>Ctrl+X</string>
+    </property>
+    <property name="default" >
+     <bool>true</bool>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
