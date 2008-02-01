@@ -1,4 +1,8 @@
 ;------------------------
+; Vista Tweaks:
+RequestExecutionLevel user
+
+;------------------------
 ; Include Modern UI
 
    !include "MUI.nsh"
@@ -29,6 +33,28 @@ InstallDirRegKey HKLM "Software\XSupplicant" "Install_Dir"
 ;-----------------------
 ; Functions
 Function .onInit
+
+UAC_Elevate:
+  UAC::RunElevated
+  StrCmp 1223 $0 UAC_ElevationAborted ; UAC dialog aborted by user?
+  StrCmp 0 $0 0 UAC_Err ; Error?
+  StrCmp 1 $1 0 UAC_Success ; Are we the real deal or just the wrapper?
+  Quit
+
+UAC_Err:
+  MessageBox mb_iconstop "Unable to elevate, error $0"
+  Abort
+
+UAC_ElevationAborted: 
+  # elevation was aborted, run as normal?
+  MessageBox mb_iconstop "User needs to have administrator rights in order to install application, aborting!"
+  Abort
+
+UAC_Success:
+  StrCmp 1 $3 +4 ; Admin?
+  StrCmp 3 $1 0 UAC_ElevationAborted ; Try again?
+  MessageBox mb_iconstop "User needs to have administrator rights in order to install application, abortin!"
+  goto UAC_Elevate
  
   ReadRegStr $R0 HKLM \
   "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" \
@@ -55,6 +81,14 @@ uninst:
   
 done:
  
+FunctionEnd
+
+Function .OnInstSuccess
+  UAC::Unload ; Must call unload!
+FunctionEnd
+
+Function .OnInstFailed
+  UAC::Unload ; Must call unload!
 FunctionEnd
 
 
@@ -234,7 +268,24 @@ Section "XSupplicant (required)"
         DetailPrint "Installing the protocol driver.."
         nsExec::Exec '"$INSTDIR\ProtInstall.exe" /Install /hide open1x.inf'
 
+        ; Get the windows version and determine how to install the service.
+        ; The service won't start on Vista if we try to depend on wzc.
+	  ClearErrors
+	  GetVersion::WindowsName
+	  Pop $R0
+
+	  Strcmp $R0 "Vista" vista_service_install
+        
+        Goto default_service_install
+
+default_service_install:
         nsExec::Exec '"$WINDIR\system32\sc.exe" create XSupplicant binPath= "$INSTDIR\xsupplicant_service.exe" DisplayName= XSupplicant start= auto depend= open1x/SENS/wzcsvc'
+        Goto finish_service_install
+
+vista_service_install:
+        nsExec::Exec '"$WINDIR\system32\sc.exe" create XSupplicant binPath= "$INSTDIR\xsupplicant_service.exe" DisplayName= XSupplicant start= auto depend= open1x/SENS'
+
+finish_service_install:
 
         ; Create a description for the supplicant.
         WriteRegStr  HKLM SYSTEM\CurrentControlSet\Services\XSupplicant "Description" "802.1X Authentication Service"
