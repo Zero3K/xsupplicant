@@ -1,4 +1,4 @@
-SUBDIRS = lib src etc tools doc drivers gui_tools
+SUBDIRS = lib src etc tools doc 
 
 all-docs:
 	cd doc && $(MAKE) $(AM_MAKEFLAGS) all-docs

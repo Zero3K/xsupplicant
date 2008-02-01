@@ -389,14 +389,8 @@ AC_CONFIG_FILES([Makefile
 		doc/Makefile
 		doc/Doxyfile
 		etc/Makefile
-		drivers/Makefile
 		tools/config-parser/Makefile
 		tools/ntpwdhash/Makefile
-		gui_tools/Makefile
-		gui_tools/cli/Makefile
-		gui_tools/cli/xsup_set_pwd/Makefile
-		gui_tools/cli/xsup_monitor/Makefile
-		gui_tools/cli/xsup_get_state/Makefile
 		lib/Makefile
 		lib/libxsupgui/Makefile
 		lib/libxsupconfig/Makefile

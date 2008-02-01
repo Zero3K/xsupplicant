@@ -40,7 +40,7 @@
 #include "libxsupconfig/xsupconfig.h"
 #include "src/context.h"
 #include "config_ssid.h"
-#include "cardif/cardif.h"
+#include "platform/cardif.h"
 #include "xsup_debug.h"
 #include "xsup_err.h"
 #include "snmp.h"
@@ -55,9 +55,9 @@
 #include "darwinwireless.h"
 #endif
 
-#include "cardif/macosx/cardif_macosx.h"
-#include "cardif/macosx/cardif_macosx_wireless.h"
-#include "cardif/macosx/ndrv_socket.h"
+#include "platform/macosx/cardif_macosx.h"
+#include "platform/macosx/cardif_macosx_wireless.h"
+#include "platform/macosx/ndrv_socket.h"
 #include "timer.h"
 
 #ifndef ETH_P_EAPOL
