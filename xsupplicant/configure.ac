@@ -1,4 +1,4 @@
-AC_INIT([XSupplicant],[1.9.5.071009],[],[xsupplicant])
+AC_INIT([XSupplicant],[2.1.1.080203],[],[xsupplicant])
 AC_PREREQ(2.59)
 AM_INIT_AUTOMAKE([dist-bzip2] [dist-zip] [foreign])
 AC_PROG_RANLIB
