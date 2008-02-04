@@ -113,7 +113,7 @@ int statemachine_init(context *ctx)
  **/
 int statemachine_reinit(context *ctx)
 {
-  struct config_globals *globals;
+  struct config_globals *globals = NULL;
   char dot1x_default_dest[6] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x03};
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
@@ -213,10 +213,6 @@ int statemachine_reinit(context *ctx)
 
   // No need to free the PMK here, it is a pointer to data in the EAP
   // state machine that will be freed by that deinit function.
-
-  ctx->statemachine->MICfailures = 0;
-
-  memset(ctx->statemachine->replay_counter, 0x00, 6);
 
   ctx->statemachine->to_authenticated = 0;
   ctx->statemachine->last_reauth = 0;

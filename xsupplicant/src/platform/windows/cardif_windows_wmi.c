@@ -199,7 +199,7 @@ int cardif_windows_wmi_event_check_connect()
 			{
 				debug_printf(DEBUG_NORMAL, "Interface '%s' sent us an associate event about a BSSID we are already associated to.  This usually indicates a firmware, driver, or environmental issue.  This event has been ignored.\n", ctx->desc);
 				debug_printf(DEBUG_PHYSICAL_STATE, "Clearing replay counter.\n");
-				memset(&ctx->statemachine->replay_counter, 0x00, 8);
+				memset(&wctx->replay_counter, 0x00, 8);
 			}
 
 			if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))

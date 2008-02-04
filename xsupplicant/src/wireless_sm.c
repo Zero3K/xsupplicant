@@ -657,10 +657,8 @@ void wireless_sm_change_to_associated(context *ctx)
   // We are associated, so clear the timer.
   timer_cancel(ctx, ASSOCIATION_TIMER);
 
-  // XXX The replay counter belongs in a different structure!!!
   debug_printf(DEBUG_PHYSICAL_STATE, "Clearing replay counter.\n");
-  memset(&ctx->statemachine->replay_counter, 0x00, 8);
-  //ctx->recv_size = 0;
+  memset(&wctx->replay_counter, 0x00, 8);
 
   wireless_sm_set_sig_strength_timer(ctx);
 
@@ -811,7 +809,7 @@ void wireless_sm_change_to_associating(context *ctx)
 #endif
 
   // Clear the replay counter.
-  memset(ctx->statemachine->replay_counter, 0x00, 8);
+  memset(wctx->replay_counter, 0x00, 8);
 
   /*
   if ((wireless_sm->state != ASSOCIATING) && 

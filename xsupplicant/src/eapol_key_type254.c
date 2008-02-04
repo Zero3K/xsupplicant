@@ -302,6 +302,7 @@ void eapol_key_type254_do_gtk(context *intdata)
   unsigned char *keydata = NULL;
   char key[32], rc4_ek[32];
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  wireless_ctx *wctx = NULL;
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return;
@@ -309,23 +310,27 @@ void eapol_key_type254_do_gtk(context *intdata)
   xsup_assert((intdata->statemachine != NULL), "intdata->statemachine != NULL",
 	      TRUE);
 
-  xsup_assert((intdata->eap_state != NULL), "intdata->eap_state != NULL",
-	      TRUE);
+  if (!xsup_assert((intdata->intType == ETH_802_11_INT), "intdata->intType == ETH_802_11_INT", FALSE))
+	  return;
+
+  if (!xsup_assert((intdata->intTypeData != NULL), "intdata->intTypeData != NULL", FALSE))
+	  return;
+
+  wctx = intdata->intTypeData;
 
   inkeydata = (struct wpa_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL+4];
   outkeydata = (struct wpa_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL+4];
 
   // First, make sure that the inkeydata replay counter is higher than
   // the last counter we saw.
-  if ((memcmp(inkeydata->key_replay_counter, 
-	      intdata->statemachine->replay_counter, 8) <= 0) &&
+  if ((memcmp(inkeydata->key_replay_counter, wctx->replay_counter, 8) <= 0) &&
       (memcmp(inkeydata->key_replay_counter, zeros, 8) != 0))
     {
       debug_printf(DEBUG_NORMAL, "Invalid replay counter!  Discarding!\n");
       debug_printf(DEBUG_KEY, "Recieved counter : ");
       debug_hex_printf(DEBUG_KEY, inkeydata->key_replay_counter, 8);
       debug_printf(DEBUG_KEY, "Our counter : ");
-      debug_hex_printf(DEBUG_KEY, intdata->statemachine->replay_counter, 8);
+      debug_hex_printf(DEBUG_KEY, wctx->replay_counter, 8);
       intdata->recv_size = 0;
       return;
     }
@@ -468,17 +473,25 @@ void eapol_key_type254_do_type1(context *intdata)
   int i, version, ielen;
   char key[16], wpa_ie[26];
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  wireless_ctx *wctx = NULL;
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return;
+
+  if (!xsup_assert((intdata->intType == ETH_802_11_INT), "intdata->intType == ETH_802_11_INT", FALSE))
+	  return;
+
+  if (!xsup_assert((intdata->intTypeData != NULL), "intdata->intTypeData != NULL", FALSE))
+	return;
+
+  wctx = intdata->intTypeData;
 
   inkeydata = (struct wpa_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL+4];
   outkeydata = (struct wpa_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL+4];
 
   // First, make sure that the inkeydata replay counter is higher than
   // the last counter we saw.
-  if ((memcmp(inkeydata->key_replay_counter, 
-	      intdata->statemachine->replay_counter, 8) <= 0) &&
+  if ((memcmp(inkeydata->key_replay_counter, wctx->replay_counter, 8) <= 0) &&
       (memcmp(inkeydata->key_replay_counter, zeros, 8) != 0))
     {
       debug_printf(DEBUG_NORMAL, "Invalid replay counter!  Discarding!\n");
@@ -633,9 +646,18 @@ void eapol_key_type254_do_type3(context *intdata)
   int version;
   char key[32];
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  wireless_ctx *wctx = NULL;
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return;
+
+  if (!xsup_assert((intdata->intType == ETH_802_11_INT), "intdata->intType == ETH_802_11_INT", FALSE))
+	  return;
+
+  if (!xsup_assert((intdata->intTypeData != NULL), "intdata->intTypeData != NULL", FALSE))
+	  return;
+
+  wctx = intdata->intTypeData;
 
   memset(key, 0x00, 32);
 
@@ -644,8 +666,7 @@ void eapol_key_type254_do_type3(context *intdata)
 
   // First, make sure that the inkeydata replay counter is higher than
   // the last counter we saw.
-  if ((memcmp(inkeydata->key_replay_counter, 
-	      intdata->statemachine->replay_counter, 8) <= 0) &&
+  if ((memcmp(inkeydata->key_replay_counter, wctx->replay_counter, 8) <= 0) &&
       (memcmp(inkeydata->key_replay_counter, zeros, 8) != 0))
     {
       debug_printf(DEBUG_NORMAL, "Invalid replay counter!  Discarding!\n");
@@ -654,8 +675,7 @@ void eapol_key_type254_do_type3(context *intdata)
     }
 
   // Update our replay counter.
-  memcpy(intdata->statemachine->replay_counter, inkeydata->key_replay_counter,
-	 8);
+  memcpy(wctx->replay_counter, &inkeydata->key_replay_counter, 8);
 
   // Clear everything out.
   memset(&intdata->sendframe[OFFSET_TO_EAPOL], 0x00,

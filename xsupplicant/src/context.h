@@ -119,13 +119,6 @@ typedef struct dot1x_state
   uint8_t *GTK;
   uint8_t *PMK;
 
-  /** This contains the number of MIC failures the driver has reported.
-   * Once it reaches 2, we should enable countermeasures.
-   */
-  uint8_t MICfailures;
-
-  uint8_t replay_counter[8];
-
   /** Not defined in the standard for the state machine.  This value tracks
    *  the uptime that the interface changed to AUTHENTICATED state.  If the
    *  value is 0, then you should check the current state to see if we are
@@ -196,7 +189,7 @@ typedef struct {
 	uint8_t *wpa_ie;
 	uint8_t *rsn_ie;
 	uint8_t strength;      // 0 - 100% used to avoid sending signal strength events that aren't needed.
-	char *cur_essid;                 // XXX Remove! 
+	char *cur_essid;                  
 	uint8_t cur_bssid[6];
 	struct found_ssids *ssid_cache;  // All SSIDs found on this interface.
 
@@ -215,6 +208,14 @@ typedef struct {
 	uint8_t groupKeyType;
 
 	struct found_ssids *active_ssid;
+
+  /** This contains the number of MIC failures the driver has reported.
+   * Once it reaches 2, we should enable countermeasures.
+   */
+  uint8_t MICfailures;
+
+  uint8_t replay_counter[8];
+
 } wireless_ctx;
 
 
