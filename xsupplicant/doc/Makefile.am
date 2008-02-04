@@ -1,6 +1,6 @@
 EXTRA_DIST=README.certificates README.direct_radius README.wpa Doxyfile.in standards code-design ldp-dsssl xsupplicant_mac_os_x_with_eap_fast_how_to Xsupplicant-wireless-cards.html xml-userguide builddocs.sh
 
-SOURCE_DIRS = ../src ../lib ../tools ../gui_tools ../drivers
+SOURCE_DIRS = ../src ../lib ../tools
 SOURCE_FILES = $(shell find $(SOURCE_DIRS) -name "*.c")
 HEADER_FILES = $(shell find $(SOURCE_DIRS) -name "*.h")
 

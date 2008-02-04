@@ -83,7 +83,6 @@ int get_mac_by_name_no_ctx(char *intname, char *intmac)
   struct ifreq ifr;
   int sock = -1;
   int retval = XENONE;
-  context *ctx = NULL;
  
   sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_EAPOL));
   if (sock < 0) return XEGENERROR;
@@ -926,8 +925,7 @@ int cardif_get_if_state(context *ctx)
  **/
 int cardif_get_link_state(context *ctx)
 {
-  int retVal = 0;
-  int result = 0, *state = NULL;
+  int result = 0;
   struct lin_sock_data *sockData = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
