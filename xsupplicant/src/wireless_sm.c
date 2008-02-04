@@ -1525,7 +1525,7 @@ void wireless_sm_do_state(context *ctx)
 	  ipc_events_error(ctx, IPC_EVENT_ERROR_NO_WCTX, ctx->desc);
 
       // We can't continue!
-      _exit(2);
+      global_deinit();
       return;
     }
 

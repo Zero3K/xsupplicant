@@ -52,7 +52,8 @@
                                 // shouldn't have been!
 #define XENOUSERDATA      -23   // Our userdata structure was NULL!
 
-// Skip -31 through -40 for possible use later.
+// Error numbers -31 through -40 are additional general errors.
+#define XECANTFINDSERVER   -31
 
 // Error numbers -41 through -50 are key generation errors.
 #define XENOKEYSUPPORT    -41

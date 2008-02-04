@@ -362,7 +362,7 @@ int certificates_load_root(struct tls_vars *mytls_vars, char *trusted_servername
 	if (svr == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Couldn't locate the server '%s'!\n", trusted_servername);
-		return -1;   // XXX Make this a real return value!
+		return XECANTFINDSERVER;   
 	}
 
 	// Set up the CN match, and if it should be exact.

@@ -248,7 +248,7 @@ void event_core_init()
   if (events == NULL)
   {
 	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store event slots!\n");
-	  _exit(4);
+	  global_deinit();
   }
 
   for (i=0; i < num_event_slots; i++)
@@ -566,7 +566,7 @@ void event_core()
   if (numhandles <= 0)
   {
 	  debug_printf(DEBUG_NORMAL, "No handles available to watch.  Cannot continue!\n");
-	  _exit(3);
+	  global_deinit();
   }
 
   result = WaitForMultipleObjectsEx(numhandles, handles, FALSE, 1000, 1);

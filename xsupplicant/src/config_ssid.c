@@ -94,9 +94,6 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
  * @param[in] wctx   A pointer to the wireless context that we want to create
  *                   a new cache node in.
  *
- * \todo Replace _exit() calls with a better call that cleans up before we
- *       exit.
- *
  * \retval NULL on error
  * \retval ptr to the structure that was just created.
  **/
@@ -117,8 +114,7 @@ struct found_ssids *config_ssid_init_new_node(wireless_ctx *wctx)
 		       __FUNCTION__, __LINE__);
 	  ipc_events_malloc_failed(NULL);
 	  
-	  // XXX Replace the _exit calls with a call to clean up before exiting.
-	  _exit(1);
+	  global_deinit();
 	}
 
 	  working = ssids;
@@ -137,7 +133,7 @@ struct found_ssids *config_ssid_init_new_node(wireless_ctx *wctx)
 	  debug_printf(DEBUG_NORMAL, "Insufficient memory at %s:%d!\n",
 		       __FUNCTION__, __LINE__);
 	  ipc_events_malloc_failed(NULL);
-	  _exit(1);
+	  global_deinit();
 	}
 
       working = working->next;

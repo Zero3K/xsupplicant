@@ -106,6 +106,9 @@ DWORD WINAPI ControlHandler( DWORD request,    DWORD dwEventType,
    LPVOID lpEventData, LPVOID lpContext );
 #endif
 
+// Forward decl.
+void global_deinit();
+
 /*********************************************
  *
  * Create a file and store our PID in it
@@ -183,14 +186,14 @@ void xsup_driver_init_config(char *config)
 	  if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
 	  {
 		  printf("Couldn't determine the path to the common app data.\n");
-		  _exit(1);                                 /// Fix?
+		  global_deinit();
 	  }
 
 	  config = Malloc(strlen(szMyPath)+strlen("xsupplicant.conf")+5);
 	  if (config == NULL)
 	  {
 		  printf("Couldn't allocate memory to store the configuration file path string!\n");
-		  _exit(1);
+		  global_deinit();
 	  }
 
 	  sprintf(config, "%s\\xsupplicant.conf", szMyPath);
