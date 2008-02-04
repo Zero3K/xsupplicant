@@ -1,17 +1,11 @@
 /**
- * Windows wireless (ExtSta) interface.
+ * Windows OID_DOT11 * wireless interface.
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \file cardif_windows_dot11.c
  *
  * \authors chris@open1x.org
- *
- * \par CVS Status Information:
- * \code
- * $Id: cardif_windows_dot11.c,v 1.2 2008/01/30 21:43:43 galimorerpg Exp $
- * $Date: 2008/01/30 21:43:43 $
- * \endcode
  *
  */
 
@@ -184,6 +178,131 @@ bad_strncpy:
   return;
 }
 
+/**
+ * \brief Determine if the power to the wireless interface is ON or not.
+ *
+ * @param[in] ctx   The context for the wireless interface we want to check.
+ *
+ * \retval TRUE   if the power is on
+ * \retval FALSE  if the power is off, or we get an error.
+ **/
+int cardif_windows_dot11_is_power_on(context *ctx)
+{
+  DWORD BytesReturned;
+  UCHAR Buffer[sizeof(NDIS_OID)+4];
+  PNDISPROT_QUERY_OID pQueryOid = NULL;
+  struct win_sock_data *sockData = NULL;
+  LPVOID lpMsgBuf = NULL;
+  unsigned int *powered = NULL;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return XEMALLOC;
+
+  sockData = ctx->sockData;
+
+  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return XEMALLOC;
+
+  memset(&Buffer, 0x00, sizeof(Buffer));
+  pQueryOid = (PNDISPROT_QUERY_OID)&Buffer[0];
+ 
+  pQueryOid->Oid = OID_DOT11_NIC_POWER_STATE;
+
+  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE, (LPVOID)&Buffer[0], sizeof(Buffer), 
+					(LPVOID)&Buffer[0], sizeof(Buffer), &BytesReturned) == FALSE)
+  {
+		lpMsgBuf = GetLastErrorStr(GetLastError());
+		debug_printf(DEBUG_NORMAL, "Couldn't determine if the interface is powered on interface '%s'.  Reason was : %s\n", ctx->desc, lpMsgBuf);
+		LocalFree(lpMsgBuf);
+	  return FALSE;
+  }
+
+  powered = &pQueryOid->Data[0];
+
+  debug_printf(DEBUG_NORMAL, "Powered = %d\n", (*powered));
+
+  if ((*powered) == 0) return FALSE;
+
+  return TRUE;
+}
+
+int cardif_windows_dot11_reset(context *ctx)
+{
+  DWORD BytesReturned;
+  UCHAR Buffer[sizeof(NDIS_OID)+sizeof(DOT11_RESET_REQUEST)];
+  PNDISPROT_SET_OID pSetOid = NULL;
+  struct win_sock_data *sockData = NULL;
+  LPVOID lpMsgBuf = NULL;
+  PDOT11_RESET_REQUEST drr = NULL;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return XEMALLOC;
+
+  sockData = ctx->sockData;
+
+  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return XEMALLOC;
+
+  memset(&Buffer, 0x00, sizeof(Buffer));
+  pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+ 
+  pSetOid->Oid = OID_DOT11_RESET_REQUEST;
+
+  drr = pSetOid->Data;
+  drr->bSetDefaultMIB = 0xffff;
+  drr->dot11ResetType = dot11_reset_type_phy_and_mac;
+  memcpy(drr->dot11MacAddress, ctx->source_mac, 6);
+
+  debug_hex_dump(DEBUG_NORMAL, pSetOid->Data, sizeof(DOT11_RESET_REQUEST));
+
+  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, (LPVOID)&Buffer[0], sizeof(Buffer), 
+					(LPVOID)&Buffer[0], sizeof(Buffer), &BytesReturned) == FALSE)
+  {
+		lpMsgBuf = GetLastErrorStr(GetLastError());
+		debug_printf(DEBUG_NORMAL, "Couldn't reset interface '%s'.  Reason was : %s\n", ctx->desc, lpMsgBuf);
+		LocalFree(lpMsgBuf);
+	  return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * \brief Determine if the power to the wireless interface is ON or not.
+ *
+ * @param[in] ctx   The context for the wireless interface we want to check.
+ *
+ * \retval TRUE   if the power is on
+ * \retval FALSE  if the power is off, or we get an error.
+ **/
+int cardif_windows_dot11_set_pwr_mgmt(context *ctx)
+{
+  DWORD BytesReturned;
+  UCHAR Buffer[sizeof(NDIS_OID)+4];
+  PNDISPROT_SET_OID pSetOid = NULL;
+  struct win_sock_data *sockData = NULL;
+  LPVOID lpMsgBuf = NULL;
+  unsigned int *powered = NULL;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return XEMALLOC;
+
+  sockData = ctx->sockData;
+
+  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return XEMALLOC;
+
+  memset(&Buffer, 0x00, sizeof(Buffer));
+  pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+ 
+  pSetOid->Oid = OID_DOT11_POWER_MGMT_REQUEST;
+
+  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, (LPVOID)&Buffer[0], sizeof(Buffer), 
+					(LPVOID)&Buffer[0], sizeof(Buffer), &BytesReturned) == FALSE)
+  {
+		lpMsgBuf = GetLastErrorStr(GetLastError());
+		debug_printf(DEBUG_NORMAL, "Couldn't set power saving on interface '%s'.  Reason was : %s\n", ctx->desc, lpMsgBuf);
+		LocalFree(lpMsgBuf);
+	  return FALSE;
+  }
+
+  return TRUE;
+}
+
 int cardif_windows_dot11_get_extsta_capabilities(context *ctx, DOT11_EXTSTA_CAPABILITY *capa)
 {
   DWORD BytesReturned;
@@ -266,7 +385,7 @@ int cardif_windows_dot11_get_mode_capabilities(context *ctx)
 int cardif_windows_dot11_scan(context *ctx, char passive)
 {
   DWORD BytesReturned;
-  UCHAR Buffer[sizeof(NDIS_OID)+sizeof(DOT11_SCAN_REQUEST_V2)];
+  UCHAR Buffer[sizeof(NDIS_OID)+sizeof(DOT11_SCAN_REQUEST_V2)+32];
   PNDISPROT_SET_OID pSetOid;
   struct win_sock_data *sockData;
   LPVOID lpMsgBuf;
@@ -312,11 +431,20 @@ int cardif_windows_dot11_scan(context *ctx, char passive)
   
   pScanReq = pSetOid->Data;
 
-  pScanReq->dot11BSSType = dot11_BSS_type_infrastructure;
+  pScanReq->dot11BSSType = dot11_BSS_type_any;
   memset(pScanReq->dot11BSSID, 0xff, 6);  // Get everything.
   pScanReq->dot11ScanType = dot11_scan_type_auto;
-  pScanReq->bRestrictedScan = 0;
-
+  pSetOid->Data[0x0f] = 0xff;
+  pSetOid->Data[0x18] = 0xff;
+  pSetOid->Data[0x30] = 0xff;
+//  pScanReq->bRestrictedScan = 0x10000;
+  /*
+  pScanReq->udot11SSIDsOffset = 128;
+  pScanReq->uNumOfdot11SSIDs = 0x01;
+  pScanReq->uRequestIDsOffset = 0x24;
+*/
+  debug_printf(DEBUG_NORMAL, "Scan data (%d) :\n", (sizeof(DOT11_SCAN_REQUEST_V2)+32));
+  debug_hex_dump(DEBUG_NORMAL, pSetOid->Data, sizeof(DOT11_SCAN_REQUEST_V2)+32);
 
   if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, (LPVOID)&Buffer[0], sizeof(NDISPROT_QUERY_OID)+4, 
 					NULL, 0, &BytesReturned) == FALSE)
@@ -1791,7 +1919,6 @@ struct cardif_funcs cardif_windows_dot11_driver = {
   cardif_windows_dot11_get_wpa_ie,                 // .get_wpa_ie
   cardif_windows_dot11_get_wpa2_ie,                // .get_wpa2_ie
   cardif_windows_dot11_enc_disable,                // .enc_disable
-//  cardif_windows_dot11_enc_capabilities,			  // .enc_capabilities
   cardif_windows_dot11_enc_pairs,                  // .enc_capabilities
   cardif_windows_dot11_set_bssid,                  // .set_bssid
   NULL,												  // .set_operstate

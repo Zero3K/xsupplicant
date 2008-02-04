@@ -2046,7 +2046,7 @@ void delete_config_devices(struct xsup_devices **head)
  **/
 void delete_config_trusted_server(struct config_trusted_server **tmp_server)
 {
-  if (*tmp_server == NULL)
+  if (((*tmp_server) == NULL) || (tmp_server == NULL))
     return;
 
   FREE_STRING((*tmp_server)->name);
@@ -2067,13 +2067,17 @@ void delete_config_trusted_server(struct config_trusted_server **tmp_server)
  **/
 void delete_config_trusted_servers(struct config_trusted_servers **tmp_servers)
 {
-  struct config_trusted_server *next, *cur;
+  struct config_trusted_server *next = NULL, *cur = NULL;
 
-  if (*tmp_servers == NULL)
+  if (((*tmp_servers) == NULL) || (tmp_servers == NULL))
     return;
 
   cur = (*tmp_servers)->servers;
-  next = (*tmp_servers)->servers->next;
+
+  if ((*tmp_servers)->servers != NULL) 
+  {
+	  next = (*tmp_servers)->servers->next;
+  }
 
   while (cur)
     {

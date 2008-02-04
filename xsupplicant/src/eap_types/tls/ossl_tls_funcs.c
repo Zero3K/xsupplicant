@@ -594,6 +594,7 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
   uint8_t temp = 0;
   uint16_t size = 0;
   char *error_str = NULL;
+  context *ctx = NULL;
 
   TRACE
 
@@ -606,6 +607,8 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
   if (mytls_vars->ssl == NULL) 
   {
 	  debug_printf(DEBUG_NORMAL, "The server sent a mid-conversation message when we expected a start.  If this is a wireless connection, it is likely that the wireless card hopped to a new AP in the middle of a conversation.\n");
+	  ctx = event_core_get_active_ctx();
+	  if (ctx != NULL) statemachine_reinit(ctx);
 	  return DONE;
   }
 

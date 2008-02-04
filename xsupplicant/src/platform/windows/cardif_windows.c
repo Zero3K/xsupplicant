@@ -1005,6 +1005,11 @@ int cardif_init(context *ctx, char driver)
   case 2:
 	debug_printf(DEBUG_INT, "It appears your card supports the new API!  Life is good!\n");
 	wireless = &cardif_windows_dot11_driver;
+
+	// Check to see if the power is on.
+	cardif_windows_dot11_reset(ctx);
+	cardif_windows_dot11_is_power_on(ctx);
+	cardif_windows_dot11_set_pwr_mgmt(ctx);
 	break;
   }
 #endif

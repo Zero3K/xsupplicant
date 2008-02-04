@@ -872,17 +872,17 @@ DWORD WINAPI ControlHandler( DWORD request, DWORD dwEventType,
    { 
       case SERVICE_CONTROL_STOP: 
 /*         ServiceStatus.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR; 
-		 ServiceStatus.dwServiceSpecificExitCode = SERVICE_ERROR_STOP_REQUESTED;
-         ServiceStatus.dwCurrentState = SERVICE_STOPPED; 
-         SetServiceStatus (hStatus, &ServiceStatus); */
+		 ServiceStatus.dwServiceSpecificExitCode = SERVICE_ERROR_STOP_REQUESTED;*/
+         ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING; 
+         SetServiceStatus (hStatus, &ServiceStatus); 
 		  event_core_terminate();
          return NO_ERROR; 
  
       case SERVICE_CONTROL_SHUTDOWN: 
 /*         ServiceStatus.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR; 
-		 ServiceStatus.dwServiceSpecificExitCode = SERVICE_ERROR_STOP_REQUESTED;
-         ServiceStatus.dwCurrentState = SERVICE_STOPPED; 
-         SetServiceStatus (hStatus, &ServiceStatus); */
+		 ServiceStatus.dwServiceSpecificExitCode = SERVICE_ERROR_STOP_REQUESTED;*/
+         ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING; 
+         SetServiceStatus (hStatus, &ServiceStatus); 
 		  event_core_terminate();
          return NO_ERROR; 
 

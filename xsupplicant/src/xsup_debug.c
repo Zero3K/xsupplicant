@@ -988,6 +988,12 @@ void debug_hex_dump(uint32_t level, uint8_t *hextodump, int size)
 		  {
 			ufprintf(logfile, buf, level);
 		  }
+		  else
+		  {
+		      #ifdef DEBUG_LOG_PLUGINS
+			  log_hook_full_debug(buf);
+		      #endif // DEBUG_LOG_PLUGINS
+		  }
 		}
     }
   
@@ -1253,6 +1259,7 @@ void debug_printf(uint32_t level, char *fmt, ...)
 	{
 		printf("Unknown debug level %d.\n", level);
 	}
+
       vsnprintf((char *)&temp, TEMP_LOG_BUF_SIZE-1, fmt, ap);
 
 	  tdstring = xsup_debug_system_time();
