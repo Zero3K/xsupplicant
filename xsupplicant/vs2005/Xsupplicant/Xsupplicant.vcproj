@@ -1953,7 +1953,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\cardif\cardif.h"
+				RelativePath="..\..\src\platform\cardif.h"
 				>
 			</File>
 			<File
@@ -1977,7 +1977,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\cardif\cert_handler.h"
+				RelativePath="..\..\src\platform\cert_handler.h"
 				>
 			</File>
 			<File

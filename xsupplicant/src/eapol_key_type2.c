@@ -224,7 +224,7 @@ void eapol_key_type2_dump(context *intdata, char *framedata)
 		       " invalid!)\n");
 	  if (intdata->statemachine->PTK == NULL) debug_printf(DEBUG_NORMAL, "Unwrap failed because PTK is NULL!\n");
 		ipc_events_error(intdata, IPC_EVENT_ERROR_FAILED_AES_UNWRAP, intdata->desc);
-		cardif_disassociate(intdata, 0); // XXX Fix this to be a valid reason.
+		cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT); 
 	}
       
       FREE(keypayload);
@@ -779,7 +779,7 @@ void eapol_key_type2_do_gtk(context *intdata)
 		debug_printf(DEBUG_NORMAL, "Failed AES unwrap.\n");
 		if (intdata->statemachine->PTK == NULL) debug_printf(DEBUG_NORMAL, "Unwrap failed because PTK is NULL!\n");
 		ipc_events_error(intdata, IPC_EVENT_ERROR_FAILED_AES_UNWRAP, intdata->desc);
-		cardif_disassociate(intdata, 0); // XXX Fix this to be a valid reason.
+		cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT); 
       }
 
       debug_printf(DEBUG_KEY, "Result : ");
@@ -1147,7 +1147,7 @@ void eapol_key_type2_do_type3(context *intdata)
 		  if (intdata->statemachine->PTK == NULL) debug_printf(DEBUG_NORMAL, "Unwrap failed because there is no PTK set!\n");
 		  ipc_events_error(intdata, IPC_EVENT_ERROR_FAILED_AES_UNWRAP, intdata->desc);
 	      FREE(keydata);
-		  cardif_disassociate(intdata, 0);  // XXX Set this to a proper value!
+		  cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT);  
 	      return;
 	    } else {
 	      FREE(keydata);
@@ -1161,7 +1161,7 @@ void eapol_key_type2_do_type3(context *intdata)
 		       version);
 	  ipc_events_error(intdata, IPC_EVENT_ERROR_UNKNOWN_KEY_REQUEST, intdata->desc);
 	  FREE(keydata);
-	  cardif_disassociate(intdata, 0);  // XXX Set the reason to something valid!
+	  cardif_disassociate(intdata, DISASSOC_BAD_RSN_VERSION);  
 	  return;
 	  break;
 	}
@@ -1175,7 +1175,7 @@ void eapol_key_type2_do_type3(context *intdata)
 	{
 	  debug_printf(DEBUG_NORMAL, "Error processing key data!\n");
 	  FREE(keydata);
-	  cardif_disassociate(intdata, 0);  // XXX Set this to something valid.
+	  cardif_disassociate(intdata, DISASSOC_BAD_RSN_VERSION);  
 	  return;
 	}
 

@@ -52,8 +52,8 @@
 #include "timer.h"
 
 // XXX These can be removed once ipc_callout_eap_cert_state() has moved to the proper location.
-#include "eap_types/tls/eaptls.h"
-#include "eap_types/tls/tls_funcs.h"  
+//#include "eap_types/tls/eaptls.h"
+//#include "eap_types/tls/tls_funcs.h"  
 // XXX (End)
 
 #ifdef WINDOWS

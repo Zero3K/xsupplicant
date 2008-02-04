@@ -1494,7 +1494,7 @@ void wireless_sm_do_int_restart(context *ctx)
   debug_printf(DEBUG_NORMAL, "You should't get here!!  Fix the code!\n");
   debug_printf(DEBUG_NORMAL, "File : %s   Function : %s  Line : %d\n",
 	       __FILE__, __FUNCTION__, __LINE__);
-  exit(255);
+  global_deinit();
 }
 
 /*********************************************************************

@@ -421,12 +421,12 @@ void global_config_reload()
   // XXX need to rebind to all active interfaces.
 }
 
-/****************************************
+/**
+ * \brief Display our usage information.
  *
- * Display our usage information.
- *
- * \todo XXX Fix!
- ****************************************/
+ * @param[in] prog   The name of the program we are running. (Should always be XSupplicant. ;)
+ * @param[in] opts   An array of options that were passed on the command line.
+ **/
 void usage(char *prog, struct options opts[])
 {
   debug_printf(DEBUG_NORMAL, "\n\nXsupplicant %s.%s\n", VERSION, BUILDNUM);

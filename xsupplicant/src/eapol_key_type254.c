@@ -391,7 +391,7 @@ void eapol_key_type254_do_gtk(context *intdata)
 		if (intdata->statemachine->PTK == NULL)
 		{
 			debug_printf(DEBUG_NORMAL, "The PTK for this connection is NULL!\n");
-			cardif_disassociate(intdata, 0);  // XXX Fix this to be a valid disassocate value!
+			cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT);  
 			return;
 		}
 
@@ -417,7 +417,7 @@ void eapol_key_type254_do_gtk(context *intdata)
 		  debug_printf(DEBUG_NORMAL, "Failed AES unwrap.\n");
 		  if (intdata->statemachine->PTK == NULL) debug_printf(DEBUG_NORMAL, "Unwrap failed because PTK is NULL!\n");
 		  ipc_events_error(intdata, IPC_EVENT_ERROR_FAILED_AES_UNWRAP, intdata->desc);
-		  cardif_disassociate(intdata, 0);  // XXX Set this to something valid.
+		  cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT);  
 		  return;
 	  }
       

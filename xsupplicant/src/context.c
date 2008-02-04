@@ -413,7 +413,7 @@ int context_init_interface_hdwr(context **ctx, char *desc, char *device, char dr
     {
       debug_printf(DEBUG_NORMAL, "Couldn't init interface struct for device "
 		   "%s!  Cannot continue!\n", device);
-      exit(1);
+	  global_deinit();
     }
 
   // Set our flags.
