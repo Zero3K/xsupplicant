@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -102,7 +102,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 			/>
 			<Tool
@@ -159,7 +159,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -217,7 +217,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 			/>
 			<Tool
@@ -273,7 +273,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 			/>
 			<Tool
@@ -330,7 +330,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -389,7 +389,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"

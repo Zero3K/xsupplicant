@@ -42,7 +42,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -57,8 +57,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalDependencies="libeay32.lib ssleay32.lib libxml2_a.lib"
+				AdditionalLibraryDirectories="&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -108,7 +108,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -124,7 +124,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OPENSSLDIR)\lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -174,7 +174,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -190,7 +190,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OPENSSLDIR)\lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -240,7 +240,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -256,7 +256,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OPENSSLDIR)\lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -306,7 +306,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -322,7 +322,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OPENSSLDIR)\lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -372,7 +372,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -389,7 +389,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OPENSSLDIR)\lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -439,7 +439,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -455,7 +455,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OPENSSLDIR)\lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"
