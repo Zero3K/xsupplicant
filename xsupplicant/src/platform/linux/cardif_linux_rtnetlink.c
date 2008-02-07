@@ -805,14 +805,24 @@ void cardif_linux_rtnetlink_process_IWEVASSOCRESPIE(context *ctx,
 void cardif_linux_rtnetlink_process_IWEVMICHAELMICFAILURE(context *ctx,
 							  struct iw_event *iwe)
 {
+  wireless_ctx *wctx = NULL;
+
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
   if (!xsup_assert((iwe != NULL), "iwe != NULL", FALSE))
     return;
 
+  if (!xsup_assert((ctx->intType == ETH_802_11_INT), "ctx->intType == ETH_802_11_INT", FALSE))
+    return;
+
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
+    return;
+
+  wctx = ctx->intTypeData;
+
 #ifdef IW_MICFAILURE_KEY_ID
-  struct iw_michaelmicfailure *mic;
+  struct iw_michaelmicfailure *mic = NULL;
 
   // TODO : Double check this implementation.
 
@@ -852,11 +862,11 @@ void cardif_linux_rtnetlink_process_IWEVMICHAELMICFAILURE(context *ctx,
   // Some wireless cards may also return a count.  But we maintain our own
   // internal counter, so it isn't relevant.
   
-  ctx->statemachine->MICfailures++;
-  debug_printf(DEBUG_NORMAL, "MIC failure #%d!\n",
-	       ctx->statemachine->MICfailures);
+  wctx->MICfailures++;
+  debug_printf(DEBUG_NORMAL, "MIC failure #%d on interface %s!\n",
+	       wctx->MICfailures, ctx->desc);
       
-  if (ctx->statemachine->MICfailures >= 2)
+  if (wctx->MICfailures >= 2)
     {
       // The WPA/802.11i standard requires we assert countermeasures 
       // for 60 seconds.
@@ -1191,6 +1201,8 @@ void cardif_linux_rtnetlink_do_link(struct nlmsghdr *msg, int len, int type)
 void cardif_linux_rtnetlink_check_custom(context *intdata,
 					 char *str)
 {
+  wireless_ctx *wctx = NULL;
+
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return;
 
@@ -1199,9 +1211,18 @@ void cardif_linux_rtnetlink_check_custom(context *intdata,
 
   if (strncmp(str, "MLME-MICHAELMICFAILURE.indication", 33) == 0)
     {
-      intdata->statemachine->MICfailures++;
-      debug_printf(DEBUG_NORMAL, "MIC failure #%d!\n",
-		   intdata->statemachine->MICfailures);
+      if ((intdata->intType != ETH_802_11_INT) ||
+	  (intdata->intTypeData == NULL))
+	{
+	  debug_printf(DEBUG_NORMAL, "Got a MIC failure on a WIRED interface!? (Interface : %s)\n", intdata->desc);
+	  return;
+	}
+
+      wctx = intdata->intTypeData;
+
+      wctx->MICfailures++;
+      debug_printf(DEBUG_NORMAL, "MIC failure #%d on interface %s!\n",
+		   wctx->MICfailures, intdata->desc);
       
       if (strstr(str, " unicast ") != NULL)
 	{
@@ -1216,7 +1237,7 @@ void cardif_linux_rtnetlink_check_custom(context *intdata,
 	  intdata->send_size = 0;
 	}
 
-      if (intdata->statemachine->MICfailures >= 2)
+      if (wctx->MICfailures >= 2)
 	{
 	  // The WPA/802.11i standard requires we assert countermeasures 
 	  // for 60 seconds.
