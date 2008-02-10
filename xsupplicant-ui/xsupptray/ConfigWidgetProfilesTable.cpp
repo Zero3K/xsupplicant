@@ -36,6 +36,7 @@
 #include "ConfigWidgetProfilesTable.h"
 #include "Util.h"
 #include "NavPanel.h"
+#include "helpbrowser.h"
 
 ConfigWidgetProfilesTable::ConfigWidgetProfilesTable(QTableWidget *pRealTable, profile_enum *pProfilesEnum, XSupCalls *xsup, QWidget *parent) :
 	m_pRealTable(pRealTable), m_pParent(parent), m_pProfilesEnum(pProfilesEnum), m_pSupplicant(xsup)
@@ -117,6 +118,7 @@ void ConfigWidgetProfilesTable::fillTable()
 	QString outer;
 	QTableWidgetItem *newItem = NULL;
 	bool sorting = false;
+	QString temp;
 
 	m_pRealTable->setCursor(Qt::WaitCursor);   // This may take a second.
 
@@ -129,7 +131,8 @@ void ConfigWidgetProfilesTable::fillTable()
 
 	while (m_pProfilesEnum[i].name != NULL)
 	{
-		if (m_pSupplicant->getConfigProfile(QString(m_pProfilesEnum[i].name), &myProfile, true))
+	  temp = m_pProfilesEnum[i].name;
+		if (m_pSupplicant->getConfigProfile(temp, &myProfile, true))
 		{
 			m_pSupplicant->getTunnelNames(myProfile->method, outer, inner);
 

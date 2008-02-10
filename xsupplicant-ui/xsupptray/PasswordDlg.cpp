@@ -30,7 +30,7 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "PasswordDlg.h"
 #include "Util.h"
 
@@ -70,15 +70,21 @@ PasswordDlg::~PasswordDlg(void)
 
 void PasswordDlg::slotSave()
 {
+  // XXX This needs to be fixed up to use some sane QT calls.
+  /*
   m_message.DisplayMessage( MessageClass::INFORMATION_TYPE, tr("Password"), tr("Save the password"));
   accept();
+  */
 }
 
 
 void PasswordDlg::slotCancel()
 {
+  // XXX This needs to be fixed up to use some sane QT calls.
+  /*
   m_message.DisplayMessage( MessageClass::INFORMATION_TYPE, tr("Password"), tr("Cancel the authentication"));
   reject();
+  */
 }
 
 void PasswordDlg::slotHelp()

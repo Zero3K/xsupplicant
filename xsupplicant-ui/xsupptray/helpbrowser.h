@@ -47,13 +47,21 @@ public:
 
 protected: 
   HelpBrowser(QWidget *parent = 0);
+#ifdef WINDOWS
   virtual HelpBrowser::~HelpBrowser();
+#else
+  virtual ~HelpBrowser();
+#endif
   bool create();
 
 public:
   void setSource(const QString &path, const QString &file, const QString &page);
 
+#ifdef WINDOWS
   static void HelpBrowser::showPage(const QString &file, const QString &page);
+#else
+  static void showPage(const QString &file, const QString &page);
+#endif
 
 private:
   static HelpBrowser *s_pBrowser;

@@ -32,7 +32,8 @@
 
 #include "stdafx.h"
 #include "ConfigWidgetEditAdvancedSettings.h"
-
+#include "Util.h"
+#include "helpbrowser.h"
 
 ConfigWidgetEditAdvancedSettings::ConfigWidgetEditAdvancedSettings(QWidget *pRealWidget, XSupCalls *xsup, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup)

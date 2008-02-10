@@ -75,3 +75,5 @@ QPixmap *FormLoader::loadicon(QString iconname)
 
 	return p;
 }
+
+

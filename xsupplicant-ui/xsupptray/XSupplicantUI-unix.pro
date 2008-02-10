@@ -13,6 +13,7 @@ DESTDIR = ../build-debug
 QT += xml
 CONFIG += debug
 INCLUDEPATH += ./../../xsupplicant/src/eap_types/tnc \
+    ./../../xsupplicant/lib \
     ./../../xsupplicant/lib/libsupdetect \
     ./../../xsupplicant/lib/libxsupconfig \
     ./../../xsupplicant/lib/libxsupgui \

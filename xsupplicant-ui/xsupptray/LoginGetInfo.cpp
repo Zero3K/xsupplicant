@@ -75,10 +75,12 @@ void LoginGetInfo::updateWindow(bool updateAll)
 	QString username;
 	QString password;
 	int m_authType;
+	QString temp;
 
 	setAdapterInfo();
 
-    if (m_supplicant.getConnectionInformation(QString(pConn->name), m_authType, username, password, false))
+	temp = pConn->name;
+    if (m_supplicant.getConnectionInformation(temp, m_authType, username, password, false))
     {
       switch (m_authType)
       {
@@ -285,3 +287,5 @@ bool LoginGetInfo::getCacheCredentialsFlag()
 
 	return false;
 }
+
+

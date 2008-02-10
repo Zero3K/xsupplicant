@@ -34,6 +34,7 @@
 #include "stdafx.h"
 #include "helpbrowser.h"
 #include "FormLoader.h"
+#include "Util.h"
 
 HelpBrowser *HelpBrowser::s_pBrowser = NULL;
 

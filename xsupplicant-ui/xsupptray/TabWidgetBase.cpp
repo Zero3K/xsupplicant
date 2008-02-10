@@ -32,6 +32,7 @@
 
 #include "stdafx.h"
 
+#include <QMessageBox>
 #include "TabWidgetBase.h"
 
 TabWidgetBase::TabWidgetBase()
@@ -94,3 +95,5 @@ void TabWidgetBase::removeTab(int index)
 		QMessageBox::critical(this, tr("Error"), tr("Attempted to remove a tab from a NULL parent!"));
 	}
 }
+
+

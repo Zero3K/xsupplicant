@@ -31,7 +31,9 @@
  **/
 
 #include "stdafx.h"
+#include "Util.h"
 #include "ConfigWidgetEditAdvancedInternals.h"
+#include "helpbrowser.h"
 
 
 ConfigWidgetEditAdvancedInternals::ConfigWidgetEditAdvancedInternals(QWidget *pRealWidget, XSupCalls *xsup, QWidget *parent) :

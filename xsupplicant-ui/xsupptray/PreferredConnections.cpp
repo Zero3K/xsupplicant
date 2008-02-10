@@ -31,8 +31,14 @@
  **/
 
 #include "stdafx.h"
+
+#ifdef WINDOWS
 #include <direct.h>
+#endif
+
 #include "PreferredConnections.h"
+#include "Util.h"
+#include "helpbrowser.h"
 
 //! Constructor
 /*!
@@ -230,7 +236,7 @@ void PreferredConnections::slotMoveUp()
   if (items.size() == 0)
   {
     // nothing to do
-    m_message.DisplayMessage( MessageClass::WARNING_TYPE, tr("Can't move items"), tr("Make sure you select an item to move first."));
+    QMessageBox::warning(this, tr("Can't move items"), tr("Make sure you select an item to move first."));
     return;
   }
   int row = m_pPreferredList->row(items[0]);
@@ -238,7 +244,7 @@ void PreferredConnections::slotMoveUp()
   // If the top row is already the top row, there is nothing to do
   if (row == 0)
   {
-    m_message.DisplayMessage( MessageClass::WARNING_TYPE, tr("Can't move items"), tr("The items are already at the top"));
+    QMessageBox::warning(this, tr("Can't move items"), tr("The items are already at the top."));
     return;
   }
 
@@ -281,7 +287,7 @@ void PreferredConnections::slotMoveDown()
   if (count == 0)
   {
     // nothing to do
-    m_message.DisplayMessage( MessageClass::WARNING_TYPE, tr("Can't move items"), tr("Make sure you select an item to move first."));
+    QMessageBox::warning(this, tr("Can't move items"), tr("Make sure you select an item to move first."));
     return;
   }
 
@@ -293,7 +299,7 @@ void PreferredConnections::slotMoveDown()
   // Row is zero-based, so must add one
   if (row+1 == m_pPreferredList->count())
   {
-    m_message.DisplayMessage( MessageClass::WARNING_TYPE, tr("Can't move items"), tr("The items are already at the bottom."));
+    QMessageBox::warning(this, tr("Can't move items"), tr("The items are already at the bottom."));
     return;
   }
   // now move them up - need to find the row just before the row selected and move above this row.
@@ -519,3 +525,5 @@ void PreferredConnections::slotHelp()
 {
   HelpBrowser::showPage("xsupphelp.html", "xsupsetconnpriorities");
 }
+
+

@@ -38,6 +38,7 @@
 #include "FormLoader.h"
 #include "NavPanel.h"
 #include "PreferredConnections.h"
+#include "helpbrowser.h"
 
 ConfigWidgetConnectionsTable::ConfigWidgetConnectionsTable(QWidget *pRealWidget, XSupCalls *pSupplicant, conn_enum *pConnectionsEnum, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pConnectionsEnum(pConnectionsEnum), m_pSupplicant(pSupplicant)

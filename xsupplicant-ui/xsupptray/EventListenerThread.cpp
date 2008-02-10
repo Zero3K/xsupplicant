@@ -33,7 +33,7 @@
 #include "stdafx.h"
 #include "EventListenerThread.h"
 #include "LoggingConsole.h"
-#include "util.h"
+#include "Util.h"
 #include "xsupcalls.h"
 #include "TrayApp.h"
 

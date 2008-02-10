@@ -34,6 +34,7 @@
 #include <QTreeWidgetItem>
 #include "NavPanel.h"
 #include "ConfigWidgetEditProfile.h"
+#include "Util.h"
 
 ConfigWidgetEditProfile::ConfigWidgetEditProfile(QWidget *pRealWidget, QString profName, XSupCalls *xsup, QWidget *parent, UIPlugins *pPlugins) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalProfName(profName), m_pPlugins(pPlugins)
@@ -156,6 +157,7 @@ bool ConfigWidgetEditProfile::newItem()
 void ConfigWidgetEditProfile::updateWindow()
 {
 	int index = 0;
+	QString temp;
 
 	if (m_pProfile != NULL)
 	{
@@ -165,7 +167,8 @@ void ConfigWidgetEditProfile::updateWindow()
 
 	if (m_bNewProfile)
 	{
-		if (m_pSupplicant->createNewProfile(QString("New Profile"), &m_pProfile) != true)
+	  temp = "New Profile";
+		if (m_pSupplicant->createNewProfile(temp, &m_pProfile) != true)
 		{
 			QMessageBox::critical(m_pRealWidget, tr("New Profile"), tr("There was an error attempting to create a new profile."));
 			m_pProfile = NULL;
@@ -224,6 +227,7 @@ void ConfigWidgetEditProfile::slotDataChanged()
 bool ConfigWidgetEditProfile::save()
 {
 	config_profiles *pNewProfile = NULL;
+	QString temp;
 
 	if (m_pProfNameEdit->text() == "")
 	{
@@ -231,7 +235,8 @@ bool ConfigWidgetEditProfile::save()
 		return false;
 	}
 
-	if ((m_originalProfName != m_lastProfName) && (m_pSupplicant->getConfigProfile(m_pProfNameEdit->text(), &pNewProfile, false) == true))
+	temp = m_pProfNameEdit->text();
+	if ((m_originalProfName != m_lastProfName) && (m_pSupplicant->getConfigProfile(temp, &pNewProfile, false) == true))
 	{
 		QMessageBox::critical(m_pRealWidget, tr("Profile Exists"), tr("The profile '%1' already exists in the configuration.  Please select a different name.").arg(m_pProfNameEdit->text()));
 		return false;
@@ -247,7 +252,8 @@ bool ConfigWidgetEditProfile::save()
 	// If the server was renamed, then rename it first, then update the config, and write it.
 	if ((m_bProfileRenamed) && (QString(m_pProfile->name) != m_originalProfName))
 	{
-		if (m_pSupplicant->renameProfile(m_originalProfName, QString(m_pProfile->name)) == false)
+	  temp = m_pProfile->name;
+		if (m_pSupplicant->renameProfile(m_originalProfName, temp) == false)
 			return false;
 
 		m_bProfileRenamed = false;  // We are done.

@@ -95,11 +95,13 @@ LoginStatus::~LoginStatus()
 void LoginStatus::updateWindow(bool updateAll, bool fromConnect)
 {
 	QLabel *myLabel = NULL;
+	QString temp;
 
 	myLabel = qFindChild<QLabel*>(myProxy, "statusAdapterName");
 	if (myLabel != NULL)
 	{
-		myLabel->setText(Util::removePacketSchedulerFromName(QString(pConn->dev_desc)).left(48));
+	  temp = pConn->dev_desc;
+	  myLabel->setText(Util::removePacketSchedulerFromName(temp));
 	}
 
 	m_pIpAddressTextBox = qFindChild<QLabel*>(myProxy, "ipAddrLabel");
@@ -303,8 +305,10 @@ void LoginStatus::updateState()
 	bool bValue;
 	QString m_status;
 	int m_XState;
+	QString temp;
 
-	bValue = m_supplicant.get1xState(QString(pConn->dev_desc), 
+	temp = pConn->dev_desc;
+	bValue = m_supplicant.get1xState(temp, 
       devName, 
       m_status,  // this is what we display on the status window
       m_XState, 
@@ -407,6 +411,7 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
 	bool bValue;
 	QString m_status;
 	int m_XState;
+	QString temp;
 
 /*
 #define TNC_CONNECTION_STATE_ACCESS_ALLOWED 2
@@ -434,7 +439,8 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
         // If it's "AUTHENTICATED" then we can ask the IMC for the posture state.
         // If it's "FAILED" we'll always report NA
         // If it's anything else, we won't update.
-	    bValue = m_supplicant.get1xState(QString(pConn->dev_desc), 
+	temp = pConn->dev_desc;
+	    bValue = m_supplicant.get1xState(temp, 
             devName, 
             m_status,  
             m_XState, 
@@ -465,7 +471,8 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
                 //tnc_allowed.png
                 m_pTNCStatusTextLabel->setText(tr("This connection is compliant."));
 				m_pTNCStatusImageText->setText(tr("ALLOWED"));
-				setPixmapLabel(m_pTNCStatusImagePic, QString("tnc_allowed.png"));
+				temp = "tnc_allowed.png";
+				setPixmapLabel(m_pTNCStatusImagePic, temp);
 				m_pTNCStatusImagePic->setHidden(false);
             }break;
 
@@ -474,7 +481,8 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
                 //tnc_isolated.png
                 m_pTNCStatusTextLabel->setText(tr("This connection has been isolated."));
 				m_pTNCStatusImageText->setText(tr("ISOLATED"));
-				setPixmapLabel(m_pTNCStatusImagePic, QString("tnc_isolated.png"));
+				temp = "tnc_isolated.png";
+				setPixmapLabel(m_pTNCStatusImagePic, temp);
 				m_pTNCStatusImagePic->setHidden(false);
             }break;
 
@@ -483,7 +491,8 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
                 //tnc_none.png
                 m_pTNCStatusTextLabel->setText(tr("This connection was not allowed on the network."));
 				m_pTNCStatusImageText->setText(tr("NONE"));
-				setPixmapLabel(m_pTNCStatusImagePic, QString("tnc_none.png"));
+				temp = "tnc_none.png";
+				setPixmapLabel(m_pTNCStatusImagePic, temp);
 				m_pTNCStatusImagePic->setHidden(false);
             }break;
 

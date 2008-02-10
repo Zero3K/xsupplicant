@@ -118,10 +118,8 @@ void XSupCalls::disconnectXSupplicant()
   {
     if (QThread::currentThread() == qApp->thread())
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Error"), 
-        tr("Can't disconnect from xsupplicant.")
-        , retcode
-        , "xsupgui_disconnect");
+      QMessageBox::critical(NULL, tr("Error"), 
+        tr("Can't disconnect from xsupplicant."));
     }
   }
 }
@@ -219,11 +217,10 @@ bool XSupCalls::createNewTrustedServer(QString &name, config_trusted_server **pT
   char *p = "WINDOWS";
   pConfig->store_type = Util::myNullStrdup(p);
 #else
-  m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("Invalid Trusted Server Config"), tr("Need location for this OS."));
+  QMessageBox::critical(NULL, tr("Invalid Trusted Server Config"), tr("Need location for this OS."));
   pConfig->location = "WHOKNOWS";
 #endif 
 
-//  freeConfigTrustedServer(&pConfig);
   (*pTServer) = pConfig;
 
   return true;
@@ -266,46 +263,6 @@ bool XSupCalls::createNewProfile(QString &name, config_profiles **m_pConfig)
   // Now save the new connection, after setting the connection name
   pConfig->name = Util::myNullStrdup(name.toAscii());
 
-/*
-  pConfig->method = (config_eap_method *)malloc(sizeof config_eap_method);
-  memset(pConfig->method, 0, sizeof(config_eap_method));
-  pConfig->method->method_num = EAP_TYPE_PEAP;
-  pConfig->method->method_data = malloc(sizeof(config_eap_peap));
-  memset(pConfig->method->method_data, 0, sizeof(config_eap_peap));
-
-  config_eap_peap *pMethod = (config_eap_peap *)pConfig->method->method_data;
-
-  pConfig->identity = Util::myNullStrdup("anonymous");
-
-  pMethod->force_peap_version = 0xff;
-  
-  if (server.isEmpty())
-  {
-    pMethod->validate_cert = 0;
-  }
-  else
-  {
-    pMethod->trusted_server = Util::myNullStrdup(server.toAscii());
-    pMethod->validate_cert = 1;
-  }
-
-  // Now allocate the structure for the eap method
-  pMethod->phase2 = (config_eap_method *) malloc(sizeof(config_eap_method));
-  memset(pMethod->phase2, NULL, sizeof(config_eap_method));
-  pMethod->phase2->method_num = EAP_TYPE_MSCHAPV2;
-  pMethod->phase2->method_data = malloc(sizeof(config_eap_mschapv2));
-  memset(pMethod->phase2->method_data, NULL, sizeof(config_eap_mschapv2));
-
-  if (this->setConfigProfile(pConfig))
-  {
-    bValue = true;
-  }
-  else
-  {
-    bValue = false;
-  }
-
-  this->freeConfigProfile(&pConfig); */
   (*m_pConfig) = pConfig;
 
   return true;
@@ -358,6 +315,7 @@ bool XSupCalls::createNewInterface(QString &name, QString &deviceDescription, QS
   }
   bValue = setConfigInterface(pConfig);
   this->freeConfigInterface(&pConfig);
+
   return bValue;
 }
 
@@ -372,14 +330,12 @@ bool XSupCalls::createNewConnectionDefaults(QString &name, config_connection **p
 {
   bool bValue = true;
   Q_ASSERT(pConfig);
-  int retval = xsupconfig_defaults_create_connection(pConfig);
 
-  if (retval != 0 || pConfig == NULL)
+  int retval = xsupconfig_defaults_create_connection(pConfig);
+  if ((retval != 0) || (pConfig == NULL))
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
-      tr("Can't create new connection '%1'.").arg(name)
-      , retval
-      , "xsupconfig_defaults_create_connection");
+    QMessageBox::critical(NULL, tr("Status Warning"), 
+      tr("Can't create new connection '%1'.").arg(name));
     bValue = false;
   }
 
@@ -397,13 +353,12 @@ bool XSupCalls::createNewTrustedServerDefaults(QString &name, config_trusted_ser
 {
   bool bValue = true;
   Q_ASSERT(pConfig);
+
   int retval = xsupconfig_defaults_create_trusted_server(pConfig);
-  if (retval != 0 || pConfig == NULL)
+  if ((retval != 0) || (pConfig == NULL))
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
-      tr("Can't create new trusted server '%1'").arg(name)
-      , retval
-      , "xsupconfig_default_create_trusted_server");
+    QMessageBox::critical(NULL, tr("Status Warning"), 
+      tr("Can't create new trusted server '%1'").arg(name));
     bValue = false;
   }
 
@@ -421,13 +376,12 @@ bool XSupCalls::createNewProfileDefaults(QString &name, config_profiles **pConfi
 {
   bool bValue = true;
   Q_ASSERT(pConfig);
+
   int retval = xsupconfig_defaults_create_profile(pConfig);
-  if (retval != 0 || pConfig == NULL)
+  if ((retval != 0) || (pConfig == NULL))
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
-      tr("Can't create new profile '%1'").arg(name)
-      , retval
-      , "xsupconfig_default_create_profile");
+    QMessageBox::critical(NULL, tr("Status Warning"), 
+			      tr("Can't create new profile '%1'").arg(name));
     bValue = false;
   }
   return bValue;
@@ -444,14 +398,13 @@ bool XSupCalls::createNewInterfaceDefaults(QString &name, config_interfaces **pC
 {
   Q_ASSERT(pConfig);
   bool bValue = true;
+
   int retval = xsupconfig_defaults_create_interface(pConfig);
-  if (retval != 0 || pConfig == NULL)
+  if ((retval != 0) || (pConfig == NULL))
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
+    QMessageBox::critical(NULL, tr("Status Warning"), 
       tr("Can't create new interface '%1'")
-      .arg(name)
-      , retval
-      , "xsupconfig_default_create_interface");
+      .arg(name));
     bValue = false;
   }
   return bValue;
@@ -474,7 +427,8 @@ void XSupCalls::getUserAndPasswordFromProfile(config_profiles *prof, QString &in
   innerUser = "";
   password = "";
   char *p = NULL;
-	config_get_pwd(prof->method, &p);
+
+  config_get_pwd(prof->method, &p);
   if (p)
   {
     password = p;
@@ -511,19 +465,17 @@ bool XSupCalls::getConfigConnectionName(QString &deviceDescription,
   bool bValue = true;
   CharC d(deviceName);
   char *pName = NULL;
-  int retval = xsupgui_request_get_conn_name_from_int(d.charPtr(), &pName);
 
+  int retval = xsupgui_request_get_conn_name_from_int(d.charPtr(), &pName);
   if (retval != 0)
   {
     if (retval != IPC_ERROR_NO_CONNECTION) // this means that there is no connection in use
     {
       if (bDisplayError)
       {
-        m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
+	QMessageBox::critical(NULL, tr("Status Warning"), 
               tr("Can't get the name of the connection used to connect to device '%1'.\n" 
-              "This means that the device isn't using a connection.\n").arg(deviceDescription)
-              , retval
-              , "xsupgui_request_get_conn_name_from_int");
+              "This means that the device isn't using a connection.\n").arg(deviceDescription));
       }
     }
     bValue = false;
@@ -537,6 +489,7 @@ bool XSupCalls::getConfigConnectionName(QString &deviceDescription,
   {
     bValue = false;
   }
+
   return bValue;
 }
 
@@ -552,16 +505,15 @@ bool XSupCalls::getSignalStrength(QString &deviceDesc, QString &deviceName, int 
   bool bValue = true;
   CharC d(deviceName);
   int retval;
-	retval = xsupgui_request_get_signal_strength_percent(d.charPtr(), &signal);
-	if (retval != 0)
+
+  retval = xsupgui_request_get_signal_strength_percent(d.charPtr(), &signal);
+  if (retval != 0)
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
+      QMessageBox::critical(NULL, tr("Status Warning"), 
             tr("Can't get signal strength for device '%1'")
-            .arg(deviceDesc)
-            , retval
-            , "xsupgui_request_get_signal_strength_percent");
+            .arg(deviceDesc));
     }
     bValue = false;
 	}
@@ -582,17 +534,16 @@ bool XSupCalls::getAssociation(QString &deviceDesc, QString &deviceName, QString
   QString text;
   CharC d(deviceName);
   int assocType;
-	int retval = xsupgui_request_get_association_type(d.charPtr(), &assocType);
+
+  int retval = xsupgui_request_get_association_type(d.charPtr(), &assocType);
   if (retval != 0)
   {
     bValue = false;
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
+      QMessageBox::critical(NULL, tr("Status Warning"), 
           tr("Can't get assocation type for device '%1'.")
-          .arg(deviceDesc)
-          , retval
-          , "xsupgui_request_get_association_type");
+          .arg(deviceDesc));
     }
     bValue = false;
   }
@@ -640,6 +591,7 @@ bool XSupCalls::getSSID(QString &deviceDesc, QString &device, QString &ssidStrin
 {
   char *ssid;
   CharC d(device);
+
   int retval = xsupgui_request_get_ssid(d.charPtr(), &ssid);
 	if (retval == REQUEST_SUCCESS)
   {
@@ -650,10 +602,8 @@ bool XSupCalls::getSSID(QString &deviceDesc, QString &device, QString &ssidStrin
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
-          tr("Can't get the SSID for device '%1'.").arg(deviceDesc)
-          , retval
-          , "xsupgui_request_get_ssid");
+      QMessageBox::critical(NULL, tr("Status Warning"), 
+          tr("Can't get the SSID for device '%1'.").arg(deviceDesc));
     }
     ssidString = "";
     return false;
@@ -672,24 +622,25 @@ bool XSupCalls::getSSID(QString &deviceDesc, QString &device, QString &ssidStrin
 bool XSupCalls::getLiveInterfaceData(QString &intName, QString &description, 
     QString &mac, bool &bWireless, bool bDisplayError)
 {
-  CharC d = intName;
+  char *d = NULL;
   bool bValue = false;
   char *pDescription  = NULL;
   char *pMac = NULL;
-  int wireless = NULL;
+  int wireless = 0;
+
   bWireless = false;
-  int retval = xsupgui_request_get_os_specific_int_data(d.charPtr(), &pDescription, &pMac, &wireless);
+  d = _strdup(intName.toAscii());
+
+  int retval = xsupgui_request_get_os_specific_int_data(d, &pDescription, &pMac, &wireless);
   // If we get an error, it should signify that the interface is already bound
   // thus no action need occur
   if (retval)
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
+      QMessageBox::critical(NULL, tr("Status Warning"), 
           tr("Can't get OS specific information about adapter '%1'.")
-          .arg(description)
-          , retval
-          , "xsupgui_request_get_os_specific_int_data");
+          .arg(description));
     }
 
     bValue = false;
@@ -701,15 +652,18 @@ bool XSupCalls::getLiveInterfaceData(QString &intName, QString &description,
       description = pDescription;
       free (pDescription);
     }
+
     if (pMac)
     {
       mac = pMac;
       free (pMac);
     }
+
     if (wireless)
     {
       bWireless = true;
     }
+
     bValue = true;
   }
   return bValue;
@@ -732,14 +686,12 @@ bool XSupCalls::enumAndSortConnections(conn_enum **pSortedConns, bool bDisplayMe
   int retval = 0;
 
   retval = xsupgui_request_enum_connections(&pConn);
-  if (retval != REQUEST_SUCCESS || pConn == NULL)
+  if ((retval != REQUEST_SUCCESS) || (pConn == NULL))
   {
     if (bDisplayMessage)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Connections Error"), 
-        tr("Can't get connections.")
-        , retval
-        , "xsupgui_request_enum_connections");
+      QMessageBox::critical(NULL, tr("Get Connections Error"), 
+        tr("Can't get connections."));
     }
   	bValue = false;
   }
@@ -767,6 +719,7 @@ bool XSupCalls::enumAndSortPossibleConnections(poss_conn_enum **pSortedConn, boo
   Q_ASSERT(pSortedConn);
   poss_conn_enum *pConn = NULL;
   int retval = 0;
+
   retval = xsupgui_request_enum_possible_connections(&pConn);
   if (retval == REQUEST_SUCCESS && pConn)
   {
@@ -776,10 +729,8 @@ bool XSupCalls::enumAndSortPossibleConnections(poss_conn_enum **pSortedConn, boo
   {
     if (bDisplayMessage)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Connections Error"), 
-        tr("Can't get connections.")
-        , retval
-        , "xsupgui_request_enum_possible_connections");
+      QMessageBox::critical(NULL, tr("Get Connections Error"), 
+        tr("Can't get connections."));
     }
 		bValue = false;
 	}
@@ -1004,6 +955,7 @@ bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, QString &deviceNam
 {
   CharC d(deviceName);
   Q_ASSERT(pssids);
+
   int retval = xsupgui_request_enum_ssids(d.charPtr(), pssids);
   if (retval == REQUEST_SUCCESS && *pssids)
 	{
@@ -1011,11 +963,9 @@ bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, QString &deviceNam
 	}
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get SSIDs Error"), 
+    QMessageBox::critical(NULL, tr("Get SSIDs Error"), 
       tr("Can't get SSIDs for device %1\n")
-      .arg(deviceDescription)
-      ,retval
-      ,"xsupgui_request_enum_ssids");
+      .arg(deviceDescription));
 		return false;
 	}
 }
@@ -1029,6 +979,7 @@ bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, QString &deviceNam
 bool XSupCalls::enumProfiles(profile_enum **pProfiles, bool bDisplayError)
 {
   Q_ASSERT(pProfiles);
+
   int retval = xsupgui_request_enum_profiles(pProfiles);
   if (retval == REQUEST_SUCCESS && *pProfiles)
   {
@@ -1038,10 +989,8 @@ bool XSupCalls::enumProfiles(profile_enum **pProfiles, bool bDisplayError)
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Profiles Error"), 
-        tr("Can't get profiles.")
-        , retval
-        , "xsupgui_request_enum_profiles");
+      QMessageBox::critical(NULL, tr("Get Profiles Error"), 
+        tr("Can't get profiles."));
     }
 		return false;
 	}
@@ -1057,7 +1006,9 @@ bool XSupCalls::getConfigProfile(QString &profileName, config_profiles **pConfig
 {
   Q_ASSERT(pConfig);
   CharC pName(profileName);
+
   *pConfig = NULL;
+
   int retval = xsupgui_request_get_profile_config(pName.charPtr(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
@@ -1067,10 +1018,8 @@ bool XSupCalls::getConfigProfile(QString &profileName, config_profiles **pConfig
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Profiles Error"), 
-        tr("Can't get profile configuration for profile '%1'.").arg(profileName)
-        , retval
-        , "xsupgui_request_get_profile_config");
+      QMessageBox::critical(NULL, tr("Get Profiles Error"), 
+        tr("Can't get profile configuration for profile '%1'.").arg(profileName));
     }
 		return false;
 	}
@@ -1085,6 +1034,7 @@ bool XSupCalls::getConfigProfile(QString &profileName, config_profiles **pConfig
 bool XSupCalls::enumTrustedServers(trusted_servers_enum **pServers, bool bDisplayError)
 {
   Q_ASSERT(pServers);
+
   int retval = xsupgui_request_enum_trusted_servers(pServers);
   if (retval == REQUEST_SUCCESS && *pServers)
   {
@@ -1094,10 +1044,8 @@ bool XSupCalls::enumTrustedServers(trusted_servers_enum **pServers, bool bDispla
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Servers Error"), 
-        tr("Can't enumerate trusted servers")
-        , retval
-        , "xsupgui_request_enum_trusted_servers");
+      QMessageBox::critical(NULL, tr("Get Servers Error"), 
+        tr("Can't enumerate trusted servers"));
     }
     return false;
 	}
@@ -1123,10 +1071,8 @@ bool XSupCalls::enumCertificates(cert_enum **pCertificates, bool bDisplayError)
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Certificates Error"), 
-        tr("Can't enumerate Root CA Certificates.")
-        , retval
-        , "xsupgui_request_enum_root_ca_certs");
+      QMessageBox::critical(NULL, tr("Get Certificates Error"), 
+        tr("Can't enumerate Root CA Certificates."));
     }
     return false;
 	}
@@ -1142,13 +1088,18 @@ bool XSupCalls::enumCertificates(cert_enum **pCertificates, bool bDisplayError)
 */
 bool XSupCalls::getCertInfo(QString &storetype, QString &location, cert_info **certInfo, bool bDisplayError)
 {
-  CharC l = location;
-  CharC s = storetype;
+  char *l = NULL;
+  char *s = NULL;
+
   if (location.isEmpty())
   {
     return false;
   }
-  int retval = xsupgui_request_ca_certificate_info(s.charPtr(), l.charPtr(), certInfo);
+
+  l = _strdup(location.toAscii());
+  s = _strdup(storetype.toAscii());
+
+  int retval = xsupgui_request_ca_certificate_info(s, l, certInfo);
   if (retval == REQUEST_SUCCESS)
 	{
     return true;
@@ -1157,10 +1108,8 @@ bool XSupCalls::getCertInfo(QString &storetype, QString &location, cert_info **c
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Certificates Error"), 
-        tr("Can't get certificate information for storetype %1 and location '%2'.").arg(storetype).arg(location)
-        , retval
-        , "xsupgui_request_ca_certificate");
+      QMessageBox::critical(NULL, tr("Get Certificates Error"), 
+        tr("Can't get certificate information for storetype %1 and location '%2'.").arg(storetype).arg(location));
     }
     return false;
 	}
@@ -1178,11 +1127,13 @@ bool XSupCalls::getConfigConnection(QString &connection, config_connection **pCo
   Q_ASSERT(pConfig);
   CharC conn(connection);
   *pConfig = NULL;
+
   if (connection.isEmpty())
   {
     Q_ASSERT(!connection.isEmpty());
     return false;
   }
+
   int retval = xsupgui_request_get_connection_config(conn.charPtr(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
@@ -1192,10 +1143,8 @@ bool XSupCalls::getConfigConnection(QString &connection, config_connection **pCo
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Connections Config Error"), 
-        tr("Can't get connection configuration for connection '%1'").arg(connection)
-        , retval
-        , "xsupgui_request_get_connection_config");
+      QMessageBox::critical(NULL, tr("Get Connections Config Error"), 
+        tr("Can't get connection configuration for connection '%1'").arg(connection));
     }
 		return false;
 	}
@@ -1213,6 +1162,7 @@ bool XSupCalls::getConfigTrustedServer(QString &server, config_trusted_server **
   Q_ASSERT(pConfig);
   CharC srvr(server);
   *pConfig = NULL;
+
   int retval = xsupgui_request_get_trusted_server_config(srvr.charPtr(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
@@ -1222,10 +1172,8 @@ bool XSupCalls::getConfigTrustedServer(QString &server, config_trusted_server **
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Connections Config Error"), 
-        tr("Can't get connection configuration for trusted server '%1'.").arg(server)
-        , retval
-        , "xsupgui_request_get_trusted_server_config");
+      QMessageBox::critical(NULL, tr("Get Connections Config Error"), 
+        tr("Can't get connection configuration for trusted server '%1'.").arg(server));
     }
 		return false;
 	}
@@ -1251,10 +1199,8 @@ bool XSupCalls::getConnectionInformation(QString &connectionName, int &authType,
   {
     if(bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Status Warning"), 
-        tr("Can't get connection information for connection '%1'").arg(connectionName)
-        , retval
-        , "xsupgui_request_get_connection_upw");
+      QMessageBox::critical(NULL, tr("Status Warning"), 
+        tr("Can't get connection information for connection '%1'").arg(connectionName));
     }
     bValue = false;
   }
@@ -1310,8 +1256,9 @@ bool XSupCalls::getDefaultSettings(config_globals **pGlobals)
 bool XSupCalls::getAuthTime(QString &deviceName, long int &timeauthed, bool bDisplayError)
 {
   CharC d(deviceName);
+
   int retval = xsupgui_request_get_seconds_authenticated(d.charPtr(), &timeauthed);
-	if (retval == REQUEST_SUCCESS)
+  if (retval == REQUEST_SUCCESS)
   {
     return true;
   }
@@ -1320,10 +1267,8 @@ bool XSupCalls::getAuthTime(QString &deviceName, long int &timeauthed, bool bDis
     // No message
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Error Getting Time"), 
-        tr("Can't retrieve the authenticated time.")
-        , retval
-        , "xsupgui_request_get_seconds_authenticated");
+      QMessageBox::critical(NULL, tr("Error Getting Time"), 
+        tr("Can't retrieve the authenticated time."));
     }
     return false;
 	}
@@ -1342,7 +1287,7 @@ bool XSupCalls::getIPInfo(QString &deviceDescription, IPInfoClass &outInfo, bool
   CharC d(deviceDescription);
 
   int retval = xsupgui_request_get_ip_info(d.charPtr(), &info);
-	if (retval == REQUEST_SUCCESS)
+  if (retval == REQUEST_SUCCESS)
   {
     outInfo.setInfo(info);
 
@@ -1353,10 +1298,8 @@ bool XSupCalls::getIPInfo(QString &deviceDescription, IPInfoClass &outInfo, bool
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Error getting device info"),
-        tr("An error occurred while gettting the IP info for device '%1'.").arg(deviceDescription)
-          ,retval
-          ,"xsupgui_request_get_ip_info");
+      QMessageBox::critical(NULL, tr("Error getting device info"),
+        tr("An error occurred while gettting the IP info for device '%1'.").arg(deviceDescription));
     }
 
 	if (info != NULL) xsupgui_request_free_ip_info(&info);
@@ -1377,22 +1320,21 @@ bool XSupCalls::getDeviceName(const QString &deviceDescription, QString &deviceN
   QString text;
   char *pDeviceName = NULL;
   CharC d(deviceDescription);
+
   // Using the device description - get the device name
   int retval = xsupgui_request_get_devname(d.charPtr(), &pDeviceName);
 	if (retval != REQUEST_SUCCESS)
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get device info"),
+      QMessageBox::critical(NULL, tr("Get device info"),
         tr("An error occurred while getting the device name for device '%1'\n%2\n%3\n%4\n%5\n%6\n\n")
         .arg(deviceDescription)
         .arg(tr("This has multiple causes:"))
         .arg(tr("1. Your network card is disabled."))
         .arg(tr("2. Your configuration file (*.conf) is incorrectly formatted."))
         .arg(tr("3. A device with the associated <MAC> address isn't available on this computer."))
-        .arg(tr("Select another connection or fix the problem before proceeding."))
-        ,retval
-        ,"xsupgui_request_get_devname");
+        .arg(tr("Select another connection or fix the problem before proceeding.")));
     }
     return false;
 	}
@@ -1424,16 +1366,14 @@ bool XSupCalls::getDeviceDescription(const QString &deviceName, QString &deviceD
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get device info"),
+      QMessageBox::critical(NULL, tr("Get device info"),
         tr("An error occurred while getting the device description for device '%1'\n%2\n%3\n%4\n%5\n%6\n\n")
         .arg(deviceDescription)
         .arg(tr("This has multiple causes:"))
         .arg(tr("1. Your network card is disabled."))
         .arg(tr("2. Your configuration file (*.conf) is incorrectly formatted."))
         .arg(tr("3. A device with the associated <MAC> address isn't available on this computer."))
-        .arg(tr("Select another connection or fix the problem before proceeding."))
-        ,retval
-        ,"xsupgui_request_get_devdesc");
+        .arg(tr("Select another connection or fix the problem before proceeding.")));
     }
     return false;
 	}
@@ -1459,15 +1399,14 @@ bool XSupCalls::getEncryption(QString &device, QString &encryptionType, bool bDi
   bool bValue = true;
   CharC d(device);
   int keyType = 0;
-	int retval = xsupgui_request_get_pairwise_key_type(d.charPtr(), &keyType);
+
+  int retval = xsupgui_request_get_pairwise_key_type(d.charPtr(), &keyType);
   if (retval)
   {
     if (bDisplayError)
     {
-        m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Pairwise Key Type"),
-          tr("An error occurred while getting the encryption type for device '%1'.\n\n").arg(device)
-          , retval
-          , "xsupgui_request_get_pairwise_key_type");
+      QMessageBox::critical(NULL, tr("Get Pairwise Key Type"),
+          tr("An error occurred while getting the encryption type for device '%1'.\n\n").arg(device));
     }
     bValue = false;
   }
@@ -1537,15 +1476,14 @@ bool XSupCalls::getPhysicalState(QString &deviceDescription,
 {
   bool bValue = true;
   CharC d(deviceName);
+
   int retval = xsupgui_request_get_physical_state(d.charPtr(), &state);
   if (retval)
   {
     if (bDisplayError)
     {
-        m_message.DisplayMessage( MessageClass::ERROR_TYPE, tr("Error getting physical device state"),
-          tr("An error was returned while getting the physical state for device '%1'.").arg(deviceDescription)
-          , retval
-          , "xsupgui_request_get_physical_state");
+      QMessageBox::critical(NULL, tr("Error getting physical device state"),
+          tr("An error was returned while getting the physical state for device '%1'.").arg(deviceDescription));
     }
     bValue = false;
   }
@@ -1642,10 +1580,8 @@ bool XSupCalls::get1xState(QString &deviceDescription,
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( MessageClass::ERROR_TYPE, tr("Error getting 802.1X state"),
-        tr("An error was returned while getting the 802.1X state for device '%1'.\n").arg(deviceDescription)
-        , retval
-        , "xsupgui_request_get_1x_state");
+      QMessageBox::critical(NULL, tr("Error getting 802.1X state"),
+        tr("An error was returned while getting the 802.1X state for device '%1'.\n").arg(deviceDescription));
     }
     bValue = false;
   }
@@ -1720,9 +1656,9 @@ void XSupCalls::map1XState(int state, QString &status)
 bool XSupCalls::enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDisplayError)
 {
   Q_ASSERT(pInterfaceData);
-	int retval = 0;
-	retval = xsupgui_request_enum_ints_config(pInterfaceData);
-
+  int retval = 0;
+	
+  retval = xsupgui_request_enum_ints_config(pInterfaceData);
   if (retval == REQUEST_SUCCESS && *pInterfaceData)
   {
     return true;
@@ -1731,10 +1667,8 @@ bool XSupCalls::enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDis
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Enumerate Interfaces (adapters) Error"), 
-        tr("No interfaces(Linux)/adapters(Windows) defined in the configuration file.")
-        , retval
-        , "xsupgui_request_enum_ints_config");
+      QMessageBox::critical(NULL, tr("Enumerate Interfaces (adapters) Error"), 
+        tr("No interfaces(Linux)/adapters(Windows) defined in the configuration file."));
     }
 		return false;
 	}
@@ -1749,8 +1683,8 @@ bool XSupCalls::enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDis
 bool XSupCalls::enumLiveInterfaces(int_enum **pInterfaceData, bool bDisplayError)
 {
   Q_ASSERT(pInterfaceData);
-	int retval = xsupgui_request_enum_live_ints(pInterfaceData);
 
+  int retval = xsupgui_request_enum_live_ints(pInterfaceData);
   if (retval == REQUEST_SUCCESS && *pInterfaceData)
   {
     return true;
@@ -1759,10 +1693,8 @@ bool XSupCalls::enumLiveInterfaces(int_enum **pInterfaceData, bool bDisplayError
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Live Interfaces Error"), 
-        tr("Can't get the list of interfaces.\n")
-        , retval
-        , "xsupgui_request_enum_live_ints");
+      QMessageBox::critical(NULL, tr("Get Live Interfaces Error"), 
+        tr("Can't get the list of interfaces.\n"));
     }
 	}
   return false;
@@ -1780,7 +1712,7 @@ bool XSupCalls::getConfigInterface(QString &interfaceName, config_interfaces **p
 {
   Q_ASSERT(pInterfaceData);
 
-	int retval = 0;
+  int retval = 0;
   CharC i(interfaceName);
 
   retval = xsupgui_request_get_interface_config(i.charPtr(), pInterfaceData);
@@ -1793,10 +1725,8 @@ bool XSupCalls::getConfigInterface(QString &interfaceName, config_interfaces **p
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get interface configuration error"), 
-        tr("Can't get the configuration data for interface '%1'.").arg(interfaceName)
-        , retval
-        , "xsupgui_request_get_interface_config");
+      QMessageBox::critical(NULL, tr("Get interface configuration error"), 
+        tr("Can't get the configuration data for interface '%1'.").arg(interfaceName));
     }
 		return false;
 	}
@@ -1812,7 +1742,8 @@ bool XSupCalls::getConfigInterface(QString &interfaceName, config_interfaces **p
 bool XSupCalls::getConfigGlobals(config_globals **pGlobals, bool bDisplayError)
 {
   Q_ASSERT(pGlobals);
-	int retval = xsupgui_request_get_globals_config(pGlobals);
+
+  int retval = xsupgui_request_get_globals_config(pGlobals);
   if (retval == REQUEST_SUCCESS && *pGlobals)
   {
     return true;
@@ -1821,10 +1752,8 @@ bool XSupCalls::getConfigGlobals(config_globals **pGlobals, bool bDisplayError)
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Globals Error"),
-        tr("Can't get advanced/global settings.")
-        , retval
-        , "xsupgui_request_get_globals_config");
+      QMessageBox::critical(NULL, tr("Get Globals Error"),
+        tr("Can't get advanced/global settings."));
     }
 		return false;
 	}
@@ -1850,10 +1779,8 @@ bool XSupCalls::setConfigGlobals(config_globals *pGlobals)
   }
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set Globals Error"), 
-      tr("Can't set advanced/global settings.\n")
-      , retval
-      , "xsupgui_request_set_globals_config");
+    QMessageBox::critical(NULL, tr("Set Globals Error"), 
+      tr("Can't set advanced/global settings.\n"));
 		return false;
 	}
 }
@@ -1869,12 +1796,15 @@ bool XSupCalls::applyPriorities(conn_enum *pConns)
   Q_ASSERT(pConns);
   config_connection *pConfig = NULL;
   int i = 0;
+  QString temp;
+
   // Must first read the entire configuration
   if (pConns)
   {
     while (pConns[i].name)
     {
-      if (!getConfigConnection(QString(pConns[i].name), &pConfig))
+      temp = pConns[i].name;
+      if (!getConfigConnection(temp, &pConfig))
       {
         continue; // no message necessary - already shown in above call
       }
@@ -1909,10 +1839,8 @@ bool XSupCalls::setConfigConnection(config_connection *pConfig)
   }
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set connection configuration"),
-      tr("An error occurred while setting the connection configuration for connection '%1'.").arg(pConfig->name)
-      , retval
-      , "xsupgui_request_set_connection_config");
+    QMessageBox::critical(NULL, tr("Set connection configuration"),
+      tr("An error occurred while setting the connection configuration for connection '%1'.").arg(pConfig->name));
   }
 
   return bValue;
@@ -1931,6 +1859,7 @@ bool XSupCalls::setConnection(QString &deviceName, QString &connectionName)
   bool bValue = false;
   CharC d(deviceName);
   CharC c(connectionName);
+
   int retval = xsupgui_request_set_connection(d.charPtr(), c.charPtr());
   if (retval == REQUEST_SUCCESS)
   {
@@ -1944,11 +1873,9 @@ bool XSupCalls::setConnection(QString &deviceName, QString &connectionName)
     }
     else
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set connection info"),
+      QMessageBox::critical(NULL, tr("Set connection info"),
         tr("An error occurred while setting the connection information for connection '%1' and device '%2'.\n")
-        .arg(connectionName).arg(deviceName)
-        , retval
-        , "xsupgui_request_set_connection");
+        .arg(connectionName).arg(deviceName));
     }
   }
   return bValue;
@@ -1975,8 +1902,9 @@ void XSupCalls::getAndDisplayErrors()
         errors += QString ("- %1\n").arg(msgs[i].errmsgs);
         i++;
       }
+
       // This box needs to be modeless - I have to create my own dialog box to go modeless
-      m_message.DisplayMessageModeless(tr("XSupplicant Error Summary"),
+      QMessageBox::critical(NULL, tr("XSupplicant Error Summary"),
         tr("The following errors were returned from XSupplicant while starting up or attempting to connect.\n%1")
         .arg(errors),
         QString("top"));
@@ -1984,10 +1912,8 @@ void XSupCalls::getAndDisplayErrors()
   }
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Get Error Message error"),
-      tr("An error occurred while checking for errors from the XSupplicant.")
-      , retval
-      , "xsupgui_request_get_error_msgs");
+    QMessageBox::critical(NULL, tr("Get Error Message error"),
+      tr("An error occurred while checking for errors from the XSupplicant."));
   }
 
   xsupgui_request_free_error_msgs(&msgs);
@@ -2003,6 +1929,7 @@ bool XSupCalls::setConfigTrustedServer(config_trusted_server *pConfig)
 {
   Q_ASSERT(pConfig);
   bool bValue = false;
+
   int retval = xsupgui_request_set_trusted_server_config(pConfig);
   if (retval == REQUEST_SUCCESS)
   {
@@ -2010,11 +1937,9 @@ bool XSupCalls::setConfigTrustedServer(config_trusted_server *pConfig)
   }
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set trusted server configuration"),
+    QMessageBox::critical(NULL, tr("Set trusted server configuration"),
       tr("An error occurred while setting the trusted server configuration for server '%1'.\n")
-      .arg(pConfig->name)
-      , retval
-      , "xsupgui_request_set_trusted_server");
+      .arg(pConfig->name));
   }
   return bValue;
 }
@@ -2029,6 +1954,7 @@ bool XSupCalls::setConfigProfile(config_profiles *pConfig)
 {
   Q_ASSERT(pConfig);
   bool bValue = false;
+
   int retval = xsupgui_request_set_profile_config(pConfig);
   if (retval == REQUEST_SUCCESS)
   {
@@ -2036,11 +1962,9 @@ bool XSupCalls::setConfigProfile(config_profiles *pConfig)
   }
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set profile configuration"),
+    QMessageBox::critical(NULL, tr("Set profile configuration"),
       tr("An error occurred while setting the connection configuration for profile '%1'.")
-      .arg(pConfig->name)
-      , retval
-      , "xsupgui_request_set_profile_config");
+      .arg(pConfig->name));
   }
   return bValue;
 }
@@ -2062,10 +1986,8 @@ bool XSupCalls::setConfigInterface(config_interfaces *pConfig)
   }
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set interface configuration"),
-      tr("An error occurred while setting the interface configuration for interface '%1'.").arg(pConfig->description)
-      , retval
-      , "xsupgui_request_set_interface");
+    QMessageBox::critical(NULL, tr("Set interface configuration"),
+      tr("An error occurred while setting the interface configuration for interface '%1'.").arg(pConfig->description));
   }
   return bValue;
 }
@@ -2108,20 +2030,18 @@ bool XSupCalls::setUserNameAndPassword(const QString &connectionName, const QStr
   }
   else if (retval == IPC_ERROR_INVALID_PROF_NAME)
   {
-	  m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set connection info"),
+    QMessageBox::critical(NULL, tr("Set connection info"),
       tr("Unable to locate the profile for this connection.  Please verify that you have a valid profile defined for connection '%1'.")
-      .arg(connectionName)
-      , retval
-      , "xsupgui_request_set_connection_upw");
+      .arg(connectionName));
+
 	  return false;
   }
   else
   {
-	  m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set connection info"),
+    QMessageBox::critical(NULL, tr("Set connection info"),
       tr("An error occurred while setting the user name and password for connection '%1'.")
-      .arg(connectionName)
-      , retval
-      , "xsupgui_request_set_connection_upw");
+      .arg(connectionName));
+
     return false;
 	}
 }
@@ -2136,14 +2056,15 @@ bool XSupCalls::setUserNameAndPassword(const QString &connectionName, const QStr
 void XSupCalls::setPasswordIntoProfile(config_profiles *prof, const QString &password)
 {
   Q_ASSERT(prof);
-  CharC p = password;
-  int retval = config_change_pwd(prof->method, p.charPtr());
+  char *p = NULL;
+
+  p = _strdup(password.toAscii());
+
+  int retval = config_change_pwd(prof->method, p);
   if (retval != XENONE)
   {
-	  m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set password"),
-      tr("An error occurred while setting the tunnel password for profile '%1'.\n").arg(prof->name)
-      , retval
-      , "config_change_pwd");
+    QMessageBox::critical(NULL, tr("Set password"),
+				    tr("An error occurred while setting the tunnel password for profile '%1'.\n").arg(prof->name));
   }
 }
 
@@ -2156,8 +2077,11 @@ void XSupCalls::setPasswordIntoProfile(config_profiles *prof, const QString &pas
 */
 void XSupCalls::setUserNameIntoProfile(config_profiles *prof, const QString &userName)
 {
+  char *u = NULL;
   Q_ASSERT(prof);
-  CharC u = userName;
+  
+  u = _strdup(userName.toAscii());
+
   if (prof->method->method_num == EAP_TYPE_MD5)
   {
     Util::myFree(&prof->identity);
@@ -2165,13 +2089,11 @@ void XSupCalls::setUserNameIntoProfile(config_profiles *prof, const QString &use
   }
   else
   {
-    int retval = config_set_user(prof->method, u.charPtr());
+    int retval = config_set_user(prof->method, u);
     if (retval != XENONE)
     {
-  	  m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Set user name"),
-        tr("An error occurred while setting the tunnel user name for profile '%1'.").arg(prof->name)
-        , retval
-        , "config_set_user");
+      QMessageBox::critical(NULL, tr("Set user name"),
+        tr("An error occurred while setting the tunnel user name for profile '%1'.").arg(prof->name));
     }
   }
 }
@@ -2184,16 +2106,18 @@ void XSupCalls::setUserNameIntoProfile(config_profiles *prof, const QString &use
 */
 bool XSupCalls::logoffWired(QString &device, QString &description)
 {
-	int retval;
-  CharC d(device);
-	retval = xsupgui_request_logoff(d.charPtr());
+  int retval;
+  char *d = NULL;
+
+  d = _strdup(device.toAscii());
+
+  retval = xsupgui_request_logoff(d);
   if (retval != REQUEST_SUCCESS)
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Disconnect Wired"),
+    QMessageBox::critical(NULL, tr("Disconnect Wired"),
       tr("An error occurred while logging off device '%1'.")
-      .arg(description)
-      , retval
-      , "xsupgui_request_logoff");
+      .arg(description));
+
     return false;
 	}
   return true;
@@ -2208,15 +2132,16 @@ bool XSupCalls::logoffWired(QString &device, QString &description)
 */
 bool XSupCalls::disassociateWireless(QString &device, QString &description)
 {
-	int retval;
-  CharC d(device);
-	retval = xsupgui_request_set_disassociate(d.charPtr(), 0);
+  int retval;
+  char *d = NULL;
+
+  d = _strdup(device.toAscii());
+
+  retval = xsupgui_request_set_disassociate(d, 0);
   if (retval != REQUEST_SUCCESS)
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Disconnect Wireless"),
-      tr("An error occurred while disassociating device '%1'.\n").arg(description)
-      , retval
-      , "xsupgui_request_set_disassociate");
+    QMessageBox::critical(NULL, tr("Disconnect Wireless"),
+      tr("An error occurred while disassociating device '%1'.\n").arg(description));
     return false;
 	}
   return true;
@@ -2231,15 +2156,17 @@ bool XSupCalls::disassociateWireless(QString &device, QString &description)
 */
 bool XSupCalls::pauseWireless(QString &device, QString &description)
 {
-	int retval;
-  CharC d(device);
-	retval = xsupgui_request_stop(d.charPtr());
+  int retval;
+  char *d = NULL;
+
+ d = _strdup(device.toAscii());
+
+  retval = xsupgui_request_stop(d);
   if (retval != REQUEST_SUCCESS)
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("XSupplicant Pause Wireless Error"),
-      tr("An error occurred while attempting to 'pause' device '%1'.\n").arg(description)
-      , retval
-      , "xsupgui_request_stop");
+    QMessageBox::critical(NULL, tr("XSupplicant Pause Wireless Error"),
+      tr("An error occurred while attempting to 'pause' device '%1'.\n").arg(description));
+
     return false;
 	}
   return true;
@@ -2260,10 +2187,8 @@ bool XSupCalls::connectEventListener(bool bDisplayMessage)
     {
       if (bDisplayMessage)
       {
-        m_message.DisplayMessage( m_message.ERROR_TYPE, tr("XSupplicant Event System Error"),
-          tr("An error occurred while attempting to connect to the XSupplicant Event system\n")
-          , retval
-          , "xsupgui_connect_event_listener");
+	QMessageBox::critical(NULL, tr("XSupplicant Event System Error"),
+          tr("An error occurred while attempting to connect to the XSupplicant Event system\n"));
       }
       return false;
 	  }
@@ -2289,11 +2214,9 @@ bool XSupCalls::disconnectEventListener()
     {
       if (QThread::currentThread() == qApp->thread())
       {
-        m_message.DisplayMessage( m_message.ERROR_TYPE, tr("XSupplicant Event Listener Error"),
+	QMessageBox::critical(NULL, tr("XSupplicant Event Listener Error"),
           tr("An error occurred while attempting to disconnect from the XSupplicant Event system."
-          "This usually means handle couldn't be closed\n")
-          , retval
-          , "xsupgui_disconnect_event_listener");
+          "This usually means handle couldn't be closed\n"));
         return false;
 	    }
     }
@@ -2364,6 +2287,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
   bool bCode = true;
   int sm, oldstate, newstate;
   unsigned int tncconnectionid = 0xFFFFFFFF;
+  QString temp;
 
   /*
   text = QString(tr("Event %1")).arg(eventCode);
@@ -2485,7 +2409,8 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 			        break;
 
 			case IPC_EVENT_UI_AUTH_TIMEOUT:
-				e.sendAuthTimeout(QString(interfaces));
+			  temp = interfaces;
+				e.sendAuthTimeout(temp);
 				break;
 
             case IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN: 
@@ -2507,7 +2432,8 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				break;
 
 			case IPC_EVENT_BAD_PSK:
-				e.sendBadPSK(QString(value));
+			  temp = value;
+				e.sendBadPSK(temp);
 				break;
 
 			case IPC_EVENT_UI_LINK_UP:
@@ -2676,10 +2602,8 @@ bool XSupCalls::TNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t r
   {
     if (bDisplayError)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Remediation Response Error"), 
-        tr("Got an error telling the XSupplicant to fix the remediation issues issues.")
-        , retval
-        , "xsupgui_request_answer_tnc_ui_request");
+      QMessageBox::critical(NULL, tr("Remediation Response Error"), 
+        tr("Got an error telling the XSupplicant to fix the remediation issues issues."));
     }
     return false;
   }
@@ -2768,23 +2692,24 @@ void XSupCalls::sendXStatus(Emitter &e)
 bool XSupCalls::startWirelessScan(QString &deviceDescription)
 {
   QString deviceName;
+  char *d = NULL;
+
   bool bval = getDeviceName(deviceDescription, deviceName, true);
   if (!bval)
   {
     return false;
   }
-  CharC d = deviceName;
-	int retval = xsupgui_request_wireless_scan(d.charPtr(), FALSE);
+
+  d = _strdup(deviceName.toAscii());
+  int retval = xsupgui_request_wireless_scan(d, FALSE);
   if (retval == REQUEST_SUCCESS)
   {
     return true;
   }
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Scan for Wireless Access Points"), 
-      tr("Can't start a scan for wireless access points on adapter '%1'.").arg(deviceDescription)
-      , retval
-      , "xsupgui_request_wireless_scan");
+    QMessageBox::critical(NULL, tr("Scan for Wireless Access Points"), 
+      tr("Can't start a scan for wireless access points on adapter '%1'.").arg(deviceDescription));
 		return false;
   }
 }
@@ -2801,9 +2726,11 @@ bool XSupCalls::startWirelessScan(QString &deviceDescription)
 */
 bool XSupCalls::deleteConnectionConfig(QString &name)
 {
-  CharC n(name);
+  char *n = NULL;
 
-  int retval = xsupgui_request_delete_connection_config(n.charPtr());
+  n = _strdup(name.toAscii());
+
+  int retval = xsupgui_request_delete_connection_config(n);
   if (retval == REQUEST_SUCCESS)
   {
     writeConfig();
@@ -2813,20 +2740,16 @@ bool XSupCalls::deleteConnectionConfig(QString &name)
   {
     if (retval == IPC_ERROR_CANT_DEL_CONN_IN_USE)
     {
-		m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Can't delete"), tr("You cannot delete this connection because it is still in use.\nPlease disconnect from the network, and try again."),
-			retval,
-			"xsupgui_request_delete_connection_config");
+      QMessageBox::critical(NULL, tr("Can't delete"), tr("You cannot delete this connection because it is still in use.\nPlease disconnect from the network, and try again."));
 		return false;
 	}
     else
     {
 		if (retval == IPC_ERROR_INVALID_CONN_NAME) return true;  // This means the configuration wasn't written yet.
 
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Error Deleting Connection"), 
+		QMessageBox::critical(NULL, tr("Error Deleting Connection"), 
         tr("Can't delete connection '%1' from the configuration file.")
-        .arg(name)
-        , retval
-        , "xsupgui_request_delete_connection_config");
+        .arg(name));
     }
 		return false;
   }
@@ -2839,10 +2762,12 @@ bool XSupCalls::deleteConnectionConfig(QString &name)
 */
 bool XSupCalls::deleteProfileConfig(QString &name)
 {  
-  CharC n(name);
+  char *n = NULL;
   int retval = REQUEST_SUCCESS;
 
-  retval = xsupgui_request_delete_profile_config(n.charPtr(), 0);
+  n = _strdup(name.toAscii());
+
+  retval = xsupgui_request_delete_profile_config(n, 0);
 
   if (retval == REQUEST_SUCCESS)
   {
@@ -2852,20 +2777,16 @@ bool XSupCalls::deleteProfileConfig(QString &name)
 
   if (retval == IPC_ERROR_STILL_IN_USE)
   {
-	  m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Delete a Profile"),
-		  tr("The profile '%1' is still in use by one or more connections.  Please remove it from any connections and try again.").arg(name),
-		  retval,
-		  "xsupgui_request_delete_profile_config");
+    QMessageBox::critical(NULL, tr("Delete a Profile"),
+		  tr("The profile '%1' is still in use by one or more connections.  Please remove it from any connections and try again.").arg(name));
 	return false;
   }
   else
   {
 	  if (retval == IPC_ERROR_INVALID_PROF_NAME) return true;  // This means the profile wasn't written yet.  (Which means it was deleted. ;)
 
-      m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Delete a Profile"), 
-        tr("Can't delete profile '%1'from the configuration file.\n").arg(name)
-        , retval
-        , "xsupgui_request_delete_profile_config");
+	  QMessageBox::critical(NULL, tr("Delete a Profile"), 
+        tr("Can't delete profile '%1'from the configuration file.\n").arg(name));
 		  return false;
   }
 
@@ -2889,19 +2810,16 @@ bool XSupCalls::deleteTrustedServerConfig(QString &name)
   }
   else if (retval == IPC_ERROR_STILL_IN_USE)
   {
-	  m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Delete a Trusted Server"),
-		  tr("Can't delete trusted server '%1' because it is still in use by one or more profiles.").arg(name),
-		  retval, "xsupgui_request_delete_trusted_server_config");
+    QMessageBox::critical(NULL, tr("Delete a Trusted Server"),
+		  tr("Can't delete trusted server '%1' because it is still in use by one or more profiles.").arg(name));
 	  return false;
   }
   else
   {
 	  if (retval == IPC_ERROR_INVALID_TRUSTED_SVR) return true;  // Means the trusted server wasn't written yet.
 
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Delete a Trusted Server"), 
-      tr("Can't delete trusted server '%1'from the configuration file.\n").arg(name)
-      , retval
-      , "xsupgui_request_delete_trusted_server_config");
+	  QMessageBox::critical(NULL, tr("Delete a Trusted Server"), 
+      tr("Can't delete trusted server '%1'from the configuration file.\n").arg(name));
   return false;
   }
 
@@ -3085,6 +3003,7 @@ bool XSupCalls::writeConfig()
   {
     case QMessageBox::Cancel:
       return false;
+
     case QMessageBox::No:
     {
       tempFile = QString("%1/%2").arg(QApplication::applicationDirPath()).arg("testconfig.conf");
@@ -3092,11 +3011,15 @@ bool XSupCalls::writeConfig()
       retval = xsupgui_request_write_config(n.charPtr());
       break;
     }
+
     case QMessageBox::Yes:
     {
       retval = xsupgui_request_write_config(NULL);
       break;
     }
+    
+  default:
+    return false;
   }
   if (retval == REQUEST_SUCCESS)
   {
@@ -3104,10 +3027,8 @@ bool XSupCalls::writeConfig()
   }
   else
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Write Configuration"), 
-      tr("Can't write the supplicant configuration file.\n")
-      , retval
-      , "xsupgui_request_write_config");
+    QMessageBox::critical(NULL, tr("Write Configuration"), 
+      tr("Can't write the supplicant configuration file.\n"));
   return false;
   }
 }
@@ -3116,16 +3037,15 @@ bool XSupCalls::getAndCheckSupplicantVersion(QString &fullVersion, QString &numb
 {
   char *pVersion = NULL;
   bool bValue = true;
+
   int retval = xsupgui_request_version_string(&pVersion);
   if (retval)
   {
     if (bDisplay)
     {
-      m_message.DisplayMessage( m_message.ERROR_TYPE, 
+      QMessageBox::critical(NULL, 
         tr("XSupplicant Version Info"), 
-        tr("The XSupplicant version information could not be read. You cannot proceed.")
-        , retval
-        , "xsupgui_request_version_string");
+        tr("The XSupplicant version information could not be read. You cannot proceed."));
     }
     fullVersion = tr("Unknown");
     numberString = tr("Unknown");
@@ -3160,7 +3080,7 @@ bool XSupCalls::checkSupplicantVersion(QString &numberString)
   QStringList versionInfo = temp.split(".");
   if (versionInfo.size() != 4)
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, 
+    QMessageBox::critical(NULL, 
       tr("XSupplicant Version Info"), 
       tr("The XSupplicant version information could not be parsed. The version string is invalid: %1\nYou cannot proceed.")
       .arg(numberString));
@@ -3514,10 +3434,13 @@ bool XSupCalls::isOnlyInstance(char *exeName)
     return false;
   }
 #else
+#warning FIX!
+  /*
   if (supdetect_numinstance(exeName) >= 2)
   {
-    return false
+    return false;
   }
+  */
 #endif
   return true;
 }
@@ -3693,15 +3616,17 @@ bool XSupCalls::connectionDisconnect(QString &connectionName)
 */
 bool XSupCalls::renameConnection(QString &oldName, QString &newName)
 {
-  CharC old = oldName;
-  CharC n = newName;
-  int retval = xsupgui_request_rename_connection(old.charPtr(), n.charPtr());
+  char *old = NULL;
+  char *n = NULL;
+
+  old = _strdup(oldName.toAscii());
+  n = _strdup(newName.toAscii());
+
+  int retval = xsupgui_request_rename_connection(old, n);
   if (retval != REQUEST_SUCCESS)
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Can't Rename Connection"),
-      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName)
-      ,retval,
-      "xsupgui_request_rename_connection");
+    QMessageBox::critical(NULL, tr("Can't Rename Connection"),
+      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName));
     return false;
   }
   return true;
@@ -3716,15 +3641,17 @@ bool XSupCalls::renameConnection(QString &oldName, QString &newName)
 */
 bool XSupCalls::renameProfile(QString &oldName, QString &newName)
 {
-  CharC old = oldName;
-  CharC n = newName;
-  int retval = xsupgui_request_rename_profile(old.charPtr(), n.charPtr());
+  char *old = NULL;
+  char *n = NULL;
+
+  old = _strdup(oldName.toAscii());
+  n = _strdup(newName.toAscii());
+
+  int retval = xsupgui_request_rename_profile(old, n);
   if (retval != REQUEST_SUCCESS)
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Can't Rename Profile"),
-      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName)
-      ,retval,
-      "xsupgui_request_rename_profile");
+    QMessageBox::critical(NULL, tr("Can't Rename Profile"),
+      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName));
     return false;
   }
   return true;
@@ -3738,15 +3665,17 @@ bool XSupCalls::renameProfile(QString &oldName, QString &newName)
 */
 bool XSupCalls::renameTrustedServer(QString &oldName, QString &newName)
 {
-  CharC old = oldName;
-  CharC n = newName;
-  int retval = xsupgui_request_rename_trusted_server(old.charPtr(), n.charPtr());
+  char *old = NULL;
+  char *n = NULL;
+
+  old = _strdup(oldName.toAscii());
+  n = _strdup(newName.toAscii());
+
+  int retval = xsupgui_request_rename_trusted_server(old, n);
   if (retval != REQUEST_SUCCESS)
   {
-    m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Can't Rename Trusted Server"),
-      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName)
-      ,retval,
-      "xsupgui_request_rename_trusted_server");
+    QMessageBox::critical(NULL, tr("Can't Rename Trusted Server"),
+      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName));
     return false;
   }
   return true;
@@ -3789,7 +3718,7 @@ int XSupCalls::config_get_ttls_pwd(struct config_eap_method *meth, char **pPassw
 		  break;
 
 	  default:
-      m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("Error Getting Password")
+	    QMessageBox::critical(NULL, tr("Error Getting Password")
         ,tr("Invalid EAP method requested: %1\n(config_get_ttls_pwd)")
         .arg(meth->method_num));
 		  break;
@@ -3850,7 +3779,7 @@ int XSupCalls::config_get_ttls_pwd(struct config_eap_method *meth, char **pPassw
 		break;
 
 	default:
-    m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("Error Getting Password")
+	  QMessageBox::critical(NULL, tr("Error Getting Password")
       ,tr("Invalid EAP method requested: %1\n(config_get_pwd)")
       .arg(meth->method_num));
 		break;
@@ -3892,7 +3821,7 @@ int XSupCalls::config_get_ttls_user(struct config_eap_method *meth, char **pUser
 		  break;
 
 	  default:
-      m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("Error Getting TTLS User")
+	    QMessageBox::critical(NULL, tr("Error Getting TTLS User")
         ,tr("Invalid EAP method requested: %1\n(config_get_ttls_user)")
         .arg(ttls->phase2_type));
 		  break;
@@ -3947,7 +3876,7 @@ int XSupCalls::config_get_user(struct config_eap_method *meth, char **pUser)
 		break;
 
 	default:
-    m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("Error Getting User")
+	  QMessageBox::critical(NULL, tr("Error Getting User")
       ,tr("Invalid EAP method requested: %1\n(config_get_user)")
       .arg(meth->method_num));
 		break;
@@ -3990,7 +3919,7 @@ int XSupCalls::config_set_ttls_user(struct config_eap_method *meth, char *pUser)
 		  break;
 
 	  default:
-      m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("Error Getting Password")
+	    QMessageBox::critical(NULL, tr("Error Getting Password")
         ,tr("Invalid EAP method requested: %1\n(config_set_ttls_user)")
         .arg(meth->method_num));
 		  break;
@@ -4091,7 +4020,7 @@ int XSupCalls::config_set_user(struct config_eap_method *meth, char *pUser)
 		break;
 
 	default:
-    m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("Error Getting Password")
+	  QMessageBox::critical(NULL,  tr("Error Getting Password")
       ,tr("Invalid EAP method requested: %1\n(config_set_user)")
       .arg(meth->method_num));
 		break;
@@ -4152,3 +4081,5 @@ int XSupCalls::createTroubleTicket(char *filename, char *scratchdir, int overwri
 {
 	return xsupgui_request_create_trouble_ticket_file(filename, scratchdir, overwrite);
 }
+
+

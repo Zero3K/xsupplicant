@@ -34,7 +34,8 @@
 #include <QTreeWidgetItem>
 #include "NavPanel.h"
 #include "ConfigWidgetEditTrustedServers.h"
-
+#include "Util.h"
+#include "helpbrowser.h"
 
 ConfigWidgetEditTrustedServers::ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalServername(serverName)
@@ -198,6 +199,8 @@ bool ConfigWidgetEditTrustedServers::newItem()
 
 void ConfigWidgetEditTrustedServers::updateWindow()
 {
+  QString temp;
+
 	if (m_pTrustedServer != NULL)
 	{
 		m_pSupplicant->freeConfigTrustedServer(&m_pTrustedServer);
@@ -206,7 +209,8 @@ void ConfigWidgetEditTrustedServers::updateWindow()
 
 	if (m_bNewServer)
 	{
-		if (m_pSupplicant->createNewTrustedServer(QString("New Server"), &m_pTrustedServer) != true)
+	  temp = "New Server";
+		if (m_pSupplicant->createNewTrustedServer(temp, &m_pTrustedServer) != true)
 		{
 			QMessageBox::critical(this, tr("New Trusted Server"), tr("There was an error attempting to create a new Trusted Server."));
 			m_pTrustedServer = NULL;
@@ -263,8 +267,11 @@ void ConfigWidgetEditTrustedServers::updateWindow()
 void ConfigWidgetEditTrustedServers::updateCertData()
 {
 	cert_info *myCertInfo = NULL;
+	QString temp, temp2;
 
-	if (m_pSupplicant->getCertInfo(QString(m_pTrustedServer->store_type), QString(m_pTrustedServer->location), &myCertInfo, true) == true)
+	temp = m_pTrustedServer->store_type;
+	temp2 = m_pTrustedServer->location;
+	if (m_pSupplicant->getCertInfo(temp, temp2, &myCertInfo, true) == true)
 	{
 		QFontMetrics pMet = fontMetrics();	
 
@@ -303,6 +310,8 @@ void ConfigWidgetEditTrustedServers::slotDataChanged()
 
 bool ConfigWidgetEditTrustedServers::save()
 {
+  QString temp;
+
 	if (m_pServerNameEdit->text() == "")
 	{
 		QMessageBox::critical(this, tr("Trusted Server Name Error"), tr("You must specify a valid trusted server name before attempting to save."));
@@ -347,7 +356,8 @@ bool ConfigWidgetEditTrustedServers::save()
 	// If the server was renamed, then rename it first, then update the config, and write it.
 	if ((m_bServerRenamed) && (QString(m_pTrustedServer->name) != m_originalServername))
 	{
-		if (m_pSupplicant->renameTrustedServer(m_originalServername, QString(m_pTrustedServer->name)) == false)
+	  temp = m_pTrustedServer->name;
+		if (m_pSupplicant->renameTrustedServer(m_originalServername, temp) == false)
 			return false;
 
 		m_originalServername = m_pTrustedServer->name;

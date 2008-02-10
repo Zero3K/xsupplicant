@@ -444,6 +444,7 @@ void NavPanel::slotDelItem()
 	QTreeWidgetItem *selectedItem;
 	QTreeWidgetItem *toDelete;
 	int toDeleteIdx;
+	QString temp;
 
 	selectedItem = getSelectedItem();
 	
@@ -453,7 +454,8 @@ void NavPanel::slotDelItem()
 	}
 	else if (selectedItem->parent() == m_pConnectionsItem)
 	{
-		if (m_supplicant->deleteConnectionConfig(selectedItem->text(0)) == true)
+	  temp = selectedItem->text(0);
+		if (m_supplicant->deleteConnectionConfig(temp) == true)
 		{
 			emit signalItemDeleted(CONNECTIONS_ITEM);
 
@@ -474,7 +476,8 @@ void NavPanel::slotDelItem()
 	}
 	else if (selectedItem->parent() == m_pProfilesItem)
 	{
-		if (m_supplicant->deleteProfileConfig(selectedItem->text(0)) == true)
+	  temp = selectedItem->text(0);
+		if (m_supplicant->deleteProfileConfig(temp) == true)
 		{
 			emit signalItemDeleted(PROFILES_ITEM);
 
@@ -493,7 +496,8 @@ void NavPanel::slotDelItem()
 	}
 	else if (selectedItem->parent() == m_pTrustedServersItem)
 	{
-		if (m_supplicant->deleteTrustedServerConfig(selectedItem->text(0)) == true)
+	  temp = selectedItem->text(0);
+		if (m_supplicant->deleteTrustedServerConfig(temp) == true)
 		{
 			emit signalItemDeleted(TRUSTED_SERVERS_ITEM);
 
@@ -739,3 +743,5 @@ void NavPanel::slotDecideNavItemClicked(int type, const QString &name)
 	}
 	// Otherwise, ignore it.
 }
+
+

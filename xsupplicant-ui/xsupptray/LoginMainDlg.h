@@ -37,7 +37,7 @@
 
 #include "xsupcalls.h"
 #include "LoggingConsole.h"
-#include "messageclass.h"
+#include "MessageClass.h"
 #include "EventListenerThread.h"
 #include "StackedLoginConfig.h"
 

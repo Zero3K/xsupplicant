@@ -35,6 +35,7 @@
 #include "FormLoader.h"
 #include "TrustedRootCertsDlg.h"
 #include "Util.h"
+#include "helpbrowser.h"
 
 TrustedRootCertsDlg::TrustedRootCertsDlg(XSupCalls &sup, QWidget *parent):
   m_pParent(parent), m_supplicant(sup), m_pCertificates(NULL)

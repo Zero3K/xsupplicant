@@ -35,7 +35,7 @@
 
 #include <QWidget>
 
-#include "XSupCalls.h"
+#include "xsupcalls.h"
 #include "ConfigStackedWidget.h"
 #include "UIPlugins.h"
 

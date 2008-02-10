@@ -31,7 +31,8 @@
  **/
 
 #include "stdafx.h"
-
+#include "Util.h"
+#include "helpbrowser.h"
 #include "ConfigProfileTabs.h"
 #include "TabPlugins.h"
 
@@ -1220,7 +1221,11 @@ void ConfigProfileTabs::populateTwoPhase()
 	showAllTabs();
 	populateTrustedServerList();
 
+#ifdef WINDOWS
 	if ((m_pProfile->identity == NULL) || (_stricmp(m_pProfile->identity, "anonymous") == 0))
+#else
+	  if ((m_pProfile->identity == NULL) || (strcasecmp(m_pProfile->identity, "anonymous") == 0))
+#endif
 	{
 		m_pPhase1Ident->setText(QString(""));
 		m_pPhase1Ident->setEnabled(false);

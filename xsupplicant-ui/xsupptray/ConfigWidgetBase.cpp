@@ -32,6 +32,7 @@
 
 #include "stdafx.h"
 
+#include <QMessageBox>
 #include "ConfigWidgetBase.h"
 
 ConfigWidgetBase::ConfigWidgetBase()
@@ -78,3 +79,5 @@ void ConfigWidgetBase::discard()
 void ConfigWidgetBase::detach()
 {
 }
+
+

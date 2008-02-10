@@ -36,6 +36,7 @@
 #include "FormLoader.h"
 #include "ViewLogDlg.h"
 #include "Util.h"
+#include "helpbrowser.h"
 
 ConfigWidgetEditGlobalsLogging::ConfigWidgetEditGlobalsLogging(QWidget *pRealWidget, XSupCalls *xsup, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup)
@@ -369,12 +370,15 @@ void ConfigWidgetEditGlobalsLogging::browseButtonClicked()
 
 void ConfigWidgetEditGlobalsLogging::viewLogButtonClicked()
 {
+  QString temp;
+
 	if (m_pViewLogDialog != NULL)
 	{
 		cleanupViewLogDlg();   // Close out the old one.
 	}
 
-	m_pViewLogDialog = new ViewLogDlg(m_pLogDirectory->text());
+	temp = m_pLogDirectory->text();
+	m_pViewLogDialog = new ViewLogDlg(temp);
 	
 	if ((m_pViewLogDialog == NULL) || (m_pViewLogDialog->attach() == false))
 	{
@@ -409,3 +413,5 @@ void ConfigWidgetEditGlobalsLogging::slotShowHelp()
 {
 	HelpBrowser::showPage("xsupphelp.html", "xsuplogging");
 }
+
+

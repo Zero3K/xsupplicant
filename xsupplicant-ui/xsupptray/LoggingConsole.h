@@ -36,6 +36,8 @@
 #include <stdafx.h>
 #include <QtGui>
 #include "MessageClass.h"
+#include "Emitter.h"
+#include "xsupcalls.h"
 
 //!\class LoggingConsole
 /*!\brief LoggingConsole is used to display the log messages from the xsupplicant

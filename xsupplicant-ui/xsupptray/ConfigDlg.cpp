@@ -31,6 +31,7 @@
  **/
 
 #include "stdafx.h"
+#include "Util.h"
 #include "FormLoader.h"
 #include "ConfigDlg.h"
 

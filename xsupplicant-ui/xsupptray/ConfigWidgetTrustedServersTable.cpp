@@ -36,6 +36,7 @@
 #include "ConfigWidgetTrustedServersTable.h"
 #include "Util.h"
 #include "NavPanel.h"
+#include "helpbrowser.h"
 
 ConfigWidgetTrustedServersTable::ConfigWidgetTrustedServersTable(QTableWidget *pRealTable, trusted_servers_enum *pTrustedServersEnum, QWidget *parent) :
 	m_pRealTable(pRealTable), m_pParent(parent), m_pTrustedServersEnum(pTrustedServersEnum)

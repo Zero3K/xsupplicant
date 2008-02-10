@@ -45,8 +45,13 @@ public:
   FormLoader();
   virtual ~FormLoader();
 
+#ifdef WINDOWS
   static QWidget *FormLoader::buildform(QString formname);
   static QPixmap *FormLoader::loadicon(QString iconname);
+#else
+  static QWidget *buildform(QString formname);
+  static QPixmap *loadicon(QString iconname);
+#endif
 };
 
 #endif // _FORMLOADER_H_

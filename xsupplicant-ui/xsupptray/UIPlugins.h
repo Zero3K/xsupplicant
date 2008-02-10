@@ -32,7 +32,7 @@
 #ifndef XSUPPLICANT_UI_PLUGINS_H
 #define XSUPPLICANT_UI_PLUGINS_H
 
-#include <QWidget.h>
+#include <QWidget>
 #include "xsupcalls.h"
 #include "PluginWidget.h"
 #include "Emitter.h"

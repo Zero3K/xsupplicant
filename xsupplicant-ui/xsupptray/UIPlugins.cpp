@@ -50,7 +50,11 @@ UIPlugins::UIPlugins()
 UIPlugins::UIPlugins(Emitter *pEmitter, XSupCalls *pSupplicant)
 {
 	next        = NULL;
+
+#ifdef WINDOWS
 	hdll        = NULL;
+#endif
+
 	initialized = false;
 	loaded      = false;
 	type        = PLUGIN_TYPE_UNKNOWN;

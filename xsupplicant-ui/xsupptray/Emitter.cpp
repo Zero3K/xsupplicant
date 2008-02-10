@@ -32,7 +32,7 @@
 
 #include "stdafx.h"
 #include <QtGui>
-
+#include "UIPlugins.h"
 
 //! Emitter
 /*!

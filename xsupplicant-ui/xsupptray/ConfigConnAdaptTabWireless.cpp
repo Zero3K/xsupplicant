@@ -31,7 +31,7 @@
  **/
 
 #include "stdafx.h"
-
+#include "Util.h"
 #include "ConfigConnAdaptTabWireless.h"
 
 ConfigConnAdaptTabWireless::ConfigConnAdaptTabWireless(QWidget *pRealWidget, Emitter *e, XSupCalls *pSupplicant, config_connection *pConn, QString adaptName, QWidget *parent) :

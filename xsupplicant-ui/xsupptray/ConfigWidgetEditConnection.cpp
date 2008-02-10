@@ -34,6 +34,8 @@
 #include <QTreeWidgetItem>
 #include "NavPanel.h"
 #include "ConfigWidgetEditConnection.h"
+#include "helpbrowser.h"
+#include "Util.h"
 
 ConfigWidgetEditConnection::ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalConnName(connName), m_pEmitter(e)
@@ -136,6 +138,8 @@ bool ConfigWidgetEditConnection::newItem()
 
 void ConfigWidgetEditConnection::updateWindow()
 {
+  QString temp;
+
 	if (m_pConnection != NULL)
 	{
 		m_pSupplicant->freeConfigConnection(&m_pConnection);
@@ -144,7 +148,8 @@ void ConfigWidgetEditConnection::updateWindow()
 
 	if (m_bNewConnection)
 	{
-		if (m_pSupplicant->createNewConnection(QString("New Connection"), &m_pConnection) != true)
+	  temp = "New Connection";
+		if (m_pSupplicant->createNewConnection(temp, &m_pConnection) != true)
 		{
 			QMessageBox::critical(this, tr("New Connection"), tr("There was an error attempting to create a new Connection."));
 			m_pConnection = NULL;
@@ -174,6 +179,8 @@ void ConfigWidgetEditConnection::slotDataChanged()
 
 bool ConfigWidgetEditConnection::save()
 {
+  QString temp;
+
 	if (m_pConnNameEdit->text() == "")
 	{
 		QMessageBox::critical(m_pRealWidget, tr("Invalid Connection Name"), tr("You must specify a connection name before attempting to save."));
@@ -196,7 +203,8 @@ bool ConfigWidgetEditConnection::save()
 	// If the server was renamed, then rename it first, then update the config, and write it.
 	if ((m_bConnectionRenamed) && (QString(m_pConnection->name) != m_originalConnName))
 	{
-		if (m_pSupplicant->renameConnection(m_originalConnName, QString(m_pConnection->name)) == false)
+	  temp = m_pConnection->name;
+		if (m_pSupplicant->renameConnection(m_originalConnName, temp) == false)
 			return false;
 
 		m_bConnectionRenamed = false;
@@ -285,11 +293,13 @@ void ConfigWidgetEditConnection::connectionInUse()
 {
 	QString m_deviceName;
 	QString m_connName;
+	QString temp;
 
 	if (m_pSupplicant->getDeviceName(QString(m_pConnection->device), m_deviceName, false) == false)
 		return;
 
-	if (m_pSupplicant->getConfigConnectionName(QString(m_pConnection->device), m_deviceName, m_connName, false) == false)
+	temp = m_pConnection->device;
+	if (m_pSupplicant->getConfigConnectionName(temp, m_deviceName, m_connName, false) == false)
 		return;
 
 	if (m_connName == QString(m_pConnection->name))

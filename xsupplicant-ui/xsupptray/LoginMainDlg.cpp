@@ -33,9 +33,10 @@
 #include "stdafx.h"
 
 #include "LoginMainDlg.h"
-#include "loggingconsole.h"
-#include "stackedloginconfig.h"
+#include "LoggingConsole.h"
+#include "StackedLoginConfig.h"
 #include "FormLoader.h"
+#include "helpbrowser.h"
 
 //! Constructor
 /*!
@@ -324,7 +325,7 @@ bool LoginMainDlg::populateConnectionBox(bool bDisplayMessage)
 	 m_pLoginStack = new StackedLoginConfig(m_pConns, m_pStack, this, m_pEmitter);
   }
 
-  if (!m_pConns || m_pConns[0].name == NULL || *m_pConns[0].name == NULL)
+  if ((!m_pConns) || (m_pConns[0].name == NULL))
   {
     if (bDisplayMessage)
     {
@@ -339,9 +340,9 @@ bool LoginMainDlg::populateConnectionBox(bool bDisplayMessage)
   {
     while (m_pConns[i].name != NULL)
     {
-      if (m_pConns[i].dev_desc == NULL || *m_pConns[i].dev_desc == NULL)
+      if (m_pConns[i].dev_desc == NULL)
       {
-        m_message.DisplayMessage( MessageClass::WARNING_TYPE, tr("Invalid Configuration"), tr("No adapter description for connection '%1'.  You will need to modify the configuration of this connection in order to use it.").arg(m_pConns[i].name));
+	QMessageBox::critical(this, tr("Invalid Configuration"), tr("No adapter description for connection '%1'.  You will need to modify the configuration of this connection in order to use it.").arg(m_pConns[i].name));
       }
       else
       {
@@ -789,6 +790,7 @@ bool LoginMainDlg::isCurrentConnectionActive(poss_conn_enum &conn)
 bool LoginMainDlg::saveCredentials()
 {
     config_connection *pConfig = NULL;
+    QString temp;
 
     if (m_supplicant.getConfigConnection(m_currentConnection, &pConfig) == true)
 	{
@@ -797,7 +799,9 @@ bool LoginMainDlg::saveCredentials()
 		  if (pConfig->profile && *pConfig->profile)
 	      {
 	        config_profiles *pProfile;
-	        if (m_supplicant.getConfigProfile(QString(pConfig->profile), &pProfile) && pProfile)
+
+		temp = pConfig->profile;
+	        if (m_supplicant.getConfigProfile(temp, &pProfile) && pProfile)
 	        {
 	          m_supplicant.setUserNameIntoProfile(pProfile, m_userName); 
 	          m_supplicant.setPasswordIntoProfile(pProfile, m_password); 

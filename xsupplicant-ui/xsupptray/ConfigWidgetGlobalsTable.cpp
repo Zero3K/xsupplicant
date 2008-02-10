@@ -36,6 +36,7 @@
 #include "ConfigWidgetGlobalsTable.h"
 #include "Util.h"
 #include "NavPanel.h"
+#include "helpbrowser.h"
 
 ConfigWidgetGlobalsTable::ConfigWidgetGlobalsTable(QTableWidget *pRealTable, QWidget *parent) :
 	m_pRealTable(pRealTable), m_pParent(parent)
@@ -96,3 +97,5 @@ void ConfigWidgetGlobalsTable::slotShowHelp()
 {
 	HelpBrowser::showPage("xsupphelp.html", "xsupglobals");
 }
+
+

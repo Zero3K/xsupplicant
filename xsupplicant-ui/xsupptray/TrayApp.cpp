@@ -33,12 +33,13 @@
 #include <QMessageBox>
 
 #include "stdafx.h" 
+#include "Emitter.h"
+#include "xsupcalls.h"
 #include "LoggingConsole.h"
 #include "TrayApp.h"
-#include "xsupcalls.h"
 #include "AboutDlg.h"
-#include "LoginMaindlg.h"
-#include "mymessagebox.h"
+#include "LoginMainDlg.h"
+#include "MyMessageBox.h"
 #include "helpbrowser.h"
 #include "EventListenerThread.h"
 #include "ConfigDlg.h"
@@ -58,7 +59,7 @@ TrayApp::TrayApp(QApplication &app):
 {
   if (!m_supplicant.isOnlyInstance("XSupplicantUI"))
   {
-    m_message.DisplayMessage( MessageClass::ERROR_TYPE, tr("Error on Startup"), tr("There is another instance of this program running.  You can only have one instance of this application running at a time."));
+    QMessageBox::critical(this, tr("Error on Startup"), tr("There is another instance of this program running.  You can only have one instance of this application running at a time."));
     exit(1);
   }
 
@@ -388,7 +389,7 @@ bool TrayApp::checkCommandLineParams(int argc)
     if (argc > 2)
     {
       // only one argument is permitted for now
-      m_message.DisplayMessage( MessageClass::INFORMATION_TYPE, tr("Too Many Command-line options"),
+      QMessageBox::information(this, tr("Too many command line options"),
         tr("You have entered too many options. Only one option is allowed.\nThe command line options are:\n"
         "-l\tLogin window\n"
         "-c\tConfiguration Window\n"
@@ -419,7 +420,7 @@ bool TrayApp::checkCommandLineParams(int argc)
       else
       {
         // only one argument is permitted for now
-        m_message.DisplayMessage( MessageClass::INFORMATION_TYPE, tr("Invalid Command-line options"),
+	QMessageBox::critical(this, tr("Invalid Command-line options"),
           tr("You have entered an incorrect command-line option.\nThe command line options are (one only):\n"
           "-l\tLogin window\n"
           "-c\tConfiguration Window\n"
@@ -627,7 +628,7 @@ void TrayApp::slotLaunchConfig()
   // window loses focus - what to do about this?
   if (!m_bSupplicantConnected)
   {
-    m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("Service not connected yet."),
+    QMessageBox::warning(this,  tr("Service not connected yet."),
       tr("You can't run the Configuration module until the service is connected"));
   }
   else
@@ -687,7 +688,7 @@ void TrayApp::slotLaunchLogin()
 {
   if (!m_bSupplicantConnected)
   {
-    m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("XSupplicant not connected yet."),
+    QMessageBox::critical(this, tr("XSupplicant not connected yet."),
       tr("You can't run the Login module until the XSupplicant is connected"));
   }
   else
@@ -723,7 +724,7 @@ void TrayApp::slotViewLog()
 {
   if (!m_bSupplicantConnected)
   {
-    m_message.DisplayMessage(MessageClass::ERROR_TYPE, tr("XSupplicant not connected yet."),
+    QMessageBox::warning(this, tr("XSupplicant not connected yet."),
       tr("You can't view the log file until the XSupplicant is connected"));
   }
   else
@@ -862,16 +863,17 @@ bool TrayApp::startEventListenerThread()
   
   if (m_pEventListenerThread == NULL)
   {
-      m_message.DisplayMessage( MessageClass::ERROR_TYPE, tr("XSupplicant Event Listener Error"), 
+    QMessageBox::critical(this, tr("XSupplicant Event Listener Error"), 
         tr("Can't create the EventListenerThread object.  You must shut down the XSupplicant UI and restart."));
       return false;
   }
 
   if (!m_pEventListenerThread->connectXSupEventListener(true))
   {
-    m_message.DisplayMessage( MessageClass::ERROR_TYPE, tr("XSupplicant Event Message Error"), 
+    QMessageBox::critical(this, tr("XSupplicant Event Message Error"), 
       tr("The utility can't connect to the event system from the XSupplicant."
       "You must shut down the XSupplicant UI and restart. Contact IDEngines support if this occurs."));
+
     delete m_pEventListenerThread;
     m_pEventListenerThread = NULL;
     bValue = false;

@@ -278,3 +278,5 @@ void StackedLoginConfig::deviceRemoved(QString intName)
 		}
 	}
 }
+
+

@@ -37,7 +37,7 @@ extern "C" {
 };
 
 #include "TrayApp.h"
-#include "Formloader.h"
+#include "FormLoader.h"
 
 int main(int argc, char *argv[])
 {

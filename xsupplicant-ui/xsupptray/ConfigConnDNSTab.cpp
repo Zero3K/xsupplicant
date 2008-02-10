@@ -31,7 +31,7 @@
  **/
 
 #include "stdafx.h"
-
+#include "Util.h"
 #include "ConfigConnDNSTab.h"
 
 ConfigConnDNSTab::ConfigConnDNSTab(QWidget *pRealWidget, XSupCalls *pSupplicant, config_connection *pConn, QWidget *parent) :

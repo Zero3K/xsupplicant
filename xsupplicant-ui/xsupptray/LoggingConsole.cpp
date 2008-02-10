@@ -32,12 +32,14 @@
 
 #include "stdafx.h"
 
-#include "LoggingConsole.h"
 #include "EventListenerThread.h"
 #include "PasswordDlg.h"
 #include "libxsupgui/xsupgui_events.h"
 #include "FormLoader.h"
 #include "Util.h"
+#include "Emitter.h"
+#include "MessageClass.h"
+#include "LoggingConsole.h"
 
 //! Constructor
 /*!
@@ -317,9 +319,9 @@ void LoggingConsole::slotInterfaceInsertedMessage(char *)
 */
 void LoggingConsole::slotXSupplicantShutDown()
 {
-  this->m_message.DisplayMessage( MessageClass::ERROR_TYPE, tr("XSupplicant Status"),
-    tr("The communications with the XSupplicant has been terminated.  This application will now terminate.\n"
-    "If you know how to restart the XSupplicant do so, otherwise, contact your network administrator for help.\n"
+  QMessageBox::critical(this, tr("XSupplicant Status"),
+    tr("The communications with XSupplicant have been terminated. \n"
+    "If you know how to restart XSupplicant do so, otherwise, contact your network administrator for help.\n"
     "\nThe application will go into a 'disconnected' state (red tray icon) until the XSupplicant restarts."));
 
   emit signalSupplicantDownRestart(); // this should be received by the trayapp class which will delete all objects and go into a wait state

@@ -31,7 +31,7 @@
  **/
 
 #include "stdafx.h"
-
+#include "Util.h"
 #include "ConfigConnectionTabs.h"
 #include "ConfigConnAdapterTab.h"
 #include "ConfigConnNetTab.h"

@@ -108,8 +108,10 @@ void LoginStatusWireless::getSignalStrength()
 {
   int signal = 0;
   bool bValue = true;
+  QString temp;
 
-  bValue = m_supplicant.getSignalStrength(QString(pConn->dev_desc), devName, signal, m_bDisplayError);
+  temp = pConn->dev_desc;
+  bValue = m_supplicant.getSignalStrength(temp, devName, signal, m_bDisplayError);
   if (bValue)
   {
     setSignalStrength(signal);
@@ -129,27 +131,34 @@ void LoginStatusWireless::getSignalStrength()
 */
 void LoginStatusWireless::setSignalStrength(int signal)
 {
+  QString temp;
+
 	if (m_pSignalImageLabel != NULL)
 	{
 		if (signal <= 0)
 		{
-			setPixmapLabel(m_pSignalImageLabel, QString("signal_0.png"));
+		  temp = "signal_0.png";
+		  setPixmapLabel(m_pSignalImageLabel, temp);
 		}
 		else if (signal > 0 && signal <= 25)
 		{
-			setPixmapLabel(m_pSignalImageLabel, QString("signal_1.png"));
+		  temp = "signal_1.png";
+		  setPixmapLabel(m_pSignalImageLabel, temp);
 		}
 		else if (signal > 25 && signal <= 50)
 		{
-			setPixmapLabel(m_pSignalImageLabel, QString("signal_2.png"));
+		  temp = "signal_2.png";
+		  setPixmapLabel(m_pSignalImageLabel, temp);
 		}
 		else if (signal > 50 && signal <= 75)
 		{
-			setPixmapLabel(m_pSignalImageLabel, QString("signal_3.png"));
+		  temp = "signal_3.png";
+		  setPixmapLabel(m_pSignalImageLabel, temp);
 		}
 		else
 		{
-			setPixmapLabel(m_pSignalImageLabel, QString("signal_4.png"));
+		  temp = "signal_4.png";
+		  setPixmapLabel(m_pSignalImageLabel, temp);
 		}
 	}
 
@@ -196,13 +205,14 @@ bool LoginStatusWireless::getEncryption()
 bool LoginStatusWireless::getAssociation()
 {
   QString text;
+  QString temp;
+  bool bValue = true;
 
   if (m_pAssociationTextLabel != NULL)
   {
-	 bool bValue = true;
-
 	// Using the device name, get the association
-	bValue = m_supplicant.getAssociation(QString(pConn->dev_desc), devName, text, m_bDisplayError);
+    temp = pConn->dev_desc;
+	bValue = m_supplicant.getAssociation(temp, devName, text, m_bDisplayError);
 	if (bValue)
 	{
 		m_pAssociationTextLabel->setText(text);
@@ -223,8 +233,10 @@ void LoginStatusWireless::updateState()
 	bool bValue;
 	QString m_status;
 	int m_PState;
+	QString temp;
 
-	bValue = m_supplicant.getPhysicalState(QString(pConn->dev_desc), 
+	temp = pConn->dev_desc;
+	bValue = m_supplicant.getPhysicalState(temp, 
 		devName, 
 		m_status, 
 		m_PState, 

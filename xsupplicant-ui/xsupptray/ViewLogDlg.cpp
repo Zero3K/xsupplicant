@@ -198,7 +198,7 @@ bool ViewLogDlg::open()
   }
   else
   {
-    m_message.DisplayMessage( MessageClass::WARNING_TYPE, tr("Open File Error"), tr("Can't open the log file '%1'.\nError: '%2 - %3'")
+    QMessageBox::warning(this, tr("Open File Error"), tr("Can't open the log file '%1'.\nError: '%2 - %3'")
       .arg(m_filePath).arg(file.error()).arg(getErrorText(file.error())));
     return false;
   }
@@ -273,3 +273,5 @@ void ViewLogDlg::show()
 {
 	m_pRealWidget->show();
 }
+
+

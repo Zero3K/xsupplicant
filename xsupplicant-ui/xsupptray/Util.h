@@ -39,6 +39,7 @@
 #define STRDUP _strdup
 #else
 #define STRDUP strdup
+#define _strdup  strdup
 #endif
 
 
@@ -67,7 +68,13 @@ public:
   static QRadioButton *createRadioButton(const QString &text, QObject *thisPtr, const char *slot, const QString &toolTip);
   static QString removePacketSchedulerFromName(char *fullName);
   static QString removePacketSchedulerFromName(QString &fullName);
+
+#ifdef WINDOWS
   static char *Util::myNullStrdup(const char *p);
+#else
+  static char *myNullStrdup(const char *p);
+#endif
+
   static void useBackslash(char *str);
 
   static void setWidgetWidth(QWidget *pWidget, char *text);
@@ -75,10 +82,13 @@ public:
   static void myFree(void **);
   static void myFree(char **);
   static QLabel *createPixmapLabel(QString &URLPath); // , int height, int width)
+
+#ifdef WINDOWS
   static void debugMemCheck(char *file, int line)
   {
     Q_ASSERT_X(_CrtCheckMemory(), tr("File: %1").arg(file).toAscii(), tr("Line: %1").arg(line).toAscii());
   }
+#endif
 };
 
 #endif   // _UTIL_H_

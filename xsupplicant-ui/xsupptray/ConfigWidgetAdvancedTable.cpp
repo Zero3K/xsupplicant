@@ -36,6 +36,7 @@
 #include "ConfigWidgetAdvancedTable.h"
 #include "Util.h"
 #include "NavPanel.h"
+#include "helpbrowser.h"
 
 ConfigWidgetAdvancedTable::ConfigWidgetAdvancedTable(QTableWidget *pRealTable, QWidget *parent) :
 	m_pRealTable(pRealTable), m_pParent(parent)

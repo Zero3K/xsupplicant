@@ -321,7 +321,9 @@ void MessageClass::DisplayMessageModeless(QString &titleString,
                                           QString &formattedString,
                                           QString &helpLocation)
 {
-  msgDlg.setInfo(titleString, formattedString, QString ("xsupphelp.html"), helpLocation);
+  QString temp = "xsupphelp.html";
+
+  msgDlg.setInfo(titleString, formattedString, temp, helpLocation);
   msgDlg.setWindowFlags(msgDlg.windowFlags() | Qt::WindowStaysOnTopHint);
   msgDlg.show();
 }

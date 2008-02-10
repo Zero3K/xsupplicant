@@ -33,6 +33,7 @@
 #include "stdafx.h"
 
 #include "ConfigConnAdapterTab.h"
+#include "Util.h"
 
 ConfigConnAdapterTab::ConfigConnAdapterTab(QWidget *pRealWidget, Emitter *e, XSupCalls *pSupplicant, config_connection *pConn, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pSupplicant(pSupplicant), m_pConn(pConn), m_pParent(parent), m_pEmitter(e)
