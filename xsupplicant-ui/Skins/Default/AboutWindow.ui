@@ -1723,7 +1723,7 @@
      <property name="frameShadow" >
       <enum>QFrame::Plain</enum>
      </property>
-     <widget class="QLabel" name="Contact_Info_Label" >
+     <widget class="QLabel" name="headerContactInformation" >
       <property name="geometry" >
        <rect>
         <x>0</x>

@@ -1,0 +1,17 @@
+Last Updated: 2008-02-13
+Bret Jordan
+
+This files contains the color pallet used in the UI skins.
+
+Gray Background          = 206,207,210
+
+White Frame with Blue Border
+	Frame Background = 255,255,255
+	Frame Border     = 127,157,185
+
+Brown Frame with Brown Border
+	Frame Background = 236,234,223
+	Frame Border     = 208,208,191
+
+Brown Header Text        = 144,141,124
+
