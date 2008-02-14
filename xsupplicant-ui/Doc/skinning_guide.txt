@@ -1,44 +1,96 @@
-Some of the windows provided in the supplicant UI allow for skinning.  To
+Last Updated: 2008-02-13
+
+Nearly all of the windows provided in the supplicant UI allow for skinning.  To
 skin these windows, you will need to use QTDesigner, and make sure that
 certain components of the UI file have the correct names.  This file should
-be used as an index to the names that the UI engine will operate on.
+be used as an index to the widget names used.  Eventually this file will call out
+the widget names that the UI engine will operate on.
 
 *****  NOTE :  All names referenced in this document are CASE SENSATIVE!
 
 
 ======================
-  About Dialog
+  About Window
 ======================
 
-engVersionLabel  --  The label that will be used to display the supplicant
-                     engine version string.
+uiWindowAbout
+uiBannerGraphicLeft
+uiBannerGraphicRight
+buttonClose -- (Optional) The button that will be used to close the dialog box.
+backgroundMain
+whiteFrameMain
+dataFrameProductInformation
+dataFrameVersionInformation
+dataFrameContactInformation
+headerProductInformation
+dataField01
+dataFieldPlugins --  The label that will be used to display the string that contains information about the plugins that are in use.
+dataField02
+dataField03
+headerVersionInformation
+labelGUIVersion
+dataFieldGUIVersion --  The label that will be used to display the UI engine version string.
+labelEngineVersion
+dataFieldEngineVersion --  The label that will be used to display the supplicant engine version string.
+labelMoreInformation
+dataFieldURLOpenSEA
+dataFieldURLIDEngines
+dataFieldURLOpen1X
 
-uiVersionLabel --  The label that will be used to display the UI engine
-                   version string.
-
-pluginsLabel --  The label that will be used to display the string that
-                 contains information about the plugins that are in use.
-
-uiBannerGraphic --   The label that will be used to display the UI banner
-                     graphic.
-
-clsBtn --  (Optional)  The button that will be used to close the dialog box.
 
 
 
 ======================
-  Help Dialog
+  Help Window
 ======================
 
-homeBtn  -- (Optional)  A button that allows the user to go back to where
-                        they started.
+uiWindowHelp
+uiBannerGraphicLeft
+uiBannerGraphicRight
+backgroundBottom
+backgroundMain
+dataFieldHelpWindow -- A QTextEdit widget that displays the help for the item requested.
+buttonClose -- (Optional)  A button that allows the user to close the help window.
+buttonBack -- (Optional)  A button that allows the user to go back one link.
+buttonHome -- (Optional)  A button that allows the user to go back to where they started.
 
-backBtn  -- (Optional)  A button that allows the user to go back one link.
 
-clsBtn  -- (Optional)  A button that allows the user to close the help window.
 
-helpBrowser  -- A QTextEdit widget that displays the help for the item
-                requested.
+
+======================
+  Logs Window
+======================
+
+uiWindowLogs
+uiBannerGraphicLeft
+uiBannerGraphicRight
+backgroundBottom
+backgroundMain
+dataFieldLogWindow
+buttonCopy
+buttonClose
+buttonClear
+backgroundBanner
+
+
+
+
+======================
+  View Logs Window
+======================
+uiWindowViewLogs
+uiBannerGraphicLeft
+uiBannerGraphicRight
+backgroundMain
+dataFieldLogWindow
+backgroundBottom
+buttonCopy
+buttonClose
+buttonHelp
+backgroundBanner
+buttonBrowse
+labelFilePath
+dataFieldLogFileDirectory
 
 
 
@@ -46,22 +98,57 @@ helpBrowser  -- A QTextEdit widget that displays the help for the item
   Login Dialog
 ======================
 
-uiBannerGraphic --  A label that displays a banner graphic for the UI.
-
-connectionDropDown -- A Combo Box that is used to display a list of all of
-                      the connections known to the engine.
-
-conDisBtn -- A push button that will allow the user to connect to, or
-             disconnect from, the connection selected in the connectionDropDown.
-
-configBtn -- (Optional) A push button that will open the configuration dialog.
-
-showLogBtn -- (Optional) A push button that will open the log window.
-
-helpBtn -- (Optional) A push button that will open the help window.
-
-
-
-
-
+uiWindowLogin
+backgroundMain
+buttonClose
+buttonConnect -- A push button that will allow the user to connect to, or disconnect from, the connection selected in the connectionDropDown.
+buttonConfig -- (Optional) A push button that will open the configuration dialog.
+buttonShowLog -- (Optional) A push button that will open the log window.
+buttonHelp -- (Optional) A push button that will open the help window.
+labelComboConnections
+dataComboConnections -- A Combo Box that is used to display a list of all of the connections known to the engine.
+whiteFrameMain
+widgetStackLogin
+widgetStackCredentials
+dataFrameInterfaceStatus
+headerInterfaceStatus
+labelAdapterStatus
+labelSSIDStatus
+dataFieldAdapterStatus
+dataFieldSSIDStatus
+widgetStackLoginPage
+widgetStackUsernamePasswordPage
+headerCredentialsUsernamePassword
+labelUsername
+labelPassword
+dataCheckboxSaveUsernamePassowrd
+dataFieldUsername
+dataFieldPassword
+widgetStackPSKPage
+headerCredentialsPSK
+labelPSK
+dataFieldPSK
+dataCheckboxSavePSK
+widgetStackNoCredentialsPage
+headerCredentialsNone
+dataFieldCredentialsNone
+widgetStackStatusPage
+dataFrameConnectionStatus
+headerConnectionStatus
+labelAdapter
+labelStatus
+labelConnectedTime
+labelIPAddress
+labelSSID
+dataFieldAdapterName
+dataFieldStatus
+dataFieldConnectedTime
+dataFieldIPAddress
+dataFieldSSIDName
+iconSignalStrength
+dataFieldSignalStrength
+iconAssociationMode
+dataFieldAssociationMode
+iconEncryptionType
+dataFieldEncryptionType
 
