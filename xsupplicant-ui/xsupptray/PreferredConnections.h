@@ -42,12 +42,17 @@ class QFileInfo;
 class QListWidget;
 */
 
-class PreferredConnections:public QDialog
+class PreferredConnections:public QWidget
 {
   Q_OBJECT
 public:
   PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent);
   ~PreferredConnections();
+  bool attach();
+  void show();
+
+signals:
+  void close();
 
 private:
   QString m_connection;
@@ -55,9 +60,8 @@ private:
   XSupCalls &m_supplicant;
   bool m_bModified; //! set to true something has changed that needs to be written out
 
-  //! GUI variabled
-  QLabel *m_pAvailableConnectionsLabel;
-  QLabel *m_pPreferredConnectionsLabel;
+  //! GUI variables
+  QWidget *m_pRealForm;
   QListWidget *m_pAvailableList;
   QListWidget *m_pPreferredList;
   QPushButton *m_pLeftButton;
@@ -65,9 +69,8 @@ private:
   QPushButton *m_pUpButton;
   QPushButton *m_pDownButton;
   QPushButton *m_pSaveButton;
-  QPushButton *m_pApplyButton;
   QPushButton *m_pHelpButton;
-  QPushButton *m_pDoneButton;
+  QPushButton *m_pCancelButton;
 
   private slots:
     void slotMoveLeft();
@@ -88,6 +91,7 @@ private:
   MessageClass m_message;
   void hookupSignalsAndSlots();
   void updateLists();
+  void setupWindow();
   void moveItems(QListWidget *from, QListWidget *to);
 };
 

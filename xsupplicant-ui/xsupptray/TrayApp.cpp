@@ -236,7 +236,7 @@ void TrayApp::slotRestart()
   // clear the flag that we are connected
   m_bSupplicantConnected = false;
   // Set the tray icon to disconnected
-  setTrayIconDisconnected();
+  setTrayIconState(ENGINE_DISCONNECTED);
 
   // delete in reverse order of creation
   delete m_pLoginDlg;
@@ -292,7 +292,7 @@ void TrayApp::slotConnectToSupplicant()
       }
 
       m_bConnectFailed = true;
-      setTrayIconDisconnected();
+      setTrayIconState(ENGINE_DISCONNECTED);
       // disable the menu options
       setEnabledMenuItems(false);
 
@@ -304,7 +304,7 @@ void TrayApp::slotConnectToSupplicant()
     }
     else
     {
-	  setTrayIconConnected();
+	  setTrayIconState(ENGINE_CONNECTED);
       // Enable the menu items
       setEnabledMenuItems(true);
       m_bSupplicantConnected = true;
@@ -340,6 +340,41 @@ void TrayApp::slotHideLog()
 	m_pLoggingCon->hide();
 }
 
+/**
+ * \brief Enumerate all of the interfaces and determine the authentication state
+ *        to display in the tray.
+ *
+ * We need to enumerate interfaces, then determine their authentication state.
+ * Once we know the state, we decide which one is "highest" and change the icon
+ * to that color.  (If needed.)  Once our table is built, we can then maintain
+ * it using signals from the supplicant engine.
+ **/
+void TrayApp::setGlobalTrayIconState()
+{
+	int_enum *intlist = NULL;
+	int i = 0;
+	int state = 0;
+
+	if (xsupgui_request_enum_live_ints(intlist) == REQUEST_SUCCESS)
+	{
+		// Build our "snapshot" table in memory.
+		while (intlist[i].name != NULL)
+		{
+			if (xsupgui_request_get_1x_state(intlist[i].name, &state) == REQUEST_SUCCESS)
+			{
+				// Add the state to our table.
+			}
+			else
+			{
+				// Couldn't determine the state, so skip it and hope we get an event later.
+			}
+
+			i++;
+		}
+	}
+	// XXX Finish!
+}
+
 //! postConnectActions
 /*!
   \return false - if can't start event listener - can't go on if this is the case
@@ -373,6 +408,8 @@ bool TrayApp::postConnectActions()
   Util::myConnect(m_pEmitter, SIGNAL(signalSupWarningEvent(const QString &)), this, SLOT(slotSupWarning(const QString &)));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));  
+
+  setGlobalTrayIconState();
 
   return true;
 }
@@ -542,42 +579,59 @@ void TrayApp::createTrayIcon()
 
   m_pTrayIcon = new QSystemTrayIcon(this);
   m_pTrayIcon->setContextMenu(m_pTrayIconMenu);
+
   Util::myConnect(m_pTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
           this, SLOT(slotIconActivated(QSystemTrayIcon::ActivationReason)));
-  setTrayIconDisconnected();
+
+  setTrayIconState(ENGINE_DISCONNECTED);
+
   m_pTrayIcon->show();       // Even if the icon couldn't be loaded, we will at least get a blank spot on the tray.
 }
 
-//! 
-/*!
-  \return 
-*/
-void TrayApp::setTrayIconConnected()
+/**
+ * \brief Change the tray icon to display a current global state.  The states
+ *        are defined by the \ref iconState enum in \ref TrayApp.h.
+ *
+ * @param[in] curState   A member of the iconState enum that identifies the 
+ *                       icon state that we should display for the user.
+ **/
+void TrayApp::setTrayIconState(int curState)
 {
   QPixmap *p = NULL;
+  QString icon_to_load;
 
-  p = FormLoader::loadicon("prod_color.png");
+  icon_to_load = "";
 
-  if (p != NULL)
+  switch (curState)
   {
-    QIcon icon((*p));
-    m_pTrayIcon->setIcon(icon);
-    setWindowIcon(icon);
-	m_pTrayIcon->show();
+  case ENGINE_DISCONNECTED:
+	  icon_to_load = "prod_no_engine.png";
+	  break;
+
+  case ENGINE_CONNECTED:
+	  icon_to_load = "prod_eng_connected.png";
+	  break;
+
+  case AUTHENTICATION_FAILED:
+	  icon_to_load = "prod_red.png";
+	  break;
+
+  case AUTHENTICATION_IN_PROCESS:
+	  icon_to_load = "prod_yellow.png";
+	  break;
+
+  case AUTHENTICATION_SUCCESS:
+	  icon_to_load = "prod_green.png";
+	  break;
+
+  case AUTHENTICATION_TNC_NON_COMPLIANT:
+	  icon_to_load = "prod_purple.png";
+	  break;
   }
 
-  delete p;
-}
+  if (icon_to_load == "") return;   // Unknown state.  Leave it the way it was.
 
-//! 
-/*!
-  \return 
-*/
-void TrayApp::setTrayIconDisconnected()
-{
-  QPixmap *p = NULL;
-
-  p = FormLoader::loadicon("prod_red.png");
+  p = FormLoader::loadicon(icon_to_load);
 
   if (p != NULL)
   {
@@ -589,6 +643,7 @@ void TrayApp::setTrayIconDisconnected()
 
   delete p;
 }
+
 
 //! 
 /*!

@@ -3460,6 +3460,7 @@ bool XSupCalls::updateAdapters(bool bDisplayError)
   QString mac;
   bool bWireless = false;
   int i = 0;
+
   do
   {
     if (!m_adapterMutex.tryLock())
@@ -3467,14 +3468,17 @@ bool XSupCalls::updateAdapters(bool bDisplayError)
       i++;
       continue;
     }
+
     bool bValue = enumLiveInterfaces(&liveInts, bDisplayError);
-    if (!bValue || liveInts == NULL)
+    if ((!bValue) || (liveInts == NULL))
     {
       return false;
     }
+
     while (liveInts[i].name)
     {
       deviceName = liveInts[i].name;
+
       // If we can get the liveInterfaceData then it means it isn't in the config file
       // Therefore, add it 
       if (getLiveInterfaceData(deviceName, deviceDescription, mac, bWireless, bDisplayError) == true)
@@ -3483,15 +3487,18 @@ bool XSupCalls::updateAdapters(bool bDisplayError)
       }
       i++;
     }
-    // If I add something, write it out to the file
+
+    // If we found a new interface, make sure we save the config file.
     if (bAdded)
     {
       writeConfig();
     }
-    this->freeEnumLiveInt(&liveInts);
+
+    freeEnumLiveInt(&liveInts);
     m_adapterMutex.unlock();
     i = 11;
   }while(i < 10);
+
   return false;
 }
 

@@ -38,6 +38,7 @@
 
 #include "PreferredConnections.h"
 #include "Util.h"
+#include "FormLoader.h"
 #include "helpbrowser.h"
 
 //! Constructor
@@ -48,8 +49,20 @@
   \return Nothing
 */
 PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent)
-     : QDialog(parent), m_pConns(pConn), m_supplicant(supplicant), m_bModified(false), m_message(this)
+     : QWidget(parent), m_pConns(pConn), m_supplicant(supplicant), m_bModified(false), m_message(this)
  {
+  m_pAvailableList = NULL;
+  m_pPreferredList = NULL;
+  m_pLeftButton = NULL;
+  m_pRightButton = NULL;
+  m_pUpButton = NULL;
+  m_pDownButton = NULL;
+  m_pSaveButton = NULL;
+  m_pHelpButton = NULL;
+  m_pCancelButton = NULL;
+  m_pRealForm = NULL;
+
+  /*
     m_pAvailableList = new QListWidget();
     m_pPreferredList = new QListWidget();
 
@@ -133,6 +146,7 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
     hookupSignalsAndSlots();
     m_pAvailableList->setCurrentRow(0);
     m_pPreferredList->setCurrentRow(0);
+	*/
  }
 
 //! Destructor
@@ -141,6 +155,154 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
 */
  PreferredConnections::~PreferredConnections()
 {
+	if (m_pAvailableList != NULL)
+	{
+		Util::myDisconnect(m_pAvailableList, SIGNAL(itemSelectionChanged()), this, 
+			SLOT(slotEnableButtons()));
+		Util::myDisconnect(m_pAvailableList, SIGNAL(itemClicked(QListWidgetItem *)), this,
+			SLOT(slotAvailableSelected(QListWidgetItem *)));
+	}
+
+	if (m_pPreferredList != NULL)
+	{
+		Util::myDisconnect(m_pPreferredList, SIGNAL(itemSelectionChanged()), this, 
+			SLOT(slotEnableButtons()));
+		Util::myDisconnect(m_pPreferredList, SIGNAL(itemClicked(QListWidgetItem *)), this,
+			SLOT(slotPreferredSelected(QListWidgetItem *)));
+	}
+
+	if (m_pLeftButton != NULL)
+	{
+		Util::myDisconnect(m_pLeftButton, SIGNAL(clicked()), this, SLOT(slotMoveLeft()));
+	}
+
+	if (m_pRightButton != NULL)
+	{
+		Util::myDisconnect(m_pRightButton, SIGNAL(clicked()), this, SLOT(slotMoveRight()));
+	}
+
+	if (m_pUpButton != NULL)
+	{
+		Util::myDisconnect(m_pUpButton, SIGNAL(clicked()), this, SLOT(slotMoveUp()));
+	}
+	
+	if (m_pDownButton != NULL)
+	{
+		Util::myDisconnect(m_pDownButton, SIGNAL(clicked()), this, SLOT(slotMoveDown()));
+	}
+
+	if (m_pCancelButton != NULL)
+	{
+		Util::myDisconnect(m_pCancelButton, SIGNAL(clicked()), this, SLOT(slotDone()));
+	}
+
+	if (m_pSaveButton != NULL)
+	{
+		Util::myDisconnect(m_pSaveButton, SIGNAL(clicked()), this, SLOT(slotSave()));
+	}
+
+	if (m_pHelpButton != NULL)
+	{
+		Util::myDisconnect(m_pHelpButton, SIGNAL(clicked()), this, SLOT(slotHelp()));
+	}
+
+	if (m_pRealForm != NULL)
+	{
+		delete m_pRealForm;
+	}
+}
+
+ void PreferredConnections::show()
+ {
+	 if (m_pRealForm != NULL) m_pRealForm->show();
+ }
+
+ bool PreferredConnections::attach()
+ {
+	m_pRealForm = FormLoader::buildform("WirelessPriorityDlg.ui");
+
+	if (m_pRealForm == NULL) return false;
+
+	// If the user hits the "X" button in the title bar, close us out gracefully.
+	//Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+
+	m_pAvailableList = qFindChild<QListWidget*>(m_pRealForm, "availConnections");
+	if (m_pAvailableList == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'availConnections' QListWidget!"));
+		return false;
+	}
+
+	m_pPreferredList = qFindChild<QListWidget*>(m_pRealForm, "prefConnections");
+	if (m_pPreferredList == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'prefConnections' QListWidget!"));
+		return false;
+	}
+
+	m_pLeftButton = qFindChild<QPushButton*>(m_pRealForm, "pbLeft");
+	if (m_pLeftButton == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbLeft' QPushButton!"));
+		return false;
+	}
+
+	m_pRightButton = qFindChild<QPushButton*>(m_pRealForm, "pbRight");
+	if (m_pRightButton == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbRight' QPushButton!"));
+		return false;
+	}
+
+	m_pUpButton = qFindChild<QPushButton*>(m_pRealForm, "pbUp");
+	if (m_pUpButton == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbUp' QPushButton!"));
+		return false;
+	}
+
+	m_pDownButton = qFindChild<QPushButton*>(m_pRealForm, "pbDown");
+	if (m_pDownButton == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbDown' QPushButton!"));
+		return false;
+	}
+
+	m_pSaveButton = qFindChild<QPushButton*>(m_pRealForm, "pbSave");
+	if (m_pSaveButton == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbSave' QPushButton!"));
+		return false;
+	}
+
+	m_pCancelButton = qFindChild<QPushButton*>(m_pRealForm, "pbCancel");
+	if (m_pCancelButton == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbCancel' QPushButton!"));
+		return false;
+	}
+
+	m_pHelpButton = qFindChild<QPushButton*>(m_pRealForm, "pbHelp");
+	if (m_pHelpButton == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbHelp' QPushButton!"));
+		return false;
+	}
+
+	setupWindow();
+	hookupSignalsAndSlots();
+	updateLists();
+
+	return true;
+ }
+
+ void PreferredConnections::setupWindow()
+{
+	Qt::WindowFlags flags;
+
+	flags = m_pRealForm->windowFlags();
+	flags &= (~Qt::WindowContextHelpButtonHint);
+	m_pRealForm->setWindowFlags(flags);
 }
 
 //! hookupSignalsAndSlots
@@ -167,6 +329,10 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
   Util::myConnect(m_pRightButton, SIGNAL(clicked()), this, SLOT(slotMoveRight()));
   Util::myConnect(m_pUpButton, SIGNAL(clicked()), this, SLOT(slotMoveUp()));
   Util::myConnect(m_pDownButton, SIGNAL(clicked()), this, SLOT(slotMoveDown()));
+
+  Util::myConnect(m_pCancelButton, SIGNAL(clicked()), this, SLOT(slotDone()));
+  Util::myConnect(m_pSaveButton, SIGNAL(clicked()), this, SLOT(slotSave()));
+  Util::myConnect(m_pHelpButton, SIGNAL(clicked()), this, SLOT(slotHelp()));
 }
 //! slotMoveLeft
 /*!
@@ -491,17 +657,21 @@ void PreferredConnections::slotDone()
     if (retVal == QMessageBox::Yes)
     {
       slotSave();
-      accept();
+	  emit close();
+	  return;
     }
     else if (retVal == QMessageBox::No)
     {
-      reject();
+      emit close();
+	  return;
     }
   }
   else
   {
-    accept();
+    emit close();
+	return;
   }
+
   return;
 }
 

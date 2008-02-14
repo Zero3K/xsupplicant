@@ -44,6 +44,7 @@ ConfigWidgetConnectionsTable::ConfigWidgetConnectionsTable(QWidget *pRealWidget,
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pConnectionsEnum(pConnectionsEnum), m_pSupplicant(pSupplicant)
 {
 	m_bConnected = false;
+	m_pPreferred = NULL;
 
 	Util::myConnect(this, SIGNAL(signalSetSaveBtn(bool)), parent, SIGNAL(signalSetSaveBtn(bool)));
 
@@ -284,10 +285,29 @@ void ConfigWidgetConnectionsTable::slotShowHelp()
 	HelpBrowser::showPage("xsupphelp.html", "xsupconnmain");
 }
 
+void ConfigWidgetConnectionsTable::slotPriorityCleanup()
+{
+	Util::myDisconnect(m_pPreferred, SIGNAL(close()), this, SLOT(slotPriorityCleanup()));
+
+	delete m_pPreferred;
+	m_pPreferred = NULL;
+
+	updateWindow();
+}
+
 void ConfigWidgetConnectionsTable::slotPriorityClicked()
 {
-	PreferredConnections connections(m_pConnectionsEnum, (*m_pSupplicant), this);
+	if (m_pPreferred == NULL)
+	{
+		m_pPreferred = new PreferredConnections(m_pConnectionsEnum, (*m_pSupplicant), this);
+		if (m_pPreferred != NULL)
+		{
+			if (m_pPreferred->attach() == false)
+				return;
+		}
 
-	connections.exec();
-	updateWindow();
+		Util::myConnect(m_pPreferred, SIGNAL(close()), this, SLOT(slotPriorityCleanup()));
+
+		m_pPreferred->show();
+	}
 }

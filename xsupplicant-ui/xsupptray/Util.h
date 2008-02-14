@@ -82,13 +82,6 @@ public:
   static void myFree(void **);
   static void myFree(char **);
   static QLabel *createPixmapLabel(QString &URLPath); // , int height, int width)
-
-#ifdef WINDOWS
-  static void debugMemCheck(char *file, int line)
-  {
-    Q_ASSERT_X(_CrtCheckMemory(), tr("File: %1").arg(file).toAscii(), tr("Line: %1").arg(line).toAscii());
-  }
-#endif
 };
 
 #endif   // _UTIL_H_

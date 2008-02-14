@@ -37,6 +37,7 @@
 
 #include "ConfigWidgetBase.h"
 #include "xsupcalls.h"
+#include "PreferredConnections.h"
 
 class ConfigWidgetConnectionsTable : public ConfigWidgetBase
  {
@@ -55,6 +56,7 @@ class ConfigWidgetConnectionsTable : public ConfigWidgetBase
 private slots:
 	void slotShowHelp();
 	void slotPriorityClicked();
+	void slotPriorityCleanup();
 
  private:
 	 void updateWindow();
@@ -69,6 +71,8 @@ private slots:
  	 conn_enum *m_pConnectionsEnum;
 
 	 QWidget *m_pParent;
+
+	 PreferredConnections *m_pPreferred;
 
 	 bool m_bConnected;
 };

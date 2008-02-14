@@ -322,16 +322,15 @@ void LoggingConsole::slotXSupplicantShutDown()
   QMessageBox::critical(this, tr("XSupplicant Status"),
     tr("The communications with XSupplicant have been terminated. \n"
     "If you know how to restart XSupplicant do so, otherwise, contact your network administrator for help.\n"
-    "\nThe application will go into a 'disconnected' state (red tray icon) until the XSupplicant restarts."));
+    "\nThe application will go into a 'disconnected' state until the XSupplicant service restarts."));
 
   emit signalSupplicantDownRestart(); // this should be received by the trayapp class which will delete all objects and go into a wait state
 }
-/*! slotClear()
-  \brief Called when the interface inserted message is receiveddetail what has gone out of compliance
-  \return Nothing
-  \todo Check to see if this works
-*/
 
+/*! slotClear()
+  \brief Called when the interface inserted message is received detail what has gone out of compliance
+  \return Nothing
+*/
 void LoggingConsole::slotClear()
 {
   if (m_pLogEdit != NULL) m_pLogEdit->clear();

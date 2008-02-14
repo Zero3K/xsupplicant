@@ -44,6 +44,7 @@
 class TrayApp : public QWidget
 {
     Q_OBJECT
+
   enum startOption
     {
       NONE,
@@ -52,6 +53,16 @@ class TrayApp : public QWidget
       START_CONFIG,
       START_ABOUT
     };
+
+	enum iconState
+	{
+		ENGINE_DISCONNECTED,
+		ENGINE_CONNECTED,
+		AUTHENTICATION_FAILED,
+		AUTHENTICATION_IN_PROCESS,
+		AUTHENTICATION_SUCCESS,
+		AUTHENTICATION_TNC_NON_COMPLIANT
+	};
 
 public:
     TrayApp(QApplication &app);
@@ -90,9 +101,9 @@ public slots:
 private:
     void createTrayActionsAndConnections();
     void createTrayIcon();
+	void setTrayIconState(int curState);
+	void setGlobalTrayIconState();
     void setEnabledMenuItems(bool bEnable);
-  	void setTrayIconConnected();
-	void setTrayIconDisconnected();
     bool startEventListenerThread();
     bool postConnectActions();
     bool checkCommandLineParams(int argc);
