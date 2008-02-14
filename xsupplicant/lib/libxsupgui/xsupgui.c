@@ -230,7 +230,9 @@ int ipc_events_log_msg(char *logmsg)
 	return 0;
 }
 
+#ifndef WINDOWS
 int crashdump_add_file(char *temp, char temp2)
 {
 	return 0;
 }
+#endif

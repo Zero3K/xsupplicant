@@ -30,6 +30,11 @@
 
 #include "src/getopts.h"
 
+int crashdump_add_file(char *temp, char temp2)
+{
+	return 0;
+}
+
 // Terminate the IPC test program.
 void die()
 {
