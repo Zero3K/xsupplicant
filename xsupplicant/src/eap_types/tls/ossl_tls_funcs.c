@@ -823,6 +823,7 @@ int tls_funcs_get_packet(struct tls_vars *mytls_vars, int maxsize,
   uint32_t retlen = 0;
   uint32_t cpysize = 0;
   uint32_t queuesize = 0;
+  uint32_t res_size32 = 0;
   int more = 0;
   int athead = 0;
 
@@ -865,7 +866,9 @@ int tls_funcs_get_packet(struct tls_vars *mytls_vars, int maxsize,
 
 	  (*res_size) = maxsize - 6;  // Leave room in case we need to slap a length header on.
 
-	  more = queue_dequeue(&mytls_vars->tlsoutqueue, &dequeue_data, (uint32_t *)res_size);
+	  res_size32 = (*res_size);
+      more = queue_dequeue(&mytls_vars->tlsoutqueue, &dequeue_data, &res_size32);
+      *res_size = (uint16_t) res_size32;  // The value of res_size32 will always fit in *res_size
 
   	  if (more < 0) 
 	  {
