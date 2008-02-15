@@ -61,7 +61,7 @@ class TrayApp : public QWidget
 		AUTHENTICATION_FAILED,
 		AUTHENTICATION_IN_PROCESS,
 		AUTHENTICATION_SUCCESS,
-		AUTHENTICATION_TNC_NON_COMPLIANT
+		AUTHENTICATION_NAC_NON_COMPLIANT
 	};
 
 public:
@@ -85,6 +85,8 @@ private slots:
 	void slotCleanupLogin();
 	void slotLaunchHelp(const QString &, const QString &);
 	void slotCleanupConfig();
+	void slotInterfaceInserted(char *);
+	void slotInterfaceRemoved(char *);
 
 signals:
 	// Signals that can be rebroadcast from the root that other objects can subscribe to.
@@ -97,6 +99,7 @@ public slots:
   void slotSupError(const QString &error);
   void slotSupWarning(const QString &warning);
   void slotRestart();
+	void slotStateChange(const QString &, int, int, int, unsigned int);
 
 private:
     void createTrayActionsAndConnections();
@@ -109,6 +112,10 @@ private:
     bool checkCommandLineParams(int argc);
 	void loadPlugins();
 	void unloadPlugins();
+	void updateGlobalTrayIconState();
+	void connectGlobalTrayIconSignals();
+	void disconnectGlobalTrayIconSignals();
+	void populateGlobalTrayData(QString, QString);
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();
@@ -128,6 +135,8 @@ private:
 	Emitter *m_pEmitter;
     QTimer m_timer;
     bool m_bConnectFailed;
+
+	QMultiHash<QString, QString> m_intStateHash;
 
     QSystemTrayIcon *m_pTrayIcon;
     QMenu *m_pTrayIconMenu;

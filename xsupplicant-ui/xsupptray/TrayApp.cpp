@@ -341,6 +341,232 @@ void TrayApp::slotHideLog()
 }
 
 /**
+ * \brief Walk the hash table and find the "highest" state that an interface is
+ *        in.
+ **/
+void TrayApp::updateGlobalTrayIconState()
+{
+	int highest = -1;
+	int itemp = 0;
+	QString temp;
+	bool valid;
+	QHash<QString, QString>::const_iterator i = m_intStateHash.constBegin();
+
+	while (i != m_intStateHash.constEnd()) {
+		temp = i.value();
+
+		itemp = temp.toInt(&valid);
+
+		if (valid)
+		{
+			// At this point, itemp should have a numeric value that indicates
+			// what 802.1X state it is in.  Based on this, we assign a new value
+			// to the variable "highest" if the state needs us to show a higher
+			// level icon.  The order of icon display is:
+
+			// "Purple" (4) - Indicates that a user is in a quarentined state. 
+			//                Some network access may be available, but it is
+			//                likely restricted.  (This isn't implemented at this time!)
+
+			// "Green" (3) - Indicates that a user should be able to access the network
+			//				 and is only displayed when in AUTHENTICATED state.
+			
+			// "Yellow" (2) - Indicates that an authentication is in progress. During
+			//				  this time, a user may have network access.
+
+			// "Red" (1) - Indicates that an authentication failed.  No network access
+			//			   should be available.
+
+			// "Blue" (0) - Indicates that the supplicant isn't doing anything with
+			//				any interfaces.
+			switch (itemp)
+			{
+			case CONNECTING:
+			case ACQUIRED:
+			case AUTHENTICATING:
+				if (highest < 2) highest = 2;
+				break;
+
+			case HELD:
+				if (highest < 1) highest = 1;
+				break;
+
+			case AUTHENTICATED:
+				if (highest < 3) highest = 3;
+				break;
+
+			case LOGOFF:
+			case DISCONNECTED:
+			default:
+				if (highest < 0) highest = 0;
+				break;
+			}
+		}
+
+		++i;
+	}
+
+	switch (highest)
+	{
+	default:
+	case 0:
+		setTrayIconState(ENGINE_CONNECTED);
+		break;
+
+	case 1:
+		setTrayIconState(AUTHENTICATION_FAILED);
+		break;
+
+	case 2:
+		setTrayIconState(AUTHENTICATION_IN_PROCESS);
+		break;
+
+	case 3:
+		setTrayIconState(AUTHENTICATION_SUCCESS);
+		break;
+
+	case 4:
+		setTrayIconState(AUTHENTICATION_NAC_NON_COMPLIANT);
+		break;
+	}
+}
+
+/**
+ * \brief An interface was inserted.  Update our QHash to track it.
+ *
+ * @param[in] intName   The OS specific name of the interface that was
+ *                      inserted.
+ **/
+void TrayApp::slotInterfaceInserted(char *intName)
+{
+	char *devDesc = NULL;
+
+	if (xsupgui_request_get_devdesc(intName, &devDesc) == REQUEST_SUCCESS)
+	{
+		populateGlobalTrayData(intName, devDesc);
+		updateGlobalTrayIconState();
+	}
+}
+
+/**
+ * \brief An interface was removed.  Update our QHash to no longer track it.
+ *
+ * @param[in] intDesc   The vanity name of the interface that was removed.
+ **/
+void TrayApp::slotInterfaceRemoved(char *intDesc)
+{
+	QString m_myKey;
+
+	m_myKey = m_intStateHash.key(intDesc);
+	m_intStateHash.remove(m_myKey);
+	updateGlobalTrayIconState();
+}
+
+/**
+ * \brief Connect the signals that we would use to monitor the global tray
+ *        icon data.
+ **/
+void TrayApp::connectGlobalTrayIconSignals()
+{
+	if (m_pEmitter != NULL)
+	{
+		Util::myConnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
+			this, SLOT(slotStateChange(const QString &, int, int, int, unsigned int)));
+
+		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
+		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
+	}
+}
+
+/**
+ * \brief Disconnect the signals that we would use to monitor the global tray
+ *        icon data.
+ **/
+void TrayApp::disconnectGlobalTrayIconSignals()
+{
+	if (m_pEmitter != NULL)
+	{
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
+			this, SLOT(slotStateChange(const QString &, int, int, int, unsigned int)));
+
+		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
+	}
+}
+
+/**
+ * \brief Catch a state change event, and update our state hash.
+ *
+ **/
+void TrayApp::slotStateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid)
+{
+	QString temp, desc;
+	QList<QString> valList;
+	bool done = false;
+	int i, x;
+
+	if (sm == IPC_STATEMACHINE_8021X)
+	{
+		valList = m_intStateHash.values(intName);
+		desc = "";
+		
+		for (i = 0; i < valList.size(); ++i)
+		{
+			temp = valList.at(i);
+
+			x = temp.toInt(&done);
+
+			if (!done)   // This should be the description, not the state value.
+			{
+				desc = temp;
+				break;
+			}
+		}
+
+		// Remove the old values.
+		m_intStateHash.remove(intName);
+
+		m_intStateHash.insert(intName, desc);
+		temp.setNum(newstate);
+		m_intStateHash.insert(intName, temp);
+
+		updateGlobalTrayIconState();
+	}
+}
+
+/**
+ * \brief Add data about one interface to the hash used to determine the
+ *        icon color state.
+ *
+ * @param[in] intName   The OS specific interface name that we want to add.
+ * @param[in] intDesc   The vanity description for the interface we want to add.
+ **/
+void TrayApp::populateGlobalTrayData(QString intName, QString intDesc)
+{
+	int state = -1;
+	QString temp;
+	char *ctemp = NULL;
+
+	m_intStateHash.insert(intName, intDesc);
+	ctemp = _strdup(intName.toAscii());
+	if (xsupgui_request_get_1x_state(ctemp, &state) == REQUEST_SUCCESS)
+	{
+		// Add the state to our table.
+		temp.setNum(state);
+
+		m_intStateHash.insert(intName, temp);
+	}
+	else
+	{
+		// Couldn't determine the state, so skip it and hope we get an event later.
+		temp.setNum(-1);
+		m_intStateHash.insert(intName, temp);
+	}
+
+	free(ctemp);
+}
+
+/**
  * \brief Enumerate all of the interfaces and determine the authentication state
  *        to display in the tray.
  *
@@ -353,26 +579,23 @@ void TrayApp::setGlobalTrayIconState()
 {
 	int_enum *intlist = NULL;
 	int i = 0;
-	int state = 0;
+	QString temp;
 
-	if (xsupgui_request_enum_live_ints(intlist) == REQUEST_SUCCESS)
+	// Make sure our hash is empty before we start.
+	m_intStateHash.clear();
+
+	if (xsupgui_request_enum_live_ints(&intlist) == REQUEST_SUCCESS)
 	{
 		// Build our "snapshot" table in memory.
 		while (intlist[i].name != NULL)
 		{
-			if (xsupgui_request_get_1x_state(intlist[i].name, &state) == REQUEST_SUCCESS)
-			{
-				// Add the state to our table.
-			}
-			else
-			{
-				// Couldn't determine the state, so skip it and hope we get an event later.
-			}
-
+			populateGlobalTrayData(intlist[i].name, intlist[i].desc);
 			i++;
 		}
 	}
-	// XXX Finish!
+	
+	updateGlobalTrayIconState();
+	connectGlobalTrayIconSignals();
 }
 
 //! postConnectActions
@@ -624,7 +847,7 @@ void TrayApp::setTrayIconState(int curState)
 	  icon_to_load = "prod_green.png";
 	  break;
 
-  case AUTHENTICATION_TNC_NON_COMPLIANT:
+  case AUTHENTICATION_NAC_NON_COMPLIANT:
 	  icon_to_load = "prod_purple.png";
 	  break;
   }
