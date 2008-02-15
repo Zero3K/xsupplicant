@@ -16,7 +16,6 @@ Version 1.2.8
 	- Misc. other fixes
 	- Updated documentation to show that iwlib is required on Linux.
 	- Added the ability to associate using methods other than 'open system'.
-
 Version 1.2.7
 	- Added a copy of the latest wireless.h for Linux, so we no longer have
 	  to worry about missing #ifdefs when writing wext version specific
