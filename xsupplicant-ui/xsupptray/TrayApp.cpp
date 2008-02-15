@@ -44,6 +44,8 @@
 #include "EventListenerThread.h"
 #include "ConfigDlg.h"
 #include "FormLoader.h"
+#include "version.h"
+#include "buildnum.h"
 
 //! Constructor
 /*!
@@ -351,6 +353,16 @@ void TrayApp::updateGlobalTrayIconState()
 	QString temp;
 	bool valid;
 	QHash<QString, QString>::const_iterator i = m_intStateHash.constBegin();
+	QString tooltip = "XSupplicant ";
+	int failed = 0;
+	int authing = 0;
+	int authed = 0;
+	int inactive = 0;
+	
+	tooltip += VERSION;
+	tooltip += ".";
+	tooltip += BUILDNUM;
+	tooltip += "\nInterfaces :\n";
 
 	while (i != m_intStateHash.constEnd()) {
 		temp = i.value();
@@ -385,26 +397,39 @@ void TrayApp::updateGlobalTrayIconState()
 			case ACQUIRED:
 			case AUTHENTICATING:
 				if (highest < 2) highest = 2;
+				authing++;
 				break;
 
 			case HELD:
 				if (highest < 1) highest = 1;
+				failed++;
 				break;
 
 			case AUTHENTICATED:
 				if (highest < 3) highest = 3;
+				authed++;
 				break;
 
 			case LOGOFF:
 			case DISCONNECTED:
 			default:
 				if (highest < 0) highest = 0;
+				inactive++;
 				break;
 			}
 		}
 
 		++i;
 	}
+
+	temp.setNum(authed);
+	tooltip += " - Authenticated : "+temp+"\n";
+	temp.setNum(authing);
+	tooltip += " - Authenticating : "+temp+"\n";
+	temp.setNum(failed);
+	tooltip += " - Failed : "+temp+"\n";
+	temp.setNum(inactive);
+	tooltip += " - Idle : "+temp+"\n";
 
 	switch (highest)
 	{
@@ -429,6 +454,8 @@ void TrayApp::updateGlobalTrayIconState()
 		setTrayIconState(AUTHENTICATION_NAC_NON_COMPLIANT);
 		break;
 	}
+
+	m_pTrayIcon->setToolTip(tooltip);
 }
 
 /**
