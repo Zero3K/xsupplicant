@@ -1,23 +1,66 @@
+echo off
 rem XSupplicant Build Script
 rem Author: Terry Simons (galimorerpg@users.sourceforge.net)
 
+rem ---- Environment ----
+
 echo on
-set BUILD_ROOT=c:\xsup_dev\OpenSEA\SeaAnt
-set QTDIR=C:\Qt\4.3.3-opensource
-set QMAKESPEC=win32-msvc2005
-set BUILD_SDK=C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2
+set OPEN1X_BUILD_ROOT=%OPEN1X_BUILD_ROOT%
+set QTDIR=%QTDIR%
+set QMAKESPEC=%QMAKESPEC%
+set OPEN1X_BUILD_SDK=%OPEN1X_BUILD_SDK%
+
+if ["%OPEN1X_BUILD_ROOT%"]==[""] (
+	set OPEN1X_BUILD_ROOT=c:\xsup_dev\OpenSEA\SeaAnt
+)
+
+if ["%OPEN1X_BUILD_SDK%"]==[""] (
+	rem set OPEN1X_BUILD_SDK=C:\WinDDK\3790.1830\bin
+)
+
+if ["%QTDIR%"]==[""] (
+	set QTDIR=C:\Qt\qt-win-opensource-src-4.3.3
+)
+
+if [%QMAKESPEC%]==[] (
+	set QMAKESPEC=win32-msvc2005
+)
+
+rem ---- Support Libraries ----
+
+set LIBXML2DIR=%LIBXML2DIR%
+set ICONVDIR=%ICONVDIR%
+set OPENSSLDIR=%OPENSSLDIR%
+set ZLIBDIR=%ZLIBDIR%
+set LIBTNCDIR=%LIBTNCDIR%
+
+if [%LIBXML2DIR%]==[] (
+	set LIBXML2DIR=C:\gnu\libxml2-2.6.30+.win32
+)
+if [%ICONVDIR%]==[] (
+	set ICONVDIR=C:\gnu\iconv-1.9.2.win32
+)
+if [%OPENSSLDIR%]==[] (
+	set OPENSSLDIR=C:\gnu\openssl-0.9.8a.win32
+)
+if [%ZLIBDIR%]==[] (
+	set ZLIBDIR=C:\gnu\zlib-1.2.3.win32
+)
+if [%LIBTNCDIR%]==[] (
+	set LIBTNCDIR=C:\gnu\libtnc-1.16
+)
 
 rem ---- Open1X ----
-set OPEN1X_ENGINE=%BUILD_ROOT%\xsupplicant\vs2005
-set OPEN1X_ENGINE_PLUGINS=%BUILD_ROOT%\xsupplicant\plugins\vs2005
-set OPEN1X_GUI=%BUILD_ROOT%\ui
-set OPEN1X_GUI_PLUGINS=%BUILD_ROOT%\ui\plugins
-set OPEN1X_PROTINSTALL=%BUILD_ROOT%\ProtInstall
+set OPEN1X_ENGINE=%OPEN1X_BUILD_ROOT%\xsupplicant\vs2005
+set OPEN1X_ENGINE_PLUGINS=%OPEN1X_BUILD_ROOT%\xsupplicant\plugins\vs2005
+set OPEN1X_GUI=%OPEN1X_BUILD_ROOT%\ui
+set OPEN1X_GUI_PLUGINS=%OPEN1X_BUILD_ROOT%\ui\plugins
+set OPEN1X_PROTINSTALL=%OPEN1X_BUILD_ROOT%\ProtInstall
 
 rem ---- OEM ----
 
-rem set OEM_GUI_PLUGINS=%BUILD_ROOT%\OEM\UI Plugins
-rem set OEM_ENGINE_PLUGINS=%BUILD_ROOT%\OEM\Engine Plugins 
+rem set OEM_GUI_PLUGINS=%OPEN1X_BUILD_ROOT%\OEM\UI Plugins
+rem set OEM_ENGINE_PLUGINS=%OPEN1X_BUILD_ROOT%\OEM\Engine Plugins 
 
 set BUILD_TYPE=%1
 set BUILD_FLAGS=%2
@@ -33,17 +76,17 @@ set BUILD_TYPE=Release
 goto Release
 
 :Release
-set BUILD_FLAGS=/XP32 /RETAIL %BUILD_FLAGS%
+set BUILD_FLAGS=/Release %BUILD_FLAGS%
 goto Done
 
 :Debug
-set BUILD_FLAGS=/XP32 /DEBUG %BUILD_FLAGS%
+set BUILD_FLAGS=/Debug %BUILD_FLAGS%
 goto Done
 
 :Done
 
 REM Source the Microsoft development environment...
-Call "%BUILD_SDK%\SetEnv.Cmd" %BUILD_FLAGS%
+Call "%OPEN1X_BUILD_SDK%\SetEnv.Cmd" %BUILD_FLAGS%
 
 echo on
 
