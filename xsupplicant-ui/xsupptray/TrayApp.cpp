@@ -429,7 +429,7 @@ void TrayApp::updateGlobalTrayIconState()
 	temp.setNum(failed);
 	tooltip += " - Failed : "+temp+"\n";
 	temp.setNum(inactive);
-	tooltip += " - Idle : "+temp+"\n";
+	tooltip += " - Idle : "+temp;
 
 	switch (highest)
 	{
