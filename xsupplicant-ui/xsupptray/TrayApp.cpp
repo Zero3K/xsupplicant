@@ -357,6 +357,7 @@ void TrayApp::updateGlobalTrayIconState()
 	int failed = 0;
 	int authing = 0;
 	int authed = 0;
+	int connected = 0;
 	int inactive = 0;
 	
 	tooltip += VERSION;
@@ -381,7 +382,7 @@ void TrayApp::updateGlobalTrayIconState()
 			//                likely restricted.  (This isn't implemented at this time!)
 
 			// "Green" (3) - Indicates that a user should be able to access the network
-			//				 and is only displayed when in AUTHENTICATED state.
+			//				 and is only displayed when in AUTHENTICATED state or S_FORCE_AUTH state.
 			
 			// "Yellow" (2) - Indicates that an authentication is in progress. During
 			//				  this time, a user may have network access.
@@ -393,6 +394,7 @@ void TrayApp::updateGlobalTrayIconState()
 			//				any interfaces.
 			switch (itemp)
 			{
+			case RESTART:
 			case CONNECTING:
 			case ACQUIRED:
 			case AUTHENTICATING:
@@ -410,6 +412,11 @@ void TrayApp::updateGlobalTrayIconState()
 				authed++;
 				break;
 
+			case S_FORCE_AUTH:
+				if (highest < 3) highest = 3;
+				connected++;
+				break;
+
 			case LOGOFF:
 			case DISCONNECTED:
 			default:
@@ -424,6 +431,8 @@ void TrayApp::updateGlobalTrayIconState()
 
 	temp.setNum(authed);
 	tooltip += " - Authenticated : "+temp+"\n";
+	temp.setNum(connected);
+	tooltip += " - Connected : "+temp+"\n";
 	temp.setNum(authing);
 	tooltip += " - Authenticating : "+temp+"\n";
 	temp.setNum(failed);
