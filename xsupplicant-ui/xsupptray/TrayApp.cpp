@@ -237,6 +237,8 @@ void TrayApp::slotRestart()
 {
   // clear the flag that we are connected
   m_bSupplicantConnected = false;
+
+  m_pTrayIcon->setToolTip(tr("The XSupplicant service isn't running.  Please restart it."));
   // Set the tray icon to disconnected
   setTrayIconState(ENGINE_DISCONNECTED);
 
@@ -294,6 +296,8 @@ void TrayApp::slotConnectToSupplicant()
       }
 
       m_bConnectFailed = true;
+
+	  m_pTrayIcon->setToolTip(tr("The XSupplicant service isn't running.  Please restart it."));
       setTrayIconState(ENGINE_DISCONNECTED);
       // disable the menu options
       setEnabledMenuItems(false);
@@ -842,6 +846,7 @@ void TrayApp::createTrayIcon()
   Util::myConnect(m_pTrayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
           this, SLOT(slotIconActivated(QSystemTrayIcon::ActivationReason)));
 
+  m_pTrayIcon->setToolTip(tr("The XSupplicant service isn't running.  Please restart it."));
   setTrayIconState(ENGINE_DISCONNECTED);
 
   m_pTrayIcon->show();       // Even if the icon couldn't be loaded, we will at least get a blank spot on the tray.
