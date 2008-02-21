@@ -1,0 +1,15 @@
+* Branch Naming conventions:
+
+Branches should be named in a way that identifies the release and feature such as:
+
+<TargetRelease>-<feature-name-in-lower-case>
+
+For example, SeaAnt-disconnect-at-logoff
+
+* Properties
+
+When adding new files, be sure to set:
+
+svn:eol-style native
+
+
