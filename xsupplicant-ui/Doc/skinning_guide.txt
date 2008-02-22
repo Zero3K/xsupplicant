@@ -16,6 +16,8 @@ the widget names that the UI engine will operate on.
 uiWindowAbout
 uiBannerGraphicLeft
 uiBannerGraphicRight
+hLineDark
+hLineLight
 buttonClose -- (Optional) The button that will be used to close the dialog box.
 backgroundMain
 whiteFrameMain
@@ -47,6 +49,8 @@ dataFieldURLOpen1X
 uiWindowHelp
 uiBannerGraphicLeft
 uiBannerGraphicRight
+hLineDark
+hLineLight
 backgroundBottom
 backgroundMain
 dataFieldHelpWindow -- A QTextEdit widget that displays the help for the item requested.
@@ -64,6 +68,8 @@ buttonHome -- (Optional)  A button that allows the user to go back to where they
 uiWindowLogs
 uiBannerGraphicLeft
 uiBannerGraphicRight
+hLineDark
+hLineLight
 backgroundBottom
 backgroundMain
 dataFieldLogWindow
@@ -81,6 +87,8 @@ backgroundBanner
 uiWindowViewLogs
 uiBannerGraphicLeft
 uiBannerGraphicRight
+hLineDark
+hLineLight
 backgroundMain
 dataFieldLogWindow
 backgroundBottom
@@ -100,6 +108,10 @@ dataFieldLogFileDirectory
 
 uiWindowLogin
 backgroundMain
+uiBannerGraphicLeft
+uiBannerGraphicRight
+hLineDark
+hLineLight
 buttonClose
 buttonConnect -- A push button that will allow the user to connect to, or disconnect from, the connection selected in the connectionDropDown.
 buttonConfig -- (Optional) A push button that will open the configuration dialog.
