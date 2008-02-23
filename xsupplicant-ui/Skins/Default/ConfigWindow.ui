@@ -290,7 +290,7 @@
      <number>0</number>
     </property>
     <property name="currentIndex" >
-     <number>10</number>
+     <number>7</number>
     </property>
     <widget class="QWidget" name="widgetStackConnectionsTablePage" >
      <widget class="QFrame" name="backgroundHeaderConnectionsTable" >
@@ -7183,7 +7183,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex" >
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="widgetTabsProfilesProtocolSettingsPage" >
        <attribute name="title" >
@@ -7779,7 +7779,7 @@
            <number>0</number>
           </property>
          </widget>
-         <widget class="QCheckBox" name="dataCheckboxValidateServer" >
+         <widget class="QCheckBox" name="dataCheckboxProfilesValidateServer" >
           <property name="geometry" >
            <rect>
             <x>10</x>
@@ -15572,7 +15572,7 @@
   <tabstop>dataFieldProfileName</tabstop>
   <tabstop>dataComboEAPTypes</tabstop>
   <tabstop>widgetTabsProfiles</tabstop>
-  <tabstop>dataCheckboxValidateServer</tabstop>
+  <tabstop>dataCheckboxProfilesValidateServer</tabstop>
   <tabstop>dataComboProfilesTrustedServers</tabstop>
   <tabstop>dataRadioProfilesAnonymousIdentity</tabstop>
   <tabstop>dataRadioProfielsUseThisIdentity</tabstop>
@@ -15586,7 +15586,7 @@
   <tabstop>buttonProfilesShowPassword</tabstop>
   <tabstop>dataFrameTrustedServerName</tabstop>
   <tabstop>dataFieldCommonNameEndsWith</tabstop>
-  <tabstop>dataCheckboxValidateServer</tabstop>
+  <tabstop>dataCheckboxProfilesValidateServer</tabstop>
   <tabstop>buttonLoggingBrowse</tabstop>
   <tabstop>dataCheckboxEnableLoggingToFile</tabstop>
   <tabstop>dataFieldLoggingLogDirectory</tabstop>
@@ -15614,7 +15614,7 @@
   <tabstop>buttonClose</tabstop>
   <tabstop>buttonHelp</tabstop>
   <tabstop>buttonLoggingBrowse</tabstop>
-  <tabstop>dataCheckboxValidateServer</tabstop>
+  <tabstop>dataCheckboxProfilesValidateServer</tabstop>
  </tabstops>
  <resources/>
  <connections/>
