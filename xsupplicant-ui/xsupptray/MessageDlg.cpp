@@ -134,5 +134,5 @@ void MessageDlg::slotCopy(bool bCopy)
 */
 void MessageDlg::slotHelp()
 {
-  HelpBrowser::showPage(m_helpFile, m_helpLocation);
+  HelpWindow::showPage(m_helpFile, m_helpLocation);
 }

@@ -71,22 +71,22 @@ bool ConfigInfo::attach()
 {
 	QStackedWidget *m_pWidget;
 
-	m_pWidget = qFindChild<QStackedWidget*>(m_pRealWidget, "configStackedWidget");
+	m_pWidget = qFindChild<QStackedWidget*>(m_pRealWidget, "widgetStackConfig");
 	if (m_pWidget == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate a QStackedWidget named 'configStackedWidget'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate a QStackedWidget named 'widgetStackConfig'."));
 		return false;
 	}
 
-	 m_pSaveButton = qFindChild<QPushButton*>(m_pRealWidget, "saveBtn");
+	 m_pSaveButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonSave");
 
 	 if (m_pSaveButton == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("The configuration form doesn't have a 'saveBtn' defined."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("The configuration form doesn't have a 'buttonSave' defined."));
 		 return false;
 	 }
 
-	 m_pHelpButton = qFindChild<QPushButton*>(m_pRealWidget, "helpBtn");
+	 m_pHelpButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonHelp");
 	 // Not worried if this button isn't there.
 
 	 if (m_pHelpButton != NULL)
@@ -95,7 +95,7 @@ bool ConfigInfo::attach()
 		 Util::myConnect(m_pHelpButton, SIGNAL(clicked()), this, SIGNAL(signalHelpClicked()));
 	 }
 
-	 m_pCloseButton = qFindChild<QPushButton*>(m_pRealWidget, "clsBtn");
+	 m_pCloseButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonClose");
 	// Not worried if this button isn't there.
 
 	 if (m_pCloseButton != NULL)

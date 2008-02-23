@@ -95,7 +95,7 @@ void ConfigWidgetGlobalsTable::slotDoubleClicked(int row, int column)
 
 void ConfigWidgetGlobalsTable::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsupglobals");
+	HelpWindow::showPage("xsupphelp.html", "xsupglobals");
 }
 
 

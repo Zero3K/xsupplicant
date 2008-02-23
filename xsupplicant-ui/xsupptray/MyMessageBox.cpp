@@ -201,7 +201,7 @@ void MyMessageBox::setupFields(QString &title, QString &text, char *pHelpLocatio
 */
 void MyMessageBox::slotHelp()
 {
-  HelpBrowser::showPage("xsupphelp.html", m_helpLocation);
+  HelpWindow::showPage("xsupphelp.html", m_helpLocation);
 }
 
 void MyMessageBox::slotYes()

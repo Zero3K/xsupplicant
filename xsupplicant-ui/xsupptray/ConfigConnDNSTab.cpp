@@ -52,38 +52,38 @@ ConfigConnDNSTab::~ConfigConnDNSTab()
 
 bool ConfigConnDNSTab::attach()
 {
-	m_pDHCPAuto = qFindChild<QRadioButton*>(m_pRealWidget, "obtainDNSButton");
+	m_pDHCPAuto = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioAutoDNS");
 	if (m_pDHCPAuto == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QRadioButton called 'obtainDNSButton'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QRadioButton called 'dataRadioAutoDNS'."));
 		return false;
 	}
 
-	m_pDHCPStatic = qFindChild<QRadioButton*>(m_pRealWidget, "staticDNSButton");
+	m_pDHCPStatic = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioStaticDNS");
 	if (m_pDHCPStatic == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QRadioButton called 'staticDNSButton'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QRadioButton called 'dataRadioStaticDNS'."));
 		return false;
 	}
 
-	m_pPrimaryDNS = qFindChild<QLineEdit*>(m_pRealWidget, "primaryDNSEdit");
+	m_pPrimaryDNS = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticDNSPrimary");
 	if (m_pPrimaryDNS == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'primaryDNSEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'dataFieldStaticDNSPrimary'."));
 		return false;
 	}
 
-	m_pSecondaryDNS = qFindChild<QLineEdit*>(m_pRealWidget, "secondaryDNSEdit");
+	m_pSecondaryDNS = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticDNSSecondary");
 	if (m_pSecondaryDNS == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'secondaryDNSEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'dataFieldStaticDNSSecondary'."));
 		return false;
 	}
 
-	m_pSuffix = qFindChild<QLineEdit*>(m_pRealWidget, "domainSuffixEdit");
+	m_pSuffix = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticDNSSecondary");
 	if (m_pSuffix == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'domainSuffixEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'dataFieldStaticDNSSecondary'."));
 		return false;
 	}
 

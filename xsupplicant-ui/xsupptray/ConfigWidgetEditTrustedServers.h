@@ -80,7 +80,7 @@ private slots:
 	 QLineEdit *m_pCNEdit;
 	 QLineEdit *m_pServerNameEdit;
 	 QCheckBox *m_pValidateServer;
-	 QPushButton *m_pBrowseBtn;
+	 QPushButton *m_pbuttonBrowse;
 	 QLabel *m_pCertCNLabel;
 	 QLabel *m_pCertDeptLabel;
 	 QLabel *m_pCertCompanyLabel;

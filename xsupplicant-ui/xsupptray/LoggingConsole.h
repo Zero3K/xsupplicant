@@ -30,8 +30,8 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#ifndef _LOGGINGCONSOLE_H_
-#define _LOGGINGCONSOLE_H_
+#ifndef _LOGWINDOW_H_
+#define _LOGWINDOW_H_
 
 #include <stdafx.h>
 #include <QtGui>
@@ -39,10 +39,10 @@
 #include "Emitter.h"
 #include "xsupcalls.h"
 
-//!\class LoggingConsole
-/*!\brief LoggingConsole is used to display the log messages from the xsupplicant
+//!\class LogWindow
+/*!\brief LogWindow is used to display the log messages from the xsupplicant
 */
-class LoggingConsole :  public QWidget
+class LogWindow :  public QWidget
 {
   Q_OBJECT 
   signals:
@@ -63,7 +63,7 @@ private slots:
 	void slotCopyToClipboard();
 
 public:
-  LoggingConsole(QWidget *parent = NULL, Emitter *e = NULL);
+  LogWindow(QWidget *parent = NULL, Emitter *e = NULL);
   bool isScanComplete();
   void addMessage(const QString &message);
   bool create();
@@ -83,12 +83,12 @@ private:
   Emitter *m_pEmitter;
 
 public:
-  virtual ~LoggingConsole(void);
+  virtual ~LogWindow(void);
   
   // Static functions to control only one occurrence of this dialog
   void showLog();
   XSupCalls &getSupplicant();
 };
 
-#endif  // _LOGGINGCONSOLE_H_
+#endif  // _LOGWINDOW_H_
 

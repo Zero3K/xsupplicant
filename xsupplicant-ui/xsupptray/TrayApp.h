@@ -130,8 +130,8 @@ private:
     QApplication &m_app;
     LoginMainDlg *m_pLoginDlg;
 	ConfigDlg *m_pConfDlg;
-    LoggingConsole *m_pLoggingCon;
-    AboutDlg *m_pAboutDlg;
+    LogWindow *m_pLoggingCon;
+    AboutWindow *m_pAboutWindow;
 	Emitter *m_pEmitter;
     QTimer m_timer;
     bool m_bConnectFailed;

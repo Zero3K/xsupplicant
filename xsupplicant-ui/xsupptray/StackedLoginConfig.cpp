@@ -197,10 +197,10 @@ void StackedLoginConfig::setWireless(poss_conn_enum *pConnEnum, bool fromConnect
 		m_pLoginInfo = NULL;
 	}
 
-	myWidget = qFindChild<QWidget*>(m_pWidgets, "statusPage");
+	myWidget = qFindChild<QWidget*>(m_pWidgets, "widgetStackStatusPage");
 	if (myWidget == NULL)
 	{
-		QMessageBox::critical(this, "Form Design Error", "There is no 'statusPage' defined in the widget stack!");
+		QMessageBox::critical(this, "Form Design Error", "There is no 'widgetStackStatusPage' defined in the widget stack!");
 		return;
 	}
 
@@ -223,10 +223,10 @@ void StackedLoginConfig::setWired(poss_conn_enum *pConnEnum, bool fromConnect)
 		m_pLoginInfo = NULL;
 	}
 
-	myWidget = qFindChild<QWidget*>(m_pWidgets, "statusPage");
+	myWidget = qFindChild<QWidget*>(m_pWidgets, "widgetStackStatusPage");
 	if (myWidget == NULL)
 	{
-		QMessageBox::critical(this, "Form Design Error", "There is no 'statusPage' defined in the widget stack!");
+		QMessageBox::critical(this, "Form Design Error", "There is no 'widgetStackStatusPage' defined in the widget stack!");
 		return;
 	}
 
@@ -249,10 +249,10 @@ void StackedLoginConfig::setLogin(poss_conn_enum *pConnEnum)
 		m_pLoginInfo = NULL;
 	}
 	
-	myWidget = qFindChild<QWidget*>(m_pWidgets, "loginPage");
+	myWidget = qFindChild<QWidget*>(m_pWidgets, "widgetStackLoginPage");
 	if (myWidget == NULL)
 	{
-		QMessageBox::critical(this, "Form Design Error", "There is no 'loginPage' defined in the widget stack!");
+		QMessageBox::critical(this, "Form Design Error", "There is no 'widgetStackLoginPage' defined in the widget stack!");
 		return;
 	}
 

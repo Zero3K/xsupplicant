@@ -299,11 +299,11 @@ void MessageClass::slotHelp()
 {
   if (m_pHelpFile && m_pHelpLocation)
   {
-    HelpBrowser::showPage(m_pHelpFile, m_pHelpLocation);
+    HelpWindow::showPage(m_pHelpFile, m_pHelpLocation);
   }
   else
   {
-    HelpBrowser::showPage("xsupphelp.html","xsupuserguide"); // generic help if none is passed in
+    HelpWindow::showPage("xsupphelp.html","xsupuserguide"); // generic help if none is passed in
   }
 }
 //! DisplayMessageModeless

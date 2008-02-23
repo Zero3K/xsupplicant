@@ -73,7 +73,7 @@ TrayApp::TrayApp(QApplication &app):
   m_pViewLogAction       = NULL;
   m_pTroubleticketAction = NULL;
   m_pLoginDlg            = NULL;
-  m_pAboutDlg            = NULL;
+  m_pAboutWindow            = NULL;
   m_pLoggingCon          = NULL;
   m_pConfDlg             = NULL;
   m_pEmitter             = NULL;
@@ -103,10 +103,10 @@ TrayApp::~TrayApp()
 		m_pEmitter = NULL;
 	}
 
-	if (m_pAboutDlg != NULL) 
+	if (m_pAboutWindow != NULL) 
 	{
-		delete m_pAboutDlg;  // Clean up any about window hanging around.
-		m_pAboutDlg = NULL;
+		delete m_pAboutWindow;  // Clean up any about window hanging around.
+		m_pAboutWindow = NULL;
 	}
 
 	if (m_pConfDlg != NULL)
@@ -648,7 +648,7 @@ bool TrayApp::postConnectActions()
 
   m_pEmitter = new Emitter();
 
-  m_pLoggingCon = new LoggingConsole(NULL, m_pEmitter); // no parent
+  m_pLoggingCon = new LogWindow(NULL, m_pEmitter); // no parent
   if (m_pLoggingCon != NULL)
   {
 	  if (m_pLoggingCon->create() == true)
@@ -1059,25 +1059,25 @@ void TrayApp::slotViewLog()
 */
 void TrayApp::slotAbout()
 {
-  if (m_pAboutDlg == NULL)
+  if (m_pAboutWindow == NULL)
   {
-	  m_pAboutDlg = new AboutDlg(this);
-	  if (m_pAboutDlg->create() == false)
+	  m_pAboutWindow = new AboutWindow(this);
+	  if (m_pAboutWindow->create() == false)
 	  {
 		  QMessageBox::critical(this, tr("Form Creation Error"), tr("The About Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
-		  delete m_pAboutDlg;
-		  m_pAboutDlg = NULL;
+		  delete m_pAboutWindow;
+		  m_pAboutWindow = NULL;
 	  }
 	  else
 	  {
-		  m_pAboutDlg->show();
+		  m_pAboutWindow->show();
 
-		  Util::myConnect(m_pAboutDlg, SIGNAL(close(void)), this, SLOT(slotCleanupAbout(void)));
+		  Util::myConnect(m_pAboutWindow, SIGNAL(close(void)), this, SLOT(slotCleanupAbout(void)));
 	  }
   }
   else
   {
-	  m_pAboutDlg->show();
+	  m_pAboutWindow->show();
   }
 }
 
@@ -1087,13 +1087,13 @@ void TrayApp::slotAbout()
  **/
 void TrayApp::slotCleanupAbout()
 {
-	if (m_pAboutDlg == NULL) return;  // This shouldn't be possible!
+	if (m_pAboutWindow == NULL) return;  // This shouldn't be possible!
 
-	Util::myDisconnect(m_pAboutDlg, SIGNAL(close(void)), this, SLOT(slotCleanupAbout(void)));
+	Util::myDisconnect(m_pAboutWindow, SIGNAL(close(void)), this, SLOT(slotCleanupAbout(void)));
 
-	delete m_pAboutDlg;
+	delete m_pAboutWindow;
 
-	m_pAboutDlg = NULL;
+	m_pAboutWindow = NULL;
 }
 
 //! 
@@ -1214,12 +1214,12 @@ bool TrayApp::startEventListenerThread()
 */
 void TrayApp::slotHelp()
 {
-  HelpBrowser::showPage("xsupphelp.html", "xsupuserguide");
+  HelpWindow::showPage("xsupphelp.html", "xsupuserguide");
 }
 
 void TrayApp::slotLaunchHelp(const QString &file, const QString &page)
 {
-	HelpBrowser::showPage(file, page);
+	HelpWindow::showPage(file, page);
 }
 
 void TrayApp::loadPlugins()

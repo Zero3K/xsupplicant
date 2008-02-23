@@ -80,15 +80,15 @@ ConfigWidgetEditAdvancedSettings::~ConfigWidgetEditAdvancedSettings()
 
 bool ConfigWidgetEditAdvancedSettings::attach()
 {
-	m_pScanTimeout = qFindChild<QLineEdit*>(m_pRealWidget, "scanTimeoutEdit");
+	m_pScanTimeout = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldAdvancedSettingsScanTimeout");
 
-	m_pAssocTimeout = qFindChild<QLineEdit*>(m_pRealWidget, "assocTimeoutEdit");
+	m_pAssocTimeout = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldAdvancedSettingsAssociationTimeout");
 
-	m_pResetValues = qFindChild<QPushButton*>(m_pRealWidget, "resetBtn");
+	m_pResetValues = qFindChild<QPushButton*>(m_pRealWidget, "buttonAdvancedSettingsReset");
 
-	m_pDefaultWired = qFindChild<QComboBox*>(m_pRealWidget, "wiredConnectionDefault");
+	m_pDefaultWired = qFindChild<QComboBox*>(m_pRealWidget, "dataComboAdvancedSettingsWiredDefault");
 
-	m_pCheckOtherSupplicants = qFindChild<QCheckBox*>(m_pRealWidget, "runCheckOnStartup");
+	m_pCheckOtherSupplicants = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxAdvancedSettignsRunCheckOnStartup");
 
 	updateWindow();
 
@@ -445,7 +445,7 @@ bool ConfigWidgetEditAdvancedSettings::dataChanged()
 
 void ConfigWidgetEditAdvancedSettings::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsupsettings");
+	HelpWindow::showPage("xsupphelp.html", "xsupsettings");
 }
 
 void ConfigWidgetEditAdvancedSettings::discard()

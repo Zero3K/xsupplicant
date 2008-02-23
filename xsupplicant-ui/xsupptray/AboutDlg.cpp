@@ -50,7 +50,7 @@
   \param[in] parent
   \return nothing
 */
-AboutDlg::AboutDlg(QWidget *parent)
+AboutWindow::AboutWindow(QWidget *parent)
      : QWidget(parent),
      m_supplicant(this)
 {
@@ -61,7 +61,7 @@ AboutDlg::AboutDlg(QWidget *parent)
 	m_pTitleImageLabel = NULL;
 	m_pSupVersion      = NULL;
 	m_pGUIVersion      = NULL;
-	m_pClose           = NULL;
+	m_pbuttonClose     = NULL;
 }
 
 
@@ -70,7 +70,7 @@ AboutDlg::AboutDlg(QWidget *parent)
   \brief Clears out whatever needs to be cleared out
   \return nothing
 */
-AboutDlg::~AboutDlg()
+AboutWindow::~AboutWindow()
 {
 	if (m_pRealForm != NULL) 
 	{
@@ -79,9 +79,9 @@ AboutDlg::~AboutDlg()
 	}
 }
 
-bool AboutDlg::create()
+bool AboutWindow::create()
 {
-	m_pRealForm = FormLoader::buildform("AbtDlg.ui");
+	m_pRealForm = FormLoader::buildform("AboutWindow.ui");
 
 	if (m_pRealForm == NULL) return false;
 
@@ -89,33 +89,33 @@ bool AboutDlg::create()
 	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
-	m_pSupVersion = qFindChild<QLabel*>(m_pRealForm, "engVersionLabel");
+	m_pSupVersion = qFindChild<QLabel*>(m_pRealForm, "dataFieldEngineVersion");
 
 	if (m_pSupVersion == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'engVersionLabel' label.  The engine version will not be displayed properly."));
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'dataFieldEngineVersion' label.  The engine version will not be displayed properly."));
 	}
 
-	m_pGUIVersion = qFindChild<QLabel*>(m_pRealForm, "uiVersionLabel");
+	m_pGUIVersion = qFindChild<QLabel*>(m_pRealForm, "dataFieldGUIVersion");
 
 	if (m_pSupVersion == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'uiVersionLabel' label.  The GUI version will not be displayed properly."));
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'dataFieldGUIVersion' label.  The GUI version will not be displayed properly."));
 	}
 
-	m_pPlugInsLabel = qFindChild<QLabel*>(m_pRealForm, "pluginsLabel");
+	m_pdataFieldPlugins = qFindChild<QLabel*>(m_pRealForm, "dataFieldPlugins");
 
-	if (m_pPlugInsLabel == NULL)
+	if (m_pdataFieldPlugins == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'pluginsLabel' label.  The plugins section of the About Dialog will be incorrect."));
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'dataFieldPlugins' label.  The plugins section of the About Dialog will be incorrect."));
 	}
 
-	m_pClose = qFindChild<QPushButton*>(m_pRealForm, "clsBtn");
+	m_pbuttonClose = qFindChild<QPushButton*>(m_pRealForm, "buttonClose");
 
-	// If m_pClose is NULL, then there isn't a close button.  We don't consider that to be a problem, so don't complain.
-	if (m_pClose != NULL)
+	// If m_pbuttonClose is NULL, then there isn't a close button.  We don't consider that to be a problem, so don't complain.
+	if (m_pbuttonClose != NULL)
 	{
-	    QObject::connect(m_pClose, SIGNAL(clicked()),
+	    QObject::connect(m_pbuttonClose, SIGNAL(clicked()),
 		                  this, SIGNAL(close()));
 	}
 
@@ -127,7 +127,7 @@ bool AboutDlg::create()
 	return true;
 }
 
-void AboutDlg::show()
+void AboutWindow::show()
 {
 	// This will cause the window to come to the front if it is already built.
 	if (m_pRealForm->isVisible() == true) m_pRealForm->hide();
@@ -135,7 +135,7 @@ void AboutDlg::show()
 	m_pRealForm->show();
 }
 
-void AboutDlg::setupWindow()
+void AboutWindow::setupWindow()
 {
 	Qt::WindowFlags flags;
 
@@ -144,7 +144,7 @@ void AboutDlg::setupWindow()
   m_pRealForm->setWindowFlags(flags);
 }
 
-void AboutDlg::updateData()
+void AboutWindow::updateData()
 {
   QString fullVersion;
   QString numberString;
@@ -154,9 +154,9 @@ void AboutDlg::updateData()
   m_pSupVersion->setText(tr("%1").arg(numberString));
 
 #ifdef TNC
-  m_pPlugInsLabel->setText(tr("with Identity Engines Ignition Posture Module"));
+  m_pdataFieldPlugins->setText(tr("with Identity Engines Ignition Posture Module"));
 #else
-  m_pPlugInsLabel->setText("");
+  m_pdataFieldPlugins->setText("");
 #endif
 
   m_pGUIVersion->setText(tr("%1").arg(getGUIVersion()));
@@ -169,7 +169,7 @@ void AboutDlg::updateData()
   \return nothing
   \todo Need to get the data from the supplicant for all of the fields that we need here
 */
-QString &AboutDlg::getGUIVersion()
+QString &AboutWindow::getGUIVersion()
 {
   return m_versionString;
 }

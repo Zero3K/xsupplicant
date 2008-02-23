@@ -100,5 +100,5 @@ void ConfigWidgetAdvancedTable::slotDoubleClicked(int row, int column)
 
 void ConfigWidgetAdvancedTable::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsupadvanced");
+	HelpWindow::showPage("xsupphelp.html", "xsupadvanced");
 }

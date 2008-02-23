@@ -59,45 +59,45 @@ ConfigConnNetTab::~ConfigConnNetTab()
 
 bool ConfigConnNetTab::attach()
 {
-	m_pDHCPRadioBtn = qFindChild<QRadioButton*>(m_pRealWidget, "dhcpBtn");
+	m_pDHCPRadioBtn = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioDHCP");
 	if (m_pDHCPRadioBtn == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton named 'dhcpBtn'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton named 'dataRadioDHCP'."));
 		return false;
 	}
 
-	m_pStaticRadioBtn = qFindChild<QRadioButton*>(m_pRealWidget, "staticIPRadio");
+	m_pStaticRadioBtn = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioStaticIP");
 	if (m_pStaticRadioBtn == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton named 'staticIPRadio'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton named 'dataRadioStaticIP'."));
 		return false;
 	}
 
-	m_pRenewDHCPCheckbox = qFindChild<QCheckBox*>(m_pRealWidget, "renewSettingsCheckBox");
+	m_pRenewDHCPCheckbox = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxRenewSettings");
 	if (m_pRenewDHCPCheckbox == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox named 'renewSettingsCheckBox'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox named 'dataCheckboxRenewSettings'."));
 		return false;
 	}
 
-	m_pIPAddrEdit = qFindChild<QLineEdit*>(m_pRealWidget, "ipaddrEdit");
+	m_pIPAddrEdit = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticIPAddress");
 	if (m_pIPAddrEdit == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit named 'ipaddrEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit named 'dataFieldStaticIPAddress'."));
 		return false;
 	}
 
-	m_pNetmaskEdit = qFindChild<QLineEdit*>(m_pRealWidget, "netmaskEdit");
+	m_pNetmaskEdit = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticIPNetmask");
 	if (m_pNetmaskEdit == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit named 'netmaskEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit named 'dataFieldStaticIPNetmask'."));
 		return false;
 	}
 
-	m_pGWEdit = qFindChild<QLineEdit*>(m_pRealWidget, "gatewayEdit");
+	m_pGWEdit = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticIPGateway");
 	if (m_pGWEdit == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit named 'gatewayEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit named 'dataFieldStaticIPGateway'."));
 		return false;
 	}
 

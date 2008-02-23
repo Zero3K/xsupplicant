@@ -229,11 +229,11 @@ void ConfigStackedWidget::doConnectionsPanels(QString toEdit, bool isNew)
 			m_pActivePage = NULL;
 		}
 
-		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "connList");
+		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "widgetStackConnectionsTablePage");
 
 		if (pRealWidget == NULL)
 		{
-			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'connList' could not be found in this form!"));
+			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'widgetStackConnectionsTablePage' could not be found in this form!"));
 		}
 		else
 		{
@@ -258,11 +258,11 @@ void ConfigStackedWidget::doConnectionsPanels(QString toEdit, bool isNew)
 			m_pActivePage = NULL;
 		}
 
-		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "connConfPage");
+		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "widgetStackConnectionsEditPage");
 
 		if (pRealWidget == NULL)
 		{
-			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'connConfPage' could not be found in this form!"));
+			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'widgetStackConnectionsEditPage' could not be found in this form!"));
 		}
 		else
 		{
@@ -299,11 +299,11 @@ void ConfigStackedWidget::doProfilesPanels(QString toEdit, bool isNew)
 			m_pActivePage = NULL;
 		}
 
-		pRealTable = qFindChild<QTableWidget*>(m_pRealWidget, "profileTable");
+		pRealTable = qFindChild<QTableWidget*>(m_pRealWidget, "dataTableProfiles");
 
 		if (pRealTable == NULL)
 		{
-			QMessageBox::critical(this, tr("Form Design Error"), tr("The QTableWidget 'profileTable' could not be found in this form!"));
+			QMessageBox::critical(this, tr("Form Design Error"), tr("The QTableWidget 'dataTableProfiles' could not be found in this form!"));
 		}
 		else
 		{
@@ -327,11 +327,11 @@ void ConfigStackedWidget::doProfilesPanels(QString toEdit, bool isNew)
 			m_pActivePage = NULL;
 		}
 
-		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "profConfPage");
+		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "widgetStackProfilesEditPage");
 
 		if (pRealWidget == NULL)
 		{
-			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'profConfPage' could not be found in this form!"));
+			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'widgetStackProfilesEditPage' could not be found in this form!"));
 		}
 		else
 		{
@@ -368,11 +368,11 @@ void ConfigStackedWidget::doGlobalsPanels(QString toEdit)
 			m_pActivePage = NULL;
 		}
 
-		pRealTable = qFindChild<QTableWidget*>(m_pRealWidget, "globalsTable");
+		pRealTable = qFindChild<QTableWidget*>(m_pRealWidget, "dataTableGlobals");
 
 		if (pRealTable == NULL)
 		{
-			QMessageBox::critical(this, tr("Form Design Error"), tr("The QTableWidget 'globalsTable' could not be found in this form!"));
+			QMessageBox::critical(this, tr("Form Design Error"), tr("The QTableWidget 'dataTableGlobals' could not be found in this form!"));
 		}
 		else
 		{
@@ -397,11 +397,11 @@ void ConfigStackedWidget::doGlobalsPanels(QString toEdit)
 			m_pActivePage = NULL;
 		}
 
-		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "globalsConfPage");
+		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "widgetStackLoggingEditPage");
 
 		if (pRealWidget == NULL)
 		{
-			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'globalsConfPage' could not be found in this form!"));
+			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'widgetStackLoggingEditPage' could not be found in this form!"));
 		}
 		else
 		{
@@ -464,11 +464,11 @@ void ConfigStackedWidget::doAdvancedPanels(QString toEdit)
 				m_pActivePage = NULL;
 			}
 
-			pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "advancedSettingsConfPage");
+			pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "widgetStackAdvancedSettingsEditPage");
 
 			if (pRealWidget == NULL)
 			{
-				QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'advancedSettingsConfPage' could not be found in this form!"));
+				QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'widgetStackAdvancedSettingsEditPage' could not be found in this form!"));
 			}
 			else
 			{
@@ -493,11 +493,11 @@ void ConfigStackedWidget::doAdvancedPanels(QString toEdit)
 				m_pActivePage = NULL;
 			}
 
-			pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "advancedInternalsPage");
+			pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "widgetStackAdvancedInternalsEditPage");
 
 			if (pRealWidget == NULL)
 			{
-				QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'advancedInternalsPage' could not be found in this form!"));
+				QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'widgetStackAdvancedInternalsEditPage' could not be found in this form!"));
 			}
 			else
 			{
@@ -534,11 +534,11 @@ void ConfigStackedWidget::doTrustedServersPanels(QString toEdit, bool isNew)
 			m_pActivePage = NULL;
 		}
 
-		pRealTable = qFindChild<QTableWidget*>(m_pRealWidget, "trustedServersTable");
+		pRealTable = qFindChild<QTableWidget*>(m_pRealWidget, "dataTableTrustedServers");
 
 		if (pRealTable == NULL)
 		{
-			QMessageBox::critical(this, tr("Form Design Error"), tr("The QTableWidget 'globalsTable' could not be found in this form!"));
+			QMessageBox::critical(this, tr("Form Design Error"), tr("The QTableWidget 'dataTableGlobals' could not be found in this form!"));
 		}
 		else
 		{
@@ -563,11 +563,11 @@ void ConfigStackedWidget::doTrustedServersPanels(QString toEdit, bool isNew)
 			m_pActivePage = NULL;
 		}
 
-		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "trustedServerConfPage");
+		pRealWidget = qFindChild<QWidget*>(m_pRealWidget, "widgetStackTrustedServersEditPage");
 
 		if (pRealWidget == NULL)
 		{
-			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'trustedServerConfPage' could not be found in this form!"));
+			QMessageBox::critical(this, tr("Form Design Error"), tr("The QWidget 'widgetStackTrustedServersEditPage' could not be found in this form!"));
 		}
 		else
 		{

@@ -155,5 +155,5 @@ void ConfigWidgetProfilesTable::fillTable()
 
 void ConfigWidgetProfilesTable::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsupprofmain");
+	HelpWindow::showPage("xsupphelp.html", "xsupprofmain");
 }

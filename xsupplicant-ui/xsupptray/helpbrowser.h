@@ -30,15 +30,15 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#ifndef _HELPBROWSER_H_
-#define _HELPBROWSER_H_
+#ifndef _HELPWINDOW_H_
+#define _HELPWINDOW_H_
 
 #include <QWidget>
 #include <QTextBrowser>
 #include <QPushButton>
 
 
-class HelpBrowser: public QWidget
+class HelpWindow: public QWidget
 {
   Q_OBJECT
 
@@ -46,11 +46,11 @@ public:
 	void show();
 
 protected: 
-  HelpBrowser(QWidget *parent = 0);
+  HelpWindow(QWidget *parent = 0);
 #ifdef WINDOWS
-  virtual HelpBrowser::~HelpBrowser();
+  virtual HelpWindow::~HelpWindow();
 #else
-  virtual ~HelpBrowser();
+  virtual ~HelpWindow();
 #endif
   bool create();
 
@@ -58,13 +58,13 @@ public:
   void setSource(const QString &path, const QString &file, const QString &page);
 
 #ifdef WINDOWS
-  static void HelpBrowser::showPage(const QString &file, const QString &page);
+  static void HelpWindow::showPage(const QString &file, const QString &page);
 #else
   static void showPage(const QString &file, const QString &page);
 #endif
 
 private:
-  static HelpBrowser *s_pBrowser;
+  static HelpWindow *s_pBrowser;
 
 private slots:
   
@@ -77,4 +77,4 @@ private:
   QPushButton *m_pCloseButton;
 };
 
-#endif // _HELPBROWSER_H_
+#endif // _HELPWINDOW_H_

@@ -39,24 +39,24 @@
 LoginGetInfo::LoginGetInfo(QString inDevName, poss_conn_enum *pConnEnum, QWidget *proxy, QWidget *parent, Emitter *e):
 	m_pEmitter(e), m_pParent(parent), m_pStack(proxy), m_supplicant(NULL), pConn(pConnEnum)
 {
-	usernameEdit = NULL;
-	passwordEdit = NULL;
+	dataFrameProfilesUsername = NULL;
+	dataFrameProfilesPassword = NULL;
 	m_pSaveCreds = NULL;
 
 	m_bSignalConnected = false;
 
-	m_pAdapterInfo = qFindChild<QGroupBox*>(m_pStack, "interfaceInfoFrame");
+	m_pAdapterInfo = qFindChild<QGroupBox*>(m_pStack, "dataFrameInterfaceStatus");
 
-	m_pAdapterStat = qFindChild<QLabel*>(m_pStack, "adaptStatValue");
+	m_pAdapterStat = qFindChild<QLabel*>(m_pStack, "dataFieldAdapterStatus");
 
 	m_pSSIDStatLabel = qFindChild<QLabel*>(m_pStack, "ssidStat");
 
-	m_pSSIDStat = qFindChild<QLabel*>(m_pStack, "ssidStatValue");
+	m_pSSIDStat = qFindChild<QLabel*>(m_pStack, "dataFieldSSIDStatus");
 
-	m_pWidgetStack = qFindChild<QStackedWidget*>(m_pStack, "credentialsStack");
+	m_pWidgetStack = qFindChild<QStackedWidget*>(m_pStack, "widgetStackCredentials");
 	if (m_pWidgetStack == NULL)
 	{
-		QMessageBox::critical(this, tr("Dialog Design Error"), tr("There is no 'credentialsStack' found in the form.  You won't be able to enter a username and password!"));
+		QMessageBox::critical(this, tr("Dialog Design Error"), tr("There is no 'widgetStackCredentials' found in the form.  You won't be able to enter a username and password!"));
 	}
 
 	updateWindow(true);
@@ -160,25 +160,25 @@ void LoginGetInfo::setAdapterInfo()
 
 QString LoginGetInfo::get_password()
 {
-	if (passwordEdit == NULL)
+	if (dataFrameProfilesPassword == NULL)
 	{
 		return QString("");
 	}
 	else
 	{
-		return passwordEdit->text();
+		return dataFrameProfilesPassword->text();
 	}
 }
 
 QString LoginGetInfo::get_username()
 {
-	if (usernameEdit == NULL)
+	if (dataFrameProfilesUsername == NULL)
 	{
 		return QString("");
 	}
 	else
 	{
-		return usernameEdit->text();
+		return dataFrameProfilesUsername->text();
 	}
 }
 
@@ -193,7 +193,7 @@ void LoginGetInfo::setEAPAuth(QString username, QString password)
 		m_bSignalConnected = true;
 	}
 
-	m_pSaveCreds = qFindChild<QCheckBox*>(m_pStack, "rememberCredUPW");
+	m_pSaveCreds = qFindChild<QCheckBox*>(m_pStack, "dataCheckboxSaveUsernamePassowrd");
 
 	if (m_pSaveCreds != NULL)
 	{
@@ -201,27 +201,27 @@ void LoginGetInfo::setEAPAuth(QString username, QString password)
 		m_pSaveCreds->setCheckState(Qt::Unchecked);
 	}
 
-	usernameEdit = qFindChild<QLineEdit*>(m_pStack, "eapUsername");
+	dataFrameProfilesUsername = qFindChild<QLineEdit*>(m_pStack, "dataFieldUsername");
 
-	if (usernameEdit == NULL)
+	if (dataFrameProfilesUsername == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The 'eapUsername' line edit box wasn't found in this form!  You won't be able to enter a username!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The 'dataFieldUsername' line edit box wasn't found in this form!  You won't be able to enter a username!"));
 	}
 	else
 	{
-		usernameEdit->setText(username);
+		dataFrameProfilesUsername->setText(username);
 	}
 
-	passwordEdit = qFindChild<QLineEdit*>(m_pStack, "eapPwd");
+	dataFrameProfilesPassword = qFindChild<QLineEdit*>(m_pStack, "dataFieldPassword");
 
-	if (passwordEdit == NULL)
+	if (dataFrameProfilesPassword == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"),  tr("The 'eapPwd' line edit box wasn't found in this form!  You won't be able to enter a password!"));
+		QMessageBox::critical(this, tr("Form Design Error"),  tr("The 'dataFieldPassword' line edit box wasn't found in this form!  You won't be able to enter a password!"));
 	}
 	else
 	{
-		passwordEdit->setEchoMode(QLineEdit::Password);
-		passwordEdit->setText(password);
+		dataFrameProfilesPassword->setEchoMode(QLineEdit::Password);
+		dataFrameProfilesPassword->setText(password);
 	}
 }
 
@@ -236,35 +236,35 @@ void LoginGetInfo::setPSKAuth(QString password)
 		m_bSignalConnected = true;
 	}
 
-	m_pSaveCreds = qFindChild<QCheckBox*>(m_pStack, "pskSaveCreds");
+	m_pSaveCreds = qFindChild<QCheckBox*>(m_pStack, "dataCheckboxSavePSK");
 
-	usernameEdit = NULL;  // We don't use this one.
+	dataFrameProfilesUsername = NULL;  // We don't use this one.
 
-	passwordEdit = qFindChild<QLineEdit*>(m_pStack, "pskPwd");
+	dataFrameProfilesPassword = qFindChild<QLineEdit*>(m_pStack, "dataFieldPSK");
 
-	if (passwordEdit == NULL)
+	if (dataFrameProfilesPassword == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The 'pskPwd' line edit box wasn't found in this form!  You won't be able to enter a PSK!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The 'dataFieldPSK' line edit box wasn't found in this form!  You won't be able to enter a PSK!"));
 	}
 	else
 	{
-		passwordEdit->setEchoMode(QLineEdit::Password);
-		passwordEdit->setText(password);
+		dataFrameProfilesPassword->setEchoMode(QLineEdit::Password);
+		dataFrameProfilesPassword->setText(password);
 	}
 }
 
 void LoginGetInfo::slotUnhidePwd()
 {
-	if (passwordEdit->echoMode() == QLineEdit::Password)
+	if (dataFrameProfilesPassword->echoMode() == QLineEdit::Password)
 	{
 		// Unhide the password.
-		passwordEdit->setEchoMode(QLineEdit::Normal);
+		dataFrameProfilesPassword->setEchoMode(QLineEdit::Normal);
 		hideBtn->setText(tr("Hide"));
 	}
 	else
 	{
 		// Hide the password.
-		passwordEdit->setEchoMode(QLineEdit::Password);
+		dataFrameProfilesPassword->setEchoMode(QLineEdit::Password);
 		hideBtn->setText(tr("Show"));
 	}
 }

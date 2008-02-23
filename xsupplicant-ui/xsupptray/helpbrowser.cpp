@@ -36,9 +36,9 @@
 #include "FormLoader.h"
 #include "Util.h"
 
-HelpBrowser *HelpBrowser::s_pBrowser = NULL;
+HelpWindow *HelpWindow::s_pBrowser = NULL;
 
-HelpBrowser::HelpBrowser(QWidget *parent):
+HelpWindow::HelpWindow(QWidget *parent):
   QWidget(parent)
 {
   setAttribute(Qt::WA_DeleteOnClose);
@@ -51,7 +51,7 @@ HelpBrowser::HelpBrowser(QWidget *parent):
   m_pCloseButton = NULL;
 }
 
-HelpBrowser::~HelpBrowser()
+HelpWindow::~HelpWindow()
 {
 	if (m_pRealForm != NULL)
 	{
@@ -62,9 +62,9 @@ HelpBrowser::~HelpBrowser()
   s_pBrowser = NULL;
 }
 
-bool HelpBrowser::create()
+bool HelpWindow::create()
 {
-	m_pRealForm = FormLoader::buildform("HelpDlg.ui");
+	m_pRealForm = FormLoader::buildform("HelpWindow.ui");
 
     if (m_pRealForm == NULL) return false;
 
@@ -72,15 +72,15 @@ bool HelpBrowser::create()
 	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SLOT(close()));
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
-	m_pTextBrowser = qFindChild<QTextBrowser*>(m_pRealForm, "helpBrowser");
+	m_pTextBrowser = qFindChild<QTextBrowser*>(m_pRealForm, "dataFieldHelpWindow");
 
 	if (m_pTextBrowser == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Help Dialog' did not contain the 'helpBrowser' text box."));
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Help Dialog' did not contain the 'dataFieldHelpWindow' text box."));
 		return false;
 	}
 
-	m_pHomeButton = qFindChild<QPushButton*>(m_pRealForm, "homeBtn");
+	m_pHomeButton = qFindChild<QPushButton*>(m_pRealForm, "buttonHome");
 
 	// We don't care if the button is there or not, but if it is make it work.
 	if (m_pHomeButton != NULL)
@@ -88,7 +88,7 @@ bool HelpBrowser::create()
 		Util::myConnect(m_pHomeButton, SIGNAL(clicked()), m_pTextBrowser, SLOT(home()));
 	}
 
-	m_pBackButton = qFindChild<QPushButton*>(m_pRealForm, "backBtn");
+	m_pBackButton = qFindChild<QPushButton*>(m_pRealForm, "buttonBack");
 
 	// We don't care if the button is there or not, but if it is make it work.
 	if (m_pBackButton != NULL)
@@ -96,7 +96,7 @@ bool HelpBrowser::create()
 		Util::myConnect(m_pBackButton, SIGNAL(clicked()), m_pTextBrowser, SLOT(backward()));
 	}
 
-	m_pCloseButton = qFindChild<QPushButton*>(m_pRealForm, "clsBtn");
+	m_pCloseButton = qFindChild<QPushButton*>(m_pRealForm, "buttonClose");
 
 	// We don't care if the button is there or not, but if it is make it work.
 	if (m_pCloseButton != NULL)
@@ -109,7 +109,7 @@ bool HelpBrowser::create()
 	return true;
 }
 
-void HelpBrowser::show()
+void HelpWindow::show()
 {
 	// This will cause the window to come to the front if it is already built.
 	if (m_pRealForm->isVisible() == true) m_pRealForm->hide();
@@ -117,7 +117,7 @@ void HelpBrowser::show()
 	m_pRealForm->show();
 }
 
-void HelpBrowser::setSource(const QString &path, const QString &file, const QString &page)
+void HelpWindow::setSource(const QString &path, const QString &file, const QString &page)
 {
   QString fullPath = QString ("%1/%2").arg(path).arg(file);
   QString fullPage = QString ("%1#%2").arg(file).arg(page);
@@ -135,14 +135,14 @@ void HelpBrowser::setSource(const QString &path, const QString &file, const QStr
 }
 
 // This is the singleton use and also the display of the page
-void HelpBrowser::showPage(const QString &file, const QString &page)
+void HelpWindow::showPage(const QString &file, const QString &page)
 {
   QString path = QApplication::applicationDirPath() + "/Docs";
 
   // This is a singleton 
   if (s_pBrowser == NULL)
   {
-    s_pBrowser = new HelpBrowser();
+    s_pBrowser = new HelpWindow();
   }
 
   if (s_pBrowser->create() == true)

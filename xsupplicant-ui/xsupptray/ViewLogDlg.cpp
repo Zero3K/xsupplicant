@@ -38,7 +38,7 @@
 #include "FormLoader.h"
 #include "helpbrowser.h"
 
-ViewLogDlg::ViewLogDlg(QString &folderPath):
+uiWindowViewLogs::uiWindowViewLogs(QString &folderPath):
   m_message(this)
 {
   int size = folderPath.size();
@@ -59,7 +59,7 @@ ViewLogDlg::ViewLogDlg(QString &folderPath):
 }
 
 
-ViewLogDlg::~ViewLogDlg(void)
+uiWindowViewLogs::~uiWindowViewLogs(void)
 {
 	if (m_pBrowseButton != NULL)
 	{
@@ -92,27 +92,27 @@ ViewLogDlg::~ViewLogDlg(void)
 	}
 }
 
-bool ViewLogDlg::attach()
+bool uiWindowViewLogs::attach()
 {
-	m_pRealWidget = FormLoader::buildform("ViewLogDlg.ui");
+	m_pRealWidget = FormLoader::buildform("ViewLogWindow.ui");
 	if (m_pRealWidget == NULL) return false;
 
-	m_pBrowseButton = qFindChild<QPushButton*>(m_pRealWidget, "browseBtn");
+	m_pBrowseButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonBrowse");
 
-	m_pCloseButton = qFindChild<QPushButton*>(m_pRealWidget, "closeBtn");
+	m_pCloseButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonClose");
 
-	m_pHelpButton = qFindChild<QPushButton*>(m_pRealWidget, "helpBtn");
+	m_pHelpButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonHelp");
 
-	m_pPathName = qFindChild<QLineEdit*>(m_pRealWidget, "logFileDirectory");
+	m_pPathName = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldLogFileDirectory");
 
-	m_pLogView = qFindChild<QTextEdit*>(m_pRealWidget, "viewLogTextBox");
+	m_pLogView = qFindChild<QTextEdit*>(m_pRealWidget, "dataFieldLogWindow");
 	if (m_pLogView == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QTextBox called 'viewLogTextBox' couldn't be found."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QTextBox called 'dataFieldLogWindow' couldn't be found."));
 		return false;
 	}
 
-	m_pCopyToClipboard = qFindChild<QPushButton*>(m_pRealWidget, "copyBtn");
+	m_pCopyToClipboard = qFindChild<QPushButton*>(m_pRealWidget, "buttonCopy");
 	if (m_pCopyToClipboard != NULL)
 	{
 		Util::myConnect(m_pCopyToClipboard, SIGNAL(clicked()), this, SLOT(slotCopyToClipboard()));
@@ -143,7 +143,7 @@ bool ViewLogDlg::attach()
 	return true;
 }
 
-void ViewLogDlg::slotCopyToClipboard()
+void uiWindowViewLogs::slotCopyToClipboard()
 {
 	QTextCursor cursor;
 
@@ -159,7 +159,7 @@ void ViewLogDlg::slotCopyToClipboard()
 	}
 }
 
-void ViewLogDlg::slotBrowse()
+void uiWindowViewLogs::slotBrowse()
 {
   QString temp = QFileDialog::getOpenFileName(m_pRealWidget, tr("Select Log File to View"), m_filePath);
   if (temp.isEmpty())
@@ -172,7 +172,7 @@ void ViewLogDlg::slotBrowse()
   open();
 }
 
-bool ViewLogDlg::open()
+bool uiWindowViewLogs::open()
 {
   if (m_filePath.isEmpty())
   {
@@ -206,17 +206,17 @@ bool ViewLogDlg::open()
 }
 
 /*
-void ViewLogDlg::slotClose()
+void uiWindowViewLogs::slotClose()
 {
   accept();
 }*/
 
-void ViewLogDlg::slotHelp()
+void uiWindowViewLogs::slotHelp()
 {
-  HelpBrowser::showPage("xsupphelp.html","xsupviewlogwin");
+  HelpWindow::showPage("xsupphelp.html","xsupviewlogwin");
 }
 
-QString ViewLogDlg::getErrorText(QFile::FileError e)
+QString uiWindowViewLogs::getErrorText(QFile::FileError e)
 {
   QString message = "";
   switch (e)
@@ -269,7 +269,7 @@ QString ViewLogDlg::getErrorText(QFile::FileError e)
   return message;
 }
 
-void ViewLogDlg::show()
+void uiWindowViewLogs::show()
 {
 	m_pRealWidget->show();
 }

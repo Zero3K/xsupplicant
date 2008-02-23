@@ -94,17 +94,17 @@ void ConfigWidgetEditAdvancedInternals::getPageName(QString &name)
 
 bool ConfigWidgetEditAdvancedInternals::attach()
 {
-	m_pAuthPeriod = qFindChild<QLineEdit*>(m_pRealWidget, "authPeriodEdit");
+	m_pAuthPeriod = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldAdvancedInternalsAuthPeriod");
 
-	m_pHeldPeriod = qFindChild<QLineEdit*>(m_pRealWidget, "heldPeriodEdit");
+	m_pHeldPeriod = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldAdvancedInternalsHeldPeriod");
 
-	m_pIdlePeriod = qFindChild<QLineEdit*>(m_pRealWidget, "idlePeriodEdit");
+	m_pIdlePeriod = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldAdvancedInternalsIdlePeriod");
 
-	m_pStaleWepTimeout = qFindChild<QLineEdit*>(m_pRealWidget, "staleWepTimeout");
+	m_pStaleWepTimeout = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldAdvancedInternalsStaleWEPKeyTimeout");
 
-	m_pMaximumStarts = qFindChild<QLineEdit*>(m_pRealWidget, "maxStarts");
+	m_pMaximumStarts = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldAdvancedInternalsMaximumStarts");
 
-	m_pResetValues = qFindChild<QPushButton*>(m_pRealWidget, "resetToDefaults");
+	m_pResetValues = qFindChild<QPushButton*>(m_pRealWidget, "buttonAdvancedInternalsReset");
 
 	updateWindow();
 
@@ -316,7 +316,7 @@ bool ConfigWidgetEditAdvancedInternals::dataChanged()
 
 void ConfigWidgetEditAdvancedInternals::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsupinternals");
+	HelpWindow::showPage("xsupphelp.html", "xsupinternals");
 }
 
 void ConfigWidgetEditAdvancedInternals::discard()

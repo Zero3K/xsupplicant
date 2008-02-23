@@ -79,14 +79,14 @@ void ConfigConnAdapterTab::populateProfiles()
 	profile_enum *pProfiles = NULL;
 	int i = 0;
 
-	pWirelessProfile = qFindChild<QComboBox*>(m_pRealWidget, "wirelessProfileComboBox");
+	pWirelessProfile = qFindChild<QComboBox*>(m_pRealWidget, "dataComboWirelessProfile");
 	if (pWirelessProfile == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox named 'wirelessProfileComboBox'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox named 'dataComboWirelessProfile'."));
 		return;
 	}
 
-	pWirelessProfileLabel = qFindChild<QLabel*>(m_pRealWidget, "wirelessProfileLabel");
+	pWirelessProfileLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboWirelessProfile");
 
 	if (m_pSupplicant->enumProfiles(&pProfiles, true) != true)
 	{
@@ -191,28 +191,28 @@ void ConfigConnAdapterTab::slotProfileChanged(int newSelection)
 
 bool ConfigConnAdapterTab::attach()
 {
-	m_pAdapterSelection = qFindChild<QComboBox*>(m_pRealWidget, "adapterComboBox");
+	m_pAdapterSelection = qFindChild<QComboBox*>(m_pRealWidget, "dataComboAdapters");
 	if (m_pAdapterSelection == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox named 'adapterComboBox'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox named 'dataComboAdapters'."));
 		return false;
 	}
 
-	m_pWidgetStack = qFindChild<QStackedWidget*>(m_pRealWidget, "wiredWirelessStack");
+	m_pWidgetStack = qFindChild<QStackedWidget*>(m_pRealWidget, "widgetStackAdapter");
 	if (m_pWidgetStack == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QStackedWidget named 'wiredWirelessStack'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QStackedWidget named 'widgetStackAdapter'."));
 		return false;
 	}
 
-	m_pWiredProfile = qFindChild<QComboBox*>(m_pRealWidget, "wiredProfileComboBox");
+	m_pWiredProfile = qFindChild<QComboBox*>(m_pRealWidget, "dataComboWiredNetworkProfile");
 	if (m_pWiredProfile == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox named 'wiredProfileComboBox'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox named 'dataComboWiredNetworkProfile'."));
 		return false;
 	}
 
-	m_pWiredProfileLabel = qFindChild<QLabel*>(m_pRealWidget, "wiredProfileLabel");
+	m_pWiredProfileLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboWiredNetworkProfile");
 
 	updateWindow();
 	populateProfiles();

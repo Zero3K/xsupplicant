@@ -219,17 +219,17 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
 
  bool PreferredConnections::attach()
  {
-	m_pRealForm = FormLoader::buildform("WirelessPriorityDlg.ui");
+	m_pRealForm = FormLoader::buildform("WirelessPriorityWindow.ui");
 
 	if (m_pRealForm == NULL) return false;
 
 	// If the user hits the "X" button in the title bar, close us out gracefully.
 	//Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
 
-	m_pAvailableList = qFindChild<QListWidget*>(m_pRealForm, "availConnections");
+	m_pAvailableList = qFindChild<QListWidget*>(m_pRealForm, "dataFrameAvailableConnections");
 	if (m_pAvailableList == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'availConnections' QListWidget!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'dataFrameAvailableConnections' QListWidget!"));
 		return false;
 	}
 
@@ -240,52 +240,52 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
 		return false;
 	}
 
-	m_pLeftButton = qFindChild<QPushButton*>(m_pRealForm, "pbLeft");
+	m_pLeftButton = qFindChild<QPushButton*>(m_pRealForm, "buttonLeft");
 	if (m_pLeftButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbLeft' QPushButton!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonLeft' QPushButton!"));
 		return false;
 	}
 
-	m_pRightButton = qFindChild<QPushButton*>(m_pRealForm, "pbRight");
+	m_pRightButton = qFindChild<QPushButton*>(m_pRealForm, "buttonRight");
 	if (m_pRightButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbRight' QPushButton!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonRight' QPushButton!"));
 		return false;
 	}
 
-	m_pUpButton = qFindChild<QPushButton*>(m_pRealForm, "pbUp");
+	m_pUpButton = qFindChild<QPushButton*>(m_pRealForm, "buttonUp");
 	if (m_pUpButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbUp' QPushButton!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonUp' QPushButton!"));
 		return false;
 	}
 
-	m_pDownButton = qFindChild<QPushButton*>(m_pRealForm, "pbDown");
+	m_pDownButton = qFindChild<QPushButton*>(m_pRealForm, "buttonDown");
 	if (m_pDownButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbDown' QPushButton!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonDown' QPushButton!"));
 		return false;
 	}
 
-	m_pSaveButton = qFindChild<QPushButton*>(m_pRealForm, "pbSave");
+	m_pSaveButton = qFindChild<QPushButton*>(m_pRealForm, "buttonSave");
 	if (m_pSaveButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbSave' QPushButton!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonSave' QPushButton!"));
 		return false;
 	}
 
-	m_pCancelButton = qFindChild<QPushButton*>(m_pRealForm, "pbCancel");
+	m_pCancelButton = qFindChild<QPushButton*>(m_pRealForm, "buttonCancel");
 	if (m_pCancelButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbCancel' QPushButton!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonCancel' QPushButton!"));
 		return false;
 	}
 
-	m_pHelpButton = qFindChild<QPushButton*>(m_pRealForm, "pbHelp");
+	m_pHelpButton = qFindChild<QPushButton*>(m_pRealForm, "buttonHelp");
 	if (m_pHelpButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'pbHelp' QPushButton!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonHelp' QPushButton!"));
 		return false;
 	}
 
@@ -693,7 +693,7 @@ void PreferredConnections::slotPreferredSelected(QListWidgetItem *clickedItem)
 */
 void PreferredConnections::slotHelp()
 {
-  HelpBrowser::showPage("xsupphelp.html", "xsupsetconnpriorities");
+  HelpWindow::showPage("xsupphelp.html", "xsupsetconnpriorities");
 }
 
 

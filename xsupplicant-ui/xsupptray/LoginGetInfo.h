@@ -75,8 +75,8 @@ private:
 	QLabel *m_pSSIDStatLabel;
 	QLabel *m_pSSIDStat;
 
-	QLineEdit *usernameEdit;
-	QLineEdit *passwordEdit;
+	QLineEdit *dataFrameProfilesUsername;
+	QLineEdit *dataFrameProfilesPassword;
 
 	QPushButton *hideBtn;
 

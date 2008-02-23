@@ -95,7 +95,7 @@ void LoginStatusWireless::enableWirelessItems()
 
 	if (m_pSSIDName != NULL) m_pSSIDName->setVisible(true);
 
-	myLabel = qFindChild<QLabel*>(myProxy, "ssidLabel");
+	myLabel = qFindChild<QLabel*>(myProxy, "labelSSID");
 	if (myLabel != NULL) myLabel->setVisible(true);
 }
 

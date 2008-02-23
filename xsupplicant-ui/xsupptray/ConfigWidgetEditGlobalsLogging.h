@@ -52,7 +52,7 @@ class ConfigWidgetEditGlobalsLogging : public ConfigWidgetBase
 	 void getPageName(QString &);
 
  public slots:
-	 void cleanupViewLogDlg();
+	 void cleanupuiWindowViewLogs();
 
  private slots:
 	 void slotDataChanged();
@@ -85,7 +85,7 @@ class ConfigWidgetEditGlobalsLogging : public ConfigWidgetBase
 	QWidget *m_pRealWidget;
 	QWidget *m_pParent;
 
-	ViewLogDlg *m_pViewLogDialog;
+	uiWindowViewLogs *m_pViewLogDialog;
 
 	XSupCalls *m_pSupplicant;
 

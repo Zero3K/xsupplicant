@@ -46,7 +46,7 @@
   \param [in] parent is the parent widget
   \return Nothing
 */
-LoggingConsole::LoggingConsole(QWidget *parent, Emitter *e)
+LogWindow::LogWindow(QWidget *parent, Emitter *e)
   : QWidget(parent), 
   m_bUpdateCalled(false),
   m_message(parent), m_pEmitter(e),
@@ -66,7 +66,7 @@ LoggingConsole::LoggingConsole(QWidget *parent, Emitter *e)
 /*!
   \return Nothing
 */
-LoggingConsole::~LoggingConsole(void)
+LogWindow::~LogWindow(void)
 {
 	if (m_pCopyToClipboard != NULL)
 	{
@@ -89,20 +89,20 @@ LoggingConsole::~LoggingConsole(void)
  * \retval true if the form was loaded and processed correctly
  * \retval false if the form can't be loaded.
  **/
-bool LoggingConsole::create()
+bool LogWindow::create()
 {
-	m_pRealForm = FormLoader::buildform("LogDlg.ui");
+	m_pRealForm = FormLoader::buildform("LogWindow.ui");
 
     if (m_pRealForm == NULL) return false;
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
-	m_pLogEdit = qFindChild<QTextEdit*>(m_pRealForm, "logEdit");
+	m_pLogEdit = qFindChild<QTextEdit*>(m_pRealForm, "dataFieldLogWindow");
 	if (m_pLogEdit == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form loaded for the 'Logging Dialog' did not contain the 'logEdit' text edit window.  Log information will not be shown."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form loaded for the 'Logging Dialog' did not contain the 'dataFieldLogWindow' text edit window.  Log information will not be shown."));
 	}
 
-	m_pCloseButton = qFindChild<QPushButton*>(m_pRealForm, "clsBtn");
+	m_pCloseButton = qFindChild<QPushButton*>(m_pRealForm, "buttonClose");
 	// If this one isn't around, ignore it.
 	if (m_pCloseButton != NULL)
 	{
@@ -110,7 +110,7 @@ bool LoggingConsole::create()
 		                  this, SIGNAL(close()));
 	}
 
-	m_pClearButton = qFindChild<QPushButton*>(m_pRealForm, "clearBtn");
+	m_pClearButton = qFindChild<QPushButton*>(m_pRealForm, "buttonClear");
 	// If this one isn't around, ignore it.
 	if (m_pClearButton != NULL)
 	{
@@ -118,7 +118,7 @@ bool LoggingConsole::create()
 			this, SLOT(slotClear()));
 	}
 
-	m_pCopyToClipboard = qFindChild<QPushButton*>(m_pRealForm, "copyBtn");
+	m_pCopyToClipboard = qFindChild<QPushButton*>(m_pRealForm, "buttonCopy");
 	if (m_pCopyToClipboard != NULL)
 	{
 		QObject::connect(m_pCopyToClipboard, SIGNAL(clicked()), this, SLOT(slotCopyToClipboard()));
@@ -132,12 +132,12 @@ bool LoggingConsole::create()
 /**
  * \brief Hide the logging window from view.  (This is the same as "close".)
  **/
-void LoggingConsole::hide()
+void LogWindow::hide()
 {
 	m_pRealForm->hide();
 }
 
-void LoggingConsole::slotCopyToClipboard()
+void LogWindow::slotCopyToClipboard()
 {
 	QTextCursor cursor;
 
@@ -158,7 +158,7 @@ void LoggingConsole::slotCopyToClipboard()
   \brief Shows the log window - if it is hidden - unhides it
   \return Nothing
 */
-void LoggingConsole::showLog()
+void LogWindow::showLog()
 {
 	if (m_pRealForm != NULL)
 	{
@@ -176,7 +176,7 @@ void LoggingConsole::showLog()
   \return Nothing
   \todo Don't really need this one now
 */
-void LoggingConsole::slotStartLogMessage(const QString &message)
+void LogWindow::slotStartLogMessage(const QString &message)
 {
   addMessage(message);
 }
@@ -187,7 +187,7 @@ void LoggingConsole::slotStartLogMessage(const QString &message)
   \param [in] message is the message to send
   \return Nothing
 */
-void LoggingConsole::slotAddUILogMessage(const QString &message)
+void LogWindow::slotAddUILogMessage(const QString &message)
 {
 	QDate myDate;
 	QTime myTime;
@@ -204,7 +204,7 @@ void LoggingConsole::slotAddUILogMessage(const QString &message)
   \param [in] message is the message to send
   \return Nothing
 */
-void LoggingConsole::slotAddXSupplicantLogMessage(const QString &message)
+void LogWindow::slotAddXSupplicantLogMessage(const QString &message)
 {
   QString text = tr("%1")
     .arg(message);
@@ -212,7 +212,7 @@ void LoggingConsole::slotAddXSupplicantLogMessage(const QString &message)
   addMessage(text);
 }
 
-void LoggingConsole::addMessage(const QString &message)
+void LogWindow::addMessage(const QString &message)
 {
 	QString test;
 	int index = 0;
@@ -255,7 +255,7 @@ void LoggingConsole::addMessage(const QString &message)
   \brief Get function to get the supplicant object
   \return supplicant
 */
-XSupCalls &LoggingConsole::getSupplicant() 
+XSupCalls &LogWindow::getSupplicant() 
 {
   return m_supplicant;
 }
@@ -269,7 +269,7 @@ XSupCalls &LoggingConsole::getSupplicant()
   \param [in] challengeString
   \return Nothing
 */
-void LoggingConsole::slotRequestPasswordMessage(const QString &connName, const QString &eapMethod, const QString &challengeStr)
+void LogWindow::slotRequestPasswordMessage(const QString &connName, const QString &eapMethod, const QString &challengeStr)
 {
   // Enter the password - what information do I display about why we are asking for a password?
   PasswordDlg dlg(connName, eapMethod, challengeStr);
@@ -281,7 +281,7 @@ void LoggingConsole::slotRequestPasswordMessage(const QString &connName, const Q
 /*!
   \brief Gives information from the TNC system
 */
-void LoggingConsole::slotRemediation()
+void LogWindow::slotRemediation()
 { 
 	/*
   tnc_msg_batch *pMessageBatch = NULL;
@@ -304,7 +304,7 @@ void LoggingConsole::slotRemediation()
   \return Nothing
   \todo Check to see if this works
 */
-void LoggingConsole::slotInterfaceInsertedMessage(char *)
+void LogWindow::slotInterfaceInsertedMessage(char *)
 {
   // add the interface to the config file
   // do this by calling the update adapters api
@@ -317,7 +317,7 @@ void LoggingConsole::slotInterfaceInsertedMessage(char *)
   to continue to wait, it will shut down the GUI
   \return Nothing
 */
-void LoggingConsole::slotXSupplicantShutDown()
+void LogWindow::slotXSupplicantShutDown()
 {
   QMessageBox::critical(this, tr("XSupplicant Status"),
     tr("The communications with XSupplicant have been terminated. \n"
@@ -331,7 +331,7 @@ void LoggingConsole::slotXSupplicantShutDown()
   \brief Called when the interface inserted message is received detail what has gone out of compliance
   \return Nothing
 */
-void LoggingConsole::slotClear()
+void LogWindow::slotClear()
 {
   if (m_pLogEdit != NULL) m_pLogEdit->clear();
   addMessage(tr("Log entries cleared by user"));

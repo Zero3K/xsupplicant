@@ -42,7 +42,7 @@ ConfigWidgetEditTrustedServers::ConfigWidgetEditTrustedServers(QWidget *pRealWid
 {
 	m_pCNEdit = NULL;
 	m_pValidateServer = NULL;
-	m_pBrowseBtn = NULL;
+	m_pbuttonBrowse = NULL;
 	m_pCertCNLabel = NULL;
 	m_pCertDeptLabel = NULL;
 	m_pCertCompanyLabel = NULL;
@@ -86,9 +86,9 @@ void ConfigWidgetEditTrustedServers::detach()
 		Util::myDisconnect(m_pValidateServer, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
 	}
 
-	if (m_pBrowseBtn != NULL)
+	if (m_pbuttonBrowse != NULL)
 	{
-		Util::myDisconnect(m_pBrowseBtn, SIGNAL(clicked()), this, SLOT(slotBrowse()));
+		Util::myDisconnect(m_pbuttonBrowse, SIGNAL(clicked()), this, SLOT(slotBrowse()));
 	}
 
 	Util::myDisconnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
@@ -102,49 +102,49 @@ void ConfigWidgetEditTrustedServers::detach()
 
 bool ConfigWidgetEditTrustedServers::attach()
 {
-	m_pCNEdit = qFindChild<QLineEdit*>(m_pRealWidget, "cnEdit");
+	m_pCNEdit = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldCommonNameEndsWith");
 	if (m_pCNEdit == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'cnEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFieldCommonNameEndsWith'."));
 		return false;
 	}
 
-	m_pValidateServer = qFindChild<QCheckBox*>(m_pRealWidget, "validateServerCheckbox");
+	m_pValidateServer = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxValidateCommonName");
 	if (m_pValidateServer == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox called 'validateServerCheckbox'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox called 'dataCheckboxValidateCommonName'."));
 		return false;
 	}
 
-	m_pBrowseBtn = qFindChild<QPushButton*>(m_pRealWidget, "browseBtn");
-	if (m_pBrowseBtn == NULL)
+	m_pbuttonBrowse = qFindChild<QPushButton*>(m_pRealWidget, "buttonTrustedServersBrowse");
+	if (m_pbuttonBrowse == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QPushButton called 'browseBtn'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QPushButton called 'buttonTrustedServersBrowse'."));
 		return false;
 	}
 
-	m_pServerNameEdit = qFindChild<QLineEdit*>(m_pRealWidget, "tsNameEdit");
+	m_pServerNameEdit = qFindChild<QLineEdit*>(m_pRealWidget, "dataFrameTrustedServerName");
 	if (m_pServerNameEdit == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'tsNameEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFrameTrustedServerName'."));
 		return false;
 	}
 
-	m_pCertCNLabel = qFindChild<QLabel*>(m_pRealWidget, "certCNLabel");
+	m_pCertCNLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldTrustedServersCertificateCN");
 
-	m_pCertDeptLabel = qFindChild<QLabel*>(m_pRealWidget, "certDeptLabel");
+	m_pCertDeptLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldTrustedServersDepartment");
 
-	m_pCertCompanyLabel = qFindChild<QLabel*>(m_pRealWidget, "certCompanyLabel");
+	m_pCertCompanyLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldTrustedServersCompany");
 
-	m_pCertLocationLabel = qFindChild<QLabel*>(m_pRealWidget, "certLocLabel");
+	m_pCertLocationLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldTrustedServersLocation");
 
-	m_pCertStateLabel = qFindChild<QLabel*>(m_pRealWidget, "certStateLabel");
+	m_pCertStateLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldTrustedServersState");
 
-	m_pCertOULabel = qFindChild<QLabel*>(m_pRealWidget, "certOULabel");
+	m_pCertOULabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldTrustedServersOU");
 
-	m_pCertDomainLabel = qFindChild<QLabel*>(m_pRealWidget, "certDomainLabel");
+	m_pCertDomainLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldTrustedServersDomain");
 
-	m_pCertPurposeLabel = qFindChild<QLabel*>(m_pRealWidget, "certPurposeLabel");
+	m_pCertPurposeLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldTrustedServersPurpose");
 
 	// This needs to be connected before calling updateWindow()!
 	Util::myConnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pParent, SIGNAL(signalAddItem(int, const QString &)));
@@ -161,9 +161,9 @@ bool ConfigWidgetEditTrustedServers::attach()
 		Util::myConnect(m_pValidateServer, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
 	}
 
-	if (m_pBrowseBtn != NULL)
+	if (m_pbuttonBrowse != NULL)
 	{
-		Util::myConnect(m_pBrowseBtn, SIGNAL(clicked()), this, SLOT(slotBrowse()));
+		Util::myConnect(m_pbuttonBrowse, SIGNAL(clicked()), this, SLOT(slotBrowse()));
 	}
 
 	Util::myConnect(m_pServerNameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(slotServerRenamed(const QString &)));
@@ -467,6 +467,6 @@ void ConfigWidgetEditTrustedServers::discard()
 
 void ConfigWidgetEditTrustedServers::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsuptrustedservers");
+	HelpWindow::showPage("xsupphelp.html", "xsuptrustedservers");
 }
 

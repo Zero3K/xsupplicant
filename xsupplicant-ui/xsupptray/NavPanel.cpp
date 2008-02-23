@@ -64,27 +64,27 @@ NavPanel::~NavPanel()
 
 bool NavPanel::attach()
 {
-	 m_pNewButton = qFindChild<QPushButton*>(m_pRealWidget, "newBtn");
+	 m_pNewButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonNew");
 
 	 if (m_pNewButton == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("The QPushButton 'newBtn' wasn't found in the form."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("The QPushButton 'buttonNew' wasn't found in the form."));
 		 return false;
 	 }
 
-	 m_pDeleteButton = qFindChild<QPushButton*>(m_pRealWidget, "delBtn");
+	 m_pDeleteButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonDelete");
 
 	 if (m_pDeleteButton == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("The QPushButton 'delBtn' wasn't found in the form."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("The QPushButton 'buttonDelete' wasn't found in the form."));
 		 return false;
 	 }
 
-	 m_pManagedItems = qFindChild<QTreeWidget*>(m_pRealWidget, "itemsToManageWidget");
+	 m_pManagedItems = qFindChild<QTreeWidget*>(m_pRealWidget, "widgetTreeItemsToManage");
 	 
 	 if (m_pManagedItems == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("The QTreeWidget 'itemsToManageWidget' wasn't found in the form."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("The QTreeWidget 'widgetTreeItemsToManage' wasn't found in the form."));
 		 return false;
 	 }
 

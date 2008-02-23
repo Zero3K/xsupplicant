@@ -136,7 +136,7 @@ bool LoginMainDlg::create()
 {
 	QPixmap *p = NULL;
 
-	m_pRealForm = FormLoader::buildform("LoginDlg.ui");
+	m_pRealForm = FormLoader::buildform("LoginWindow.ui");
 
     if (m_pRealForm == NULL) return false;
 
@@ -144,23 +144,23 @@ bool LoginMainDlg::create()
 	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
-	m_pConnectionComboBox = qFindChild<QComboBox*>(m_pRealForm, "connectionDropDown");
+	m_pConnectionComboBox = qFindChild<QComboBox*>(m_pRealForm, "dataComboConnections");
 	if (m_pConnectionComboBox == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form loaded for the 'Login Dialog' did not contain the 'connectionDropDown' combo box.  This is needed to select a connection!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form loaded for the 'Login Dialog' did not contain the 'dataComboConnections' combo box.  This is needed to select a connection!"));
 	}
 
-	m_pConnectDisconnectButton = qFindChild<QPushButton*>(m_pRealForm, "conDisBtn");
+	m_pConnectDisconnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonConnect");
 	if (m_pConnectDisconnectButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form loaded for the 'Login Dialog' did not contain the 'conDisBtn' push button.  This is needed to connect to, or disconnect from, a connection!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form loaded for the 'Login Dialog' did not contain the 'buttonConnect' push button.  This is needed to connect to, or disconnect from, a connection!"));
 	}
 	else
 	{
 		Util::myConnect(m_pConnectDisconnectButton, SIGNAL(clicked()), this, SLOT(slotConnectDisconnect()));
 	}
 
-	m_pCloseButton = qFindChild<QPushButton*>(m_pRealForm, "clsBtn");
+	m_pCloseButton = qFindChild<QPushButton*>(m_pRealForm, "buttonClose");
 
 	// If m_pClose is NULL, then there isn't a close button.  We don't consider that to be a problem, so don't complain.
 	if (m_pCloseButton != NULL)
@@ -168,7 +168,7 @@ bool LoginMainDlg::create()
 		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), this, SIGNAL(close()));
 	}
 
-	m_pHelpButton = qFindChild<QPushButton*>(m_pRealForm, "helpBtn");
+	m_pHelpButton = qFindChild<QPushButton*>(m_pRealForm, "buttonHelp");
 
 	// If m_pHelpButton is NULL, then there isn't a help button.  We don't consider this to be a problem, so don't complain.
 	if (m_pHelpButton != NULL)
@@ -176,7 +176,7 @@ bool LoginMainDlg::create()
 	    Util::myConnect(m_pHelpButton, SIGNAL(clicked()), this, SLOT(slotShowHelp()));
 	}
 
-	m_pConfigureButton = qFindChild<QPushButton*>(m_pRealForm, "configBtn");
+	m_pConfigureButton = qFindChild<QPushButton*>(m_pRealForm, "buttonConfig");
 
 	// If m_pConfigureButton is NULL, then there isn't a help button.  We don't consider this to be a problem, so don't complain.
 	if (m_pConfigureButton != NULL)
@@ -184,7 +184,7 @@ bool LoginMainDlg::create()
 	    Util::myConnect(m_pConfigureButton, SIGNAL(clicked()), m_pEmitter, SIGNAL(signalShowConfig()));
 	}
 
-	m_pShowLogButton = qFindChild<QPushButton*>(m_pRealForm, "showLogBtn");
+	m_pShowLogButton = qFindChild<QPushButton*>(m_pRealForm, "buttonShowLog");
 
 	// If m_pShowLogButton is NULL, then there isn't a help button.  We don't consider this to be a problem, so don't complain.
 	if (m_pShowLogButton != NULL)
@@ -229,11 +229,11 @@ bool LoginMainDlg::create()
 
 bool LoginMainDlg::setupLoginStack()
 {
-	m_pStack = qFindChild<QStackedWidget*>(m_pRealForm, "loginWidgetStack");
+	m_pStack = qFindChild<QStackedWidget*>(m_pRealForm, "widgetStackLogin");
 
 	if (m_pStack == NULL) 
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The design file for the 'Login Dialog' is missing the 'loginWidgetStack'.  You cannot use this program without it!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The design file for the 'Login Dialog' is missing the 'widgetStackLogin'.  You cannot use this program without it!"));
 		return false;
 	}
 	
@@ -844,15 +844,15 @@ void LoginMainDlg::slotShowHelp()
 	switch(m_pStack->currentIndex())
 	{
 	case StackedLoginConfig::LOGIN_GET_INFO:
-		HelpBrowser::showPage("xsupphelp.html", "xsuploginmain");
+		HelpWindow::showPage("xsupphelp.html", "xsuploginmain");
 		break;
 
 	case StackedLoginConfig::LOGIN_STATUS:
-		HelpBrowser::showPage("xsupphelp.html", "xsuploginmain");
+		HelpWindow::showPage("xsupphelp.html", "xsuploginmain");
 		break;
 
 	default:
-		HelpBrowser::showPage("xsupphelp.html", "xsupusing");
+		HelpWindow::showPage("xsupphelp.html", "xsupusing");
 		break;
 	}
 }

@@ -91,59 +91,59 @@ void ConfigConnAdaptTabWireless::slotDataChanged()
 
 bool ConfigConnAdaptTabWireless::attach()
 {
-	 m_pBroadcastSSID = qFindChild<QRadioButton*>(m_pRealWidget, "broadcastRadioButton");
+	 m_pBroadcastSSID = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioBroadcastSSID");
 	 if (m_pBroadcastSSID == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'broadcastRadioButton'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'dataRadioBroadcastSSID'."));
 		 return false;
 	 }
 
-	 m_pHiddenSSID = qFindChild<QRadioButton*>(m_pRealWidget, "hiddenRadioButton");
+	 m_pHiddenSSID = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioHiddenSSID");
 	 if (m_pHiddenSSID == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'hiddenRadioButton'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'dataRadioHiddenSSID'."));
 		 return false;
 	 }
 
-	 m_pBroadcastCombo = qFindChild<QComboBox*>(m_pRealWidget, "broadcastComboBox");
+	 m_pBroadcastCombo = qFindChild<QComboBox*>(m_pRealWidget, "dataComboBroadcastSSID");
 	 if (m_pBroadcastCombo == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'broadcastComboBox'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'dataComboBroadcastSSID'."));
 		 return false;
 	 }
 
-	 m_pHiddenName = qFindChild<QLineEdit*>(m_pRealWidget, "hiddenLineEdit");
+	 m_pHiddenName = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldHiddenSSID");
 	 if (m_pHiddenName == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'hiddenLineEdit'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFieldHiddenSSID'."));
 		 return false;
 	 }
 
-	 m_pAssociationType = qFindChild<QComboBox*>(m_pRealWidget, "assocMode");
+	 m_pAssociationType = qFindChild<QComboBox*>(m_pRealWidget, "dataComboWirelessAssociationMode");
 	 if (m_pAssociationType == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'assocMode'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'dataComboWirelessAssociationMode'."));
 		 return false;
 	 }
 
-	 m_pProfile = qFindChild<QComboBox*>(m_pRealWidget, "wirelessProfileComboBox");
+	 m_pProfile = qFindChild<QComboBox*>(m_pRealWidget, "dataComboWirelessProfile");
 	 if (m_pProfile == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'wirelessProfileComboBox'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'dataComboWirelessProfile'."));
 		 return false;
 	 }
 
-	 m_pPSK = qFindChild<QLineEdit*>(m_pRealWidget, "pskEdit");
+	 m_pPSK = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldWirelessPSK");
 	 if (m_pPSK == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'pskEdit'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFieldWirelessPSK'."));
 		 return false;
 	 }
 
-	 m_pWEPLength = qFindChild<QComboBox*>(m_pRealWidget, "wepKeyLength");
+	 m_pWEPLength = qFindChild<QComboBox*>(m_pRealWidget, "dataComboWEPKeyLength");
 	 if (m_pWEPLength == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'wepKeyLength'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'dataComboWEPKeyLength'."));
 		 return false;
 	 }
 
@@ -156,34 +156,34 @@ bool ConfigConnAdaptTabWireless::attach()
 		 return false;
 	 }
 
-	 m_pStack = qFindChild<QStackedWidget*>(m_pRealWidget, "wirelessTypeStack");
+	 m_pStack = qFindChild<QStackedWidget*>(m_pRealWidget, "widgetStackWirelessAuthentication");
 	 if (m_pStack == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QWidgetStack called 'wirelessTypeStack'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QWidgetStack called 'widgetStackWirelessAuthentication'."));
 		 return false;
 	 }
 
-	 m_pKeyTypeLabel = qFindChild<QLabel*>(m_pRealWidget, "keyTypeLabel");
+	 m_pKeyTypeLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboKeyType");
 	 if (m_pKeyTypeLabel == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLabel called 'keyTypeLabel'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLabel called 'labelComboKeyType'."));
 		 return false;
 	 }
 
-	 m_pKeyTypeCombo = qFindChild<QComboBox*>(m_pRealWidget, "keyTypeDropDown");
+	 m_pKeyTypeCombo = qFindChild<QComboBox*>(m_pRealWidget, "dataComboKeyType");
 	 if (m_pKeyTypeCombo == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'keyTypeDropDown'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'dataComboKeyType'."));
 		 return false;
 	 }
 
-	 m_pShowButton = qFindChild<QPushButton*>(m_pRealWidget, "pskShowButton");
+	 m_pShowButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonShowPSK");
 
-	 m_pRescan = qFindChild<QPushButton*>(m_pRealWidget, "btnRescan");
+	 m_pRescan = qFindChild<QPushButton*>(m_pRealWidget, "buttonRescan");
 
-	 m_pWirelessProfileLabel = qFindChild<QLabel*>(m_pRealWidget, "wirelessProfileLabel");
+	 m_pWirelessProfileLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboWirelessProfile");
 
-	 m_pHexKeyLabel = qFindChild<QLabel*>(m_pRealWidget, "hexCharsLabel");
+	 m_pHexKeyLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldHexCharacters");
 
 	 m_pPSK->setEchoMode(QLineEdit::Password);
 	 updateWindow();

@@ -82,54 +82,54 @@ void ConfigWidgetEditGlobalsLogging::discard()
 
 bool ConfigWidgetEditGlobalsLogging::attach()
 {
-	 m_pBrowseButton = qFindChild<QPushButton*>(m_pRealWidget, "browseBtn");
+	 m_pBrowseButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonLoggingBrowse");
 
-	 m_pViewLogButton = qFindChild<QPushButton*>(m_pRealWidget, "viewLogBtn");
+	 m_pViewLogButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonLoggingViewLog");
 
-	 m_pEnableLogging = qFindChild<QCheckBox*>(m_pRealWidget, "enableLog");
+	 m_pEnableLogging = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxEnableLoggingToFile");
 	 if (m_pEnableLogging == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("The QCheckBox called 'enableLog' is missing from the form design!"));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("The QCheckBox called 'dataCheckboxEnableLoggingToFile' is missing from the form design!"));
 		 return false;
 	 }
 
-	m_pFriendlyWarnings = qFindChild<QCheckBox*>(m_pRealWidget, "friendlyCheckBox");
+	m_pFriendlyWarnings = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxIncludeFriendlyWarnings");
 
-	m_pLogDirectory = qFindChild<QLineEdit*>(m_pRealWidget, "logDirectoryEdit");
+	m_pLogDirectory = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldLoggingLogDirectory");
 	if (m_pLogDirectory == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QLineEdit called 'logDirectoryEdit' is missing from the form design!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QLineEdit called 'dataFieldLoggingLogDirectory' is missing from the form design!"));
 		return false;
 	}
 
-	m_pLogLevel = qFindChild<QComboBox*>(m_pRealWidget, "logLevelCombo");
+	m_pLogLevel = qFindChild<QComboBox*>(m_pRealWidget, "dataComboLoggingLogLevel");
 	if (m_pLogLevel == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QComboBox called 'logLevelCombo' is missing from the form design!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QComboBox called 'dataComboLoggingLogLevel' is missing from the form design!"));
 		return false;
 	}
 
-	m_pLogsToKeep = qFindChild<QSpinBox*>(m_pRealWidget, "numLogsToKeep");
+	m_pLogsToKeep = qFindChild<QSpinBox*>(m_pRealWidget, "dataFieldNumberOfLogs");
 	if (m_pLogsToKeep == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QSpinBox called 'numLogsToKeep' is missing from the form design!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QSpinBox called 'dataFieldNumberOfLogs' is missing from the form design!"));
 		return false;
 	}
 
 	m_pLogsToKeep->setMaximum(255);
 	m_pLogsToKeep->setMinimum(1);
 
-	m_pRollAtSize = qFindChild<QSpinBox*>(m_pRealWidget, "logSizeToRotate");
+	m_pRollAtSize = qFindChild<QSpinBox*>(m_pRealWidget, "dataFieldLogSizeToRoll");
 	if (m_pRollAtSize == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QSpinBox called 'logSizeToRotate' is missing from the form design!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QSpinBox called 'dataFieldLogSizeToRoll' is missing from the form design!"));
 		return false;
 	}
 
-	m_pRollBySize = qFindChild<QCheckBox*>(m_pRealWidget, "rollLogsCheck");
+	m_pRollBySize = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxRollLogs");
 	if (m_pRollBySize == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QCheckBox called 'rollLogsCheck' is missing from the form design!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QCheckBox called 'dataCheckboxRollLogs' is missing from the form design!"));
 		return false;
 	}
 
@@ -374,15 +374,15 @@ void ConfigWidgetEditGlobalsLogging::viewLogButtonClicked()
 
 	if (m_pViewLogDialog != NULL)
 	{
-		cleanupViewLogDlg();   // Close out the old one.
+		cleanupuiWindowViewLogs();   // Close out the old one.
 	}
 
 	temp = m_pLogDirectory->text();
-	m_pViewLogDialog = new ViewLogDlg(temp);
+	m_pViewLogDialog = new uiWindowViewLogs(temp);
 	
 	if ((m_pViewLogDialog == NULL) || (m_pViewLogDialog->attach() == false))
 	{
-		QMessageBox::critical(this, tr("Form Error"), tr("Unable to load the form 'ViewLogDlg.ui'."));
+		QMessageBox::critical(this, tr("Form Error"), tr("Unable to load the form 'ViewLogWindow.ui'."));
 		delete m_pViewLogDialog;
 		m_pViewLogDialog = NULL;
 
@@ -391,14 +391,14 @@ void ConfigWidgetEditGlobalsLogging::viewLogButtonClicked()
 
 	m_pViewLogDialog->show();
 
-	Util::myConnect(m_pViewLogDialog, SIGNAL(close()), this, SLOT(cleanupViewLogDlg()));
+	Util::myConnect(m_pViewLogDialog, SIGNAL(close()), this, SLOT(cleanupuiWindowViewLogs()));
 }
 
-void ConfigWidgetEditGlobalsLogging::cleanupViewLogDlg()
+void ConfigWidgetEditGlobalsLogging::cleanupuiWindowViewLogs()
 {
 	if (m_pViewLogDialog != NULL)
 	{
-		Util::myDisconnect(m_pViewLogDialog, SIGNAL(close()), this, SLOT(cleanupViewLogDlg()));
+		Util::myDisconnect(m_pViewLogDialog, SIGNAL(close()), this, SLOT(cleanupuiWindowViewLogs()));
 		delete m_pViewLogDialog;
 		m_pViewLogDialog = NULL;
 	}
@@ -411,7 +411,7 @@ bool ConfigWidgetEditGlobalsLogging::dataChanged()
 
 void ConfigWidgetEditGlobalsLogging::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsuplogging");
+	HelpWindow::showPage("xsupphelp.html", "xsuplogging");
 }
 
 

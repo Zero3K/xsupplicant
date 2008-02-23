@@ -97,32 +97,32 @@ void LoginStatus::updateWindow(bool updateAll, bool fromConnect)
 	QLabel *myLabel = NULL;
 	QString temp;
 
-	myLabel = qFindChild<QLabel*>(myProxy, "statusAdapterName");
+	myLabel = qFindChild<QLabel*>(myProxy, "dataFieldAdapterName");
 	if (myLabel != NULL)
 	{
 	  temp = pConn->dev_desc;
 	  myLabel->setText(Util::removePacketSchedulerFromName(temp));
 	}
 
-	m_pIpAddressTextBox = qFindChild<QLabel*>(myProxy, "ipAddrLabel");
+	m_pIpAddressTextBox = qFindChild<QLabel*>(myProxy, "dataFieldIPAddress");
 
-	m_pSignalImageLabel = qFindChild<QLabel*>(myProxy, "sigStrengthGfx");
+	m_pSignalImageLabel = qFindChild<QLabel*>(myProxy, "iconSignalStrength");
 
-	m_pSignalTextLabel = qFindChild<QLabel*>(myProxy, "sigStrengthText");
+	m_pSignalTextLabel = qFindChild<QLabel*>(myProxy, "dataFieldSignalStrength");
 
-	m_pSecurityImageLabel = qFindChild<QLabel*>(myProxy, "encTypeGFX");
+	m_pSecurityImageLabel = qFindChild<QLabel*>(myProxy, "iconEncryptionType");
 
-	m_pSecurityTextLabel = qFindChild<QLabel*>(myProxy, "encTypeLabel");
+	m_pSecurityTextLabel = qFindChild<QLabel*>(myProxy, "dataFieldEncryptionType");
 
-	m_pAssociationImageLabel = qFindChild<QLabel*>(myProxy, "assocGfx");
+	m_pAssociationImageLabel = qFindChild<QLabel*>(myProxy, "iconAssociationMode");
 
-	m_pAssociationTextLabel = qFindChild<QLabel*>(myProxy, "assocTypeLabel");
+	m_pAssociationTextLabel = qFindChild<QLabel*>(myProxy, "dataFieldAssociationMode");
 
-	m_pStatusLabel = qFindChild<QLabel*>(myProxy, "statusLabel");
+	m_pStatusLabel = qFindChild<QLabel*>(myProxy, "dataFieldStatus");
 
-	m_pSSIDName = qFindChild<QLabel*>(myProxy, "ssidNameLabel");
+	m_pSSIDName = qFindChild<QLabel*>(myProxy, "dataFieldSSIDName");
 	
-	m_pTimeBox = qFindChild<QLabel*>(myProxy, "connTimeLabel");
+	m_pTimeBox = qFindChild<QLabel*>(myProxy, "dataFieldConnectedTime");
 
 	m_pTNCStatusTextLabel = qFindChild<QLabel*>(myProxy, "tncStatus");
 
@@ -238,7 +238,7 @@ void LoginStatus::clearWirelessItems()
 
 	if (m_pSSIDName != NULL) m_pSSIDName->setVisible(false);
 
-	myLabel = qFindChild<QLabel*>(myProxy, "ssidLabel");
+	myLabel = qFindChild<QLabel*>(myProxy, "labelSSID");
 	if (myLabel != NULL) myLabel->setVisible(false);
 }
 

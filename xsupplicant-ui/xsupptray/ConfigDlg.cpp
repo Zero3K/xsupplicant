@@ -130,7 +130,7 @@ bool ConfigDlg::create()
 	QWidget *m_pNavBox = NULL;
 	QWidget *m_pConfInfo = NULL;
 
-	m_pRealForm = FormLoader::buildform("ConfigDlg.ui");
+	m_pRealForm = FormLoader::buildform("ConfigWindow.ui");
 
     if (m_pRealForm == NULL) return false;
 
@@ -155,11 +155,11 @@ bool ConfigDlg::create()
 		m_pTrustedServers = NULL;
 	}
 
-	m_pNavBox = qFindChild<QWidget*>(m_pRealForm, "navBox");
+	m_pNavBox = qFindChild<QWidget*>(m_pRealForm, "backgroundTree");
 
 	if (m_pNavBox == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QWidget by the name of 'navBox'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QWidget by the name of 'backgroundTree'."));
 		return false;
 	}
 
@@ -167,11 +167,11 @@ bool ConfigDlg::create()
 
 	if ((m_pNavPanel == NULL) || (m_pNavPanel->attach() == false)) return false;
 
-	m_pConfInfo = qFindChild<QWidget*>(m_pRealForm, "confInfo");
+	m_pConfInfo = qFindChild<QWidget*>(m_pRealForm, "backgroundMain");
 
 	if (m_pConfInfo == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QWidget by the name of 'confInfo'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QWidget by the name of 'backgroundMain'."));
 		return false;
 	}
 

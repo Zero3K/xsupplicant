@@ -89,17 +89,17 @@ void ConfigWidgetEditProfile::detach()
 
 bool ConfigWidgetEditProfile::attach()
 {
-	m_pProfNameEdit = qFindChild<QLineEdit*>(m_pRealWidget, "profNameEdit");
+	m_pProfNameEdit = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldProfileName");
 	if (m_pProfNameEdit == NULL)
 	{
-		QMessageBox::critical(m_pRealWidget, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'profNameEdit'."));
+		QMessageBox::critical(m_pRealWidget, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFieldProfileName'."));
 		return false;
 	}
 
-	m_pEapType = qFindChild<QComboBox*>(m_pRealWidget, "eapTypeCombo");
+	m_pEapType = qFindChild<QComboBox*>(m_pRealWidget, "dataComboEAPTypes");
 	if (m_pEapType == NULL)
 	{
-		QMessageBox::critical(m_pRealWidget, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'eapTypeCombo'."));
+		QMessageBox::critical(m_pRealWidget, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'dataComboEAPTypes'."));
 		return false;
 	}
 

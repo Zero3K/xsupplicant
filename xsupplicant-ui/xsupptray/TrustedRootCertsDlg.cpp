@@ -69,10 +69,10 @@ bool TrustedRootCertsDlg::attach()
 {
 	Qt::WindowFlags flags;
 
-	m_pRealWidget = FormLoader::buildform("SelectTrustedServerDlg.ui");
+	m_pRealWidget = FormLoader::buildform("SelectTrustedServerWindow.ui");
 	if (m_pRealWidget == NULL) 
 	{
-		QMessageBox::critical(this, tr("Form Load Error"), tr("Unable to load the 'SelectTrustedServerDlg.ui' form."));
+		QMessageBox::critical(this, tr("Form Load Error"), tr("Unable to load the 'SelectTrustedServerWindow.ui' form."));
 		return false;
 	}
 
@@ -80,35 +80,35 @@ bool TrustedRootCertsDlg::attach()
 	flags &= (~Qt::WindowContextHelpButtonHint);
 	m_pRealWidget->setWindowFlags(flags);
 
-	m_pCertificateTable = qFindChild<QTableWidget*>(m_pRealWidget, "certTableWidget");
+	m_pCertificateTable = qFindChild<QTableWidget*>(m_pRealWidget, "dataTableCerts");
 	if (m_pCertificateTable == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QTableWidget named 'certTableWidget'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QTableWidget named 'dataTableCerts'."));
 		return false;
 	}
 
-	m_pOkButton = qFindChild<QPushButton*>(m_pRealWidget, "okBtn");
+	m_pOkButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonOK");
 	if (m_pOkButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QPushButton named 'okBtn'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QPushButton named 'buttonOK'."));
 		return false;
 	}
 
-	m_pCancelButton = qFindChild<QPushButton*>(m_pRealWidget, "cancelBtn");
+	m_pCancelButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonCancel");
 	if (m_pCancelButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable the locate the QPushButton named 'cancelBtn'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable the locate the QPushButton named 'buttonCancel'."));
 		return false;
 	}
 
-	m_pImportButton = qFindChild<QPushButton*>(m_pRealWidget, "importBtn");
+	m_pImportButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonImport");
 	if (m_pImportButton == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QPushButton named 'importBtn'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QPushButton named 'buttonImport'."));
 		return false;
 	}
 
-	m_pHelpButton = qFindChild<QPushButton*>(m_pRealWidget, "helpBtn");
+	m_pHelpButton = qFindChild<QPushButton*>(m_pRealWidget, "buttonHelp");
 	if (m_pHelpButton != NULL)
 	{
 		Util::myConnect(m_pHelpButton, SIGNAL(clicked()), this, SLOT(slotHelp()));
@@ -252,7 +252,7 @@ void TrustedRootCertsDlg::slotImport()
 
 void TrustedRootCertsDlg::slotHelp()
 {
-  HelpBrowser::showPage("xsupphelp.html", "xsupservercert");
+  HelpWindow::showPage("xsupphelp.html", "xsupservercert");
 }
 
 //! getCurrentCertificate

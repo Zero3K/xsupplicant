@@ -737,10 +737,10 @@ bool ConfigProfileTabs::attach()
 	UIPlugins *currentPlugin       = NULL;
 	int pluginStatus                = 0;
 
-	m_pProfileTabs = qFindChild<QTabWidget*>(m_pRealWidget, "profTabWidget");
+	m_pProfileTabs = qFindChild<QTabWidget*>(m_pRealWidget, "widgetTabsProfiles");
 	if (m_pProfileTabs == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QTabWidget called 'profTabWidget'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QTabWidget called 'widgetTabsProfiles'."));
 		return false;
 	}
 
@@ -769,91 +769,91 @@ bool ConfigProfileTabs::attach()
 
 	m_pProfileTabs->setCurrentIndex(0);  // Always start at tab 0.
 
-	 m_pValidateServer = qFindChild<QCheckBox*>(m_pRealWidget, "validateServerCheckbox");
+	 m_pValidateServer = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxProfilesValidateServer");
 	 if (m_pValidateServer == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox called 'validateServerCheckbox'."));
-		return false;
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox called 'dataCheckboxProfilesValidateServer'."));
+		 return false;
 	 }
 
-	 m_pTrustedServerCombo = qFindChild<QComboBox*>(m_pRealWidget, "trustedServerCombo");
+	 m_pTrustedServerCombo = qFindChild<QComboBox*>(m_pRealWidget, "dataComboProfilesTrustedServers");
 	 if (m_pTrustedServerCombo == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'trustedServerCombo'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'dataComboProfilesTrustedServers'."));
 		 return false;
 	 }
 
-	 m_pAnonIdent = qFindChild<QRadioButton*>(m_pRealWidget, "anonIdentRadioBtn");
+	 m_pAnonIdent = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioProfilesAnonymousIdentity");
 	 if (m_pAnonIdent == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'anonIdentRadioBtn'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'dataRadioProfilesAnonymousIdentity'."));
 		 return false;
 	 }
-
-	 m_pUseThisIdent = qFindChild<QRadioButton*>(m_pRealWidget, "thisIdentityRadioBtn");
+ 
+	 m_pUseThisIdent = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioProfilesUseThisIdentity");
 	 if (m_pUseThisIdent == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'thisIdentityRadioBtn'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'dataRadioProfilesUseThisIdentity'."));			
 		 return false;
 	 }
 
-	 m_pPhase1Ident = qFindChild<QLineEdit*>(m_pRealWidget, "phase1IdentEdit");
+	 m_pPhase1Ident = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldProfilesUseThisIdentity");
 	 if (m_pPhase1Ident == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'phase1IdentEdit'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFieldProfilesUseThisIdentity'."));
 		 return false;
 	 }
 
-	 m_pInnerMethod = qFindChild<QComboBox*>(m_pRealWidget, "innerComboBox");
+	 m_pInnerMethod = qFindChild<QComboBox*>(m_pRealWidget, "dataComboProfilesTunneledProtocols");
 	 if (m_pInnerMethod == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'innerComboBox'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'dataComboProfilesTunneledProtocols'."));
 		 return false;
 	 }
 
-	 m_pPromptForUPW = qFindChild<QRadioButton*>(m_pRealWidget, "promptUPW");
+	 m_pPromptForUPW = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioProfilesPromptUsernamePassword");
 	 if (m_pPromptForUPW == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'promptUPW'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'dataRadioProfilesPromptUsernamePassword'."));
 		 return false;
 	 }
 
-	 m_pPromptForPWD = qFindChild<QRadioButton*>(m_pRealWidget, "promptPWDOnly");
+	 m_pPromptForPWD = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioProfilesPromptPassword");
 	 if (m_pPromptForPWD == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'promptPWDOnly'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'dataRadioProfilesPromptPassword'."));
 		 return false;
 	 }
 
-	 m_pDontPrompt = qFindChild<QRadioButton*>(m_pRealWidget, "promptNone");
+	 m_pDontPrompt = qFindChild<QRadioButton*>(m_pRealWidget, "dataRadioProfilesPromptNone");
 	 if (m_pDontPrompt == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'promptNone'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QRadioButton called 'dataRadioProfilesPromptNone'."));
 		 return false;
 	 }
 
-	 m_pUsername = qFindChild<QLineEdit*>(m_pRealWidget, "usernameEdit");
+	 m_pUsername = qFindChild<QLineEdit*>(m_pRealWidget, "dataFrameProfilesUsername");
 	 if (m_pUsername == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'usernameEdit'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFrameProfilesUsername'."));
 		 return false;
 	 }
 
-	 m_pPassword = qFindChild<QLineEdit*>(m_pRealWidget, "passwordEdit");
+	 m_pPassword = qFindChild<QLineEdit*>(m_pRealWidget, "dataFrameProfilesPassword");
 	 if (m_pPassword == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'passwordEdit'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFrameProfilesPassword'."));
 		 return false;
 	 }
 
-	 m_pShowBtn = qFindChild<QPushButton*>(m_pRealWidget, "showBtn");
+	 m_pShowBtn = qFindChild<QPushButton*>(m_pRealWidget, "buttonProfilesShowPassword");
 	 if (m_pShowBtn == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QPushButton called 'showBtn'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QPushButton called 'buttonProfilesShowPassword'."));
 		 return false;
 	 }
 
-	 m_pTSLabel = qFindChild<QLabel*>(m_pRealWidget, "tsText");
+	 m_pTSLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboProfilesTrustedServers");
 
  	if (m_pProfile == NULL)
 	{
@@ -1279,16 +1279,16 @@ void ConfigProfileTabs::showHelp()
 	switch (m_pProfileTabs->currentIndex())
 	{
 	case PROTOCOL_SETTINGS_TAB:
-		HelpBrowser::showPage("xsupphelp.html", "xsupprofiles");
+		HelpWindow::showPage("xsupphelp.html", "xsupprofiles");
 		break;
 
 	case USER_CREDENTIALS_TAB:
-		HelpBrowser::showPage("xsupphelp.html", "xsupuser");
+		HelpWindow::showPage("xsupphelp.html", "xsupuser");
 		break;
 
 	default:
 		// XXX This is a band-aid fix to show posture help for the IDE version of the UI.
-		HelpBrowser::showPage("xsupphelp.html", "idngcompliance");
+		HelpWindow::showPage("xsupphelp.html", "idngcompliance");
 		break;
 	}
 }

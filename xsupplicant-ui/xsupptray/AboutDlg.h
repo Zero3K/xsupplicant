@@ -39,16 +39,16 @@
 #include "MessageClass.h"
 #include "Util.h"
 
-class AboutDlg : public QWidget
+class AboutWindow : public QWidget
 {
   Q_OBJECT
 
 public:
-  AboutDlg(QWidget *parent);
+  AboutWindow(QWidget *parent);
   bool create();
   void updateData();
   void show();
-  virtual ~AboutDlg();
+  virtual ~AboutWindow();
 
 signals:
   void close();
@@ -58,13 +58,13 @@ private:
   QDialog *m_pDialog;
 
   QLabel *m_pTitleImageLabel;
-  QLabel *m_pPlugInsLabel;
+  QLabel *m_pdataFieldPlugins;
   QString &getGUIVersion();
 
   XSupCalls m_supplicant;
   QLabel *m_pSupVersion;
   QLabel *m_pGUIVersion;
-  QPushButton *m_pClose;
+  QPushButton *m_pbuttonClose;
   QString m_versionString;
 
   void setupWindow();

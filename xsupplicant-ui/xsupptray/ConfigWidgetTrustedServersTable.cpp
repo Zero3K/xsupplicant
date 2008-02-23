@@ -109,5 +109,5 @@ void ConfigWidgetTrustedServersTable::slotDoubleClicked(int row, int column)
 
 void ConfigWidgetTrustedServersTable::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsupservermain");
+	HelpWindow::showPage("xsupphelp.html", "xsupservermain");
 }

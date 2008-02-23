@@ -78,17 +78,17 @@ void ConfigWidgetEditConnection::detach()
 
 bool ConfigWidgetEditConnection::attach()
 {
-	m_pConnNameEdit = qFindChild<QLineEdit*>(m_pRealWidget, "connNameEdit");
+	m_pConnNameEdit = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldConnectionName");
 	if (m_pConnNameEdit == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'tsNameEdit'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFrameTrustedServerName'."));
 		return false;
 	}
 
-	m_pTabs = qFindChild<QTabWidget*>(m_pRealWidget, "connTabs");
+	m_pTabs = qFindChild<QTabWidget*>(m_pRealWidget, "widgetTabsConnections");
 	if (m_pTabs == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QTabBar called 'connTabs'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QTabBar called 'widgetTabsConnections'."));
 		return false;
 	}
 
@@ -269,19 +269,19 @@ void ConfigWidgetEditConnection::slotHelp()
 	switch (m_pTabs->currentIndex())
 	{
 	case ADAPTER_TAB:
-		HelpBrowser::showPage("xsupphelp.html", "xsupconnections");
+		HelpWindow::showPage("xsupphelp.html", "xsupconnections");
 		break;
 
 	case NETWORK_TAB:
-		HelpBrowser::showPage("xsupphelp.html", "xsupnetwork");
+		HelpWindow::showPage("xsupphelp.html", "xsupnetwork");
 		break;
 
 	case DNS_TAB:
-		HelpBrowser::showPage("xsupphelp.html", "xsupdns");
+		HelpWindow::showPage("xsupphelp.html", "xsupdns");
 		break;
 
 	default:
-		HelpBrowser::showPage("xsupphelp.html", "xsupconnections");
+		HelpWindow::showPage("xsupphelp.html", "xsupconnections");
 		break;
 	}
 }

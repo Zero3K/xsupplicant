@@ -30,21 +30,21 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#ifndef _VIEWLOGDLG_H_
-#define _VIEWLOGDLG_H_
+#ifndef _UIWINDOWVIEWLOGS_H_
+#define _UIWINDOWVIEWLOGS_H_
 
 #include <QWidget>
 #include "MessageClass.h"
 #include <QFile>
 
-class ViewLogDlg :
+class uiWindowViewLogs :
   public QWidget
 {
   Q_OBJECT 
 
 public:
-  ViewLogDlg(QString &path);
-  virtual ~ViewLogDlg();
+  uiWindowViewLogs(QString &path);
+  virtual ~uiWindowViewLogs();
   bool attach();
   bool open();
   void show();
@@ -76,5 +76,5 @@ private:
 
 };
 
-#endif  // _VIEWLOGDLG_H_
+#endif  // _UIWINDOWVIEWLOGS_H_
 

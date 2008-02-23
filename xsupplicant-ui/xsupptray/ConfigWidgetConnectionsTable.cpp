@@ -77,17 +77,17 @@ void ConfigWidgetConnectionsTable::detach()
 
 bool ConfigWidgetConnectionsTable::attach()
 {
-	m_pRealTable = qFindChild<QTableWidget*>(m_pRealWidget, "connectionTable");
+	m_pRealTable = qFindChild<QTableWidget*>(m_pRealWidget, "dataTableConnections");
 	if (m_pRealTable == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to find the QTableWidget called 'connectionTable'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to find the QTableWidget called 'dataTableConnections'."));
 		return false;
 	}
 
-	m_pPriority = qFindChild<QPushButton*>(m_pRealWidget, "priorityButton");
+	m_pPriority = qFindChild<QPushButton*>(m_pRealWidget, "buttonPriority");
 	if (m_pPriority == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to find the QPushButton called 'priorityButton'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to find the QPushButton called 'buttonPriority'."));
 		return false;
 	}
 
@@ -282,7 +282,7 @@ void ConfigWidgetConnectionsTable::slotDoubleClicked(int row, int column)
 
 void ConfigWidgetConnectionsTable::slotShowHelp()
 {
-	HelpBrowser::showPage("xsupphelp.html", "xsupconnmain");
+	HelpWindow::showPage("xsupphelp.html", "xsupconnmain");
 }
 
 void ConfigWidgetConnectionsTable::slotPriorityCleanup()
