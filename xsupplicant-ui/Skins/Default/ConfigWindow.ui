@@ -290,7 +290,7 @@
      <number>0</number>
     </property>
     <property name="currentIndex" >
-     <number>7</number>
+     <number>6</number>
     </property>
     <widget class="QWidget" name="widgetStackConnectionsTablePage" >
      <widget class="QFrame" name="backgroundHeaderConnectionsTable" >
@@ -8028,7 +8028,7 @@
            <number>255</number>
           </property>
          </widget>
-         <widget class="QRadioButton" name="dataRadioProfielsUseThisIdentity" >
+         <widget class="QRadioButton" name="dataRadioProfilesUseThisIdentity" >
           <property name="geometry" >
            <rect>
             <x>30</x>
@@ -15575,7 +15575,7 @@
   <tabstop>dataCheckboxProfilesValidateServer</tabstop>
   <tabstop>dataComboProfilesTrustedServers</tabstop>
   <tabstop>dataRadioProfilesAnonymousIdentity</tabstop>
-  <tabstop>dataRadioProfielsUseThisIdentity</tabstop>
+  <tabstop>dataRadioProfilesUseThisIdentity</tabstop>
   <tabstop>dataFieldProfilesUseThisIdentity</tabstop>
   <tabstop>dataComboProfilesTunneledProtocols</tabstop>
   <tabstop>dataRadioProfilesPromptUsernamePassword</tabstop>
