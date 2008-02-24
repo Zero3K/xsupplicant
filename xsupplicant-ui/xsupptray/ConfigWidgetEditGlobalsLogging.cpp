@@ -38,6 +38,10 @@
 #include "Util.h"
 #include "helpbrowser.h"
 
+#ifdef WINDOWS
+#include <shlobj.h>
+#endif
+
 ConfigWidgetEditGlobalsLogging::ConfigWidgetEditGlobalsLogging(QWidget *pRealWidget, XSupCalls *xsup, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup)
 {
@@ -343,6 +347,11 @@ void ConfigWidgetEditGlobalsLogging::getPageName(QString &name)
 
 void ConfigWidgetEditGlobalsLogging::loggingStateChanged(int newstate)
 {
+#ifdef WINDOWS
+  TCHAR szMyPath[MAX_PATH];
+  char *newPath = NULL;
+#endif
+
 	if (newstate == Qt::Unchecked)
 	{
 		setEnabled(false);
@@ -350,6 +359,24 @@ void ConfigWidgetEditGlobalsLogging::loggingStateChanged(int newstate)
 	else if (newstate == Qt::Checked)
 	{
 		setEnabled(true);
+		if (m_pLogDirectory->text() == "")
+		{
+#ifdef WINDOWS
+		  if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
+		  {
+			  m_pLogDirectory->setText(".");
+		  }
+		  else
+		  {
+			  newPath = (char *)malloc(MAX_PATH);
+			  sprintf(newPath, "%ws", szMyPath);
+			  m_pLogDirectory->setText(newPath);
+			  free(newPath);
+		  }
+#else
+			m_pLogDirectory->setText("/var/log/");
+#endif
+		}
 	}
 	else
 	{
