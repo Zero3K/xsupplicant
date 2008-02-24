@@ -1808,8 +1808,10 @@ int tls_funcs_encrypt(struct tls_vars *mytls_vars, uint8_t *inbuf,
   BIO_reset(mytls_vars->ssl_in);
   BIO_reset(mytls_vars->ssl_out);
 
+#ifdef UNSAFE_DUMPS
   debug_printf(DEBUG_TLS_CORE, "inbuf (%d) :\n", insize);
   debug_hex_dump(DEBUG_TLS_CORE, inbuf, insize);
+#endif
 
   rc = SSL_write(mytls_vars->ssl, inbuf, insize);
   if (rc <= 0)
