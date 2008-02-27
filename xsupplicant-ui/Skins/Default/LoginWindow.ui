@@ -1099,7 +1099,7 @@
         <enum>QFrame::Box</enum>
        </property>
        <property name="currentIndex" >
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="widgetStackNoCredentialsPage" >
         <widget class="QLabel" name="dataFieldCredentialsNone" >
@@ -2313,7 +2313,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>167</y>
+          <y>146</y>
           <width>115</width>
           <height>18</height>
          </rect>
@@ -2389,7 +2389,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>210</y>
+          <y>182</y>
           <width>115</width>
           <height>18</height>
          </rect>
@@ -2845,7 +2845,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>81</y>
+          <y>74</y>
           <width>115</width>
           <height>18</height>
          </rect>
@@ -2921,7 +2921,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>124</y>
+          <y>110</y>
           <width>115</width>
           <height>18</height>
          </rect>
@@ -2996,9 +2996,9 @@
        <widget class="QLabel" name="dataFieldAdapterName" >
         <property name="geometry" >
          <rect>
-          <x>120</x>
+          <x>130</x>
           <y>38</y>
-          <width>290</width>
+          <width>270</width>
           <height>18</height>
          </rect>
         </property>
@@ -3010,13 +3010,13 @@
         </property>
         <property name="minimumSize" >
          <size>
-          <width>290</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
         <property name="maximumSize" >
          <size>
-          <width>290</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
@@ -3072,9 +3072,9 @@
        <widget class="QLabel" name="dataFieldStatus" >
         <property name="geometry" >
          <rect>
-          <x>120</x>
-          <y>81</y>
-          <width>250</width>
+          <x>130</x>
+          <y>74</y>
+          <width>270</width>
           <height>18</height>
          </rect>
         </property>
@@ -3086,13 +3086,13 @@
         </property>
         <property name="minimumSize" >
          <size>
-          <width>250</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
         <property name="maximumSize" >
          <size>
-          <width>250</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
@@ -3148,9 +3148,9 @@
        <widget class="QLabel" name="dataFieldConnectedTime" >
         <property name="geometry" >
          <rect>
-          <x>120</x>
-          <y>124</y>
-          <width>250</width>
+          <x>130</x>
+          <y>110</y>
+          <width>270</width>
           <height>18</height>
          </rect>
         </property>
@@ -3162,13 +3162,13 @@
         </property>
         <property name="minimumSize" >
          <size>
-          <width>250</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
         <property name="maximumSize" >
          <size>
-          <width>250</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
@@ -3224,9 +3224,9 @@
        <widget class="QLabel" name="dataFieldIPAddress" >
         <property name="geometry" >
          <rect>
-          <x>120</x>
-          <y>167</y>
-          <width>250</width>
+          <x>130</x>
+          <y>146</y>
+          <width>270</width>
           <height>18</height>
          </rect>
         </property>
@@ -3238,13 +3238,13 @@
         </property>
         <property name="minimumSize" >
          <size>
-          <width>250</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
         <property name="maximumSize" >
          <size>
-          <width>250</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
@@ -3300,9 +3300,9 @@
        <widget class="QLabel" name="dataFieldSSIDName" >
         <property name="geometry" >
          <rect>
-          <x>120</x>
-          <y>210</y>
-          <width>250</width>
+          <x>130</x>
+          <y>182</y>
+          <width>270</width>
           <height>18</height>
          </rect>
         </property>
@@ -3314,13 +3314,13 @@
         </property>
         <property name="minimumSize" >
          <size>
-          <width>250</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
         <property name="maximumSize" >
          <size>
-          <width>250</width>
+          <width>270</width>
           <height>18</height>
          </size>
         </property>
