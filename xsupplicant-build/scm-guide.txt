@@ -13,3 +13,5 @@ When adding new files, be sure to set:
 svn:eol-style native
 
 
+* Deleting Branches:
+
