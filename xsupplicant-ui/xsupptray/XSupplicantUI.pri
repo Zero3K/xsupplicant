@@ -52,7 +52,8 @@ HEADERS += ./AboutDlg.h \
     ./ViewLogDlg.h \
     ./xsupcalls.h \
     ./PluginWidget.h \
-    ./UIPlugins.h
+    ./UIPlugins.h \
+    ../../xsupplicant/src/xsup_debug.c
 
 #Source files
 SOURCES += ./AboutDlg.cpp \
@@ -104,7 +105,8 @@ SOURCES += ./AboutDlg.cpp \
     ./ViewLogDlg.cpp \
     ./XSupCalls.cpp \
     ./PluginWidget.cpp \
-    ./UIPlugins.cpp
+    ./UIPlugins.cpp \
+    ../../xsupplicant/src/xsup_debug.c
 
 #Resource file(s)
 RESOURCES += xsupptray.qrc
