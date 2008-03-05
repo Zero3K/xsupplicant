@@ -233,10 +233,10 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
 		return false;
 	}
 
-	m_pPreferredList = qFindChild<QListWidget*>(m_pRealForm, "prefConnections");
+	m_pPreferredList = qFindChild<QListWidget*>(m_pRealForm, "dataFramePreferredConnections");
 	if (m_pPreferredList == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'prefConnections' QListWidget!"));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'dataFramePreferredConnections' QListWidget!"));
 		return false;
 	}
 
