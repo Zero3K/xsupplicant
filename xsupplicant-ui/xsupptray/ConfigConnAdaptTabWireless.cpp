@@ -149,10 +149,10 @@ bool ConfigConnAdaptTabWireless::attach()
 
 	 m_pWEPLength->setCurrentIndex(0);
 
-	 m_pWEPKey = qFindChild<QLineEdit*>(m_pRealWidget, "wepKeyEdit");
+	 m_pWEPKey = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticWEPKey");
 	 if (m_pWEPKey == NULL)
 	 {
-		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'wepKeyEdit'."));
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QLineEdit called 'dataFieldStaticWEPKey'."));
 		 return false;
 	 }
 
