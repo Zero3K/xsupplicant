@@ -49,7 +49,7 @@ LoginGetInfo::LoginGetInfo(QString inDevName, poss_conn_enum *pConnEnum, QWidget
 
 	m_pAdapterStat = qFindChild<QLabel*>(m_pStack, "dataFieldAdapterStatus");
 
-	m_pSSIDStatLabel = qFindChild<QLabel*>(m_pStack, "ssidStat");
+	m_pSSIDStatLabel = qFindChild<QLabel*>(m_pStack, "labelSSIDStatus");
 
 	m_pSSIDStat = qFindChild<QLabel*>(m_pStack, "dataFieldSSIDStatus");
 
