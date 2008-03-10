@@ -2742,7 +2742,7 @@
          <pixmap>icons/key.png</pixmap>
         </property>
        </widget>
-       <widget class="QLabel" name="iconEncryptionTime" >
+       <widget class="QLabel" name="iconEncryptionType" >
         <property name="geometry" >
          <rect>
           <x>410</x>
