@@ -290,7 +290,7 @@
      <number>0</number>
     </property>
     <property name="currentIndex" >
-     <number>6</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="widgetStackConnectionsTablePage" >
      <widget class="QFrame" name="backgroundHeaderConnectionsTable" >
@@ -2391,7 +2391,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex" >
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="elideMode" >
        <enum>Qt::ElideNone</enum>
@@ -7183,7 +7183,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex" >
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="widgetTabsProfilesProtocolSettingsPage" >
        <attribute name="title" >
@@ -11917,7 +11917,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>38</y>
+          <y>66</y>
           <width>71</width>
           <height>18</height>
          </rect>
@@ -11990,7 +11990,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>66</y>
+          <y>94</y>
           <width>71</width>
           <height>18</height>
          </rect>
@@ -12063,7 +12063,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>94</y>
+          <y>10</y>
           <width>421</width>
           <height>18</height>
          </rect>
@@ -12130,7 +12130,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>10</y>
+          <y>38</y>
           <width>421</width>
           <height>18</height>
          </rect>
@@ -12197,7 +12197,7 @@
         <property name="geometry" >
          <rect>
           <x>90</x>
-          <y>35</y>
+          <y>63</y>
           <width>335</width>
           <height>25</height>
          </rect>
@@ -12224,7 +12224,7 @@
         <property name="geometry" >
          <rect>
           <x>435</x>
-          <y>35</y>
+          <y>63</y>
           <width>75</width>
           <height>25</height>
          </rect>
@@ -12260,7 +12260,7 @@
         <property name="geometry" >
          <rect>
           <x>435</x>
-          <y>63</y>
+          <y>91</y>
           <width>75</width>
           <height>25</height>
          </rect>
@@ -12296,7 +12296,7 @@
         <property name="geometry" >
          <rect>
           <x>90</x>
-          <y>63</y>
+          <y>91</y>
           <width>335</width>
           <height>25</height>
          </rect>
@@ -12337,7 +12337,7 @@
        <widget class="QLabel" name="labelLoggingLogSizeUnits" >
         <property name="geometry" >
          <rect>
-          <x>200</x>
+          <x>220</x>
           <y>150</y>
           <width>46</width>
           <height>18</height>
@@ -12387,7 +12387,7 @@
        <widget class="QLabel" name="labelLoggingNumberOfLogs" >
         <property name="geometry" >
          <rect>
-          <x>10</x>
+          <x>30</x>
           <y>178</y>
           <width>120</width>
           <height>18</height>
@@ -12437,7 +12437,7 @@
        <widget class="QSpinBox" name="dataFieldLogSizeToRoll" >
         <property name="geometry" >
          <rect>
-          <x>140</x>
+          <x>160</x>
           <y>147</y>
           <width>50</width>
           <height>25</height>
@@ -12447,7 +12447,7 @@
        <widget class="QLabel" name="labelLoggingLogSizeToRoll" >
         <property name="geometry" >
          <rect>
-          <x>10</x>
+          <x>30</x>
           <y>150</y>
           <width>120</width>
           <height>16</height>
@@ -12497,7 +12497,7 @@
        <widget class="QCheckBox" name="dataCheckboxRollLogs" >
         <property name="geometry" >
          <rect>
-          <x>10</x>
+          <x>30</x>
           <y>122</y>
           <width>101</width>
           <height>18</height>
@@ -12547,7 +12547,7 @@
        <widget class="QSpinBox" name="dataFieldNumberOfLogs" >
         <property name="geometry" >
          <rect>
-          <x>140</x>
+          <x>160</x>
           <y>175</y>
           <width>50</width>
           <height>25</height>
@@ -15551,12 +15551,13 @@
   <tabstop>buttonRescan</tabstop>
   <tabstop>dataRadioHiddenSSID</tabstop>
   <tabstop>dataFieldHiddenSSID</tabstop>
+  <tabstop>dataComboKeyType</tabstop>
   <tabstop>dataComboWirelessAssociationMode</tabstop>
+  <tabstop>dataComboWirelessProfile</tabstop>
   <tabstop>dataFieldWirelessPSK</tabstop>
   <tabstop>buttonShowPSK</tabstop>
   <tabstop>dataComboWEPKeyLength</tabstop>
   <tabstop>dataFieldStaticWEPKey</tabstop>
-  <tabstop>dataComboWirelessProfile</tabstop>
   <tabstop>dataComboWiredNetworkProfile</tabstop>
   <tabstop>dataRadioDHCP</tabstop>
   <tabstop>dataCheckboxRenewSettings</tabstop>
@@ -15586,17 +15587,21 @@
   <tabstop>buttonProfilesShowPassword</tabstop>
   <tabstop>dataFrameTrustedServerName</tabstop>
   <tabstop>dataFieldCommonNameEndsWith</tabstop>
-  <tabstop>dataCheckboxProfilesValidateServer</tabstop>
-  <tabstop>buttonLoggingBrowse</tabstop>
+  <tabstop>dataCheckboxValidateCommonName</tabstop>
+  <tabstop>buttonTrustedServersBrowse</tabstop>
+  <tabstop>dataCheckboxIncludeFriendlyWarnings</tabstop>
   <tabstop>dataCheckboxEnableLoggingToFile</tabstop>
   <tabstop>dataFieldLoggingLogDirectory</tabstop>
   <tabstop>buttonLoggingBrowse</tabstop>
   <tabstop>dataComboLoggingLogLevel</tabstop>
   <tabstop>buttonLoggingViewLog</tabstop>
-  <tabstop>dataCheckboxIncludeFriendlyWarnings</tabstop>
+  <tabstop>dataCheckboxRollLogs</tabstop>
+  <tabstop>dataFieldLogSizeToRoll</tabstop>
+  <tabstop>dataFieldNumberOfLogs</tabstop>
   <tabstop>dataFieldAdvancedSettingsScanTimeout</tabstop>
   <tabstop>dataFieldAdvancedSettingsAssociationTimeout</tabstop>
   <tabstop>dataComboAdvancedSettingsWiredDefault</tabstop>
+  <tabstop>dataCheckboxAdvancedSettignsRunCheckOnStartup</tabstop>
   <tabstop>buttonAdvancedSettingsReset</tabstop>
   <tabstop>dataFieldAdvancedInternalsAuthPeriod</tabstop>
   <tabstop>dataFieldAdvancedInternalsHeldPeriod</tabstop>
@@ -15613,8 +15618,6 @@
   <tabstop>buttonSave</tabstop>
   <tabstop>buttonClose</tabstop>
   <tabstop>buttonHelp</tabstop>
-  <tabstop>buttonLoggingBrowse</tabstop>
-  <tabstop>dataCheckboxProfilesValidateServer</tabstop>
  </tabstops>
  <resources/>
  <connections/>
