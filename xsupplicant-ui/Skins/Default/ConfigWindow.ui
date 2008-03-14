@@ -12443,6 +12443,9 @@
           <height>25</height>
          </rect>
         </property>
+        <property name="minimum" >
+         <number>1</number>
+        </property>
        </widget>
        <widget class="QLabel" name="labelLoggingLogSizeToRoll" >
         <property name="geometry" >
@@ -12497,7 +12500,7 @@
        <widget class="QCheckBox" name="dataCheckboxRollLogs" >
         <property name="geometry" >
          <rect>
-          <x>30</x>
+          <x>10</x>
           <y>122</y>
           <width>101</width>
           <height>18</height>
@@ -12552,6 +12555,9 @@
           <width>50</width>
           <height>25</height>
          </rect>
+        </property>
+        <property name="minimum" >
+         <number>1</number>
         </property>
        </widget>
       </widget>
