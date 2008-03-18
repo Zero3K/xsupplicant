@@ -1535,7 +1535,7 @@ int ipc_callout_get_seconds_authenticated(xmlNodePtr innode, xmlNodePtr *outnode
 	}
 
 #ifdef WINDOWS
-  if (cardif_windows_wmi_get_uptime(&curuptime) != 0)
+  if (cardif_windows_get_uptime(&curuptime) != 0)
   {
 	return ipc_callout_create_error(ctx->intName, "Get_Seconds_Authenticated", IPC_ERROR_CANT_GET_SYS_UPTIME, outnode);
   }

@@ -130,9 +130,9 @@ int xsup_ipc_win_create_pipe(int i)
 		memset(&handle_str, 0x00, sizeof(handle_str));
 		sprintf((char *)&handle_str, "pipe handle #%d", i);
 
-		event_core_register(pipes[i].hdl, NULL, xsup_ipc_win_event, HIGH_PRIORITY, handle_str);
+		event_core_register(pipes[i].hdl, NULL, xsup_ipc_win_event, 0, HIGH_PRIORITY, handle_str);
 		event_core_bind_hevent(pipes[i].hdl, pipes[i].hevent);
-		ovr = event_core_get_ovr(pipes[i].hdl);
+		ovr = event_core_get_ovr(pipes[i].hdl, 0);
 		if (ovr == NULL)
 		{
 			debug_printf(DEBUG_NORMAL, "OVERLAPPED structure is NULL!\n");
@@ -180,7 +180,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 		event_core_user_logged_on();                // This will trigger the user logged on actions in the event that we didn't get a user logon even from Windows.
 
 		SET_FLAG(pipes[i].flags, IPC_CONNECTED);
-		lovr = event_core_get_ovr(pipes[i].hdl);
+		lovr = event_core_get_ovr(pipes[i].hdl, 0);
 		if (lovr == NULL)
 		{
 			debug_printf(DEBUG_NORMAL, "Couldn't locate bound OVERLAPPED structure!\n");
@@ -198,7 +198,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 				{
 					debug_printf(DEBUG_IPC, "Disconnected PIPE on handle %d.\n", pipes[i].hdl);
 					pipes[i].flags = 0;
-					event_core_deregister(pipes[i].hdl);
+					event_core_deregister(pipes[i].hdl, 0);
 					CloseHandle(pipes[i].hevent);
 					CloseHandle(pipes[i].hdl);
 					pipes[i].hevent = INVALID_HANDLE_VALUE;
@@ -221,7 +221,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 				{
 					debug_printf(DEBUG_IPC, "Disconnected PIPE on handle %d.\n", pipes[i].hdl);
 					pipes[i].flags = 0;
-					event_core_deregister(pipes[i].hdl);
+					event_core_deregister(pipes[i].hdl, 0);
 					CloseHandle(pipes[i].hevent);
 					CloseHandle(pipes[i].hdl);
 					pipes[i].hevent = INVALID_HANDLE_VALUE;
@@ -236,7 +236,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 	}
 	else
 	{
-		lovr = event_core_get_ovr(pipes[i].hdl);
+		lovr = event_core_get_ovr(pipes[i].hdl, 0);
 		if (lovr == NULL)
 		{
 			debug_printf(DEBUG_NORMAL, "Couldn't locate bound OVERLAPPED structure!\n");
@@ -254,7 +254,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 			{
 				debug_printf(DEBUG_IPC, "Disconnected PIPE on handle %d.\n", pipes[i].hdl);
 				pipes[i].flags = 0;
-				event_core_deregister(pipes[i].hdl);
+				event_core_deregister(pipes[i].hdl, 0);
 				CloseHandle(pipes[i].hevent);
 				CloseHandle(pipes[i].hdl);
 				pipes[i].hevent = INVALID_HANDLE_VALUE;
@@ -310,7 +310,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 			pipes[i].inbuf = 0;
 			memset(&pipes[i].buffer, 0x00, sizeof(pipes[i].buffer));
 
-			lovr = event_core_get_ovr(pipes[i].hdl);
+			lovr = event_core_get_ovr(pipes[i].hdl, 0);
 			if (lovr == NULL)
 			{
 				debug_printf(DEBUG_NORMAL, "Invalid OVERLAPPED structure!\n");
@@ -328,7 +328,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 					{
 						debug_printf(DEBUG_IPC, "Disconnected PIPE on handle %d.\n", pipes[i].hdl);
 						pipes[i].flags = 0;
-						event_core_deregister(pipes[i].hdl);
+						event_core_deregister(pipes[i].hdl, 0);
 						CloseHandle(pipes[i].hevent);
 						CloseHandle(pipes[i].hdl);
 						pipes[i].hevent = INVALID_HANDLE_VALUE;
@@ -377,6 +377,8 @@ int xsup_ipc_init(uint8_t clear)
 
 	// If we don't have any valid pipe handles, return an error.
 	if (valid != TRUE) return -1;
+
+	ipc_events_init();
 
   return XENONE;
 }
@@ -637,6 +639,8 @@ void xsup_ipc_cleanup()
   int i;
 
   debug_printf(DEBUG_DEINIT | DEBUG_IPC, "Shutting down IPC socket!\n");
+
+  ipc_events_deinit();
 
   for (i=0; i<INSTANCES; i++)
   {

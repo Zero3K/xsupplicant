@@ -1255,6 +1255,10 @@ void debug_printf(uint32_t level, char *fmt, ...)
 		return;
 	      }
     }
+	else if (TEST_FLAG(level, DEBUG_VERBOSE))
+	{
+		// Don't do anything, but this will keep us from throwing an error to the screen.
+	}
 	else
 	{
 		printf("Unknown debug level %d.\n", level);

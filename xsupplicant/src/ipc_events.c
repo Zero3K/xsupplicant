@@ -39,13 +39,19 @@
 #include "event_core.h"
 #endif
 
+#ifndef WINDOWS
 int ipc_events_in_use = FALSE;    // This is our dirty hack for a platform agnostic mutex. ;)
+#warning You should consider implementing proper mutex locking for your platform!
+#else
+HANDLE ipcLock = INVALID_HANDLE_VALUE;
+#endif
 
+#ifndef WINDOWS
 /**
  * \brief Lock the IPC event channel so that nobody else can use it.  (In theory. ;)
  *        This will allow us to be thread safe(ish).
  **/
-void ipc_events_lock()
+int ipc_events_lock()
 {
 	while (ipc_events_in_use == TRUE)
 	{
@@ -62,15 +68,95 @@ void ipc_events_lock()
 
 	// Lock the channel.
 	ipc_events_in_use = TRUE;
+
+	return 0;
 }
 
 /**
  * \brief Unlock the IPC event channel.
  **/
-void ipc_events_unlock()
+int ipc_events_unlock()
 {
 	ipc_events_in_use = FALSE;
+
+	return 0;
 }
+
+void ipc_events_init()
+{
+}
+
+void ipc_events_deinit()
+{
+}
+#else
+void ipc_events_init()
+{
+	ipcLock = CreateMutex( NULL, FALSE, NULL);  // New mutex that isn't owned by anyone.
+	if (ipcLock == INVALID_HANDLE_VALUE)
+	{
+		debug_printf(DEBUG_NORMAL, "Couldn't init IPC event system locking mutex!\n");
+		return;
+	}
+}
+
+void ipc_events_deinit()
+{
+	if (ipcLock != INVALID_HANDLE_VALUE)
+	{
+		CloseHandle(ipcLock);
+	}
+}
+
+/**
+ * \brief Get a lock on our Mutex.
+ *
+ * \warning DO NOT debug_printf() in here with anything other than DEBUG_IPC or you *WILL* deadlock!
+ **/
+int ipc_events_lock()
+{
+	DWORD dwWaitResult;
+
+	// Wait for our mutex to be available!
+	dwWaitResult = WaitForSingleObject(ipcLock, INFINITE);
+
+	switch (dwWaitResult)
+	{
+	case WAIT_OBJECT_0:
+#ifdef LOCK_DEBUG
+		debug_printf(DEBUG_IPC, "Acquired IPC event lock.\n");
+#endif LOCK_DEBUG
+		return 0;
+		break;
+
+	default:
+		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error acquiring IPC event lock!  (Error %d)\n", GetLastError());
+		break;
+	}
+
+	return -1;
+}
+
+/**
+ * \brief Release the mutex for IPC events.
+ *
+ * \warning DO NOT debug_printf() in here with anything except DEBUG_IPC or you *WILL* deadlock!
+ **/
+int ipc_events_unlock()
+{
+	if (!ReleaseMutex(ipcLock))
+	{
+		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error releasing IPC event lock!  (Error %d)\n", GetLastError());
+		return -1;
+	}
+
+#ifdef LOCK_DEBUG
+	debug_printf(DEBUG_IPC, "Released IPC event lock.\n");
+#endif
+
+	return 0;
+}
+#endif
 
 /**
  * \brief Remove a \n from the log line.
@@ -179,14 +265,18 @@ int ipc_events_send(xmlDocPtr indoc)
 	if (!xsup_assert((indoc != NULL), "indoc != NULL", FALSE))
 		return -1;
 
-	ipc_events_lock();
+	if (ipc_events_lock() != 0) return -1;   // We got an error acquiring the lock for the mutex, so bail out!
 
 	// Then, put the document back in to a format to be sent.
 	xmlDocDumpFormatMemory(indoc, (xmlChar **)&retbuf, &retsize, 0);
 
 	retval = xsup_ipc_send_all(retbuf, retsize);
 
-	ipc_events_unlock();
+	if (ipc_events_unlock() != 0)
+	{
+		FREE(retbuf);
+		return -1;   // We got an error releasing the mutex.  THIS IS REALLY BAD!
+	}
 
 	FREE(retbuf);
 

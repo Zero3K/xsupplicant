@@ -319,7 +319,7 @@ int statemachine_change_to_s_force_auth(context *ctx)
   ctx->statemachine->curState = S_FORCE_AUTH;
 
 #ifdef WINDOWS
-  if (cardif_windows_wmi_get_uptime(&ctx->statemachine->last_reauth) != 0)
+  if (cardif_windows_get_uptime(&ctx->statemachine->last_reauth) != 0)
   {
 	debug_printf(DEBUG_NORMAL, "Unable to determine the system uptime.  Your time connected counter will be wrong!\n");
   }
@@ -897,7 +897,7 @@ int statemachine_change_to_authenticated(context *ctx)
   ctx->statemachine->eapolEap = FALSE;
 
 #ifdef WINDOWS
-  if (cardif_windows_wmi_get_uptime(&ctx->statemachine->last_reauth) != 0)
+  if (cardif_windows_get_uptime(&ctx->statemachine->last_reauth) != 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Couldn't determine the current uptime.  Your time authenticated counter will be wrong.\n");
   }

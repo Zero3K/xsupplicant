@@ -1,54 +1,36 @@
---- C:/WinDDK/3790.1830/src/network/ndis/ndisprot/sys/sources	Tue Dec 05 10:37:40 2006
-+++ C:/xsup_dev/xsupplicant/vs2005/ndis_proto_driver/sources	Mon Dec 04 15:22:23 2006
-@@ -1,4 +1,4 @@
--TARGETNAME=ndisprot
-+TARGETNAME=open1x
- TARGETPATH=obj
- TARGETTYPE=DRIVER
- 
---- C:/WinDDK/3790.1830/src/network/ndis/ndisprot/sys/recv.c	Fri Feb 18 08:31:58 2005
-+++ C:/xsup_dev/xsupplicant/vs2005/ndis_proto_driver/recv.c	Fri Dec 08 15:55:21 2006
-@@ -479,11 +479,22 @@
-                                   pLookaheadBuffer,
-                                   LookaheadBufferSize,
-                                   pOpenContext->MacOptions);
--            //
--            //  Queue this up for receive processing, and
--            //  try to complete some read IRPs.
--            //
--            ndisprotQueueReceivePacket(pOpenContext, pRcvPacket);
+--- ndisbind.c	Fri Feb 18 08:31:58 2005
++++ ndisbind.c	Thu Mar 06 13:32:31 2008
+@@ -2071,7 +2071,15 @@
+             pIrpSp = IoGetCurrentIrpStackLocation(pIrp);            
+             pIndicateStatus = pIrp->AssociatedIrp.SystemBuffer;
+             inBufLength = pIrpSp->Parameters.DeviceIoControl.InputBufferLength;
+-            outBufLength = pIrpSp->Parameters.DeviceIoControl.OutputBufferLength;            
++            outBufLength = pIrpSp->Parameters.DeviceIoControl.OutputBufferLength;
 +
-+            if ((pRcvData[12] == 0x88) && (pRcvData[13] == 0x8e))
-+            {
-+                //
-+                //  Queue this up for receive processing, and
-+                //  try to complete some read IRPs.
-+                //
-+                ndisprotQueueReceivePacket(pOpenContext, pRcvPacket);
++            //
++            // Filter out messages that we don't care about.  (Some wireless drivers get pretty chatty.)
++            //
++            if ((GeneralStatus > 0x40000000L) &&
++                (GeneralStatus < 0x40040000L) &&
++                (GeneralStatus != 0x40010017L)) 
++                {
+             //
+             // Clear the cancel routine.
+             //
+@@ -2121,6 +2129,11 @@
+                 // Cancel rotuine is running. Leave the irp alone.
+                 //
+                 pIrp = NULL;
 +            }
-+            else
-+            {
-+                // Free the buffer.
-+                ndisprotFreeReceivePacket(pOpenContext, pRcvPacket);
-+                Status = NDIS_STATUS_NOT_ACCEPTED;
-+                break;
-+            }
++            } else {
++                // Don't cancel the IRP yet.
++                pIrp = NULL;
++//                ntStatus = STATUS_SUCCESS;
+             }
          }
-         else
-         {
---- C:/WinDDK/3790.1830/src/network/ndis/ndisprot/sys/ntdisp.c	Fri Feb 18 08:31:58 2005
-+++ C:/xsup_dev/xsupplicant/vs2005/ndis_proto_driver/ntdisp.c	Mon Dec 04 15:25:35 2006
-@@ -67,7 +67,7 @@
- {
-     NDIS_PROTOCOL_CHARACTERISTICS   protocolChar;
-     NTSTATUS                        status = STATUS_SUCCESS;
--    NDIS_STRING                     protoName = NDIS_STRING_CONST("NdisProt");     
-+    NDIS_STRING                     protoName = NDIS_STRING_CONST("Open1X");     
-     UNICODE_STRING                  ntDeviceName;
-     UNICODE_STRING                  win32DeviceName;
-     BOOLEAN                         fSymbolicLink = FALSE;
---- C:/WinDDK/3790.1830/src/network/ndis/ndisprot/sys/ndisprot.h	Fri Feb 18 08:31:58 2005
-+++ C:/xsup_dev/xsupplicant/vs2005/ndis_proto_driver/ndisprot.h	Thu Dec 07 12:01:18 2006
+     }while(FALSE);
+--- ndisprot.h	Fri Feb 18 08:31:58 2005
++++ ndisprot.h	Tue Jan 08 10:29:38 2008
 @@ -24,8 +24,8 @@
  #define __NDISPROT__H
  
@@ -70,3 +52,79 @@
  
  //
  //  Send packet pool bounds
+--- ntdisp.c	Fri Feb 18 08:31:58 2005
++++ ntdisp.c	Tue Jan 08 10:29:38 2008
+@@ -67,7 +67,7 @@
+ {
+     NDIS_PROTOCOL_CHARACTERISTICS   protocolChar;
+     NTSTATUS                        status = STATUS_SUCCESS;
+-    NDIS_STRING                     protoName = NDIS_STRING_CONST("NdisProt");     
++    NDIS_STRING                     protoName = NDIS_STRING_CONST("Open1X");     
+     UNICODE_STRING                  ntDeviceName;
+     UNICODE_STRING                  win32DeviceName;
+     BOOLEAN                         fSymbolicLink = FALSE;
+--- recv.c	Fri Feb 18 08:31:58 2005
++++ recv.c	Tue Jan 08 10:29:38 2008
+@@ -453,6 +453,13 @@
+             break;
+         }
+ 
++        if (((PNDISPROT_ETH_HEADER)pHeaderBuffer)->EthType != 0x8e88)
++        {
++            // We don't want it!
++            Status = NDIS_STATUS_NOT_ACCEPTED;
++            break;
++        }
++
+         //
+         //  Allocate resources for queueing this up.
+         //
+@@ -479,6 +486,7 @@
+                                   pLookaheadBuffer,
+                                   LookaheadBufferSize,
+                                   pOpenContext->MacOptions);
++
+             //
+             //  Queue this up for receive processing, and
+             //  try to complete some read IRPs.
+@@ -740,6 +748,14 @@
+                 ("ReceivePacket: Open %p, runt pkt %p, first buffer length %d\n",
+                     pOpenContext, pNdisPacket, BufferLength));
+ 
++            Status = NDIS_STATUS_NOT_ACCEPTED;
++            break;
++        }
++
++        // If we ever find a Windows version that is big endian, this won't
++        // work!!!!!  (But how likely is that? ;)
++        if (pEthHeader->EthType != 0x8e88)
++        {
+             Status = NDIS_STATUS_NOT_ACCEPTED;
+             break;
+         }
+--- sources	Fri Feb 18 08:31:58 2005
++++ sources	Tue Jan 08 10:29:38 2008
+@@ -1,4 +1,4 @@
+-TARGETNAME=ndisprot
++TARGETNAME=open1x
+ TARGETPATH=obj
+ TARGETTYPE=DRIVER
+ 
+--- debug.c	Fri Feb 18 08:31:58 2005
++++ debug.c	Tue Jan 08 10:29:39 2008
+--- debug.h	Fri Feb 18 08:31:58 2005
++++ debug.h	Tue Jan 08 10:29:39 2008
+--- excallbk.c	Fri Feb 18 08:31:58 2005
++++ excallbk.c	Tue Jan 08 10:29:39 2008
+--- macros.h	Fri Feb 18 08:31:58 2005
++++ macros.h	Tue Jan 08 10:29:39 2008
+--- makefile	Fri Feb 18 08:31:58 2005
++++ makefile	Tue Jan 08 10:29:39 2008
+--- ndisprot.rc	Fri Feb 18 08:31:58 2005
++++ ndisprot.rc	Tue Jan 08 10:29:39 2008
+--- nuiouser.h	Fri Feb 18 08:31:58 2005
++++ nuiouser.h	Tue Jan 08 10:29:39 2008
+--- precomp.h	Fri Feb 18 08:31:58 2005
++++ precomp.h	Tue Jan 08 10:29:38 2008
+--- send.c	Fri Feb 18 08:31:58 2005
++++ send.c	Tue Jan 08 10:29:39 2008

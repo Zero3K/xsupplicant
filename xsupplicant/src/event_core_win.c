@@ -79,6 +79,8 @@ int sleep_state = PWR_STATE_RUNNING;
 
 void global_deinit();      // In xsup_driver.c
 
+HANDLE evtCoreMutex;
+
 /**
  * Return the context that is currently being processed.
  **/
@@ -99,16 +101,18 @@ void event_core_terminate()
 	ipc_events_error(NULL, IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN, NULL);
 }
 
-int event_core_set_ovr(HANDLE devHandle, LPOVERLAPPED lovr)
+int event_core_set_ovr(HANDLE devHandle, uint8_t eventType, LPOVERLAPPED lovr)
 {
 	int i;
+	uint8_t evtType;
 
 	for (i=0; i < num_event_slots; i++)
 	{
 #ifdef DEBUG_EVENT_HANDLER
 		printf("%d == %d?\n", devHandle, events[i].devHandle);
 #endif
-		if (devHandle == events[i].devHandle)
+		evtType = (events[i].flags & 0xf0);
+		if ((devHandle == events[i].devHandle) && (evtType == eventType))
 		{
 			events[i].ovr = lovr;
 			return TRUE;
@@ -124,16 +128,18 @@ int event_core_set_ovr(HANDLE devHandle, LPOVERLAPPED lovr)
 /**
  *  Get the OVERLAPPED structure that is being used with 'devHandle'.
  **/
-LPOVERLAPPED event_core_get_ovr(HANDLE devHandle)
+LPOVERLAPPED event_core_get_ovr(HANDLE devHandle, uint8_t eventType)
 {
 	int i;
+	uint8_t evtType = 0;
 
 	for (i=0; i < num_event_slots; i++)
 	{
 #ifdef DEBUG_EVENT_HANDLER
 		printf("%d == %d?\n", devHandle, events[i].devHandle);
 #endif
-		if (devHandle == events[i].devHandle)
+		evtType = (events[i].flags & 0xf0);  // Only include the high bits.
+		if ((devHandle == events[i].devHandle) && (eventType == evtType))
 		{
 			return events[i].ovr;
 		}
@@ -259,11 +265,19 @@ void event_core_init()
   event_core_ctrl_c_handle();
   time(&last_check);   // Get our starting clock position.
 
-  if (cardif_windows_wmi_init() != XENONE)
+  if (cardif_windows_get_os_ver() >= 2)
   {
-	  debug_printf(DEBUG_NORMAL, "Couldn't establish a connection to WMI!  It is likely that "
-			"things will be broken!  (We will try to continue anyway.)\n");
-	  ipc_events_error(NULL, IPC_EVENT_ERROR_WMI_ATTACH_FAILED, NULL);
+	  if (cardif_windows_wmi_init() != XENONE)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Couldn't establish a connection to WMI!  It is likely that "
+				"things will be broken!  (We will try to continue anyway.)\n");
+		  ipc_events_error(NULL, IPC_EVENT_ERROR_WMI_ATTACH_FAILED, NULL);
+	  }
+  }
+
+  if (win_ip_manip_init_iphlpapi() != XENONE)
+  {
+	  debug_printf(DEBUG_NORMAL, "Couldn't load the iphlpapi DLL!  IP address setting functionality will be broken!\n");
   }
 
   if (wzc_ctrl_connect() != XENONE)
@@ -272,6 +286,12 @@ void event_core_init()
 		  "go in to your network control panel, and clicked the check box for 'Use Windows to "
 		  "configure my wireless settings.'\n");
 	  ipc_events_error(NULL, IPC_EVENT_ERROR_WZC_ATTACH_FAILED, NULL);
+  }
+
+  evtCoreMutex = CreateMutex(NULL, FALSE, NULL);   // Nobody owns this mutex to start with.
+  if (evtCoreMutex == INVALID_HANDLE_VALUE)
+  {
+	  debug_printf(DEBUG_NORMAL, "Unable to create a mutex for the event core!\n");
   }
 }
 
@@ -285,19 +305,70 @@ void event_core_deinit()
 {
   int i;
 
-  cardif_windows_wmi_deinit();
+  // Only deinit 
+  if (cardif_windows_get_os_ver() >= 2)
+  {
+	cardif_windows_wmi_deinit();
+  }
+
+  win_ip_manip_deinit_iphlpapi();
+
+  event_core_lock();    // Even if this fails, we should keep trying to deinit.
 
   for (i=0;i < num_event_slots; i++)
     {
       if (events[i].name)
 	  {
-		  event_core_deregister(events[i].devHandle);
+		  event_core_deregister(events[i].devHandle, (events[i].flags & 0xf0));
 	  }
     }
 
   wzc_ctrl_disconnect();
 
+  event_core_unlock();
+
+  if (evtCoreMutex != INVALID_HANDLE_VALUE) CloseHandle(evtCoreMutex);
+
   FREE(events);
+}
+
+int event_core_lock()
+{
+	DWORD dwWaitResult;
+
+	// Wait for our mutex to be available!
+	dwWaitResult = WaitForSingleObject(evtCoreMutex, INFINITE);
+
+	switch (dwWaitResult)
+	{
+	case WAIT_OBJECT_0:
+#ifdef LOCK_DEBUG
+		debug_printf(DEBUG_IPC, "Acquired event core lock.\n");
+#endif
+		return 0;
+		break;
+
+	default:
+		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error acquiring event core lock!  (Error %d)\n", GetLastError());
+		break;
+	}
+
+	return -1;
+}
+
+int event_core_unlock()
+{
+	if (!ReleaseMutex(evtCoreMutex))
+	{
+		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error releasing event core lock!  (Error %d)\n", GetLastError());
+		return -1;
+	}
+
+#ifdef LOCK_DEBUG
+	debug_printf(DEBUG_IPC, "Released event core lock.\n");
+#endif
+
+	return 0;
 }
 
 /**
@@ -309,12 +380,12 @@ void event_core_deinit()
  *
  **/
 static void event_core_fill_reg_struct(eventhandler *events, HANDLE devHandle, int(*call_func)(context *, HANDLE),
-										context *ctx, char *name)
+										context *ctx, uint8_t flags, char *name)
 {
 	      events->devHandle = devHandle;
 	      events->name = _strdup(name);
 		  events->ctx = ctx;
-		  events->flags = 0x00;
+		  events->flags = flags;
 	      events->func_to_call = call_func;
 		  events->ovr = Malloc(sizeof(OVERLAPPED));
 		  if (events->ovr == NULL)
@@ -323,7 +394,7 @@ static void event_core_fill_reg_struct(eventhandler *events, HANDLE devHandle, i
 			  ipc_events_malloc_failed(NULL);
 		  }
 
-		  if (ctx != NULL)
+		  if (flags == EVENT_PRIMARY)
 		  {
 			  // Set up a receive.
 			  cardif_setup_recv(events->ctx);
@@ -344,7 +415,7 @@ static void event_core_fill_reg_struct(eventhandler *events, HANDLE devHandle, i
  *
  *************************************************************************/
 int event_core_register(HANDLE devHandle, context *ctx, 
-		int(*call_func)(context *, HANDLE), 
+		int(*call_func)(context *, HANDLE), uint8_t flags,
 		int hilo, char *name)
 {
   int i = 0, done = FALSE;
@@ -365,7 +436,7 @@ int event_core_register(HANDLE devHandle, context *ctx,
               debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
                            "slot %d.\n", name, i);
 
-			  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, name);
+			  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
 	      done = TRUE;
 	    }
 	  
@@ -404,7 +475,7 @@ int event_core_register(HANDLE devHandle, context *ctx,
 	           debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
 	                        "slot %d.\n", name, i);
 
-			  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, name);
+			  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
 		      done = TRUE;
 		    }
 	  
@@ -422,7 +493,7 @@ int event_core_register(HANDLE devHandle, context *ctx,
 	    {
 	      debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
 			   "slot %d.\n", name, i);
-		  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, name);
+		  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
               done = TRUE;
             }
 	  
@@ -459,7 +530,7 @@ int event_core_register(HANDLE devHandle, context *ctx,
 			{
 				debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
 					"slot %d.\n", name, i);
-				event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, name);
+				event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
 				done = TRUE;
             }
 	  
@@ -481,18 +552,18 @@ int event_core_register(HANDLE devHandle, context *ctx,
  * there probably won't be.)
  *
  ***********************************************************************/
-void event_core_deregister(HANDLE devHandle)
+void event_core_deregister(HANDLE devHandle, uint8_t flags)
 {
   int i;
 
   for (i=0;i < num_event_slots;i++)
     {
-      if (events[i].devHandle == devHandle)
+      if ((events[i].devHandle == devHandle) && ((events[i].flags & 0xf0) == flags))
 	{
 	  debug_printf(DEBUG_EVENT_CORE, "Deregistering event handler '%s' in "
 		       "slot %d.\n", events[i].name, i);
 
-	  if (events[i].ctx != NULL) context_destroy(events[i].ctx);
+	  if ((events[i].ctx != NULL) && ((events[i].flags & 0xf0) != EVENT_SECONDARY)) context_destroy(events[i].ctx);
 	  events[i].ctx = NULL;
 
 	  FREE(events[i].name);
@@ -502,6 +573,49 @@ void event_core_deregister(HANDLE devHandle)
 	  FREE(events[i].ovr);
 	}
     }
+}
+
+/**
+ * \brief Recieve a frame, and put it in the right place to be processed.
+ *
+ * @param[in] ctx   The context that we are recieving the frame on.
+ * @param[in] size   The size of the frame we recieved.
+ **/
+void event_core_recv_frame(context *ctx, ULONG size)
+{
+	if (ctx->intType == ETH_802_11_INT)
+	{
+		if (ctx->intTypeData != NULL)
+		{
+			if (((wireless_ctx *)(ctx->intTypeData))->state != ASSOCIATED)
+			{
+				cardif_windows_wmi_check_events();
+				wireless_sm_do_state(ctx);
+			}
+		}
+	}
+
+	if (ctx->recvframe != NULL)
+	{
+		if (ctx->recv_size != 0)
+		{
+			// If we have an unprocessed frame in the buffer, clear it out.
+			ctx->recv_size = 0;
+		}
+
+		FREE(ctx->recvframe); 
+		ctx->recvframe = NULL;
+		ctx->eap_state->eapReqData = NULL;
+	}
+
+	ctx->recv_size = size;
+	ctx->recvframe = ((struct win_sock_data *)(ctx->sockData))->frame;
+
+	((struct win_sock_data *)(ctx->sockData))->frame = NULL;
+	((struct win_sock_data *)(ctx->sockData))->size = 0;
+					
+	// Set up to receive the next frame.
+	cardif_setup_recv(ctx);
 }
 
 /***********************************************************************
@@ -573,6 +687,11 @@ void event_core()
 
   cardif_windows_wmi_check_events();
 
+  if (event_core_lock() != 0)
+  {
+	  debug_printf(DEBUG_NORMAL, "!!!!!!!! Unable to acquire the event core lock!!  Bad things will probably happen!\n");
+  }
+
 	  for (i=(num_event_slots-1); i>=0; i--)
 	  {
 		  if ((events[i].devHandle != INVALID_HANDLE_VALUE) && (HasOverlappedIoCompleted(events[i].ovr) == TRUE) &&
@@ -584,42 +703,18 @@ void event_core()
 			  {
 				  debug_printf(DEBUG_EVENT_CORE, "Got data on handle %d (Size %d).\n", events[i].devHandle,
 					  bytesrx);
-				  if (events[i].ctx != NULL)
+				  
+				  // Only process as a frame handler if we have a context, and
+				  // no flags indicating that it isn't a frame handler.
+				  if ((events[i].ctx != NULL) && ((events[i].flags & 0xf0) == EVENT_PRIMARY))
   				  {
-					if (events[i].ctx->intType == ETH_802_11_INT)
-					{
-						if (events[i].ctx->intTypeData != NULL)
-						{
-							if (((wireless_ctx *)(events[i].ctx->intTypeData))->state != ASSOCIATED)
-							{
-								cardif_windows_wmi_check_events();
-								wireless_sm_do_state(events[i].ctx);
-							}
-						}
-					}
+					  event_core_recv_frame(events[i].ctx, bytesrx);
+				  } 
 
-					if (events[i].ctx->recvframe != NULL)
-					{
-						if (events[i].ctx->recv_size != 0)
-						{
-							// If we have an unprocessed frame in the buffer, clear it out.
-							events[i].ctx->recv_size = 0;
-						}
-
-						FREE(events[i].ctx->recvframe); 
-						events[i].ctx->recvframe = NULL;
-						events[i].ctx->eap_state->eapReqData = NULL;
-					}
-
-					events[i].ctx->recv_size = bytesrx;
-					events[i].ctx->recvframe = ((struct win_sock_data *)(events[i].ctx->sockData))->frame;
-
-					((struct win_sock_data *)(events[i].ctx->sockData))->frame = NULL;
-					((struct win_sock_data *)(events[i].ctx->sockData))->size = 0;
-					
-					// Set up to receive the next frame.
-					cardif_setup_recv(events[i].ctx);
-				} 
+				  if ((events[i].ctx != NULL) && ((events[i].flags & 0xf0) == EVENT_SECONDARY))
+				  {
+					  cardif_windows_events_set_bytes_rx(events[i].ctx, bytesrx);
+				  }
 
 				// Be sure to set active_ctx before calling the function below.  It is
 				// used to allow upper layers to determine details of the lower layers.
@@ -647,7 +742,10 @@ void event_core()
 		  			  ipc_events_ui(events[i].ctx, IPC_EVENT_INTERFACE_REMOVED, events[i].ctx->desc);
 
 					  events[i].ctx->flags |= INT_GONE;
-					  event_core_deregister(events[i].devHandle); 
+					  
+					  // Make sure we deregister both primary and secondary handlers.  (Always deregister the secondary first!)
+					  event_core_deregister(events[i].devHandle, EVENT_SECONDARY);
+					  event_core_deregister(events[i].devHandle, EVENT_PRIMARY); 
 				  }
 			  }
 		  }
@@ -735,6 +833,11 @@ void event_core()
 			}
 		}
 	}
+  }
+
+  if (event_core_unlock() != 0)
+  {
+	  debug_printf(DEBUG_NORMAL, "!!!!!!!!!!!! Unable to release event core lock!  Bad things will probably happen!!\n");
   }
 }
 

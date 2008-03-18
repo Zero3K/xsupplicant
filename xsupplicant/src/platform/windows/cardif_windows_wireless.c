@@ -460,16 +460,14 @@ void cardif_windows_wireless_parse_ies(context *ctx, uint8_t *iedata, int ielen)
 }
 
 /**
- * \brief Enumerate the IOCTLs that this interface can use.  
- *
- * @param[in] ctx   The context that contains the information that we need to use
- *                  to enumerate the IOCTLs, and make a decision.
+ * \brief Determine the version of Windows that is in use so that we can use the proper
+ *        function calls.
  *
  * \retval 0 if we can't determine which wireless calls to use.
  * \retval 1 if we should use the XP/2k calls
  * \retval 2 if we should use the Vista/2008 calls
  **/
-int cardif_windows_use_new_ioctls(context *ctx)
+int cardif_windows_get_os_ver()
 {
 	OSVERSIONINFOEX winVer;
 
@@ -489,12 +487,12 @@ int cardif_windows_use_new_ioctls(context *ctx)
 		switch (winVer.dwMinorVersion)
 		{
 		case 0:
-			debug_printf(DEBUG_NORMAL, "Detected Windows 2000.     *****  It is likely that this won't work!!!  *****\n");
+			debug_printf(DEBUG_INT, "Detected Windows 2000.     *****  It is likely that this won't work!!!  *****\n");
 			return 1;
 			break;
 
 		case 1:
-			debug_printf(DEBUG_NORMAL, "Detected Windows XP.\n");
+			debug_printf(DEBUG_INT, "Detected Windows XP.\n");
 			return 1;
 			break;
 
@@ -2247,11 +2245,11 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			debug_printf(DEBUG_INT, "Requesting lease renew.\n");
 			if (ctx->auths == 1) //&& (ctx->intType == ETH_802_11_INT))
 			{
-				cardif_windows_wmi_release_renew(ctx);
+				cardif_windows_release_renew(ctx);
 			}
 			else
 			{
-				cardif_windows_wmi_renew_dhcp(ctx);
+				cardif_windows_renew_ip(ctx);
 			}
 			break;
 
@@ -2259,7 +2257,7 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			if (ctx->auths > 1) return;   // We don't need to "renew" a static IP address.
 
 			debug_printf(DEBUG_INT, "Using a static IP!\n");
-			retval = cardif_windows_wmi_set_static_ip(ctx, ctx->conn->ip.ipaddr, ctx->conn->ip.netmask);
+			retval = cardif_windows_set_static_ip(ctx, ctx->conn->ip.ipaddr, ctx->conn->ip.netmask, ctx->conn->ip.gateway);
 			if (retval != 0)
 			{
 				debug_printf(DEBUG_NORMAL, "Failed to request setting of a static IP address on interface '%s'!\n", ctx->desc);
@@ -2279,31 +2277,15 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			switch (ctx->conn->ip.type)
 			{
 			case CONFIG_IP_USE_DHCP:
-				cardif_windows_wmi_get_dhcp_enabled(ctx, &dhcpenabled);
+				cardif_windows_is_dhcp_enabled(ctx, &dhcpenabled);
 			
 				if (dhcpenabled == FALSE)  // If DHCP is already enabled, don't try to do it again.
 				{
-					debug_printf(DEBUG_INT, "Turning on DHCP.\n");
-					retval = cardif_windows_wmi_enable_dhcp(ctx);
-					if (retval == 94)
-					{
-						// Try again.
-						retval = cardif_windows_wmi_enable_dhcp(ctx);
-						if (retval != 0)
-						{
-							debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
-							break;
-						}
-					}
-					else if (retval != 0)
-					{
-						debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
-						break;
-					}
+					cardif_windows_enable_dhcp(ctx);
 				}
 
 				debug_printf(DEBUG_INT, "Requesting lease renew.\n");
-				cardif_windows_wmi_release_renew(ctx);
+				cardif_windows_release_renew(ctx);
 				break;
 			}
 		}

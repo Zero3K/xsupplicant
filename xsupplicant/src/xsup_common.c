@@ -213,3 +213,17 @@ void xsup_common_upcase(char *strtoconvert)
       strtoconvert[i] = toupper(strtoconvert[i]);
     }
 }
+
+/**
+ * \brief A modified version of strlen() that returns 0 on NULL.
+ *
+ * @param[in] str   The string to get the length of.
+ *
+ * \retval strlen   The length of the string passed in.
+ **/
+size_t Strlen(const char *str)
+{
+	if (str == NULL) return 0;
+
+	return strlen(str);
+}

@@ -45,6 +45,7 @@
 #include "cardif_windows_wmi.h"
 #include "wzc_ctrl.h"
 #include "windows_eapol_ctrl.h"
+#include "cardif_windows_events.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -123,7 +124,7 @@ DWORD devioctl7(HANDLE hDevice, DWORD dwIoCtl, LPVOID lpInBuf, DWORD nInBufSiz,
    if (!DeviceIoControl(hDevice, dwIoCtl, lpInBuf, nInBufSiz, lpOutBuf,
                         nOutBufSiz, lpBytesReturned, &ovr))
     {
-		if (GetLastError() != 997)
+		if (GetLastError() != ERROR_IO_PENDING)
 		{
       debug_printf(DEBUG_INT, "Couldn't do IOCTL.\n");
 	  //printf("Couldn't do IOCTL!\n");
@@ -241,7 +242,7 @@ DWORD devioctl(HANDLE hDevice, DWORD dwIoCtl, LPVOID lpInBuf, DWORD nInBufSiz,
    if (!DeviceIoControl(hDevice, dwIoCtl, lpInBuf, nInBufSiz, lpOutBuf,
                         nOutBufSiz, lpBytesReturned, &ovr))
     {
-		if (GetLastError() != 997)
+		if (GetLastError() != ERROR_IO_PENDING)
 		{
 			oid = (NDIS_OID *)lpInBuf;
 	      debug_printf(DEBUG_INT, "Couldn't do IOCTL %04X. Error : %d\n", oid->Oid, GetLastError());
@@ -994,7 +995,8 @@ int cardif_init(context *ctx, char driver)
 
   //wireless = &cardif_windows_wireless_driver;
 #if 1
-  switch (cardif_windows_use_new_ioctls(ctx))
+  sockData->osver = cardif_windows_get_os_ver();
+  switch (sockData->osver)
   {
   case 0:
   case 1:
@@ -1014,16 +1016,22 @@ int cardif_init(context *ctx, char driver)
   }
 #endif
 
-  //_beginthread(cardif_windows_get_events, 0, ctx);
+  cardif_windows_setup_int_events(ctx);
 
-  if (cardif_windows_wmi_get_idx(ctx, &intdesc) != 0)
+  if (sockData->osver >= 2)
   {
-	  debug_printf(DEBUG_NORMAL, "Couldn't determine the WMI interface caption for interface '%s'!\n",
-		  ctx->desc);
+	if (cardif_windows_wmi_get_idx(ctx, &intdesc) != 0)
+	{
+		  debug_printf(DEBUG_NORMAL, "Couldn't determine the WMI interface caption for interface '%s'!\n",
+			  ctx->desc);
+	}
   }
   else
   {
-	// Verify that we know about the interface.  MAC address, description, etc.
+	  intdesc = cardif_find_description(ctx->intName);
+  }
+
+  // Verify that we know about the interface.  MAC address, description, etc.
 	confints = config_get_config_ints();
 
 	while ((confints != NULL) && (memcmp(mac, confints->mac, 6) != 0))
@@ -1042,11 +1050,11 @@ int cardif_init(context *ctx, char driver)
 			ctx->desc = _strdup(intdesc);
 		}
 	}
-  }
+
   FREE(mac);
   FREE(intdesc);
 
-  event_core_register(sockData->devHandle, ctx, &cardif_handle_frame, 2, "frame handler");
+  event_core_register(sockData->devHandle, ctx, &cardif_handle_frame, EVENT_PRIMARY, LOW_PRIORITY, "frame handler");
 
   return XENONE;
 }
@@ -1902,7 +1910,7 @@ int cardif_setup_recv(context *ctx)
 
   resultsize = FRAMESIZE; 
 
-  lovr = event_core_get_ovr(sockData->devHandle);
+  lovr = event_core_get_ovr(sockData->devHandle, EVENT_PRIMARY);
   if (lovr == NULL)
   {
 	  debug_printf(DEBUG_NORMAL, "The device handle doesn't appear to have an event handler "
@@ -2871,7 +2879,7 @@ char *cardif_windows_find_os_name_from_desc(wchar_t *devdesc)
 
 		if ((desc != NULL) && (shortdesc != NULL) && (strcmp(desc, shortdesc) == 0))
 		{
-			resstr = strdup(name);
+			resstr = _strdup(name);
 		}
 
 		FREE(name);
@@ -2946,7 +2954,7 @@ char *cardif_find_description(char *intname)
 
 		if (strcmp(name, intname) == 0) 
 		{
-			resstr = strdup(desc);
+			resstr = _strdup(desc);
 		}
 
 		FREE(name);
@@ -3042,4 +3050,255 @@ void cardif_restart_io(context *ctx)
 {
 	debug_printf(DEBUG_INT, "Restarting I/O for device '%s'.\n", ctx->desc);
 	cardif_setup_recv(ctx);
+}
+
+/**
+ * \brief Determine the system uptime in seconds.
+ *
+ * @param[out] uptime   A 64 bit number that indicates the uptime of the system in seconds.
+ *
+ * \retval 0 on success
+ * \retval -1 on failure
+ **/
+int cardif_windows_get_uptime(uint64_t *uptime)
+{
+	(*uptime) = (uint64_t)(GetTickCount()/1000);  // This will roll every 49.7 days!
+	return 0;  // Success
+}
+
+/**
+ * \brief Release an IP address.
+ *
+ * @param[in] ctx   The context for the address we want to release.
+ **/
+void cardif_windows_release_ip(context *ctx)
+{
+	struct win_sock_data *sockData = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+		// If we are using Win2k or XP.  (Or we don't know.)
+	default:
+	case 0:
+	case 1:
+		win_ip_manip_release_ip(ctx);
+		break;
+
+		// If we are using Vista.
+	case 2:
+		cardif_windows_wmi_release_dhcp(ctx);
+		break;
+	}
+}
+
+/**
+ * \brief Renew (or request) an IP address.
+ *
+ * @param[in] ctx   The context for the address we want to renew (or request).
+ **/
+void cardif_windows_renew_ip(context *ctx)
+{
+	struct win_sock_data *sockData = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+		// If we are using Win2k or XP.  (Or we don't know.)
+	default:
+	case 0:
+	case 1:
+		win_ip_manip_renew_ip(ctx);
+		break;
+
+		// If we are using Vista.
+	case 2:
+		cardif_windows_wmi_renew_dhcp(ctx);
+		break;
+	}
+}
+
+/**
+ * \brief Do a release/renew of an IP address.
+ *
+ * @param[in] ctx   The context for the address we want to renew (or request).
+ **/
+void cardif_windows_release_renew(context *ctx)
+{
+	struct win_sock_data *sockData = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+		// If we are using Win2k or XP.  (Or we don't know.)
+	default:
+	case 0:
+	case 1:
+		win_ip_manip_release_renew_ip(ctx);
+		break;
+
+		// If we are using Vista.
+	case 2:
+		cardif_windows_wmi_release_renew(ctx);
+		break;
+	}
+}
+
+/**
+ * \brief Set static IP data for the interface specified by the context.
+ *
+ * @param[in] ctx   The context that specifies the interface we want to work with.
+ * @param[in] addr   The IP address we want assigned to this interface.
+ * @param[in] netmask   The netmask we want assigned to this interface.
+ * @param[in] gateway   The gateway we want assigned to this interface.
+ *
+ * \retval 0 on success anything else on error.
+ **/
+int cardif_windows_set_static_ip(context *ctx, char *addr, char *netmask, char *gateway)
+{
+	struct win_sock_data *sockData = NULL;
+	int retval = 0;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return -1;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+	default:
+	case 0:
+	case 1:
+		// Using XP or earlier
+		retval = win_ip_manip_set_static_ip(ctx, addr, netmask, gateway);
+		if (retval != 0) break;
+
+		if ((ctx->conn != NULL) && ((ctx->conn->ip.dns1 != NULL) || (ctx->conn->ip.dns2 != NULL) ||
+			(ctx->conn->ip.dns3 != NULL)))
+		{
+			retval = win_ip_manip_set_dns_servers(ctx, ctx->conn->ip.dns1, ctx->conn->ip.dns2,
+												ctx->conn->ip.dns3);
+			if (retval == FALSE)
+			{
+				// Display an error message, but continue on.
+				debug_printf(DEBUG_NORMAL, "Failed to set DNS servers on interface '%s'!\n", ctx->desc);
+			}
+		}
+
+		if ((ctx->conn != NULL) && (ctx->conn->ip.search_domain != NULL))
+		{
+			retval = win_ip_manip_set_dns_domain(ctx, ctx->conn->ip.search_domain);
+			if (retval == FALSE)
+			{
+				// Display an error message, but continue on.
+				debug_printf(DEBUG_NORMAL, "Failed to set DNS domain on interface '%s'!\n", ctx->desc);
+			}
+		}
+		break;
+
+	case 2:
+		// Using Vista.
+		if (cardif_windows_wmi_enable_static(ctx, addr, netmask) != 0) retval = -1;
+		if (cardif_windows_wmi_set_static_gw(ctx, gateway) != 0) retval = -1;
+		break;
+	}
+
+	return retval;
+}
+
+/**
+ * \brief Determine if DHCP is enabled on the interface that the passed in context references.
+ *
+ * @param[in] ctx   The context for the interface we want to check DHCP status on.
+ * @param[out] enabled   Returns either TRUE or FALSE to indicate if DHCP is enabled.
+ **/
+void cardif_windows_is_dhcp_enabled(context *ctx, int *enabled)
+{
+	struct win_sock_data *sockData = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+	default:
+	case 0:
+	case 1:
+		// Using XP or earlier
+		(*enabled) = TRUE;
+		break;
+
+	case 2:
+		cardif_windows_wmi_get_dhcp_enabled(ctx, enabled);
+		break;
+	}
+}
+
+/**
+ * \brief Enabled DHCP for the interface specified by the context that was passed in.
+ *
+ * @param[in] ctx   The context for the interface we want to enable DHCP on.
+ **/
+void cardif_windows_enable_dhcp(context *ctx)
+{
+	struct win_sock_data *sockData = NULL;
+	int retval = 0;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+	default:
+	case 0:
+	case 1:
+		// Using XP or earlier
+		if (cardif_windows_events_enable_dhcp() != 0)
+		{
+			debug_printf(DEBUG_NORMAL, "Unable to enable DHCP for interface '%s'!\n", ctx->desc);
+		}
+		break;
+
+	case 2:
+		debug_printf(DEBUG_INT, "Turning on DHCP.\n");
+		retval = cardif_windows_wmi_enable_dhcp(ctx);
+		if (retval == 94)
+		{
+			// Try again.
+			retval = cardif_windows_wmi_enable_dhcp(ctx);
+			if (retval != 0)
+			{
+				debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
+				break;
+			}
+		}
+		else if (retval != 0)
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
+			break;
+		}
+		break;
+	}
 }

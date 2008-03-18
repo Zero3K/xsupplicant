@@ -1093,7 +1093,7 @@ int tls_funcs_load_root_certs(struct tls_vars *mytls_vars, char *root_cert,
       {
 	debug_printf(DEBUG_NORMAL, "Failed to initalize path to CRLs!\n");
 	tls_funcs_process_error();
-	//debug_printf(DEBUG_NORMAL, "Error : %s\n", ERR_error_string(ERR_get_error(), NULL));
+
 	if(mytls_vars->ctx)
 	  {
 	    SSL_CTX_free(mytls_vars->ctx);

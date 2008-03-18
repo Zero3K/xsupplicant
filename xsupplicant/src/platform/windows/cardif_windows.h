@@ -18,6 +18,9 @@ struct win_sock_data {
   wchar_t *caption;    // The caption for this interface.  Needed to match WMI events to the interface.
   uint8_t *frame;      // Buffer to store a frame for this interface
   DWORD size;       // The size of the frame that was received.
+  uint8_t *eventdata;  // Buffer for the event data from the protocol driver.
+  DWORD evtSize;	   // The size of event data that was received.
+  uint8_t osver;       // The OS version this interface is running on.
 };
 
 LPVOID GetLastErrorStr(DWORD);
@@ -29,5 +32,6 @@ DWORD devioctl(HANDLE hDevice, DWORD dwIoCtl, LPVOID lpInBuf, DWORD nInBufSiz,
                 LPVOID lpOutBuf,  DWORD nOutBufSiz, LPDWORD lpBytesReturned);
 
 char *cardif_windows_find_os_name_from_desc(wchar_t *devdesc);
+void cardif_windows_is_dhcp_enabled(context *ctx, int *enabled);
 
 #endif

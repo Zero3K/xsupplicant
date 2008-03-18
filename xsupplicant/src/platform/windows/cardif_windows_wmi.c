@@ -53,9 +53,6 @@ typedef struct {
 #define BIND_CHECKS_SIZE         5  // We can only have 5 outstanding binding requests.  This is probably plenty since they shouldn't last long.
 check_type checks[5];            
 
-#define WMI_BIND_ADD     0
-#define WMI_BIND_CHECK   1
-
 // Some globals to make life easy.
 IWbemLocator *wmiLoc = NULL;
 IWbemServices *wmiSvc = NULL;
@@ -551,7 +548,10 @@ int cardif_windows_wmi_event_check_remove()
 		ctx->flags |= INT_GONE;
 		if ((ctx != NULL) && (ctx->statemachine != NULL)) ctx->statemachine->portEnabled = FALSE;
 		if ((ctx != NULL) && (ctx->eap_state != NULL)) ctx->eap_state->portEnabled = FALSE;
-		event_core_deregister(((struct win_sock_data *)ctx->sockData)->devHandle);
+
+		// Always deregister the secondary first!!
+		event_core_deregister(((struct win_sock_data *)ctx->sockData)->devHandle, EVENT_SECONDARY);
+		event_core_deregister(((struct win_sock_data *)ctx->sockData)->devHandle, EVENT_PRIMARY);
 
 		FREE(intdesc);
 	}
@@ -829,70 +829,16 @@ int cardif_windows_wmi_event_check_media_specific()
  **/
 void cardif_windows_wmi_check_events()
 {
-	cardif_windows_wmi_event_check_media_specific();
-	cardif_windows_wmi_event_check_connect();
-	cardif_windows_wmi_event_check_disconnect();
-	cardif_windows_wmi_event_check_insert();
-	cardif_windows_wmi_event_check_remove();
+//	cardif_windows_wmi_event_check_media_specific();
+//	cardif_windows_wmi_event_check_connect();
+//	cardif_windows_wmi_event_check_disconnect();
+//	cardif_windows_wmi_event_check_insert();
+//	cardif_windows_wmi_event_check_remove();
 
 	// Check to see if any WMI method calls have completed.
 	cardif_windows_wmi_async_check();
 	
 	cardif_windows_wmi_late_bind_insert_check(WMI_BIND_CHECK, NULL);
-}
-
-int ipupdatecallback(context *ctx, HANDLE myhandle)
-{
-	LPOVERLAPPED ovr = NULL;
-
-	ipc_events_ui(ctx, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
-
-    ovr = event_core_get_ovr(myhandle);
-
-	// myhandle should NEVER change, so this is safe.
-	NotifyAddrChange(&myhandle, ovr);
-
-	return 0;
-}
-
-/**
- * \brief This isn't really a WMI function, but WMI is inited only once, and we need to only init this once.
- *        The call above is the callback that is generated whenever an IP address is updated.
- **/
-void cardif_windows_wmi_ip_update()
-{
-  DWORD ret;
-  LPOVERLAPPED ovr;
-  HANDLE hand = INVALID_HANDLE_VALUE;
-
-  ovr = Malloc(sizeof(OVERLAPPED));
-  if (ovr == NULL)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for overlapped structure!\n");
-	  return;
-  }
-
-  ovr->hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-
-  ret = NotifyAddrChange(&hand, ovr);
-
-  if ((ret != NO_ERROR) && (ret != 997))
-  {
-		debug_printf(DEBUG_NORMAL, "Can't establish IP address change notify handler.  Error was : %d\n", WSAGetLastError());			
-      return;
-  }
-
-  if (event_core_register(hand, NULL, &ipupdatecallback, 0, "IP address change event") != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "Unable to register IP address change handler.\n");
-	  return;
-  }
-
-  if (event_core_set_ovr(hand, ovr) != TRUE)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't set ovr!\n");
-	  return;
-  }
 }
 
 /**
@@ -907,7 +853,7 @@ int cardif_windows_wmi_init()
 	memset(checks, 0x00, sizeof(checks));
 
 	// Set up notifications to let us know when an address has updated.
-	cardif_windows_wmi_ip_update();
+	cardif_windows_ip_update();
 
 	hr = CoInitializeEx(0, COINIT_APARTMENTTHREADED); 
 	if ((hr != S_OK) && (hr != S_FALSE))
@@ -2916,6 +2862,7 @@ done:
 	return retval;
 }
 
+#ifdef WINDOWS_USE_WMI
 /**
  * \brief Determine the system uptime in seconds.
  *
@@ -2976,12 +2923,6 @@ int cardif_windows_wmi_get_uptime(uint64_t *uptime)
 			(*uptime) = _atoi64(rettime);
 			FREE(rettime);
 			break;
-			/*
-			debug_printf(DEBUG_NORMAL, "Couldn't determine array data via WMI query!\n");
-			IWbemClassObject_Release(pEnumerator);
-			VariantClear(&vtProp);
-			IWbemClassObject_Release(pclsObj);
-			return NULL;*/
 		}
 		
 	}
@@ -2994,11 +2935,14 @@ int cardif_windows_wmi_get_uptime(uint64_t *uptime)
 
 	return 0;
 }
+#endif
 
 /**
- * \brief Determine the system uptime in seconds.
+ * \brief Determine if DHCP is enabled.
  *
- * @param[out] uptime   A 64 bit number that indicates the uptime of the system in seconds.
+ * @param[in] ctx   The context for the interface that we are checking DHCP state
+ *					on.
+ * @param[in] enstate   A TRUE/FALSE value that indicates if DHCP is in use.
  *
  * \retval 0 on success
  * \retval -1 on failure

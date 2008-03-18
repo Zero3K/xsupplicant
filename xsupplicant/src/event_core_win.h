@@ -23,9 +23,11 @@
 
 // Event flags
 #define EVENT_IGNORE_INT       BIT(0)
+#define EVENT_PRIMARY		   BIT(7)  // This event handler slot does accept frames.
+#define EVENT_SECONDARY 	   BIT(6)  // This event handler slot doesn't accept frames, but needs a context anyway.
 
 // Starting maximum number of event handlers we will register.  (This will be dynamically increased as needed.)
-#define STARTING_EVENTS       10
+#define STARTING_EVENTS       20
 #define EVENT_GROW            5    // The number of additional event slots to add when we run out.
 
 void event_core_init();
@@ -33,10 +35,11 @@ void event_core_deinit();
 void event_core();
 context *event_core_get_active_ctx();
 void event_core_terminate();
-int event_core_register(HANDLE, context *, int(*)(context *, HANDLE), int, char *);
-void event_core_deregister(HANDLE);
+int event_core_register(HANDLE, context *, int(*)(context *, HANDLE), uint8_t, int, char *);
+void event_core_deregister(HANDLE, uint8_t);
 context *event_core_locate(char *);
-LPOVERLAPPED event_core_get_ovr(HANDLE);
+LPOVERLAPPED event_core_get_ovr(HANDLE, uint8_t);
+int event_core_set_ovr(HANDLE devHandle, uint8_t eventType, LPOVERLAPPED lovr);
 context *event_core_locate_by_caption(wchar_t *, int);
 context *event_core_locate_by_desc(char *);
 context *event_core_locate_by_desc_strstr(char *);
@@ -53,5 +56,7 @@ void event_core_user_logged_on();
 void event_core_user_logged_off();
 uint32_t event_core_register_imc_logon_callback(void *callback);
 uint32_t event_core_register_ui_connect_callback(void *callback);
+int event_core_lock();
+int event_core_unlock();
 
 #endif

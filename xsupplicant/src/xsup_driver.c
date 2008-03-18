@@ -92,8 +92,12 @@ char *config_path = NULL;
 char *pid_filename = NULL;
 
 #ifdef BUILD_SERVICE
+#include <dbt.h>
+#include <devguid.h>
+
 SERVICE_STATUS          ServiceStatus; 
 SERVICE_STATUS_HANDLE   hStatus; 
+HDEVNOTIFY				hDevStatus;
 
 // Some service specific error codes.
 #define SERVICE_ERROR_STOP_REQUESTED       1
@@ -101,6 +105,9 @@ SERVICE_STATUS_HANDLE   hStatus;
 #define SERVICE_ERROR_GLOBAL_DEINIT_CALLED 3
 #define SERVICE_ERROR_FAILED_TO_INIT       4
 #define SERVICE_ERROR_FAILED_TO_START_IPC  5
+
+// Used to determine when a network interface is plugged in.
+DEFINE_GUID(GUID_NDIS_LAN_CLASS,                    0xad498944, 0x762f, 0x11d0, 0x8d, 0xcb, 0x00, 0xc0, 0x4f, 0xc3, 0x35, 0x8c);
 
 DWORD WINAPI ControlHandler( DWORD request,    DWORD dwEventType,
    LPVOID lpEventData, LPVOID lpContext );
@@ -381,12 +388,11 @@ void global_deinit()
 #ifndef BUILD_SERVICE
   exit(0);
 #else
+	UnregisterDeviceNotification(hDevStatus);
+
       ServiceStatus.dwCurrentState = SERVICE_STOPPED; 
 	  ServiceStatus.dwWin32ExitCode = NO_ERROR;
-	  /*
-      ServiceStatus.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR; 
-	  ServiceStatus.dwServiceSpecificExitCode = SERVICE_ERROR_GLOBAL_DEINIT_CALLED;
-	  */
+
       SetServiceStatus(hStatus, &ServiceStatus); 
 #endif
 }
@@ -600,8 +606,8 @@ int main(int argc, char *argv[])
   char *args = NULL;
   char *drivername = NULL;
 
-#ifdef WINDOWS
-  //char *ver = NULL;
+#ifdef BUILD_SERVICE
+  DEV_BROADCAST_DEVICEINTERFACE devBcInterface;
 #endif
 
   int xdaemon = 1, new_debug, zeros=0;
@@ -650,6 +656,16 @@ int main(int argc, char *argv[])
       // Registering Control Handler failed
       return -1; 
    }  
+
+   // Register for device insert/remove notifications.
+   ZeroMemory(&devBcInterface, sizeof(devBcInterface));
+   devBcInterface.dbcc_size = sizeof(DEV_BROADCAST_DEVICEINTERFACE);
+   devBcInterface.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+   memcpy( &(devBcInterface.dbcc_classguid),
+   			&(GUID_NDIS_LAN_CLASS),
+   			sizeof(struct _GUID));
+
+   hDevStatus = RegisterDeviceNotification(hStatus, &devBcInterface, DEVICE_NOTIFY_SERVICE_HANDLE); 
 #endif
 
 #ifdef WINDOWS
@@ -868,26 +884,78 @@ int main(int argc, char *argv[])
  * Extra functions that are needed to build as a Windows service.
  **/
 
+/**
+ * \brief Handle device insertion/removal events that are coming in on the service
+ *        event handler.
+ *
+ * \note Because we filter by the class of events we want, we don't need to do any extra
+ *       checking in here.  (Unless someone messes with our filter. ;)
+ *
+ * @param[in] dwEventType   The event type that triggered this call.
+ * @param[in] lpEventData   The data blob that came with the event.
+ **/
+void ProcessDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
+{
+	PDEV_BROADCAST_DEVICEINTERFACE lpdb = (PDEV_BROADCAST_DEVICEINTERFACE)lpEventData;
+
+	switch (dwEventType)
+	{
+		case DBT_DEVICEARRIVAL:
+			// This check is largely pointless, but leave it here just to make sure nothing weird
+			// happens.
+			if (lpdb->dbcc_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
+			{
+				// The device name we care about will start with something like this :
+				//    \\?\Root#MS_PSCHEDMP#0008#
+
+				// If it is the one we want, then process it, otherwise ignore it.
+				if (wcsncmp(lpdb->dbcc_name, L"\\\\?\\Root#MS_PSCHEDMP#", 21) == 0)
+				{
+					debug_printf(DEBUG_INT, "Processing interface insertion!\n");
+					cardif_windows_events_add_remove_interface(lpdb->dbcc_name, TRUE);
+				}
+			}
+			break;
+
+		case DBT_DEVICEREMOVECOMPLETE:
+			// This check is largely pointless, but leave it here just to make sure nothing weird
+			// happens.
+			if (lpdb->dbcc_devicetype == DBT_DEVTYP_DEVICEINTERFACE)
+			{
+				// The device name we care about will start with something like this :
+				//    \\?\Root#MS_PSCHEDMP#0008#
+
+				// If it is the one we want, then process it, otherwise ignore it.
+				if (wcsncmp(lpdb->dbcc_name, L"\\\\?\\Root#MS_PSCHEDMP#", 21) == 0)
+				{
+					debug_printf(DEBUG_INT, "Processing interface removal!\n");
+					cardif_windows_events_add_remove_interface(lpdb->dbcc_name, FALSE);
+				}
+			}
+			break;
+	}
+}
+
 DWORD WINAPI ControlHandler( DWORD request, DWORD dwEventType,
    LPVOID lpEventData, LPVOID lpContext )
 { 
    switch(request) 
    { 
       case SERVICE_CONTROL_STOP: 
-/*         ServiceStatus.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR; 
-		 ServiceStatus.dwServiceSpecificExitCode = SERVICE_ERROR_STOP_REQUESTED;*/
          ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING; 
          SetServiceStatus (hStatus, &ServiceStatus); 
 		  event_core_terminate();
          return NO_ERROR; 
  
       case SERVICE_CONTROL_SHUTDOWN: 
-/*         ServiceStatus.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR; 
-		 ServiceStatus.dwServiceSpecificExitCode = SERVICE_ERROR_STOP_REQUESTED;*/
          ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING; 
          SetServiceStatus (hStatus, &ServiceStatus); 
 		  event_core_terminate();
          return NO_ERROR; 
+
+	  case SERVICE_CONTROL_DEVICEEVENT:
+		  ProcessDeviceEvent(dwEventType, lpEventData);
+		  return NO_ERROR;
 
 	  case SERVICE_CONTROL_SESSIONCHANGE:
 		  switch (dwEventType)
