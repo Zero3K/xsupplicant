@@ -92,41 +92,41 @@ Function .OnInstFailed
 FunctionEnd
 
 
-Function CheckSups
-        File "..\check_other_supplicants\libchecksups\checksups\Release\checksuppsapp.exe"
-	File "qtcore4.dll"
-	File "qtgui4.dll"
-        File "qtxml4.dll"
+;Function CheckSups
+;        File "..\check_other_supplicants\libchecksups\checksups\Release\checksuppsapp.exe"
+;	File "qtcore4.dll"
+;	File "qtgui4.dll"
+;        File "qtxml4.dll"
 
-        DetailPrint "Checking for other supplicants..."
-        nsExec::Exec '"$INSTDIR\checksuppsapp.exe" -Q'  ; If there are no other supplicants, be quiet about it. ;)
-	Pop $0
-        DetailPrint "  Checksuppsapp return value : $0"
+;        DetailPrint "Checking for other supplicants..."
+;        nsExec::Exec '"$INSTDIR\checksuppsapp.exe" -Q'  ; If there are no other supplicants, be quiet about it. ;)
+;	Pop $0
+;        DetailPrint "  Checksuppsapp return value : $0"
 
-        IntCmp $0 4 done
-        IntCmp $0 1 abort
-        IntCmp $0 2 abort
-        IntCmp $0 3 reboot_needed
-        IntCmp $0 5 done         ; No others were found, so move along.
+;        IntCmp $0 4 done
+;        IntCmp $0 1 abort
+;        IntCmp $0 2 abort
+;        IntCmp $0 3 reboot_needed
+;        IntCmp $0 5 done         ; No others were found, so move along.
 
- abort:
-	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 \
-  		"Other supplicants or wireless managers were discovered, but not disabled or removed. $\nThis could cause \
-  		XSupplicant to be unable to work properly.  (In some cases, it can cause drivers to blue screen.) $\n \
-		Would you like to continue anyway?" \
-	IDYES done
+; abort:
+;	MessageBox MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2 \
+;  		"Other supplicants or wireless managers were discovered, but not disabled or removed. $\nThis could cause \
+;  		XSupplicant to be unable to work properly.  (In some cases, it can cause drivers to blue screen.) $\n \
+;		Would you like to continue anyway?" \
+;	IDYES done
 
-        DetailPrint "One or more problems prevented us from installing.  Please correct the problems and try again."
-        Abort  ; We can't continue.
+;        DetailPrint "One or more problems prevented us from installing.  Please correct the problems and try again."
+;        Abort  ; We can't continue.
 
- reboot_needed:
+; reboot_needed:
         ; Set a flag so that we know not to start the UI and service at the end
         ; as well as asking the user to reboot at the end.
-	SetRebootFlag true
+;	SetRebootFlag true
 
- done:
+; done:
 
-FunctionEnd  ;CheckSups
+;FunctionEnd  ;CheckSups
 
 Function CheckAdmin
 
@@ -183,24 +183,25 @@ Section "XSupplicant (required)"
 	SetOutPath $INSTDIR
 
 	; Make sure the redist is installed before going forward.
-	File "vcredist_x86.exe"
-	DetailPrint "Installing the Visual C++ redistributable if necessary."
+	; 
+	File "C:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\BootStrapper\Packages\vcredist_x86\vcredist_x86.exe"
+	DetailPrint "Installing Microsoft Runtime."
 	nsExec::Exec '"$INSTDIR\vcredist_x86.exe"'
 	Pop $0
 	DetailPrint "  VCRedist return value : $0"
 	Delete $INSTDIR\vcredist_x86.exe
 
-        Call CheckSups
+        ; Call CheckSups
 
         Call CallFirst
 
         SetOutPath $INSTDIR    ; Make sure we are in the right place still.
 
-        File "..\XSupplicant\vs2005\build-release\XSupplicant_service.exe"
-        File "..\ui\build-release\XSupplicantUI.exe"
+        File "..\xsupplicant\vs2005\build-release\XSupplicant_service.exe"
+        File "..\xsupplicant-ui\build-release\XSupplicantUI.exe"
         File "..\XSupplicant\vs2005\ndis_proto_driver\open1x.sys"
         File "..\XSupplicant\vs2005\ndis_proto_driver\open1x.inf"
-        File "..\ProtInstall\build-release\ProtInstall.exe"
+        ;File "..\ProtInstall\build-release\ProtInstall.exe"
 
 	SetOutPath "$INSTDIR\Modules"
 	File "..\XSupplicant\plugins\vs2005\release\BirdDog.dll"
@@ -211,47 +212,48 @@ Section "XSupplicant (required)"
 
         SetOutPath "$INSTDIR\Skins\Default"
 
-        File "..\ui\Skins\Default\AbtDlg.ui"
-        File "..\ui\Skins\Default\ConfigDlg.ui"
-        File "..\ui\Skins\Default\HelpDlg.ui"
-        File "..\ui\Skins\Default\LogDlg.ui"
-        File "..\ui\Skins\Default\LoginDlg.ui"
-        File "..\ui\Skins\Default\SelectTrustedServerDlg.ui"
-        File "..\ui\Skins\Default\ViewLogDlg.ui"
+        File "..\xsupplicant-ui\Skins\Default\AboutWindow.ui"
+        File "..\xsupplicant-ui\Skins\Default\ConfigWindow.ui"
+        File "..\xsupplicant-ui\Skins\Default\HelpWindow.ui"
+        File "..\xsupplicant-ui\Skins\Default\LogWindow.ui"
+        File "..\xsupplicant-ui\Skins\Default\LoginWindow.ui"
+        File "..\xsupplicant-ui\Skins\Default\SelectTrustedServerWindow.ui"
+        File "..\xsupplicant-ui\Skins\Default\ViewLogWindow.ui"
+        File "..\xsupplicant-ui\Skins\Default\WirelessPriorityWindow.ui"
 
         SetOutPath "$INSTDIR\Skins\Default\images"
 
-        File "..\ui\Skins\Default\images\banner_left_short.png"
-        File "..\ui\Skins\Default\images\banner_right_short.png"
-        File "..\ui\Skins\Default\images\banner_right.png"
-        File "..\ui\Skins\Default\images\banner_left.png"
+        File "..\xsupplicant-ui\Skins\Default\images\banner_left_short.png"
+        File "..\xsupplicant-ui\Skins\Default\images\banner_right_short.png"
+        File "..\xsupplicant-ui\Skins\Default\images\banner_right.png"
+        File "..\xsupplicant-ui\Skins\Default\images\banner_left.png"
 
         SetOutPath "$INSTDIR\Skins\Default\icons"
 
-        File "..\ui\Skins\Default\icons\tree_advanced.png"
-        File "..\ui\Skins\Default\icons\tree_trustedservers.png"
-        File "..\ui\Skins\Default\icons\tree_trustedserver.png"
-        File "..\ui\Skins\Default\icons\tree_connections.png"
-        File "..\ui\Skins\Default\icons\tree_connection.png"
-        File "..\ui\Skins\Default\icons\tree_globals.png"
-        File "..\ui\Skins\Default\icons\tree_internals.png"
-        File "..\ui\Skins\Default\icons\key.png"
-        File "..\ui\Skins\Default\icons\lock.png"
-        File "..\ui\Skins\Default\icons\lockedstate.png"
-        File "..\ui\Skins\Default\icons\tree_logging.png"
-        File "..\ui\Skins\Default\icons\prod_color.png"
-        File "..\ui\Skins\Default\icons\prod_red.png"
-        File "..\ui\Skins\Default\icons\tree_profiles.png"
-        File "..\ui\Skins\Default\icons\tree_profile.png"
-        File "..\ui\Skins\Default\icons\tree_settings.png"
-        File "..\ui\Skins\Default\icons\signal_0.png"
-        File "..\ui\Skins\Default\icons\signal_1.png"
-        File "..\ui\Skins\Default\icons\signal_2.png"
-        File "..\ui\Skins\Default\icons\signal_3.png"
-        File "..\ui\Skins\Default\icons\signal_4.png"
-        File "..\ui\Skins\Default\icons\unlockedstate.png"
-        File "..\ui\Skins\Default\icons\wired.png"
-        File "..\ui\Skins\Default\icons\wireless.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_advanced.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_trustedservers.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_trustedserver.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_connections.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_connection.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_globals.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_internals.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\key.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\lock.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\lockedstate.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_logging.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\prod_color.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\prod_red.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_profiles.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_profile.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\tree_settings.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\signal_0.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\signal_1.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\signal_2.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\signal_3.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\signal_4.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\unlockedstate.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\wired.png"
+        File "..\xsupplicant-ui\Skins\Default\icons\wireless.png"
 
         SetOutPath $INSTDIR
 
