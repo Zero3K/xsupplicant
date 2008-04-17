@@ -26,4 +26,15 @@
 #define TNC_COMPLIANCE_ALLOW_AUTO_UPDATE   0x00000080   ///< Should we allow an auto update of any pieces found not to be in compliance?  (If unset, we will ask the user.)
 // TODO: Remove TNC_COMPLIANCE_ALLOW_FULL_SCAN and TNC_COMPLIANCE_ALLOW_AUTO_UPDATE and replace with TNC_COMPLIANCE_ALLOW_AUTOMATIC_REMEDIATION or the like.  This has already been done in the UI.
 
+enum BatchTypes {
+	BATCH_REMEDIATION,
+	BATCH_REMEDIATION_IN_PROGRESS,
+    BATCH_REMEDIATION_STATUS_UPDATE,
+	BATCH_REMEDIATED,
+    BATCH_REMEDIATION_FAILURE,
+	BATCH_OUT_OF_COMPLIANCE,
+	BATCH_RECONNECT_REQUEST,
+    BATCH_TNC_STATE_CHANGE,
+};
+
 #endif // __TNC_COMPLIANCE_OPTIONS_H__
