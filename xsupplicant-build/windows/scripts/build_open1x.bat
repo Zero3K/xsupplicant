@@ -6,12 +6,17 @@ rem ---- Environment ----
 
 echo on
 set OPEN1X_BUILD_ROOT=%OPEN1X_BUILD_ROOT%
+set OPEN1X_VENDOR_ROOT=%OPEN1X_VENDOR_ROOT%
 set QTDIR=%QTDIR%
 set QMAKESPEC=%QMAKESPEC%
 set OPEN1X_BUILD_SDK=%OPEN1X_BUILD_SDK%
 
 if ["%OPEN1X_BUILD_ROOT%"]==[""] (
 	set OPEN1X_BUILD_ROOT=c:\OpenSEA\SeaAnt
+)
+
+if ["%OPEN1X_VENDOR_ROOT%"]==[""] (
+	set OPEN1X_VENDOR_ROOT=c:\OpenSEA\vendor
 )
 
 if ["%OPEN1X_BUILD_SDK%"]==[""] (
@@ -53,9 +58,9 @@ if [%LIBTNCDIR%]==[] (
 rem ---- Open1X ----
 set OPEN1X_ENGINE=%OPEN1X_BUILD_ROOT%\xsupplicant\vs2005
 set OPEN1X_ENGINE_PLUGINS=%OPEN1X_BUILD_ROOT%\xsupplicant\plugins\vs2005
-set OPEN1X_GUI=%OPEN1X_BUILD_ROOT%\ui
-set OPEN1X_GUI_PLUGINS=%OPEN1X_BUILD_ROOT%\ui\plugins
-set OPEN1X_PROTINSTALL=%OPEN1X_BUILD_ROOT%\ProtInstall
+set OPEN1X_GUI=%OPEN1X_BUILD_ROOT%\xsupplicant-ui
+set OPEN1X_GUI_PLUGINS=%OPEN1X_GUI%\plugins
+set OPEN1X_PROTINSTALL=%OPEN1X_VENDOR_ROOT%\ProtInstall
 
 rem ---- OEM ----
 
