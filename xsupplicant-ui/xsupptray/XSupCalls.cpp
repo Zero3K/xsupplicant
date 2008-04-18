@@ -52,6 +52,7 @@ extern "C"
 #include "libxsupgui/xsupgui_mac_utils.h"
 #include "xsup_err.h"
 #include "supdetect.h"
+#include "eap_types/tnc/tnc_compliance_options.h"
 }
 
 #ifndef WINDOWS

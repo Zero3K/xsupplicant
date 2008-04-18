@@ -79,16 +79,9 @@ UIPlugins::~UIPlugins()
 int UIPlugins::loadPlugin(char *location)
 {
 #ifdef WIN32
-	// Windows requires a wchar_t as the input to LoadLibrary, so we'll convert it here.
-//	wchar_t *PluginLocation = (wchar_t *)malloc(((strlen(location) * 2) + 2));
-
-	//wsprintf(PluginLocation, L"%S", location);
-
 	hdll = LoadLibraryA(location);   // Probably need to change this to LoadLibraryW later on.
 
 	DWORD error = GetLastError();
-
-//	free(PluginLocation);
 
 	if(hdll == NULL)
 		return PLUGIN_LOAD_FAILURE;
