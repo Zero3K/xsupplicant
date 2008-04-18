@@ -11,15 +11,15 @@ set QMAKESPEC=%QMAKESPEC%
 set OPEN1X_BUILD_SDK=%OPEN1X_BUILD_SDK%
 
 if ["%OPEN1X_BUILD_ROOT%"]==[""] (
-	set OPEN1X_BUILD_ROOT=c:\xsup_dev\OpenSEA\SeaAnt
+	set OPEN1X_BUILD_ROOT=c:\OpenSEA\SeaAnt
 )
 
 if ["%OPEN1X_BUILD_SDK%"]==[""] (
-	rem set OPEN1X_BUILD_SDK=C:\WinDDK\3790.1830\bin
+	set OPEN1X_BUILD_SDK=C:\Program Files\Microsoft SDKs\Windows\v6.0\Bin
 )
 
 if ["%QTDIR%"]==[""] (
-	set QTDIR=C:\Qt\qt-win-opensource-src-4.3.3
+	set QTDIR=C:\Qt\qt-win-opensource-src-4.3.4
 )
 
 if [%QMAKESPEC%]==[] (
@@ -86,7 +86,7 @@ goto Done
 :Done
 
 REM Source the Microsoft development environment...
-Call "%OPEN1X_BUILD_SDK%\SetEnv.Cmd" %BUILD_FLAGS%
+REM Call "%OPEN1X_BUILD_SDK%\SetEnv.Cmd" %BUILD_FLAGS%
 
 echo on
 
