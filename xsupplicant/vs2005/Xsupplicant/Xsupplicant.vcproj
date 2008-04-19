@@ -1154,6 +1154,7 @@
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS"
 				RuntimeLibrary="2"
 				StructMemberAlignment="0"
+				DebugInformationFormat="3"
 				CompileAs="1"
 			/>
 			<Tool
@@ -1171,6 +1172,7 @@
 				OutputFile="$(OutDir)\$(ProjectName)_service.exe"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
+				GenerateDebugInformation="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
