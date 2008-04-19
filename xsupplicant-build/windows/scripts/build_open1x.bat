@@ -40,19 +40,19 @@ set ZLIBDIR=%ZLIBDIR%
 set LIBTNCDIR=%LIBTNCDIR%
 
 if [%LIBXML2DIR%]==[] (
-	set LIBXML2DIR=C:\gnu\libxml2-2.6.30+.win32
+	set LIBXML2DIR=C:\OpenSEA\thirdparty\libxml2-2.6.30+.win32
 )
 if [%ICONVDIR%]==[] (
-	set ICONVDIR=C:\gnu\iconv-1.9.2.win32
+	set ICONVDIR=C:\OpenSEA\thirdparty\iconv-1.9.2.win32
 )
 if [%OPENSSLDIR%]==[] (
-	set OPENSSLDIR=C:\gnu\openssl-0.9.8a.win32
+	set OPENSSLDIR=C:\OpenSEA\thirdparty\openssl-0.9.8g.win32
 )
 if [%ZLIBDIR%]==[] (
-	set ZLIBDIR=C:\gnu\zlib-1.2.3.win32
+	set ZLIBDIR=C:\OpenSEA\thirdparty\zlib-1.2.3.win32
 )
 if [%LIBTNCDIR%]==[] (
-	set LIBTNCDIR=C:\gnu\libtnc-1.16
+	set LIBTNCDIR=C:\OpenSEA\thirdparty\libtnc-1.18
 )
 
 rem ---- Open1X ----
