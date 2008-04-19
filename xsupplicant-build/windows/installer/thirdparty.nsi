@@ -1,4 +1,4 @@
-
+!define THIRDPARTY ..\..\..\..\thirdparty
 
 ; Do pre-installation stuff here
 Function ThirdPartyPreInstall
@@ -45,6 +45,8 @@ FunctionEnd  ;InstallSupplicantChecker
 
 Function un.InstallSupplicantChecker
 	Delete $INSTDIR\checksuppsapp.exe
+
+        Delete "$SMPROGRAMS\XSupplicant\Check for other supplicants.lnk"
 
 	Delete "$SMPROGRAMS\Identity Engines\XSupplicant Tray Application.lnk"
  

@@ -6,7 +6,8 @@
 !define QTDIR C:\Qt\qt-win-opensource-src-4.3.4
 !define SRCDIR ..\..\..
 !define VENDORDIR ..\..\..\..\vendor
-!define THIRDPARTY ..\..\..\..\thirdparty
+!define SKINROOT xsupplicant-ui\Skins
+!define SKINDIR  Default
 
 
 ;------------------------
@@ -179,7 +180,7 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\xsupplicant-ui\build-release\XSupplicantUI.exe"
         File "${SRCDIR}\xsupplicant\vs2005\ndis_proto_driver\open1x.sys"
         File "${SRCDIR}\xsupplicant\vs2005\ndis_proto_driver\open1x.inf"
-        ;File "${VENDORDIR}\ProtInstall\build-release\ProtInstall.exe"
+        File "${VENDORDIR}\ProtInstall\build-release\ProtInstall.exe"
 
 	SetOutPath "$INSTDIR\Modules"
 	File "${SRCDIR}\xsupplicant\plugins\vs2005\release\BirdDog.dll"
@@ -190,48 +191,56 @@ Section "XSupplicant (required)"
 
         SetOutPath "$INSTDIR\Skins\Default"
 
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\AboutWindow.ui"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\ConfigWindow.ui"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\HelpWindow.ui"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\LogWindow.ui"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\LoginWindow.ui"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\SelectTrustedServerWindow.ui"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\ViewLogWindow.ui"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\WirelessPriorityWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\AboutWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConfigWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\HelpWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\LogWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\LoginWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SelectTrustedServerWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ViewLogWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
 
         SetOutPath "$INSTDIR\Skins\Default\images"
 
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\images\banner_left_short.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\images\banner_right_short.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\images\banner_right.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\images\banner_left.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner_left.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner_left_short.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner_right.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner_right_short.png"
+
 
         SetOutPath "$INSTDIR\Skins\Default\icons"
 
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_advanced.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_trustedservers.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_trustedserver.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_connections.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_connection.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_globals.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_internals.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\key.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\lock.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\lockedstate.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_logging.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\prod_color.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\prod_red.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_profiles.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_profile.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\tree_settings.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\signal_0.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\signal_1.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\signal_2.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\signal_3.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\signal_4.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\unlockedstate.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\wired.png"
-        File "${SRCDIR}\xsupplicant-ui\Skins\Default\icons\wireless.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lock.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lockedstate.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\key.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_color.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_eng_connected.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_green.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_no_engine.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_red.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_yellow.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\signal_0.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\signal_1.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\signal_2.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\signal_3.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\signal_4.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tnc_allowed.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tnc_isolated.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tnc_none.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_advanced.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_connections.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_connection.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_globals.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_internals.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_logging.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_profiles.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_profile.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_settings.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_trustedservers.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_trustedserver.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\unlockedstate.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\wired.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\wireless.png"
 
         SetOutPath $INSTDIR
 
@@ -324,10 +333,10 @@ Section "Uninstall"
         nsExec::Exec '"$INSTDIR\ProtInstall.exe" /Uninstall /hide open1x.inf'
 
 	DetailPrint "Removing program files..."
-	Delete $INSTDIR\xsupplicant_service.exe
-	Delete $INSTDIR\qtcore4.dll
-        Delete $INSTDIR\qtgui4.dll 
-        Delete $INSTDIR\qtxml4.dll
+	Delete $INSTDIR\XSupplicant_service.exe
+	Delete $INSTDIR\QtCore4.dll
+        Delete $INSTDIR\QtGui4.dll
+        Delete $INSTDIR\QtXml4.dll
         Delete $INSTDIR\XSupplicantUI.exe
         Delete $INSTDIR\ProtInstall.exe
         Delete $INSTDIR\open1x.inf
@@ -336,13 +345,14 @@ Section "Uninstall"
 
 	Delete $INSTDIR\Modules\BirdDog.dll
 
-        Delete $INSTDIR\Skins\Default\AbtDlg.ui
-        Delete $INSTDIR\Skins\Default\ConfigDlg.ui
-        Delete $INSTDIR\Skins\Default\HelpDlg.ui
-        Delete $INSTDIR\Skins\Default\LogDlg.ui
-        Delete $INSTDIR\Skins\Default\LoginDlg.ui
-        Delete $INSTDIR\Skins\Default\SelectTrustedServerDlg.ui
-        Delete $INSTDIR\Skins\Default\ViewLogDlg.ui
+        Delete $INSTDIR\Skins\Default\AboutWindow.ui
+        Delete $INSTDIR\Skins\Default\ConfigWindow.ui
+        Delete $INSTDIR\Skins\Default\HelpWindow.ui
+        Delete $INSTDIR\Skins\Default\LogWindow.ui
+        Delete $INSTDIR\Skins\Default\LoginWindow.ui
+        Delete $INSTDIR\Skins\Default\SelectTrustedServerWindow.ui
+        Delete $INSTDIR\Skins\Default\ViewLogWindow.ui
+	Delete $INSTDIR\Skins\Default\WirelessPriorityWindow.ui
 
         Delete $INSTDIR\Skins\Default\images\banner_left_short.png
         Delete $INSTDIR\Skins\Default\images\banner_right_short.png
@@ -351,27 +361,34 @@ Section "Uninstall"
 
         SetOutPath "$INSTDIR\Skins\Default\icons"
 
-        Delete $INSTDIR\Skins\Default\icons\tree_advanced.png
-        Delete $INSTDIR\Skins\Default\icons\tree_trustedservers.png
-        Delete $INSTDIR\Skins\Default\icons\tree_trustedserver.png
-        Delete $INSTDIR\Skins\Default\icons\tree_connections.png
-        Delete $INSTDIR\Skins\Default\icons\tree_connection.png
-        Delete $INSTDIR\Skins\Default\icons\tree_globals.png
-        Delete $INSTDIR\Skins\Default\icons\tree_internals.png
-        Delete $INSTDIR\Skins\Default\icons\key.png
         Delete $INSTDIR\Skins\Default\icons\lock.png
         Delete $INSTDIR\Skins\Default\icons\lockedstate.png
-        Delete $INSTDIR\Skins\Default\icons\tree_logging.png
+        Delete $INSTDIR\Skins\Default\icons\key.png
         Delete $INSTDIR\Skins\Default\icons\prod_color.png
+        Delete $INSTDIR\Skins\Default\icons\prod_eng_connected.png
+        Delete $INSTDIR\Skins\Default\icons\prod_green.png
+        Delete $INSTDIR\Skins\Default\icons\prod_no_engine.png
         Delete $INSTDIR\Skins\Default\icons\prod_red.png
-        Delete $INSTDIR\Skins\Default\icons\tree_profiles.png
-        Delete $INSTDIR\Skins\Default\icons\tree_profile.png
-        Delete $INSTDIR\Skins\Default\icons\tree_settings.png
+        Delete $INSTDIR\Skins\Default\icons\prod_yellow.png
         Delete $INSTDIR\Skins\Default\icons\signal_0.png
         Delete $INSTDIR\Skins\Default\icons\signal_1.png
         Delete $INSTDIR\Skins\Default\icons\signal_2.png
         Delete $INSTDIR\Skins\Default\icons\signal_3.png
         Delete $INSTDIR\Skins\Default\icons\signal_4.png
+        Delete $INSTDIR\Skins\Default\icons\tnc_allowed.png
+        Delete $INSTDIR\Skins\Default\icons\tnc_isolated.png
+        Delete $INSTDIR\Skins\Default\icons\tnc_none.png
+        Delete $INSTDIR\Skins\Default\icons\tree_advanced.png
+        Delete $INSTDIR\Skins\Default\icons\tree_connections.png
+        Delete $INSTDIR\Skins\Default\icons\tree_connection.png
+        Delete $INSTDIR\Skins\Default\icons\tree_globals.png
+        Delete $INSTDIR\Skins\Default\icons\tree_internals.png
+        Delete $INSTDIR\Skins\Default\icons\tree_logging.png
+        Delete $INSTDIR\Skins\Default\icons\tree_profiles.png
+        Delete $INSTDIR\Skins\Default\icons\tree_profile.png
+        Delete $INSTDIR\Skins\Default\icons\tree_settings.png
+        Delete $INSTDIR\Skins\Default\icons\tree_trustedservers.png
+        Delete $INSTDIR\Skins\Default\icons\tree_trustedserver.png
         Delete $INSTDIR\Skins\Default\icons\unlockedstate.png
         Delete $INSTDIR\Skins\Default\icons\wired.png
         Delete $INSTDIR\Skins\Default\icons\wireless.png
@@ -379,8 +396,8 @@ Section "Uninstall"
 	SetOutPath $INSTDIR
 
         RMDir /r "$INSTDIR\Skins\Default\icons"
+	RMDir /r "$INSTDIR\Skins\Default\images"
         RMDir /r "$INSTDIR\Skins\Default"
-        RMDir /r "$INSTDIR\Skins"
         RMDir /r "$INSTDIR\Skins"
 	RMDir /r "$INSTDIR\Modules"
 
@@ -393,7 +410,6 @@ Section "Uninstall"
 	; Delete start menu programs
 	SetShellVarContext All
         Delete "$SMPROGRAMS\XSupplicant\XSupplicant Tray Application.lnk"
-        Delete "$SMPROGRAMS\XSupplicant\Check for other supplicants.lnk"
 	RMDir $SMPROGRAMS\XSupplicant
 
 	; Clean up registry keys.
