@@ -7,16 +7,21 @@ rem ---- Environment ----
 echo on
 set OPEN1X_BUILD_ROOT=%OPEN1X_BUILD_ROOT%
 set OPEN1X_VENDOR_ROOT=%OPEN1X_VENDOR_ROOT%
+set OPEN1X_LIBRARY_ROOT=%OPEN1X_LIBRARY_ROOT%
 set QTDIR=%QTDIR%
 set QMAKESPEC=%QMAKESPEC%
 set OPEN1X_BUILD_SDK=%OPEN1X_BUILD_SDK%
 
 if ["%OPEN1X_BUILD_ROOT%"]==[""] (
-	set OPEN1X_BUILD_ROOT=c:\OpenSEA\SeaAnt
+	set OPEN1X_BUILD_ROOT=..\..\..
 )
 
 if ["%OPEN1X_VENDOR_ROOT%"]==[""] (
-	set OPEN1X_VENDOR_ROOT=c:\OpenSEA\vendor
+	set OPEN1X_VENDOR_ROOT=C:\OpenSEA\vendor
+)
+
+if ["%OPEN1X_LIBRARY_ROOT%"]==[""] (
+	set OPEN1X_LIBRARY_ROOT=C:\OpenSEA\thirdparty
 )
 
 if ["%OPEN1X_BUILD_SDK%"]==[""] (
@@ -38,21 +43,26 @@ set ICONVDIR=%ICONVDIR%
 set OPENSSLDIR=%OPENSSLDIR%
 set ZLIBDIR=%ZLIBDIR%
 set LIBTNCDIR=%LIBTNCDIR%
+set NUIOUSERDIR=%NUIOUSERDIR%
 
 if [%LIBXML2DIR%]==[] (
-	set LIBXML2DIR=C:\OpenSEA\thirdparty\libxml2-2.6.30+.win32
+	set LIBXML2DIR=%OPEN1X_LIBRARY_ROOT%\libxml2-2.6.30+.win32
 )
 if [%ICONVDIR%]==[] (
-	set ICONVDIR=C:\OpenSEA\thirdparty\iconv-1.9.2.win32
+	set ICONVDIR=%OPEN1X_LIBRARY_ROOT%\iconv-1.9.2.win32
 )
 if [%OPENSSLDIR%]==[] (
-	set OPENSSLDIR=C:\OpenSEA\thirdparty\openssl-0.9.8g.win32
+	set OPENSSLDIR=%OPEN1X_LIBRARY_ROOT%\openssl-0.9.8g.win32
 )
 if [%ZLIBDIR%]==[] (
-	set ZLIBDIR=C:\OpenSEA\thirdparty\zlib-1.2.3.win32
+	set ZLIBDIR=%OPEN1X_LIBRARY_ROOT%\zlib-1.2.3.win32
 )
 if [%LIBTNCDIR%]==[] (
-	set LIBTNCDIR=C:\OpenSEA\thirdparty\libtnc-1.18
+	set LIBTNCDIR=%OPEN1X_LIBRARY_ROOT%\libtnc-1.18
+)
+
+if [%NUIOUSERDIR%]==[] (
+	set NUIOUSERDIR=C:\WinDDK\6000\src\network\ndis\ndisprot\5x\sys
 )
 
 rem ---- Open1X ----
@@ -101,6 +111,7 @@ set
 echo off
 
 set BUILD_PROJECT="Open1X Engine"
+copy %NUIOUSERDIR%\nuiouser.h %OPEN1X_ENGINE%\ndis_proto_driver
 vcbuild /time "%OPEN1X_ENGINE%\Xsupplicant.sln" "%BUILD_TYPE% as Service with TNC|Win32" %BUILD_FLAGS%
 
 set BUILD_ERROR=%ERRORLEVEL%
