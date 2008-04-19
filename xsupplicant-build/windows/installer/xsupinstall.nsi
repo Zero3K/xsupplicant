@@ -381,6 +381,7 @@ Section "Uninstall"
         Delete $INSTDIR\open1x.inf
         Delete $INSTDIR\open1x.sys
 	Delete $INSTDIR\uninstall.exe
+	Delete $INSTDIR\msvcr80.dll
 
 	Delete $INSTDIR\Modules\BirdDog.dll
 
@@ -431,6 +432,7 @@ Section "Uninstall"
         Delete $INSTDIR\Skins\Default\icons\unlockedstate.png
         Delete $INSTDIR\Skins\Default\icons\wired.png
         Delete $INSTDIR\Skins\Default\icons\wireless.png
+
 
 	SetOutPath $INSTDIR
 
