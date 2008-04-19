@@ -199,12 +199,13 @@ Section "XSupplicant (required)"
 
 	; Make sure the redist is installed before going forward.
 	; 
-	File "C:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\BootStrapper\Packages\vcredist_x86\vcredist_x86.exe"
-	DetailPrint "Installing Microsoft Runtime."
-	nsExec::Exec '"$INSTDIR\vcredist_x86.exe"'
-	Pop $0
-	DetailPrint "  VCRedist return value : $0"
-	Delete $INSTDIR\vcredist_x86.exe
+	;File "C:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\BootStrapper\Packages\vcredist_x86\vcredist_x86.exe"
+	;DetailPrint "Installing Microsoft Runtime."
+	;nsExec::Exec '"$INSTDIR\vcredist_x86.exe"'
+	;Pop $0
+	;DetailPrint "  VCRedist return value : $0"
+	;Delete $INSTDIR\vcredist_x86.exe
+	File "C:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
 
 	File "${QTDIR}\bin\QtCore4.dll"
 	File "${QTDIR}\bin\QtGui4.dll"
