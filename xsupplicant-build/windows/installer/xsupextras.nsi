@@ -62,7 +62,7 @@ InstallDir "$PROGRAMFILES\XSupplicant"
 ;    un.ExtrasPostInstall -- Same as above, but is called during uninstall.
 
 Function ExtrasPreInstall
-!ifdef THIRDPARTYADITIONS
+!ifdef THIRDPARTYADDITIONS
 	; Called from thirdparty.nsi
  	Call ThirdPartyPreInstall
 !endif ;THIRDPARTYDDITIONS
