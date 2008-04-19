@@ -1,7 +1,25 @@
-;------------------------
-; XSupplicant version # used in this installer
-   !include version.nsi
-   !include thirdparty.nsi
+; This variable can be overridden by passing /DVERSION=<whatever> to the nullsoft compiler.
+!ifndef VERSION
+	!define VERSION 2.1.1.080419
+!endif
+
+; Third party tweaks go here.
+; For official Open1X builds, the IDE supplicant checker is included.
+; Comment out "!define THIRDPARTYADDITIONS" to turn this off.
+; if you need to create an installer for your own purposes.
+; 
+!define THIRDPARTYADDITIONS
+!ifdef THIRDPARTYADDITIONS
+	!include thirdparty.nsi
+!endif
+
+; This script packages up the .pdb debug files for easier
+; debugability of the supplicant in the event of crashes.
+; Comment out "!define DEBUGFILES" to turn this off.
+!define DEBUGFILES
+!ifdef DEBUGFILES
+!include open1xdebug.nsi
+!endif ;DEBUGFILES
 
 ;------------------------
 ; Target Directory for Start Menu
@@ -36,29 +54,42 @@ InstallDir "$PROGRAMFILES\XSupplicant"
 ;                   it is running with admin rights, but before anything
 ;                   else is done.
 ;
+;    un.ExtrasPreInstall -- Same as above, but is called during uninstall.
+;
 ; 2. ExtrasPostInstall -- This function will be called right before the installer
 ;                   enables the services and the tray app.
+;
+;    un.ExtrasPostInstall -- Same as above, but is called during uninstall.
 
 Function ExtrasPreInstall
+!ifdef THIRDPARTYADITIONS
+	; Called from thirdparty.nsi
  	Call ThirdPartyPreInstall
+!endif ;THIRDPARTYDDITIONS
+
+!ifdef DEBUGFILES
+	; Called from open1xdebug.nsi
+	Call DebugFilesInstall
+!endif ;DEBUGFILES
 FunctionEnd
 
+Function un.ExtrasPreInstall
 
+!ifdef THIRDPARTYADDITIONS
+	; Called from thirdparty.nsi
+	Call un.ThirdPartyPreInstall
+!endif ;THIRDPARTYADDITIONS
+
+!ifdef DEBUGFILES
+	; Called from open1xdebug.nsi
+	Call un.DebugFilesInstall
+!endif ;DEBUGFILES
+FunctionEnd
 
 Function ExtrasPostInstall
 	
 FunctionEnd
 
-
-
-
-;--------------------------
-; These are the calls for the installer.
-
-Function un.ExtrasPreInstall
-	Call un.ThirdPartyPreInstall
-FunctionEnd
-
 Function un.ExtrasPostInstall
-
+	
 FunctionEnd

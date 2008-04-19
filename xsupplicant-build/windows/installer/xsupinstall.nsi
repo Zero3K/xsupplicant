@@ -307,11 +307,11 @@ Section "XSupplicant (required)"
         Goto default_service_install
 
 default_service_install:
-        nsExec::Exec '"$WINDIR\system32\sc.exe" create XSupplicant binPath= "$INSTDIR\xsupplicant_service.exe" DisplayName= XSupplicant start= auto depend= open1x/SENS/wzcsvc'
+        nsExec::Exec '"$WINDIR\system32\sc.exe" create XSupplicant binPath= "$INSTDIR\XSupplicant_service.exe" DisplayName= XSupplicant start= auto depend= open1x/SENS/wzcsvc'
         Goto finish_service_install
 
 vista_service_install:
-        nsExec::Exec '"$WINDIR\system32\sc.exe" create XSupplicant binPath= "$INSTDIR\xsupplicant_service.exe" DisplayName= XSupplicant start= auto depend= open1x/SENS'
+        nsExec::Exec '"$WINDIR\system32\sc.exe" create XSupplicant binPath= "$INSTDIR\XSupplicant_service.exe" DisplayName= XSupplicant start= auto depend= open1x/SENS'
 
 finish_service_install:
 
