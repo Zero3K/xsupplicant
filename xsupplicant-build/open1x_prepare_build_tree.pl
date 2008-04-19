@@ -147,6 +147,8 @@ sub GetEndRevisionForReleaseWithBranch {
 
 sub AttemptMergeOfBranchWithDryRunForRelease {
     my ($branch, $release_name) = @_;
+    
+    print("Attempting to merge $branch into $release_name build tree.\n");
 
     my $branch_root = GetBranchRootForRelease($release_name);
 
