@@ -9,6 +9,7 @@
 !define SKINROOT xsupplicant-ui\Skins
 !define SKINDIR  Default
 
+SetCompressor /SOLID lzma
 
 ;------------------------
 ; Vista Tweaks:
