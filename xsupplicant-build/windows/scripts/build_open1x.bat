@@ -153,7 +153,7 @@ rem echo %BUILD_PROJECT% Status: %BUILD_STATUS%
 rem ----------------------------------------------
 
 rem set BUILD_PROJECT="Open1X Protocol Installer"
-rem vcbuild /time "%OPEN1X_PROTINSTALL%\ProtInstall.sln" "%BUILD_TYPE%|Win32" %BUILD_FLAGS%
+vcbuild /time "%OPEN1X_PROTINSTALL%\ProtInstall.sln" "%BUILD_TYPE%|Win32" %BUILD_FLAGS%
 
 set BUILD_ERROR=%ERRORLEVEL%
 
