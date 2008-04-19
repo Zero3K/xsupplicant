@@ -3,11 +3,48 @@
 ;
 
 ; The more relative the better.  It's more portable. ;)
-!define QTDIR C:\Qt\qt-win-opensource-src-4.3.4
-!define SRCDIR ..\..\..
-!define VENDORDIR ..\..\..\..\vendor
-!define SKINROOT xsupplicant-ui\Skins
-!define SKINDIR  Default
+; 
+; 
+; Variables:
+;
+; The following variables can be passed to the nullsoft command line (Use /D<VARIABLE>=<VALUE>):
+;
+;
+; QTDIR     - 	The root directory for Qt (i.e. C:\Qt\qt-win-opensource-src-4.3.4)
+;
+; SRCDIR    - 	The directory containing the Open1X source tree (i.e. C:\OpenSEA\SeaAnt)
+;
+; VENDORDIR - 	The directory containing the Open1X vendor source tree (i.e. C:\OpenSEA\vendor)
+;
+; SKINROOT  - 	The directory containing the skins directories (i.e. C:\OpenSEA\SeaAnt\xsupplicant-ui\Skins)
+;			This option *MUST* be defined relative to SRCDIR! (i.e. xsupplicant-ui\Skins)
+;
+; SKINDIR   - 	The directory containing the actual skin files (i.e. C:\OpenSEA\SeaAnt\xsupplicant-ui\Skins\Default)
+;			This option *MUST* be defined relative to SKINROOT!  (i.e. Default )
+;
+; Invocation:
+; C:\>"C:\Program Files\NSIS\makensis.exe" /D<VARIABLE>=<VALUE> C:\OpenSEA\SeaAnt\xsupplicant-build\windows\installer\xsupinstall.nsi
+;
+
+!ifndef QTDIR
+	!define QTDIR C:\Qt\qt-win-opensource-src-4.3.4
+!endif
+
+!ifndef SRCDIR
+	!define SRCDIR ..\..\..
+!endif 
+
+!ifndef VENDORDIR
+	!define VENDORDIR ..\..\..\..\vendor
+!endif
+
+!ifndef SKINROOT
+	!define SKINROOT xsupplicant-ui\Skins
+!endif
+
+!ifndef SKINDIR
+	!define SKINDIR Default
+!endif
 
 SetCompressor /SOLID lzma
 
