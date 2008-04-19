@@ -1,5 +1,5 @@
 This directory contains the files that are needed to create the installer used by XSupplicant.  Note that you will need to 
-provide your own versions of the QT files, since the ones used in the official releases are licensed to the XSupplicant
+provide your own versions of the Qt files, since the ones used in the official releases are licensed to the XSupplicant
 developers.
 
 NOTE: In order to use this installer data you currently need to have it in a directory at the same level as the xsupplicant and ui
