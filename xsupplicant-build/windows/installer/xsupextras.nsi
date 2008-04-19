@@ -1,6 +1,7 @@
 ;------------------------
 ; XSupplicant version # used in this installer
    !include version.nsi
+   !include thirdparty.nsi
 
 ;------------------------
 ; Target Directory for Start Menu
@@ -31,22 +32,21 @@ InstallDir "$PROGRAMFILES\XSupplicant"
 ; There are two functions that will get called out of this file.  (For Install
 ; and two for uninstall.)
 ;
-; 1. CallFirst  -- This function will be called after the installer verifies
-;                  it is running with admin rights, but before anything
-;                  else is done.
+; 1. ExtrasPreInstall --  This function will be called after the installer verifies
+;                   it is running with admin rights, but before anything
+;                   else is done.
 ;
-; 2. CallLast  -- This function will be called right before the installer
-;                 enables the services and the tray app.
+; 2. ExtrasPostInstall -- This function will be called right before the installer
+;                   enables the services and the tray app.
 
-Function CallFirst
-
+Function ExtrasPreInstall
+ 	Call ThirdPartyPreInstall
 FunctionEnd
 
 
 
-Function CallLast
-
-
+Function ExtrasPostInstall
+	
 FunctionEnd
 
 
@@ -55,10 +55,10 @@ FunctionEnd
 ;--------------------------
 ; These are the calls for the installer.
 
-Function un.CallFirst
-
+Function un.ExtrasPreInstall
+	Call un.ThirdPartyPreInstall
 FunctionEnd
 
-Function un.CallLast
+Function un.ExtrasPostInstall
 
 FunctionEnd
