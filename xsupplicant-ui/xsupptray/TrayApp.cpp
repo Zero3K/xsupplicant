@@ -218,7 +218,9 @@ bool TrayApp::init(int argc)
 
   slotConnectToSupplicant();
 
-  m_pTrayIcon->show();
+  if(m_pTrayIcon != NULL) {
+    m_pTrayIcon->show();
+  }
 
   loadPlugins();
   
