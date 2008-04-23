@@ -295,7 +295,14 @@ Section "XSupplicant (required)"
         ; Then, install the protocol driver.
         DetailPrint "Installing the protocol driver.."
         nsExec::Exec '"$INSTDIR\ProtInstall.exe" /Install /hide open1x.inf'
+	Pop $0
+	DetailPrint "  Protocol driver installer return value : $0"
+	IntCmp $0 0 continue_service_install
+	
+	DetailPrint "Unable to install the Open1X.sys protocol driver."
+	abort
 
+continue_service_install:
         ; Get the windows version and determine how to install the service.
         ; The service won't start on Vista if we try to depend on wzc.
 	  ClearErrors
