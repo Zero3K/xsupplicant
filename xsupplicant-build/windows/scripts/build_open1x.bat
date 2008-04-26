@@ -25,7 +25,8 @@ if ["%OPEN1X_LIBRARY_ROOT%"]==[""] (
 )
 
 if ["%OPEN1X_BUILD_SDK%"]==[""] (
-	set OPEN1X_BUILD_SDK=C:\Program Files\Microsoft SDKs\Windows\v6.0\Bin
+	REM set OPEN1X_BUILD_SDK=C:\Program Files\Microsoft SDKs\Windows\v6.0\Bin
+	set OPEN1X_BUILD_SDK=C:\Program Files\Microsoft Visual Studio 8\VC\bin\x86_amd64
 )
 
 if ["%QTDIR%"]==[""] (
@@ -102,6 +103,7 @@ goto Done
 
 REM Source the Microsoft development environment...
 REM Call "%OPEN1X_BUILD_SDK%\SetEnv.Cmd" %BUILD_FLAGS%
+Call "%OPEN1X_BUILD_SDK%\vcvarsx86_amd64.bat"
 
 echo on
 
