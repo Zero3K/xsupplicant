@@ -1,16 +1,27 @@
-echo off
+echo on
 rem XSupplicant Build Script
 rem Author: Terry Simons (galimorerpg@users.sourceforge.net)
 
 rem ---- Environment ----
 
-echo on
+if ["%1"]==["Reset"] (
+set OPEN1X_BUILD_ROOT=
+set OPEN1X_VENDOR_ROOT=
+set OPEN1X_LIBRARY_ROOT=
+set QTDIR=
+set QMAKESPEC=
+set OPEN1X_BUILD_SDK=
+
+goto FIN
+) else (
 set OPEN1X_BUILD_ROOT=%OPEN1X_BUILD_ROOT%
 set OPEN1X_VENDOR_ROOT=%OPEN1X_VENDOR_ROOT%
 set OPEN1X_LIBRARY_ROOT=%OPEN1X_LIBRARY_ROOT%
 set QTDIR=%QTDIR%
 set QMAKESPEC=%QMAKESPEC%
 set OPEN1X_BUILD_SDK=%OPEN1X_BUILD_SDK%
+)
+
 
 if ["%OPEN1X_BUILD_ROOT%"]==[""] (
 	set OPEN1X_BUILD_ROOT=..\..\..
@@ -93,13 +104,13 @@ goto Release
 
 :Release
 set BUILD_FLAGS=/Release %BUILD_FLAGS%
-goto Done
+goto START
 
 :Debug
 set BUILD_FLAGS=/Debug %BUILD_FLAGS%
-goto Done
+goto START
 
-:Done
+:START
 
 REM Source the Microsoft development environment...
 REM Call "%OPEN1X_BUILD_SDK%\SetEnv.Cmd" %BUILD_FLAGS%
@@ -180,10 +191,12 @@ rem ----------------------------------------------
 
 echo All projects built successfullly.
 
-goto DONE
+goto SUCCESS
 
 :FAIL
 set BUILD_STATUS=FAIL
 echo %BUILD_PROJECT% Status: %BUILD_STATUS%
+goto FIN
 
-:DONE
+:SUCCESS
+:FIN
