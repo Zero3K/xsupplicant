@@ -59,7 +59,7 @@ if [%ZLIBDIR%]==[] (
 	set ZLIBDIR=%OPEN1X_LIBRARY_ROOT%\zlib-1.2.3.win32
 )
 if [%LIBTNCDIR%]==[] (
-	set LIBTNCDIR=%OPEN1X_LIBRARY_ROOT%\libtnc-1.18
+	set LIBTNCDIR=%OPEN1X_LIBRARY_ROOT%\libtnc-1.10-modified
 )
 
 if [%NUIOUSERDIR%]==[] (
