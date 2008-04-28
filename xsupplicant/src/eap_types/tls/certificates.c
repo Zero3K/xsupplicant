@@ -254,7 +254,7 @@ int certificates_windows_build_ossl_mem_chain(struct tls_vars *mytls_vars, 	PCCE
 
 	if (pChainContext == NULL)
 	{
-		debug_printf(DEBUG_NORMAL, "Windows return a NULL chain context, but didn't return an error!?\n");
+		debug_printf(DEBUG_NORMAL, "Windows returned a NULL chain context, but didn't return an error!?\n");
 		return -1;
 	}
 

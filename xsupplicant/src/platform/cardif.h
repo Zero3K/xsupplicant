@@ -13,6 +13,7 @@
 #define _CARDIF_H_
 
 #include "src/context.h"
+#include "src/pmksa.h"
 
 // Alg methods to use when doing WPA.
 #define WPA_NONE 0
@@ -147,6 +148,9 @@ struct cardif_funcs {
 
   // Get the percentage of the signal strength.
   int (*get_signal_percent)(context *);
+
+  // Set the PMKID data on the interface.
+  int (*apply_pmkid_data)(context *, pmksa_list *);
 };
 
 // Stuff needed by both wired, and wireless interfaces.
@@ -200,7 +204,7 @@ int cardif_enable_wpa_state(context *);
 int cardif_drop_unencrypted(context *, char);
 int cardif_countermeasures(context *, char);
 int cardif_get_wpa_ie(context *, char *, int *);
-int cardif_get_wpa2_ie(context *, char *, int *);
+int cardif_get_wpa2_ie(context *, uint8_t *, uint8_t *);
 int cardif_clear_keys(context *);
 int cardif_check_associated(context *);
 void cardif_reassociate(context *, uint8_t);
@@ -211,5 +215,6 @@ void cardif_passive_scan_timeout(context *);
 void cardif_operstate(context *, uint8_t);
 void cardif_linkmode(context *, uint8_t);
 int cardif_get_signal_strength_percent(context *);
+int cardif_apply_pmkid_data(context *);
 
 #endif

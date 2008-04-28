@@ -43,5 +43,6 @@ int cardif_windows_wireless_set_key_ext(context *, int,
 				  char *, int);
 
 void cardif_windows_wireless_enc_capabilities(context *);
+uint8_t cardif_windows_wireless_get_num_pmkids(context *);
 
 #endif

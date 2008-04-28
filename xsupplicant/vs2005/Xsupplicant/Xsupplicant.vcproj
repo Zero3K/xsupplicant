@@ -1781,6 +1781,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\pmksa.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\psk.c"
 				>
 			</File>
@@ -1972,6 +1976,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\platform\windows\cardif_windows_dot11.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\platform\windows\cardif_windows_events.h"
 				>
 			</File>
 			<File
@@ -2168,6 +2176,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\eap_types\ttls\phase2_common.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\pmksa.h"
 				>
 			</File>
 			<File

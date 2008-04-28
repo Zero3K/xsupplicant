@@ -69,6 +69,9 @@ private slots:
 
 	 QLineEdit *m_pAssocTimeout;
 	 QLineEdit *m_pScanTimeout;
+	 QSpinBox  *m_pPassiveScanInterval;
+	 QSpinBox  *m_pPMKSACacheTimeout;
+	 QSpinBox  *m_pPMKSACacheRefresh;
 	 QComboBox *m_pDefaultWired;
 	 QCheckBox *m_pCheckOtherSupplicants;
 	 QCheckBox *m_pDisconnectOnLogoff;

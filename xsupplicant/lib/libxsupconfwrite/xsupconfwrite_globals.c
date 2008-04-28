@@ -512,6 +512,34 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
+	if ((write_all == TRUE) || ((conf_globals->pmksa_age_out != PMKSA_DEFAULT_AGEOUT_TIME) &&
+		(conf_globals->pmksa_age_out != 0)))
+	{
+		sprintf((char *)&static_temp, "%d", conf_globals->pmksa_age_out);
+		if (xmlNewChild(globalnode, NULL, (xmlChar *)"PMKSA_Age_Out_Time", (xmlChar *)static_temp) == NULL)
+		{
+#ifdef WRITE_GLOBALS_CONFIG
+			printf("Failed to create <PMKSA_Age_Out_Time> node!\n");
+#endif
+			xmlFreeNode(globalnode);
+			return NULL;
+		}
+	}
+
+	if ((write_all == TRUE) || ((conf_globals->pmksa_cache_check != PMKSA_CACHE_REFRESH) &&
+		(conf_globals->pmksa_cache_check != 0)))
+	{
+		sprintf((char *)&static_temp, "%d", conf_globals->pmksa_cache_check);
+		if (xmlNewChild(globalnode, NULL, (xmlChar *)"PMKSA_Refresh_Time", (xmlChar *)static_temp) == NULL)
+		{
+#ifdef WRITE_GLOBALS_CONFIG
+			printf("Failed to create <PMKSA_Refresh_Time> node!\n");
+#endif
+			xmlFreeNode(globalnode);
+			return NULL;
+		}
+	}
+
 	if ((write_all == TRUE) || ((conf_globals->logs_to_keep != 3) &&
 		(conf_globals->logs_to_keep != 0)))
 	{

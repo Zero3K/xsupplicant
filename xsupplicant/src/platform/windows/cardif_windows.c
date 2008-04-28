@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <winsock2.h>
+#include <iphlpapi.h>
 
 #include <NtDDNdis.h>
 
@@ -873,6 +874,7 @@ int cardif_init(context *ctx, char driver)
 	LPVOID lpMsgBuf = NULL;
 	char *mac = NULL;
 	char *intdesc = NULL;
+	wireless_ctx *wctx = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
@@ -961,6 +963,15 @@ int cardif_init(context *ctx, char driver)
 		{
 			cardif_GetBSSID(ctx, ctx->dest_mac);
 		}
+
+	  wctx = (wireless_ctx *)ctx->intTypeData;
+	  if (wctx != NULL)
+	  {
+		  wctx->pmkids_supported = cardif_windows_wireless_get_num_pmkids(ctx);
+		  debug_printf(DEBUG_INT, "\t Interface supports %d PMKID(s).\n", wctx->pmkids_supported);
+
+		  pmksa_cache_init(ctx);
+	  }
 
 	  // And make sure we don't have any stray connections hanging around.
 	  cardif_disassociate(ctx, 0);
@@ -1176,6 +1187,8 @@ int cardif_deinit(context *ctx)
 
   if (ctx->intType == ETH_802_11_INT)
   {
+	  pmksa_cache_deinit(ctx);
+
     // Remove all of the keys that we have set.
     if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_clear_keys(ctx);
 
@@ -2236,7 +2249,7 @@ int cardif_get_wpa_ie(context *ctx, char *iedata, int *ielen)
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on sucess
  **/
-int cardif_get_wpa2_ie(context *intdata, char *iedata, int *ielen)
+int cardif_get_wpa2_ie(context *intdata, uint8_t *iedata, uint8_t *ielen)
 {
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return XEMALLOC;
@@ -2449,11 +2462,9 @@ void cardif_passive_scan_timeout(context *ctx)
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
-#if 0
-#warning FINISH!  We get scan data results, but we still need to do something with them.
-#endif
-
   wctx = (wireless_ctx *)ctx->intTypeData;
+      
+  globals = config_get_globals();
 
   if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
@@ -2461,7 +2472,7 @@ void cardif_passive_scan_timeout(context *ctx)
     {
      if (!TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
 	{
-	  timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, 5);
+	  timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, globals->passive_timeout);
 	  cardif_do_wireless_scan(ctx, 1);
 	  SET_FLAG(ctx->flags, WIRELESS_PASV_SCANNING);
 	}
@@ -2471,6 +2482,7 @@ void cardif_passive_scan_timeout(context *ctx)
 		  "when a previous one has not completed!\n", ctx->desc);
 	}
     }
+  /*
   else
     {
       // If the scanning flag is no longer set, then we need to make a decision
@@ -2547,6 +2559,7 @@ void cardif_passive_scan_timeout(context *ctx)
 	    }
 	}
     }
+	*/
 }
 
 /**
@@ -3302,3 +3315,227 @@ void cardif_windows_enable_dhcp(context *ctx)
 		break;
 	}
 }
+
+/**
+ * \brief Apply the PMKID data that is currently in our cache to the interface.
+ *
+ * @param[in] ctx   The context we are working with.
+ * @param[in] list   The list of PMKSAs we want to apply.
+ *
+ * \retval XENONE on success.
+ **/
+int cardif_apply_pmkid_data(context *ctx, pmksa_list *list)
+{
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return FALSE;
+
+  if (wireless == NULL) return XEMALLOC;
+
+  if (wireless->apply_pmkid_data == NULL) return XEMALLOC;
+
+  return wireless->apply_pmkid_data(ctx, list);
+}
+
+/**
+ * \brief Return a string representation of the gateway address.
+ *
+ * @param[in] ctx   The context for the interface that we want to get the gateway information from.
+ *
+ * \retval NULL on error
+ **/
+char *cardif_get_gw(context *ctx)
+{
+	struct win_sock_data *sockData = NULL;
+	int retval = 0;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+	default:
+	case 0:
+	case 1:
+		// Using XP or earlier
+		// XXX FINISH!
+		break;
+
+	case 2:
+		return cardif_windows_wmi_get_gw_utf8(ctx);
+		break;
+	}
+
+	return NULL;
+}
+
+/**
+ * \brief Return a string representation of the netmask.
+ *
+ * @param[in] ctx   The context for the interface that we want to get the netmask information from.
+ *
+ * \retval NULL on error
+ **/
+char *cardif_get_netmask(context *ctx)
+{
+	struct win_sock_data *sockData = NULL;
+	int retval = 0;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+	default:
+	case 0:
+	case 1:
+		// Using XP or earlier
+		// XXX FINISH!
+		break;
+
+	case 2:
+		return cardif_windows_wmi_get_netmask_utf8(ctx);
+		break;
+	}
+
+	return NULL;
+}
+
+/**
+ * \brief Get the IP address using IP helper API calls.
+ *
+ * @param[in] ctx   The context for the interface that we are looking for the IP address of.
+ *
+ * \retval NULL on error.
+ **/
+char *cardif_windows_get_ip(context *ctx)
+{
+    PIP_ADAPTER_ADDRESSES AdapterAddresses = NULL;
+    ULONG OutBufferLength = 0;
+    ULONG RetVal = 0, i;    
+	char *retaddr = NULL;
+	struct sockaddr_in *saddr = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return NULL;
+    
+    // The size of the buffer can be different 
+    // between consecutive API calls.
+    // In most cases, i < 2 is sufficient;
+    // One call to get the size and one call to get the actual parameters.
+    // But if one more interface is added or addresses are added, 
+    // the call again fails with BUFFER_OVERFLOW. 
+    // So the number is picked slightly greater than 2. 
+    // We use i <5 in the example
+    for (i = 0; i < 5; i++) {
+        RetVal = 
+            GetAdaptersAddresses(
+                AF_INET, 
+                0,
+                NULL, 
+                AdapterAddresses, 
+                &OutBufferLength);
+        
+        if (RetVal != ERROR_BUFFER_OVERFLOW) {
+            break;
+        }
+
+        if (AdapterAddresses != NULL) {
+            FREE(AdapterAddresses);
+        }
+        
+        AdapterAddresses = (PIP_ADAPTER_ADDRESSES) 
+            Malloc(OutBufferLength);
+        if (AdapterAddresses == NULL) {
+            RetVal = GetLastError();
+            break;
+        }
+    }
+    if (RetVal == NO_ERROR) {
+      // If successful, output some information from the data we received
+      PIP_ADAPTER_ADDRESSES AdapterList = AdapterAddresses;
+	  while ((AdapterList) && (strstr(ctx->intName, AdapterList->AdapterName) == NULL)) {
+        AdapterList = AdapterList->Next;
+      }
+
+	  if (AdapterList != NULL)
+	  {
+		  if (AdapterList->FirstUnicastAddress != NULL)
+		  {
+			saddr = AdapterList->FirstUnicastAddress->Address.lpSockaddr;
+
+			if (saddr != NULL)
+			{
+			  retaddr = Malloc(20);
+			  if (retaddr != NULL)
+			  {
+				  sprintf(retaddr, "%d.%d.%d.%d", saddr->sin_addr.S_un.S_un_b.s_b1, saddr->sin_addr.S_un.S_un_b.s_b2,
+					  saddr->sin_addr.S_un.S_un_b.s_b3, saddr->sin_addr.S_un.S_un_b.s_b4);
+			  }
+			}
+		  }
+	  }
+    }
+    else { 
+      LPVOID MsgBuf;
+      
+      if (FormatMessage( 
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+        FORMAT_MESSAGE_FROM_SYSTEM | 
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        RetVal,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+        (LPTSTR) &MsgBuf,
+        0,
+        NULL )) {
+        debug_printf(DEBUG_NORMAL, "Call to GetAdaptersAddresses() failed.  Error: %s", MsgBuf);
+      }
+      LocalFree(MsgBuf);
+    }  
+
+    if (AdapterAddresses != NULL) {
+        FREE(AdapterAddresses);
+    }
+
+	return retaddr;
+}
+
+/**
+ * \brief Return a string representation of the IP address.
+ *
+ * @param[in] ctx   The context for the interface that we want to get the IP address for.
+ *
+ * \retval NULL on error
+ **/
+char *cardif_get_ip(context *ctx)
+{
+	struct win_sock_data *sockData = NULL;
+	int retval = 0;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	switch (sockData->osver)
+	{
+	default:
+	case 0:
+	case 1:
+		// Using XP or earlier
+		return cardif_windows_get_ip(ctx);
+		break;
+
+	case 2:
+		return cardif_windows_wmi_get_ip_utf8(ctx);
+		break;
+	}
+
+	return NULL;
+}
+

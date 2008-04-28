@@ -38,6 +38,7 @@ int config_ssid_using_wep(wireless_ctx *);
 int config_ssid_ssid_known(wireless_ctx *, char *);
 void config_ssid_get_by_mac(context *, uint8_t *);
 struct found_ssids *config_ssid_find_by_name(wireless_ctx *wctx, char *ssid_name);
+struct found_ssids *config_ssid_best_signal(struct found_ssids *one, struct found_ssids *two);
 
 // Functions to add information to an existing ESSID node.
 void config_ssid_add_freq(wireless_ctx *, unsigned int);

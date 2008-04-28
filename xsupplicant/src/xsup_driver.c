@@ -62,6 +62,7 @@
 #include "libxsupconfig/xsupconfig_vars.h"
 #include "platform/plugin_handler.h"
 #include "plugins.h"
+#include "pmksa.h"
 
 #include "platform/cert_handler.h"
 

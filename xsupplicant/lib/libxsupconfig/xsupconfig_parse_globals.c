@@ -705,6 +705,64 @@ void *xsupconfig_parse_log_size_to_roll(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
+void *xsupconfig_parse_pmksa_age_out(void **attr, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
+
+  value = xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("PMKSA Age Out Time : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+ 
+  if (xsupconfig_common_is_number(value) == 0)
+    {
+      xsupconfig_common_log("Value assigned to PMKSA_Age_Out is not a number!  (Line %ld)"
+		  "   Using default!\n", xsupconfig_parse_get_line_num());
+	  myglobals->pmksa_age_out = PMKSA_DEFAULT_AGEOUT_TIME;
+    }
+  else
+    {
+		myglobals->pmksa_age_out = atoi(value);
+    }
+
+  FREE(value);
+
+  return myglobals;
+}
+
+void *xsupconfig_parse_pmksa_refresh_time(void **attr, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
+
+  value = xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("PMKSA Cache Refresh : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+ 
+  if (xsupconfig_common_is_number(value) == 0)
+    {
+      xsupconfig_common_log("Value assigned to PMKSA_Refresh_Time is not a number!  (Line %ld)"
+		  "   Using default!\n", xsupconfig_parse_get_line_num());
+	  myglobals->pmksa_cache_check = PMKSA_CACHE_REFRESH;
+    }
+  else
+    {
+		myglobals->pmksa_cache_check = atoi(value);
+    }
+
+  FREE(value);
+
+  return myglobals;
+}
+
 void *xsupconfig_parse_use_eap_hints(void **attr, xmlNodePtr node)
 {
   struct config_globals *myglobals;
@@ -911,5 +969,7 @@ parser globals[] = {
   {"Log_Size_To_Roll", NULL, FALSE, &xsupconfig_parse_log_size_to_roll},
   {"Roll_Logs", NULL, FALSE, &xsupconfig_parse_roll_logs},
   {"Disconnect_at_Logoff", NULL, FALSE, &xsupconfig_disconnect_at_logoff},
+  {"PMKSA_Age_Out_Time", NULL, FALSE, &xsupconfig_parse_pmksa_age_out},
+  {"PMKSA_Refresh_Time", NULL, FALSE, &xsupconfig_parse_pmksa_refresh_time},
   
   {NULL, NULL, FALSE, NULL}};

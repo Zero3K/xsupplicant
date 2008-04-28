@@ -138,7 +138,24 @@ void backend_sm_sync_p_to_ll(context *ctx)
   ctx->statemachine->eapNoResp = ctx->eap_state->eapNoResp;
   ctx->statemachine->eapSuccess = ctx->eap_state->eapSuccess;
   ctx->statemachine->eapFail = ctx->eap_state->eapFail;
-  ctx->statemachine->PMK = ctx->eap_state->eapKeyData;
+
+  if ((ctx->statemachine->keyAvailable == FALSE) && (ctx->eap_state->eapKeyAvailable == TRUE))
+  {
+	if (ctx->statemachine->PMK != NULL) 
+	{
+	  FREE(ctx->statemachine->PMK);
+	}
+
+	if (ctx->eap_state->eapKeyAvailable == TRUE)
+	 {
+		  ctx->statemachine->PMK = Malloc(ctx->eap_state->eapKeyLen);
+		  if (ctx->statemachine->PMK != NULL)
+		  {
+			  memcpy(ctx->statemachine->PMK, ctx->eap_state->eapKeyData, ctx->eap_state->eapKeyLen);
+		  }
+	 }
+  }
+
   ctx->statemachine->keyAvailable = ctx->eap_state->eapKeyAvailable;
   ctx->statemachine->eapRestart = ctx->eap_state->eapRestart;
 }

@@ -283,9 +283,12 @@ struct config_globals
   uint16_t max_starts;
   uint16_t stale_key_timeout;
   uint16_t assoc_timeout;
-  uint16_t passive_timeout;
+  uint16_t passive_timeout;      ///< The amount of time (in seconds) between each passive scan attempt.  (NOTE : If this value is greater than the value for pmksa_age_out, then your PMKSAs will *ALWAYS* age out the first time around!)
   uint16_t active_timeout;
   uint8_t  idleWhile_timeout;
+
+  uint16_t pmksa_age_out;        ///< The amount of time to wait (in seconds) before we age out a PMKSA entry.  Maximum time is ((65535/60)/60) = 18.20 hours.  (Which would be a silly amount of time to really wait. ;)
+  uint8_t  pmksa_cache_check;    ///< The frequency that we should do cache maintenance on the various interface caches.  This value is only used to age out cache entries.  The passive scan timer is used to keep them up to date.
 };
 
 struct config_profiles {

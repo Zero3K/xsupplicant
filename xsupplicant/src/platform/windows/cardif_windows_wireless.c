@@ -47,6 +47,7 @@
 #include "../../timer.h"
 #include "../../wpa.h"
 #include "../../wpa2.h"
+#include "../../pmksa.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -200,18 +201,16 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 		  goto bad_strncpy;
 	  }
 
-	  debug_printf(DEBUG_INT, "Found SSID : %s\n", ssid);
-	  config_ssid_add_ssid_name(wctx, ssid);
-
-	  debug_printf(DEBUG_INT, "BSSID : ");
-	  debug_hex_printf(DEBUG_INT, pBssidEx->MacAddress, 6);
-	  config_ssid_add_bssid(wctx, pBssidEx->MacAddress);
-
 	  rssi = pBssidEx->Rssi;
-	  debug_printf(DEBUG_INT, "RSSI : %d\n", rssi);
+
+	  config_ssid_add_ssid_name(wctx, ssid);
+	  config_ssid_add_bssid(wctx, pBssidEx->MacAddress);
 	  config_ssid_add_qual(wctx, 0, rssi, 0);
 
-	  debug_printf(DEBUG_INT, "Privacy : %d\n", pBssidEx->Privacy);
+	  debug_printf(DEBUG_INT, "Found SSID : %s\t\t BSSID : %02x:%02x:%02x:%02x:%02x:%02x\t RSSI : %d\n", ssid,
+		  pBssidEx->MacAddress[0], pBssidEx->MacAddress[1], pBssidEx->MacAddress[2], pBssidEx->MacAddress[3],
+		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi);
+
 	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ENC);
 
 	  if (pBssidEx->IELength != 0) cardif_windows_wireless_parse_ies(ctx, (uint8_t *)&pBssidEx->IEs[sizeof(NDIS_802_11_FIXED_IEs)], pBssidEx->IELength);
@@ -225,6 +224,50 @@ bad_strncpy:
   return;
 }
 
+/**
+ * \brief Do the Windows XP 'fake' passive scan.
+ *
+ * @param[in] ctx   The context that we are getting 'passive scan' data from.
+ *
+ * \retval XENONE on success.
+ **/
+int cardif_windows_wireless_xp_passive(context *ctx)
+{
+	wireless_ctx *wctx = NULL;
+	struct found_ssids *ssids = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return XEGENERROR;
+
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE)) return XEGENERROR;
+
+	wctx = (wireless_ctx *)ctx->intTypeData;
+
+	//debug_printf(DEBUG_NORMAL, "Doing 'passive' scan!\n");
+	cardif_windows_wireless_scan_timeout(ctx);
+
+	// Walk the list, and generate OKC entries for anything that we might roam to.
+	ssids = wctx->ssid_cache;
+
+	while (ssids != NULL)
+	{
+		// If the SSID in the cache is one that matches the SSID we are currently on.
+		if (strcmp(ssids->ssid_name, wctx->cur_essid) == 0)
+		{
+			// We only care if it is a WPA2 network.
+			if (ssids->rsn_ie != NULL)
+			{
+				pmksa_seen(ctx, ssids->mac, ssids->ssid_name);
+			}
+		}
+
+		ssids = ssids->next;
+	}
+
+	pmksa_apply_cache(ctx);
+
+	return XENONE;  // We always return XENONE for now, since failure to generate OKC entries isn't
+					// a big deal.
+}
 
 /**
  * Tell the wireless card to scan for wireless networks.
@@ -241,8 +284,9 @@ int cardif_windows_wireless_scan(context *ctx, char passive)
 
   if (passive == TRUE)
   {
-	  // Windows XP doesn't do passive, so for now, return an error.
-	  return XECANTPASSIVE;
+	  // Windows XP doesn't allow us to request a passive scan.  So, we just want to grab the latest
+	  // data in the card's scan cache, and pray that it is doing passives all the time. ;)
+	  return cardif_windows_wireless_xp_passive(ctx);
   }
 
   sockData = ctx->sockData;
@@ -344,8 +388,8 @@ int cardif_windows_wireless_get_ies(context *ctx, char *ies, int *ie_size)
  *   
  *  The value for XX needs to be at least 8 for it to be a valid IE.
  **/
-int cardif_windows_wireless_find_wpa2_ie(context *ctx, char *in_ie, int in_size,
-										char *out_ie, int *out_size)
+int cardif_windows_wireless_find_wpa2_ie(context *ctx, uint8_t *in_ie, uint16_t in_size,
+										uint8_t *out_ie, uint8_t *out_size)
 {
 	const char wpa2oui[3] = {0x00, 0x0f, 0xac};
 	unsigned int i = 0;
@@ -366,7 +410,7 @@ int cardif_windows_wireless_find_wpa2_ie(context *ctx, char *in_ie, int in_size,
 		if (in_ie[i] == 0x30)
 		{
 			// It may be a WPA 2 IE.
-			if (in_ie[i+1] >= 8)
+			if ((unsigned char)in_ie[i+1] >= 8)
 			{
 				// Looking good..
 				if ((in_ie[i+2] == 0x01) && (in_ie[i+3] == 0x00))
@@ -378,6 +422,7 @@ int cardif_windows_wireless_find_wpa2_ie(context *ctx, char *in_ie, int in_size,
 				}
 			}
 		}
+
 		if (done == FALSE) i+=(unsigned char)(in_ie[i+1]+2);
 	}
 
@@ -408,7 +453,7 @@ int cardif_windows_wireless_find_wpa2_ie(context *ctx, char *in_ie, int in_size,
 /**
  * Get the WPA2 Information Element.
  **/
-int cardif_windows_wireless_get_wpa2_ie(context *ctx, char *iedata, int *ielen)
+int cardif_windows_wireless_get_wpa2_ie(context *ctx, uint8_t *iedata, uint8_t *ielen)
 {
 	char ie_buf[65535];
 	int ie_size = 65535;
@@ -429,7 +474,7 @@ int cardif_windows_wireless_get_wpa2_ie(context *ctx, char *iedata, int *ielen)
  * Scan through whatever was returned by the scan, and pull
  * out any interesting IEs.
  **/
-void cardif_windows_wireless_parse_ies(context *ctx, uint8_t *iedata, int ielen)
+void cardif_windows_wireless_parse_ies(context *ctx, uint8_t *iedata, uint16_t ielen)
 {
   int i = 0;
   int wpalen = 0;
@@ -1988,14 +2033,56 @@ void cardif_windows_wireless_capabilities_secondary(context *ctx)
 }
 
 /**
- * Determine the encryption capabilities for this driver/interface.
+ * \brief Get the capability structure for an interface from Windows.
+ *
+ * @param[in] ctx   The context for the interface that we want to get the capabilities for.
+ * @param[out] pcapa   The capabilities specified by Windows for the OID_802_11_CAPABILITY IOCTL.
+ * 
+ * \retval XENONE on success
  **/
-void cardif_windows_wireless_enc_capabilities(context *ctx)
+int cardif_windows_get_capability(context *ctx, PNDIS_802_11_CAPABILITY *pcapa)
 {
 	struct win_sock_data *sockData = NULL;
 	DWORD BytesReturned = 0;
 	UCHAR QueryBuffer[1024];
 	PNDISPROT_QUERY_OID pQueryOid = NULL;
+	void *retCapa = NULL;
+	int i = 0;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+
+	sockData = ctx->sockData;
+
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+
+	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid->Oid = OID_802_11_CAPABILITY;
+
+	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE, &QueryBuffer[0],
+				sizeof(QueryBuffer), &QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned) == FALSE)
+	{
+		return -1;   // Couldn't do malloc.  We don't want to scream here, just return an error code.  (There may be cases where this IOCTL failing is perfectly fine.)
+	}
+
+	retCapa = malloc(BytesReturned - sizeof(pQueryOid->Oid));
+	if (retCapa == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to allocate memory in %s()!\n", __FUNCTION__);
+		return XEMALLOC;
+	}
+
+	memcpy(retCapa, pQueryOid->Data, (BytesReturned - sizeof(pQueryOid->Oid)));
+	(*pcapa) = retCapa;
+
+	return XENONE;
+}
+
+
+/**
+ * Determine the encryption capabilities for this driver/interface.
+ **/
+void cardif_windows_wireless_enc_capabilities(context *ctx)
+{
 	PNDIS_802_11_CAPABILITY pCapa = NULL;
 	int i = 0;
 	wireless_ctx *wctx = NULL;
@@ -2006,15 +2093,7 @@ void cardif_windows_wireless_enc_capabilities(context *ctx)
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
-	sockData = ctx->sockData;
-
-	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return;
-
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
-	pQueryOid->Oid = OID_802_11_CAPABILITY;
-
-	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE, &QueryBuffer[0],
-				sizeof(QueryBuffer), &QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned) == FALSE)
+	if (cardif_windows_get_capability(ctx, &pCapa) != XENONE)
 	{
 		debug_printf(DEBUG_INT, "Couldn't determine capabilities the normal way, trying the icky way.\n");
 
@@ -2023,13 +2102,15 @@ void cardif_windows_wireless_enc_capabilities(context *ctx)
 		return;
 	}
 
-	pCapa = (PNDIS_802_11_CAPABILITY)&pQueryOid->Data[0];
+	if (pCapa == NULL) return;
 
 	for (i=0; i < (int)pCapa->NoOfAuthEncryptPairsSupported; i++)
 	{
 		cardif_windows_auth_mode_supported(pCapa->AuthenticationEncryptionSupported[i].AuthModeSupported, &wctx->enc_capa);
 		cardif_windows_enc_mode_supported(pCapa->AuthenticationEncryptionSupported[i].EncryptStatusSupported, &wctx->enc_capa);
 	}
+
+	FREE(pCapa);
 }
 
 /**
@@ -2219,7 +2300,7 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			break;
 
 		case CONFIG_IP_USE_DHCP:
-			cardif_windows_wmi_get_dhcp_enabled(ctx, &dhcpenabled);
+			cardif_windows_is_dhcp_enabled(ctx, &dhcpenabled);
 			
 			if (dhcpenabled == FALSE)  // If DHCP is already enabled, don't try to do it again.
 			{
@@ -2242,7 +2323,7 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 				}
 			}
 
-			debug_printf(DEBUG_INT, "Requesting lease renew.\n");
+			debug_printf(DEBUG_NORMAL, "Requesting DHCP information for '%s'.\n", ctx->desc);
 			if (ctx->auths == 1) //&& (ctx->intType == ETH_802_11_INT))
 			{
 				cardif_windows_release_renew(ctx);
@@ -2292,6 +2373,110 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 	}
 }
 
+/**
+ * \breif Query the interface to see how many PMKIDs it supports.
+ *
+ * @param[in] ctx   The context for the interface we want to query.
+ * 
+ * \retval 0..255   The number of PMKIDs that are supported.
+ **/
+uint8_t cardif_windows_wireless_get_num_pmkids(context *ctx)
+{
+	PNDIS_802_11_CAPABILITY pCapa = NULL;
+	uint8_t result;
+
+	if (cardif_windows_get_capability(ctx, &pCapa) != XENONE)
+	{
+		debug_printf(DEBUG_INT, "Unable to determine the number of supported PMKIDs.  Returning 0.\n");
+		return 0;
+	}
+
+	result = (uint8_t)pCapa->NoOfPMKIDs;
+	return result;
+}
+
+/**
+ * \brief Apply the PMKIDs that are currently in our cache.
+ *
+ * @param[in] ctx   The context for the interface that we want to apply our PMKID cache to.
+ *
+ * \retval TRUE on success
+ * \retval FALSE on failure
+ **/
+int cardif_windows_wireless_apply_pmkids(context *ctx, pmksa_list *pmklist)
+{
+	wireless_ctx *wctx = NULL;
+	NDIS_802_11_PMKID *pPMKids = NULL;
+	uint8_t *pmkid_buf = NULL;
+	int i = 0;
+	int numelems = 0;
+	pmksa_cache_element *cur = NULL;
+	ULONG buflen = 0;
+	struct win_sock_data *sockData = NULL;
+	DWORD BytesReturned = 0;
+	UCHAR *Buffer;
+	PNDISPROT_SET_OID pSetOid = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return FALSE;
+
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE)) return FALSE;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return FALSE;
+
+	wctx = ctx->intTypeData;
+
+	sockData = ctx->sockData;
+
+	if (wctx->pmkids_supported > 0)
+	{
+		for (i = (wctx->pmkids_supported-1); i >= 0; i--)
+		{
+			if (pmklist[i].cache_element != NULL) numelems++;
+		}
+	}
+
+	buflen = FIELD_OFFSET(NDIS_802_11_PMKID, BSSIDInfo) + (numelems * sizeof(BSSID_INFO));
+	Buffer = Malloc(buflen + sizeof(NDISPROT_SET_OID));
+	if (Buffer == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to allocate memory to store the PMKID cache we want to apply to interface '%s'!\n", ctx->desc);
+		return FALSE;
+	}
+
+	pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid->Oid = OID_802_11_PMKID;
+
+	pPMKids = (PNDIS_802_11_PMKID)pSetOid->Data;
+
+	pPMKids->Length = buflen;
+	pPMKids->BSSIDInfoCount = numelems;
+
+	if ((wctx->pmkids_supported > 0) && (numelems > 0))
+	{
+		for (i = 1; i <= numelems; i++)
+		{
+			memcpy(pPMKids->BSSIDInfo[i-1].BSSID, pmklist[wctx->pmkids_supported-i].cache_element->authenticator_mac, 6);
+			memcpy(pPMKids->BSSIDInfo[i-1].PMKID, pmklist[wctx->pmkids_supported-i].cache_element->pmkid, sizeof(NDIS_802_11_PMKID_VALUE));
+		}
+	}
+
+	debug_printf(DEBUG_INT, "PMKSA set OID (%d) :\n", pPMKids->Length);
+	debug_hex_dump(DEBUG_INT, pSetOid->Data, pPMKids->Length);
+
+	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, Buffer,
+				(buflen + sizeof(NDISPROT_SET_OID)), NULL, 0, &BytesReturned) == FALSE)
+	{
+		debug_printf(DEBUG_NORMAL, "Couldn't set PMKIDs for interface '%s'.\n",
+			ctx->desc);
+		FREE(Buffer);
+		return FALSE;
+	}
+	
+//	debug_printf(DEBUG_NORMAL, "%d PMKID(s) set for interface '%s'.\n", pPMKids->BSSIDInfoCount, ctx->desc);
+	FREE(Buffer);
+	return TRUE;
+}
+
 struct cardif_funcs cardif_windows_wireless_driver = {
   cardif_windows_wireless_scan,                       // .scan
   cardif_windows_wireless_disassociate,               // .disassociate
@@ -2315,5 +2500,6 @@ struct cardif_funcs cardif_windows_wireless_driver = {
   cardif_windows_wireless_set_operstate,			  // .set_operstate
   NULL,												  // .set_linkmode
   cardif_windows_wireless_get_percent,                // .get_signal_percent
+  cardif_windows_wireless_apply_pmkids,				  // .apply_pmkid_data
 };
 

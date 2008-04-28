@@ -41,6 +41,7 @@
 #include "ipc_events.h"
 #include "ipc_events_index.h"
 #include "eap_sm.h"
+#include "pmksa.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -1349,6 +1350,5 @@ void event_core_drop_active_conns()
 			}
 		}
 	}
-
 }
 

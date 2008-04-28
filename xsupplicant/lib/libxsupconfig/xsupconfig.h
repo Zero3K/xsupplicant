@@ -56,7 +56,7 @@
 #define ASSOCIATION_TIMEOUT           60    // in seconds.
 
 // The length of time to wait before we attempt another passive scan.
-#define PASSIVE_TIMEOUT               300   // in seconds.
+#define PASSIVE_TIMEOUT               30   // in seconds.
 
 // The length of time to wait before we attempt another active scan.
 #define RESCAN_TIMEOUT                15    // in seconds.
@@ -71,6 +71,9 @@
 // The default size (in MB) to roll the log file at.
 #define LOG_SIZE_TO_ROLL              10    // MB
 #define OLD_LOGS_TO_KEEP              3     // How many old log files should we keep around.
+
+#define PMKSA_DEFAULT_AGEOUT_TIME     300   ///< The amount of time to keep a stale PMKSA around when the AP isn't visible anymore.
+#define PMKSA_CACHE_REFRESH           10    ///< The amount of time between cache refresh/updates.
 
 /*** EAP Type IDs (Only for EAP types that are implemented!!) ***/
 

@@ -2869,26 +2869,13 @@ int ipc_callout_get_ip_data(xmlNodePtr innode, xmlNodePtr *outnode)
 		goto get_ip_done;
 	}
 
-#ifdef WINDOWS
-	ipaddr = cardif_windows_wmi_get_ip_utf8(ctx);
-#else
 	ipaddr = cardif_get_ip(ctx);
-#endif
 	debug_printf(DEBUG_IPC, "IP Address : %s\n", ipaddr);
 
-#ifdef WINDOWS
-	netmask = cardif_windows_wmi_get_netmask_utf8(ctx);
-#else
 	netmask = cardif_get_netmask(ctx);
-#endif
 	debug_printf(DEBUG_IPC, "Net Mask : %s\n", netmask);
 
-#ifdef WINDOWS
-	gateway = cardif_windows_wmi_get_gw_utf8(ctx);
-#else
 	gateway = cardif_get_gw(ctx);
-#endif
-
 	debug_printf(DEBUG_IPC, "Default GW : %s\n", gateway);
 
 	dns1 = cardif_get_dns1(ctx);

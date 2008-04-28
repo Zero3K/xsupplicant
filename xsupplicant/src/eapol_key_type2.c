@@ -476,9 +476,35 @@ char eapol_key_type2_do_mac_kde(context *intdata, uint8_t *key,
 /**
  * Process a PMKID KDE.
  **/
-char eapol_key_type2_do_pmkid_kde(context *intdata,
-				  uint8_t *key, uint16_t keylen, char version)
+char eapol_key_type2_do_pmkid_kde(context *ctx,
+				  uint8_t *key, uint16_t kdelen, char version)
 {
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+    return XEMALLOC;
+
+  if (!xsup_assert((key != NULL), "key != NULL", FALSE))
+    return XEMALLOC;
+
+  debug_printf(DEBUG_KEY, "KDE (%d) : \n", kdelen);
+  debug_hex_dump(DEBUG_KEY, key, kdelen);
+
+  if (pmksa_populate_keydata(ctx, key) == 0)
+  {
+	  debug_printf(DEBUG_NORMAL, "Interface '%s' used a cached PMK to connect.\n", ctx->desc);
+	  statemachine_change_state(ctx, AUTHENTICATED);
+  }
+  else
+  {
+	  debug_printf(DEBUG_NORMAL, "Interface '%s' had a cache miss.  You will have to do a full authentication.\n", ctx->desc);
+	  // Kick out an EAPoL start.
+	  txStart(ctx);
+
+	  debug_printf(DEBUG_INT, "PMKID : ");
+	  debug_hex_printf(DEBUG_INT, key, 16);
+
+	  pmksa_dump_cache(ctx);
+  }
+
   return XENONE;
 }
 
@@ -541,14 +567,27 @@ int eapol_key_type2_cmp_ie(context *intdata, uint8_t *iedata,
 }
 
 /**
+ * \brief Process key data provided in the key frame.
+ *
  * Given a string of bytes, go through it, and parse the information looking
  * for different Key Data Encapsulations (KDEs).  Depending on the KDE that
  * we find, we will pass the data on for further processing.
+ *
+ * @param[in] intdata   The context for the interface that we are working with.
+ * @param[in] keydata   The keydata field from the WPA2 key frame.  (This is the undefined length field at the end of the frame.)
+ * @param[in] len		The number of bytes in the keydata
+ * @param[in] keylen	The length of the keys that we are using.  (May be 0 if we are processing a frame that isn't expected to have a GTK KDE.)
+ * @param[in] keyrsc    The RSC field provided in the key frame.
+ * @param[in] version	The version field from the key frame.
+ * @param[in] cmpies    A TRUE/FALSE value that indicates if we should compare the IE data in the keydata field against the IEs provided by the AP.
+ *                      This should be set to FALSE when dealing with the first frame of the handshake.
+ *
+ * \retval XENONE on success
  **/
 char eapol_key_type2_process_keydata(context *intdata, 
 				     uint8_t *keydata, uint16_t len, 
 				     uint8_t keylen, uint8_t *keyrsc, 
-				     char version)
+				     char version, char cmpies)
 {
   uint8_t kdeval[3] = {0x00, 0x0f, 0xac};
   int i = 0, done = 0;
@@ -565,7 +604,7 @@ char eapol_key_type2_process_keydata(context *intdata,
 
   while ((i < len) && (!done))
     {
-      if (keydata[i] == 0x30)
+      if ((keydata[i] == 0x30) && (cmpies == TRUE))
 	{
 	  // We are testing the IE to see if it matches what the AP gave us.
 	  if (eapol_key_type2_cmp_ie(intdata, &keydata[i], (keydata[i+1]+2))
@@ -762,7 +801,7 @@ void eapol_key_type2_do_gtk(context *intdata)
 
       if (eapol_key_type2_process_keydata(intdata, keydata, value16, 
 					  ntohs(inkeydata->key_length),
-					  inkeydata->key_rsc, version) 
+					  inkeydata->key_rsc, version, TRUE) 
 	  != XENONE)
 	{
 	  FREE(keydata);
@@ -787,7 +826,7 @@ void eapol_key_type2_do_gtk(context *intdata)
 
       if (eapol_key_type2_process_keydata(intdata, (uint8_t *)key, value16, 
 					  ntohs(inkeydata->key_length),
-					  inkeydata->key_rsc, version)
+					  inkeydata->key_rsc, version, TRUE)
 	  != XENONE)
 	{
 	  FREE(keydata);
@@ -842,7 +881,8 @@ void eapol_key_type2_do_type1(context *intdata)
 {
   struct wpa2_key_packet *inkeydata, *outkeydata;
   uint16_t keyflags, len, value16;
-  int i, version, ielen;
+  int i, version;
+  uint8_t ielen;
   char key[16];
   char wpa_ie[256];
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
@@ -899,11 +939,27 @@ void eapol_key_type2_do_type1(context *intdata)
   memcpy(intdata->statemachine->SNonce, (char *)&outkeydata->key_nonce[0],
 	 32);
 
+  value16 = ntohs(inkeydata->key_material_len);
+
+  version = ntohs((uint16_t)(*inkeydata->key_information)) | WPA2_KEYTYPE_MASK;
+
+  // Check the IE field to see if we have any KDEs to parse.
+  // We can discard the result field because the only thing we can possibly expect is a PMKID KDE, and
+  // if it isn't there, then it is okay.
+  eapol_key_type2_process_keydata(intdata, inkeydata->keydata, value16, 
+					  ntohs(inkeydata->key_length), inkeydata->key_rsc, version, FALSE);
+
   // Calculate the PTK.
   FREE(intdata->statemachine->PTK);
 
   intdata->statemachine->PTK = (uint8_t *)eapol_key_type2_gen_ptk(intdata,
 						       (char *)&inkeydata->key_nonce);
+
+  if (intdata->statemachine->PTK == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "Unable to generate the PTK for interface '%s'!\n", intdata->desc);
+	  return;
+  }
 
   outkeydata->key_descriptor = WPA2_KEY_TYPE;
 
@@ -929,14 +985,6 @@ void eapol_key_type2_do_type1(context *intdata)
   if (cardif_get_wpa2_ie(intdata, wpa_ie, &ielen) < 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Couldn't locate WPA2 information element!\n");
-	  intdata->send_size = 0;
-	  return;
-  }
-
-  if (ielen > 0xff)
-  {
-	  // The IE is invalid.
-	  debug_printf(DEBUG_NORMAL, "Error getting WPA2 Information Element!\n");
 	  intdata->send_size = 0;
 	  return;
   }
@@ -1171,7 +1219,7 @@ void eapol_key_type2_do_type3(context *intdata)
 
       if (eapol_key_type2_process_keydata(intdata, keydata, keylen,
 					  ntohs(inkeydata->key_length), 
-					  inkeydata->key_rsc, version) != XENONE)
+					  inkeydata->key_rsc, version, TRUE) != XENONE)
 	{
 	  debug_printf(DEBUG_NORMAL, "Error processing key data!\n");
 	  FREE(keydata);

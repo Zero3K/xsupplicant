@@ -40,6 +40,8 @@
 #include "ipc_events.h"
 #include "ipc_callout.h"
 #include "ipc_events_index.h"
+#include "pmksa.h"
+#include "config_ssid.h"
 
 #ifdef DARWIN_WIRELESS
 #include "platform/macosx/cardif_macosx_wireless.h"
@@ -211,8 +213,7 @@ int statemachine_reinit(context *ctx)
 
   memcpy(ctx->dest_mac, dot1x_default_dest, 6);
 
-  // No need to free the PMK here, it is a pointer to data in the EAP
-  // state machine that will be freed by that deinit function.
+  FREE(ctx->statemachine->PMK);
 
   ctx->statemachine->to_authenticated = 0;
   ctx->statemachine->last_reauth = 0;
@@ -641,8 +642,35 @@ int statemachine_change_to_connecting(context *ctx)
 	  // If we don't have a connection defined, we don't want to bother with starts.
 	  // We do want to continue to run the state machine, however, so that we can attempt to
 	  // gather EAP hints.
-	ctx->statemachine->startCount = ctx->statemachine->startCount + 1;
-	txStart(ctx);
+	  if (ctx->statemachine->startCount == 0)
+	  {
+		  // If we are doing PMKSA, we probably don't want to send the first start right after connecting.
+		  // So, check for that case, and decide if we want to send it or not.
+		  if (ctx->intType == ETH_802_11_INT)
+		  {
+			  if (ctx->intTypeData != NULL)
+			  {
+				  if (((wireless_ctx *)ctx->intTypeData)->rsn_ie == NULL)
+				  {
+					  txStart(ctx);
+				  }
+			  }
+			  else
+			  {
+				  txStart(ctx);
+			  }
+		  }
+		  else
+		  {
+			  txStart(ctx);
+		  }
+	  }
+	  else
+	  {
+		  txStart(ctx);
+	  }
+
+	  ctx->statemachine->startCount = ctx->statemachine->startCount + 1;
   }
 
   return XENONE;
@@ -663,7 +691,8 @@ void statemachine_do_connecting(context *ctx)
   if ((ctx->statemachine->startWhen == 0) &&
       (ctx->statemachine->startCount < ctx->statemachine->maxStart))
     {
-      // Change to connecting state again.
+      // Send a start, and change to connecting state again.
+		txStart(ctx);
       statemachine_change_state(ctx, CONNECTING);
       return;
     }
@@ -926,22 +955,38 @@ int statemachine_change_to_authenticated(context *ctx)
 
   if ((!globals) || (TEST_FLAG(globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN)))
     {
-      // Start scan timer.
-      if (timer_check_existing(ctx, PASSIVE_SCAN_TIMER) == FALSE)
+		if (ctx->intType == ETH_802_11_INT)
+		{
+			// Start scan timer.
+			if (timer_check_existing(ctx, PASSIVE_SCAN_TIMER) == FALSE)
+			{
+				// Set up a new timer, since this is the first time we have set a timer.
+				debug_printf((DEBUG_DOT1X_STATE | DEBUG_VERBOSE), "Starting new passive scan timer.\n");
+				timer_add_timer(ctx, PASSIVE_SCAN_TIMER, globals->passive_timeout, NULL,
+					cardif_passive_scan_timeout);
+			} 
+			else
+			{
+				// Reset the timer so we don't scan sooner than needed.
+				debug_printf((DEBUG_DOT1X_STATE | DEBUG_VERBOSE), "Resetting passive scan timer.\n");
+				timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, 
+					globals->passive_timeout);
+			}
+		}
+  }
+
+  // Stick this PMK in our cache if we are using WPA2.
+  if ((ctx->intType == ETH_802_11_INT) && (((wireless_ctx *)ctx->intTypeData)->active_ssid->rsn_ie != NULL))
+  {
+	if (pmksa_add(ctx, ctx->dest_mac) == 0)
 	{
-	  // Set up a new timer, since this is the first time we have set a timer.
-	  debug_printf((DEBUG_DOT1X_STATE | DEBUG_VERBOSE), "Starting new passive scan timer.\n");
-	  timer_add_timer(ctx, PASSIVE_SCAN_TIMER, globals->passive_timeout, NULL,
-			  cardif_passive_scan_timeout);
-	} 
-      else
-	{
-	  // Reset the timer so we don't scan sooner than needed.
-	  debug_printf((DEBUG_DOT1X_STATE | DEBUG_VERBOSE), "Resetting passive scan timer.\n");
-	  timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, 
-				  globals->passive_timeout);
+		// Then, generate our OKC cache.
+		debug_printf(DEBUG_DOT1X_STATE, "Generating OKC cache.\n");
+		pmksa_generate_okc_data(ctx);
+
+		pmksa_apply_cache(ctx);
 	}
-    }
+  }
 
   snmp_dump_stats(ctx->intName);
 
@@ -1280,6 +1325,7 @@ int statemachine_cleanup(context *ctx)
 
   FREE(ctx->statemachine->SNonce);
   FREE(ctx->statemachine->PTK);
+  FREE(ctx->statemachine->PMK);
 
   FREE(ctx->statemachine);
 

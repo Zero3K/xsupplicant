@@ -766,8 +766,8 @@ void wireless_sm_association_timeout(context *ctx)
  **/
 void wireless_sm_change_to_associating(context *ctx)
 {
-  struct config_globals *globals;
-  wireless_ctx *wctx;
+  struct config_globals *globals = NULL;
+  wireless_ctx *wctx = NULL;
 
   TRACE
 
@@ -810,6 +810,18 @@ void wireless_sm_change_to_associating(context *ctx)
 
   // Clear the replay counter.
   memset(wctx->replay_counter, 0x00, 8);
+
+  // Populate our PMKSA cache (if we are using WPA2)
+  if (wctx->rsn_ie != NULL)
+  {
+	pmksa_apply_cache(ctx);
+
+	// We also want to tweak the EAPoL start timer to hang back for a couple of seconds to allow for APs to start the
+	// PMK handshake.  We don't want this timer to be too long, because some APs seem to wait for a start before doing it,
+	// but it can't be too short either because some APs assume that if a start is seen that a full 802.1X handshake is
+	// desired.
+	ctx->statemachine->startWhen = 2;  
+  }
 
   /*
   if ((wireless_sm->state != ASSOCIATING) && 

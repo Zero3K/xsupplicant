@@ -12,19 +12,20 @@
 #define _TIMER_H_
 
 // Different types of timers that we will use.
-#define NUM_TIMER_IDS   11
+#define NUM_TIMER_IDS   12
 
 // BE SURE THAT IF YOU ADD A TIMER HERE, THAT YOU ADD IT'S DEF. IN timer.c!
-#define COUNTERMEASURE_TIMER 1
-#define REKEY_PROB_TIMER     2
-#define ASSOCIATION_TIMER    3
-#define STALE_KEY_WARN_TIMER 4
-#define PASSIVE_SCAN_TIMER   5
-#define RESCAN_TIMER         6
-#define SCANCHECK_TIMER      7
-#define INT_HELD_TIMER       8
-#define SIG_STRENGTH         9
-#define PSK_DEATH_TIMER      10
+#define COUNTERMEASURE_TIMER   1
+#define REKEY_PROB_TIMER       2
+#define ASSOCIATION_TIMER      3
+#define STALE_KEY_WARN_TIMER   4
+#define PASSIVE_SCAN_TIMER     5
+#define RESCAN_TIMER           6
+#define SCANCHECK_TIMER        7
+#define INT_HELD_TIMER         8
+#define SIG_STRENGTH           9
+#define PSK_DEATH_TIMER        10
+#define PMKSA_CACHE_MGMT_TIMER 11
 
 struct timer_data
 {

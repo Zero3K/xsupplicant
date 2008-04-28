@@ -236,6 +236,7 @@ void cardif_windows_int_event_disconnect(context *ctx)
 		{
 			UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
 			UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
+			memset(ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
 		}
 
 		if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))

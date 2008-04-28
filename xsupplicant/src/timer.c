@@ -51,7 +51,8 @@ struct timer_ids_struct timer_ids[] = {
   {SCANCHECK_TIMER, "scan result timer"},
   {INT_HELD_TIMER, "interface held timer"},
   {SIG_STRENGTH, "signal strength indicator"},
-  {PSK_DEATH_TIMER, "PSK validation timer"}
+  {PSK_DEATH_TIMER, "PSK validation timer"},
+  {PMKSA_CACHE_MGMT_TIMER, "PMKSA cache management timer"}
 };
 
 /*****************************
@@ -202,7 +203,7 @@ void timer_add_timer(context *ctx, uint16_t timertype, uint16_t timeout, void *t
     } else {
       if (timer_check_existing(ctx, timertype) == TRUE)
 	{
-	  debug_printf(DEBUG_NORMAL, "Attempt to add a timer that already "
+	  debug_printf(DEBUG_EVENT_CORE, "Attempt to add a timer that already "
 		       "exists!  Ignoring!\n");
 	  return;
 	}
@@ -267,9 +268,9 @@ void do_tick(struct timer_data *cur, context *ctx)
   if (cur->seconds_left <= 0)
     {
       if (cur->timer_expired != NULL)
-	{
-	  cur->timer_expired(ctx);
-	}
+		{
+			cur->timer_expired(ctx);
+		}
     }
 }
 

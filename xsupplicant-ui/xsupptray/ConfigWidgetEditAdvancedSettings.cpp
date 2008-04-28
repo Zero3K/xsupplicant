@@ -43,6 +43,9 @@ ConfigWidgetEditAdvancedSettings::ConfigWidgetEditAdvancedSettings(QWidget *pRea
 	m_pResetValues = NULL;
 	m_pGlobals = NULL;
 	m_pDisconnectOnLogoff = NULL;
+	m_pPassiveScanInterval = NULL;
+	m_pPMKSACacheTimeout = NULL;
+	m_pPMKSACacheRefresh = NULL;
 
 	m_bChangedData = false;
 }
@@ -93,6 +96,12 @@ bool ConfigWidgetEditAdvancedSettings::attach()
 	m_pResetValues = qFindChild<QPushButton*>(m_pRealWidget, "buttonAdvancedSettingsReset");
 
 	m_pDefaultWired = qFindChild<QComboBox*>(m_pRealWidget, "dataComboAdvancedSettingsWiredDefault");
+
+	m_pPassiveScanInterval = qFindChild<QSpinBox*>(m_pRealWidget, "dataFieldAdvancedSettingsPassiveScanInterval");
+
+	m_pPMKSACacheTimeout = qFindChild<QSpinBox*>(m_pRealWidget, "dataFieldAdvancedSettingsPMKSACacheTimeout");
+
+	m_pPMKSACacheRefresh = qFindChild<QSpinBox*>(m_pRealWidget, "dataFieldAdvancedSettingsPMKSACacheRefresh");
 
 	m_pCheckOtherSupplicants = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxAdvancedSettignsRunCheckOnStartup");
 
@@ -151,6 +160,7 @@ void ConfigWidgetEditAdvancedSettings::getPageName(QString &name)
 void ConfigWidgetEditAdvancedSettings::updateWindow()
 {
 	char tempStr[30];
+	int tempVal = 0;
 
 	if (m_pGlobals != NULL)
 	{
@@ -182,6 +192,39 @@ void ConfigWidgetEditAdvancedSettings::updateWindow()
 	}
 
 	if (m_pScanTimeout != NULL) m_pScanTimeout->setText(QString(tempStr));
+
+	if (m_pGlobals->passive_timeout == 0)
+	{
+		tempVal = PASSIVE_TIMEOUT;
+	}
+	else
+	{
+		tempVal = m_pGlobals->passive_timeout;
+	}
+
+	if (m_pPassiveScanInterval != NULL) m_pPassiveScanInterval->setValue(tempVal);
+
+	if (m_pGlobals->pmksa_age_out == 0)
+	{
+		tempVal = PMKSA_DEFAULT_AGEOUT_TIME;
+	}
+	else
+	{
+		tempVal = m_pGlobals->pmksa_age_out;
+	}
+
+	if (m_pPMKSACacheTimeout != NULL) m_pPMKSACacheTimeout->setValue(tempVal);
+
+	if (m_pGlobals->pmksa_cache_check == 0)
+	{
+		tempVal = PMKSA_CACHE_REFRESH;
+	}
+	else
+	{
+		tempVal = m_pGlobals->pmksa_cache_check;
+	}
+
+	if (m_pPMKSACacheRefresh != NULL) m_pPMKSACacheRefresh->setValue(tempVal);
 
 	if (m_pCheckOtherSupplicants != NULL)
 	{
@@ -438,6 +481,21 @@ bool ConfigWidgetEditAdvancedSettings::save()
 	if (m_pScanTimeout != NULL)
 	{
 		m_pGlobals->active_timeout = atoi(m_pScanTimeout->text().toAscii());
+	}
+
+	if (m_pPassiveScanInterval != NULL)
+	{
+		m_pGlobals->passive_timeout = m_pPassiveScanInterval->value();
+	}
+
+	if (m_pPMKSACacheTimeout != NULL)
+	{
+		m_pGlobals->pmksa_age_out = m_pPMKSACacheTimeout->value();
+	}
+
+	if (m_pPMKSACacheRefresh != NULL)
+	{
+		m_pGlobals->pmksa_cache_check = m_pPMKSACacheRefresh->value();
 	}
 
 	if (m_pCheckOtherSupplicants != NULL)

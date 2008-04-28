@@ -871,7 +871,7 @@ void eap_sm_change_to_received(eap_sm *sm)
     }
 
   // XXX The sm->phase == 2 part of this should probably go away when we
-  // refactor the state machine components in Sea Monkey.
+  // refactor the state machine components in Sea Ant.
   if ((sm->rxReq) && ((sm->reqId != sm->lastId) || (sm->phase == 2)) &&
       (sm->reqMethod == sm->selectedMethod) &&
       (sm->methodState != DONE))
@@ -1114,6 +1114,7 @@ void eap_sm_change_to_get_method(eap_sm *sm)
 void eap_sm_change_to_method(eap_sm *sm)
 {
   int eapstruct = 0;
+  int keyavail = FALSE;
 
   xsup_assert((sm != NULL), "sm != NULL", TRUE);
 
@@ -1157,6 +1158,8 @@ void eap_sm_change_to_method(eap_sm *sm)
 
   if (sm->ignore == FALSE) 
     {
+		keyavail = eaphandlers[eapstruct].eap_isKeyAvailable(sm->active);
+
       // Don't need to sync ll to e here, since it should still be current.
       eaphandlers[eapstruct].eap_process(sm->active);
       eap_sm_sync_e_to_ll(sm);
@@ -1171,11 +1174,15 @@ void eap_sm_change_to_method(eap_sm *sm)
 	  snmp_dot1xSuppEapolRespFramesTx();
 
 	  eap_sm_sync_e_to_ll(sm);
-	  if (eaphandlers[eapstruct].eap_isKeyAvailable(sm->active))
+
+	  // Only do this once after we have transitioned from not having a key, to having one.  Otherwise,
+	  // we end up wasting a lot of time regenerating key data over and over in phase 2.
+	  if ((eaphandlers[eapstruct].eap_isKeyAvailable(sm->active)) && (keyavail == FALSE))
 	    {
 			FREE(sm->eapKeyData);  // Make sure we don't leak memory on keys.
 	      sm->eapKeyData = eaphandlers[eapstruct].eap_getKey(sm->active);
 	      sm->eapKeyLen = eaphandlers[eapstruct].eap_getKeyLen(sm->active);
+
 	      eap_sm_sync_e_to_ll(sm);
 	    }
 	}
