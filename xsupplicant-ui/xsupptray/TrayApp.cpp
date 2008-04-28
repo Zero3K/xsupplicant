@@ -80,6 +80,7 @@ TrayApp::TrayApp(QApplication &app):
   m_pTrayIcon            = NULL;
   m_pTrayIconMenu        = NULL;
   m_pPlugins             = NULL;
+  m_pIntCtrl			 = NULL;
 }
 
 //! Destructor
@@ -345,6 +346,7 @@ void TrayApp::setEnabledMenuItems(bool bEnable)
   m_pConfigAction->setEnabled(bEnable);
   m_pViewLogAction->setEnabled(bEnable);
   m_pTroubleticketAction->setEnabled(bEnable);
+  m_p1XControl->setEnabled(bEnable);
 }
 
 void TrayApp::slotHideLog()
@@ -644,6 +646,30 @@ void TrayApp::setGlobalTrayIconState()
 	connectGlobalTrayIconSignals();
 }
 
+/**
+ * \brief Determine if the engine is trying to control interfaces or not.  And update the check mark
+ *        on the UI pop-up accordingly.
+ *
+ **/
+void TrayApp::updateIntControlCheck()
+{
+	config_globals *globals = NULL;
+
+	if (m_supplicant.getConfigGlobals(&globals, false) == true)
+	{
+		if ((globals->flags & CONFIG_GLOBALS_NO_INT_CTRL) == CONFIG_GLOBALS_NO_INT_CTRL)
+		{
+			m_p1XControl->setChecked(false);
+		}
+		else
+		{
+			m_p1XControl->setChecked(true);
+		}
+
+		m_supplicant.freeConfigGlobals(&globals);
+	}
+}
+
 //! postConnectActions
 /*!
   \return false - if can't start event listener - can't go on if this is the case
@@ -678,6 +704,7 @@ bool TrayApp::postConnectActions()
   Util::myConnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));  
 
+  updateIntControlCheck();
   setGlobalTrayIconState();
 
   return true;
@@ -818,6 +845,12 @@ void TrayApp::createTrayActionsAndConnections()
   m_pViewLogAction = new QAction(tr("&View Log..."), this);
   Util::myConnect(m_pViewLogAction, SIGNAL(triggered()), this, SLOT(slotViewLog()));
 
+#ifdef WINDOWS
+  m_p1XControl = new QAction(tr("Manage interfaces with XSupplicant"), this);
+  Util::myConnect(m_p1XControl, SIGNAL(triggered()), this, SLOT(slotControlInterfaces()));
+  m_p1XControl->setCheckable(true);
+#endif
+
   m_pAboutAction = new QAction(tr("&About"), this);
   Util::myConnect(m_pAboutAction, SIGNAL(triggered()), this, SLOT(slotAbout()));
 
@@ -829,6 +862,34 @@ void TrayApp::createTrayActionsAndConnections()
 
   Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(slotConnectToSupplicant()));
 
+}
+
+void TrayApp::slotControlInterfaces()
+{
+	if (m_pIntCtrl != NULL)
+	{
+		delete m_pIntCtrl;
+		m_pIntCtrl = NULL;
+	}
+
+	m_pIntCtrl = new InterfaceCtrl(m_p1XControl->isChecked(), m_pEmitter, &m_supplicant, this);
+
+	m_pIntCtrl->exec();
+	if (m_pIntCtrl->updateSupplicant() == true)
+	{
+		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceControl(bool)), this, SLOT(slotControlInterfacesDone(bool)));
+	}
+}
+
+void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
+{
+	if (m_pIntCtrl != NULL)
+	{
+		delete m_pIntCtrl;
+		m_pIntCtrl = NULL;
+	}
+
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceControl(bool)), this, SLOT(slotControlInterfacesDone(bool)));
 }
 
 //! 
@@ -843,6 +904,10 @@ void TrayApp::createTrayIcon()
   m_pTrayIconMenu->addAction(m_pViewLogAction);
   m_pTrayIconMenu->addAction(m_pTroubleticketAction);
   m_pTrayIconMenu->addSeparator();
+#ifdef WINDOWS
+  m_pTrayIconMenu->addAction(m_p1XControl);
+  m_pTrayIconMenu->addSeparator();
+#endif
   m_pTrayIconMenu->addAction(m_pAboutAction);
   m_pTrayIconMenu->addAction(m_pQuitAction);
 

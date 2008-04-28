@@ -155,3 +155,94 @@ int wzc_ctrl_disable_wzc(char *guid)
 	return 0;   // Life is good.
 }
 
+/**
+ * \brief Enable (if needed) WZC.
+ *
+ * @param[in] guid   The GUID for the interface that we want to enable WZC on.
+ *
+ * \retval 0 if WZC was disabled, or if WZC was already disabled.
+ * \retval -1 if WZC couldn't be disabled.
+ **/
+int wzc_ctrl_enable_wzc(char *guid)
+{
+	INTFS_KEY_TABLE Intfs;
+	INTF_ENTRY Intf;
+	int i = 0;
+	DWORD outFlags;
+	DWORD val;
+	wchar_t *longver = NULL;
+
+	if (WZC_CTRL_Inited == FALSE) return -1;  // We can't be sure if we disabled it or not.
+
+	Intfs.dwNumIntfs = 0;
+	Intfs.pIntfs = NULL;
+
+	if (WZCEnumInterfaces(NULL, &Intfs) != ERROR_SUCCESS) 
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to enumerate interfaces through Windows Zero Config.\n");
+		return -1;
+	}
+
+	if (Intfs.dwNumIntfs == 0) 
+	{
+		debug_printf(DEBUG_NORMAL, "Windows Zero Config indicates that there are no interfaces that it is controlling.\n");
+		return -1;
+	}
+
+	longver = (wchar_t *)malloc((strlen(guid)*2)+2);
+	if (longver == NULL) return -1;
+
+	if (MultiByteToWideChar(CP_ACP, 0, guid, strlen(guid), longver, ((strlen(guid)*2)+2)) <= 0)
+	{
+		free(longver);
+		debug_printf(DEBUG_NORMAL, "Couldn't convert the string to unicode!\n");
+		return -1;
+	}
+
+	if (longver == NULL) return -1;
+
+	for (i= 0 ; i<Intfs.dwNumIntfs; i++)
+	{
+		if (Intfs.pIntfs[i].wszGuid != NULL)
+		{
+			if (wcsstr(longver, Intfs.pIntfs[i].wszGuid) != NULL) break;
+		}
+	}
+
+	free(longver);
+
+	if (i >= Intfs.dwNumIntfs)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to enable WZC control of requested interface!\n");
+		return -1;
+	}
+
+	memset(&Intf, 0x00, sizeof(Intf));
+	Intf.wszGuid = Intfs.pIntfs[i].wszGuid;
+	Intf.dwCtlFlags = 0;
+	outFlags = 0;
+ 
+	// Query everything.
+	val = WZCQueryInterface(NULL, 0xffffffff, &Intf, &outFlags);
+	if (val != ERROR_SUCCESS)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to query WZC for the needed interface.\n");
+		return -1;
+	}
+
+	if (Intf.dwCtlFlags & INTFCTL_ENABLED)
+	{
+		// Enable WZC, and write it to the registry.
+		Intf.dwCtlFlags |= INTFCTL_ENABLED;
+		Intf.dwCtlFlags |= INTFCTL_VOLATILE;
+
+		// Only change the flags we care about.
+		if (WZCSetInterface(NULL, (INTFCTL_ENABLED | INTFCTL_VOLATILE), &Intf, &outFlags) != ERROR_SUCCESS)
+		{	
+			debug_printf(DEBUG_NORMAL, "Unable to instruct Windows Zero Config to manage the interface!\n");
+			return -1;
+		}
+	}
+
+	return 0;   // Life is good.
+}

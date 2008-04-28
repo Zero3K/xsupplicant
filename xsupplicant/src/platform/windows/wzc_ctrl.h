@@ -62,5 +62,6 @@ typedef DWORD (WINAPI* WZCRefreshInt)(LPWSTR pSvrAddr, DWORD dwInFlags, INTF_ENT
 int wzc_ctrl_disconnect();
 int wzc_ctrl_connect();
 int wzc_ctrl_disable_wzc(char *guid);
+int wzc_ctrl_enable_wzc(char *guid);
 
 #endif // WZC_CTRL_H

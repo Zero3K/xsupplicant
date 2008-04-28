@@ -2445,6 +2445,19 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				e.sendLinkDownEvent(value);
 				break;
 
+			case IPC_EVENT_UI_INT_CTRL_CHANGED:
+				sspercent = atoi(value);
+
+				if (sspercent == 1)
+				{
+					e.sendInterfaceControl(true);
+				}
+				else
+				{
+					e.sendInterfaceControl(false);
+				}
+				break;
+
             default:
             if (getUIEventString(uievent, desc))
             {

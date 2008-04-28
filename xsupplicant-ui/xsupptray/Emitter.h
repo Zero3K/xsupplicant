@@ -92,6 +92,7 @@ signals:
   void signalAuthTimeout(const QString &);
   void signalClearLoginPopups();
   void signalWokeUp();
+  void signalInterfaceControl(bool);
 
 public:
   Emitter();
@@ -133,6 +134,7 @@ public:
   void sendAuthTimeout(QString &intName);
   void sendClearLoginPopups();
   void sendWokeUp();
+  void sendInterfaceControl(bool);
 };
 
 #endif  // _EMITTER_H_

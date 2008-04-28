@@ -78,6 +78,7 @@
 #define IPC_EVENT_UI_WAKING_UP                                 9   ///< The system is coming out of sleep mode.
 #define IPC_EVENT_UI_LINK_UP								   10  ///< The interface's link came up.
 #define IPC_EVENT_UI_LINK_DOWN								   11  ///< The interface's link went down.
+#define IPC_EVENT_UI_INT_CTRL_CHANGED						   12  ///< The supplicant changed it's control posture.
 
 // State machines that we may get state machine events for. 
 #define IPC_STATEMACHINE_PHYSICAL                              1   ///< Identify the physical state machine

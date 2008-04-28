@@ -12,6 +12,7 @@
 #define _WINDOWS_EAPOL_CTRL_H_
 
 int windows_eapol_ctrl_disable(char *osName, char *intName);
+int windows_eapol_ctrl_enable(char *osName, char *intName);
 
 #endif // _WINDOWS_EAPOL_CTRL_H_
 

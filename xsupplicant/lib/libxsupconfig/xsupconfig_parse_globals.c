@@ -979,6 +979,42 @@ void *xsupconfig_parse_wireless_only(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
+void *xsupconfig_control_ints(void **attr, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+
+  value = xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Control_Interfaces : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result == 1)
+    {
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
+    }
+  else if (result == 0)
+    {
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
+    }
+  else
+    {
+      xsupconfig_common_log("Unknown value for Control_Interfaces.  (Line %ld)    Using "
+	     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
+    }
+
+  FREE(value);
+
+  return myglobals;
+}
+
 parser globals[] = {
   {"Log_Path", NULL, FALSE, &xsupconfig_parse_logpath},
   {"Log_Level", NULL, FALSE, &xsupconfig_parse_loglevel},
@@ -1008,4 +1044,5 @@ parser globals[] = {
   {"PMKSA_Age_Out_Time", NULL, FALSE, &xsupconfig_parse_pmksa_age_out},
   {"PMKSA_Refresh_Time", NULL, FALSE, &xsupconfig_parse_pmksa_refresh_time},
   {"Wireless_Only", NULL, FALSE, &xsupconfig_parse_wireless_only},    
+  {"Control_Interfaces", NULL, FALSE, &xsupconfig_control_ints},
   {NULL, NULL, FALSE, NULL}};

@@ -1905,6 +1905,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\src\platform\windows\windows_int_ctrl.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\wireless_sm.c"
 				>
 			</File>

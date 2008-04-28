@@ -40,6 +40,7 @@
 #include "LoginMainDlg.h"
 #include "ConfigDlg.h"
 #include "AboutDlg.h"
+#include "interfacectrl.h"
 
 class TrayApp : public QWidget
 {
@@ -88,6 +89,8 @@ private slots:
 	void slotInterfaceInserted(char *);
 	void slotInterfaceRemoved(char *);
 	void slotWokeUp();
+	void slotControlInterfaces();
+	void slotControlInterfacesDone(bool);
 
 signals:
 	// Signals that can be rebroadcast from the root that other objects can subscribe to.
@@ -117,6 +120,7 @@ private:
 	void connectGlobalTrayIconSignals();
 	void disconnectGlobalTrayIconSignals();
 	void populateGlobalTrayData(QString, QString);
+	void updateIntControlCheck();
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();
@@ -128,6 +132,7 @@ private:
     QAction *m_pAboutAction;
     QAction *m_pViewLogAction;
     QAction *m_pTroubleticketAction;
+	QAction *m_p1XControl;
     QApplication &m_app;
     LoginMainDlg *m_pLoginDlg;
 	ConfigDlg *m_pConfDlg;
@@ -146,6 +151,8 @@ private:
     bool m_bSupplicantConnected;
     bool m_bListenerStarted;
     startOption m_commandLineOption;
+
+	InterfaceCtrl *m_pIntCtrl;
 
 	UIPlugins *m_pPlugins;
 };

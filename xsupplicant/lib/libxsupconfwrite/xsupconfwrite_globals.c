@@ -488,6 +488,32 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
+	if ((write_all == TRUE) || (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
+	{
+		if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_INT_CTRL))
+		{
+			if (xmlNewChild(globalnode, NULL, "Control_Interfaces", "no") == NULL)
+			{
+#ifdef WRITE_GLOBALS_CONFIG
+				printf("Failed to create <Roll_Logs> node!\n");
+#endif
+				xmlFreeNode(globalnode);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xmlNewChild(globalnode, NULL, "Control_Interfaces", "yes") == NULL)
+			{
+#ifdef WRITE_GLOBALS_CONFIG
+				printf("Failed to create <Roll_Logs> node!\n");
+#endif
+				xmlFreeNode(globalnode);
+				return NULL;
+			}
+		}
+	}
+
 	if ((write_all == TRUE) || (conf_globals->destination != DEST_AUTO))
 	{
 		switch (conf_globals->destination)

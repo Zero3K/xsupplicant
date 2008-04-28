@@ -1460,3 +1460,39 @@ void event_core_change_wireless(config_globals *newsettings)
 	}
 }
 
+/**
+ * \brief Iterate through all of the interfaces we currently know about, and enable or disable
+ *        control of them.
+ *
+ * @param[in] endis   TRUE if the interfaces should be controlled by XSupplicant.  FALSE if not.
+ *
+ * \todo Add mutex controls in when merged with HEAD.
+ **/
+void event_core_change_os_ctrl_state(void *param)
+{
+	int i = 0;
+	int endis = 0;
+
+	endis = (int)param;
+
+	for (i= 0; i< num_event_slots; i++)
+	{
+		if (endis == TRUE)
+		{
+			// XSupplicant should control this interface.
+			windows_int_ctrl_take_ctrl(events[i].ctx);
+			cardif_restart_io(events[i].ctx);
+			events[i].flags &= (~EVENT_IGNORE_INT);
+		}
+		else
+		{
+			// Windows should control this interface.
+			windows_int_ctrl_give_to_windows(events[i].ctx);
+			cardif_cancel_io(events[i].ctx);
+			events[i].flags |= EVENT_IGNORE_INT;
+		}
+	}
+
+	ipc_events_ui(NULL, IPC_EVENT_UI_INT_CTRL_CHANGED, NULL);
+}
+

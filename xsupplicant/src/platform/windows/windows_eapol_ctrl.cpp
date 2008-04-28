@@ -87,7 +87,7 @@ int windows_eapol_ctrl_new_disabled_reg_key(char *guid)
 }
 
 /**
- * \brief Tweak the registry to disable 802.1X on the wired interface specified by the GUID.
+ * \brief Tweak the registry to enable or disable 802.1X on the wired interface specified by the GUID.
  *
  * @param[in] guid   The GUID of the interface that we want to disable 802.1X on.
  *
@@ -95,7 +95,7 @@ int windows_eapol_ctrl_new_disabled_reg_key(char *guid)
  * \retval 1 on success  (don't need to do anything, it was already done)
  * \retval -1 on error.
  **/
-int windows_eapol_ctrl_disable_in_reg(char *guid)
+int windows_eapol_ctrl_toggle_in_reg(char *guid, int enable)
 {
 	unsigned char buffer[256];  // More than we need.
 	DWORD size = 256;
@@ -120,7 +120,17 @@ int windows_eapol_ctrl_disable_in_reg(char *guid)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to open path to key needed to disable 802.1X on a wired interface!  Attemping to create it.\n");
 		FREE(fullpath);
-		return windows_eapol_ctrl_new_disabled_reg_key(guid);
+
+		// If we are disabling and the reg data isn't there, we need to write it.  If we are enabling,
+		// and it isn't there, then it is already enabled. ;)
+		if (enable == FALSE)
+		{
+			return windows_eapol_ctrl_new_disabled_reg_key(guid);
+		}
+		else
+		{
+			return 1;
+		}
 	}
 
 	FREE(fullpath);
@@ -134,24 +144,49 @@ int windows_eapol_ctrl_disable_in_reg(char *guid)
 		return -1;
 	}
 
-	if (buffer[11] & 0x80)
+	if (enable == FALSE)
 	{
-		debug_printf(DEBUG_INT, "802.1X is enabled on GUID %s.  Turning it off.\n", guid);
-
-		buffer[11] &= (0x7f);  // Turn off the high bit.
-
-		if (RegSetValueEx(phk, "1", NULL, REG_BINARY, (const BYTE *)&buffer, size) != ERROR_SUCCESS)
+		if (buffer[11] & 0x80)
 		{
-			debug_printf(DEBUG_NORMAL, "Error writing the registry key that controls 802.1X state on wired interfaces.\n");
-			RegCloseKey(phk);
-			return -1;
-		}
+			debug_printf(DEBUG_INT, "802.1X is enabled on GUID %s.  Turning it off.\n", guid);
 
-		debug_printf(DEBUG_INT, "802.1X enable/disable registry key has been updated.\n");
+			buffer[11] &= (0x7f);  // Turn off the high bit.
+
+			if (RegSetValueEx(phk, "1", NULL, REG_BINARY, (const BYTE *)&buffer, size) != ERROR_SUCCESS)
+			{
+				debug_printf(DEBUG_NORMAL, "Error writing the registry key that controls 802.1X state on wired interfaces.\n");
+				RegCloseKey(phk);
+				return -1;
+			}
+
+			debug_printf(DEBUG_INT, "802.1X enable/disable registry key has been updated.\n");
+		}
+		else
+		{
+			myresult = 1;
+		}
 	}
 	else
 	{
-		myresult = 1;
+		if ((buffer[11] & 0x80) == 0x00)
+		{
+			debug_printf(DEBUG_INT, "802.1X is disabled on GUID %s.  Turning it on.\n", guid);
+
+			buffer[11] |= (0x80);  // Turn on the high bit.
+
+			if (RegSetValueEx(phk, "1", NULL, REG_BINARY, (const BYTE *)&buffer, size) != ERROR_SUCCESS)
+			{
+				debug_printf(DEBUG_NORMAL, "Error writing the registry key that controls 802.1X state on wired interfaces.\n");
+				RegCloseKey(phk);
+				return -1;
+			}
+
+			debug_printf(DEBUG_INT, "802.1X enable/disable registry key has been updated.\n");
+		}
+		else
+		{
+			myresult = 1;
+		}
 	}
 
 	RegCloseKey(phk);
@@ -243,7 +278,79 @@ int windows_eapol_ctrl_disable(char *osName, char *intName)
 
 	guid = strstr(intName, "{");
 
-	switch (windows_eapol_ctrl_disable_in_reg(guid))
+	switch (windows_eapol_ctrl_toggle_in_reg(guid, FALSE))
+	{
+	default:
+	case -1:
+		debug_printf(DEBUG_NORMAL, "Unable to disable the registry entry for interface '%s'.\n", osName);
+		return -1;
+		break;
+
+	case 1:
+		return 0;  // Don't need to do anything.
+		break;
+
+	case 0:
+		break;  // Do nothing.
+	}
+
+	llength = (strlen(osName)*2)+2;
+	intdesc = (LPWSTR)Malloc(llength);
+	if (intdesc == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store interface name!\n");
+		return -1;
+	}
+
+	if (MultiByteToWideChar(CP_ACP, 0, osName, strlen(osName), intdesc, llength) <= 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Couldn't convert ASCII to wide!\n");
+		free(intdesc);
+		return -1;
+	}
+
+	// Disable the interface  (Bounce step #1.)
+	if (EnableConnection(intdesc, FALSE) != TRUE) 
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to disable the interface '%s'.\n", osName);
+		free(intdesc);
+		return -1;
+	}
+
+	// Enable the interface  (Bounce step #2.)
+	if (EnableConnection(intdesc, TRUE) != TRUE)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to enable the interface '%s'.\n", osName);
+		free(intdesc);
+		return -1;
+	}
+
+	free(intdesc);
+
+	return 0;
+}
+};
+
+/**
+ * \brief Enable 802.1X on a wired interface.  This will set a bit in a registry key, and
+ *        bounce the interface.
+ *
+ * @param[in] osName   The OS description of the interface to work with.
+ * @param[in] intName   The OS specific interface name to work with.
+ *
+ * \retval 0 on success
+ * \retval -1 on failure.
+ **/
+extern "C" {
+int windows_eapol_ctrl_enable(char *osName, char *intName)
+{
+	char *guid = NULL;
+	LPWSTR intdesc = NULL;
+	int llength = 0;
+
+	guid = strstr(intName, "{");
+
+	switch (windows_eapol_ctrl_toggle_in_reg(guid, TRUE))
 	{
 	default:
 	case -1:

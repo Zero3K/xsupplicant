@@ -387,3 +387,8 @@ void Emitter::sendWokeUp()
 {
 	emit signalWokeUp();
 }
+
+void Emitter::sendInterfaceControl(bool xsupCtrl)
+{
+	emit signalInterfaceControl(xsupCtrl);
+}
