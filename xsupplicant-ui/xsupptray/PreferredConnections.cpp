@@ -302,6 +302,7 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
 
 	flags = m_pRealForm->windowFlags();
 	flags &= (~Qt::WindowContextHelpButtonHint);
+	flags |= Qt::WindowMinimizeButtonHint;
 	m_pRealForm->setWindowFlags(flags);
 }
 

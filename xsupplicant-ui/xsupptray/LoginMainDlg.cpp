@@ -252,6 +252,7 @@ void LoginMainDlg::setupWindow()
   // Create the title and other fields on parent dialog
 	flags = m_pRealForm->windowFlags();
 	flags &= (~Qt::WindowContextHelpButtonHint);
+	flags |= Qt::WindowMinimizeButtonHint;
 	m_pRealForm->setWindowFlags(flags);
 
 	m_pStack->setCurrentIndex(0);

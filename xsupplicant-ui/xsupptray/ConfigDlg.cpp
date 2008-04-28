@@ -129,12 +129,11 @@ bool ConfigDlg::create()
 {
 	QWidget *m_pNavBox = NULL;
 	QWidget *m_pConfInfo = NULL;
+	Qt::WindowFlags flags;
 
 	m_pRealForm = FormLoader::buildform("ConfigWindow.ui");
 
     if (m_pRealForm == NULL) return false;
-
-	Qt::WindowFlags flags;
 
 	// If the user hits the "X" button in the title bar, close us out gracefully.
 	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
@@ -189,7 +188,10 @@ bool ConfigDlg::create()
 	Util::myConnect(m_pNavPanel, SIGNAL(signalItemDeleted(int)), m_pConfigInfo, SIGNAL(signalItemDeleted(int)));
 	Util::myConnect(m_pConfigInfo, SIGNAL(signalNavChangeItem(int, const QString &)), m_pNavPanel, SLOT(slotNavChangeItem(int, const QString &)));
 
-	m_pRealForm->setWindowFlags(((Qt::WindowFlags)(m_pRealForm->windowFlags() & (~Qt::WindowContextHelpButtonHint))));
+	flags = m_pRealForm->windowFlags();
+	flags &= (~Qt::WindowContextHelpButtonHint);
+	flags |= Qt::WindowMinimizeButtonHint;
+	m_pRealForm->setWindowFlags(flags);
 
 	return true;
 }

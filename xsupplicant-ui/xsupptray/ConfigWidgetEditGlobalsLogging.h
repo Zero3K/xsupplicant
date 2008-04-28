@@ -60,6 +60,7 @@ class ConfigWidgetEditGlobalsLogging : public ConfigWidgetBase
 	 void browseButtonClicked();
 	 void viewLogButtonClicked();
 	 void slotShowHelp();
+	 void slotRollLogsClicked(int);
 
  private:
 	 enum {

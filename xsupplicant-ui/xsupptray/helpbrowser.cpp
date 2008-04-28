@@ -64,6 +64,8 @@ HelpWindow::~HelpWindow()
 
 bool HelpWindow::create()
 {
+	Qt::WindowFlags flags;
+
 	m_pRealForm = FormLoader::buildform("HelpWindow.ui");
 
     if (m_pRealForm == NULL) return false;
@@ -104,7 +106,10 @@ bool HelpWindow::create()
 		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), this, SLOT(close()));
 	}
 
-	m_pRealForm->setWindowFlags((Qt::WindowFlags)(m_pRealForm->windowFlags() & (~Qt::WindowContextHelpButtonHint)));
+	flags = m_pRealForm->windowFlags();
+	flags &= (~Qt::WindowContextHelpButtonHint);
+	flags |= Qt::WindowMinimizeButtonHint;
+	m_pRealForm->setWindowFlags(flags);
 
 	return true;
 }

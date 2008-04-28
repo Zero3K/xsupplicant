@@ -62,7 +62,7 @@ ConfigWidgetEditGlobalsLogging::~ConfigWidgetEditGlobalsLogging()
 		Util::myDisconnect(m_pViewLogButton, SIGNAL(clicked()), this, SLOT(viewLogButtonClicked()));
 	}
 
-	Util::myDisconnect(m_pRollBySize, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
+	Util::myDisconnect(m_pRollBySize, SIGNAL(stateChanged(int)), this, SLOT(slotRollLogsClicked(int)));
 	Util::myDisconnect(m_pLogsToKeep, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
 	Util::myDisconnect(m_pRollAtSize, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
 
@@ -130,6 +130,8 @@ bool ConfigWidgetEditGlobalsLogging::attach()
 		return false;
 	}
 
+	m_pRollAtSize->setMinimum(1);
+
 	m_pRollBySize = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxRollLogs");
 	if (m_pRollBySize == NULL)
 	{
@@ -147,7 +149,7 @@ bool ConfigWidgetEditGlobalsLogging::attach()
 
 	Util::myConnect(m_pLogsToKeep, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
 	Util::myConnect(m_pRollAtSize, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
-	Util::myConnect(m_pRollBySize, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
+	Util::myConnect(m_pRollBySize, SIGNAL(stateChanged(int)), this, SLOT(slotRollLogsClicked(int)));
 
 	Util::myConnect(m_pEnableLogging, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
 	Util::myConnect(m_pEnableLogging, SIGNAL(stateChanged(int)), this, SLOT(loggingStateChanged(int)));
@@ -332,10 +334,12 @@ void ConfigWidgetEditGlobalsLogging::updateWindow()
 		if ((m_pGlobals->flags & CONFIG_GLOBALS_ROLL_LOGS) == CONFIG_GLOBALS_ROLL_LOGS)
 		{
 			m_pRollBySize->setChecked(true);
+			m_pRollAtSize->setEnabled(true);
 		}
 		else
 		{
 			m_pRollBySize->setChecked(false);
+			m_pRollAtSize->setEnabled(false);
 		}
 	}
 }
@@ -441,4 +445,17 @@ void ConfigWidgetEditGlobalsLogging::slotShowHelp()
 	HelpWindow::showPage("xsupphelp.html", "xsuplogging");
 }
 
+void ConfigWidgetEditGlobalsLogging::slotRollLogsClicked(int newstate)
+{
+	slotDataChanged();
+	
+	if (newstate == Qt::Unchecked)
+	{
+		m_pRollAtSize->setEnabled(false);
+	}
+	else
+	{
+		m_pRollAtSize->setEnabled(true);
+	}
+}
 

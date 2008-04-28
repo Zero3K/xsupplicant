@@ -78,6 +78,7 @@ bool TrustedRootCertsDlg::attach()
 
 	flags = m_pRealWidget->windowFlags();
 	flags &= (~Qt::WindowContextHelpButtonHint);
+	flags |= Qt::WindowMinimizeButtonHint;
 	m_pRealWidget->setWindowFlags(flags);
 
 	m_pCertificateTable = qFindChild<QTableWidget*>(m_pRealWidget, "dataTableCerts");

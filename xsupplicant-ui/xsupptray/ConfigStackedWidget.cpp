@@ -150,7 +150,7 @@ void ConfigStackedWidget::changeWidget(int stackIdx, const QString &editItem, bo
 	{
 		// Ask the user if we should save first.
 		switch (QMessageBox::question(this, tr("You have changed data"), tr("You have unsaved changes.  Would you like to save them?"),
-				(QMessageBox::Save | QMessageBox::Discard), QMessageBox::Discard))  // Discard is the default.
+			(QMessageBox::Save | QMessageBox::Discard), QMessageBox::Discard))  // Discard is the default.
 		{
 		case QMessageBox::Save:
 			if (m_pActivePage->save() == false)
@@ -162,8 +162,14 @@ void ConfigStackedWidget::changeWidget(int stackIdx, const QString &editItem, bo
 			}
 			refreshData();
 			break;
-
+/*
+		case QMessageBox::Cancel:
+			m_pActivePage->getPageName(name);
+			emit signalNavChangeItem(curPage, name);
+			break;
+*/
 		default:
+		case QMessageBox::Discard:
 			refreshData();
 			m_pActivePage->discard();
 			break;

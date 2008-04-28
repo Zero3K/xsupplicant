@@ -141,6 +141,7 @@ void AboutWindow::setupWindow()
 
 	flags = m_pRealForm->windowFlags();
 	flags &= (~Qt::WindowContextHelpButtonHint);
+	flags |= Qt::WindowMinimizeButtonHint;
   m_pRealForm->setWindowFlags(flags);
 }
 

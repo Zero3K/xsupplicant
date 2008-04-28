@@ -56,8 +56,6 @@ ConfigConnAdapterTab::~ConfigConnAdapterTab()
 
 		Util::myDisconnect(m_pAdapterSelection, SIGNAL(currentIndexChanged(int)), this, SLOT(adapterChanged(int)));
 
-		Util::myDisconnect(m_pWiredProfile, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
-
 		Util::myDisconnect(m_pWiredProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(slotProfileChanged(int)));
 	}
 
@@ -179,6 +177,8 @@ void ConfigConnAdapterTab::setLabelValid(QLabel *toEditLabel)
 
 void ConfigConnAdapterTab::slotProfileChanged(int newSelection)
 {
+	slotDataChanged();
+
 	if (newSelection == 0)
 	{
 		setLabelInvalid(m_pWiredProfileLabel);
@@ -222,7 +222,6 @@ bool ConfigConnAdapterTab::attach()
 	// The data changed signal is emitted from the adapterChanged() slot, so we don't need to double bind.
 	Util::myConnect(m_pAdapterSelection, SIGNAL(currentIndexChanged(int)), this, SLOT(adapterChanged(int)));
 
-	Util::myConnect(m_pWiredProfile, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	Util::myConnect(m_pWiredProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(slotProfileChanged(int)));
 
 	m_bConnected = true;
