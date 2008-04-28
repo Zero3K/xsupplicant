@@ -105,6 +105,7 @@ HDEVNOTIFY				hDevStatus;
 #define SERVICE_ERROR_GLOBAL_DEINIT_CALLED 3
 #define SERVICE_ERROR_FAILED_TO_INIT       4
 #define SERVICE_ERROR_FAILED_TO_START_IPC  5
+#define SERVICE_ERROR_BASIC_INIT_FAILED    6
 
 // Used to determine when a network interface is plugged in.
 DEFINE_GUID(GUID_NDIS_LAN_CLASS,                    0xad498944, 0x762f, 0x11d0, 0x8d, 0xcb, 0x00, 0xc0, 0x4f, 0xc3, 0x35, 0x8c);
@@ -473,18 +474,8 @@ void usage(char *prog, struct options opts[])
   debug_printf(DEBUG_NORMAL, "\tv : Enabled verbose debug.  (Same as normal with some of the debugs from above.)\n");
 }
 
-/**
- * \brief Initialize the supplicant.
- *
- **/
-int xsup_driver_init(char *config, int xdaemon, uint8_t clear_ipc, char *device,
-					 char *drivername, FDEPTH flags)
+int xsup_driver_basic_init(char *config, int xdaemon)
 {
-  printf("Found %d other supplicants and wireless managers.\n",
-		supdetect_check_for_other_supplicants());
-
-  snmp_init();
-
   xsup_driver_init_config(config);
 
   if (xsup_driver_init_logfile(xdaemon) != 0)
@@ -495,6 +486,18 @@ int xsup_driver_init(char *config, int xdaemon, uint8_t clear_ipc, char *device,
   {
 	  debug_printf(DEBUG_NORMAL, "XSupplicant %s.%s started.\n", VERSION, BUILDNUM);
   }
+
+  return 0;
+}
+
+/**
+ * \brief Initialize the supplicant.
+ *
+ **/
+int xsup_driver_init(uint8_t clear_ipc, char *device, char *drivername, 
+					 FDEPTH flags)
+{
+  snmp_init();       // This needs to be moved to support multiple interfaces.
 
   global_init();
 
@@ -532,14 +535,6 @@ int xsup_driver_init(char *config, int xdaemon, uint8_t clear_ipc, char *device,
   // Build our interface cache.
   cardif_enum_ints();
 
-  // Init IPC
-  if (xsup_ipc_init(clear_ipc) != 0)
-    {
-      printf("Couldn't initalize daemon socket!\n");
-      global_deinit();
-      return -2;
-    }
-
   // Init any interfaces passed on the command line.
   if (device != NULL)
   {
@@ -555,6 +550,14 @@ int xsup_driver_init(char *config, int xdaemon, uint8_t clear_ipc, char *device,
   context_init_ints_from_conf(&intiface);
 
   cert_handler_init();
+
+  // Init IPC
+  if (xsup_ipc_init(clear_ipc) != 0)
+    {
+      printf("Couldn't initalize daemon socket!\n");
+      global_deinit();
+      return -2;
+    }
 
   return XENONE;
 }
@@ -619,7 +622,7 @@ int main(int argc, char *argv[])
 #ifdef WINDOWS
   crashdump_init("\\xsupcrashdmp-"BUILDNUM".zip");
 #else
-  #warning Need to implement crash dump file handlingfor this platform.
+  #warning Need to implement crash dump file handling for this platform.
 #endif // WINDOWS
 
 #ifdef WINDOWS
@@ -824,7 +827,31 @@ int main(int argc, char *argv[])
       // Otherwise, keep going.
     }
 
-  retval = xsup_driver_init(config, xdaemon, clear_ipc, device, drivername, flags);
+  retval = xsup_driver_basic_init(config, xdaemon);
+  if (retval < 0)
+  {
+#ifdef BUILD_SERVICE
+      ServiceStatus.dwCurrentState = SERVICE_STOPPED; 
+      ServiceStatus.dwWin32ExitCode = ERROR_SERVICE_SPECIFIC_ERROR; 
+	  ServiceStatus.dwServiceSpecificExitCode = SERVICE_ERROR_BASIC_INIT_FAILED;
+      SetServiceStatus(hStatus, &ServiceStatus); 
+#endif
+	  return -1;
+  }
+#ifdef BUILD_SERVICE
+  else
+  {
+	  // The next part of the startup could see some lag that can confuse
+	  // Windows about the state of the service.  So, we need to report the
+	  // state earlier.  Technically we are in a fully running state here, 
+	  // even though no interfaces are operational and no IPC channel is 
+	  // available.
+	ServiceStatus.dwCurrentState = SERVICE_RUNNING; 
+	SetServiceStatus (hStatus, &ServiceStatus);
+  }
+#endif
+
+  retval = xsup_driver_init(clear_ipc, device, drivername, flags);
   if (retval < 0) 
    {
 #ifdef BUILD_SERVICE
@@ -862,11 +889,6 @@ int main(int argc, char *argv[])
 		event_core(intiface);
     }
 #else  // BUILD_SERVICE
-     // We report the running status to SCM. 
-   ServiceStatus.dwCurrentState = 
-      SERVICE_RUNNING; 
-   SetServiceStatus (hStatus, &ServiceStatus);
-
    while (ServiceStatus.dwCurrentState == 
           SERVICE_RUNNING)
    {
