@@ -378,3 +378,12 @@ void Emitter::sendAuthTimeout(QString &intName)
 	emit signalAuthTimeout(intName);
 }
 
+void Emitter::sendClearLoginPopups()
+{
+	emit signalClearLoginPopups();
+}
+
+void Emitter::sendWokeUp()
+{
+	emit signalWokeUp();
+}

@@ -39,7 +39,7 @@
 // The timer that we use to determine when we need to retransmit.  This 
 // should probably be tied in to a lower layer timer, but for now, we
 // will use a #define.
-#define IDLE_WHILE_TIMER  30
+#define IDLE_WHILE_TIMER  32
 
 // If a WEP key sits around for more than the timeout below, we should barf
 // out a warning letting the user know that their data isn't as secure as
@@ -48,7 +48,7 @@
 
 // The amount of time we should wait before we assume an authentication will
 // not be able to succeed.
-#define AUTHENTICATION_TIMEOUT  30   // 30 seconds.
+#define AUTHENTICATION_TIMEOUT  32   // 32 seconds.
 
 // The length of time to wait before we assume an assocation failed. (Defined
 // by 802.11i section 8.1.3 as dot11RSNAConfigSA-Timeout.)  Default is 60, but

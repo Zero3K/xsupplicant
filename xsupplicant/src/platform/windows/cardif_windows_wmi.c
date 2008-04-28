@@ -197,6 +197,11 @@ int cardif_windows_wmi_event_check_connect()
 				debug_printf(DEBUG_NORMAL, "Interface '%s' sent us an associate event about a BSSID we are already associated to.  This usually indicates a firmware, driver, or environmental issue.  This event has been ignored.\n", ctx->desc);
 				debug_printf(DEBUG_PHYSICAL_STATE, "Clearing replay counter.\n");
 				memset(&wctx->replay_counter, 0x00, 8);
+
+				//Reset our EAP IDs so we don't discard frames when an AP is dumb,
+				// and resets it's EAP counter. ;)
+				ctx->eap_state->reqId = 0xff;
+				ctx->eap_state->lastId = 0xff;
 			}
 
 			if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
@@ -390,6 +395,7 @@ int cardif_windows_wmi_post_insert_bind(wchar_t *name)
 	char mac[6];
 	char is_wireless = 0;
 	context *ctx = NULL;
+	uint8_t flags;
 
 	intname = cardif_windows_find_os_name_from_desc(name);
 	intdesc = uni_to_ascii(name);
@@ -432,8 +438,14 @@ int cardif_windows_wmi_post_insert_bind(wchar_t *name)
 
 	if (confints != NULL)
 	{
+		flags = 0;
+		if (TEST_FLAG(confints->flags, CONFIG_INTERFACE_DONT_MANAGE))
+		{
+			flags |= INT_IGNORE;
+		}
+
 		// Build the interface, and start watching it.
-		if (context_init_interface(&ctx, intdesc, intname, NULL, 0) != XENONE)
+		if (context_init_interface(&ctx, intdesc, intname, NULL, flags) != XENONE)
 		{
 			debug_printf(DEBUG_NORMAL, "Couldn't allocate context to manage newly inserted interface!\n");
 		}
@@ -656,6 +668,9 @@ int cardif_windows_wmi_event_check_disconnect()
 			{
 				UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
 				UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
+
+				// Clear out our destination MAC, since we are disconnected now.
+				memset(&ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
 			}
 
 			if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))

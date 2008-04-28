@@ -90,6 +90,8 @@ signals:
   void signalPluginObjectDestroyed(UIPlugins *plugin);
   void signalBadPSK(const QString &);
   void signalAuthTimeout(const QString &);
+  void signalClearLoginPopups();
+  void signalWokeUp();
 
 public:
   Emitter();
@@ -129,6 +131,8 @@ public:
   void sendPluginObjectDestroyed(UIPlugins *plugin);
   void sendBadPSK(QString &intName);
   void sendAuthTimeout(QString &intName);
+  void sendClearLoginPopups();
+  void sendWokeUp();
 };
 
 #endif  // _EMITTER_H_

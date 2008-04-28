@@ -259,6 +259,7 @@ typedef struct {
 #define POSS_CONN_SSID_KNOWN    0x08  ///< Set to 1 if the SSID was found in the scan cache.
 #define POSS_CONN_INT_UNKNOWN   0x10  ///< Set to 1 if the interface isn't found in the live cache, or the configuration.  (Should almost NEVER happen!)
 #define POSS_CONN_LINK_STATE    0x20  ///< Set to 1 if the link is up, set to 0 if it is down.
+#define POSS_CONN_NO_PWD        0x40  ///< Set to 1 if the EAP method doesn't want a password to be set.
 
 typedef struct {
 	char *name;
@@ -460,6 +461,7 @@ int xsupgui_request_get_ip_info(char *device, ipinfo_type **info);
 int xsupgui_request_set_connection(char *device, char *conn_name);
 int xsupgui_request_get_connection_upw(char *conn_name, char **username, char **password, int *authtype);
 int xsupgui_request_set_connection_upw(char *conn_name, char *username, char *password);
+int xsupgui_request_set_connection_pw(char *conn_name, char *password);
 int xsupgui_request_set_disassociate(char *device, unsigned char reason);
 int xsupgui_request_get_signal_strength_percent(char *device, int *strength);
 int xsupgui_request_get_seconds_authenticated(char *device, long int *seconds);

@@ -33,6 +33,13 @@
 #include "../../eap_types/eap_type_common.h"
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
+#include "../../platform/cardif.h"
+
+#ifdef WINDOWS
+#include "../../event_core_win.h"
+#else
+#include "../../event_core.h"
+#endif
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -63,6 +70,7 @@ int eapotp_init(eap_type_data *eapdata)
 void eapotp_check(eap_type_data *eapdata)
 {
   // For GTC and OTP, there really isn't anything to check.
+	eapdata->ignore = FALSE;
 }
 
 /*****************************************************
@@ -72,12 +80,14 @@ void eapotp_check(eap_type_data *eapdata)
  *****************************************************/
 uint8_t *eapotp_buildResp(eap_type_data *eapdata)
 {
-  struct eap_header *eaphdr;
-  struct config_pwd_only *otpconf;
+  struct eap_header *eaphdr = NULL;
+  struct config_pwd_only *otpconf = NULL;
   uint8_t *retdata;
   uint16_t datasize, respofs = 0;
   uint8_t reqId;
   uint8_t eapType;
+  context *ctx = NULL;
+  char *pwd = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return NULL;
@@ -93,6 +103,10 @@ uint8_t *eapotp_buildResp(eap_type_data *eapdata)
   if (!xsup_assert((otpconf != NULL), "otpconf != NULL", FALSE))
     return NULL;
 
+  ctx = event_core_get_active_ctx();
+
+  if ((otpconf->password == NULL) && ((ctx != NULL) && (ctx->prof != NULL) && (ctx->prof->temp_password == NULL)))  return NULL;
+
   if (new_response == TRUE)
     {
       datasize = sizeof(struct eap_header) + strlen(RESPONSE_TEXT) + 
@@ -100,8 +114,17 @@ uint8_t *eapotp_buildResp(eap_type_data *eapdata)
     }
   else
     {
-      datasize = sizeof(struct eap_header) + strlen(otpconf->password) + 1;
-    }
+		if (otpconf->password != NULL)
+		{
+			datasize = sizeof(struct eap_header) + strlen(otpconf->password) + 1;
+			pwd = otpconf->password;
+		}
+		else
+		{
+			datasize = sizeof(struct eap_header) + strlen(ctx->prof->temp_password) + 1;
+			pwd = ctx->prof->temp_password;
+		}
+  }
 
   retdata = Malloc(datasize);
   if (retdata == NULL)
@@ -109,6 +132,7 @@ uint8_t *eapotp_buildResp(eap_type_data *eapdata)
       debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store result "
 		   "data.\n");
 	  ipc_events_malloc_failed(NULL);
+  	  FREE(ctx->prof->temp_password);
       return NULL;
     }
 
@@ -152,14 +176,87 @@ uint8_t *eapotp_buildResp(eap_type_data *eapdata)
     }
 
   // Then, copy the response.
-  if (xsup_common_strcpy((char *)&retdata[respofs], (datasize - respofs), otpconf->password) != 0)
+  if (xsup_common_strcpy((char *)&retdata[respofs], (datasize - respofs), pwd) != 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Attempt to overflow a buffer in %s() at %d!\n",
 		  __FUNCTION__, __LINE__);
 	  return NULL;
   }
 
+  FREE(ctx->prof->temp_password);
+
   return retdata;
+}
+
+void eapotp_p2_pwd_callback(void *ctxptr, struct eap_sm_vars *p2sm, uint8_t **packet, uint16_t *pktsize)
+{
+	context *ctx = NULL;
+	struct eap_otp_stored_frame *myFrame = NULL;
+
+	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE)) return;
+
+	ctx = ctxptr;
+
+	// Clear the callback.
+	ctx->p2_pwd_callback = NULL;
+
+	myFrame = ctx->pwd_callback_data;
+
+	if (!xsup_assert((myFrame != NULL), "myFrame != NULL", FALSE)) return;
+
+	(*packet) = myFrame->eappkt;
+	(*pktsize) = myFrame->eaplen;
+
+	myFrame->eappkt = NULL;  // This is okay, because we passed the pointer out.
+
+	// Back up our EAP ID so that we don't discard when we reprocess this frame.
+	p2sm->lastId--;
+	p2sm->ignore = FALSE;
+}
+
+/**
+ * \brief This callback will be called when a password is set.  We need to reset the context to process the frame, kick it off,
+ *        and clear the callback.  (Not necessarily in that order. ;)
+ *
+ * @param[in] ctxptr   A void pointer to the context that we are processing for.
+ **/
+void eapotp_pwd_callback(void *ctxptr)
+{
+	context *ctx = NULL;
+	struct eap_otp_stored_frame *myFrame = NULL;
+	void *temp = NULL;
+
+	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE)) return;
+
+	ctx = ctxptr;
+
+	event_core_set_active_ctx(ctx);
+
+	// Clear the callback.
+	ctx->pwd_callback = NULL;
+
+	myFrame = ctx->pwd_callback_data;
+
+	if (!xsup_assert((myFrame != NULL), "myFrame != NULL", FALSE)) return;
+
+	temp = ctx->recvframe;
+
+	ctx->recvframe = myFrame->frame;
+	ctx->recv_size = myFrame->length;
+
+	myFrame->frame = NULL;   // This is okay, because we passed the pointer to ctx->recvframe.
+
+	// Back up our EAP ID so that we don't discard when we reprocess this frame.
+	ctx->eap_state->lastId--;
+	ctx->statemachine->eapolEap = TRUE;
+	ctx->eap_state->ignore = FALSE;   // Don't ignore anymore.
+
+	SET_FLAG(ctx->flags, INT_REPROCESS);
+
+	eapol_execute(ctx);   // Kick it off.
+
+	FREE(ctx->recvframe);
+	ctx->recvframe = temp;
 }
 
 /*****************************************************
@@ -169,10 +266,13 @@ uint8_t *eapotp_buildResp(eap_type_data *eapdata)
  ******************************************************/
 void eapotp_process(eap_type_data *eapdata)
 {
-  char *otp_chal;
-  struct config_pwd_only *userdata;
-  uint16_t eaplen;
-  struct eap_header *header;
+  char *otp_chal = NULL;
+  struct config_pwd_only *userdata = NULL;
+  uint16_t eaplen = 0;
+  struct eap_header *header = NULL;
+  context *ctx = NULL;
+  struct config_profile *prof = NULL;
+  struct eap_otp_stored_frame *myFrame = NULL;
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-OTP/GTC) Processing.\n");
   
@@ -211,11 +311,13 @@ void eapotp_process(eap_type_data *eapdata)
 
   if (strncmp(CHALLENGE_TEXT, otp_chal, strlen(CHALLENGE_TEXT)) == 0)
     {
-      debug_printf(DEBUG_AUTHTYPES, "Will use new response method!\n");
+      debug_printf(DEBUG_AUTHTYPES, "Will use broken Cisco response method!\n");
       new_response = TRUE;
     }
   
-  if (userdata->password == NULL)
+  ctx = event_core_get_active_ctx();
+
+  if ((userdata->password == NULL) && ((ctx != NULL) && (ctx->prof != NULL) && (ctx->prof->temp_password == NULL)))
     {
       debug_printf(DEBUG_NORMAL, "No password available for EAP-GTC/OTP! (Trying to request one.)\n");
 	  if (ipc_events_request_eap_upwd("EAP-GTC", otp_chal) != IPC_SUCCESS)
@@ -229,6 +331,42 @@ void eapotp_process(eap_type_data *eapdata)
 		  eapdata->ignore = TRUE;       // Don't do anything just yet.
 		  eapdata->methodState = CONT;
 		  eapdata->decision = COND_SUCC;  // We may be able to succeed.
+
+		  if ((ctx != NULL) && (ctx->pwd_callback_data != NULL)) 
+		  {
+			  eapotp_cleanup(ctx->pwd_callback_data);
+			  FREE(ctx->pwd_callback_data);
+		  }
+
+		  ctx->pwd_callback_data = Malloc(sizeof(struct eap_otp_stored_frame));
+		  if (ctx->pwd_callback_data != NULL)
+		  {
+			  myFrame = ctx->pwd_callback_data;
+			myFrame->frame = Malloc(FRAMESIZE);
+			if (myFrame->frame == NULL)
+			{
+				FREE(ctx->pwd_callback_data);
+			}
+			else
+			{
+				memcpy(myFrame->frame, ctx->recvframe, ctx->recv_size);
+				myFrame->length = ctx->recv_size;
+
+				myFrame->eaplen = eap_type_common_get_eap_length(eapdata->eapReqData);
+				myFrame->eappkt = Malloc(myFrame->eaplen);
+				if (myFrame->eappkt != NULL)
+				{
+					memcpy(myFrame->eappkt, eapdata->eapReqData, myFrame->eaplen);
+				}
+
+				ctx->pwd_callback = eapotp_pwd_callback;
+				ctx->p2_pwd_callback = eapotp_p2_pwd_callback;
+
+				// Since we return ignore, our EAP ID won't get updated.  But we need it to, so we
+				// update it manually here.  (That way we discard retransmissions.)
+				ctx->eap_state->lastId = ctx->eap_state->reqId;
+			}
+		  }
 	  }
       return;
     }
@@ -236,7 +374,7 @@ void eapotp_process(eap_type_data *eapdata)
   // Otherwise, we are basically done.
   FREE(otp_chal);
 
-  eapdata->methodState = DONE;
+  eapdata->methodState = MAY_CONT;
   eapdata->decision = COND_SUCC;
 }
 
@@ -263,6 +401,27 @@ uint8_t *eapotp_getKey(eap_type_data *eapdata)
   return NULL;
 }
 
+/**
+ * \brief Clean up the memory on the EAP-OTP/GTC data hook.
+ *
+ * @param[in] cbdata   The callback data stored in the context that we need to free.
+ **/
+void eapotp_cleanup(void *cbdata)
+{
+  struct eap_otp_stored_frame *myFrame = NULL;
+
+  // Because of the nature of GTC/OTP, it is possible that cleanup will get called on a NULL pointer.
+  // If that happens, silently move on.
+  if (cbdata == NULL) return;
+
+  myFrame = cbdata;
+
+  if (myFrame != NULL)
+  {
+	  FREE(myFrame->frame);
+  }
+}
+
 /*******************************************************
  *
  * Clean up after ourselves.  This will get called when we get a packet that
@@ -272,7 +431,17 @@ uint8_t *eapotp_getKey(eap_type_data *eapdata)
  *******************************************************/
 void eapotp_deinit(eap_type_data *eapdata)
 {
+	context *ctx = NULL;
+
   // Clean up after ourselves.
   debug_printf(DEBUG_AUTHTYPES, "(EAP-OTP) Cleaning up.\n");
+
+  ctx = event_core_get_active_ctx();
+
+  if (ctx != NULL)
+  {
+	  eapotp_cleanup(ctx->pwd_callback_data);
+	  FREE(ctx->pwd_callback_data);
+  }
 }
 

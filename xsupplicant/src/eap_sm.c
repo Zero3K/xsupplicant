@@ -432,6 +432,17 @@ void eap_sm_change_to_initialize(eap_sm *sm)
   sm->idleWhile = config_get_idleWhile();
   sm->lastId = 0xff;                         // Initialize this to something other than 0, since some 
 											 // authenticators like to start the conversation with 0.
+
+  if ((sm->phase == 2) && (sm->reqMethod == EAP_TYPE_TNC))
+  {
+	// If we are doing TNC, and we start with an ID of 255, bad things can happen.  So make sure
+	  // to deal with that case.
+	  if (eap_type_common_get_eap_reqid(sm->eapReqData) == 0xff)
+	  {
+		  sm->lastId--;
+	  }
+  }
+
   sm->eapSuccess = FALSE;
   sm->eapFail = FALSE;
   sm->altAccept = FALSE;
@@ -840,9 +851,19 @@ void eap_sm_change_to_received(eap_sm *sm)
       return;
     }
 
-  if ((sm->rxReq) && //(sm->reqId != sm->lastId) &&
-      (sm->selectedMethod == NONE) && (sm->reqMethod == EAP_TYPE_IDENTITY))
+   // RFC 4192 shows a different way of transitioning to IDENTITY state, but
+  // if we follow what it says, we can land in impossible states.  So, we do this
+  // instead, because it works. ;)
+  if ((sm->rxReq) && (sm->reqMethod == EAP_TYPE_IDENTITY))
     {
+		if (sm->selectedMethod != NONE)
+		{
+			// Clean up the old method, and process the identity frame.
+			eapstruct = eap_sm_find_method(sm->selectedMethod);
+			if (eaphandlers[eapstruct].eap_deinit != NULL)
+				eaphandlers[eapstruct].eap_deinit(sm->active);
+		}
+
       eap_sm_change_state(sm, EAP_IDENTITY);
       return;
     }
@@ -1061,7 +1082,7 @@ void eap_sm_change_to_get_method(eap_sm *sm)
 			eapstruct = eap_sm_find_method(sm->lastMethod);
 			if (eapstruct != -1)
 			{
-				if (eaphandlers[eapstruct].eap_deinit != NULL)
+				if ((eaphandlers[eapstruct].eap_deinit != NULL) && (sm->active != NULL))
 				{
 					eaphandlers[eapstruct].eap_deinit(sm->active);
 					sm->eapKeyData = NULL;
@@ -1295,6 +1316,11 @@ void eap_sm_change_to_discard(eap_sm *sm)
   sm->eapNoResp = TRUE;
 
   sm->eap_sm_state = EAP_DISCARD;
+
+  if (sm->lastRespData != NULL)
+  {
+	  FREE(sm->lastRespData);
+  }
 
   eap_sm_change_state(sm, EAP_IDLE);
 }
@@ -1597,6 +1623,7 @@ void eap_sm_change_to_identity(eap_sm *sm)
 		return;
   }
 
+  sm->methodState = INIT;
   eap_sm_change_state(sm, EAP_SEND_RESPONSE);
 }
 
@@ -1695,6 +1722,7 @@ void eap_sm_change_to_retransmit(eap_sm *sm)
 {
   struct eap_header *eapdata = NULL;
   uint16_t           eapsize = 0;
+  context			*ctx = NULL;
 
   xsup_assert((sm != NULL), "sm != NULL", TRUE);
 
@@ -1713,11 +1741,20 @@ void eap_sm_change_to_retransmit(eap_sm *sm)
 
   if (sm->lastRespData == NULL)
     {
-      debug_printf(DEBUG_EAP_STATE, "There was nothing buffered to "
-		   "retransmit!?\n");
+		// Check and see if we have a callback hooked up.  If we do, then
+		// just discard this frame.
+		ctx = event_core_get_active_ctx();
+		if (ctx->pwd_callback == NULL)
+		{
+			debug_printf(DEBUG_EAP_STATE, "There was nothing buffered to "
+				"retransmit!?\n");
 
-      sm->eapFail = TRUE;
-      return;
+			sm->eapFail = TRUE;
+			return;
+		}
+
+		eap_sm_change_state(sm, EAP_DISCARD);
+		return;
     }
   
   eapdata = (struct eap_header *)sm->lastRespData;

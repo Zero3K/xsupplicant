@@ -130,6 +130,7 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
   LPVOID lpMsgBuf = NULL;
   wireless_ctx *wctx = NULL;
   DWORD lastError = 0;
+  ULONG ielen = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 
@@ -213,7 +214,25 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 
 	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ENC);
 
-	  if (pBssidEx->IELength != 0) cardif_windows_wireless_parse_ies(ctx, (uint8_t *)&pBssidEx->IEs[sizeof(NDIS_802_11_FIXED_IEs)], pBssidEx->IELength);
+	  // At least one card tested returned a bogus IELength value.  So we need to check it against the structure
+	  // length, and if it is invalid, we need to try to calculate the proper value.
+	  if (pBssidEx->IELength > pBssidEx->Length)
+	  {
+		  if (pBssidEx->Length > sizeof(NDIS_WLAN_BSSID_EX))
+		  {
+			  ielen = pBssidEx->Length - sizeof(NDIS_WLAN_BSSID_EX);
+		  }
+		  else
+		  {
+			  ielen = 0;
+		  }
+	  }
+	  else
+	  {
+		  ielen = pBssidEx->IELength;
+	  }
+
+	  if (ielen > 0) cardif_windows_wireless_parse_ies(ctx, (uint8_t *)&pBssidEx->IEs[sizeof(NDIS_802_11_FIXED_IEs)], ielen);
 
 bad_strncpy:
 	  ofs += pBssidEx->Length;

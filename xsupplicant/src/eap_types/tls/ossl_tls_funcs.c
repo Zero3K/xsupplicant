@@ -657,8 +657,10 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 	  }
   }
 
+#ifdef UNSAFE_DUMPS
   debug_printf(DEBUG_TLS_CORE, "Copying (%d) : \n", packet_size);
   debug_hex_dump(DEBUG_TLS_CORE, cur, packet_size);
+#endif
 
   // If there are more fragments coming, our response should be an ACK.
   if (temp & EAPTLS_MORE_FRAGS) mytls_vars->send_ack = TRUE;

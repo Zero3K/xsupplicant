@@ -112,6 +112,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_Device_Name", ipc_callout_request_device_name},
 	{"Get_Device_Description", ipc_callout_request_device_desc},
 	{"Set_Connection_UPW", ipc_callout_set_connection_upw},
+	{"Set_Connection_PW", ipc_callout_set_connection_pw},
 	{"Change_Socket_Type", ipc_callout_change_socket_type},
 	{"Request_Connection_Change", ipc_callout_change_connection},
 	{"Request_Disassociate", ipc_callout_disassociate},
@@ -260,28 +261,6 @@ xmlDocPtr ipc_callout_build_doc()
 	xmlDocSetRootElement(doc, n);
 
 	return doc;
-}
-
-/**
- * Set up a callback that an EAP method can use to get a dynamically
- * requested password from the user.  When the callback completes, it
- * needs to return TRUE if it was able to process the password, or
- * FALSE if it can't.
- **/
-void ipc_callout_set_pwd_cb(void *cb, void *cb_data)
-{
-  if (cbdata.pwd_set_cb != NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "A password callback handle was not cleared "
-		   "before this attempt to set it.  It is possible that a "
-		   "previous EAP method didn't finish acquireing a password "
-		   "or that there is a bug in the code.\n");
-
-      // And continue anyway.
-    }
-
-  cbdata.pwd_set_cb = cb;
-  cbdata.cb_data = cb_data;
 }
 
 /**
@@ -1615,6 +1594,7 @@ int ipc_callout_enum_connections(xmlNodePtr innode, xmlNodePtr *outnode)
 	unsigned int count, i;
 	char res[100];
 	char *temp = NULL;
+	uint8_t flags = 0;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -2163,25 +2143,15 @@ int ipc_callout_set_profile_upw(struct config_profiles *prof, char *username, ch
 	if (!xsup_assert((prof != NULL), "prof != NULL", FALSE))
 		return -1;
 
-	// Clear out an existing values.
-	FREE(prof->temp_password);
-	FREE(prof->temp_username);
-
-	if (username == NULL)
+	if (username != NULL)
 	{
-		debug_printf(DEBUG_NORMAL, "*** WARNING ***  Your username is NULL!\n");
-	}
-	else
-	{
+		FREE(prof->temp_username);
 		prof->temp_username = _strdup(username);
 	}
 
-	if (password == NULL)
+	if (password != NULL)
 	{
-		debug_printf(DEBUG_NORMAL, "*** WARNING ***  Your password is NULL!\n");
-	}
-	else
-	{
+		FREE(prof->temp_password);
 		prof->temp_password = _strdup(password);
 	}
 
@@ -2242,6 +2212,41 @@ void ipc_callout_rebind_upw_all()
 
 		ctx = event_core_get_next_context();
 	}
+}
+
+/**
+ * \brief Determine the requirements for the authentication method in use.  In general, we will
+ *        require a username and password before we can allow an authentication to begin.  But, some
+ *        methods (such as GTC) may require a password be provided in-line to the auth.
+ *
+ * \note This function returns flags for what the connection needs to proceed.  It doesn't take in
+ *       to account what the connection already knows.
+ *
+ * @param[in] cur   The connection we want to get information on.
+ * 
+ * \retval uint8_t  A byte that contains flag settings the UI can use to determine what to ask for.
+ **/
+uint8_t ipc_callout_auth_needs(struct config_connection *cur)
+{
+	struct config_profiles *profile = NULL;
+	struct config_eap_peap *peap = NULL;
+
+	if (!xsup_assert((cur != NULL), "cur != NULL", FALSE)) return 0;
+
+	profile = config_find_profile(cur->profile);
+	if (profile == NULL) return 0;
+
+	if (profile->method->method_num == EAP_TYPE_PEAP)
+	{
+		peap = profile->method->method_data;
+
+		if (peap->phase2->method_num == EAP_TYPE_GTC)
+		{
+			return POSS_CONN_NO_PWD;
+		}
+	}
+	
+	return 0;
 }
 
 /**
@@ -2333,26 +2338,27 @@ int ipc_callout_set_connection_upw(xmlNodePtr innode, xmlNodePtr *outnode)
 		username = NULL;
 	}
 
-	if ((conn->association.auth_type != AUTH_PSK) && (username == NULL))
+	if (ipc_callout_auth_needs(conn) == 0)
 	{
-		debug_printf(DEBUG_IPC, "No username in the set command, when using an EAP authentication!\n");
-		return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_NEED_USERNAME, outnode);
-	}
+		t = ipc_callout_find_node(n, "Password");
+		if (t == NULL)
+		{
+			debug_printf(DEBUG_IPC, "Couldn't get 'Password' node!\n");
+			FREE(username);
+			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_INVALID_REQUEST, outnode);
+		}
 
-	t = ipc_callout_find_node(n, "Password");
-	if (t == NULL)
-	{
-		debug_printf(DEBUG_IPC, "Couldn't get 'Password' node!\n");
-		FREE(username);
-		return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_INVALID_REQUEST, outnode);
+		password = xmlNodeGetContent(t);
+		if ((password != NULL) && (strlen(password) == 0))
+		{
+			xmlFree(password);
+			password = NULL;
+			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_NEED_PASSWORD, outnode);
+		}
 	}
-
-	password = (char *)xmlNodeGetContent(t);
-	if ((password != NULL) && (strlen(password) == 0))
+	else
 	{
-		xmlFree(password);
 		password = NULL;
-		return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_NEED_PASSWORD, outnode);
 	}
 
 	if (conn->association.auth_type != AUTH_PSK)
@@ -2383,6 +2389,150 @@ int ipc_callout_set_connection_upw(xmlNodePtr innode, xmlNodePtr *outnode)
 	ipc_callout_rebind_upw_all();
 
 	return ipc_callout_create_ack(NULL, "Set_Connection_UPW", outnode);
+}
+
+/**
+ *  \brief Change the password in use for a specific connection.
+ *
+ *  \param[in] innode   A pointer to the node tree that contains the request to change
+ *                      the password for a connection.
+ *  \param[out] outnode   A pointer to the node tree that contains either an ACK for
+ *                        success, or an error code for failure.
+ *
+ *  \retval IPC_SUCCESS on success
+ *  \retval IPC_FAILURE on failure
+ *
+ *  \warning  If a connection points to something that isn't a WPA(2)-PSK network, then
+ *            this call will actually change the username/password on the profile that this
+ *            connection points to.  If more than one connection points to the same profile,
+ *            this can have undesired results!
+ *
+ *  \note This call only changes the password that is stored in memory.  It
+ *        does not change the values stored in the configuration file!
+ **/
+int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	xmlNodePtr n = NULL, t = NULL;
+	struct config_connection *conn = NULL;
+	struct config_profiles *prof = NULL;
+	char *request = NULL, *username = NULL, *password = NULL;
+	int retval = 0;
+	context *ctx = NULL;
+
+	if (innode == NULL) return IPC_FAILURE;
+
+	debug_printf(DEBUG_IPC, "Got an IPC connection *SET* pw request!\n");
+
+	n = ipc_callout_find_node(innode, "Set_Connection_PW");
+	if (n == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get first PW node.\n");
+		return IPC_FAILURE;
+	}
+
+	n = n->children;
+
+	t = ipc_callout_find_node(n, "Connection_Name");
+	if (t == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Connection_Name' node.\n");
+		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	request = xmlNodeGetContent(t);
+	if (request == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get data from the 'Connection_Name' node.\n");
+		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	debug_printf(DEBUG_IPC, "Looking for connection : %s\n", request);
+	conn = config_find_connection(request);
+	if (conn == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't locate connection '%s'!\n", request);
+		FREE(request);
+		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_CONN_NAME, outnode);
+	}
+
+	// Done with 'request'.
+	FREE(request);
+
+	if (conn->association.auth_type != AUTH_PSK)
+	{
+		prof = config_find_profile(conn->profile);
+		if (prof == NULL)
+		{
+			debug_printf(DEBUG_IPC, "Couldn't locate profile '%s'!\n", conn->profile);
+			return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_PROF_NAME, outnode);
+		}
+	}
+
+	if ((conn->association.auth_type != AUTH_PSK) && (username == NULL))
+	{
+		debug_printf(DEBUG_IPC, "No username in the set command, when using an EAP authentication!\n");
+		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_NEED_USERNAME, outnode);
+	}
+
+	t = ipc_callout_find_node(n, "Password");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Password' node!\n");
+		FREE(username);
+		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	password = (char *)xmlNodeGetContent(t);
+	if ((password != NULL) && (strlen(password) == 0))
+	{
+		xmlFree(password);
+		password = NULL;
+		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_NEED_PASSWORD, outnode);
+	}
+
+	if (conn->association.auth_type != AUTH_PSK)
+	{
+		if (ipc_callout_set_profile_upw(prof, username, password) != 0)
+		{
+			debug_printf(DEBUG_IPC, "Couldn't change username/password!\n");
+			FREE(username);
+			FREE(password);
+			return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_COULDNT_CHANGE_UPW, outnode);
+		}
+	}
+	else
+	{
+		if (ipc_callout_set_connection_psk(conn, password) != 0)
+		{
+			debug_printf(DEBUG_IPC, "Couldn't change password!\n");
+			FREE(password);
+			// Username should already be NULL.  But make sure it is.
+			FREE(username);
+			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_COULDNT_CHANGE_UPW, outnode);
+		}
+	}
+
+	FREE(username);
+	FREE(password);
+
+	ipc_callout_rebind_upw_all();
+
+	retval = ipc_callout_create_ack(NULL, "Set_Connection_PW", outnode);
+
+	ctx = event_core_locate_by_connection(conn->name);
+
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to restart authentication after the password was provided!\n");
+		return retval;
+	}
+
+	if (ctx->pwd_callback != NULL)
+	{
+		(*ctx->pwd_callback)(ctx);    // Kick restart the authentication.
+	}
+
+	return retval;
 }
 
 /**
@@ -2611,7 +2761,10 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	free(iface);
 
 	retval2 = ipc_callout_create_ack(NULL, "Request_Connection_Change", outnode);
-	if (retval2 == IPC_SUCCESS) return retval;
+	if (retval2 == IPC_SUCCESS) 
+	{
+		return retval;
+	}
 
 	return retval;
 }
@@ -4222,6 +4375,8 @@ int ipc_callout_set_globals_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Globals_Config", IPC_ERROR_PARSING, outnode);
 	}
     
+	event_core_change_wireless(newg);
+
 	reset_config_globals(newg);
 
 	if (logpath_changed(newg->logpath) == TRUE)
@@ -5902,6 +6057,8 @@ int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode
 				flags |= POSS_CONN_IS_HIDDEN;
 			}
 		}
+
+		flags |= ipc_callout_auth_needs(cur);
 
 		sprintf((char *)&res, "%d", flags);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Flags", (xmlChar *)res) == NULL)

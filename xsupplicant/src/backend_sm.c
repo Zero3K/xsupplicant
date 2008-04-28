@@ -309,17 +309,16 @@ int backend_sm_timeout_display(context *ctx)
       if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
 	{
 	  debug_printf(DEBUG_NORMAL, "[WARNING] Timeout during the EAP "
-		       "conversation!  Please verify that the settings\nin "
+		       "conversation!  Please verify that the settings in "
 		       "your config file are correct and that the "
-		       "authenticator and RADIUS servers\nare properly "
+		       "authenticator and RADIUS servers are properly "
 		       "configured.  If this error persists, please run "
-		       "Xsupplicant in debug\nmode, and e-mail the output, "
-		       "along with the config\nfile, and RADIUS config file "
+		       "Xsupplicant in debug mode, and e-mail the output, "
+		       "along with the config file, and RADIUS config file "
 		       "(where possible) to open1x-xsupplicant@"
 		       "lists.sourceforge.net.\n");
 	}
-	  ipc_events_error(ctx, IPC_EVENT_ERROR_TIMEOUT_DURING_AUTH, NULL);
-	  ipc_events_ui(ctx, IPC_EVENT_UI_AUTH_TIMEOUT, ctx->desc);
+	  ctx->statemachine->suppTimeout = TRUE;  // Signal that we got a timeout.
       break;
     }
 

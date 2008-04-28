@@ -130,68 +130,6 @@ MessageS MessageClass::m_xSupCalls[] =
 
 
 
-//! myMsgHandler()
-/*!
-  \brief A Qt message handler - this doesn't work very well - for some reason
-  \param [in] type - the type of the message
-  \param [in] msg
-  \return nothing
-*/
-void myMsgHandler(QtMsgType type , const char *msg)
-{
-  QString text;
-  if (strstr(msg, "Object::connect:") != NULL)
-  {
-    return;
-  }
-  switch (type) 
-  {
-     case QtDebugMsg:
-       text = QString ("Debug: %1\n").arg(msg);
-       break;
-     case QtWarningMsg:
-       text = QString ("Warning: %1\n").arg(msg);
-       break;
-     case QtCriticalMsg:
-       text = QString ("Critical: %1\n").arg(msg);
-       break;
-     case QtFatalMsg:
-       text = QString ("Fatal: %1\n").arg(msg);
-       break;
-  }
-
-  // Display a message to the user inside the gui thread
-  if (QThread::currentThread() == qApp->thread())
-  {
-    QMessageBox::information(NULL, QString("Error"), text);
-  }
-  /*
-  
-  if (msgHandler)
-  {
-    // call the default windows handler
-        msgHandler(type, msg);
-    }
-    else
-    {
-        fprintf(stderr, qPrintable(text));
-    }
-    */
-
-  // This is a windows only type call  - how do I determine
-#ifdef WINDOWS
-  OutputDebugStringA(text.toAscii().data());
-#else
-  fprintf(stderr, text.toAscii());
-#endif
-
-  if (type == QtFatalMsg)
-  {
-    abort();
-  }
-  return;
-}
-
 MessageClass::MessageClass(QWidget *pParent)
 {
   m_pParent = pParent;

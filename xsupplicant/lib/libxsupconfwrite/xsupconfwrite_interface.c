@@ -137,6 +137,32 @@ xmlNodePtr xsupconfwrite_interface_create_tree(struct xsup_interfaces *conf_int,
 		}
 	}
 
+	if ((write_all == TRUE) || (TEST_FLAG(conf_int->flags, CONFIG_INTERFACE_DONT_MANAGE)))
+	{
+		if (TEST_FLAG(conf_int->flags, CONFIG_INTERFACE_DONT_MANAGE))
+		{
+			if (xmlNewChild(intnode, NULL, "Manage", "no") == NULL)
+			{
+#ifdef WRITE_INTERFACE_DEBUG
+				printf("Couldn't create <Manage> node!\n");
+#endif
+				xmlFreeNode(intnode);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xmlNewChild(intnode, NULL, "Manage", "yes") == NULL)
+			{
+#ifdef WRITE_INTERFACE_DEBUG
+				printf("Couldn't create <Manage> node!\n");
+#endif
+				xmlFreeNode(intnode);
+				return NULL;
+			}
+		}
+	}
+
 	if ((write_all == TRUE) || (memcmp(conf_int->mac, "\0x00\0x00\0x00\0x00\0x00\0x00", 6) != 0))
 	{
 		mac_str = mac2str((char *)conf_int->mac);

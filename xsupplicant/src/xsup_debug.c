@@ -201,7 +201,7 @@ char *xsup_debug_system_time()
   tdstring = Malloc(128);  // Should be WAY more than enough!
   if (tdstring == NULL) 
   {
-	  debug_printf(DEBUG_NORMAL, "Unable to allocate memory to prepend system date/time.  You logs won't have date/time stamps.");
+	  // DO NOT debug_print in here!  It will overflow your stack!
 	  return NULL;
   }
 

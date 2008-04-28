@@ -86,7 +86,7 @@ void LoginGetInfo::updateWindow(bool updateAll)
       {
         case AUTH_EAP:
 			m_pWidgetStack->setCurrentIndex(LOGIN_CREDENTIALS_UPW_PAGE);
-			if (updateAll) setEAPAuth(username, password);
+			if (updateAll) setEAPAuth(username, password, pConn->flags);
           break;
 
         case AUTH_PSK:
@@ -182,7 +182,7 @@ QString LoginGetInfo::get_username()
 	}
 }
 
-void LoginGetInfo::setEAPAuth(QString username, QString password)
+void LoginGetInfo::setEAPAuth(QString username, QString password, uint8_t flags)
 {
 	hideBtn = qFindChild<QPushButton*>(m_pStack, "showBtnUPW");
 
@@ -222,6 +222,21 @@ void LoginGetInfo::setEAPAuth(QString username, QString password)
 	{
 		dataFrameProfilesPassword->setEchoMode(QLineEdit::Password);
 		dataFrameProfilesPassword->setText(password);
+	}
+
+	m_pEAPPwdLabel = qFindChild<QLabel*>(m_pStack, "labelPassword");
+
+	if ((flags & POSS_CONN_NO_PWD) == POSS_CONN_NO_PWD)
+	{
+		dataFrameProfilesPassword->setEnabled(false);
+		m_pSaveCreds->setEnabled(false);
+		if (m_pEAPPwdLabel != NULL) m_pEAPPwdLabel->setEnabled(false);
+	}
+	else
+	{
+		dataFrameProfilesPassword->setEnabled(true);
+		m_pSaveCreds->setEnabled(true);
+		if (m_pEAPPwdLabel != NULL) m_pEAPPwdLabel->setEnabled(true);
 	}
 }
 

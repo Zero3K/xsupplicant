@@ -379,7 +379,7 @@ int do_peap_version0(struct phase2_data *p2d, uint8_t *in, uint16_t in_size,
  ************************************************************************/
 void peap_phase2_check(eap_type_data *eapdata)
 {
-  struct config_eap_peap *peapconf;
+  struct config_eap_peap *peapconf = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;

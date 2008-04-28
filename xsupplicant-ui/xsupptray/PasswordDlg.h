@@ -33,31 +33,35 @@
 #ifndef _PASSWORDDLG_H_
 #define _PASSWORDDLG_H_
 
-#include <QDialog>
+#include <QWidget>
+#include <QLineEdit>
+#include <QLabel>
+#include <QPushButton>
 
-class QTextEdit;
-class XSupCalls;
-#include "MessageClass.h"
-
-class PasswordDlg : public QDialog
+class PasswordDlg : public QWidget
 {
   Q_OBJECT 
 public:
-  PasswordDlg(const QString &conn, const QString &eap, const QString &challeng);
+  PasswordDlg(const QString &conn, const QString &eap, const QString &challengeString);
 public:
   ~PasswordDlg(void);
+  bool attach();
+  void show();
+  QString getPassword();
+  QString getConnName();
+
+signals:
+  void signalDone();
 
 private:
-  QTextEdit *m_pPasswordField;
-  XSupCalls *m_supplicant;
-  MessageClass m_message;
+  QString   m_connName;
+  QString   m_eapType;
+  QString   m_challenge;
 
-  private slots:
-    void slotHelp();
-    void slotSave();
-    void slotCancel();
+  QWidget     *m_pRealForm;
+  QPushButton *m_pOKBtn;
+  QLineEdit   *m_pResponseField;
+  QLabel      *m_pServerChallenge;
 };
 
 #endif  // _PASSWORDDLG_H_
-
-

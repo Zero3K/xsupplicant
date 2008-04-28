@@ -107,7 +107,14 @@ bool ConfigWidgetEditAdvancedSettings::attach()
 
 	m_pDisconnectOnLogoff = qFindChild<QCheckBox*>(m_pRealWidget, "logoffDisconnect");
 
+	m_pWirelessOnly = qFindChild<QCheckBox*>(m_pRealWidget, "manageWireless");
+
 	updateWindow();
+
+	if (m_pWirelessOnly != NULL)
+	{
+		Util::myConnect(m_pWirelessOnly, SIGNAL(clicked()), this, SLOT(slotDataChanged()));
+	}
 
 	if (m_pScanTimeout != NULL)
 	{
@@ -472,6 +479,17 @@ bool ConfigWidgetEditAdvancedSettings::saveWiredConnectionDefault()
 
 bool ConfigWidgetEditAdvancedSettings::save()
 {
+	if (m_pWirelessOnly != NULL)
+	{
+		if (m_pWirelessOnly->isChecked())
+		{
+			m_pGlobals->flags |= CONFIG_GLOBALS_WIRELESS_ONLY;
+		}
+		else
+		{
+			m_pGlobals->flags &= (~CONFIG_GLOBALS_WIRELESS_ONLY);
+		}
+	}
 
 	if (m_pAssocTimeout != NULL)
 	{

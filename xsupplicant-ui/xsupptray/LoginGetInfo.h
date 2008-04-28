@@ -74,6 +74,7 @@ private:
 	QLabel *m_pAdapterStat;
 	QLabel *m_pSSIDStatLabel;
 	QLabel *m_pSSIDStat;
+	QLabel *m_pEAPPwdLabel;
 
 	QLineEdit *dataFrameProfilesUsername;
 	QLineEdit *dataFrameProfilesPassword;
@@ -86,7 +87,7 @@ private:
 	poss_conn_enum *pConn;
 
 	void setAdapterInfo();
-	void setEAPAuth(QString username, QString password);
+	void setEAPAuth(QString username, QString password, uint8_t flags);
 	void setPSKAuth(QString password);
 };
 

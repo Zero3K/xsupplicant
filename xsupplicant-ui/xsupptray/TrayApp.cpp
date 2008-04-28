@@ -147,6 +147,11 @@ void TrayApp::checkOtherSupplicants()
 			return;
 		}
 	}
+	else
+	{
+		// We don't want to run the check if the engine isn't running.
+		return;
+	}
 
 	m_supplicant.freeConfigGlobals(&globals);
 	
@@ -203,8 +208,6 @@ void TrayApp::checkOtherSupplicants()
 */
 bool TrayApp::init(int argc)
 {
-  qInstallMsgHandler(myMsgHandler);
-
   if (!checkCommandLineParams(argc))
   {
     return false;
@@ -224,10 +227,6 @@ bool TrayApp::init(int argc)
 
   loadPlugins();
   
-#ifdef WINDOWS
-  checkOtherSupplicants();
-#endif
-
   return true;
 }
 
@@ -313,6 +312,11 @@ void TrayApp::slotConnectToSupplicant()
     else
     {
 	  setTrayIconState(ENGINE_CONNECTED);
+
+#ifdef WINDOWS
+	  checkOtherSupplicants();
+#endif
+
       // Enable the menu items
       setEnabledMenuItems(true);
       m_bSupplicantConnected = true;
@@ -1362,4 +1366,9 @@ void TrayApp::unloadPlugins()
 	}
 
 	m_pPlugins = NULL;
+}
+
+void TrayApp::slotWokeUp()
+{
+	QMessageBox::information(NULL, tr("XSupplicant"), tr("Your machine just came out of sleep mode.  The supplicant will try to connect you to the last network(s) you were on.  If you want to connect to a different network, click Disconnect, and select the alternate network."));
 }

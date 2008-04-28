@@ -38,6 +38,7 @@
 #include "MessageClass.h"
 #include "Emitter.h"
 #include "xsupcalls.h"
+#include "PasswordDlg.h"
 
 //!\class LogWindow
 /*!\brief LogWindow is used to display the log messages from the xsupplicant
@@ -58,9 +59,11 @@ class LogWindow :  public QWidget
     void slotInterfaceInsertedMessage(char *interface);
     void slotRemediation(); // temporary
     void slotRequestPasswordMessage(const QString &m, const QString &q, const QString &s);
+	void slotClearGTC();
 
 private slots:
 	void slotCopyToClipboard();
+	void slotFinishPassword();
 
 public:
   LogWindow(QWidget *parent = NULL, Emitter *e = NULL);
@@ -81,6 +84,7 @@ private:
   MessageClass m_message;
   QWidget *m_pRealForm;
   Emitter *m_pEmitter;
+  PasswordDlg *m_pPassword;
 
 public:
   virtual ~LogWindow(void);

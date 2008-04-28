@@ -295,6 +295,50 @@ void *xsupconfig_parse_interface_is_wireless(void **attr, xmlNodePtr node)
   return myints;
 }
 
+/**
+ * \brief Check the value that is set in the "<Wireless>" tag of an interface.
+ *
+ * @param[in,out] attr   A pointer to an xsup_interfaces struct that we want to operate on.
+ * @param[in] node   The node that the parser is currently on.
+ *
+ * \retval ptr to the modified xsup_interfaces struct.
+ **/
+void *xsupconfig_parse_manage_interface(void **attr, xmlNodePtr node)
+{
+  struct xsup_interfaces *myints = NULL;
+  char *value = NULL;
+  uint8_t result = 0;
+
+  value = xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Interface should be managed : %s\n", value);
+#endif
+
+  myints = (struct xsup_interfaces *)(*attr);
+
+  result = xsupconfig_common_yesno(value);
+ 
+  if (result == 1)
+    {
+      UNSET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
+    }
+  else if (result == 0)
+    {
+      SET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
+    }
+  else
+    {
+      printf("Unknown value for Manage.  (Line %ld)\n    Using "
+	     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
+      UNSET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
+    }
+
+  FREE(value);
+
+  return myints;
+}
+
 
 parser interf[] = {
   {"Description", NULL, FALSE, &xsupconfig_parse_interface_description},
@@ -302,5 +346,6 @@ parser interf[] = {
   {"Type", NULL, FALSE, &xsupconfig_parse_interface_type},
   {"Wireless", NULL, FALSE, &xsupconfig_parse_interface_is_wireless},
   {"Default_Connection", NULL, FALSE, &xsupconfig_parse_default_connection},
+  {"Manage", NULL, FALSE, xsupconfig_parse_manage_interface},
   
   {NULL, NULL, FALSE, NULL}};

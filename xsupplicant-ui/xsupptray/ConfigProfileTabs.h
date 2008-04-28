@@ -75,6 +75,7 @@ private slots:
 	 void slotSetPromptForPWD(bool);
 	 void slotDontPrompt(bool);
 	 void slotDataChanged();
+	 void slotInnerMethodChanged(int);
 
  private:
 	 enum {

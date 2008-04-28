@@ -943,6 +943,42 @@ void *xsupconfig_parse_roll_logs(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
+void *xsupconfig_parse_wireless_only(void **attr, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  uint8_t result;
+  char *value = NULL;
+
+  value = xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Wireless_Only : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result == 1)
+    {
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_WIRELESS_ONLY);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_WIRELESS_ONLY);
+    }
+  else
+    {
+      xsupconfig_common_log("Unknown value for Wireless_Only.  (Line %ld)    Using "
+	     "default of 'NO'.\n", xsupconfig_parse_get_line_num());
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_WIRELESS_ONLY);
+    }
+
+  FREE(value);
+
+  return myglobals;
+}
+
 parser globals[] = {
   {"Log_Path", NULL, FALSE, &xsupconfig_parse_logpath},
   {"Log_Level", NULL, FALSE, &xsupconfig_parse_loglevel},
@@ -971,5 +1007,5 @@ parser globals[] = {
   {"Disconnect_at_Logoff", NULL, FALSE, &xsupconfig_disconnect_at_logoff},
   {"PMKSA_Age_Out_Time", NULL, FALSE, &xsupconfig_parse_pmksa_age_out},
   {"PMKSA_Refresh_Time", NULL, FALSE, &xsupconfig_parse_pmksa_refresh_time},
-  
+  {"Wireless_Only", NULL, FALSE, &xsupconfig_parse_wireless_only},    
   {NULL, NULL, FALSE, NULL}};

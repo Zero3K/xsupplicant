@@ -75,6 +75,7 @@ private slots:
 	 QComboBox *m_pDefaultWired;
 	 QCheckBox *m_pCheckOtherSupplicants;
 	 QCheckBox *m_pDisconnectOnLogoff;
+	 QCheckBox *m_pWirelessOnly;
 
 	 QPushButton *m_pResetValues;
 

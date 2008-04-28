@@ -82,7 +82,7 @@ ConfigProfileTabs::~ConfigProfileTabs()
 	 Util::myDisconnect(m_pUsername, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 	 Util::myDisconnect(m_pPassword, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 
- 	 Util::myDisconnect(m_pInnerMethod, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
+ 	 Util::myDisconnect(m_pInnerMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(slotInnerMethodChanged(int)));
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDifferentServerSelected(int)));	
 
@@ -895,7 +895,7 @@ bool ConfigProfileTabs::attach()
 	 Util::myConnect(m_pUsername, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pPassword, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 
-	 Util::myConnect(m_pInnerMethod, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
+	 Util::myConnect(m_pInnerMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(slotInnerMethodChanged(int)));
 	 Util::myConnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDifferentServerSelected(int)));
 
@@ -1031,6 +1031,12 @@ void ConfigProfileTabs::populatePEAPData()
 			m_pPassword->setText(QString(mscv2->password));
 			password = mscv2->password;
 		}
+
+		// Configure our "User Credentials" tab properly.
+		m_pDontPrompt->setEnabled(true);
+		m_pPassword->setEnabled(true);
+		m_pShowBtn->setEnabled(true);
+
 		index = m_pInnerMethod->findText(QString("EAP-MSCHAPv2"));
 		m_pInnerMethod->setCurrentIndex(index);
 		break;
@@ -1046,6 +1052,12 @@ void ConfigProfileTabs::populatePEAPData()
 			m_pPassword->setText(QString(gtc->password));
 			password = gtc->password;
 		}
+
+		// Configure our "User Credentials" tab properly.
+		m_pDontPrompt->setEnabled(false);
+		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
+
 		index = m_pInnerMethod->findText(QString("EAP-GTC"));
 		m_pInnerMethod->setCurrentIndex(index);
 		break;
@@ -1325,7 +1337,7 @@ void ConfigProfileTabs::setPeapPhase2Types()
 {
 	m_pInnerMethod->clear();
 	m_pInnerMethod->addItem("EAP-MSCHAPv2");
-	//m_pInnerMethod->addItem("EAP-GTC");
+	m_pInnerMethod->addItem("EAP-GTC");
 }
 
 void ConfigProfileTabs::setTtlsPhase2Types()
@@ -1396,6 +1408,7 @@ void ConfigProfileTabs::slotSetPromptForUPW(bool isChecked)
 		m_pUsername->setEnabled(false);
 		m_pPassword->clear();
 		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
 	}
 }
 
@@ -1406,6 +1419,7 @@ void ConfigProfileTabs::slotSetPromptForPWD(bool isChecked)
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(false);
 		m_pPassword->clear();
+		m_pShowBtn->setEnabled(false);
 	}
 }
 
@@ -1415,7 +1429,7 @@ void ConfigProfileTabs::slotDontPrompt(bool isChecked)
 	{
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(true);
-	}
+		m_pShowBtn->setEnabled(true);}
 }
 
 void ConfigProfileTabs::slotDataChanged()
@@ -1520,3 +1534,25 @@ void ConfigProfileTabs::slotDifferentServerSelected(int selectedItem)
 	}
 	// Otherwise, do nothing.
 }
+
+void ConfigProfileTabs::slotInnerMethodChanged(int newItem)
+{
+	emit signalDataChanged();
+
+	if (eaptypeFromString(m_pInnerMethod->itemText(newItem)) == EAP_TYPE_GTC)
+	{
+		// Need to turn off some options in the User Credentials tab.
+		m_pDontPrompt->setEnabled(false);
+		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
+	}
+	else
+	{
+		// Make sure the options are enabled.
+		m_pDontPrompt->setEnabled(true);
+		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(true);
+		m_pPromptForUPW->setChecked(true);
+	}
+}
+

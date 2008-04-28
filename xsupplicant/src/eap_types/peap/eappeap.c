@@ -155,11 +155,13 @@ uint8_t eappeap_init(eap_type_data *eapdata)
  ************************************************************************/
 void eappeap_check(eap_type_data *eapdata)
 {
-  struct config_eap_peap *peapconf;
-  struct tls_vars *mytls_vars;
+  struct config_eap_peap *peapconf = NULL;
+  struct tls_vars *mytls_vars = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
+
+  eapdata->ignore = FALSE;   // Start out assuming everything is okay.
 
   if (!xsup_assert((eapdata->eap_conf_data != NULL), 
 		   "eapdata->eap_conf_data != NULL", FALSE))
@@ -215,6 +217,7 @@ void eappeap_process(eap_type_data *eapdata)
   struct eap_header *eaphdr = NULL;
   uint8_t *resbuf = NULL;
   int16_t bufsiz = 0;
+  context *ctx = NULL;
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-PEAP) Processing.\n");
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -227,6 +230,18 @@ void eappeap_process(eap_type_data *eapdata)
       eapdata->ignore = TRUE;
       return;
     }
+
+  ctx = event_core_get_active_ctx();
+  // Check to see if we have a 'reprocess' request.  If we do, pass the inner data, and skip the decryption.
+  if ((ctx != NULL) && (TEST_FLAG(ctx->flags, INT_REPROCESS)))
+  {
+	  (*ctx->p2_pwd_callback)(ctx, ((struct phase2_data *)eapdata)->sm, &resbuf, &bufsiz);
+	  peap_phase2_process(eapdata, resbuf, bufsiz);
+	  FREE(resbuf);
+	  UNSET_FLAG(ctx->flags, INT_REPROCESS);
+	  event_core_set_active_ctx(NULL);
+	  return;
+  }
 
   mytls_vars = eapdata->eap_data;
 
@@ -574,7 +589,7 @@ uint8_t *eappeap_getKey(eap_type_data *eapdata)
  ************************************************************************/
 void eappeap_deinit(eap_type_data *eapdata)
 {
-  struct tls_vars *mytls_vars;
+  struct tls_vars *mytls_vars = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;

@@ -267,8 +267,9 @@ char config_build(context *ctx, char *network_name)
 			   "memory!\n");
 		  result = config_find_connection(myint->default_connection);
 
-	      if (result != NULL) 
-			{
+		  // Only use a default connection if we are managing the interface.
+		  if ((result != NULL) && (!TEST_FLAG(myint->flags, CONFIG_INTERFACE_DONT_MANAGE)))
+		  {
 				debug_printf(DEBUG_CONFIG_PARSE, "!!!!!!!!!!!! Setting default network to : %s\n", myint->default_connection);
 
 				if (context_has_all_data(result) == TRUE)
@@ -417,7 +418,7 @@ int context_init_interface_hdwr(context **ctx, char *desc, char *device, char dr
     }
 
   // Set our flags.
-  cur->flags = flags;
+  cur->flags |= flags;
 
   // Set our interface description.   If the description is NULL, then we will
   // use the interface name itself.
@@ -434,6 +435,11 @@ int context_init_interface_hdwr(context **ctx, char *desc, char *device, char dr
   // force is set, otherwise should only turn it on if AP indicates support.
   if (cardif_init(cur, driveridx) < 0) 
     return XENOTINT;
+
+  if (TEST_FLAG(cur->flags, INT_IGNORE))
+  {
+	cardif_cancel_io((*ctx));   // Make sure we don't queue up frames that we won't process.
+  }
 
   if (cur->intType == ETH_802_11_INT)
   {
@@ -595,24 +601,43 @@ int context_init_interface(context **ctx, char *desc, char *device, char *driver
  **/
 void context_init_ints_from_conf(context **ctx)
 {
-	struct xsup_interfaces *ints;
-	char *intname;
+	struct xsup_interfaces *ints = NULL;
+	char *intname = NULL;
+	config_globals *globals = NULL;
+	uint8_t flags;
 
 	// Get the list of interfaces we want to monitor.  It is possible that we 
 	// have interfaces configured, that don't currently exist on the system, so
 	// we need to check that prior to initializing the interface.
 	ints = xsupconfig_devices_get_interfaces();
 
+	globals = config_get_globals();
+
 	while (ints != NULL)
 	{
 		debug_printf(DEBUG_INT, "Checking if interface '%s' is available.\n", ints->description);
+		flags = 0;
 
 		intname = interfaces_get_name_from_mac((char *)ints->mac);
 		if (intname != NULL)
 		{
+			if (TEST_FLAG(ints->flags, CONFIG_INTERFACE_DONT_MANAGE))
+			{
+				debug_printf(DEBUG_NORMAL, "Not managing interface '%s'.\n", ints->description);
+				flags = INT_IGNORE;
+			}
+
 			if (context_init_interface(ctx, ints->description, intname, NULL, 0) != 0)
 			{
 				debug_printf(DEBUG_NORMAL, "Couldn't initialize interface '%s'!\n", ints->description);
+			}
+
+			if ((globals != NULL) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
+			{
+				if ((*ctx)->intType != ETH_802_11_INT)
+				{
+					cardif_cancel_io((*ctx));
+				}
 			}
 		}
     else

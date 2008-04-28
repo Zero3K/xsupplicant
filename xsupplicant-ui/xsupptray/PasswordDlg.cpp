@@ -33,61 +33,88 @@
 #include "stdafx.h"
 #include "PasswordDlg.h"
 #include "Util.h"
+#include "FormLoader.h"
 
-PasswordDlg::PasswordDlg(const QString &connection, const QString &eapMethod, const QString &challengeString):
-  m_message(this)
+PasswordDlg::PasswordDlg(const QString &connection, const QString &eapMethod, const QString &challengeString)
 {
-  QLabel *pConnection = new QLabel(connection);
-  QLabel *pEapMethod = new QLabel(eapMethod);
-  QLabel *pChallengeString = new QLabel(challengeString);
-  QLabel *pMainLabel = new QLabel(tr("The network you are attempting to authenticate to, requires an additional password.  You will need to enter it here."));
-  
-  QLabel *pPasswordLabel = new QLabel(tr("Enter response"));
-  m_pPasswordField = new QTextEdit();
-  Util::setWidgetWidth(m_pPasswordField, "WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW");
-  QHBoxLayout *pPasswordLayout = new QHBoxLayout();
-  pPasswordLayout->addWidget(pPasswordLabel);
-  pPasswordLayout->addWidget(m_pPasswordField, Qt::AlignRight);
+	m_connName = connection;
+	m_eapType = eapMethod;
+	m_challenge = challengeString;
 
-  QDialogButtonBox *pButtonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-
-  QVBoxLayout *pLayout = new QVBoxLayout();
-  pLayout->addWidget(pConnection);
-  pLayout->addWidget(pEapMethod);
-  pLayout->addWidget(pChallengeString);
-  pLayout->addWidget(pMainLabel);
-  pLayout->addLayout(pPasswordLayout);
-  pLayout->addWidget(pButtonBox);
-  setLayout(pLayout);
-  setWindowTitle(tr("Password Response"));
-  Util::myConnect(pButtonBox, SIGNAL(accepted()), this, SLOT(slotSave()));
-  Util::myConnect(pButtonBox, SIGNAL(rejected()), this, SLOT(slotCancel()));
+	m_pRealForm = NULL;
+	m_pOKBtn = NULL;
+	m_pResponseField = NULL;
+	m_pServerChallenge = NULL;
 }
 
 PasswordDlg::~PasswordDlg(void)
 {
+	if (m_pOKBtn != NULL)
+	{
+		Util::myDisconnect(m_pOKBtn, SIGNAL(clicked()), this, SIGNAL(signalDone()));
+	}
+
+	if (m_pRealForm != NULL) delete m_pRealForm;
 }
 
-void PasswordDlg::slotSave()
+void PasswordDlg::show()
 {
-  // XXX This needs to be fixed up to use some sane QT calls.
-  /*
-  m_message.DisplayMessage( MessageClass::INFORMATION_TYPE, tr("Password"), tr("Save the password"));
-  accept();
-  */
+	if (m_pRealForm != NULL) 
+	{
+		m_pRealForm->show();
+		m_pResponseField->setFocus();
+	}
 }
 
-
-void PasswordDlg::slotCancel()
+bool PasswordDlg::attach()
 {
-  // XXX This needs to be fixed up to use some sane QT calls.
-  /*
-  m_message.DisplayMessage( MessageClass::INFORMATION_TYPE, tr("Password"), tr("Cancel the authentication"));
-  reject();
-  */
+	Qt::WindowFlags flags;
+
+	m_pRealForm = FormLoader::buildform("GTCWindow.ui");
+
+	if (m_pRealForm == NULL) return false;
+
+	m_pOKBtn = qFindChild<QPushButton*>(m_pRealForm, "buttonOK");
+	if (m_pOKBtn == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QPushButton named 'buttonOK' does not exist!  Please fix the form!"));
+		return false;
+	}
+
+	m_pResponseField = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldYourResponse");
+	if (m_pResponseField == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QLineEdit named 'dataFieldYourResponse' does not exist!  Please fix the form!"));
+		return false;
+	}
+
+	m_pServerChallenge = qFindChild<QLabel*>(m_pRealForm, "dataFieldServerRequest");
+	if (m_pServerChallenge == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error"), tr("The QLabel named 'dataFieldServerRequest' does not exist!  Please fix the form!"));
+		return false;
+	}
+
+	m_pServerChallenge->setText(m_challenge);
+
+	Util::myConnect(m_pOKBtn, SIGNAL(clicked()), this, SIGNAL(signalDone()));
+
+	flags = m_pRealForm->windowFlags();
+	flags &= (~Qt::WindowContextHelpButtonHint);
+	m_pRealForm->setWindowFlags(flags);
+
+	return true;
 }
 
-void PasswordDlg::slotHelp()
+QString PasswordDlg::getPassword()
 {
-
+	return m_pResponseField->text();
 }
+
+QString PasswordDlg::getConnName()
+{
+	return m_connName;
+}
+
+
+

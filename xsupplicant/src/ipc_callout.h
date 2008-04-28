@@ -96,23 +96,13 @@
 #define POSS_CONN_SSID_KNOWN    0x08  ///< Set to 1 if the SSID was found in the scan cache.
 #define POSS_CONN_INT_UNKNOWN   0x10  ///< Set to 1 if the interface isn't found in the live cache, or the configuration.  (Should almost NEVER happen!)
 #define POSS_CONN_LINK_STATE    0x20  ///< Set to 1 if the link is up, set to 0 if it is down.
+#define POSS_CONN_NO_PWD        0x40  ///< Set to 1 if the EAP method doesn't want a password to be set.
 
 void ipc_callout_init();
 void ipc_callout_deinit();
 
 uint8_t ipc_callout_process(uint8_t *, int, uint8_t **, int *);
 int ipc_callout_convert_amp(char *, char **);
-
-/*********************************************
- *
- * A callback function should have the following type :
- *     uint8_t callback_function_name(void *data, char *new_password);
- *
- *  It should return TRUE if the password was processed correctly, and
- *  FALSE if it wasn't.  
- *
- ********************************************/
-void ipc_callout_set_pwd_cb(void *, void *);
 
 xmlDocPtr ipc_callout_build_doc();
 
@@ -148,6 +138,7 @@ int ipc_callout_get_association_type(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_request_logoff(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_request_device_name(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_set_connection_upw(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_set_connection_pw(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_change_socket_type(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_change_connection(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_disassociate(xmlNodePtr, xmlNodePtr *);

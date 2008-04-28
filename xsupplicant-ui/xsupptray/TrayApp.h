@@ -87,6 +87,7 @@ private slots:
 	void slotCleanupConfig();
 	void slotInterfaceInserted(char *);
 	void slotInterfaceRemoved(char *);
+	void slotWokeUp();
 
 signals:
 	// Signals that can be rebroadcast from the root that other objects can subscribe to.

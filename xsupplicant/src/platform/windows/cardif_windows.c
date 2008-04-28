@@ -943,11 +943,14 @@ int cardif_init(context *ctx, char driver)
 	  debug_printf(DEBUG_INT, "Interface is wireless.\n");
 	  ctx->intType = ETH_802_11_INT;
 
+	  if (!TEST_FLAG(ctx->flags, INT_IGNORE))
+	  {
 		// Disable WZC (if it is running.)
 		if (wzc_ctrl_disable_wzc(ctx->intName) != 0)
 		{
 			debug_printf(DEBUG_NORMAL, "Unable to disable WZC for interface %s.\n", ctx->intName);
 		}
+	  }
 
 	  if (context_create_wireless_ctx((wireless_ctx **)&ctx->intTypeData, 0) != XENONE)
 	  {
@@ -978,11 +981,14 @@ int cardif_init(context *ctx, char driver)
     }
 	else
 	{
+	  if (!TEST_FLAG(ctx->flags, INT_IGNORE))
+	  {
 		// Disable the Windows 802.1X stack on a wired interface.
 		if (windows_eapol_ctrl_disable(ctx->desc, ctx->intName) != 0)
 		{
 			debug_printf(DEBUG_NORMAL, "Unable to configure the interface '%s'.\n", ctx->desc);
 		}
+	  }
 	}
 
 

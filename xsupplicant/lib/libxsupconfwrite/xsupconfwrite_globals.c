@@ -300,6 +300,32 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
+	if ((write_all == TRUE) || (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
+	{
+		if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY))
+		{
+			if (xmlNewChild(globalnode, NULL, "Wireless_Only", "yes") == NULL)
+			{
+#ifdef WRITE_GLOBALS_CONFIG
+				printf("Failed to create <Wireless_Only> node!\n");
+#endif
+				xmlFreeNode(globalnode);
+				return NULL;
+			}
+		} 
+		else
+		{
+			if (xmlNewChild(globalnode, NULL, "Wireless_Only", "no") == NULL)
+			{
+#ifdef WRITE_GLOBALS_CONFIG
+				printf("Failed to create <Wireless_Only> node!\n");
+#endif
+				xmlFreeNode(globalnode);
+				return NULL;
+			}
+		}
+	}
+
 	if (xsupconfwrite_globals_build_debug(globalnode, write_all, conf_globals->loglevel) != 0)
 	{
 		xmlFreeNode(globalnode);

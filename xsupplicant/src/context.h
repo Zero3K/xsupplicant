@@ -262,7 +262,8 @@ typedef enum {
 #define TERM_ON_FAIL  BIT(2)   /**< Terminate when we reach a failure. */
 #define FORCED_CONN   BIT(3)   /**< The connection has been set by an outside source.  (Probably the UI.) */
 #define INT_GONE      BIT(4)   /**< The interface has been removed from the machine already.  (So don't do any of the interface deinit stuff, just clear the context.) */
-
+#define INT_IGNORE    BIT(5)   /**< The interface is not currently being used, or managed. */
+#define INT_REPROCESS BIT(6)   /**< We are reprocessing a frame on this interface, so skip ahead to the highest layer. */
 
 /**
  * Structure to store context information, mostly related to a specific
@@ -332,6 +333,10 @@ typedef struct context_data
 #ifdef HAVE_TNC
   uint32_t tnc_connID;         ///< The connection ID that maps in to the IMC.
 #endif
+
+  void *pwd_callback_data;       ///< Data to be used in the password callback.  (Currently only used in EAP-GTC.)
+  void (*pwd_callback)(void *);  ///< The callback to be called to finish an authentication when it has been paused to ask for a password.
+  void (*p2_pwd_callback)(void *, struct eap_sm_vars *, uint8_t **, uint16_t *);
 
   uint8_t *sendframe, *recvframe;
   uint16_t send_size, recv_size;

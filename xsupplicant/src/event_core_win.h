@@ -59,5 +59,7 @@ uint32_t event_core_register_imc_logon_callback(void *callback);
 uint32_t event_core_register_ui_connect_callback(void *callback);
 int event_core_lock();
 int event_core_unlock();
+context *event_core_locate_by_connection(char *matchstr);
+void event_core_change_wireless(config_globals *newsettings);
 
 #endif

@@ -53,6 +53,7 @@ LogWindow::LogWindow(QWidget *parent, Emitter *e)
   m_supplicant(parent)
 {
 	m_pCopyToClipboard = NULL;
+	m_pPassword = NULL;
 
   Util::myConnect(m_pEmitter, SIGNAL(signalLogMessage(const QString)), this, SLOT(slotAddXSupplicantLogMessage(const QString)));
   Util::myConnect(m_pEmitter, SIGNAL(signalStartLogMessage(const QString)), this, SLOT(slotStartLogMessage(const QString)));
@@ -60,6 +61,7 @@ LogWindow::LogWindow(QWidget *parent, Emitter *e)
   Util::myConnect(m_pEmitter, SIGNAL(signalRequestPasswordMessage(const QString &, const QString &, const QString &)), this, SLOT(slotRequestPasswordMessage(const QString &, const QString &, const QString &)));
   Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotInterfaceInsertedMessage(char *)));
   Util::myConnect(m_pEmitter, SIGNAL(signalXSupplicantShutDown()), this, SLOT(slotXSupplicantShutDown()));
+  Util::myConnect(m_pEmitter, SIGNAL(signalClearLoginPopups()), this, SLOT(slotClearGTC()));
 }
 
 //! Destructor
@@ -79,8 +81,15 @@ LogWindow::~LogWindow(void)
   Util::myDisconnect(m_pEmitter, SIGNAL(signalRequestPasswordMessage(const QString &, const QString &, const QString &)), this, SLOT(slotRequestPasswordMessage(const QString &, const QString &, const QString &)));
   Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotInterfaceInsertedMessage(char *)));
   Util::myDisconnect(m_pEmitter, SIGNAL(signalXSupplicantShutDown()), this, SLOT(slotXSupplicantShutDown()));
+  Util::myDisconnect(m_pEmitter, SIGNAL(signalClearLoginPopups()), this, SLOT(slotClearGTC()));
 
-	delete m_pRealForm;
+  if (m_pPassword != NULL) 
+  {
+	  Util::myDisconnect(m_pPassword, SIGNAL(signalDone()), this, SLOT(slotFinishPassword()));
+	  delete m_pPassword;
+  }
+
+	if (m_pRealForm != NULL) delete m_pRealForm;
 }
 
 /**
@@ -263,7 +272,7 @@ XSupCalls &LogWindow::getSupplicant()
 
 //! slotRequestPasswordMessage
 /*!
-  \brief Appends a state message to the log file
+  \brief 
   \param [in] connName
   \param [in] eapMethod
   \param [in] challengeString
@@ -271,10 +280,60 @@ XSupCalls &LogWindow::getSupplicant()
 */
 void LogWindow::slotRequestPasswordMessage(const QString &connName, const QString &eapMethod, const QString &challengeStr)
 {
-  // Enter the password - what information do I display about why we are asking for a password?
-  PasswordDlg dlg(connName, eapMethod, challengeStr);
-  dlg.exec();
-  // Return the password, how is this done?
+	if (m_pPassword != NULL) return;   // We are already displaying a dialog.
+
+	m_pPassword = new PasswordDlg(connName, eapMethod, challengeStr);
+	if (m_pPassword != NULL)
+	{
+		if (m_pPassword->attach() == true)
+		{
+			Util::myConnect(m_pPassword, SIGNAL(signalDone()), this, SLOT(slotFinishPassword()));
+			m_pPassword->show();
+		}
+	}
+	else
+	{
+		QMessageBox::critical(this, tr("Form Error"), tr("Failed to load the password prompting form!"));
+	}
+}
+
+void LogWindow::slotClearGTC()
+{
+	if (m_pPassword == NULL) return;
+
+	Util::myDisconnect(m_pPassword, SIGNAL(signalDone()), this, SLOT(slotFinishPassword()));
+
+	delete m_pPassword;
+	m_pPassword = NULL;
+}
+
+void LogWindow::slotFinishPassword()
+{
+	QString password;
+	QString connection;
+	char *c_conn = NULL;
+	char *c_pass = NULL;
+
+	password = m_pPassword->getPassword();
+	connection = m_pPassword->getConnName();
+
+	if (password == "")
+	{
+		QMessageBox::critical(this, tr("No token response provided"), tr("No token response was provided.  Please provide a valid token response."));
+		return;
+	}
+
+	c_conn = _strdup(connection.toAscii());
+	c_pass = _strdup(password.toAscii());
+
+	if (xsupgui_request_set_connection_pw(c_conn, c_pass) != REQUEST_SUCCESS)
+	{
+		QMessageBox::critical(this, tr("Error Setting Token Response"), tr("Unable to send the provided token response."));
+	}
+
+	free(c_conn);
+	free(c_pass);
+	slotClearGTC();
 }
 
 //! slotRemediation

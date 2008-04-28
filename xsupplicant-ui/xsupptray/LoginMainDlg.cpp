@@ -584,10 +584,21 @@ void LoginMainDlg::slotConnectDisconnect()
       // If this succeeds, go to the status window
 	  if (m_pConns[m_connsIndex].auth_type == AUTH_EAP)
 	  {
-		  if ((m_pLoginStack->getUserName() == "") || (m_pLoginStack->getPassword() == ""))
+		  if ((m_pConns[m_connsIndex].flags & POSS_CONN_NO_PWD) == POSS_CONN_NO_PWD)
 		  {
-			  QMessageBox::information(this, tr("Username/Password Needed"), tr("Please enter a valid username and password before attempting to connect to this network."));
-			  return;
+			  if (m_pLoginStack->getUserName() == "")
+			  {
+				  QMessageBox::information(this, tr("Username Needed"), tr("Please enter a valid username before attempting to connect to this network."));
+				  return;
+			  }
+		  }
+		  else
+		  {
+			if ((m_pLoginStack->getUserName() == "") || (m_pLoginStack->getPassword() == ""))
+			{
+				QMessageBox::information(this, tr("Username/Password Needed"), tr("Please enter a valid username and password before attempting to connect to this network."));
+				return;
+			}	
 		  }
 	  }
 	  else if (m_pConns[m_connsIndex].auth_type == AUTH_PSK)
@@ -1048,6 +1059,8 @@ void LoginMainDlg::slotAuthTimeout(const QString &intName)
 	if (intName == m_deviceName)
 	{
 		networkDisconnect();
+
+		m_pEmitter->sendClearLoginPopups();
 
 		m_pConnectDisconnectButton->setText(tr("Connect"));
 		setButtons(true);

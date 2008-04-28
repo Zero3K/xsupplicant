@@ -620,6 +620,112 @@ request_set_upw_done:
 }
 
 /**
+ * \brief Set the password for a given connection.
+ *
+ * @param[in] conn_name   The name of the connection that we want to set the username and
+ *                        password for.
+ * @param[in] password    The new password that will be applied to this connection.
+ *
+ * \retval REQUEST_SUCCESS on success
+ * \retval REQUEST_TIMEOUT on timeout
+ * \retval >299 on other error.
+ **/
+int xsupgui_request_set_connection_pw(char *conn_name, char *password)
+{
+	xmlDocPtr doc = NULL, retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int err = 0;
+	int done = REQUEST_SUCCESS;
+	char *temp = NULL;
+
+	if (conn_name == NULL)  
+		return IPC_ERROR_INVALID_PARAMETERS;
+
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) 
+	{
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto request_set_pw_done;
+	}
+
+	t = xmlNewChild(n, NULL, "Set_Connection_PW", NULL);
+	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto request_set_pw_done;
+	}
+
+	xsupgui_xml_common_convert_amp(conn_name, &temp);
+	if (xmlNewChild(t, NULL, "Connection_Name", temp) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		free(temp);
+		goto request_set_pw_done;
+	}
+	free(temp);
+
+	xsupgui_xml_common_convert_amp(password, &temp);
+	if (xmlNewChild(t, NULL, "Password", temp) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		free(temp);
+		goto request_set_pw_done;
+	}
+	free(temp);
+
+	err = xsupgui_request_send(doc, &retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		done = err;
+		goto request_set_pw_done;
+	}
+
+	// Otherwise, parse it and see if we got what we wanted.
+	err = xsupgui_request_check_exceptions(retdoc);
+	if (err != 0) 
+	{
+		done = err;
+		goto request_set_pw_done;
+	}
+
+	n = xmlDocGetRootElement(retdoc);
+	if (n == NULL)
+	{
+		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
+		goto request_set_pw_done;
+	}
+
+	// If we get here, then we know that the document passed the
+	// validation tests imposed.  So, we need to see if we got the result 
+	// we wanted.
+	n = n->children;
+	n = xsupgui_request_find_node(n, "Set_Connection_PW_Result");
+	if (n != NULL)
+	{
+		done = IPC_ERROR_BAD_RESPONSE;
+		goto request_set_pw_done;
+	}
+
+	t = xsupgui_request_find_node(n, "ACK");
+	if (t != NULL)
+	{
+		done = IPC_ERROR_NOT_ACK;
+		goto request_set_pw_done;
+	}
+
+	done = REQUEST_SUCCESS;
+
+request_set_pw_done:
+	if (doc != NULL) xmlFreeDoc(doc);
+	if (retdoc != NULL) xmlFreeDoc(retdoc);
+
+	return done;
+}
+
+/**
  * \brief Request that the supplicant return it's currently known profiles.
  *
  * @param[out] profs   An array of data containing the name and type of each

@@ -91,6 +91,11 @@ context *event_core_get_active_ctx()
 	return active_ctx;
 }
 
+void event_core_set_active_ctx(context *ctx)
+{
+	active_ctx = ctx;
+}
+
 /**
  * We got a request to terminate ourselves.
  *
@@ -422,12 +427,15 @@ int event_core_register(HANDLE devHandle, context *ctx,
 {
   int i = 0, done = FALSE;
   void *temp = NULL;
+  config_globals *globals = NULL;
 
   if (!xsup_assert((call_func != NULL), "call_func != NULL", FALSE))
     return -1;
 
   if (!xsup_assert((name != NULL), "name != NULL", FALSE))
     return -1;
+
+  globals = config_get_globals();
 
   if (hilo == 0)
     {
@@ -439,6 +447,10 @@ int event_core_register(HANDLE devHandle, context *ctx,
                            "slot %d.\n", name, i);
 
 			  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
+			  if ((globals != NULL) && (ctx != NULL) && (ctx->intType != ETH_802_11_INT) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
+			  {
+				  events[i].flags |= EVENT_IGNORE_INT;
+			  }
 	      done = TRUE;
 	    }
 	  
@@ -478,6 +490,11 @@ int event_core_register(HANDLE devHandle, context *ctx,
 	                        "slot %d.\n", name, i);
 
 			  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
+			  if ((globals != NULL) && (ctx != NULL) && (ctx->intType != ETH_802_11_INT) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
+			  {
+				  events[i].flags |= EVENT_IGNORE_INT;
+			  }
+
 		      done = TRUE;
 		    }
 	  
@@ -496,6 +513,11 @@ int event_core_register(HANDLE devHandle, context *ctx,
 	      debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
 			   "slot %d.\n", name, i);
 		  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
+		  if ((globals != NULL) && (ctx != NULL) && (ctx->intType != ETH_802_11_INT) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
+		  {
+			  events[i].flags |= EVENT_IGNORE_INT;
+		  }
+
               done = TRUE;
             }
 	  
@@ -533,6 +555,11 @@ int event_core_register(HANDLE devHandle, context *ctx,
 				debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
 					"slot %d.\n", name, i);
 				event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
+			  if ((globals != NULL) && (ctx != NULL) && (ctx->intType != ETH_802_11_INT) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
+			  {
+				  events[i].flags |= EVENT_IGNORE_INT;
+			  }
+
 				done = TRUE;
             }
 	  
@@ -668,7 +695,8 @@ void event_core()
 		  cardif_check_events(events[i].ctx);
 	  }
 
-	  if ((events[i].hEvent != INVALID_HANDLE_VALUE) && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)))
+	  if ((events[i].hEvent != INVALID_HANDLE_VALUE) && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)) &&
+		  ((events[i].ctx == NULL) || (!TEST_FLAG(events[i].ctx->flags, INT_IGNORE))))
 	  {
 		  // We have a handle, add it to our list of events to watch for, and check for events.
 #if DEBUG_EVENT_HANDLER
@@ -697,7 +725,7 @@ void event_core()
 	  for (i=(num_event_slots-1); i>=0; i--)
 	  {
 		  if ((events[i].devHandle != INVALID_HANDLE_VALUE) && (HasOverlappedIoCompleted(events[i].ovr) == TRUE) &&
-			  (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)))
+			  (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)) && ((events[i].ctx == NULL) || (!TEST_FLAG(events[i].ctx->flags, INT_IGNORE))))
 		  {
 			  readOvr = events[i].ovr;
 
@@ -867,6 +895,32 @@ context *event_core_locate(char *matchstr)
   for (i = 0; i < num_event_slots; i++)
   {
 	  if ((events[i].ctx != NULL) && (strcmp(events[i].ctx->intName, matchstr) == 0))
+		  return events[i].ctx;
+  }
+
+  // Otherwise, we ran out of options.
+  return NULL;
+}
+
+/**
+ *  \brief Find the context that matches the connection name string, and return it.  
+ *
+ * @param[in] matchstr   The connection name of the interface we wish to find the
+ *                       context for.
+ *
+ * \retval ptr  Pointer to a context structure for the interface requested.
+ * \retval NULL Couldn't locate the desired interface.
+ **/
+context *event_core_locate_by_connection(char *matchstr)
+{
+  int i;
+
+  if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
+    return NULL;
+
+  for (i = 0; i < num_event_slots; i++)
+  {
+	  if ((events[i].ctx != NULL) && (events[i].ctx->conn_name != NULL) && (strcmp(events[i].ctx->conn_name, matchstr) == 0))
 		  return events[i].ctx;
   }
 
@@ -1347,6 +1401,60 @@ void event_core_drop_active_conns()
 			{
 				// Send a disassociate.
 				cardif_disassociate(events[i].ctx, 0);
+			}
+		}
+	}
+}
+
+void event_core_change_wireless(config_globals *newsettings)
+{
+	config_globals *globals = NULL;
+	wireless_ctx *wctx = NULL;
+	int i = 0;
+
+	globals = config_get_globals();
+
+	if (globals == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to determine current state of the Wireless_Only option!\n");
+		return;
+	}
+
+	// Only do things if something has changed.
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY) != TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_WIRELESS_ONLY))
+	{
+		for (i= 0; i< num_event_slots; i++)
+		{
+			// We only care if this interface is wired.
+			if ((events[i].ctx != NULL) && (events[i].ctx->intType != ETH_802_11_INT))
+			{
+				if (TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_WIRELESS_ONLY))
+				{
+					// Disable all wired interfaces.  (If it isn't already disabled.)
+					if (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
+					{
+						cardif_cancel_io(events[i].ctx);
+						events[i].flags |= EVENT_IGNORE_INT;
+					}
+				}
+				else
+				{
+					// Enable all wired interfaces.  (If it isn't already enabled.)
+					if (TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
+					{
+						cardif_restart_io(events[i].ctx);
+						events[i].flags &= (~EVENT_IGNORE_INT);
+
+						if (events[i].ctx->intType == ETH_802_11_INT)
+						{
+							wctx = events[i].ctx->intTypeData;
+							memset(wctx->cur_bssid, 0x00, 6);
+						}
+
+						// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
+						events[i].ctx->auths = 0;
+					}
+				}
 			}
 		}
 	}
