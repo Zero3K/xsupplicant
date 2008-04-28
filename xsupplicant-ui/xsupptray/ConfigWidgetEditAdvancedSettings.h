@@ -71,6 +71,7 @@ private slots:
 	 QLineEdit *m_pScanTimeout;
 	 QComboBox *m_pDefaultWired;
 	 QCheckBox *m_pCheckOtherSupplicants;
+	 QCheckBox *m_pDisconnectOnLogoff;
 
 	 QPushButton *m_pResetValues;
 

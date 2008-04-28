@@ -222,6 +222,32 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
+	if ((write_all == TRUE) || (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF)))
+	{
+		if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF))
+		{
+			if (xmlNewChild(globalnode, NULL, "Disconnect_at_Logoff", "yes") == NULL)
+			{
+#ifdef WRITE_GLOBALS_CONFIG
+				printf("Failed to create <Disconnect_at_Logoff> node!\n");
+#endif
+				xmlFreeNode(globalnode);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xmlNewChild(globalnode, NULL, "Disconnect_at_Logoff", "no") == NULL)
+			{
+#ifdef WRITE_GLOBALS_CONFIG
+				printf("Failed to create <Disconnect_at_Logoff> node!\n");
+#endif
+				xmlFreeNode(globalnode);
+				return NULL;
+			}
+		}
+	}
+
 	if ((write_all == TRUE) || (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS)))
 	{
 		if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))

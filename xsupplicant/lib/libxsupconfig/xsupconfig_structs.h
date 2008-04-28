@@ -264,6 +264,7 @@ struct config_connection
 #define CONFIG_GLOBALS_USE_SYSLOG           BIT(7)
 #define CONFIG_GLOBALS_DETECT_ON_STARTUP    BIT(8)  // Should we detect other supplicants when the UI starts?  (This has no bearing on the operation of the engine.)
 #define CONFIG_GLOBALS_ROLL_LOGS            BIT(9)  // Should we roll our log files?
+#define CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF BIT(10) // When Windows sends a user logoff signal, should we disconnect all of our active connections?
 
 struct config_globals
 {
@@ -274,7 +275,6 @@ struct config_globals
 
   char *log_facility;
   char *ipc_group_name;
-  char *cached_credential_file;
 
   uint16_t flags;
   uint8_t  destination;

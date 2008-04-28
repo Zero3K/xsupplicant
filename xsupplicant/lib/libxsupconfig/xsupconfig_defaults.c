@@ -32,7 +32,7 @@ void xsupconfig_defaults_set_globals(config_globals *toset)
 {
   toset->flags = CONFIG_GLOBALS_ALLMULTI | CONFIG_GLOBALS_ASSOC_AUTO | 
 	  			 CONFIG_GLOBALS_FIRMWARE_ROAM | CONFIG_GLOBALS_DETECT_ON_STARTUP |
-				 CONFIG_GLOBALS_ROLL_LOGS;
+				 CONFIG_GLOBALS_ROLL_LOGS | CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF;
   toset->active_timeout = RESCAN_TIMEOUT;
   toset->assoc_timeout = ASSOCIATION_TIMEOUT;
   toset->idleWhile_timeout = IDLE_WHILE_TIMER;

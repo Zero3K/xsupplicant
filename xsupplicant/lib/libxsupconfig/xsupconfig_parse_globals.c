@@ -777,6 +777,42 @@ void *xsupconfig_parse_use_syslog(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
+void *xsupconfig_disconnect_at_logoff(void **attr, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+
+  value = xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Disconnect at Logoff : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result == 1)
+    {
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF);
+    }
+  else
+    {
+      xsupconfig_common_log("Unknown value for Disconnect_at_Logoff.  (Line %ld)    Using "
+	     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF);
+    }
+
+  FREE(value);
+
+  return myglobals;
+}
+
 void *xsupconfig_parse_detect_on_startup(void **attr, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
@@ -803,7 +839,7 @@ void *xsupconfig_parse_detect_on_startup(void **attr, xmlNodePtr node)
     }
   else
     {
-      xsupconfig_common_log("Unknown value for Dectect_on_startup.  (Line %ld)    Using "
+      xsupconfig_common_log("Unknown value for Detect_on_startup.  (Line %ld)    Using "
 	     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
       SET_FLAG(myglobals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP);
     }
@@ -874,5 +910,6 @@ parser globals[] = {
   {"Logs_To_Keep", NULL, FALSE, &xsupconfig_parse_logs_to_keep},
   {"Log_Size_To_Roll", NULL, FALSE, &xsupconfig_parse_log_size_to_roll},
   {"Roll_Logs", NULL, FALSE, &xsupconfig_parse_roll_logs},
+  {"Disconnect_at_Logoff", NULL, FALSE, &xsupconfig_disconnect_at_logoff},
   
   {NULL, NULL, FALSE, NULL}};

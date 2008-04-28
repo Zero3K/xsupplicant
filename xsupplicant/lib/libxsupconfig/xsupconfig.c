@@ -2392,9 +2392,6 @@ void dump_config_globals(struct config_globals *globals)
 	printf("Log level : %d\n", globals->loglevel);
   }
 
-  if (globals->cached_credential_file)
-	  printf("Cached Credential File : '%s'\n", globals->cached_credential_file);
-
   if (globals->log_facility)
     printf("Log Facility: '%s'\n", globals->log_facility);
 
@@ -2446,6 +2443,13 @@ void dump_config_globals(struct config_globals *globals)
     } else {
       printf("Passive Scanning : No\n");
     }
+
+  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF))
+  {
+	  printf("Disconnect at Logoff : Yes\n");
+  } else {
+	  printf("Disconnect at Logoff : No\n");
+  }
 
   printf("Passive Scan Timeout : %d\n", globals->passive_timeout);
 

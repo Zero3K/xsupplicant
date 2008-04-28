@@ -71,6 +71,7 @@ int locate = 0;
 time_t last_check = 0;
 int terminate = 0;         // Is there a request to terminate ourselves.
 int userlogon = 0;		   // (single shot) User logged on event.
+int userlogoff = 0;        // (single shot) User logged off event.
 int user_logged_on = FALSE;  // Is there a user currently logged on to windows?
 void (*imc_notify_callback)() = NULL;
 void (*imc_ui_connect_callback)() = NULL;
@@ -754,6 +755,11 @@ void event_core()
   // Clean up our handles array.
   FREE(handles);
 
+  if (userlogoff == TRUE)
+  {
+	  event_core_win_do_user_logoff();
+  }
+
   if (userlogon == TRUE)
   {
 	  // Inform any IMCs that may need to know.
@@ -1185,6 +1191,69 @@ void event_core_user_logged_on()
 void event_core_user_logged_off()
 {
 	user_logged_on = FALSE;
+	userlogoff = TRUE;
+}
+
+void event_core_win_do_user_logoff()
+{
+	struct config_globals *globals = NULL;
+	context *ctx = NULL;
+	int i = 0;
+
+	userlogoff = FALSE;  // Don't trigger again.
+
+	globals = config_get_globals();
+	if (globals == NULL) 
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to obtain the global configuration data.\n");
+		return;
+	}
+
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF))
+	{
+		debug_printf(DEBUG_NORMAL, "Console user logged off.  Dropping all connections.\n");
+
+		for (i= 0; i< num_event_slots; i++)
+		{
+			// Loop through each event slot, cancel the IO, flag the context.
+			if (events[i].ctx != NULL)
+			{
+				ctx = events[i].ctx;
+
+				if (ctx->intType == ETH_802_11_INT)
+				{
+					// Do a wireless disconnect.
+					wireless_sm_change_state(INT_STOPPED, ctx);
+				}
+				else
+				{
+					// Do a wired disconnect.
+					if (statemachine_change_state(ctx, LOGOFF) == 0)
+					{
+						ctx->conn = NULL;
+						FREE(ctx->conn_name);
+						eap_sm_deinit(&ctx->eap_state);
+						eap_sm_init(&ctx->eap_state);
+						ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
+
+						txLogoff(ctx);
+					}
+				}
+
+				// Unbind any connections.
+				ctx->conn = NULL;
+				FREE(ctx->conn_name);
+				ctx->prof = NULL;
+				UNSET_FLAG(ctx->flags, FORCED_CONN);
+
+#ifdef HAVE_TNC
+				// If we are using a TNC enabled build, signal the IMC to clean up.
+				if(imc_disconnect_callback != NULL)
+					imc_disconnect_callback(ctx->tnc_connID);
+#endif
+			}
+		}
+	}
 }
 
 /**

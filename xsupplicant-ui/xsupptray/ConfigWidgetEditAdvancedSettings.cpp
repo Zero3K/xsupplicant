@@ -42,6 +42,7 @@ ConfigWidgetEditAdvancedSettings::ConfigWidgetEditAdvancedSettings(QWidget *pRea
 	m_pScanTimeout = NULL;
 	m_pResetValues = NULL;
 	m_pGlobals = NULL;
+	m_pDisconnectOnLogoff = NULL;
 
 	m_bChangedData = false;
 }
@@ -73,6 +74,11 @@ ConfigWidgetEditAdvancedSettings::~ConfigWidgetEditAdvancedSettings()
 		Util::myDisconnect(m_pCheckOtherSupplicants, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
 	}
 
+	if (m_pDisconnectOnLogoff != NULL)
+	{
+		Util::myDisconnect(m_pDisconnectOnLogoff, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
 	Util::myDisconnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
 
 	Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
@@ -89,6 +95,8 @@ bool ConfigWidgetEditAdvancedSettings::attach()
 	m_pDefaultWired = qFindChild<QComboBox*>(m_pRealWidget, "dataComboAdvancedSettingsWiredDefault");
 
 	m_pCheckOtherSupplicants = qFindChild<QCheckBox*>(m_pRealWidget, "dataCheckboxAdvancedSettignsRunCheckOnStartup");
+
+	m_pDisconnectOnLogoff = qFindChild<QCheckBox*>(m_pRealWidget, "logoffDisconnect");
 
 	updateWindow();
 
@@ -119,6 +127,11 @@ bool ConfigWidgetEditAdvancedSettings::attach()
 	if (m_pCheckOtherSupplicants != NULL)
 	{
 		Util::myConnect(m_pCheckOtherSupplicants, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
+	if (m_pDisconnectOnLogoff != NULL)
+	{
+		Util::myConnect(m_pDisconnectOnLogoff, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
 	}
 
 	Util::myConnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
@@ -179,6 +192,18 @@ void ConfigWidgetEditAdvancedSettings::updateWindow()
 		else
 		{
 			m_pCheckOtherSupplicants->setChecked(false);
+		}
+	}
+
+	if (m_pDisconnectOnLogoff != NULL)
+	{
+		if ((m_pGlobals->flags & CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF) == CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF)
+		{
+			m_pDisconnectOnLogoff->setChecked(true);
+		}
+		else
+		{
+			m_pDisconnectOnLogoff->setChecked(false);
 		}
 	}
 
@@ -253,6 +278,11 @@ void ConfigWidgetEditAdvancedSettings::slotResetValues()
 	if (m_pCheckOtherSupplicants != NULL)
 	{
 		m_pCheckOtherSupplicants->setChecked(true);
+	}
+
+	if (m_pDisconnectOnLogoff != NULL)
+	{
+		m_pDisconnectOnLogoff->setChecked(true);
 	}
 
 	if (m_pDefaultWired != NULL)
@@ -419,6 +449,18 @@ bool ConfigWidgetEditAdvancedSettings::save()
 		else
 		{
 			m_pGlobals->flags &= (~CONFIG_GLOBALS_DETECT_ON_STARTUP);
+		}
+	}
+
+	if (m_pDisconnectOnLogoff != NULL)
+	{
+		if (m_pDisconnectOnLogoff->isChecked())
+		{
+			m_pGlobals->flags |= CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF;
+		}
+		else
+		{
+			m_pGlobals->flags &= (~CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF);
 		}
 	}
 
