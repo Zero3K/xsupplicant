@@ -4375,6 +4375,10 @@ int ipc_callout_set_globals_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Globals_Config", IPC_ERROR_PARSING, outnode);
 	}
     
+#ifdef WINDOWS
+	windows_int_ctrl_change(newg);
+#endif
+
 	event_core_change_wireless(newg);
 
 	reset_config_globals(newg);

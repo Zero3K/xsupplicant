@@ -42,6 +42,7 @@
 #include "ipc_events_index.h"
 #include "eap_sm.h"
 #include "pmksa.h"
+#include "platform/windows/wlanapi_interface.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -287,12 +288,15 @@ void event_core_init()
 	  debug_printf(DEBUG_NORMAL, "Couldn't load the iphlpapi DLL!  IP address setting functionality will be broken!\n");
   }
 
-  if (wzc_ctrl_connect() != XENONE)
+  if (wlanapi_interface_connect() != WLANAPI_OK)
   {
-	  debug_printf(DEBUG_NORMAL, "Unable to initialize Windows Zero Config handle.  You should "
-		  "go in to your network control panel, and clicked the check box for 'Use Windows to "
-		  "configure my wireless settings.'\n");
-	  ipc_events_error(NULL, IPC_EVENT_ERROR_WZC_ATTACH_FAILED, NULL);
+	  if (wzc_ctrl_connect() != XENONE)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Unable to initialize Windows Zero Config handle.  You should "
+			  "go in to your network control panel, and click the check box for 'Use Windows to "
+			  "configure my wireless settings.'\n");
+		  ipc_events_error(NULL, IPC_EVENT_ERROR_WZC_ATTACH_FAILED, NULL);
+	  }
   }
 
   evtCoreMutex = CreateMutex(NULL, FALSE, NULL);   // Nobody owns this mutex to start with.
@@ -331,6 +335,8 @@ void event_core_deinit()
     }
 
   wzc_ctrl_disconnect();
+
+  wlanapi_interface_disconnect();
 
   event_core_unlock();
 
@@ -1471,28 +1477,32 @@ void event_core_change_wireless(config_globals *newsettings)
 void event_core_change_os_ctrl_state(void *param)
 {
 	int i = 0;
-	int endis = 0;
-
-	endis = (int)param;
 
 	for (i= 0; i< num_event_slots; i++)
 	{
-		if (endis == TRUE)
+		if (param != NULL)
 		{
 			// XSupplicant should control this interface.
-			windows_int_ctrl_take_ctrl(events[i].ctx);
-			cardif_restart_io(events[i].ctx);
-			events[i].flags &= (~EVENT_IGNORE_INT);
+			if (events[i].ctx != NULL)
+			{
+				windows_int_ctrl_take_ctrl(events[i].ctx);
+				cardif_restart_io(events[i].ctx);
+				events[i].flags &= (~EVENT_IGNORE_INT);
+			}
 		}
 		else
 		{
 			// Windows should control this interface.
-			windows_int_ctrl_give_to_windows(events[i].ctx);
-			cardif_cancel_io(events[i].ctx);
-			events[i].flags |= EVENT_IGNORE_INT;
+			if (events[i].ctx != NULL)
+			{
+				windows_int_ctrl_give_to_windows(events[i].ctx);
+				cardif_cancel_io(events[i].ctx);
+				events[i].flags |= EVENT_IGNORE_INT;
+			}
 		}
 	}
 
+	if (param != NULL) event_core_drop_active_conns();
 	ipc_events_ui(NULL, IPC_EVENT_UI_INT_CTRL_CHANGED, NULL);
 }
 

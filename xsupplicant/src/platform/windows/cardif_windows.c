@@ -47,6 +47,7 @@
 #include "wzc_ctrl.h"
 #include "windows_eapol_ctrl.h"
 #include "cardif_windows_events.h"
+#include "wlanapi_interface.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -875,6 +876,7 @@ int cardif_init(context *ctx, char driver)
 	char *mac = NULL;
 	char *intdesc = NULL;
 	wireless_ctx *wctx = NULL;
+	int retval = 0;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
@@ -946,10 +948,18 @@ int cardif_init(context *ctx, char driver)
 	  if (!TEST_FLAG(ctx->flags, INT_IGNORE))
 	  {
 		// Disable WZC (if it is running.)
-		if (wzc_ctrl_disable_wzc(ctx->intName) != 0)
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to disable WZC for interface %s.\n", ctx->intName);
-		}
+		  // First, try the wlan API as suggested by MS.
+		  if ((retval = wlanapi_interface_disable_wzc(ctx->desc)) == WLANAPI_NOT_AVAILABLE)
+		  {
+			if (wzc_ctrl_disable_wzc(ctx->intName) != 0)
+			{
+				debug_printf(DEBUG_NORMAL, "Unable to disable WZC for interface %s.\n", ctx->desc);
+			}
+		  }
+		  else if (retval != WLANAPI_OK)
+		  {
+			  debug_printf(DEBUG_NORMAL, "Unable to disable WZC for interface %s.\n", ctx->desc);
+		  }
 	  }
 
 	  if (context_create_wireless_ctx((wireless_ctx **)&ctx->intTypeData, 0) != XENONE)

@@ -73,7 +73,7 @@ TrayApp::TrayApp(QApplication &app):
   m_pViewLogAction       = NULL;
   m_pTroubleticketAction = NULL;
   m_pLoginDlg            = NULL;
-  m_pAboutWindow            = NULL;
+  m_pAboutWindow         = NULL;
   m_pLoggingCon          = NULL;
   m_pConfDlg             = NULL;
   m_pEmitter             = NULL;
@@ -874,11 +874,12 @@ void TrayApp::slotControlInterfaces()
 
 	m_pIntCtrl = new InterfaceCtrl(m_p1XControl->isChecked(), m_pEmitter, &m_supplicant, this);
 
-	m_pIntCtrl->exec();
 	if (m_pIntCtrl->updateSupplicant() == true)
 	{
 		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceControl(bool)), this, SLOT(slotControlInterfacesDone(bool)));
 	}
+
+	m_pIntCtrl->exec();
 }
 
 void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
