@@ -62,11 +62,9 @@ ConfigProfileTabs::~ConfigProfileTabs()
 
 	 // Hook up the validate servers checkbox.
 	 Util::myDisconnect(m_pValidateServer, SIGNAL(stateChanged(int)), this, SLOT(slotValidateServerChanged(int)));
-	 Util::myDisconnect(m_pValidateServer, SIGNAL(stateChanged(int)), this, SIGNAL(signalDataChanged()));
 
 	 // Hook up the outer identity radio buttons.
 	 Util::myDisconnect(m_pUseThisIdent, SIGNAL(toggled(bool)), this, SLOT(slotPickIdentity(bool)));
-	 Util::myDisconnect(m_pUseThisIdent, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
 	 Util::myDisconnect(m_pPhase1Ident, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 	 Util::myDisconnect(m_pAnonIdent, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
 
@@ -75,19 +73,12 @@ ConfigProfileTabs::~ConfigProfileTabs()
 	 Util::myDisconnect(m_pPromptForPWD, SIGNAL(toggled(bool)), this, SLOT(slotSetPromptForPWD(bool)));
 	 Util::myDisconnect(m_pDontPrompt, SIGNAL(toggled(bool)), this, SLOT(slotDontPrompt(bool)));
 
-	 Util::myDisconnect(m_pPromptForUPW, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
- 	 Util::myDisconnect(m_pPromptForPWD, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
-	 Util::myDisconnect(m_pDontPrompt, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
-
 	 Util::myDisconnect(m_pUsername, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 	 Util::myDisconnect(m_pPassword, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 
  	 Util::myDisconnect(m_pInnerMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(slotInnerMethodChanged(int)));
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDifferentServerSelected(int)));	
-
-	 //Util::myDisconnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
-
 	}
 }
 
@@ -735,7 +726,7 @@ bool ConfigProfileTabs::save()
 bool ConfigProfileTabs::attach()
 {
 	UIPlugins *currentPlugin       = NULL;
-	int pluginStatus                = 0;
+	int pluginStatus               = 0;
 
 	m_pProfileTabs = qFindChild<QTabWidget*>(m_pRealWidget, "widgetTabsProfiles");
 	if (m_pProfileTabs == NULL)
@@ -875,11 +866,9 @@ bool ConfigProfileTabs::attach()
 
 	 // Hook up the validate servers checkbox.
 	 Util::myConnect(m_pValidateServer, SIGNAL(stateChanged(int)), this, SLOT(slotValidateServerChanged(int)));
-	 Util::myConnect(m_pValidateServer, SIGNAL(stateChanged(int)), this, SIGNAL(signalDataChanged()));
 
 	 // Hook up the outer identity radio buttons.
 	 Util::myConnect(m_pUseThisIdent, SIGNAL(toggled(bool)), this, SLOT(slotPickIdentity(bool)));
-	 Util::myConnect(m_pUseThisIdent, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pPhase1Ident, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pAnonIdent, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
 
@@ -887,10 +876,6 @@ bool ConfigProfileTabs::attach()
 	 Util::myConnect(m_pPromptForUPW, SIGNAL(toggled(bool)), this, SLOT(slotSetPromptForUPW(bool)));
 	 Util::myConnect(m_pPromptForPWD, SIGNAL(toggled(bool)), this, SLOT(slotSetPromptForPWD(bool)));
 	 Util::myConnect(m_pDontPrompt, SIGNAL(toggled(bool)), this, SLOT(slotDontPrompt(bool)));
-
-	 Util::myConnect(m_pPromptForUPW, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
- 	 Util::myConnect(m_pPromptForPWD, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
-	 Util::myConnect(m_pDontPrompt, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
 
 	 Util::myConnect(m_pUsername, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pPassword, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
@@ -1386,6 +1371,8 @@ void ConfigProfileTabs::slotValidateServerChanged(int newState)
 		setLabelValid(m_pTSLabel);
 		m_pTrustedServerCombo->setToolTip("");
 	}
+
+	emit signalDataChanged();
 }
 
 void ConfigProfileTabs::slotPickIdentity(bool isChecked)
@@ -1398,6 +1385,8 @@ void ConfigProfileTabs::slotPickIdentity(bool isChecked)
 	{
 		m_pPhase1Ident->setEnabled(false);
 	}
+
+	emit signalDataChanged();
 }
 
 void ConfigProfileTabs::slotSetPromptForUPW(bool isChecked)
@@ -1409,6 +1398,8 @@ void ConfigProfileTabs::slotSetPromptForUPW(bool isChecked)
 		m_pPassword->clear();
 		m_pPassword->setEnabled(false);
 		m_pShowBtn->setEnabled(false);
+
+		emit signalDataChanged();
 	}
 }
 
@@ -1420,6 +1411,8 @@ void ConfigProfileTabs::slotSetPromptForPWD(bool isChecked)
 		m_pPassword->setEnabled(false);
 		m_pPassword->clear();
 		m_pShowBtn->setEnabled(false);
+
+		emit signalDataChanged();
 	}
 }
 
@@ -1429,7 +1422,10 @@ void ConfigProfileTabs::slotDontPrompt(bool isChecked)
 	{
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(true);
-		m_pShowBtn->setEnabled(true);}
+		m_pShowBtn->setEnabled(true);
+
+		emit signalDataChanged();
+	}
 }
 
 void ConfigProfileTabs::slotDataChanged()

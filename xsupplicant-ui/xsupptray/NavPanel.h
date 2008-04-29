@@ -61,6 +61,10 @@ class NavPanel : public QWidget
   ~NavPanel();
 
   bool attach();
+  void changeSelectedItem(int, QString);
+  void addItem(int itemType, const QString toAdd);
+  void renameItem(int, QString, QString);
+  void removeItem(int, QString);
 
 signals:
   void signalItemClicked(int, const QString &);
@@ -68,65 +72,59 @@ signals:
   void signalItemDeleted(int);
   void navItemSelected(int, const QString &);
 
-  public slots:
-	  void slotChangeSelected(int, const QString &);
-	  void slotAddItem(int, const QString &);
-	  void slotRenameItem(int, const QString &, const QString &);
-	  void slotRemoveItem(int, const QString &);
-	  void slotNavChangeItem(int, const QString &);
+private slots:
+  void slotItemClicked(QTreeWidgetItem *, int);
+  void slotNewClicked();
+  void slotDelItem();
+  void slotDecideNavItemClicked(int, const QString &);
+  void slotDelPressed();
+  void slotItemChanged();
 
-  private slots:
-	  void slotItemClicked(QTreeWidgetItem *, int);
-	  void slotNewClicked();
-	  void slotDelItem();
-	  void slotDecideNavItemClicked(int, const QString &);
-	  void slotDelPressed();
-	  void slotItemChanged();
+private:
+	void populateTree();
+	void populateConnections();
+	void populateProfiles();
+	void populateTrustedServers();
+	void changeSelected(int, const QString &);
 
- private:
-	 void populateTree();
-	 void populateConnections();
-	 void populateProfiles();
-	 void populateTrustedServers();
+	void enableNavBtns();
+	void disableNavBtns();
 
-	 void enableNavBtns();
-	 void disableNavBtns();
+	void changeHighlight(QTreeWidgetItem *parent, QString item);
 
-	 void changeHighlight(QTreeWidgetItem *parent, QString item);
+	void addItem(QTreeWidgetItem *parent, int itemType, QString child, QString icon);
 
-	 void addItem(QTreeWidgetItem *parent, int itemType, QString child, QString icon);
+	QTreeWidgetItem *getSelectedItem();
 
-	 QTreeWidgetItem *getSelectedItem();
+	QTreeWidgetItem *findTreeChild(QTreeWidgetItem *parent, QString name);
 
-	 QTreeWidgetItem *findTreeChild(QTreeWidgetItem *parent, QString name);
+	QWidget *m_pRealWidget;
+	QWidget *m_pParent;
 
-	 QWidget *m_pRealWidget;
-	 QWidget *m_pParent;
+	Emitter *m_pEmitter;
 
-	 Emitter *m_pEmitter;
+	QPushButton *m_pNewButton;
+	QPushButton *m_pDeleteButton;
 
-	 QPushButton *m_pNewButton;
-	 QPushButton *m_pDeleteButton;
+	QTreeWidget *m_pManagedItems;
 
-	 QTreeWidget *m_pManagedItems;
+	QTreeWidgetItem *m_pConnectionsItem;
+	QTreeWidgetItem *m_pProfilesItem;
+	QTreeWidgetItem *m_pTrustedServersItem;
+	QTreeWidgetItem *m_pGlobalsItem;
+	QTreeWidgetItem *m_pAdvancedItem;
 
-	 QTreeWidgetItem *m_pConnectionsItem;
-	 QTreeWidgetItem *m_pProfilesItem;
-	 QTreeWidgetItem *m_pTrustedServersItem;
-	 QTreeWidgetItem *m_pGlobalsItem;
-	 QTreeWidgetItem *m_pAdvancedItem;
+	conn_enum *m_pConns;
+	profile_enum *m_pProfs;
+	trusted_servers_enum *m_pTrustedServers;
 
-	 conn_enum *m_pConns;
-	 profile_enum *m_pProfs;
-	 trusted_servers_enum *m_pTrustedServers;
+	XSupCalls *m_supplicant;
+	QShortcut *myShortcut;
 
-	 XSupCalls *m_supplicant;
-	 QShortcut *myShortcut;
+	bool m_bDontEmitChange;
 
-	 bool m_bDontEmitChange;
-
-	 int activeType;
-	 QString activeName;
+	int activeType;
+	QString activeName;
 };
 
 #endif  // _NAVPANEL_H_

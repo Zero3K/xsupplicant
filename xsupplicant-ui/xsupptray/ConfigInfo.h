@@ -38,13 +38,14 @@
 #include "xsupcalls.h"
 #include "ConfigStackedWidget.h"
 #include "UIPlugins.h"
+#include "NavPanel.h"
 
 class ConfigInfo : public QWidget
  {
      Q_OBJECT
 
  public:
-	 ConfigInfo(QWidget *proxy, conn_enum **ppConnEnum, profile_enum **ppProfEnum, trusted_servers_enum **ppTSEnum, Emitter *e, XSupCalls *sup, QWidget *parent, UIPlugins *pPlugins);
+	 ConfigInfo(QWidget *proxy, conn_enum **ppConnEnum, profile_enum **ppProfEnum, trusted_servers_enum **ppTSEnum, Emitter *e, XSupCalls *sup, NavPanel *pPanel, UIPlugins *pPlugins, QWidget *parent);
 	 ~ConfigInfo();
 
 	 bool attach();
@@ -89,6 +90,7 @@ signals:
 	 QWidget *m_pParent;
 
 	 UIPlugins *m_pPlugins;
+	 NavPanel *m_pNavPanel;
 };
 
 #endif  // _CONFIGINFO_H_

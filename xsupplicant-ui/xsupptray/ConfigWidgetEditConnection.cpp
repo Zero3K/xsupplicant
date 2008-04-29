@@ -37,8 +37,8 @@
 #include "helpbrowser.h"
 #include "Util.h"
 
-ConfigWidgetEditConnection::ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, QWidget *parent) :
-	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalConnName(connName), m_pEmitter(e)
+ConfigWidgetEditConnection::ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, NavPanel *pPanel, QWidget *parent) :
+	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalConnName(connName), m_pEmitter(e), m_pNavPanel(pPanel)
 {
 	m_pTabs = NULL;
 	m_pTabsWidget = NULL;
@@ -61,9 +61,6 @@ ConfigWidgetEditConnection::~ConfigWidgetEditConnection()
 
 void ConfigWidgetEditConnection::detach()
 {
-	Util::myDisconnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pParent, SIGNAL(signalAddItem(int, const QString &)));
-	Util::myDisconnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pParent, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
-
 	if (m_pConnNameEdit != NULL)
 	{
 		Util::myDisconnect(m_pConnNameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(slotConnectionRenamed(const QString &)));
@@ -72,8 +69,6 @@ void ConfigWidgetEditConnection::detach()
 	Util::myDisconnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
 
 	Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotHelp()));
-
-	Util::myDisconnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pParent, SIGNAL(signalRemoveItem(int, const QString &)));
 }
 
 bool ConfigWidgetEditConnection::attach()
@@ -94,9 +89,6 @@ bool ConfigWidgetEditConnection::attach()
 
 	m_pTabs->setCurrentIndex(0);  // Always start with tab 0.
 
-	// This needs to be connected before calling updateWindow()!
-	Util::myConnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pParent, SIGNAL(signalAddItem(int, const QString &)));
-
 	updateWindow();
 
 	m_pTabsWidget = new ConfigConnectionTabs(m_pRealWidget, m_pEmitter, m_pSupplicant, m_pConnection, this);
@@ -108,10 +100,6 @@ bool ConfigWidgetEditConnection::attach()
 	Util::myConnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
 
 	Util::myConnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotHelp()));
-
-	Util::myConnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pParent, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
-
-	Util::myConnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pParent, SIGNAL(signalRemoveItem(int, const QString &)));
 
 	Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
 
@@ -156,7 +144,7 @@ void ConfigWidgetEditConnection::updateWindow()
 			return;
 		}
 
-		emit signalAddItem(NavPanel::CONNECTIONS_ITEM, QString(m_pConnection->name));
+		m_pNavPanel->addItem(NavPanel::CONNECTIONS_ITEM, QString(m_pConnection->name));
 
 		m_originalConnName = QString(m_pConnection->name);
 		m_lastConnName = QString(m_pConnection->name);
@@ -240,7 +228,7 @@ void ConfigWidgetEditConnection::slotConnectionRenamed(const QString &newValue)
 	
 	slotDataChanged();
 
-	emit signalRenameItem(NavPanel::SELECTED_ITEM, m_lastConnName, newValue);
+	m_pNavPanel->renameItem(NavPanel::SELECTED_ITEM, m_lastConnName, newValue);
 	m_lastConnName = newValue;
 }
 
@@ -251,11 +239,11 @@ void ConfigWidgetEditConnection::discard()
 
 	if (m_bNewConnection)
 	{
-		emit signalRemoveItem(NavPanel::CONNECTIONS_ITEM, m_pConnNameEdit->text());
+		m_pNavPanel->removeItem(NavPanel::CONNECTIONS_ITEM, m_pConnNameEdit->text());
 	}
 	else
 	{
-		emit signalRenameItem(NavPanel::CONNECTIONS_ITEM, m_pConnNameEdit->text(), m_originalConnName);
+		m_pNavPanel->renameItem(NavPanel::CONNECTIONS_ITEM, m_pConnNameEdit->text(), m_originalConnName);
 	}
 }
 

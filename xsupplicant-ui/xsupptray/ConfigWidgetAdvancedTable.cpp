@@ -60,7 +60,6 @@ ConfigWidgetAdvancedTable::~ConfigWidgetAdvancedTable()
 	{
 		Util::myDisconnect(m_pRealTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(slotDoubleClicked(int, int)));
 		Util::myDisconnect(this, SIGNAL(signalSetWidget(int, const QString &)), m_pParent, SLOT(slotSetWidget(int, const QString &)));
-		Util::myDisconnect(this, SIGNAL(signalNavChangeSelected(int, const QString &)), m_pParent, SIGNAL(signalNavChangeSelected(int, const QString &)));
 		Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
 	}
 }
@@ -69,7 +68,6 @@ bool ConfigWidgetAdvancedTable::attach()
 {
 	Util::myConnect(m_pRealTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(slotDoubleClicked(int, int)));
 	Util::myConnect(this, SIGNAL(signalSetWidget(int, const QString &)), m_pParent, SLOT(slotSetWidget(int, const QString &)));
-	Util::myConnect(this, SIGNAL(signalNavChangeSelected(int, const QString &)), m_pParent, SIGNAL(signalNavChangeSelected(int, const QString &)));
 	Util::myConnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
 
 	m_pRealTable->clearSelection();
@@ -84,12 +82,10 @@ void ConfigWidgetAdvancedTable::slotDoubleClicked(int row, int column)
 	// We only care about the row.
 	if (row == ADVANCED_SETTINGS)
 	{
-		emit signalNavChangeSelected(NavPanel::ADVANCED_ITEM, QString("Advanced_Settings"));
 		emit signalSetWidget(NavPanel::ADVANCED_ITEM, QString("Advanced_Settings"));
 	}
 	else if (row == ADVANCED_INTERNALS)
 	{
-		emit signalNavChangeSelected(NavPanel::ADVANCED_ITEM, QString("Advanced_Internals"));
 		emit signalSetWidget(NavPanel::ADVANCED_ITEM, QString("Advanced_Internals"));
 	}
 	else

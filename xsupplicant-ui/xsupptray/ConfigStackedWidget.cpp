@@ -47,8 +47,8 @@
 #include "ConfigWidgetEditConnection.h"
 #include "ConfigWidgetEditProfile.h"
 
-ConfigStackedWidget::ConfigStackedWidget(QStackedWidget *proxy, conn_enum **ppConnEnum, profile_enum **ppProfEnum, trusted_servers_enum **ppTSEnum, Emitter *e, XSupCalls *sup, QWidget *parent, UIPlugins *pPlugins):
-	m_pRealWidget(proxy), m_ppConnEnum(ppConnEnum), m_ppProfileEnum(ppProfEnum), m_ppTrustedServersEnum(ppTSEnum), m_pEmitter(e), m_pSupplicant(sup), m_pParent(parent), m_pPlugins(pPlugins)
+ConfigStackedWidget::ConfigStackedWidget(QStackedWidget *proxy, conn_enum **ppConnEnum, profile_enum **ppProfEnum, trusted_servers_enum **ppTSEnum, Emitter *e, XSupCalls *sup, NavPanel *pPanel, UIPlugins *pPlugins, QWidget *parent):
+	m_pRealWidget(proxy), m_ppConnEnum(ppConnEnum), m_ppProfileEnum(ppProfEnum), m_ppTrustedServersEnum(ppTSEnum), m_pEmitter(e), m_pSupplicant(sup), m_pParent(parent), m_pPlugins(pPlugins), m_pNavPanel(pPanel)
 {
 	m_bConnected = false;
 	m_bIsDeleted = false;
@@ -60,20 +60,19 @@ ConfigStackedWidget::~ConfigStackedWidget()
 {
 	if (m_bConnected)
 	{
-		Util::myDisconnect(m_pParent, SIGNAL(signalItemClicked(int, const QString &)), this, SLOT(slotSetWidget(int, const QString &)));
+		Util::myDisconnect(m_pNavPanel, SIGNAL(signalItemClicked(int, const QString &)), this, SLOT(slotSetWidget(int, const QString &)));
 		Util::myDisconnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SLOT(slotSetSaveBtn(bool)));
-		Util::myDisconnect(this, SIGNAL(signalNavChangeSelected(int, const QString &)), m_pParent, SIGNAL(signalNavChangeSelected(int, const QString &)));
 
 		Util::myDisconnect(m_pParent, SIGNAL(signalSaveClicked()), this, SLOT(slotSaveClicked()));
 		Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SIGNAL(signalHelpClicked()));
-		Util::myDisconnect(m_pParent, SIGNAL(signalNewItem(int)), this, SLOT(slotNewItem(int)));
+		Util::myDisconnect(m_pNavPanel, SIGNAL(signalNewItem(int)), this, SLOT(slotNewItem(int)));
 
-		Util::myDisconnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pParent, SIGNAL(signalAddItem(int, const QString &)));
-		Util::myDisconnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pParent, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
-		Util::myDisconnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pParent, SIGNAL(signalRemoveItem(int, const QString &)));
+/*		Util::myDisconnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pNavPanel, SIGNAL(signalAddItem(int, const QString &)));
+		Util::myDisconnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pNavPanel, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
+		Util::myDisconnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pNavPanel, SIGNAL(signalRemoveItem(int, const QString &)));
 		Util::myDisconnect(this, SIGNAL(signalNavChangeItem(int, const QString &)), m_pParent, SIGNAL(signalNavChangeItem(int, const QString &)));
-
-		Util::myDisconnect(m_pParent, SIGNAL(signalItemDeleted(int)), this, SLOT(slotDeletedItem(int)));
+*/
+		Util::myDisconnect(m_pNavPanel, SIGNAL(signalItemDeleted(int)), this, SLOT(slotDeletedItem(int)));
 	}
 
 	if (m_pActivePage != NULL)
@@ -87,20 +86,19 @@ bool ConfigStackedWidget::attach()
 {
 	slotSetWidget(NavPanel::CONNECTIONS_ITEM, "");
 
-	Util::myConnect(m_pParent, SIGNAL(signalItemClicked(int, const QString &)), this, SLOT(slotSetWidget(int, const QString &)));
+	Util::myConnect(m_pNavPanel, SIGNAL(signalItemClicked(int, const QString &)), this, SLOT(slotSetWidget(int, const QString &)));
 	Util::myConnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SLOT(slotSetSaveBtn(bool)));
-	Util::myConnect(this, SIGNAL(signalNavChangeSelected(int, const QString &)), m_pParent, SIGNAL(signalNavChangeSelected(int, const QString &)));
 
 	Util::myConnect(m_pParent, SIGNAL(signalSaveClicked()), this, SLOT(slotSaveClicked()));
 	Util::myConnect(m_pParent, SIGNAL(signalHelpClicked()), this, SIGNAL(signalHelpClicked()));
-	Util::myConnect(m_pParent, SIGNAL(signalNewItem(int)), this, SLOT(slotNewItem(int)));
+	Util::myConnect(m_pNavPanel, SIGNAL(signalNewItem(int)), this, SLOT(slotNewItem(int)));
 
-	Util::myConnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pParent, SIGNAL(signalAddItem(int, const QString &)));
-	Util::myConnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pParent, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
-	Util::myConnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pParent, SIGNAL(signalRemoveItem(int, const QString &)));
+/*	Util::myConnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pNavPanel, SIGNAL(signalAddItem(int, const QString &)));
+	Util::myConnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pNavPanel, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
+	Util::myConnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pNavPanel, SIGNAL(signalRemoveItem(int, const QString &)));
 	Util::myConnect(this, SIGNAL(signalNavChangeItem(int, const QString &)), m_pParent, SIGNAL(signalNavChangeItem(int, const QString &)));
-
-	Util::myConnect(m_pParent, SIGNAL(signalItemDeleted(int)), this, SLOT(slotDeletedItem(int)));
+*/
+	Util::myConnect(m_pNavPanel, SIGNAL(signalItemDeleted(int)), this, SLOT(slotDeletedItem(int)));
 
 	m_bConnected = true;
 
@@ -150,24 +148,25 @@ void ConfigStackedWidget::changeWidget(int stackIdx, const QString &editItem, bo
 	{
 		// Ask the user if we should save first.
 		switch (QMessageBox::question(this, tr("You have changed data"), tr("You have unsaved changes.  Would you like to save them?"),
-			(QMessageBox::Save | QMessageBox::Discard), QMessageBox::Discard))  // Discard is the default.
+			(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel), QMessageBox::Discard))  // Discard is the default.
 		{
 		case QMessageBox::Save:
 			if (m_pActivePage->save() == false)
 			{
 				QMessageBox::information(this, tr("Unable to save data"), tr("Your configuration changes couldn't be saved.  Please verify that all data is valid, and that the configuration file is not write protected, or in use by another program."));
 				m_pActivePage->getPageName(name);
-				emit signalNavChangeItem(curPage, name);
+				m_pNavPanel->changeSelectedItem(curPage, name);
 				return;
 			}
 			refreshData();
 			break;
-/*
+
 		case QMessageBox::Cancel:
 			m_pActivePage->getPageName(name);
-			emit signalNavChangeItem(curPage, name);
+			m_pNavPanel->changeSelectedItem(curPage, name);
+			return;
 			break;
-*/
+
 		default:
 		case QMessageBox::Discard:
 			refreshData();
@@ -216,6 +215,8 @@ void ConfigStackedWidget::changeWidget(int stackIdx, const QString &editItem, bo
 		QMessageBox::critical(this, tr("Unknown Item Selected"), tr("You have selected an item from the navigation that is unknown."));
 		break;
 	}
+
+	m_pNavPanel->changeSelectedItem(curPage, editItem);
 }
 
 void ConfigStackedWidget::doConnectionsPanels(QString toEdit, bool isNew)
@@ -272,7 +273,7 @@ void ConfigStackedWidget::doConnectionsPanels(QString toEdit, bool isNew)
 		}
 		else
 		{
-			m_pActivePage = new ConfigWidgetEditConnection(pRealWidget, m_pEmitter, toEdit, m_pSupplicant, this);
+			m_pActivePage = new ConfigWidgetEditConnection(pRealWidget, m_pEmitter, toEdit, m_pSupplicant, m_pNavPanel, this);
 
 			if (isNew)
 			{
@@ -341,7 +342,7 @@ void ConfigStackedWidget::doProfilesPanels(QString toEdit, bool isNew)
 		}
 		else
 		{
-			m_pActivePage = new ConfigWidgetEditProfile(pRealWidget, toEdit, m_pSupplicant, this, m_pPlugins);
+			m_pActivePage = new ConfigWidgetEditProfile(pRealWidget, toEdit, m_pSupplicant, m_pNavPanel, m_pPlugins, this);
 
 			if (isNew)
 			{
@@ -577,7 +578,7 @@ void ConfigStackedWidget::doTrustedServersPanels(QString toEdit, bool isNew)
 		}
 		else
 		{
-			m_pActivePage = new ConfigWidgetEditTrustedServers(pRealWidget, toEdit, m_pSupplicant, this);
+			m_pActivePage = new ConfigWidgetEditTrustedServers(pRealWidget, toEdit, m_pSupplicant, m_pNavPanel, this);
 
 			if (isNew)
 			{
@@ -589,7 +590,6 @@ void ConfigStackedWidget::doTrustedServersPanels(QString toEdit, bool isNew)
 				QMessageBox::critical(this, tr("Object Creation Error"), tr("The trusted server configuration page couldn't be created."));
 			}
 		}
-
 	}
 }
 

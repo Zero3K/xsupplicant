@@ -112,29 +112,6 @@ void NavPanel::slotItemChanged()
 	slotItemClicked(myList.first(), 0);
 }
 
-void NavPanel::slotNavChangeItem(int type, const QString &newval)
-{
-	QList<QTreeWidgetItem *>myList;
-	QModelIndex mymodel;
-
-	m_bDontEmitChange = true;
-
-	slotChangeSelected(type, newval);
-
-	activeType = type;
-	activeName = newval;
-
-//	myList = m_pManagedItems->selectedItems();
-
-//	m_pManagedItems->setCurrentItem(myList.first());
-	//m_pManagedItems->setItemSelected(m_pManagedItems->currentItem(), true);
-//	m_pManagedItems->selectionModel()->;
-	//mymodel.child(-1,-1);
-	//m_pManagedItems->setCurrentIndex(mymodel.child(-1, -1));
-
-	m_bDontEmitChange = false;
-}
-
 void NavPanel::slotDelPressed()
 {
 	// Only do something if the delete button is enabled.
@@ -516,7 +493,7 @@ void NavPanel::slotDelItem()
 	}
 }
 
-void NavPanel::slotChangeSelected(int index, const QString &itemName)
+void NavPanel::changeSelected(int index, const QString &itemName)
 {
 	switch (index)
 	{
@@ -545,6 +522,11 @@ void NavPanel::slotChangeSelected(int index, const QString &itemName)
 			activeType = GLOBALS_ITEM;
 			activeName = "Global_Logging";
 		}
+		else if (itemName == "")
+		{
+			activeType = GLOBALS_ITEM;
+			activeName = "";
+		}
 		else
 		{
 			QMessageBox::critical(this, tr("Programming Error"), tr("There was a request to change the navigation panel to a non-existant item under Globals!"));
@@ -565,6 +547,11 @@ void NavPanel::slotChangeSelected(int index, const QString &itemName)
 			m_pManagedItems->setCurrentItem(m_pAdvancedItem->child(ADVANCED_INTERNAL_ITEM));
 			activeType = ADVANCED_ITEM;
 			activeName = "Advanced_Internals";
+		}
+		else if (itemName == "")
+		{
+			activeType = ADVANCED_ITEM;
+			activeName = "";
 		}
 		else
 		{
@@ -609,7 +596,7 @@ void NavPanel::changeHighlight(QTreeWidgetItem *parent, QString item)
 	}
 }
 
-void NavPanel::slotAddItem(int itemType, const QString &toAdd)
+void NavPanel::addItem(int itemType, const QString toAdd)
 {
 	m_bDontEmitChange = true;
 
@@ -618,19 +605,19 @@ void NavPanel::slotAddItem(int itemType, const QString &toAdd)
 	case CONNECTIONS_ITEM:
 		if (m_pConnectionsItem != NULL)
 			addItem(m_pConnectionsItem, CONNECTIONS_ITEM, toAdd, "tree_connections.png");
-		slotChangeSelected(itemType, toAdd);
+		changeSelected(itemType, toAdd);
 		break;
 
 	case PROFILES_ITEM:
 		if (m_pProfilesItem != NULL)
 			addItem(m_pProfilesItem, PROFILES_ITEM, toAdd, "tree_profiles.png");
-		slotChangeSelected(itemType, toAdd);
+		changeSelected(itemType, toAdd);
 		break;
 
 	case TRUSTED_SERVERS_ITEM:
 		if (m_pTrustedServersItem != NULL)
 			addItem(m_pTrustedServersItem, TRUSTED_SERVERS_ITEM, toAdd, "tree_trustedservers.png");
-		slotChangeSelected(itemType, toAdd);
+		changeSelected(itemType, toAdd);
 		break;
 
 	default:
@@ -644,7 +631,7 @@ void NavPanel::slotAddItem(int itemType, const QString &toAdd)
 	m_bDontEmitChange = false;
 }
 
-void NavPanel::slotRenameItem(int itemType, const QString &oldName, const QString &newName)
+void NavPanel::renameItem(int itemType, QString oldName, QString newName)
 {
 	QTreeWidgetItem *workingItem = NULL;
 
@@ -688,7 +675,7 @@ void NavPanel::slotRenameItem(int itemType, const QString &oldName, const QStrin
 	}
 }
 
-void NavPanel::slotRemoveItem(int itemType, const QString &toRemove)
+void NavPanel::removeItem(int itemType, QString toRemove)
 {
 	QTreeWidgetItem *workingItem = NULL;
 	QTreeWidgetItem *toDelete = NULL;
@@ -743,5 +730,13 @@ void NavPanel::slotDecideNavItemClicked(int type, const QString &name)
 	}
 	// Otherwise, ignore it.
 }
+
+void NavPanel::changeSelectedItem(int type, QString name)
+{
+	m_bDontEmitChange = true;
+	changeSelected(type, name);
+	m_bDontEmitChange = false;
+}
+
 
 

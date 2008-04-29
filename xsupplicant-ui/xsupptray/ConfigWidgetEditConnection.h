@@ -37,13 +37,14 @@
 #include "TabWidgetBase.h"
 #include "ConfigConnectionTabs.h"
 #include "xsupcalls.h"
+#include "NavPanel.h"
 
 class ConfigWidgetEditConnection : public ConfigWidgetBase
  {
      Q_OBJECT
 
  public:
-	 ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, QWidget *parent);
+	 ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, NavPanel *pPanel, QWidget *parent);
 	 ~ConfigWidgetEditConnection();
 
 	 bool attach();
@@ -89,6 +90,8 @@ private slots:
 	 bool m_bChangedData;
 	 bool m_bNewConnection;
 	 bool m_bConnectionRenamed;
+
+	 NavPanel *m_pNavPanel;
 
 	 config_connection *m_pConnection;
 };

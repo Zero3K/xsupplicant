@@ -36,8 +36,8 @@
 #include "ConfigWidgetEditProfile.h"
 #include "Util.h"
 
-ConfigWidgetEditProfile::ConfigWidgetEditProfile(QWidget *pRealWidget, QString profName, XSupCalls *xsup, QWidget *parent, UIPlugins *pPlugins) :
-	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalProfName(profName), m_pPlugins(pPlugins)
+ConfigWidgetEditProfile::ConfigWidgetEditProfile(QWidget *pRealWidget, QString profName, XSupCalls *xsup, NavPanel *pPanel, UIPlugins *pPlugins, QWidget *parent) :
+	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalProfName(profName), m_pPlugins(pPlugins), m_pNavPanel(pPanel)
 {
 	m_pTabsWidget = NULL;
 
@@ -59,9 +59,6 @@ ConfigWidgetEditProfile::~ConfigWidgetEditProfile()
 
 void ConfigWidgetEditProfile::detach()
 {
-	Util::myDisconnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pParent, SIGNAL(signalAddItem(int, const QString &)));
-	Util::myDisconnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pParent, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
-
 	if (m_pProfNameEdit != NULL)
 	{
 		Util::myDisconnect(m_pProfNameEdit, SIGNAL(textChanged(const QString &)), this, SLOT(slotProfileRenamed(const QString &)));
@@ -69,14 +66,11 @@ void ConfigWidgetEditProfile::detach()
 
 	Util::myDisconnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
 
-	Util::myDisconnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pParent, SIGNAL(signalRemoveItem(int, const QString &)));
-
 	Util::myDisconnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
 
 	Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
 
 	Util::myDisconnect(m_pEapType, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(slotChangeEAPType(const QString &)));
-	Util::myDisconnect(m_pEapType, SIGNAL(currentIndexChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 
 	// Make sure the tabs widget detaches itself before we delete it.
 	// This helps clean up the plugins.
@@ -103,9 +97,6 @@ bool ConfigWidgetEditProfile::attach()
 		return false;
 	}
 
-	// This needs to be connected before calling updateWindow()!
-	Util::myConnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pParent, SIGNAL(signalAddItem(int, const QString &)));
-
 	updateWindow();
 
 	m_pTabsWidget = new ConfigProfileTabs(m_pRealWidget, m_pSupplicant, m_pProfile, this, m_pPlugins);
@@ -116,15 +107,10 @@ bool ConfigWidgetEditProfile::attach()
 
 	Util::myConnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
 
-	Util::myConnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pParent, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
-
-	Util::myConnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pParent, SIGNAL(signalRemoveItem(int, const QString &)));
-
 	Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
 
 	// Connection signals for the EAP selection combo box.
 	Util::myConnect(m_pEapType, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(slotChangeEAPType(const QString &)));
-	Util::myConnect(m_pEapType, SIGNAL(currentIndexChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 
 	Util::myConnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
 
@@ -175,7 +161,7 @@ void ConfigWidgetEditProfile::updateWindow()
 			return;
 		}
 
-		emit signalAddItem(NavPanel::PROFILES_ITEM, QString(m_pProfile->name));
+		m_pNavPanel->addItem(NavPanel::PROFILES_ITEM, QString(m_pProfile->name));
 
 		m_originalProfName = QString(m_pProfile->name);
 		m_lastProfName = QString(m_pProfile->name);
@@ -289,7 +275,7 @@ void ConfigWidgetEditProfile::slotProfileRenamed(const QString &newValue)
 	
 	slotDataChanged();
 
-	emit signalRenameItem(NavPanel::SELECTED_ITEM, m_lastProfName, newValue);
+	m_pNavPanel->renameItem(NavPanel::SELECTED_ITEM, m_lastProfName, newValue);
 	m_lastProfName = newValue;
 }
 
@@ -300,17 +286,19 @@ void ConfigWidgetEditProfile::discard()
 
 	if (m_bNewProfile)
 	{
-		emit signalRemoveItem(NavPanel::PROFILES_ITEM, m_pProfNameEdit->text());
+		m_pNavPanel->removeItem(NavPanel::PROFILES_ITEM, m_pProfNameEdit->text());
 	}
 	else
 	{
-		emit signalRenameItem(NavPanel::PROFILES_ITEM, m_pProfNameEdit->text(), m_originalProfName);
+		m_pNavPanel->renameItem(NavPanel::PROFILES_ITEM, m_pProfNameEdit->text(), m_originalProfName);
 	}
 }
 
 void ConfigWidgetEditProfile::slotChangeEAPType(const QString &newEAPName)
 {
 	m_pTabsWidget->setPhase1EAPType(newEAPName);
+
+	emit signalDataChanged();
 }
 
 void ConfigWidgetEditProfile::slotShowHelp()

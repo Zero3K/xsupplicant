@@ -60,7 +60,6 @@ ConfigWidgetGlobalsTable::~ConfigWidgetGlobalsTable()
 	{
 		Util::myDisconnect(m_pRealTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(slotDoubleClicked(int, int)));
 		Util::myDisconnect(this, SIGNAL(signalSetWidget(int, const QString &)), m_pParent, SLOT(slotSetWidget(int, const QString &)));
-		Util::myDisconnect(this, SIGNAL(signalNavChangeSelected(int, const QString &)), m_pParent, SIGNAL(signalNavChangeSelected(int, const QString &)));
 		Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
 	}
 }
@@ -69,7 +68,6 @@ bool ConfigWidgetGlobalsTable::attach()
 {
 	Util::myConnect(m_pRealTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(slotDoubleClicked(int, int)));
 	Util::myConnect(this, SIGNAL(signalSetWidget(int, const QString &)), m_pParent, SLOT(slotSetWidget(int, const QString &)));
-	Util::myConnect(this, SIGNAL(signalNavChangeSelected(int, const QString &)), m_pParent, SIGNAL(signalNavChangeSelected(int, const QString &)));
 	Util::myConnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
 
 	m_pRealTable->clearSelection();
@@ -84,7 +82,6 @@ void ConfigWidgetGlobalsTable::slotDoubleClicked(int row, int column)
 	// We only care about the row.
 	if (row == GLOBALS_LOGGING)
 	{
-		emit signalNavChangeSelected(NavPanel::GLOBALS_ITEM, QString("Global_Logging"));
 		emit signalSetWidget(NavPanel::GLOBALS_ITEM, QString("Global_Logging"));
 	}
 	else

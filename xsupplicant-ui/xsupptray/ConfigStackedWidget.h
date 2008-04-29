@@ -39,13 +39,14 @@
 #include "xsupcalls.h"
 #include "ConfigWidgetBase.h"
 #include "UIPlugins.h"
+#include "NavPanel.h"
 
 class ConfigStackedWidget : public QWidget
  {
      Q_OBJECT
 
  public:
-	 ConfigStackedWidget(QStackedWidget *proxy, conn_enum **ppConnEnum, profile_enum **ppProfEnum, trusted_servers_enum **ppTSEnum, Emitter *e, XSupCalls *sup, QWidget *parent, UIPlugins *pPlugins);
+	 ConfigStackedWidget(QStackedWidget *proxy, conn_enum **ppConnEnum, profile_enum **ppProfEnum, trusted_servers_enum **ppTSEnum, Emitter *e, XSupCalls *sup, NavPanel *pPanel, UIPlugins *pPlugins, QWidget *parent);
 	 ~ConfigStackedWidget();
 
 	 bool attach();
@@ -67,13 +68,13 @@ class ConfigStackedWidget : public QWidget
 
 signals:
 	 void signalSetSaveBtn(bool);
- 	 void signalNavChangeSelected(int, const QString &);
+// 	 void signalNavChangeSelected(int, const QString &);
 	 void signalSaveClicked();
 	 void signalHelpClicked();
      void signalAddItem(int, const QString &);
      void signalRenameItem(int, const QString &, const QString &);
 	 void signalRemoveItem(int, const QString &);
-	 void signalNavChangeItem(int, const QString &);
+//	 void signalNavChangeItem(int, const QString &);
 
  public slots:
 	 void slotSetWidget(int, const QString &);
@@ -116,6 +117,7 @@ signals:
 	 bool m_bIsDeleted;
 
 	 UIPlugins *m_pPlugins;
+	 NavPanel *m_pNavPanel;
 };
 
 #endif  // _CONFIGSTACKEDWIDGET_H_

@@ -36,8 +36,8 @@
 #include "Util.h"
 #include "UIPlugins.h"
 
-ConfigInfo::ConfigInfo(QWidget *proxy, conn_enum **ppConnEnum, profile_enum **ppProfEnum, trusted_servers_enum **ppTSEnum, Emitter *e, XSupCalls *sup, QWidget *parent, UIPlugins *pPlugins):
-	m_pRealWidget(proxy), m_ppConnEnum(ppConnEnum), m_ppProfileEnum(ppProfEnum), m_ppTrustedServersEnum(ppTSEnum), m_pEmitter(e), m_pSupplicant(sup), m_pParent(parent), m_pPlugins(pPlugins)
+ConfigInfo::ConfigInfo(QWidget *proxy, conn_enum **ppConnEnum, profile_enum **ppProfEnum, trusted_servers_enum **ppTSEnum, Emitter *e, XSupCalls *sup, NavPanel *pPanel, UIPlugins *pPlugins, QWidget *parent):
+	m_pRealWidget(proxy), m_ppConnEnum(ppConnEnum), m_ppProfileEnum(ppProfEnum), m_ppTrustedServersEnum(ppTSEnum), m_pEmitter(e), m_pSupplicant(sup), m_pParent(parent), m_pPlugins(pPlugins), m_pNavPanel(pPanel)
 {
 	m_bHaveClose = false;
 	m_bHaveHelp = false;
@@ -110,7 +110,7 @@ bool ConfigInfo::attach()
 
 	 m_pSaveButton->setEnabled(false);  // We start with nothing that is saveable connected.
 
- 	 m_pStackedWidget = new ConfigStackedWidget(m_pWidget, m_ppConnEnum, m_ppProfileEnum, m_ppTrustedServersEnum, m_pEmitter, m_pSupplicant, this, m_pPlugins);
+ 	 m_pStackedWidget = new ConfigStackedWidget(m_pWidget, m_ppConnEnum, m_ppProfileEnum, m_ppTrustedServersEnum, m_pEmitter, m_pSupplicant, m_pNavPanel, m_pPlugins, this);
 	 if ((m_pStackedWidget == NULL) || (m_pStackedWidget->attach() != true)) return false;
 
 	 return true;

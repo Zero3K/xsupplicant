@@ -36,13 +36,14 @@
 #include "ConfigWidgetBase.h"
 #include "TrustedRootCertsDlg.h"
 #include "xsupcalls.h"
+#include "NavPanel.h"
 
 class ConfigWidgetEditTrustedServers : public ConfigWidgetBase
  {
      Q_OBJECT
 
  public:
-	 ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, QWidget *parent);
+	 ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, NavPanel *pPanel, QWidget *parent);
 	 ~ConfigWidgetEditTrustedServers();
 
 	 bool attach();
@@ -93,6 +94,8 @@ private slots:
 	 bool m_bChangedData;
 	 bool m_bNewServer;
 	 bool m_bServerRenamed;
+
+	 NavPanel *m_pNavPanel;
 
 	 config_trusted_server *m_pTrustedServer;
 };

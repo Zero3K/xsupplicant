@@ -38,13 +38,14 @@
 #include "ConfigProfileTabs.h"
 #include "xsupcalls.h"
 #include "UIPlugins.h"
+#include "NavPanel.h"
 
 class ConfigWidgetEditProfile : public ConfigWidgetBase
  {
      Q_OBJECT
 
  public:
-	 ConfigWidgetEditProfile(QWidget *pRealWidget, QString connName, XSupCalls *xsup, QWidget *parent, UIPlugins *pPlugins);
+	 ConfigWidgetEditProfile(QWidget *pRealWidget, QString connName, XSupCalls *xsup, NavPanel *pPanel, UIPlugins *pPlugins, QWidget *parent);
 	 ~ConfigWidgetEditProfile();
 
 	 bool attach();
@@ -79,7 +80,6 @@ signals:
 
 	 QLineEdit *m_pProfNameEdit;
 	 QComboBox *m_pEapType;
-//	 QTabWidget *m_pTabs;
 	 ConfigProfileTabs *m_pTabsWidget;
 
 	 bool m_bChangedData;
@@ -87,6 +87,7 @@ signals:
 	 bool m_bProfileRenamed;
 
 	 config_profiles *m_pProfile;
+	 NavPanel *m_pNavPanel;
 
 	 UIPlugins *m_pPlugins;
 };

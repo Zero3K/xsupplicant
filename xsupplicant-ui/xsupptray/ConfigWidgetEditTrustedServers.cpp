@@ -37,8 +37,8 @@
 #include "Util.h"
 #include "helpbrowser.h"
 
-ConfigWidgetEditTrustedServers::ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, QWidget *parent) :
-	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalServername(serverName)
+ConfigWidgetEditTrustedServers::ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, NavPanel *pPanel, QWidget *parent) :
+	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalServername(serverName), m_pNavPanel(pPanel)
 {
 	m_pCNEdit = NULL;
 	m_pValidateServer = NULL;
@@ -217,7 +217,7 @@ void ConfigWidgetEditTrustedServers::updateWindow()
 			return;
 		}
 
-		emit signalAddItem(NavPanel::TRUSTED_SERVERS_ITEM, QString(m_pTrustedServer->name));
+		m_pNavPanel->addItem(NavPanel::TRUSTED_SERVERS_ITEM, QString(m_pTrustedServer->name));
 
 		m_originalServername = QString(m_pTrustedServer->name);
 		m_lastServername = QString(m_pTrustedServer->name);
@@ -410,7 +410,7 @@ void ConfigWidgetEditTrustedServers::slotServerRenamed(const QString &newValue)
 	
 	slotDataChanged();
 
-	emit signalRenameItem(NavPanel::SELECTED_ITEM, m_lastServername, newValue);
+	m_pNavPanel->renameItem(NavPanel::SELECTED_ITEM, m_lastServername, newValue);
 	m_lastServername = newValue;
 }
 
@@ -457,11 +457,11 @@ void ConfigWidgetEditTrustedServers::discard()
 
 	if (m_bNewServer)
 	{
-		emit signalRemoveItem(NavPanel::TRUSTED_SERVERS_ITEM, m_pServerNameEdit->text());
+		m_pNavPanel->removeItem(NavPanel::TRUSTED_SERVERS_ITEM, m_pServerNameEdit->text());
 	}
 	else
 	{
-		emit signalRenameItem(NavPanel::TRUSTED_SERVERS_ITEM, m_pServerNameEdit->text(), m_originalServername);
+		m_pNavPanel->renameItem(NavPanel::TRUSTED_SERVERS_ITEM, m_pServerNameEdit->text(), m_originalServername);
 	}
 }
 

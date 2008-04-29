@@ -96,26 +96,16 @@ ConfigDlg::~ConfigDlg()
 		m_pPlugins = currentPlugin;
 	}
 
-	Util::myDisconnect(m_pNavPanel, SIGNAL(signalNewItem(int)), m_pConfigInfo, SIGNAL(signalNewItem(int)));
-	Util::myDisconnect(m_pNavPanel, SIGNAL(signalItemClicked(int, const QString &)), m_pConfigInfo, SIGNAL(signalItemClicked(int, const QString &)));
-	
-	Util::myDisconnect(m_pConfigInfo, SIGNAL(signalNavChangeSelected(int, const QString &)), m_pNavPanel, SLOT(slotChangeSelected(int, const QString &)));
-	Util::myDisconnect(m_pConfigInfo, SIGNAL(signalAddItem(int, const QString &)), m_pNavPanel, SLOT(slotAddItem(int, const QString &)));
-	Util::myDisconnect(m_pConfigInfo, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pNavPanel, SLOT(slotRenameItem(int, const QString &, const QString &)));
-	Util::myDisconnect(m_pConfigInfo, SIGNAL(signalRemoveItem(int, const QString &)), m_pNavPanel, SLOT(slotRemoveItem(int, const QString &)));
-	Util::myDisconnect(m_pNavPanel, SIGNAL(signalItemDeleted(int)), m_pConfigInfo, SIGNAL(signalItemDeleted(int)));
-	Util::myDisconnect(m_pConfigInfo, SIGNAL(signalNavChangeItem(int, const QString &)), m_pNavPanel, SLOT(slotNavChangeItem(int, const QString &)));
+	if (m_pConfigInfo != NULL)
+	{
+		delete m_pConfigInfo;
+		m_pConfigInfo = NULL;
+	}
 
 	if (m_pNavPanel != NULL)
 	{
 		delete m_pNavPanel;
 		m_pNavPanel = NULL;
-	}
-
-	if (m_pConfigInfo != NULL)
-	{
-		delete m_pConfigInfo;
-		m_pConfigInfo = NULL;
 	}
 
 	if (m_pRealForm != NULL)
@@ -174,19 +164,9 @@ bool ConfigDlg::create()
 		return false;
 	}
 
-	m_pConfigInfo = new ConfigInfo(m_pConfInfo, &m_pConns, &m_pProfs, &m_pTrustedServers, m_pEmitter, &m_supplicant, this, m_pPlugins);
+	m_pConfigInfo = new ConfigInfo(m_pConfInfo, &m_pConns, &m_pProfs, &m_pTrustedServers, m_pEmitter, &m_supplicant, m_pNavPanel, m_pPlugins, this);
 
 	if ((m_pConfigInfo == NULL) || (m_pConfigInfo->attach() == false)) return false;
-
-	Util::myConnect(m_pNavPanel, SIGNAL(signalNewItem(int)), m_pConfigInfo, SIGNAL(signalNewItem(int)));
-	Util::myConnect(m_pNavPanel, SIGNAL(signalItemClicked(int, const QString &)), m_pConfigInfo, SIGNAL(signalItemClicked(int, const QString &)));
-	
-	Util::myConnect(m_pConfigInfo, SIGNAL(signalNavChangeSelected(int, const QString &)), m_pNavPanel, SLOT(slotChangeSelected(int, const QString &)));
-	Util::myConnect(m_pConfigInfo, SIGNAL(signalAddItem(int, const QString &)), m_pNavPanel, SLOT(slotAddItem(int, const QString &)));
-	Util::myConnect(m_pConfigInfo, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pNavPanel, SLOT(slotRenameItem(int, const QString &, const QString &)));
-	Util::myConnect(m_pConfigInfo, SIGNAL(signalRemoveItem(int, const QString &)), m_pNavPanel, SLOT(slotRemoveItem(int, const QString &)));
-	Util::myConnect(m_pNavPanel, SIGNAL(signalItemDeleted(int)), m_pConfigInfo, SIGNAL(signalItemDeleted(int)));
-	Util::myConnect(m_pConfigInfo, SIGNAL(signalNavChangeItem(int, const QString &)), m_pNavPanel, SLOT(slotNavChangeItem(int, const QString &)));
 
 	flags = m_pRealForm->windowFlags();
 	flags &= (~Qt::WindowContextHelpButtonHint);
