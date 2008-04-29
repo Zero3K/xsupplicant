@@ -1913,6 +1913,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\platform\windows\wlanapi_interface.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\wpa.c"
 				>
 			</File>
@@ -2268,6 +2272,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\wireless_sm.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\platform\windows\wlanapi_interface.h"
 				>
 			</File>
 			<File

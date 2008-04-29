@@ -85,7 +85,7 @@ uint8_t wireless_sm_get_state(context *ctx)
  **/
 void wireless_sm_init(int zeros_on_roam, context *ctx)
 {
-   wireless_ctx *wctx;
+   wireless_ctx *wctx = NULL;
 
    if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
      return;
@@ -436,7 +436,7 @@ void wireless_sm_change_to_unassociated(context *ctx)
  **/
 void wireless_sm_change_to_active_scan(context *ctx)
 {
-	wireless_ctx *wctx;
+	wireless_ctx *wctx = NULL;
 
 	TRACE
 

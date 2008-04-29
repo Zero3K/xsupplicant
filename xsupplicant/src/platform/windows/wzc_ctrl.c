@@ -33,7 +33,7 @@ int WZC_CTRL_Inited = FALSE;        ///< Were we able to init everything needed 
  **/
 int wzc_ctrl_connect()
 {
-	hMod = LoadLibrary("wzcsapi.dll");
+	hMod = LoadLibraryA("wzcsapi.dll");
 	if (hMod == NULL) return -1;
 
 	WZCEnumInterfaces = (WZCEnumInts) GetProcAddress(hMod, "WZCEnumInterfaces");

@@ -117,6 +117,8 @@ int ipc_events_lock()
 {
 	DWORD dwWaitResult;
 
+	if (ipcLock == INVALID_HANDLE_VALUE) return -1;  // We aren't inited yet.
+
 	// Wait for our mutex to be available!
 	dwWaitResult = WaitForSingleObject(ipcLock, INFINITE);
 
