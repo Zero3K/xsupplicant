@@ -28,6 +28,7 @@
 #include "../../eap_sm.h"
 #include "../../error_prequeue.h"
 #include "win_ip_manip.h"
+#include "../../timer.h"
 
 #include <NtDDNdis.h>
 
@@ -508,6 +509,76 @@ void cardif_windows_int_event_disassociate(context *ctx, uint8_t *eventdata, DWO
 }
 
 /**
+ * \brief Parse a driver link quality event, and pass the event up to any connected
+ *        UIs.
+ *
+ * @param[in] ctx   The context for the interface that the link quality event came in on.
+ * @param[in] eventdata   The raw event data that came up from the OS.
+ * @param[in] evtSize   The size of the data pointed to by 'eventdata'.
+ **/
+void cardif_windows_int_event_link_quality(context *ctx, uint8_t *eventdata, DWORD evtSize)
+{
+	PNDISPROT_INDICATE_STATUS pStat = NULL;
+	PDOT11_LINK_QUALITY_PARAMETERS pParams = NULL;
+	PDOT11_LINK_QUALITY_ENTRY pEntry = NULL;
+	uint16_t i;
+	char temp[10];
+	wireless_ctx *wctx = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((eventdata != NULL), "eventdata != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE)) return;
+
+	if (!xsup_assert((ctx->intType == ETH_802_11_INT), "ctx->intType == ETH_802_11_INT", FALSE)) return;
+
+	pStat = (PNDISPROT_INDICATE_STATUS)eventdata;
+
+	pParams = (PDOT11_LINK_QUALITY_PARAMETERS)&eventdata[pStat->StatusBufferOffset];
+
+	pEntry = (PDOT11_LINK_QUALITY_ENTRY)&eventdata[pParams->uLinkQualityListOffset+pStat->StatusBufferOffset];
+
+	wctx = (wireless_ctx *)ctx->intTypeData;
+
+	if (timer_check_existing(ctx, SIG_STRENGTH) == TRUE)
+	{
+		debug_printf(DEBUG_INT, "Canceling signal strength polling timer, since we are getting events.\n");
+		timer_cancel(ctx, SIG_STRENGTH);
+	}
+	
+	if (pParams->uLinkQualityListSize == 1)
+	{
+		// We don't care what the Peer MAC is, because the signal strength should be valid.
+		//  NOTE : In some cases, the Peer MAC will be all 0s when only one entry is defined.
+		//          (This is true on the Intel 3945ABG card at a minimum.)
+		sprintf((char *)&temp, "%d", pEntry[0].ucLinkQuality);
+
+		ipc_events_ui(ctx, IPC_EVENT_SIGNAL_STRENGTH, temp);
+
+		wctx->strength = pEntry[0].ucLinkQuality;
+		return;
+	}
+	else
+	{
+		for (i = 0; i < (pParams->uLinkQualityListSize/sizeof(DOT11_LINK_QUALITY_ENTRY)); i++)
+		{
+			if (memcmp(pEntry[i].PeerMacAddr, ctx->dest_mac, 6) == 0)
+			{
+				sprintf((char *)&temp, "%d", pEntry[i].ucLinkQuality);
+
+				ipc_events_ui(ctx, IPC_EVENT_SIGNAL_STRENGTH, temp);
+
+				wctx->strength = pEntry[i].ucLinkQuality;
+				return;
+			}
+		}
+	}
+
+	debug_printf(DEBUG_INT, "Unable to determine the link quality!\n");
+}
+
+/**
  * \brief Look at the event that the protocol driver generated, and determine what to do
  *		  with it.
  *
@@ -550,6 +621,7 @@ void cardif_windows_int_event_process(context *ctx, uint8_t *eventdata, DWORD ev
   case NDIS_STATUS_DOT11_LINK_QUALITY:
 	  // We need to work with this event more.  It will keep us from polling like we currently do!
 	  debug_printf(DEBUG_INT, "Link quality indication on '%s'.\n", ctx->desc);
+	  cardif_windows_int_event_link_quality(ctx, eventdata, evtSize);
 	  break;
 
   default:
