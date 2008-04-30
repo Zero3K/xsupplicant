@@ -311,6 +311,11 @@ int pmksa_add(context *ctx, uint8_t *aMac)
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
 
+	if (!xsup_assert((ctx->statemachine != NULL), "ctx->statemachine != NULL", FALSE)) return -1;
+
+	// If there is no PMK available, then ignore this request.
+	if (ctx->statemachine->PMK == NULL) return 1;
+
 	pmkid = pmksa_create_pmkid(ctx->statemachine->PMK, ctx->source_mac, aMac);
 	if (pmkid == NULL)
 	{

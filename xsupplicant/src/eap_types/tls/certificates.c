@@ -259,6 +259,7 @@ int certificates_windows_build_ossl_mem_chain(struct tls_vars *mytls_vars, 	PCCE
 	}
 
 	// Otherwise, we should have the chain, so load it in to OpenSSL.
+	// Ignore the complaint that certificates are not valid for a specific usage.
 	if (pChainContext->TrustStatus.dwErrorStatus != CERT_TRUST_NO_ERROR)
 	{
 		certificates_log_error(pChainContext->TrustStatus.dwErrorStatus);
@@ -274,7 +275,7 @@ int certificates_windows_build_ossl_mem_chain(struct tls_vars *mytls_vars, 	PCCE
 
 		if (pChain == NULL)
 		{
-			debug_printf(DEBUG_NORMAL, "Windows return a NULL simple chain context?\n");
+			debug_printf(DEBUG_NORMAL, "Windows returned a NULL simple chain context?\n");
 			CertFreeCertificateChain(pChainContext);
 			return -1;
 		}

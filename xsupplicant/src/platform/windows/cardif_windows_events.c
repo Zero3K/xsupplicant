@@ -211,6 +211,7 @@ void cardif_windows_int_event_disconnect(context *ctx)
 {
 	wireless_ctx *wctx = NULL;
 	char bssid_dest[6];
+	char dot1x_default_dest[6] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x03};
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 
@@ -254,6 +255,7 @@ void cardif_windows_int_event_disconnect(context *ctx)
 		debug_printf(DEBUG_NORMAL, "Interface '%s' no longer has link.\n", ctx->desc);
 		ctx->eap_state->portEnabled = FALSE;
 		ctx->statemachine->initialize = TRUE;
+		memcpy(&ctx->dest_mac[0], &dot1x_default_dest[0], 6);
 	}
 }
 
