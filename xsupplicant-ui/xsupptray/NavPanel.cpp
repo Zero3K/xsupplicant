@@ -432,6 +432,10 @@ void NavPanel::slotDelItem()
 	else if (selectedItem->parent() == m_pConnectionsItem)
 	{
 	  temp = selectedItem->text(0);
+	  if (QMessageBox::question(this, tr("Delete a Connection"), 
+		  tr("Are you sure you want to delete connection '%1'?").arg(temp), 
+		  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+	  {
 		if (m_supplicant->deleteConnectionConfig(temp) == true)
 		{
 			emit signalItemDeleted(CONNECTIONS_ITEM);
@@ -446,6 +450,7 @@ void NavPanel::slotDelItem()
 
 			m_pEmitter->sendConnConfigUpdate();
 		}
+	  }
 	}
 	else if (selectedItem == m_pProfilesItem) 
 	{
@@ -454,6 +459,10 @@ void NavPanel::slotDelItem()
 	else if (selectedItem->parent() == m_pProfilesItem)
 	{
 	  temp = selectedItem->text(0);
+	  if (QMessageBox::question(this, tr("Delete a Profile"), 
+		  tr("Are you sure you want to delete profile '%1'?").arg(temp), 
+		  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+	  {
 		if (m_supplicant->deleteProfileConfig(temp) == true)
 		{
 			emit signalItemDeleted(PROFILES_ITEM);
@@ -466,6 +475,7 @@ void NavPanel::slotDelItem()
 			selectedItem = getSelectedItem();
 			slotItemClicked(selectedItem, 0);
 		}
+	  }
 	}
 	else if (selectedItem == m_pTrustedServersItem) 
 	{
@@ -474,6 +484,10 @@ void NavPanel::slotDelItem()
 	else if (selectedItem->parent() == m_pTrustedServersItem)
 	{
 	  temp = selectedItem->text(0);
+	  if (QMessageBox::question(this, tr("Delete a Trusted Server"), 
+		  tr("Are you sure you want to delete trusted server '%1'?").arg(temp), 
+		  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+	  {
 		if (m_supplicant->deleteTrustedServerConfig(temp) == true)
 		{
 			emit signalItemDeleted(TRUSTED_SERVERS_ITEM);
@@ -486,6 +500,7 @@ void NavPanel::slotDelItem()
 			selectedItem = getSelectedItem();
 			slotItemClicked(selectedItem, 0);
 		}
+	  }
 	}
 	else
 	{
