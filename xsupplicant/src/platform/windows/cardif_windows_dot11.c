@@ -585,7 +585,7 @@ int cardif_windows_dot11_find_wpa2_ie(context *ctx, char *in_ie, int in_size,
 		}
 		else
 		{
-			debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA2 IE!\n");
+			//debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA2 IE!\n");
 		}
 		return -1;
 	}
@@ -855,7 +855,7 @@ int cardif_windows_dot11_find_wpa_ie(context *ctx, uint8_t *in_ie, unsigned int 
 		}
 		else
 		{
-			debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA1 IE!\n");
+			//debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA1 IE!\n");
 		}
 		return -1;
 	}

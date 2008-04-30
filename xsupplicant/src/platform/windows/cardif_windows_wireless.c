@@ -113,6 +113,9 @@ NEEDED_OIDS newoidsneeded[] = {
  * This will be called ~7 seconds after a request to scan.  According to
  * the Windows documentation, you need to wait at least 6 seconds before
  * requesting scan data, which is where 7 seconds comes from. ;)
+ *
+ * It is also possible this will be called if we get a scan complete event
+ * from the driver.
  **/
 void cardif_windows_wireless_scan_timeout(context *ctx)
 {
@@ -263,6 +266,8 @@ int cardif_windows_wireless_xp_passive(context *ctx)
 
 	//debug_printf(DEBUG_NORMAL, "Doing 'passive' scan!\n");
 	cardif_windows_wireless_scan_timeout(ctx);
+
+	UNSET_FLAG(wctx->flags, WIRELESS_PASV_SCANNING);
 
 	// Walk the list, and generate OKC entries for anything that we might roam to.
 	ssids = wctx->ssid_cache;
@@ -455,7 +460,7 @@ int cardif_windows_wireless_find_wpa2_ie(context *ctx, uint8_t *in_ie, uint16_t 
 		}
 		else
 		{
-			debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA2 IE!\n");
+			//debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA2 IE!\n");
 		}
 		return -1;
 	}
@@ -1034,7 +1039,7 @@ int cardif_windows_wireless_find_wpa_ie(context *ctx, uint8_t *in_ie, unsigned i
 		}
 		else
 		{
-			debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA1 IE!\n");
+			//debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA1 IE!\n");
 		}
 		return -1;
 	}

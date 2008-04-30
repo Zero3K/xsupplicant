@@ -554,8 +554,8 @@ void *xsupconfig_parse_passive_scanning(void **attr, xmlNodePtr node)
   else
     {
       xsupconfig_common_log("Unknown value for Passive_Scan.  (Line %ld)   Using default "
-	     "of 'NO'.\n", xsupconfig_parse_get_line_num());
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_PASSIVE_SCAN);
+	     "of 'YES'.\n", xsupconfig_parse_get_line_num());
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_PASSIVE_SCAN);
     }
 
   FREE(value);

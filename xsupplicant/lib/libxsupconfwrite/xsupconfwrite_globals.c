@@ -410,11 +410,11 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN)))
+	if ((write_all == TRUE) || (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN)))
 	{
 		if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN))
 		{
-			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Passive_Scanning", (xmlChar *)"no") == NULL)
+			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Passive_Scanning", (xmlChar *)"yes") == NULL)
 			{
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Passive_Scanning> node!\n");
@@ -425,7 +425,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 		else
 		{
-			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Passive_Scanning", (xmlChar *)"yes") == NULL)
+			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Passive_Scanning", (xmlChar *)"no") == NULL)
 			{
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Passive_Scanning> node!\n");
