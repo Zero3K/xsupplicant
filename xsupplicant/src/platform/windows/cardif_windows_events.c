@@ -256,6 +256,258 @@ void cardif_windows_int_event_disconnect(context *ctx)
 }
 
 /**
+ * \brief Return a string that identifies the reason code from Clause 7.3.1.7 of the IEEE 802.11-1999 
+ *        standard.
+ *
+ * @param[in] reason   The reason code that we want to translate in to a string.
+ *
+ * \retval NULL on failure, a reason string on success.
+ **/
+char *cardif_windows_int_get_802_11_reason(ULONG reason)
+{
+	switch (reason)
+	{
+	case 0:
+	case 1:
+		return _strdup("Unspecified Reason");
+		break;
+
+	case 2:
+		return _strdup("Previous authentication no longer valid");
+		break;
+
+	case 3:
+		return _strdup("Deauthenticated because sending STA is leaving (or has left) the network");
+		break;
+
+	case 4:
+		return _strdup("Disassociated due to inactivity");
+		break;
+
+	case 5:
+		return _strdup("Disassociated because AP is unable to handle all currently associated STAs");
+		break;
+
+	case 6:
+		return _strdup("Class 2 frame received from nonauthenticated STA");
+		break;
+
+	case 7:
+		return _strdup("Class 3 frame received from nonassociated STA");
+		break;
+
+	case 8:
+		return _strdup("Disassociated because sending STA is leaving (or has left) the network");
+		break;
+
+	case 9:
+		return _strdup("STA requresting (re)association is not authenticated with responding STA");
+		break;
+
+	case 10:
+		return _strdup("Disassociated because the information in the Power Capability element is unacceptable");
+		break;
+
+	case 11:
+		return _strdup("Disassociated because information in the Supported Channels element is unacceptible");
+		break;
+
+	// 12 is reserved
+	case 13:
+		return _strdup("Invalid information element");
+		break;
+
+	case 14:
+		return _strdup("Message integrity code (MIC) failure");
+		break;
+
+	case 15:
+		return _strdup("4-Way handshake timeout");
+		break;
+
+	case 16:
+		return _strdup("Group key handshake timeout");
+		break;
+
+	case 17:
+		return _strdup("Information element in 4-way handshake is different from (re)association request/probe response/beacon frame");
+		break;
+
+	case 18:
+		return _strdup("Invalid group cipher");
+		break;
+
+	case 19:
+		return _strdup("Invalid pairwise cipher");
+		break;
+
+	case 20:
+		return _strdup("Invalid authenticated key management protocol (AKMP)");
+		break;
+
+	case 21:
+		return _strdup("Unsupported RSN information element version");
+		break;
+
+	case 22:
+		return _strdup("Invalid RSN information element capabilities");
+		break;
+
+	case 23:
+		return _strdup("IEEE 802.1X authentication failed");
+		break;
+
+	case 24:
+		return _strdup("Cipher suite rejected because of security policy");
+		break;
+
+		//25-31 reserved
+	case 32:
+		return _strdup("Disassociated for unspecified, QoS-related reason");
+		break;
+
+	case 33:
+		return _strdup("Disassocaited because QoS AP lacks sufficient bandwidth for this QoS STA");
+		break;
+
+	case 34:
+		return _strdup("Disassociated because excessive number of frames need to be acknowledged, but are not acknowledged due to AP transmissions and/or poor channel conditions");
+		break;
+
+	case 35:
+		return _strdup("Disassociated because STA is transmitting outside the limits of its TXOPs");
+		break;
+
+	case 36:
+		return _strdup("Requested from peer STA as the STA is leaving the network (or resetting)");
+		break;
+
+	case 37:
+		return _strdup("Requested from peer STA as it does not want to use the mechanism");
+		break;
+
+	case 38:
+		return _strdup("Requested from peer STA as the STA received frames using the mechanism from which a setup is required");
+		break;
+
+	case 39:
+		return _strdup("Requested from peer STA due to timeout");
+		break;
+
+	case 45:
+		return _strdup("Peer STA does not support the requested cipher suite");
+		break;
+	}
+
+	return _strdup("Unknown, or new reason code");
+}
+
+/**
+ * \brief Parse the data provided in a disassociate message, and add it to the log.
+ *
+ * @param[in] ctx   The context for the interface that the event was generated for.
+ * @param[in] eventdata   The entire set of data that came along with the indication from
+ *                        the protocol driver.
+ * @param[in] evtSize   The size of the data that \ref eventdata points to.
+ **/
+void cardif_windows_int_event_disassociate(context *ctx, uint8_t *eventdata, DWORD evtSize)
+{
+	PNDISPROT_INDICATE_STATUS pStat = NULL;
+	PDOT11_DISASSOCIATION_PARAMETERS pDis = NULL;
+	ULONG reason = 0;
+	char *reason_str = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((eventdata != NULL), "eventdata != NULL", FALSE)) return;
+
+	pStat = (PNDISPROT_INDICATE_STATUS)eventdata;
+
+	pDis = (PDOT11_DISASSOCIATION_PARAMETERS)&eventdata[pStat->StatusBufferOffset];
+
+	switch (pDis->uReason)
+	{
+	case DOT11_ASSOC_STATUS_SUCCESS:
+		// Do nothing.
+		break;
+
+	case DOT11_ASSOC_STATUS_FAILURE:
+		debug_printf(DEBUG_NORMAL, "%s disassociated due to an interal driver error.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_ROAMING_ASSOCIATION_LOST:
+	case DOT11_ASSOC_STATUS_UNREACHABLE:
+		debug_printf(DEBUG_NORMAL, "%s disassociated because the AP is no longer reachable.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_RADIO_OFF:
+		debug_printf(DEBUG_NORMAL, "%s disassociated because the local radio was turned off.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_PHY_DISABLED:
+		debug_printf(DEBUG_NORMAL, "%s disassociated because the hardware was disabled.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_DISASSOCIATED_BY_RESET:
+	case DOT11_ASSOC_STATUS_CANCELLED:
+		debug_printf(DEBUG_NORMAL, "%s disassociated because the hardware was reset.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_CANDIDATE_LIST_EXHAUSTED:
+		debug_printf(DEBUG_NORMAL, "%s disassociated because there was no APs available to roam to.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_DISASSOCIATED_BY_OS:
+		debug_printf(DEBUG_NORMAL, "%s disassociated by request of the OS or driver.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_DISASSOCIATED_BY_ROAMING:
+		debug_printf(DEBUG_NORMAL, "%s disassociated in order to roam to a new AP.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_ROAMING_BETTER_AP_FOUND:
+		debug_printf(DEBUG_NORMAL, "%s disassociated because a better AP was found.\n", ctx->desc);
+		break;
+
+	case DOT11_ASSOC_STATUS_ROAMING_ADHOC:
+		debug_printf(DEBUG_NORMAL, "%s is roaming to a new ad-hoc network.\n", ctx->desc);
+		break;
+
+	default:
+		// These reasons have reason codes appended to them.
+		if (pDis->uReason & DOT11_ASSOC_STATUS_PEER_DEAUTHENTICATED)
+		{
+			reason &= (~DOT11_ASSOC_STATUS_PEER_DEAUTHENTICATED);
+			reason_str = cardif_windows_int_get_802_11_reason(reason);
+			debug_printf(DEBUG_NORMAL, "%s was deauthenticated from the AP.  (Reason : %s)\n", ctx->desc, reason_str);
+			FREE(reason_str);
+			break;
+		}
+
+		if (pDis->uReason & DOT11_ASSOC_STATUS_PEER_DISASSOCIATED)
+		{
+			reason &= (~DOT11_ASSOC_STATUS_PEER_DISASSOCIATED);
+			reason_str = cardif_windows_int_get_802_11_reason(reason);
+			debug_printf(DEBUG_NORMAL, "%s was disassociated from the AP.  (Reason : %s)\n", ctx->desc, reason_str);
+			FREE(reason_str);
+			break;
+		}
+
+		if (pDis->uReason & DOT11_ASSOC_STATUS_ASSOCIATION_RESPONSE)
+		{
+			reason &= (~DOT11_ASSOC_STATUS_ASSOCIATION_RESPONSE);
+			reason_str = cardif_windows_int_get_802_11_reason(reason);
+			debug_printf(DEBUG_NORMAL, "%s got an association response.  (Reason : %s)\n", ctx->desc, reason_str);
+			FREE(reason_str);
+			break;
+		}
+
+		debug_printf(DEBUG_NORMAL, "%s was disassociated for an unknown reason.\n", ctx->desc);
+		break;
+	}
+}
+
+/**
  * \brief Look at the event that the protocol driver generated, and determine what to do
  *		  with it.
  *
@@ -281,8 +533,9 @@ void cardif_windows_int_event_process(context *ctx, uint8_t *eventdata, DWORD ev
 	  break;
 
   case NDIS_STATUS_DOT11_DISASSOCIATION:
-	  // There is interesting information that comes through with this event, however, for
-	  // now we want to just use it as an indication of a disconnect.
+	  // Process the disassocate message for logging purposes.
+	  cardif_windows_int_event_disassociate(ctx, eventdata, evtSize);
+	  // Do any necessary state machine disconnection stuff.
 	  cardif_windows_int_event_disconnect(ctx);
 	  break;
 
