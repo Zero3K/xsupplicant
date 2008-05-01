@@ -229,13 +229,13 @@ void LoginGetInfo::setEAPAuth(QString username, QString password, uint8_t flags)
 	if ((flags & POSS_CONN_NO_PWD) == POSS_CONN_NO_PWD)
 	{
 		dataFrameProfilesPassword->setEnabled(false);
-		m_pSaveCreds->setEnabled(false);
+		if (m_pSaveCreds != NULL) m_pSaveCreds->setEnabled(false);
 		if (m_pEAPPwdLabel != NULL) m_pEAPPwdLabel->setEnabled(false);
 	}
 	else
 	{
 		dataFrameProfilesPassword->setEnabled(true);
-		m_pSaveCreds->setEnabled(true);
+		if (m_pSaveCreds != NULL) m_pSaveCreds->setEnabled(true);
 		if (m_pEAPPwdLabel != NULL) m_pEAPPwdLabel->setEnabled(true);
 	}
 }
