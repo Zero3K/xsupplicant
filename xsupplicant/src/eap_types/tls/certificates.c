@@ -240,7 +240,7 @@ int certificates_windows_build_ossl_mem_chain(struct tls_vars *mytls_vars, 	PCCE
 	int c = 0;
 
 	myPara.cbSize = sizeof(CERT_CHAIN_PARA);
-	myPara.RequestedUsage.dwType = USAGE_MATCH_TYPE_OR;
+	myPara.RequestedUsage.dwType = USAGE_MATCH_TYPE_AND;
 	myPara.RequestedUsage.Usage.cUsageIdentifier = 0;
 	myPara.RequestedUsage.Usage.rgpszUsageIdentifier = NULL;
 

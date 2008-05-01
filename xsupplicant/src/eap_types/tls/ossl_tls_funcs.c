@@ -702,9 +702,14 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 			err = ERR_get_error();
 			if (err != 0)
 			{
-				sprintf(error_str, "Authentication handshake failed.  Reason : %s", ERR_reason_error_string(err));
-				debug_printf(DEBUG_NORMAL, "%s\n", error_str);
-				ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
+				error_str = Malloc(1024);
+				if (error_str != NULL)
+				{
+					sprintf(error_str, "Authentication handshake failed.  Reason : %s", ERR_reason_error_string(err));
+					debug_printf(DEBUG_NORMAL, "%s\n", error_str);
+					ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
+					FREE(error_str);
+				}
 
 				tls_funcs_deinit(mytls_vars);
 
