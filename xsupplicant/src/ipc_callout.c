@@ -2472,12 +2472,6 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 		}
 	}
 
-	if ((conn->association.auth_type != AUTH_PSK) && (username == NULL))
-	{
-		debug_printf(DEBUG_IPC, "No username in the set command, when using an EAP authentication!\n");
-		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_NEED_USERNAME, outnode);
-	}
-
 	t = ipc_callout_find_node(n, "Password");
 	if (t == NULL)
 	{

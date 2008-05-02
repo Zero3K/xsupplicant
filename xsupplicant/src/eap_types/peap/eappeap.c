@@ -519,9 +519,7 @@ uint8_t eappeap_isKeyAvailable(eap_type_data *eapdata)
 
   if ((ver == 1) && (peapconf->proper_peapv1 == TRUE))
   {
-	  debug_printf(DEBUG_NORMAL, "NOTICE : Most RADIUS servers do not do proper PEAP v1 keying!\n");
-	  debug_printf(DEBUG_NORMAL, "If your authentication succeeds, and traffic cannot flow, try\n");
-	  debug_printf(DEBUG_NORMAL, "turning off Proper_PEAP_V1_Keying!\n");
+	  debug_printf(DEBUG_NORMAL, "NOTICE : Most RADIUS servers do not do proper PEAP v1 keying! If your authentication succeeds, and traffic cannot flow, try turning off Proper_PEAP_V1_Keying!\n");
   }
   else
   {
