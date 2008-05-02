@@ -925,7 +925,6 @@ int cardif_windows_events_is_dhcp_enabled(context *ctx)
 
 	while (memcmp(pCur->Address, ctx->source_mac, 6) != 0)
 	{
-		debug_printf(DEBUG_NORMAL, "It isn't '%s'.\n", pCur->AdapterName);
 		pCur = pCur->Next;
 	}
 
