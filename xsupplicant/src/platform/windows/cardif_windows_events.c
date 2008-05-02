@@ -600,7 +600,7 @@ void cardif_windows_int_event_scan_confirm(context *ctx)
 
 	wctx = (wireless_ctx *)ctx->intTypeData;
 
-	debug_printf(DEBUG_NORMAL, "Got a scan complete event on %s!\n", ctx->desc);
+	debug_printf(DEBUG_INT, "Got a scan complete event on %s!\n", ctx->desc);
 
 	// Depending on what state we are in, we may want to handle things slightly differently.
 	// If we are associated, then this scan event may be used to generate OKC data.  If we
@@ -885,14 +885,65 @@ wchar_t *cardif_windows_events_get_ip_guid_str(context *ctx)
 	return longpath;
 }
 
-int cardif_windows_events_enable_dhcp(context *ctx)
+/**
+ * \brief Determine if DHCP is enabled on an interface.
+ *
+ * @param[in] ctx   The context for the interface we want to check if DHCP is enabled on.
+ *
+ * \retval TRUE if it is enabled, FALSE if it isn't.
+ **/
+int cardif_windows_events_is_dhcp_enabled(context *ctx)
 {
-	char *guid = NULL;
+	ULONG size = 0;
+	PIP_ADAPTER_INFO pAdapterInfo = NULL;
+	PIP_ADAPTER_INFO pCur = NULL;
 
-	guid = cardif_windows_event_get_guid(ctx);
-	if (SetAdapterIpAddress(guid, 1, 0, 0, 0) != NO_ERROR) return -1;
+	// First, determine how large of a buffer we need.
+	size = 0;
+	if (GetAdaptersInfo(NULL, &size) != ERROR_BUFFER_OVERFLOW)
+	{
+		// Ack!  Something really bad happened.  Assuming that DHCP is enabled (since it will be in the general case).
+		return TRUE;
+	}
 
-	return 0;
+	pAdapterInfo = (PIP_ADAPTER_INFO)Malloc(size);  // Allocate the memory we think we need.
+	if (pAdapterInfo == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to allocate memory to store adapter information!\n");
+		return TRUE;
+	}
+
+	if (GetAdaptersInfo(pAdapterInfo, &size) != ERROR_SUCCESS)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to obtain adapter info.  Assuming DHCP is enabled.\n");
+		FREE(pAdapterInfo);
+		return FALSE;
+	}
+
+	// Walk the list, looking for our data.
+	pCur = pAdapterInfo;
+
+	while (memcmp(pCur->Address, ctx->source_mac, 6) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "It isn't '%s'.\n", pCur->AdapterName);
+		pCur = pCur->Next;
+	}
+
+	if (memcmp(pCur->Address, ctx->source_mac, 6) == 0)
+	{
+		if (pCur->DhcpEnabled == 0) 
+		{
+			FREE(pAdapterInfo);
+			return FALSE;
+		}
+
+		FREE(pAdapterInfo);
+		return TRUE;
+	}
+
+	FREE(pAdapterInfo);
+	debug_printf(DEBUG_NORMAL, "Unable to locate DHCP status information for interface '%s'.\n", ctx->desc);
+	return TRUE;  // This is the most likely value.
 }
 
 /**

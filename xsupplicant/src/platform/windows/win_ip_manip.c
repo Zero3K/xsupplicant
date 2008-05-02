@@ -474,7 +474,9 @@ void win_ip_manip_renew_ip(context *ctx)
 void win_ip_manip_release_renew_ip_thread(void *ctxptr)
 {
 	ULONG idx = 0;
-	DWORD dwRetVal = 0;
+	DWORD dwRetVal = 0xfffffff;
+	DWORD attempts = 0;
+	int success = FALSE;
 	context *ctx = NULL;
 	wchar_t *ippath = NULL;
 	IP_ADAPTER_INDEX_MAP addrMap;
@@ -520,29 +522,29 @@ void win_ip_manip_release_renew_ip_thread(void *ctxptr)
 
 	addrMap.Index = idx;
 	wcscpy((wchar_t *)&addrMap.Name, ippath); 
+	success = FALSE;
 
-    if ((dwRetVal = IpReleaseAddress(&addrMap)) != NO_ERROR) 
+	while ((attempts < 10) && (success == FALSE))
 	{
-		if (dwRetVal == 2)
+		if ((dwRetVal = IpReleaseAddress(&addrMap)) == NO_ERROR) 
 		{
-			// Sometimes we get here before Windows is ready.  So sleep for a few seconds and try again.
-			// NOTE : It is safe to sleep here because we are in a thread!
-			Sleep(3000);
-
-			dwRetVal = IpReleaseAddress(&addrMap);
+			success = TRUE;
+		}
+		else
+		{
+			debug_printf(DEBUG_INT, "IP release failed on interface '%s'.  (Error : %d)\n", ctx->desc, dwRetVal);
+			Sleep (3000);
 		}
 
-		if (dwRetVal != NO_ERROR)
-			debug_printf(DEBUG_NORMAL, "IP release failed on interface '%s'.  (Error : %d)\n", ctx->desc, dwRetVal);
+		attempts++;
     }
-#if 0
-	else
-	{
-		debug_printf(DEBUG_NORMAL, "IP release success.\n");
-	}
-#endif
 
-	// NOTE : In the release case above we attempt the release twice.  We don't need to do that here since the second
+	if (success == FALSE)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to release existing IP address on interface '%s'.\n", ctx->desc);
+	}
+
+	// NOTE : In the release case above we attempt the release several times.  We don't need to do that here since the second
 	//        attempt in the release case should have gotten us in to a good state with the interface.  As a result
 	//        if we get a failure here, it is probably a real failure.
     if ((dwRetVal = IpRenewAddress(&addrMap)) != NO_ERROR) 
@@ -659,3 +661,24 @@ int win_ip_manip_set_static_ip(context *ctx, char *addr, char *netmask, char *ga
 
 	return 0;
 }
+
+/**
+ * \brief Issue the calls needed to enable DHCP on the interface specified by ctx.
+ *
+ * @param[in] ctx   The context of the interface we want to enable DHCP on.
+ *
+ * \retval 0 on success.
+ **/
+int cardif_windows_events_enable_dhcp(context *ctx)
+{
+	char *guid = NULL;
+
+	guid = cardif_windows_event_get_guid(ctx);
+
+	if (guid == NULL) return -1;
+
+	if (SetAdapterIpAddress(guid, 1, inet_addr("1.1.1.1"), inet_addr("255.255.255.0"), inet_addr("1.1.1.1")) != NO_ERROR) return -1;
+
+	return 0;
+}
+

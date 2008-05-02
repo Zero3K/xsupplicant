@@ -3273,7 +3273,7 @@ void cardif_windows_is_dhcp_enabled(context *ctx, int *enabled)
 	case 0:
 	case 1:
 		// Using XP or earlier
-		(*enabled) = TRUE;
+		(*enabled) = cardif_windows_events_is_dhcp_enabled(ctx);
 		break;
 
 	case 2:
@@ -3304,7 +3304,7 @@ void cardif_windows_enable_dhcp(context *ctx)
 	case 0:
 	case 1:
 		// Using XP or earlier
-		if (cardif_windows_events_enable_dhcp() != 0)
+		if (cardif_windows_events_enable_dhcp(ctx) != 0)
 		{
 			debug_printf(DEBUG_NORMAL, "Unable to enable DHCP for interface '%s'!\n", ctx->desc);
 		}
