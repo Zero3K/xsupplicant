@@ -193,7 +193,7 @@ void LoginGetInfo::setEAPAuth(QString username, QString password, uint8_t flags)
 		m_bSignalConnected = true;
 	}
 
-	m_pSaveCreds = qFindChild<QCheckBox*>(m_pStack, "dataCheckboxSaveUsernamePassowrd");
+	m_pSaveCreds = qFindChild<QCheckBox*>(m_pStack, "dataCheckboxSaveUsernamePassword");
 
 	if (m_pSaveCreds != NULL)
 	{
@@ -229,7 +229,7 @@ void LoginGetInfo::setEAPAuth(QString username, QString password, uint8_t flags)
 	if ((flags & POSS_CONN_NO_PWD) == POSS_CONN_NO_PWD)
 	{
 		dataFrameProfilesPassword->setEnabled(false);
-		if (m_pSaveCreds != NULL) m_pSaveCreds->setEnabled(false);
+		if (m_pSaveCreds != NULL) m_pSaveCreds->setEnabled(true);
 		if (m_pEAPPwdLabel != NULL) m_pEAPPwdLabel->setEnabled(false);
 	}
 	else
