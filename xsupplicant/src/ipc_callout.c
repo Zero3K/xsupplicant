@@ -51,6 +51,10 @@
 #include "error_prequeue.h"
 #include "timer.h"
 
+#ifdef WINDOWS
+#include "platform/windows/tthandler.h"
+#endif
+
 // XXX These can be removed once ipc_callout_eap_cert_state() has moved to the proper location.
 #include "eap_types/tls/eaptls.h"
 #include "eap_types/tls/tls_funcs.h"  
@@ -6712,7 +6716,6 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 	char *temp_data_path = NULL;
 	char *tt_data_path = NULL;
 	int overwrite = 0;
-	int failed_plugins = 0;
 	FILE *fh = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
@@ -6761,20 +6764,13 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 		return ipc_callout_create_error(NULL, "Create_Trouble_Ticket", IPC_ERROR_FILE_EXISTS, outnode);
 	}
 	if (fh != NULL) fclose(fh);
-	
-	failed_plugins = plugin_hook_trouble_ticket_dump_file(temp_data_path);
-	if (failed_plugins < 0)
-	{
-		// ACK!  NASTY error!
-		return ipc_callout_create_error(NULL, "Create_Trouble_Ticket", IPC_ERROR_GEN_TROUBLE_TICKET, outnode);
-	}
 
 #ifdef WINDOWS
-	crashdump_gather_files(tt_data_path);
+	tthandler_create_troubleticket(temp_data_path, tt_data_path);
 #else
-        #warning Need to implement crash dump file handlingfor this platform.
+        #warning Need to implement crash dump file handling for this platform.
 #endif // WINDOWS
-
+	
 	// We have the data we need, so create the response.
 	return ipc_callout_create_ack(NULL, "Create_Trouble_Ticket", outnode);
 }

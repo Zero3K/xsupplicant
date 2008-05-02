@@ -1829,6 +1829,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\platform\windows\tthandler.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\eap_types\ttls\ttls_eap.c"
 				>
 			</File>
@@ -2248,6 +2252,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\eap_types\tnc\tnc_compliance_options.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\platform\windows\tthandler.h"
 				>
 			</File>
 			<File

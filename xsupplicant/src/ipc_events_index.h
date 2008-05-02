@@ -79,6 +79,8 @@
 #define IPC_EVENT_UI_LINK_UP								   10  ///< The interface's link came up.
 #define IPC_EVENT_UI_LINK_DOWN								   11  ///< The interface's link went down.
 #define IPC_EVENT_UI_INT_CTRL_CHANGED						   12  ///< The supplicant changed it's control posture.
+#define IPC_EVENT_UI_TROUBLETICKET_DONE						   13  ///< The requested trouble ticket has been created successfully.
+#define IPC_EVENT_UI_TROUBLETICKET_ERROR					   14  ///< The requested trouble ticket couldn't be created.
 
 // State machines that we may get state machine events for. 
 #define IPC_STATEMACHINE_PHYSICAL                              1   ///< Identify the physical state machine
