@@ -2458,6 +2458,14 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				}
 				break;
 
+			case IPC_EVENT_UI_TROUBLETICKET_ERROR:
+				e.sendTroubleTicketError();
+				break;
+
+			case IPC_EVENT_UI_TROUBLETICKET_DONE:
+				e.sendTroubleTicketError();
+				break;
+
             default:
             if (getUIEventString(uievent, desc))
             {

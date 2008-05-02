@@ -81,6 +81,7 @@ TrayApp::TrayApp(QApplication &app):
   m_pTrayIconMenu        = NULL;
   m_pPlugins             = NULL;
   m_pIntCtrl			 = NULL;
+  m_pCreateTT			 = NULL;
 }
 
 //! Destructor
@@ -1199,11 +1200,22 @@ void TrayApp::slotCreateTroubleticket()
     Util::useBackslash(path);
 #endif
 
+	if (m_pCreateTT != NULL)
+	{
+		delete m_pCreateTT;
+		m_pCreateTT = NULL;
+	}
+
     err = m_supplicant.createTroubleTicket((char *)path, "c:\\", 1);
 
     switch(err)
 	{
 	case REQUEST_SUCCESS:
+		m_pCreateTT = new CreateTT(m_pEmitter, &m_supplicant, this);
+		m_pCreateTT->show();
+
+		Util::myConnect(m_pEmitter, SIGNAL(signalTroubleTicketDone()), this, SLOT(slotCreateTroubleticketDone()));
+		Util::myConnect(m_pEmitter, SIGNAL(signalTroubleTicketError()), this, SLOT(slotCreateTroubleticketError()));
 		break;
 
 	case REQUEST_TIMEOUT:
@@ -1221,6 +1233,25 @@ void TrayApp::slotCreateTroubleticket()
 
     if(path != NULL)
         free(path);
+}
+
+void TrayApp::slotCreateTroubleticketDone()
+{
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalTroubleTicketDone()), this, SLOT(slotCreateTroubleticketDone()));
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalTroubleTicketError()), this, SLOT(slotCreateTroubleticketError()));
+
+	if (m_pCreateTT != NULL)
+	{
+		delete m_pCreateTT;
+		m_pCreateTT = NULL;
+	}
+}
+
+void TrayApp::slotCreateTroubleticketError()
+{
+	slotCreateTroubleticketDone();
+
+	QMessageBox::critical(this, tr("Troubleticket Error"), tr("There was an error creating your troubleticket.  The troubleticket file may not exist, or may be incomplete."));
 }
 
 //! 

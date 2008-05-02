@@ -392,3 +392,14 @@ void Emitter::sendInterfaceControl(bool xsupCtrl)
 {
 	emit signalInterfaceControl(xsupCtrl);
 }
+
+void Emitter::sendTroubleTicketDone()
+{
+	emit signalTroubleTicketDone();
+}
+
+void Emitter::sendTroubleTicketError()
+{
+	emit signalTroubleTicketError();
+}
+

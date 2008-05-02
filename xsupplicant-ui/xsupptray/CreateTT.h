@@ -30,8 +30,8 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#ifndef INTERFACECTRL_H
-#define INTERFACECTRL_H
+#ifndef CREATETT_H
+#define CREATETT_H
 
 #include <QObject>
 #include <QDialog>
@@ -40,15 +40,13 @@
 #include "Emitter.h"
 #include "xsupcalls.h"
 
-class InterfaceCtrl : public QDialog
+class CreateTT : public QDialog
 {
 	Q_OBJECT
 
 public:
-	InterfaceCtrl(bool takingCtrl, Emitter *pEmitter, XSupCalls *pSupplicant, QWidget *parent);
-	~InterfaceCtrl();
-
-	bool updateSupplicant();
+	CreateTT(Emitter *pEmitter, XSupCalls *pSupplicant, QWidget *parent);
+	~CreateTT();
 
 private:
 	XSupCalls *m_pSupplicant;
@@ -56,8 +54,6 @@ private:
 
 	QLabel *m_pText;
 	QVBoxLayout *m_pLayout;
-
-	bool xsupCtrl;
 };
 
-#endif // INTERFACECTRL_H
+#endif // CREATETT_H

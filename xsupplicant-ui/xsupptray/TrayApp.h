@@ -41,6 +41,7 @@
 #include "ConfigDlg.h"
 #include "AboutDlg.h"
 #include "interfacectrl.h"
+#include "CreateTT.h"
 
 class TrayApp : public QWidget
 {
@@ -91,6 +92,8 @@ private slots:
 	void slotWokeUp();
 	void slotControlInterfaces();
 	void slotControlInterfacesDone(bool);
+	void slotCreateTroubleticketDone();
+	void slotCreateTroubleticketError();
 
 signals:
 	// Signals that can be rebroadcast from the root that other objects can subscribe to.
@@ -153,6 +156,7 @@ private:
     startOption m_commandLineOption;
 
 	InterfaceCtrl *m_pIntCtrl;
+	CreateTT *m_pCreateTT;
 
 	UIPlugins *m_pPlugins;
 };

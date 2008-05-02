@@ -30,34 +30,36 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#ifndef INTERFACECTRL_H
-#define INTERFACECTRL_H
+#include "stdafx.h"
 
-#include <QObject>
-#include <QDialog>
-#include <QLabel>
+#include "CreateTT.h"
 
-#include "Emitter.h"
-#include "xsupcalls.h"
-
-class InterfaceCtrl : public QDialog
+CreateTT::CreateTT(Emitter *pEmitter, XSupCalls *pSupplicant, QWidget *parent)
+	: QDialog(parent)
 {
-	Q_OBJECT
+	Qt::WindowFlags flags;
 
-public:
-	InterfaceCtrl(bool takingCtrl, Emitter *pEmitter, XSupCalls *pSupplicant, QWidget *parent);
-	~InterfaceCtrl();
+	flags = windowFlags();
+	flags &= (~Qt::WindowContextHelpButtonHint);
 
-	bool updateSupplicant();
+	setWindowFlags(flags);
+	
+	m_pSupplicant = pSupplicant;
+	m_pEmitter = pEmitter;
 
-private:
-	XSupCalls *m_pSupplicant;
-	Emitter *m_pEmitter;
+	setWindowTitle(tr("Create Trouble Ticket"));
 
-	QLabel *m_pText;
-	QVBoxLayout *m_pLayout;
+	m_pText = new QLabel(tr("Please wait. . .  XSupplicant is creating your trouble ticket. . ."));
 
-	bool xsupCtrl;
-};
+	m_pLayout = new QVBoxLayout(this);
+	m_pLayout->addWidget(m_pText);
 
-#endif // INTERFACECTRL_H
+	setLayout(m_pLayout);
+}
+
+CreateTT::~CreateTT()
+{
+	delete m_pLayout;
+	delete m_pText;
+}
+

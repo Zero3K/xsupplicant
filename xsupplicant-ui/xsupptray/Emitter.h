@@ -93,6 +93,8 @@ signals:
   void signalClearLoginPopups();
   void signalWokeUp();
   void signalInterfaceControl(bool);
+  void signalTroubleTicketDone();
+  void signalTroubleTicketError();
 
 public:
   Emitter();
@@ -135,6 +137,8 @@ public:
   void sendClearLoginPopups();
   void sendWokeUp();
   void sendInterfaceControl(bool);
+  void sendTroubleTicketDone();
+  void sendTroubleTicketError();
 };
 
 #endif  // _EMITTER_H_
