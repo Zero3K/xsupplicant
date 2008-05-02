@@ -72,6 +72,7 @@ bool ConfigWidgetProfilesTable::attach()
 	int i = 0;
 	QTableWidgetItem *newItem = NULL;
 
+	/*
 	while (m_pProfilesEnum[i].name != NULL)
 	{
 		m_pRealTable->insertRow(i);
@@ -80,6 +81,7 @@ bool ConfigWidgetProfilesTable::attach()
 
 		i++;
 	}
+*/
 
 	fillTable();
 
@@ -128,6 +130,10 @@ void ConfigWidgetProfilesTable::fillTable()
 
 	while (m_pProfilesEnum[i].name != NULL)
 	{
+		m_pRealTable->insertRow(i);
+		newItem = new QTableWidgetItem(QString(m_pProfilesEnum[i].name), 0);
+		m_pRealTable->setItem(i, 0, newItem);
+
 	  temp = m_pProfilesEnum[i].name;
 		if (m_pSupplicant->getConfigProfile(temp, &myProfile, true))
 		{
