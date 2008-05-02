@@ -177,7 +177,7 @@ void ConfigConnAdapterTab::setLabelValid(QLabel *toEditLabel)
 
 void ConfigConnAdapterTab::slotProfileChanged(int newSelection)
 {
-	slotDataChanged();
+	emit signalDataChanged();
 
 	if (newSelection == 0)
 	{

@@ -422,6 +422,37 @@ bool ConfigWidgetEditAdvancedSettings::saveWiredConnectionDefault()
 					m_pInt->default_connection = NULL;
 				}
 
+				// Now, verify that the connection is complete enough to connect automatically.
+				// XXX - This will need to be expanded when we expand default connections to work on wireless
+				// interfaces.
+				if (m_pConn->profile == NULL)
+				{
+					QMessageBox::information(this, tr("Connection Configuration Problem"), tr("This connection doesn't "
+						"have a profile bound to it.  You won't be able to automatically connect!"));
+				}
+				else
+				{
+					m_profName = m_pConn->profile;
+					if (m_pSupplicant->getConfigProfile(m_profName, &m_pProf, true) == true)
+					{
+						m_pSupplicant->getUserAndPasswordFromProfile(m_pProf, username, password);		
+
+						if (((username == "") && (m_pProf->identity == NULL)) || (password == ""))
+						{
+							QMessageBox::information(this, tr("Username/Password Problem"), tr("The username and/or "
+								"password is not set for profile %1.  Automatic connection is not possible unless they "
+								"are saved in your configuration!").arg(m_pConn->profile));
+							m_pDefaultWired->setCurrentIndex(0);
+							return false;
+						}
+					}
+					else
+					{
+						QMessageBox::information(this, tr("Connection Configuration Problem"), tr("This profile this "
+							"connection uses doesn't seem to exist.  Please check your configuration."));
+					}
+				}
+
 				if ((m_connName != "") && (m_connName != tr("<None>")))
 				{
 					m_pInt->default_connection = _strdup(m_connName.toAscii());
@@ -433,34 +464,6 @@ bool ConfigWidgetEditAdvancedSettings::saveWiredConnectionDefault()
 				}
 			}
 
-			// Now, verify that the connection is complete enough to connect automatically.
-			// XXX - This will need to be expanded when we expand default connections to work on wireless
-			// interfaces.
-			if (m_pConn->profile == NULL)
-			{
-				QMessageBox::information(this, tr("Connection Configuration Problem"), tr("This connection doesn't "
-					"have a profile bound to it.  You won't be able to automatically connect!"));
-			}
-			else
-			{
-				m_profName = m_pConn->profile;
-				if (m_pSupplicant->getConfigProfile(m_profName, &m_pProf, true) == true)
-				{
-					m_pSupplicant->getUserAndPasswordFromProfile(m_pProf, username, password);
-
-					if (((username == "") && (m_pProf->identity == NULL)) || (password == ""))
-					{
-						QMessageBox::information(this, tr("Username/Password Problem"), tr("The username and/or "
-							"password is not set for profile %1.  Automatic connection is not possible unless they "
-							"are saved in your configuration!").arg(m_pConn->profile));
-					}
-				}
-				else
-				{
-					QMessageBox::information(this, tr("Connection Configuration Problem"), tr("This profile this "
-						"connection uses doesn't seem to exist.  Please check your configuration."));
-				}
-			}
 		}
 	}
 
