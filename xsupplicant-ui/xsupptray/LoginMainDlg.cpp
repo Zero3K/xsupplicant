@@ -447,6 +447,7 @@ void LoginMainDlg::slotConnectionChangedEvent(int index)
 void LoginMainDlg::setButtons(bool bShowInfo)
 {
   m_bWireless = false;
+  //XXX: This will crash if m_pConns is NULL.
   if (m_pConns[m_connsIndex].flags & POSS_CONN_IS_WIRELESS)
   {
     m_bWireless = true;

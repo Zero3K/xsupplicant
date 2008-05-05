@@ -241,9 +241,11 @@ void TrayApp::slotRestart()
   // clear the flag that we are connected
   m_bSupplicantConnected = false;
 
-  m_pTrayIcon->setToolTip(tr("The XSupplicant service isn't running.  Please restart it."));
-  // Set the tray icon to disconnected
-  setTrayIconState(ENGINE_DISCONNECTED);
+  if(m_pTrayIcon != NULL) {
+    m_pTrayIcon->setToolTip(tr("The XSupplicant service isn't running.  Please restart it."));
+    // Set the tray icon to disconnected
+    setTrayIconState(ENGINE_DISCONNECTED);
+  }
 
   // delete in reverse order of creation
   delete m_pLoginDlg;
