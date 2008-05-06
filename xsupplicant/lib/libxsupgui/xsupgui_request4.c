@@ -359,12 +359,41 @@ int xsupgui_request_free_ip_info(ipinfo_type **data)
 	ipi = (*data);
 	if (ipi == NULL) return REQUEST_SUCCESS;
 
-	if (ipi->dns1 != NULL) FREE(ipi->dns1);
-	if (ipi->dns2 != NULL) FREE(ipi->dns2);
-	if (ipi->dns3 != NULL) FREE(ipi->dns3);
-	if (ipi->netmask != NULL) FREE(ipi->netmask);
-	if (ipi->gateway != NULL) FREE(ipi->gateway);
-	if (ipi->ipaddr != NULL) FREE(ipi->ipaddr);
+	if (ipi->dns1 != NULL)
+    {
+        free(ipi->dns1);
+        ipi->dns1 = NULL;
+    }
+    
+    if (ipi->dns2 != NULL)
+    {
+        free(ipi->dns2);
+        ipi->dns2 = NULL;
+    }
+
+	if (ipi->dns3 != NULL)
+    {
+        free(ipi->dns3);
+        ipi->dns3 = NULL;
+    }
+    
+    if (ipi->netmask != NULL) 
+    {
+        free(ipi->netmask);
+        ipi->netmask = NULL;
+    }
+
+	if (ipi->gateway != NULL)
+    {
+        free(ipi->gateway);
+        ipi->gateway = NULL;
+    }
+
+	if (ipi->ipaddr != NULL) 
+    {
+        free(ipi->ipaddr);
+        ipi->ipaddr = NULL;
+    }
 
 	return REQUEST_SUCCESS;
 }
