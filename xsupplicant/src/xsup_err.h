@@ -51,6 +51,7 @@
 #define XENOBUFFER        -22   // There was a buffer that was empty when it
                                 // shouldn't have been!
 #define XENOUSERDATA      -23   // Our userdata structure was NULL!
+#define XECACHEMISS       -24   // We had a PMK cache miss.
 
 // Error numbers -31 through -40 are additional general errors.
 #define XECANTFINDSERVER   -31

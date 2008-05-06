@@ -503,6 +503,8 @@ char eapol_key_type2_do_pmkid_kde(context *ctx,
 	  debug_hex_printf(DEBUG_INT, key, 16);
 
 	  pmksa_dump_cache(ctx);
+
+	  return XECACHEMISS;
   }
 
   return XENONE;
@@ -946,8 +948,11 @@ void eapol_key_type2_do_type1(context *intdata)
   // Check the IE field to see if we have any KDEs to parse.
   // We can discard the result field because the only thing we can possibly expect is a PMKID KDE, and
   // if it isn't there, then it is okay.
-  eapol_key_type2_process_keydata(intdata, inkeydata->keydata, value16, 
-					  ntohs(inkeydata->key_length), inkeydata->key_rsc, version, FALSE);
+  if (eapol_key_type2_process_keydata(intdata, inkeydata->keydata, value16, 
+					  ntohs(inkeydata->key_length), inkeydata->key_rsc, version, FALSE) != XENONE)
+  {
+	  return;
+  }
 
   // Calculate the PTK.
   FREE(intdata->statemachine->PTK);
