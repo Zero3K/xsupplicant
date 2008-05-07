@@ -50,7 +50,7 @@
 struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
 					    struct found_ssids *two)
 {
-  uint8_t one_lb, two_lb;
+  uint8_t one_lb = 0, two_lb = 0;
 
   if (!xsup_assert((one != NULL), "one != NULL", FALSE))
     return NULL;
@@ -99,7 +99,7 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
  **/
 struct found_ssids *config_ssid_init_new_node(wireless_ctx *wctx)
 {
-	struct found_ssids *ssids, *working;
+	struct found_ssids *ssids = NULL, *working = NULL;
 
 	ssids = wctx->ssid_cache;
 
@@ -154,7 +154,7 @@ struct found_ssids *config_ssid_init_new_node(wireless_ctx *wctx)
  **/
 void config_ssid_add_ssid_name(wireless_ctx *wctx, char *newssid)
 {
-	struct found_ssids *working;
+	struct found_ssids *working = NULL;
 
 	working = wctx->active_ssid;
 
@@ -181,7 +181,7 @@ void config_ssid_add_ssid_name(wireless_ctx *wctx, char *newssid)
  **/
 void config_ssid_add_wpa_ie(wireless_ctx *wctx, uint8_t *wpa_ie, uint8_t len)
 {
-	struct found_ssids *working;
+	struct found_ssids *working = NULL;
 
 	working = wctx->active_ssid;
 
@@ -216,7 +216,7 @@ void config_ssid_add_wpa_ie(wireless_ctx *wctx, uint8_t *wpa_ie, uint8_t len)
  **/
 void config_ssid_add_rsn_ie(wireless_ctx *wctx, uint8_t *rsn_ie, uint8_t len)
 {
-	struct found_ssids *working;
+	struct found_ssids *working = NULL;
 
 	working = wctx->active_ssid;
 
@@ -251,13 +251,15 @@ void config_ssid_add_rsn_ie(wireless_ctx *wctx, uint8_t *rsn_ie, uint8_t len)
  **/
 void config_ssid_add_bssid(wireless_ctx *wctx, char *newmac)
 {
-  char empty_mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};\
-	  struct found_ssids *working;
-
-	  working = wctx->active_ssid;
+  char empty_mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  struct found_ssids *working = NULL;
 
   if (!xsup_assert((newmac != NULL), "newmac != NULL", FALSE))
     return;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
+
+  working = wctx->active_ssid;
 
   if (!working) 
     {
@@ -286,7 +288,9 @@ void config_ssid_add_bssid(wireless_ctx *wctx, char *newmac)
  **/
 void config_ssid_update_abilities(wireless_ctx *wctx, uint8_t newabil)
 {
-	struct found_ssids *working;
+	struct found_ssids *working = NULL;
+
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
 	working = wctx->active_ssid;
 
@@ -305,7 +309,9 @@ void config_ssid_update_abilities(wireless_ctx *wctx, uint8_t newabil)
  **/
 void config_ssid_add_freq(wireless_ctx *wctx, unsigned int newfreq)
 {
-	struct found_ssids *working;
+	struct found_ssids *working = NULL;
+
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
 	working = wctx->active_ssid;
 
@@ -330,7 +336,9 @@ void config_ssid_add_freq(wireless_ctx *wctx, unsigned int newfreq)
  **/
 void config_ssid_add_qual(wireless_ctx *wctx, unsigned char qual, char signal, char noise)
 {
-	struct found_ssids *working;
+	struct found_ssids *working = NULL;
+
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
 	working = wctx->active_ssid;
 
@@ -354,7 +362,9 @@ void config_ssid_add_qual(wireless_ctx *wctx, unsigned char qual, char signal, c
  **/
 void config_ssid_dump(wireless_ctx *wctx)
 {
-  struct found_ssids *cur;
+  struct found_ssids *cur = NULL;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
   cur = wctx->ssid_cache;
 
@@ -417,7 +427,9 @@ void config_ssid_dump(wireless_ctx *wctx)
  **/
 void config_ssid_clear(wireless_ctx *wctx)
 {
-  struct found_ssids *cur, *next;
+  struct found_ssids *cur = NULL, *next = NULL;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
   cur = wctx->ssid_cache;
 
@@ -451,7 +463,9 @@ void config_ssid_clear(wireless_ctx *wctx)
  **/
 struct found_ssids *config_ssid_find_by_name(wireless_ctx *wctx, char *ssid_name)
 {
-  struct found_ssids *cur;
+  struct found_ssids *cur = NULL;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return NULL;
 
   if (!xsup_assert((ssid_name != NULL), "ssid_name != NULL", FALSE))
     return NULL;
@@ -493,6 +507,8 @@ void config_ssid_set_active_ssid(wireless_ctx *wctx, char *ssid_name)
   if (!xsup_assert((ssid_name != NULL), "ssid_name != NULL", FALSE))
     return;
 
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
+
   wctx->active_ssid = config_ssid_find_by_name(wctx, ssid_name);
 }
 
@@ -509,6 +525,8 @@ void config_ssid_set_active_ssid(wireless_ctx *wctx, char *ssid_name)
 int config_ssid_ssid_known(wireless_ctx *wctx, char *ssid)
 {
 	if (ssid == NULL) return FALSE;
+
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return FALSE;
 
   if (config_ssid_find_by_name(wctx, ssid) != NULL)
     {
@@ -534,11 +552,13 @@ int config_ssid_ssid_known(wireless_ctx *wctx, char *ssid)
  **/
 struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 {
-  struct found_ssids *cur, *best = NULL, *temp = NULL;
-  uint8_t best_pri = 0xff, cur_pri;
+  struct found_ssids *cur = NULL, *best = NULL, *temp = NULL;
+  uint8_t best_pri = 0xff, cur_pri = 0;
   config_connection *conf = NULL;
   wireless_ctx *wctx = NULL;
   int retval = 0;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return NULL;
   
   if (ctx->intType != ETH_802_11_INT) 
   {
@@ -600,6 +620,7 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
       debug_printf(DEBUG_PHYSICAL_STATE, "    Signal : %d   Noise : %d   Quality : "
 		   "%d\n", best->signal, best->noise, best->quality);
     }
+
   return best;
 }
 
@@ -619,8 +640,8 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
  **/
 void config_ssid_get_by_mac(context *ctx, uint8_t *forced_mac)
 {
-  struct found_ssids *cur;
-  wireless_ctx *wctx;
+  struct found_ssids *cur = NULL;
+  wireless_ctx *wctx = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
@@ -666,9 +687,9 @@ void config_ssid_get_by_mac(context *ctx, uint8_t *forced_mac)
  **/
 char *config_ssid_get_desired_ssid(context *ctx)
 {
-  struct config_globals *globals;
+  struct config_globals *globals = NULL;
   char cur_ssid[33];
-  wireless_ctx *wctx;
+  wireless_ctx *wctx = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return NULL;
@@ -762,7 +783,9 @@ uint8_t config_ssid_get_ssid_abilities(wireless_ctx *wctx)
  **/
 int config_ssid_using_wep(wireless_ctx *wctx)
 {
-  int abil;
+  int abil = 0;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return FALSE;
 
   abil = config_ssid_get_ssid_abilities(wctx);
 
@@ -839,6 +862,10 @@ void config_ssid_get_rsn_ie(wireless_ctx *wctx, uint8_t **rsn_ie, uint8_t *rsn_i
  **/
 unsigned int config_ssid_get_freq(wireless_ctx *wctx)
 {
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return 0;
+
+	if (wctx->active_ssid == NULL) return 0;
+
 	return wctx->active_ssid->freq;
 }
 

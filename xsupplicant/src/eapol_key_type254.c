@@ -55,7 +55,7 @@ void eapol_key_type254_dump(char *framedata)
 {
   uint16_t value16=0;
   int need_comma = 0;
-  struct wpa_key_packet *keydata;
+  struct wpa_key_packet *keydata = NULL;
 
   if (!xsup_assert((framedata != NULL), "framedata != NULL", FALSE))
     return;
@@ -158,12 +158,12 @@ void eapol_key_type254_dump(char *framedata)
  * when we are ready.
  *
  *******************************************************/
-char *eapol_key_type254_gen_ptk(context *intdata, char *Anonce)
+char *eapol_key_type254_gen_ptk(context *ctx, char *Anonce)
 {
   char prfdata[76];  // 6*2 (MAC addrs) + 32*2 (nonces)
-  char *retval;
+  char *retval = NULL;
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return NULL;
 
   if (!xsup_assert((Anonce != NULL), "Anonce != NULL", FALSE))
@@ -172,36 +172,36 @@ char *eapol_key_type254_gen_ptk(context *intdata, char *Anonce)
   memset((char *)&prfdata, 0x00, 76);
 
   debug_printf(DEBUG_KEY, "Dest MAC: ");
-  debug_hex_printf(DEBUG_KEY, (uint8_t *)&intdata->dest_mac, 6);
+  debug_hex_printf(DEBUG_KEY, (uint8_t *)&ctx->dest_mac, 6);
 
-  if (memcmp((char *)&intdata->source_mac, (char *)&intdata->dest_mac, 6) < 0)
+  if (memcmp((char *)&ctx->source_mac, (char *)&ctx->dest_mac, 6) < 0)
     {
-      memcpy((char *)&prfdata[0], (char *)&intdata->source_mac, 6);
-      memcpy((char *)&prfdata[6], (char *)&intdata->dest_mac, 6);
-    } else if (memcmp((char *)&intdata->source_mac, (char *)&intdata->dest_mac,
+      memcpy((char *)&prfdata[0], (char *)&ctx->source_mac, 6);
+      memcpy((char *)&prfdata[6], (char *)&ctx->dest_mac, 6);
+    } else if (memcmp((char *)&ctx->source_mac, (char *)&ctx->dest_mac,
 		      6) > 0)
       {
-	memcpy((char *)&prfdata[0], (char *)&intdata->dest_mac, 6);
-	memcpy((char *)&prfdata[6], (char *)&intdata->source_mac, 6);
+	memcpy((char *)&prfdata[0], (char *)&ctx->dest_mac, 6);
+	memcpy((char *)&prfdata[6], (char *)&ctx->source_mac, 6);
       } else {
 	debug_printf(DEBUG_NORMAL, "Source and Destination MAC addresses "
 		     "match!  The PTK won't be valid!\n");
-	ipc_events_error(intdata, IPC_EVENT_ERROR_INVALID_PTK, intdata->desc);
+	ipc_events_error(ctx, IPC_EVENT_ERROR_INVALID_PTK, ctx->desc);
 	return NULL;
       }
 
-  if (memcmp(intdata->statemachine->SNonce, Anonce, 32) < 0)
+  if (memcmp(ctx->statemachine->SNonce, Anonce, 32) < 0)
     {
-      memcpy((char *)&prfdata[12], intdata->statemachine->SNonce, 32);
+      memcpy((char *)&prfdata[12], ctx->statemachine->SNonce, 32);
       memcpy((char *)&prfdata[44], Anonce, 32);
-    } else if (memcmp(intdata->statemachine->SNonce, Anonce, 32) > 0)
+    } else if (memcmp(ctx->statemachine->SNonce, Anonce, 32) > 0)
       {
 	memcpy((char *)&prfdata[12], Anonce, 32);
-	memcpy((char *)&prfdata[44], intdata->statemachine->SNonce, 32);
+	memcpy((char *)&prfdata[44], ctx->statemachine->SNonce, 32);
       } else {
 	debug_printf(DEBUG_NORMAL, "ANonce and SNonce match!  The PTK won't"
 		     " be valid!\n");
-	ipc_events_error(intdata, IPC_EVENT_ERROR_INVALID_PTK, intdata->desc);
+	ipc_events_error(ctx, IPC_EVENT_ERROR_INVALID_PTK, ctx->desc);
 	return NULL;
       }
   
@@ -210,13 +210,13 @@ char *eapol_key_type254_gen_ptk(context *intdata, char *Anonce)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for retval in %s "
 		   "at %d!\n", __FUNCTION__, __LINE__);
-	  ipc_events_malloc_failed(intdata);
+	  ipc_events_malloc_failed(ctx);
       return NULL;
     }
 
   debug_printf(DEBUG_KEY, "PMK : ");
-  debug_hex_printf(DEBUG_KEY, (uint8_t *) intdata->statemachine->PMK, 32);
-  wpa_PRF((uint8_t *) intdata->statemachine->PMK, 32, (uint8_t *) "Pairwise key "
+  debug_hex_printf(DEBUG_KEY, (uint8_t *) ctx->statemachine->PMK, 32);
+  wpa_PRF((uint8_t *) ctx->statemachine->PMK, 32, (uint8_t *) "Pairwise key "
 	  "expansion", 22, (uint8_t *)&prfdata, 76, (uint8_t *) retval, 64);
 
   debug_printf(DEBUG_KEY, "PTK : ");
@@ -231,19 +231,19 @@ char *eapol_key_type254_gen_ptk(context *intdata, char *Anonce)
  * a new key. (Reference 802.11i-D3.0.pdf page 43, line 8)
  *
  *****************************************************************/
-void eapol_key_type254_request_new_key(context *intdata, char unicast)
+void eapol_key_type254_request_new_key(context *ctx, char unicast)
 {
-  struct wpa_key_packet *outkeydata;
-  uint16_t value16, keyindex, len;
+  struct wpa_key_packet *outkeydata = NULL;
+  uint16_t value16 = 0, keyindex = 0, len = 0;
   char key[16];
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
-  outkeydata = (struct wpa_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL+4];
+  outkeydata = (struct wpa_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL+4];
 
   // Clear everything out.
-  memset(&intdata->sendframe[OFFSET_TO_EAPOL+4], 0x00,
+  memset(&ctx->sendframe[OFFSET_TO_EAPOL+4], 0x00,
 	 sizeof(struct wpa_key_packet));
 
   outkeydata->key_descriptor = WPA_KEY_TYPE;
@@ -267,23 +267,23 @@ void eapol_key_type254_request_new_key(context *intdata, char unicast)
 
   // Build the response.
   len = sizeof(struct wpa_key_packet);
-  intdata->send_size = len+OFFSET_TO_EAPOL+4;
+  ctx->send_size = len+OFFSET_TO_EAPOL+4;
 
-  eapol_build_header(intdata, EAPOL_KEY, (intdata->send_size-OFFSET_TO_EAPOL-4), 
-		     (char *) intdata->sendframe); 
+  eapol_build_header(ctx, EAPOL_KEY, (ctx->send_size-OFFSET_TO_EAPOL-4), 
+		     (char *) ctx->sendframe); 
   
-  if (!intdata->statemachine->PTK)
+  if (!ctx->statemachine->PTK)
     {
       debug_printf(DEBUG_NORMAL, "No valid PTK available!  We will not be "
 		   "able to request a new key!\n");
       return;
     }
 
-  memcpy(key, intdata->statemachine->PTK, 16);
-  mic_wpa_populate((char *) intdata->sendframe, intdata->send_size+4, key, 16);
+  memcpy(key, ctx->statemachine->PTK, 16);
+  mic_wpa_populate((char *) ctx->sendframe, ctx->send_size+4, key, 16);
 
-  cardif_sendframe(intdata);
-  intdata->statemachine->eapolEap = FALSE;
+  cardif_sendframe(ctx);
+  ctx->statemachine->eapolEap = FALSE;
 }
 
 /****************************************************************
@@ -295,7 +295,7 @@ void eapol_key_type254_request_new_key(context *intdata, char unicast)
  * that we have a group key.
  *
  ****************************************************************/
-void eapol_key_type254_do_gtk(context *intdata)
+void eapol_key_type254_do_gtk(context *ctx)
 {
   struct wpa_key_packet *inkeydata = NULL, *outkeydata = NULL;
   uint16_t value16 = 0, keyflags = 0, version = 0, keyindex = 0, len = 0;
@@ -304,22 +304,22 @@ void eapol_key_type254_do_gtk(context *intdata)
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
   wireless_ctx *wctx = NULL;
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
-  xsup_assert((intdata->statemachine != NULL), "intdata->statemachine != NULL",
+  xsup_assert((ctx->statemachine != NULL), "ctx->statemachine != NULL",
 	      TRUE);
 
-  if (!xsup_assert((intdata->intType == ETH_802_11_INT), "intdata->intType == ETH_802_11_INT", FALSE))
+  if (!xsup_assert((ctx->intType == ETH_802_11_INT), "ctx->intType == ETH_802_11_INT", FALSE))
 	  return;
 
-  if (!xsup_assert((intdata->intTypeData != NULL), "intdata->intTypeData != NULL", FALSE))
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
 	  return;
 
-  wctx = intdata->intTypeData;
+  wctx = ctx->intTypeData;
 
-  inkeydata = (struct wpa_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL+4];
-  outkeydata = (struct wpa_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL+4];
+  inkeydata = (struct wpa_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL+4];
+  outkeydata = (struct wpa_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL+4];
 
   // First, make sure that the inkeydata replay counter is higher than
   // the last counter we saw.
@@ -331,12 +331,12 @@ void eapol_key_type254_do_gtk(context *intdata)
       debug_hex_printf(DEBUG_KEY, inkeydata->key_replay_counter, 8);
       debug_printf(DEBUG_KEY, "Our counter : ");
       debug_hex_printf(DEBUG_KEY, wctx->replay_counter, 8);
-      intdata->recv_size = 0;
+      ctx->recv_size = 0;
       return;
     }
 
   // Clear everything out.
-  memset(&intdata->sendframe[OFFSET_TO_EAPOL+4], 0x00,
+  memset(&ctx->sendframe[OFFSET_TO_EAPOL+4], 0x00,
 	 sizeof(struct wpa_key_packet));
 
   outkeydata->key_descriptor = WPA_KEY_TYPE;
@@ -370,13 +370,13 @@ void eapol_key_type254_do_gtk(context *intdata)
     }
 
   memcpy(keydata, 
-	 &intdata->recvframe[OFFSET_TO_EAPOL+4+sizeof(struct wpa_key_packet)],
+	 &ctx->recvframe[OFFSET_TO_EAPOL+4+sizeof(struct wpa_key_packet)],
 	 value16);
 
   debug_printf(DEBUG_KEY, "Setting GTK! (Version : %d  Length : %d  Slot : %d)"
 	       "\n", version, value16, keyindex);
 
-  if (!intdata->statemachine->PTK)
+  if (!ctx->statemachine->PTK)
     {
       debug_printf(DEBUG_NORMAL, "No valid PTK available!  You will probably"
 		   " not be able to pass data.\n");
@@ -388,49 +388,49 @@ void eapol_key_type254_do_gtk(context *intdata)
     {
     case 1:
       // Decrypt the GTK.
-		if (intdata->statemachine->PTK == NULL)
+		if (ctx->statemachine->PTK == NULL)
 		{
 			debug_printf(DEBUG_NORMAL, "The PTK for this connection is NULL!\n");
-			cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT);  
+			cardif_disassociate(ctx, DISASSOC_CIPHER_REJECT);  
 			return;
 		}
 
       memset(rc4_ek, 0x00, 32);
       memcpy(rc4_ek, inkeydata->key_iv, 16);
-      memcpy(&rc4_ek[16], &intdata->statemachine->PTK[16], 16);
+      memcpy(&rc4_ek[16], &ctx->statemachine->PTK[16], 16);
       rc4_skip((uint8_t *) rc4_ek, 32, 256, keydata, value16);
       
       debug_printf_nl(DEBUG_KEY, "GTK (%d) : ", value16);
       debug_hex_printf(DEBUG_KEY, keydata, value16);
 
 
-      wpa_common_set_key(intdata, NULL, keyindex, FALSE, (char *)keydata,
+      wpa_common_set_key(ctx, NULL, keyindex, FALSE, (char *)keydata,
 			 value16);
       break;
 
     case 2:
       // First, decrypt the GTK
       memset(key, 0x00, 32);
-      if (aes_unwrap((uint8_t *) &intdata->statemachine->PTK[16], (value16-8)/8, 
+      if (aes_unwrap((uint8_t *) &ctx->statemachine->PTK[16], (value16-8)/8, 
 		 keydata, (uint8_t *) key) != 0)
 	  {
 		  debug_printf(DEBUG_NORMAL, "Failed AES unwrap.\n");
-		  if (intdata->statemachine->PTK == NULL) debug_printf(DEBUG_NORMAL, "Unwrap failed because PTK is NULL!\n");
-		  ipc_events_error(intdata, IPC_EVENT_ERROR_FAILED_AES_UNWRAP, intdata->desc);
-		  cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT);  
+		  if (ctx->statemachine->PTK == NULL) debug_printf(DEBUG_NORMAL, "Unwrap failed because PTK is NULL!\n");
+		  ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_AES_UNWRAP, ctx->desc);
+		  cardif_disassociate(ctx, DISASSOC_CIPHER_REJECT);  
 		  return;
 	  }
       
-      wpa_common_set_key(intdata, NULL, keyindex, FALSE, (char *)keydata, (value16 -8));
+      wpa_common_set_key(ctx, NULL, keyindex, FALSE, (char *)keydata, (value16 -8));
      
       break;
     }
 
-  debug_printf(DEBUG_NORMAL, "Interface '%s' set new group WPA key.\n", intdata->desc);
+  debug_printf(DEBUG_NORMAL, "Interface '%s' set new group WPA key.\n", ctx->desc);
 
   // Build the response.
   len = sizeof(struct wpa_key_packet);
-  intdata->send_size = len+OFFSET_TO_EAPOL+4;
+  ctx->send_size = len+OFFSET_TO_EAPOL+4;
 
   value16 = ((version | (keyindex << 4)) | WPA_KEY_MIC_FLAG | WPA_SECURE_FLAG);
   value16 = htons(value16);
@@ -439,24 +439,24 @@ void eapol_key_type254_do_gtk(context *intdata)
   outkeydata->key_length = inkeydata->key_length;
   memcpy(&outkeydata->key_replay_counter, &inkeydata->key_replay_counter, 8);
 
-  eapol_build_header(intdata, EAPOL_KEY, (intdata->send_size-OFFSET_TO_EAPOL-4), 
-		     (char *) intdata->sendframe); 
+  eapol_build_header(ctx, EAPOL_KEY, (ctx->send_size-OFFSET_TO_EAPOL-4), 
+		     (char *) ctx->sendframe); 
   
-  memcpy(&key, intdata->statemachine->PTK, 16);
-  mic_wpa_populate((char *) intdata->sendframe, intdata->send_size+4, key, 16);
+  memcpy(&key, ctx->statemachine->PTK, 16);
+  mic_wpa_populate((char *) ctx->sendframe, ctx->send_size+4, key, 16);
 
   // Dump what we built.
-  eapol_key_type254_dump((char *) intdata->sendframe);
+  eapol_key_type254_dump((char *) ctx->sendframe);
 
-  if (intdata->conn->association.auth_type == AUTH_PSK)
+  if (ctx->conn->association.auth_type == AUTH_PSK)
     {
       // If we are using PSK, and we made it here, then we are in 
       // S_FORCE_AUTH state.
-	  statemachine_change_state(intdata, S_FORCE_AUTH);
+	  statemachine_change_state(ctx, S_FORCE_AUTH);
     }
 
   // Drop unencrypted frames.
-  cardif_drop_unencrypted(intdata, 1);
+  cardif_drop_unencrypted(ctx, 1);
 
   FREE(keydata);
 }
@@ -466,28 +466,28 @@ void eapol_key_type254_do_gtk(context *intdata)
  * Handle the first packet in the four-way handshake.
  *
  ***************************************************************/
-void eapol_key_type254_do_type1(context *intdata)
+void eapol_key_type254_do_type1(context *ctx)
 {
-  struct wpa_key_packet *inkeydata, *outkeydata;
+  struct wpa_key_packet *inkeydata = NULL, *outkeydata = NULL;
   uint16_t keyflags, len, value16;
   int i, version, ielen;
   char key[16], wpa_ie[26];
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
   wireless_ctx *wctx = NULL;
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
-  if (!xsup_assert((intdata->intType == ETH_802_11_INT), "intdata->intType == ETH_802_11_INT", FALSE))
+  if (!xsup_assert((ctx->intType == ETH_802_11_INT), "ctx->intType == ETH_802_11_INT", FALSE))
 	  return;
 
-  if (!xsup_assert((intdata->intTypeData != NULL), "intdata->intTypeData != NULL", FALSE))
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
 	return;
 
-  wctx = intdata->intTypeData;
+  wctx = ctx->intTypeData;
 
-  inkeydata = (struct wpa_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL+4];
-  outkeydata = (struct wpa_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL+4];
+  inkeydata = (struct wpa_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL+4];
+  outkeydata = (struct wpa_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL+4];
 
   // First, make sure that the inkeydata replay counter is higher than
   // the last counter we saw.
@@ -495,12 +495,12 @@ void eapol_key_type254_do_type1(context *intdata)
       (memcmp(inkeydata->key_replay_counter, zeros, 8) != 0))
     {
       debug_printf(DEBUG_NORMAL, "Invalid replay counter!  Discarding!\n");
-      intdata->recv_size = 0;
+      ctx->recv_size = 0;
       return;
     }
 
   // Clear everything out.
-  memset(&intdata->sendframe[OFFSET_TO_EAPOL+4], 0x00,
+  memset(&ctx->sendframe[OFFSET_TO_EAPOL+4], 0x00,
 	 sizeof(struct wpa_key_packet));
 
   // XXX Need to do this better.  Tie it in with Nonce code from SIM/AKA.
@@ -509,21 +509,21 @@ void eapol_key_type254_do_type1(context *intdata)
       outkeydata->key_nonce[i] = rand();
     }
 
-  intdata->statemachine->SNonce = (uint8_t *)malloc(32);
-  if (intdata->statemachine->SNonce == NULL)
+  ctx->statemachine->SNonce = (uint8_t *)malloc(32);
+  if (ctx->statemachine->SNonce == NULL)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for SNonce in "
 		   "%s at %d!\n", __FUNCTION__, __LINE__);
-	  ipc_events_malloc_failed(intdata);
+	  ipc_events_malloc_failed(ctx);
       return;
     }
-  memcpy(intdata->statemachine->SNonce, (char *)&outkeydata->key_nonce[0],
+  memcpy(ctx->statemachine->SNonce, (char *)&outkeydata->key_nonce[0],
 	 32);
 
   // Calculate the PTK.
-  FREE(intdata->statemachine->PTK);
+  FREE(ctx->statemachine->PTK);
 
-  intdata->statemachine->PTK = (uint8_t *)eapol_key_type254_gen_ptk(intdata,
+  ctx->statemachine->PTK = (uint8_t *)eapol_key_type254_gen_ptk(ctx,
 							 (char *)&inkeydata->key_nonce);
 
   outkeydata->key_descriptor = WPA_KEY_TYPE;
@@ -541,30 +541,30 @@ void eapol_key_type254_do_type1(context *intdata)
   memcpy(&outkeydata->key_information, &keyflags, 2);
   
   len = sizeof(struct wpa_key_packet);
-  intdata->send_size = len+OFFSET_TO_EAPOL+4;
+  ctx->send_size = len+OFFSET_TO_EAPOL+4;
 
   outkeydata->key_length = inkeydata->key_length;
 
   memcpy(&outkeydata->key_replay_counter, &inkeydata->key_replay_counter, 8);
 
-  cardif_get_wpa_ie(intdata, wpa_ie, &ielen);
+  cardif_get_wpa_ie(ctx, wpa_ie, &ielen);
 
-  memcpy(&intdata->sendframe[OFFSET_TO_EAPOL+4+sizeof(struct wpa_key_packet)], 
+  memcpy(&ctx->sendframe[OFFSET_TO_EAPOL+4+sizeof(struct wpa_key_packet)], 
 	 &wpa_ie, ielen);
   value16 = ielen;
   value16 = htons(value16);
-  intdata->send_size += ielen;
+  ctx->send_size += ielen;
 
   outkeydata->key_material_len = value16;
 
-  eapol_build_header(intdata, EAPOL_KEY, (intdata->send_size-OFFSET_TO_EAPOL-4), 
-		     (char *) intdata->sendframe);
+  eapol_build_header(ctx, EAPOL_KEY, (ctx->send_size-OFFSET_TO_EAPOL-4), 
+		     (char *) ctx->sendframe);
 
-  memcpy(key, intdata->statemachine->PTK, 16);
-  mic_wpa_populate((char *) intdata->sendframe, intdata->send_size+4, key, 16);
+  memcpy(key, ctx->statemachine->PTK, 16);
+  mic_wpa_populate((char *) ctx->sendframe, ctx->send_size+4, key, 16);
 
   // Dump what we built.
-  eapol_key_type254_dump((char *) intdata->sendframe);
+  eapol_key_type254_dump((char *) ctx->sendframe);
 }
 
 /********************************************************
@@ -573,22 +573,22 @@ void eapol_key_type254_do_type1(context *intdata)
  * the AP, to see if they match.
  *
  ********************************************************/
-char eapol_key_type254_cmp_ie(context *intdata, uint8_t *wpaie, char wpaielen)
+char eapol_key_type254_cmp_ie(context *ctx, uint8_t *wpaie, char wpaielen)
 {
-  uint8_t *apie, apielen;
+  uint8_t *apie = NULL, apielen = 0;
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
 
   if (!xsup_assert((wpaie != NULL), "wpaie != NULL", FALSE))
     return XEMALLOC;
 
-  if (!xsup_assert((intdata->conn != NULL), "intdata->conn != NULL", FALSE))
+  if (!xsup_assert((ctx->conn != NULL), "ctx->conn != NULL", FALSE))
 	  return XEMALLOC;
 
-  if (intdata->conn->flags & CONFIG_NET_IS_HIDDEN)
+  if (ctx->conn->flags & CONFIG_NET_IS_HIDDEN)
   {
-	  debug_printf(DEBUG_NORMAL, "Interface '%s' connected to a hidden SSID.  We don't know the IE that was used, so we won't check.  (Man-in-the-middle checks have been weakened.)\n", intdata->desc);
+	  debug_printf(DEBUG_NORMAL, "Interface '%s' connected to a hidden SSID.  We don't know the IE that was used, so we won't check.  (Man-in-the-middle checks have been weakened.)\n", ctx->desc);
 	  return 0;
   }
 
@@ -596,7 +596,7 @@ char eapol_key_type254_cmp_ie(context *intdata, uint8_t *wpaie, char wpaielen)
   debug_hex_printf(DEBUG_KEY, wpaie, wpaielen);
 
   // Don't free apie, as it is a reference pointer only!!
-  config_ssid_get_wpa_ie(intdata->intTypeData, &apie, &apielen);
+  config_ssid_get_wpa_ie(ctx->intTypeData, &apie, &apielen);
   debug_printf(DEBUG_KEY, "WPA IE from AP Scan (%d)    : ", apielen);
   debug_hex_printf(DEBUG_KEY, apie, apielen);
   
@@ -604,7 +604,7 @@ char eapol_key_type254_cmp_ie(context *intdata, uint8_t *wpaie, char wpaielen)
     {
       debug_printf(DEBUG_NORMAL, "IE from the AP and IE from the key messages"
 		   " are different lengths!\n");
-	  ipc_events_error(intdata, IPC_EVENT_ERROR_IES_DONT_MATCH, intdata->desc);
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_IES_DONT_MATCH, ctx->desc);
       return -1;
     }
 
@@ -612,7 +612,7 @@ char eapol_key_type254_cmp_ie(context *intdata, uint8_t *wpaie, char wpaielen)
     {
       debug_printf(DEBUG_NORMAL, "IE from the AP and IE from the key messages"
 		   " do not match!\n");
-	  ipc_events_error(intdata, IPC_EVENT_ERROR_IES_DONT_MATCH, intdata->desc);
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_IES_DONT_MATCH, ctx->desc);
       return -1;
     }
 
@@ -638,30 +638,30 @@ int8_t eapol_key_type254_psk_timeout(context *ctx)
  * generate the pairwise key at this point.
  *
  ********************************************************/
-void eapol_key_type254_do_type3(context *intdata)
+void eapol_key_type254_do_type3(context *ctx)
 {
-  struct wpa_key_packet *inkeydata, *outkeydata;
+  struct wpa_key_packet *inkeydata = NULL, *outkeydata = NULL;
   uint16_t keyflags, len, value16, keyindex;
   int version;
   char key[32];
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
   wireless_ctx *wctx = NULL;
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
-  if (!xsup_assert((intdata->intType == ETH_802_11_INT), "intdata->intType == ETH_802_11_INT", FALSE))
+  if (!xsup_assert((ctx->intType == ETH_802_11_INT), "ctx->intType == ETH_802_11_INT", FALSE))
 	  return;
 
-  if (!xsup_assert((intdata->intTypeData != NULL), "intdata->intTypeData != NULL", FALSE))
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
 	  return;
 
-  wctx = intdata->intTypeData;
+  wctx = ctx->intTypeData;
 
   memset(key, 0x00, 32);
 
-  inkeydata = (struct wpa_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL+4];
-  outkeydata = (struct wpa_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL+4];
+  inkeydata = (struct wpa_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL+4];
+  outkeydata = (struct wpa_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL+4];
 
   // First, make sure that the inkeydata replay counter is higher than
   // the last counter we saw.
@@ -669,7 +669,7 @@ void eapol_key_type254_do_type3(context *intdata)
       (memcmp(inkeydata->key_replay_counter, zeros, 8) != 0))
     {
       debug_printf(DEBUG_NORMAL, "Invalid replay counter!  Discarding!\n");
-      intdata->recv_size = 0;
+      ctx->recv_size = 0;
       return;
     }
 
@@ -677,7 +677,7 @@ void eapol_key_type254_do_type3(context *intdata)
   memcpy(wctx->replay_counter, &inkeydata->key_replay_counter, 8);
 
   // Clear everything out.
-  memset(&intdata->sendframe[OFFSET_TO_EAPOL], 0x00,
+  memset(&ctx->sendframe[OFFSET_TO_EAPOL], 0x00,
 	sizeof(struct wpa_key_packet)+28);
 
   outkeydata->key_descriptor = WPA_KEY_TYPE;
@@ -701,62 +701,62 @@ void eapol_key_type254_do_type3(context *intdata)
   memcpy(&outkeydata->key_information, &keyflags, 2);
   
   len = sizeof(struct wpa_key_packet);
-  intdata->send_size = len+OFFSET_TO_EAPOL+4;
+  ctx->send_size = len+OFFSET_TO_EAPOL+4;
 
   outkeydata->key_length = inkeydata->key_length;
 
   memcpy(&outkeydata->key_replay_counter, &inkeydata->key_replay_counter, 8);
-  memcpy(&outkeydata->key_nonce, intdata->statemachine->SNonce, 32);
+  memcpy(&outkeydata->key_nonce, ctx->statemachine->SNonce, 32);
 
-  memcpy(outkeydata->key_nonce, intdata->statemachine->SNonce,
+  memcpy(outkeydata->key_nonce, ctx->statemachine->SNonce,
 	 32);
 
-  eapol_build_header(intdata, EAPOL_KEY, (intdata->send_size-OFFSET_TO_EAPOL-4), 
-		     (char *) intdata->sendframe); 
+  eapol_build_header(ctx, EAPOL_KEY, (ctx->send_size-OFFSET_TO_EAPOL-4), 
+		     (char *) ctx->sendframe); 
 
-  if (!intdata->statemachine->PTK)
+  if (!ctx->statemachine->PTK)
     {
       debug_printf(DEBUG_NORMAL, "No valid PTK available!  You will probably"
 		   " not get valid keys!  (And traffic will probably not "
 		   "flow correctly.)\n");
-	  ipc_events_error(intdata, IPC_EVENT_ERROR_INVALID_PTK, intdata->desc);
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_INVALID_PTK, ctx->desc);
       return;
     }
 
-  memcpy(key, intdata->statemachine->PTK, 16);
-  mic_wpa_populate((char *) intdata->sendframe, intdata->send_size+4, key, 16);  
+  memcpy(key, ctx->statemachine->PTK, 16);
+  mic_wpa_populate((char *) ctx->sendframe, ctx->send_size+4, key, 16);  
 
   // Dump what we built.
-  eapol_key_type254_dump((char *) intdata->sendframe);
+  eapol_key_type254_dump((char *) ctx->sendframe);
 
-  if (eapol_key_type254_cmp_ie(intdata, inkeydata->keydata, 
+  if (eapol_key_type254_cmp_ie(ctx, inkeydata->keydata, 
 			       ntohs(inkeydata->key_material_len)) != XENONE)
     {
       debug_printf(DEBUG_NORMAL, "Error comparing IEs.  Possible attack in "
 		   "progress!  Disconnecting.\n");
-      cardif_disassociate(intdata, DISASSOC_INVALID_IE);
+      cardif_disassociate(ctx, DISASSOC_INVALID_IE);
       return;
     }
 
-  if (!intdata->statemachine->PTK)
+  if (!ctx->statemachine->PTK)
     {
       debug_printf(DEBUG_NORMAL, "No valid PTK available.  We will not be "
 		   "able to get valid keys.  (And traffic will not flow "
 		   "properly.\n");
-	  ipc_events_error(intdata, IPC_EVENT_ERROR_INVALID_PTK, intdata->desc);
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_INVALID_PTK, ctx->desc);
       return;
     }
 
   // Get TK1
   value16 = ntohs(inkeydata->key_length);
-  memcpy(key, (char *)&intdata->statemachine->PTK[32], value16);
+  memcpy(key, (char *)&ctx->statemachine->PTK[32], value16);
   
   debug_printf(DEBUG_KEY, "TK1 : ");
   debug_hex_printf(DEBUG_KEY, (uint8_t *) key, value16);
   
-  cardif_sendframe(intdata);
-  intdata->statemachine->eapolEap = FALSE;
-  intdata->send_size = 0;
+  cardif_sendframe(ctx);
+  ctx->statemachine->eapolEap = FALSE;
+  ctx->send_size = 0;
 
   debug_printf(DEBUG_KEY, "Setting PTK1! (Index : %d Length : %d)\n", 
 	       keyindex, value16);
@@ -764,55 +764,55 @@ void eapol_key_type254_do_type3(context *intdata)
   switch (version) 
     {
     case 1:
-      wpa_common_set_key(intdata, intdata->dest_mac, keyindex, TRUE,
+      wpa_common_set_key(ctx, ctx->dest_mac, keyindex, TRUE,
 			 key, value16);
       break;
 
     case 2:
-      wpa_common_set_key(intdata, intdata->dest_mac, keyindex, TRUE,
+      wpa_common_set_key(ctx, ctx->dest_mac, keyindex, TRUE,
 			 key, value16);
       break;
     }
 
-  debug_printf(DEBUG_NORMAL, "Interface '%s' set new pairwise WPA key.\n", intdata->desc);
+  debug_printf(DEBUG_NORMAL, "Interface '%s' set new pairwise WPA key.\n", ctx->desc);
 
 #ifdef WINDOWS
   // If we get here (and are doing PSK) we need to set a timer to let us know if the PSK is wrong.  The
   // *proper* way to handle this is to check the disassociate value from the AP to see if it indicates
   // that the PSK is wrong.  But, Windows doesn't give us access to that, so we will have to play with some
   // timer magic instead. :-/
-  timer_add_timer(intdata, PSK_DEATH_TIMER, 5, NULL, eapol_key_type254_psk_timeout);
+  timer_add_timer(ctx, PSK_DEATH_TIMER, 5, NULL, eapol_key_type254_psk_timeout);
 #endif
 }
 
-void eapol_key_type254_determine_key(context *intdata)
+void eapol_key_type254_determine_key(context *ctx)
 {
-  struct wpa_key_packet *keydata;
-  int keyflags;
+  struct wpa_key_packet *keydata = NULL;
+  int keyflags = 0;
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
-  if (!xsup_assert((intdata->recvframe != NULL), "intdata->recvframe != NULL", FALSE))
+  if (!xsup_assert((ctx->recvframe != NULL), "ctx->recvframe != NULL", FALSE))
 	  return;
 
-  keydata = (struct wpa_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL+4];  
+  keydata = (struct wpa_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL+4];  
   memcpy(&keyflags, keydata->key_information, 2);
 
   keyflags = ntohs(keyflags);
 
   if (keyflags & WPA_KEY_MIC_FLAG)
     {
-      if (mic_wpa_validate((char *) intdata->recvframe, intdata->recv_size, 
-			   (char *)intdata->statemachine->PTK, 16) == FALSE)
+      if (mic_wpa_validate((char *) ctx->recvframe, ctx->recv_size, 
+			   (char *)ctx->statemachine->PTK, 16) == FALSE)
 	{
-	  intdata->statemachine->MICVerified = TRUE;
-	  intdata->statemachine->IntegrityFailed = TRUE;
+	  ctx->statemachine->MICVerified = TRUE;
+	  ctx->statemachine->IntegrityFailed = TRUE;
 	  debug_printf(DEBUG_KEY, "MIC failure!\n");
        	  return;   // Silently discard.
 	} else {
-	  intdata->statemachine->IntegrityFailed = FALSE;
-	  intdata->statemachine->MICVerified = TRUE;
+	  ctx->statemachine->IntegrityFailed = FALSE;
+	  ctx->statemachine->MICVerified = TRUE;
 	}
     }
 
@@ -820,26 +820,26 @@ void eapol_key_type254_determine_key(context *intdata)
       (keyflags & WPA_KEY_MIC_FLAG) && (keyflags & WPA_INSTALL_FLAG))
     {
       debug_printf(DEBUG_KEY, "Key Packet #3 (response) :\n");
-      eapol_key_type254_do_type3(intdata);
+      eapol_key_type254_do_type3(ctx);
     } else if ((keyflags & WPA_PAIRWISE_KEY) && (keyflags & WPA_KEY_ACK_FLAG))
     {
       debug_printf(DEBUG_KEY, "Key Packet #1 (response) :\n");
-      eapol_key_type254_do_type1(intdata);
+      eapol_key_type254_do_type1(ctx);
     } else if ((keyflags & WPA_KEY_MIC_FLAG) && (keyflags & WPA_PAIRWISE_KEY))
     {
       debug_printf(DEBUG_NORMAL, "Got Key Packet #2 or #4!  (This shouldn't happen!)\n");
     } else if (!(keyflags & WPA_PAIRWISE_KEY))
       {
 	// We have a group key packet.
-	eapol_key_type254_do_gtk(intdata);
+	eapol_key_type254_do_gtk(ctx);
       }
 
-  if (intdata->recv_size > 0)
+  if (ctx->recv_size > 0)
     {
-      eapol_build_header(intdata, EAPOL_KEY, (intdata->recv_size-OFFSET_TO_EAPOL-4), 
-			 (char *) intdata->recvframe);
-      cardif_sendframe(intdata);
-      intdata->statemachine->eapolEap = FALSE;
+      eapol_build_header(ctx, EAPOL_KEY, (ctx->recv_size-OFFSET_TO_EAPOL-4), 
+			 (char *) ctx->recvframe);
+      cardif_sendframe(ctx);
+      ctx->statemachine->eapolEap = FALSE;
     }      
 }
 
@@ -848,7 +848,7 @@ void eapol_key_type254_determine_key(context *intdata)
  * Process a WPA frame that we get from the authenticator.
  *
  **/
-void eapol_key_type254_process(context *intdata)
+void eapol_key_type254_process(context *ctx)
 {
   uint8_t *inframe = NULL;
   int insize;
@@ -856,31 +856,31 @@ void eapol_key_type254_process(context *intdata)
   wireless_ctx *wctx = NULL;
   char *pskptr = NULL;
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
-  inframe = intdata->recvframe;
-  insize = intdata->recv_size;
+  inframe = ctx->recvframe;
+  insize = ctx->recv_size;
 
   debug_printf(DEBUG_KEY, "Processing WPA key message!\n");
 
   eapol_key_type254_dump((char *)inframe);
 
-  if (intdata->conn == NULL)
+  if (ctx->conn == NULL)
   {
-	  debug_printf(DEBUG_NORMAL, "Got a key message on '%s' when we don't have a valid configuration defined?  Make sure you don't have another supplicant running.\n", intdata->desc);
+	  debug_printf(DEBUG_NORMAL, "Got a key message on '%s' when we don't have a valid configuration defined?  Make sure you don't have another supplicant running.\n", ctx->desc);
 	  return;
   }
 
-  if (intdata->conn->association.psk != NULL) pskptr = intdata->conn->association.psk;
+  if (ctx->conn->association.psk != NULL) pskptr = ctx->conn->association.psk;
 
   // Make sure the one below always comes last so that it if the user overrides it via the UI
   // that the one from the UI is the one used.
-  if (intdata->conn->association.temp_psk != NULL) pskptr = intdata->conn->association.temp_psk;
+  if (ctx->conn->association.temp_psk != NULL) pskptr = ctx->conn->association.temp_psk;
 
-	if (intdata->conn->association.auth_type == AUTH_PSK)
+	if (ctx->conn->association.auth_type == AUTH_PSK)
 	{
-		wctx = (wireless_ctx *)intdata->intTypeData;
+		wctx = (wireless_ctx *)ctx->intTypeData;
 
 		if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
@@ -896,11 +896,11 @@ void eapol_key_type254_process(context *intdata)
 		    {
 		      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory! "
 				   "(%s:%d)\n", __FUNCTION__, __LINE__);
-			  ipc_events_malloc_failed(intdata);
+			  ipc_events_malloc_failed(ctx);
 		      return;
 		    }
 
-		  if (cardif_GetSSID(intdata, wctx->cur_essid, 33) != XENONE)
+		  if (cardif_GetSSID(ctx, wctx->cur_essid, 33) != XENONE)
 		    {
 		      debug_printf(DEBUG_NORMAL, "Couldn't get ESSID!\n");
 		      FREE(wctx->cur_essid);
@@ -913,60 +913,60 @@ void eapol_key_type254_process(context *intdata)
 				 strlen(wctx->cur_essid), (uint8_t *)&tpmk) 
 		  == TRUE)
 		{
-		  FREE(intdata->statemachine->PMK);
+		  FREE(ctx->statemachine->PMK);
 
-		  intdata->statemachine->PMK = (uint8_t *)Malloc(32);
-		  if (intdata->statemachine->PMK == NULL)
+		  ctx->statemachine->PMK = (uint8_t *)Malloc(32);
+		  if (ctx->statemachine->PMK == NULL)
 		    {
 		      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for"
-				   " intdata->statemachine->PMK in %s:%d!\n",
+				   " ctx->statemachine->PMK in %s:%d!\n",
 				   __FUNCTION__, __LINE__);
-			  ipc_events_malloc_failed(intdata);
+			  ipc_events_malloc_failed(ctx);
 		      return;
 		    }
 		  
-		  memcpy(intdata->statemachine->PMK, (char *)&tpmk, 32);
+		  memcpy(ctx->statemachine->PMK, (char *)&tpmk, 32);
 		}
 	    } else {
 	      // We have a hex key, we need to convert it from ASCII to real
 	      // hex.
-			if (intdata->conn->association.psk_hex == NULL || strlen(intdata->conn->association.psk_hex) != 64)
+			if (ctx->conn->association.psk_hex == NULL || strlen(ctx->conn->association.psk_hex) != 64)
 		{
 		  debug_printf(DEBUG_NORMAL, "Invalid HEX key defined for "
 			       "WPA-PSK!\n");
 		  return;
 		}
-			process_hex(intdata->conn->association.psk_hex, 
-				strlen(intdata->conn->association.psk_hex), (char *)&tpmk);
+			process_hex(ctx->conn->association.psk_hex, 
+				strlen(ctx->conn->association.psk_hex), (char *)&tpmk);
 
-	      FREE(intdata->statemachine->PMK);
+	      FREE(ctx->statemachine->PMK);
 
-	      intdata->statemachine->PMK = (uint8_t *)Malloc(32);
-	      if (intdata->statemachine->PMK == NULL)
+	      ctx->statemachine->PMK = (uint8_t *)Malloc(32);
+	      if (ctx->statemachine->PMK == NULL)
 		{
 		  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for "
-			       "intdata->statemachine->PMK in %s:%d!\n",
+			       "ctx->statemachine->PMK in %s:%d!\n",
 			       __FUNCTION__, __LINE__);
-		  ipc_events_malloc_failed(intdata);
+		  ipc_events_malloc_failed(ctx);
 		  return;
 		}
 	    }
 
-  if (intdata->statemachine->PMK == NULL)
+  if (ctx->statemachine->PMK == NULL)
     {
 	  debug_printf(DEBUG_NORMAL, "There is no PMK available!  WPA cannot"
 		       " continue!\n");
-	  ipc_events_error(intdata, IPC_EVENT_ERROR_PMK_UNAVAILABLE, intdata->desc);
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_PMK_UNAVAILABLE, ctx->desc);
 	  return;
 	}
     } 
 
-  eapol_key_type254_determine_key(intdata);
+  eapol_key_type254_determine_key(ctx);
 
-  if (intdata->send_size > 0)
+  if (ctx->send_size > 0)
     {
-      cardif_sendframe(intdata);
-      intdata->statemachine->eapolEap = FALSE;
+      cardif_sendframe(ctx);
+      ctx->statemachine->eapolEap = FALSE;
     }
 
 }
