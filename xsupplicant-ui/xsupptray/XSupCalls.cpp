@@ -2536,43 +2536,50 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
           {
             case BATCH_OUT_OF_COMPLIANCE:
 			  {
-				e.sendUIMessage(tr("Sending batch out of compliance signal."));
-				e.sendTNCUIComplianceBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+				e.sendUIMessage(tr("Notifying listeners that a TNC IMC has detected a compliance issue."));
+				e.sendTNCUIComplianceFailureBatchEvent(imc, connID, oui, batchType, pTNCMessages);
 			  }
 			  break;
-            case BATCH_REMEDIATION:
+            case BATCH_REMEDIATION_REQUESTED:
               {
-			    e.sendUIMessage(tr("Sending batch remdiation signal."));
-                e.sendTNCUIRequestBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+			    e.sendUIMessage(tr("Notifying listeners that remediation has been requested by a TNC IMC."));
+                e.sendTNCUIRemediationRequestedBatchEvent(imc, connID, oui, batchType, pTNCMessages);
               }
               break;
-			case BATCH_REMEDIATION_IN_PROGRESS:
+			case BATCH_REMEDIATION_WILL_BEGIN:
 			  {
-			    e.sendUIMessage(tr("Sending batch remediation in progress signal."));
-				e.sendTNCUIRemediationStartedBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+			    e.sendUIMessage(tr("Notifying listeners that remediation will begin."));
+				e.sendTNCUIRemediationWillBeginBatchEvent(imc, connID, oui, batchType, pTNCMessages);
 			  }
 			  break;
-            case BATCH_REMEDIATED:
+            case BATCH_REMEDIATION_ITEM_STARTED:
               {
-				e.sendUIMessage("Sending batch remediated signal.");
-                e.sendTNCUIResponseBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+                e.sendUIMessage(tr("Notifying listeners that an item has begun remediation."));
+                e.sendTNCUIRemediationStatusItemStartedEvent(imc, connID, oui, batchType, pTNCMessages);
+              }
+              break;
+            case BATCH_REMEDIATION_ITEM_SUCCESS:
+              {
+                e.sendUIMessage(tr("Notifying listeners that an item has successful remediated."));
+                e.sendTNCUIRemediationStatusItemSuccessEvent(imc, connID, oui, batchType, pTNCMessages);
+              }
+              break;
+            case BATCH_REMEDIATION_ITEM_FAILURE:
+              {
+                e.sendUIMessage(tr("Notifying listeners that an item has failed remediation."));
+                e.sendTNCUIRemediationStatusItemFailureEvent(imc, connID, oui, batchType, pTNCMessages);
+              }
+              break;
+            case BATCH_REMEDIATION_WILL_END:
+              {
+				e.sendUIMessage(tr("Notifying listeners that remediation will end."));
+                e.sendTNCUIRemediationWillEndBatchEvent(imc, connID, oui, batchType, pTNCMessages);
               }
 			  break;
-			case BATCH_RECONNECT_REQUEST:
-			  {
-				e.sendUIMessage("Sending batch request reconnect signal.");
-				e.sendTNCUIReconnectBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-			  }
-              break;
-            case BATCH_REMEDIATION_STATUS_UPDATE:
-              {
-                e.sendUIMessage("Sending remediation status update signal.");
-                e.sendTNCUIRemediationStatusUpdateBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-              }
-              break;
             case BATCH_TNC_STATE_CHANGE:
                 {
-					e.sendUIMessage(tr("Sending login window TNC status update signal.  (State : %1)").arg(pTNCMessages[0].msgid));
+					e.sendUIMessage(tr("Notifying listeners of a TNC state change.  (New State: %1)").arg(pTNCMessages[0].msgid));
+
 					if (pTNCMessages != NULL)
 					{
 						e.sendTNCUILoginWindowStatusUpdateEvent(imc, connID, oui, pTNCMessages[0].msgid);
