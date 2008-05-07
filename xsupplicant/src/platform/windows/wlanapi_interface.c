@@ -121,6 +121,7 @@ int wlanapi_interface_change_wzc_state(char *desc, BOOL newstate)
 	if (WlanEnumInts(wlanhdl, NULL, &pIntList) != ERROR_SUCCESS)
 	{
 		debug_printf(DEBUG_INT, "Error enumerating interfaces with wlan API!\n");
+		WlanCloseHdl(wlapiModule, NULL);
 		return WLANAPI_CALL_FAILED;
 	}
 
@@ -138,17 +139,26 @@ int wlanapi_interface_change_wzc_state(char *desc, BOOL newstate)
 		FREE(temp);
 	}
 
-	if (found != TRUE) return WLANAPI_INT_NOT_FOUND;
+	if (found != TRUE) 
+	{
+		WlanCloseHdl(wlapiModule, NULL);
+		return WLANAPI_INT_NOT_FOUND;
+	}
 
 	if ((rval = WlanQueryInt(wlanhdl, &pIntList->InterfaceInfo[i].InterfaceGuid, wlan_intf_opcode_autoconf_enabled,
 		NULL, &size, &yn, NULL)) != ERROR_SUCCESS)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to determine the autoconf state of interface '%s'!  (Error : %d)\n", desc, rval);
+		WlanCloseHdl(wlapiModule, NULL);
 		return WLANAPI_CALL_FAILED;
 	}
 
 	// See if we are already in the state we want to be in.
-	if ((*yn) == newstate) return WLANAPI_ALREADY_SET;
+	if ((*yn) == newstate) 
+	{
+		WlanCloseHdl(wlapiModule, NULL);
+		return WLANAPI_ALREADY_SET;
+	}
 
 	(*yn) = newstate;   
 
@@ -157,6 +167,7 @@ int wlanapi_interface_change_wzc_state(char *desc, BOOL newstate)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to set the autoconf state on interface '%s'!  (Error :%d)\n",
 			desc, rval);
+		WlanCloseHdl(wlapiModule, NULL);
 		return WLANAPI_CALL_FAILED;
 	}
 
@@ -165,11 +176,16 @@ int wlanapi_interface_change_wzc_state(char *desc, BOOL newstate)
 		NULL, &size, &yn, NULL)) != ERROR_SUCCESS)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to determine the autoconf state of interface '%s'!  (Error : %d)\n", desc, rval);
+		WlanCloseHdl(wlapiModule, NULL);
 		return WLANAPI_CALL_FAILED;
 	}
 
 	// See if we are in the state we want to be in.
-	if ((*yn) == newstate) return WLANAPI_OK;
+	if ((*yn) == newstate) 
+	{
+		WlanCloseHdl(wlapiModule, NULL);
+		return WLANAPI_OK;
+	}
 
 	return WLANAPI_DIDNT_TAKE;
 }

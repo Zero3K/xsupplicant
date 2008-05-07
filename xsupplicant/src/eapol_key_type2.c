@@ -544,6 +544,7 @@ int eapol_key_type2_cmp_ie(context *intdata, uint8_t *iedata,
   debug_printf(DEBUG_KEY, "Got an IE of        : \n");
   debug_hex_dump(DEBUG_KEY, (uint8_t *) iedata, len);
 
+  // Be sure *NOT* to free apie, as it is a reference pointer only!!!
   config_ssid_get_rsn_ie(intdata->intTypeData, &apie, &ielen);
 
   debug_printf(DEBUG_KEY, "AP sent us an IE of : \n");
@@ -553,7 +554,6 @@ int eapol_key_type2_cmp_ie(context *intdata, uint8_t *iedata,
     {
       debug_printf(DEBUG_NORMAL, "The length of the IE from the AP and IE in"
 		   " key messages were different!  IEs are invalid!\n");
-      FREE(apie);
       return -1;
     }
 
@@ -561,7 +561,6 @@ int eapol_key_type2_cmp_ie(context *intdata, uint8_t *iedata,
     {
       debug_printf(DEBUG_NORMAL, "The IE from the AP and the IE in the key "
 		   "messages don't match!\n");
-      FREE(apie);
       return -1;
     }
 

@@ -595,6 +595,7 @@ char eapol_key_type254_cmp_ie(context *intdata, uint8_t *wpaie, char wpaielen)
   debug_printf(DEBUG_KEY, "WPA IE from Key Packet (%d) : ", wpaielen);
   debug_hex_printf(DEBUG_KEY, wpaie, wpaielen);
 
+  // Don't free apie, as it is a reference pointer only!!
   config_ssid_get_wpa_ie(intdata->intTypeData, &apie, &apielen);
   debug_printf(DEBUG_KEY, "WPA IE from AP Scan (%d)    : ", apielen);
   debug_hex_printf(DEBUG_KEY, apie, apielen);
@@ -604,7 +605,6 @@ char eapol_key_type254_cmp_ie(context *intdata, uint8_t *wpaie, char wpaielen)
       debug_printf(DEBUG_NORMAL, "IE from the AP and IE from the key messages"
 		   " are different lengths!\n");
 	  ipc_events_error(intdata, IPC_EVENT_ERROR_IES_DONT_MATCH, intdata->desc);
-      FREE(apie);
       return -1;
     }
 
@@ -613,7 +613,6 @@ char eapol_key_type254_cmp_ie(context *intdata, uint8_t *wpaie, char wpaielen)
       debug_printf(DEBUG_NORMAL, "IE from the AP and IE from the key messages"
 		   " do not match!\n");
 	  ipc_events_error(intdata, IPC_EVENT_ERROR_IES_DONT_MATCH, intdata->desc);
-      FREE(apie);
       return -1;
     }
 
