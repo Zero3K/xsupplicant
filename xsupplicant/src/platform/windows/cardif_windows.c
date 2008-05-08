@@ -911,6 +911,8 @@ int cardif_init(context *ctx, char driver)
 		return XEGENERROR;
 	}
 
+	debug_printf(DEBUG_INT, "Device Handle : %d\n", sockData->devHandle);
+
 	sockData->hEvent = INVALID_HANDLE_VALUE;
 
 	if (BindNDISDevice(sockData->devHandle, ctx->intName) == 0)
@@ -1988,7 +1990,7 @@ int cardif_setup_recv(context *ctx)
 	memset(lovr, 0x00, sizeof(OVERLAPPED));
 
     lovr->hEvent = sockData->hEvent;
-    event_core_bind_hevent(sockData->devHandle, sockData->hEvent);
+    event_core_bind_hevent(sockData->devHandle, sockData->hEvent, EVENT_PRIMARY);
   }
   else
   {

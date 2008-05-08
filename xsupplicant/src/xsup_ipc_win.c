@@ -131,7 +131,7 @@ int xsup_ipc_win_create_pipe(int i)
 		sprintf((char *)&handle_str, "pipe handle #%d", i);
 
 		event_core_register(pipes[i].hdl, NULL, xsup_ipc_win_event, 0, HIGH_PRIORITY, handle_str);
-		event_core_bind_hevent(pipes[i].hdl, pipes[i].hevent);
+		event_core_bind_hevent(pipes[i].hdl, pipes[i].hevent, 0);
 		ovr = event_core_get_ovr(pipes[i].hdl, 0);
 		if (ovr == NULL)
 		{

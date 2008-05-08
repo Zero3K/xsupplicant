@@ -54,6 +54,7 @@
 
 // Uncomment this to turn on really excessive debugging output!
 //#define DEBUG_EVENT_HANDLER 1
+//#define LOCK_DEBUG  1
 
 typedef struct eventhandler_struct {
   HANDLE devHandle;
@@ -123,6 +124,7 @@ int event_core_set_ovr(HANDLE devHandle, uint8_t eventType, LPOVERLAPPED lovr)
 		if ((devHandle == events[i].devHandle) && (evtType == eventType))
 		{
 			events[i].ovr = lovr;
+			events[i].hEvent = lovr->hEvent;
 			return TRUE;
 		}
 	}
@@ -162,13 +164,13 @@ LPOVERLAPPED event_core_get_ovr(HANDLE devHandle, uint8_t eventType)
 /**
  * Bind an hEvent to our event structure so that the event_core() will pick it up.
  **/
-int event_core_bind_hevent(HANDLE devHandle, HANDLE hEvent)
+int event_core_bind_hevent(HANDLE devHandle, HANDLE hEvent, unsigned char evtType)
 {
 	int i;
 
 	for (i=0; i < num_event_slots; i++)
 	{
-		if (devHandle == events[i].devHandle)
+		if ((devHandle == events[i].devHandle) && ((events[i].flags & evtType) == evtType))
 		{
 #ifdef DEBUG_EVENT_HANDLER
 			debug_printf(DEBUG_NORMAL, "Binding device handle %d to event handle %d.\n",
@@ -356,7 +358,7 @@ int event_core_lock()
 	{
 	case WAIT_OBJECT_0:
 #ifdef LOCK_DEBUG
-		debug_printf(DEBUG_IPC, "Acquired event core lock.\n");
+		debug_printf(DEBUG_IPC, "Acquired event core lock.  (Thread ID : %d)\n", GetCurrentThreadId());
 #endif
 		return 0;
 		break;
@@ -373,12 +375,12 @@ int event_core_unlock()
 {
 	if (!ReleaseMutex(evtCoreMutex))
 	{
-		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error releasing event core lock!  (Error %d)\n", GetLastError());
+		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error releasing event core lock!  (Error %d) (Thread id : %d)\n", GetLastError(), GetCurrentThreadId());
 		return -1;
 	}
 
 #ifdef LOCK_DEBUG
-	debug_printf(DEBUG_IPC, "Released event core lock.\n");
+	debug_printf(DEBUG_IPC, "Released event core lock.  (Thread ID : %d)\n", GetCurrentThreadId());
 #endif
 
 	return 0;
@@ -662,14 +664,14 @@ void event_core_recv_frame(context *ctx, ULONG size)
 void event_core()
 {
   HANDLE *handles = NULL;
-  int numhandles = 0, i;
-  DWORD result;
-  LPOVERLAPPED readOvr;
-  struct eapol_header *eapol;
-  wireless_ctx *wctx;
-  ULONG bytesrx;
-  time_t curtime;
-  uint64_t uptime;
+  int numhandles = 0, i = 0;
+  DWORD result = 0;
+  LPOVERLAPPED readOvr = 0;
+  struct eapol_header *eapol = NULL;
+  wireless_ctx *wctx = NULL;
+  ULONG bytesrx = 0;
+  time_t curtime = 0;
+  uint64_t uptime = 0;
   long int err = 0;
 
   if (terminate == 1)
@@ -693,6 +695,11 @@ void event_core()
 
   cardif_windows_wmi_check_events();
 
+  if (event_core_lock() != 0)
+  {
+	  debug_printf(DEBUG_NORMAL, "!!!!!!!! Unable to acquire the event core lock!!  Bad things will probably happen!\n");
+  }
+
   for (i = 0; i<num_event_slots; i++)
   {
 	  if (events[i].ctx != NULL)
@@ -706,12 +713,14 @@ void event_core()
 	  {
 		  // We have a handle, add it to our list of events to watch for, and check for events.
 #if DEBUG_EVENT_HANDLER
-		  debug_printf(DEBUG_NORMAL, "hEvent = %d  hdl = %d\n", events[i].hEvent, events[i].devHandle);
+		  debug_printf(DEBUG_EVENT_CORE, "hEvent = %d  hdl = %d (%s)\n", events[i].hEvent, events[i].devHandle, events[i].name);
 #endif
 		  handles[numhandles] = events[i].hEvent;
 		  numhandles++;
 	  }
   }
+
+  event_core_unlock();
 
   if (numhandles <= 0)
   {
@@ -768,6 +777,7 @@ void event_core()
 
 				  if ((err == ERROR_OPERATION_ABORTED) && (events[i].ctx != NULL))
 				  {
+//					  debug_printf(DEBUG_INT, "Operation aborted.  (Hdl : %d  Evt : %d)\n", events[i].devHandle, events[i].hEvent);
 					  active_ctx = events[i].ctx;
 
 					  // We have a network interface that has disappeared, and we
