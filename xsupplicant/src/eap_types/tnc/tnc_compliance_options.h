@@ -27,6 +27,7 @@
 // TODO: Remove TNC_COMPLIANCE_ALLOW_FULL_SCAN and TNC_COMPLIANCE_ALLOW_AUTO_UPDATE and replace with TNC_COMPLIANCE_ALLOW_AUTOMATIC_REMEDIATION or the like.  This has already been done in the UI.
 
 enum BatchTypes {
+    BATCH_COMPLIANCE_REPORT,         // A hint for the UI indicating how the client is compliant.
 	BATCH_REMEDIATION_REQUESTED,     // A hint for the UI indicating that remediation is needed.
 	BATCH_REMEDIATION_WILL_BEGIN,    // A hint for the UI indicating that remediation is about to begin.
     BATCH_REMEDIATION_ITEM_STARTED,  // A hint for the UI indicating that a specific item has begun remediation.
@@ -36,6 +37,7 @@ enum BatchTypes {
 	BATCH_OUT_OF_COMPLIANCE,         // A hint for the UI indicating that an IMC is out of compliance.
 	BATCH_RECONNECT_REQUEST,         // A hint for the UI indicating that an IMC would like to reconnect the user.
     BATCH_TNC_STATE_CHANGE,          // A hint for the UI indicating that a state change has occurred.
+    BATCH_REMEDIATION_EVENT,         // A hint for the UI about a TNC remediation change.
 };
 
 #endif // __TNC_COMPLIANCE_OPTIONS_H__
