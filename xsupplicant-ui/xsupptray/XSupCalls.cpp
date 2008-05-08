@@ -2540,6 +2540,12 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				e.sendTNCUIComplianceFailureBatchEvent(imc, connID, oui, batchType, pTNCMessages);
 			  }
 			  break;
+            case BATCH_COMPLIANCE_REPORT:
+                {
+                    e.sendUIMessage(tr("Notifying listeners about a TNC IMC compliance report."));
+                    e.sendTNCUIComplianceReportBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+                }
+                break;
             case BATCH_REMEDIATION_REQUESTED:
               {
 			    e.sendUIMessage(tr("Notifying listeners that remediation has been requested by a TNC IMC."));
@@ -2586,6 +2592,11 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 					}
                 }
                 break;
+            case BATCH_REMEDIATION_EVENT:
+                {
+				    e.sendUIMessage(tr("Notifying listeners of a remediation event."));
+                    e.sendTNCUIRemediationEventBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+                }
             default: // do nothing
               break;
           }

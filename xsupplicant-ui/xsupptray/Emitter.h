@@ -64,6 +64,7 @@ signals:
   void signalTNCUIMessage(int oui, int notification);
   void signalTNCUIRequestMessage(int imc, int connID, int oui, int request);
   void signalTNCUIRemediationRequestedBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
+  void signalTNCUIComplianceReportBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCUIComplianceFailureBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCUIReconnectBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCUIRemediationWillBeginBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
@@ -71,6 +72,7 @@ signals:
   void signalTNCUIRemediationStatusItemSuccessMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCUIRemediationStatusItemFailureMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCUIRemediationWillEndBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
+  void signalTNCUIRemediationEventBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer);
   void signalTNCUILoginWindowStatusUpdateEvent(unsigned int imc, unsigned int connID, unsigned int oui, unsigned int newState);
   void signalScanCompleteMessage(const QString &);
@@ -125,7 +127,9 @@ public:
   void sendTNCUIRemediationStatusItemSuccessEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUIRemediationStatusItemFailureEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUIRemediationWillEndBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
+  void sendTNCUIRemediationEventBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer);
+  void sendTNCUIComplianceReportBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUIComplianceFailureBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUILoginWindowStatusUpdateEvent(unsigned int imc, unsigned int connID, unsigned int oui, unsigned int newState);
   void sendStateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);

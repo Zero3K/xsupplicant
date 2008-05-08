@@ -255,7 +255,7 @@ void Emitter::sendTNCUIRemediationStatusItemFailureEvent(int imc, int connID, in
 }
 
 
-//! sendTNCUIRemediationDidFinishBatchEvent
+//! sendTNCUIRemediationWillEndBatchEvent
 /*!
   \brief An IMC has sent a message indicating that all remediation items have been processed.
   \return Nothing
@@ -263,6 +263,16 @@ void Emitter::sendTNCUIRemediationStatusItemFailureEvent(int imc, int connID, in
 void Emitter::sendTNCUIRemediationWillEndBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
 {
   emit signalTNCUIRemediationWillEndBatchMessage(imc, connID, oui, request, pTNCMessages);
+}
+
+//! sendTNCUIRemediationEventBatchEvent
+/*!
+  \brief An IMC has sent a message indicating that all remediation items have been processed.
+  \return Nothing
+*/
+void Emitter::sendTNCUIRemediationEventBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+{
+  emit signalTNCUIRemediationEventBatchMessage(imc, connID, oui, request, pTNCMessages);
 }
 
 //! sendTNCUIComplianceFailureBatchEvent
@@ -273,6 +283,16 @@ void Emitter::sendTNCUIRemediationWillEndBatchEvent(int imc, int connID, int oui
 void Emitter::sendTNCUIComplianceFailureBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
 {
   emit signalTNCUIComplianceFailureBatchMessage(imc, connID, oui, request, pTNCMessages);
+}
+
+//! sendTNCUIComplianceReportBatchEvent
+/*!
+  \brief emit's a message from the TNC that DOES require a response
+  \return Nothing
+*/
+void Emitter::sendTNCUIComplianceReportBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+{
+  emit signalTNCUIComplianceReportBatchMessage(imc, connID, oui, request, pTNCMessages);
 }
 
 void Emitter::sendTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer)
