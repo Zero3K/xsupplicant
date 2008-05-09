@@ -3070,6 +3070,7 @@ void cardif_cancel_io(context *ctx)
 	sockData = ctx->sockData;
 
 	CancelIo(sockData->devHandle);
+	ResetEvent(sockData->hEvent);
 }
 
 /**

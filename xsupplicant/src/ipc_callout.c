@@ -2734,8 +2734,6 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
 		timer_cancel(ctx, PSK_DEATH_TIMER);
 
-		config_ssid_set_active_ssid(wctx, ctx->conn->ssid);
-
 		FREE(wctx->cur_essid);
 		wctx->cur_essid = _strdup(ctx->conn->ssid);
 

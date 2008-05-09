@@ -495,16 +495,21 @@ char eapol_key_type2_do_pmkid_kde(context *ctx,
   }
   else
   {
-	  debug_printf(DEBUG_NORMAL, "Interface '%s' had a cache miss.  You will have to do a full authentication.\n", ctx->desc);
-	  // Kick out an EAPoL start.
-	  txStart(ctx);
+	  // If we are on a PSK network, then a cache miss should be a non-issue.
+	  if ((ctx->conn->association.psk == NULL) && (ctx->conn->association.psk_hex == NULL) &&
+		  (ctx->conn->association.temp_psk == NULL))
+	  {
+		  debug_printf(DEBUG_NORMAL, "Interface '%s' had a cache miss.  You will have to do a full authentication.\n", ctx->desc);
+		  // Kick out an EAPoL start.
+		  txStart(ctx);
 
-	  debug_printf(DEBUG_INT, "PMKID : ");
-	  debug_hex_printf(DEBUG_INT, key, 16);
+		  debug_printf(DEBUG_INT, "PMKID : ");
+		  debug_hex_printf(DEBUG_INT, key, 16);
 
-	  pmksa_dump_cache(ctx);
+		  pmksa_dump_cache(ctx);
 
-	  return XECACHEMISS;
+		  return XECACHEMISS;
+	  }
   }
 
   return XENONE;
@@ -547,7 +552,7 @@ int eapol_key_type2_cmp_ie(context *intdata, uint8_t *iedata,
   // Be sure *NOT* to free apie, as it is a reference pointer only!!!
   config_ssid_get_rsn_ie(intdata->intTypeData, &apie, &ielen);
 
-  debug_printf(DEBUG_KEY, "AP sent us an IE of : \n");
+  debug_printf(DEBUG_KEY, "AP sent us an IE of (%d) : \n", ielen);
   debug_hex_dump(DEBUG_KEY, (uint8_t *) apie, ielen);
 
   if (len != ielen)

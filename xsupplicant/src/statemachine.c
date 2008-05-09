@@ -906,7 +906,9 @@ void statemachine_do_authenticating(context *ctx)
  **/
 int statemachine_change_to_authenticated(context *ctx)
 {
-  struct config_globals *globals;
+  struct config_globals *globals = NULL;
+  uint8_t *rsnie = NULL;
+  uint8_t size = 0;
 
   xsup_assert((ctx != NULL), "ctx != NULL", TRUE);
   xsup_assert((ctx->statemachine != NULL), "ctx->statemachine != NULL", TRUE);
@@ -976,16 +978,21 @@ int statemachine_change_to_authenticated(context *ctx)
   }
 
   // Stick this PMK in our cache if we are using WPA2.
-  if ((ctx->intType == ETH_802_11_INT) && (((wireless_ctx *)ctx->intTypeData)->active_ssid->rsn_ie != NULL))
+  if (ctx->intType == ETH_802_11_INT) 
   {
-	if (pmksa_add(ctx, ctx->dest_mac) == 0)
-	{
-		// Then, generate our OKC cache.
-		debug_printf(DEBUG_DOT1X_STATE, "Generating OKC cache.\n");
-		pmksa_generate_okc_data(ctx);
+	  config_ssid_get_rsn_ie(ctx->intTypeData, &rsnie, &size);
 
-		pmksa_apply_cache(ctx);
-	}
+	  if (rsnie != NULL)
+	  {
+		if (pmksa_add(ctx, ctx->dest_mac) == 0)
+		{
+			// Then, generate our OKC cache.
+			debug_printf(DEBUG_DOT1X_STATE, "Generating OKC cache.\n");
+			pmksa_generate_okc_data(ctx);
+
+			pmksa_apply_cache(ctx);
+		}
+	  }
   }
 
   snmp_dump_stats(ctx->intName);

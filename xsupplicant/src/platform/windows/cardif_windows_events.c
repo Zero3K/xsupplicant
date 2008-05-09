@@ -1173,27 +1173,27 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 	{
 		// With service events, this first bind attempt pretty much always fails.  So don't complain about it
 		// because the driver will figure it out fairly quickly.
-//		event_core_unlock();
+		event_core_unlock();
 
 		Sleep(REBIND_ATTEMPT_INTERVAL*1000);
 
 		while (done == FALSE)
 		{
-/*			if (event_core_lock() != 0)
+			if (event_core_lock() != 0)
 			{
 				debug_printf(DEBUG_NORMAL, "!!!!! Unable to acquire event core lock!  Bad things will happen!\n");
 			}
-*/
+
 			if (cardif_windows_wmi_post_insert_bind(longName) == 0)
 			{
 				done = TRUE;
 			}
-/*			
+			
 			if (event_core_unlock() != 0)
 			{
 				debug_printf(DEBUG_NORMAL, "!!!!! Unable to release event core lock in %s()!  We will probably deadlock!\n", __FUNCTION__);
 			}
-*/
+
 			if (i >= REBIND_ATTEMPTS)
 			{
 				done = TRUE;

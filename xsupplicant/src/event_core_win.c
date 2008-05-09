@@ -64,6 +64,7 @@ typedef struct eventhandler_struct {
   LPOVERLAPPED ovr;
   HANDLE hEvent;
   uint8_t flags;
+  uint8_t silent;
 } eventhandler;
 
 eventhandler *events = NULL;  
@@ -402,6 +403,7 @@ static void event_core_fill_reg_struct(eventhandler *events, HANDLE devHandle, i
 		  events->ctx = ctx;
 		  events->flags = flags;
 	      events->func_to_call = call_func;
+		  events->silent = 0;
 		  events->ovr = Malloc(sizeof(OVERLAPPED));
 		  if (events->ovr == NULL)
 		  {
@@ -765,6 +767,7 @@ void event_core()
 				// used to allow upper layers to determine details of the lower layers.
 				active_ctx = events[i].ctx;
 				events[i].func_to_call(events[i].ctx, events[i].devHandle);
+				events[i].silent = 0;
 			  }
 			  else
 			  {
@@ -777,21 +780,35 @@ void event_core()
 
 				  if ((err == ERROR_OPERATION_ABORTED) && (events[i].ctx != NULL))
 				  {
-//					  debug_printf(DEBUG_INT, "Operation aborted.  (Hdl : %d  Evt : %d)\n", events[i].devHandle, events[i].hEvent);
 					  active_ctx = events[i].ctx;
 
-					  // We have a network interface that has disappeared, and we
-					  // don't know what to do, so dump it's context and log a message.
-					  debug_printf(DEBUG_VERBOSE, "The interface '%s' went in to a strange state.  We will terminate it's context.  If you want to "
-						  "use this interface, you need to repair it, or unplug it and plug it back in.\n", events[i].ctx->desc);
+					  // If we get an operation aborted event, and it is on an event handler that has a 
+					  // context, we want to bounce the I/O handler to see if we can recover.
+					  debug_printf(DEBUG_INT, "Operation aborted.  (Hdl : %d  Evt : %d)\n", events[i].devHandle, events[i].hEvent);
+					  if ((events[i].flags & 0xf0) == EVENT_PRIMARY)
+					  {
+		 			    // This is how we restart I/O on a primary event handler.
+						cardif_cancel_io(events[i].ctx);
+						cardif_restart_io(events[i].ctx);
+						events[i].silent++;
+					  }
 
-		  			  ipc_events_ui(events[i].ctx, IPC_EVENT_INTERFACE_REMOVED, events[i].ctx->desc);
+					  // If the interface has been broken for at least 31 seconds, we want to shut it down.
+					  if (events[i].silent >= 32)
+					  {
+						  // We have a network interface that has disappeared, and we
+						  // don't know what to do, so dump it's context and log a message.
+						  debug_printf(DEBUG_VERBOSE, "The interface '%s' went in to a strange state.  We will terminate it's context.  If you want to "
+							  "use this interface, you need to repair it, or unplug it and plug it back in.\n", events[i].ctx->desc);
 
-					  events[i].ctx->flags |= INT_GONE;
+			  			  ipc_events_ui(events[i].ctx, IPC_EVENT_INTERFACE_REMOVED, events[i].ctx->desc);
+
+						  events[i].ctx->flags |= INT_GONE;
 					  
-					  // Make sure we deregister both primary and secondary handlers.  (Always deregister the secondary first!)
-					  event_core_deregister(events[i].devHandle, EVENT_SECONDARY);
-					  event_core_deregister(events[i].devHandle, EVENT_PRIMARY); 
+						  // Make sure we deregister both primary and secondary handlers.  (Always deregister the secondary first!)
+						  event_core_deregister(events[i].devHandle, EVENT_SECONDARY);
+						  event_core_deregister(events[i].devHandle, EVENT_PRIMARY);
+					  }
 				  }
 			  }
 		  }

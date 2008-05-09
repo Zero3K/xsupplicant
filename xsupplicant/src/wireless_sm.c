@@ -668,17 +668,6 @@ void wireless_sm_change_to_associated(context *ctx)
 	  eap_sm_force_init(ctx->eap_state);
   }
 
-  if (wctx->state == ACTIVE_SCAN)
-    {
-      // We jumpped here from active scan state.  We probably don't have 
-      // useful information in our ssid configuration.  So, create it
-      // now.
-      debug_printf(DEBUG_PHYSICAL_STATE, "Jumpped directly to associated state. "
-		   "Getting SSID information.\n");
-
-      config_ssid_set_active_ssid(wctx, wctx->cur_essid);
-    }
-
   // Update our state variables to indicate what state we are in now.
   wctx->state = ASSOCIATED;
 
@@ -1160,8 +1149,8 @@ void wireless_sm_check_globals(context *ctx)
 
   if (ctx->conn == NULL)
     {
-      debug_printf(DEBUG_PHYSICAL_STATE, "No valid connection data!! (%s)\n",
-		   __FUNCTION__);
+/*      debug_printf(DEBUG_PHYSICAL_STATE, "No valid connection data!! (%s)\n",
+		   __FUNCTION__); */
       return;
     } else {
 		if ((ctx->prof != NULL) && (ctx->prof->method == NULL)) 

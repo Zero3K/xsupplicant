@@ -34,6 +34,34 @@
 #endif
 
 /**
+ * \brief Search through our list of known SSIDs, and see if we know the one
+ *        specified in the wireless context.
+ *
+ * @param[in] wctx   A pointer to the wireless context that contains the SSID
+ *                   cache we want to search through.
+ *
+ * \retval NULL on error
+ * \retval ptr to the structure that contains the information about 
+ *         \c ssid_name.
+ **/
+struct found_ssids *config_ssid_find_by_wctx(wireless_ctx *wctx)
+{
+  struct found_ssids *cur = NULL;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return NULL;
+
+  // Start at the top of the list.
+  cur = wctx->ssid_cache;
+
+  while ((cur != NULL) && (strcmp(wctx->cur_essid, cur->ssid_name) != 0) && (memcmp(wctx->cur_bssid, cur->mac, 6) != 0))
+    {
+      cur = cur->next;
+    }
+
+  return cur;
+}
+
+/**
  * \brief Determine the best SSID based on the information given about the
  *        signal.
  *
@@ -156,13 +184,13 @@ void config_ssid_add_ssid_name(wireless_ctx *wctx, char *newssid)
 {
 	struct found_ssids *working = NULL;
 
-	working = wctx->active_ssid;
+	working = wctx->temp_ssid;
 
   if ((!working) || (working->ssid_name))
     {
       debug_printf(DEBUG_PHYSICAL_STATE, "Found new ESSID (%s), adding...\n", newssid);
-	  wctx->active_ssid = config_ssid_init_new_node(wctx);
-	  working = wctx->active_ssid;
+	  wctx->temp_ssid = config_ssid_init_new_node(wctx);
+	  working = wctx->temp_ssid;
     }
 
   // We need to make a copy.  We can't assume that the allocated memory
@@ -183,13 +211,13 @@ void config_ssid_add_wpa_ie(wireless_ctx *wctx, uint8_t *wpa_ie, uint8_t len)
 {
 	struct found_ssids *working = NULL;
 
-	working = wctx->active_ssid;
+	working = wctx->temp_ssid;
 
   if ((!working) || (working->wpa_ie))
     {
       debug_printf(DEBUG_PHYSICAL_STATE, "Found new ESSID block, adding...\n");
-      wctx->active_ssid = config_ssid_init_new_node(wctx);
-	  working = wctx->active_ssid;
+      wctx->temp_ssid = config_ssid_init_new_node(wctx);
+	  working = wctx->temp_ssid;
     }
 
   working->wpa_ie = (uint8_t *)Malloc(len);
@@ -218,13 +246,13 @@ void config_ssid_add_rsn_ie(wireless_ctx *wctx, uint8_t *rsn_ie, uint8_t len)
 {
 	struct found_ssids *working = NULL;
 
-	working = wctx->active_ssid;
+	working = wctx->temp_ssid;
 
   if ((!working) || (working->rsn_ie))
     {
       debug_printf(DEBUG_PHYSICAL_STATE, "Found new ESSID block, adding...\n");
-	  wctx->active_ssid = config_ssid_init_new_node(wctx);
-	  working = wctx->active_ssid;
+	  wctx->temp_ssid = config_ssid_init_new_node(wctx);
+	  working = wctx->temp_ssid;
     }
 
   working->rsn_ie = (uint8_t *)Malloc(len);
@@ -259,20 +287,20 @@ void config_ssid_add_bssid(wireless_ctx *wctx, char *newmac)
 
   if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
-  working = wctx->active_ssid;
+  working = wctx->temp_ssid;
 
   if (!working) 
     {
-		wctx->active_ssid = config_ssid_init_new_node(wctx);
-		working = wctx->active_ssid;
+		wctx->temp_ssid = config_ssid_init_new_node(wctx);
+		working = wctx->temp_ssid;
     }
   else
     {
       if (memcmp(working->mac, empty_mac, 6) != 0)
 	{
 	  debug_printf(DEBUG_PHYSICAL_STATE, "Found new ESSID block, adding...\n");
-	  wctx->active_ssid = config_ssid_init_new_node(wctx);
-	  working = wctx->active_ssid;
+	  wctx->temp_ssid = config_ssid_init_new_node(wctx);
+	  working = wctx->temp_ssid;
 	}
     }
 
@@ -292,7 +320,7 @@ void config_ssid_update_abilities(wireless_ctx *wctx, uint8_t newabil)
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
-	working = wctx->active_ssid;
+	working = wctx->temp_ssid;
 
   // If we get here, and don't have a valid structure, then we are doomed.
   xsup_assert((working != NULL), "working != NULL", TRUE);
@@ -313,13 +341,13 @@ void config_ssid_add_freq(wireless_ctx *wctx, unsigned int newfreq)
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
-	working = wctx->active_ssid;
+	working = wctx->temp_ssid;
 
   if ((!working) || (working->freq != 0))
     {
       debug_printf(DEBUG_PHYSICAL_STATE, "Found new ESSID block, adding...\n");
-	  wctx->active_ssid = config_ssid_init_new_node(wctx);
-	  working = wctx->active_ssid;
+	  wctx->temp_ssid = config_ssid_init_new_node(wctx);
+	  working = wctx->temp_ssid;
     }
 
   working->freq = newfreq;
@@ -340,14 +368,14 @@ void config_ssid_add_qual(wireless_ctx *wctx, unsigned char qual, char signal, c
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
-	working = wctx->active_ssid;
+	working = wctx->temp_ssid;
 
   if ((!working) || (working->quality != 0) || (working->signal != 0) ||
       (working->noise != 0))
     {
       debug_printf(DEBUG_PHYSICAL_STATE, "Found new ESSID block, adding...\n");
-	  wctx->active_ssid = config_ssid_init_new_node(wctx);
-	  working = wctx->active_ssid;
+	  wctx->temp_ssid = config_ssid_init_new_node(wctx);
+	  working = wctx->temp_ssid;
     }
 
   working->quality = qual;
@@ -445,7 +473,7 @@ void config_ssid_clear(wireless_ctx *wctx)
     }
 
   wctx->ssid_cache = NULL;
-  wctx->active_ssid = NULL;
+//  wctx->active_ssid = NULL;
 }
 
 /**
@@ -502,6 +530,7 @@ struct found_ssids *config_ssid_find_by_name(wireless_ctx *wctx, char *ssid_name
  * \warning If the requested SSID is unavailable, the active SSID will be
  *          set to NULL!
  **/
+/*
 void config_ssid_set_active_ssid(wireless_ctx *wctx, char *ssid_name)
 {
   if (!xsup_assert((ssid_name != NULL), "ssid_name != NULL", FALSE))
@@ -511,6 +540,7 @@ void config_ssid_set_active_ssid(wireless_ctx *wctx, char *ssid_name)
 
   wctx->active_ssid = config_ssid_find_by_name(wctx, ssid_name);
 }
+*/
 
 /**
  * \brief See if the ESSID requested is one that we know about in our list.
@@ -673,7 +703,7 @@ void config_ssid_get_by_mac(context *ctx, uint8_t *forced_mac)
       return;
     }
 
-  wctx->active_ssid = cur;
+//  wctx->active_ssid = cur;
 }
 
 /**
@@ -690,6 +720,7 @@ char *config_ssid_get_desired_ssid(context *ctx)
   struct config_globals *globals = NULL;
   char cur_ssid[33];
   wireless_ctx *wctx = NULL;
+  struct found_ssids *ssid = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return NULL;
@@ -710,7 +741,7 @@ char *config_ssid_get_desired_ssid(context *ctx)
 		  return NULL;
 	  }
 
-	  wctx->active_ssid = config_ssid_find_by_name(wctx, ctx->conn->ssid);
+//	  wctx->active_ssid = config_ssid_find_by_name(wctx, ctx->conn->ssid);
 	  return ctx->conn->ssid;
   }
 
@@ -724,24 +755,24 @@ char *config_ssid_get_desired_ssid(context *ctx)
 
   if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ASSOC_AUTO))
     {
-      wctx->active_ssid = config_ssid_find_best_ssid(ctx);
+      ssid = config_ssid_find_best_ssid(ctx);
 
-      if (wctx->active_ssid == NULL) return NULL;
+      if (ssid == NULL) return NULL;
 
-      return wctx->active_ssid->ssid_name;
+      return ssid->ssid_name;
     } else {
       memset(cur_ssid, 0x00, 33);
 
       // Get our current SSID
       if (cardif_GetSSID(ctx, cur_ssid, 33) == XENONE)
 	{
-	  wctx->active_ssid = config_ssid_find_by_name(wctx, cur_ssid);
+	  ssid = config_ssid_find_by_name(wctx, cur_ssid);
 	  
-	  if (wctx->active_ssid != NULL) 
+	  if (ssid != NULL) 
 	    {
 	      debug_printf(DEBUG_PHYSICAL_STATE, "Returning SSID '%s'\n", 
-			   wctx->active_ssid->ssid_name);
-	      return wctx->active_ssid->ssid_name;
+			   ssid->ssid_name);
+	      return ssid->ssid_name;
 	    } else {
 	      debug_printf(DEBUG_NORMAL, "You are in manual association mode"
 			   ", and the current ESSID was not found.  Will"
@@ -765,11 +796,15 @@ char *config_ssid_get_desired_ssid(context *ctx)
  **/
 uint8_t config_ssid_get_ssid_abilities(wireless_ctx *wctx)
 {
+	struct found_ssids *ssid = NULL;
+
 	xsup_assert((wctx != NULL), "wctx != NULL", TRUE);
 
-  if (wctx->active_ssid == NULL) return 0x00;
+	ssid = config_ssid_find_by_wctx(wctx);
 
-  return wctx->active_ssid->abilities;
+  if (ssid == NULL) return 0x00;
+
+  return ssid->abilities;
 }
 
 /**
@@ -807,22 +842,27 @@ int config_ssid_using_wep(wireless_ctx *wctx)
  **/
 void config_ssid_get_wpa_ie(wireless_ctx *wctx, uint8_t **wpa_ie, uint8_t *wpa_ie_len)
 {
+	struct found_ssids *ssid = NULL;
+
   if (!xsup_assert((wpa_ie != NULL), "wpa_ie != NULL", FALSE))
     return;
 
   xsup_assert((wctx != NULL), "wctx != NULL", TRUE);
 
-  if (wctx->active_ssid == NULL) 
+  ssid = config_ssid_find_by_wctx(wctx);
+
+  if (ssid == NULL) 
     {
       *wpa_ie = NULL;
       (*wpa_ie_len) = 0;
       return;
     }
 
-  (*wpa_ie) = wctx->active_ssid->wpa_ie;
-  (*wpa_ie_len) = wctx->active_ssid->wpa_ie_len;
+  (*wpa_ie) = ssid->wpa_ie;
+  (*wpa_ie_len) = ssid->wpa_ie_len;
 }
 
+#define MACADDR(x)  x[0],x[1],x[2],x[3],x[4],x[5]
 /**
  * \brief Return the rsn_ie and the rsn_ie_len for the selected SSID.
  *
@@ -834,21 +874,31 @@ void config_ssid_get_wpa_ie(wireless_ctx *wctx, uint8_t **wpa_ie, uint8_t *wpa_i
  **/
 void config_ssid_get_rsn_ie(wireless_ctx *wctx, uint8_t **rsn_ie, uint8_t *rsn_ie_len)
 {
+	struct found_ssids *ssid = NULL;
+
   if (!xsup_assert((rsn_ie != NULL), "rsn_ie != NULL", FALSE))
     return;
 
   xsup_assert((wctx != NULL), "wctx != NULL", TRUE);
 
+  ssid = config_ssid_find_by_wctx(wctx);
 
-  if (wctx->active_ssid == NULL)
+  if (ssid == NULL)
     {
       *rsn_ie = NULL;
       rsn_ie_len = 0;
       return;
     }
 
-  *rsn_ie = wctx->active_ssid->rsn_ie;
-  *rsn_ie_len = wctx->active_ssid->rsn_ie_len;
+  if (ssid->rsn_ie == NULL)
+  {
+	  debug_printf(DEBUG_INT, "SSID : %s\n", ssid->ssid_name);
+	  debug_printf(DEBUG_INT, "MAC : %02x:%02x:%02x:%02x:%02x:%02x\n", MACADDR(ssid->mac));
+	  debug_printf(DEBUG_INT, "Abilities : %d\n", ssid->abilities);
+  }
+
+  *rsn_ie = ssid->rsn_ie;
+  *rsn_ie_len = ssid->rsn_ie_len;
 }
 
 /**
@@ -862,11 +912,15 @@ void config_ssid_get_rsn_ie(wireless_ctx *wctx, uint8_t **rsn_ie, uint8_t *rsn_i
  **/
 unsigned int config_ssid_get_freq(wireless_ctx *wctx)
 {
+	struct found_ssids *ssid = NULL;
+
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return 0;
 
-	if (wctx->active_ssid == NULL) return 0;
+	ssid = config_ssid_find_by_wctx(wctx);
 
-	return wctx->active_ssid->freq;
+	if (ssid == NULL) return 0;
+
+	return ssid->freq;
 }
 
 /**
@@ -880,9 +934,13 @@ unsigned int config_ssid_get_freq(wireless_ctx *wctx)
  **/
 uint8_t *config_ssid_get_mac(wireless_ctx *wctx)
 {
+	struct found_ssids *ssid = NULL;
+
 	xsup_assert((wctx != NULL), "wctx != NULL", TRUE);
 
-	if (wctx->active_ssid == NULL)
+	ssid = config_ssid_find_by_wctx(wctx);
+
+	if (ssid == NULL)
     {
       // This may not actually be a problem.  Rather, it could be that the
       // user wanted to use an SSID that we didn't find in a scan.
@@ -891,5 +949,5 @@ uint8_t *config_ssid_get_mac(wireless_ctx *wctx)
       return NULL;
     }
 
-  return (uint8_t *)&wctx->active_ssid->mac;
+  return (uint8_t *)&ssid->mac;
 }

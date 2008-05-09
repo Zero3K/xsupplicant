@@ -219,7 +219,7 @@ typedef struct {
 	uint8_t pairwiseKeyType;
 	uint8_t groupKeyType;
 
-	struct found_ssids *active_ssid;
+	struct found_ssids *temp_ssid;
 
   /** This contains the number of MIC failures the driver has reported.
    * Once it reaches 2, we should enable countermeasures.
