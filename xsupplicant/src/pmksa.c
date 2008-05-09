@@ -810,7 +810,7 @@ void pmksa_apply_cache(context *ctx)
 	while (ssids != NULL)
 	{
 		// If the SSID matches our current list.
-		if (strcmp(wctx->cur_essid, ssids->ssid_name) == 0)
+		if ((ssids->ssid_name != NULL) && (strcmp(wctx->cur_essid, ssids->ssid_name) == 0))
 		{
 			// We only care about SSIDs we have a PMKID for. Ignore the rest.
 			if (pmksa_sa_exists(ctx, ssids->mac) != NULL)

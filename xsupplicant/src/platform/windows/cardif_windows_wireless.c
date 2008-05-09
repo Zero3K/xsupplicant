@@ -275,7 +275,7 @@ int cardif_windows_wireless_xp_passive(context *ctx)
 	while (ssids != NULL)
 	{
 		// If the SSID in the cache is one that matches the SSID we are currently on.
-		if (strcmp(ssids->ssid_name, wctx->cur_essid) == 0)
+		if ((ssids->ssid_name != NULL) && (strcmp(ssids->ssid_name, wctx->cur_essid) == 0))
 		{
 			// We only care if it is a WPA2 network.
 			if (ssids->rsn_ie != NULL)

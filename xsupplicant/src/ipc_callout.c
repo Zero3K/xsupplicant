@@ -4943,7 +4943,7 @@ int ipc_callout_enum_known_ssids(xmlNodePtr innode, xmlNodePtr *outnode)
 		}
 		else
 		{
-			memset(temp, 0x00, 2);
+			memset(&temp, 0x00, 2);
 		}
 
 
