@@ -52,6 +52,7 @@ public:
 public slots:
 	void updateIPAddress();
     void updateTNCStatus(unsigned int, unsigned int, unsigned int, unsigned int);
+    void sendTNCUIConnectionStatusRequest();
 	virtual void slotStateChange(const QString &, int, int, int, unsigned int);
 
 protected:
@@ -86,6 +87,8 @@ protected:
       QLabel *m_pTNCStatusTextLabel;
       QLabel *m_pTNCStatusImageText;
 	  QLabel *m_pTNCStatusImagePic;
+      QPushButton *m_pTNCStatusButton;
+      int m_TNCConnectionID;
 
 	  bool getIPAddress();
 	  bool getTime();

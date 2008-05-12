@@ -75,6 +75,7 @@ signals:
   void signalTNCUIRemediationEventBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer);
   void signalTNCUILoginWindowStatusUpdateEvent(unsigned int imc, unsigned int connID, unsigned int oui, unsigned int newState);
+  void signalTNCUIConnectionStatusRequest(unsigned int connID);
   void signalScanCompleteMessage(const QString &);
   void signalConnConfigUpdate();
   void signalProfConfigUpdate();
@@ -132,6 +133,7 @@ public:
   void sendTNCUIComplianceReportBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUIComplianceFailureBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUILoginWindowStatusUpdateEvent(unsigned int imc, unsigned int connID, unsigned int oui, unsigned int newState);
+  void sendTNCUIConnectionStatusRequest(unsigned int connID);
   void sendStateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
   void sendIPAddressSet();
   void sendSupWarningEvent(const QString &warning);

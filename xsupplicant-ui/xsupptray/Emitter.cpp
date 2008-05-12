@@ -310,6 +310,16 @@ void Emitter::sendTNCUILoginWindowStatusUpdateEvent(unsigned int imc, unsigned i
     emit signalTNCUILoginWindowStatusUpdateEvent(imc, connID, oui, newState);   
 }
 
+//!   void sendTNCUIConnectionStatusRequest
+/*!
+    \brief 
+    \return Nothing
+*/
+void Emitter::sendTNCUIConnectionStatusRequest(unsigned int connID) 
+{
+    emit signalTNCUIConnectionStatusRequest(connID);
+}
+
 //! sendSignalStrength()
 /*!
   \brief emit's a signal that the signal strength has changed

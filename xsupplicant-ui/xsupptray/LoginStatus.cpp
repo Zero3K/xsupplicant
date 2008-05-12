@@ -56,6 +56,12 @@ LoginStatus::LoginStatus(bool fromConnect, QString inDevName, poss_conn_enum *pC
 	m_pSSIDName = NULL;
 	m_pStatusLabel = NULL;
 
+    m_pTNCStatusTextLabel = NULL;
+    m_pTNCStatusImageText = NULL;
+    m_pTNCStatusImagePic  = NULL;
+    m_pTNCStatusButton    = NULL;
+    m_TNCConnectionID     = -1;
+
 	Util::myConnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)), this, SLOT(slotStateChange(const QString &, int, int, int, unsigned int)));
 	Util::myConnect(m_pEmitter, SIGNAL(signalIPAddressSet()), this, SLOT(updateIPAddress()));
     Util::myConnect(m_pEmitter, SIGNAL(signalTNCUILoginWindowStatusUpdateEvent(unsigned int, unsigned int, unsigned int, unsigned int)), this, SLOT(updateTNCStatus(unsigned int, unsigned int, unsigned int, unsigned int)));
@@ -79,7 +85,13 @@ LoginStatus::~LoginStatus()
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)), this, SLOT(slotStateChange(const QString &, int, int, int, unsigned int)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalIPAddressSet()), this, SLOT(updateIPAddress()));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalTNCUILoginWindowStatusUpdateEvent(unsigned int, unsigned int, unsigned int, unsigned int)), this, SLOT(updateTNCStatus(unsigned int, unsigned int, unsigned int, unsigned int)));
-	}
+        
+        if(m_pTNCStatusButton != NULL) {
+            Util::myDisconnect(m_pEmitter, SIGNAL(clicked(bool)), this, SLOT(sendTNCUIConnectionStatusRequest()));
+        }
+    }
+
+
 
 	if (m_pClockTimer != NULL) 
 	{
@@ -130,6 +142,8 @@ void LoginStatus::updateWindow(bool updateAll, bool fromConnect)
 
 	m_pTNCStatusImagePic = qFindChild<QLabel*>(myProxy, "tncStatusIcon");
 
+    m_pTNCStatusButton    = qFindChild<QPushButton *>(myProxy, "buttonTNCStatus");
+
     if(m_pTNCStatusImagePic != NULL)
     {
         m_pTNCStatusImagePic->hide();
@@ -143,6 +157,12 @@ void LoginStatus::updateWindow(bool updateAll, bool fromConnect)
     if(m_pTNCStatusTextLabel != NULL)
     {
         m_pTNCStatusTextLabel->setText(tr("Not Available"));
+    }
+
+    if(m_pTNCStatusButton != NULL) 
+    {
+        m_pTNCStatusButton->hide();
+        Util::myConnect(m_pTNCStatusButton, SIGNAL(clicked(bool)), this, SLOT(sendTNCUIConnectionStatusRequest()));
     }
 
 	if (m_pTimeBox != NULL)
@@ -413,12 +433,7 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
 	int m_XState;
 	QString temp;
 
-/*
-#define TNC_CONNECTION_STATE_ACCESS_ALLOWED 2
-#define TNC_CONNECTION_STATE_ACCESS_ISOLATED 3
-#define TNC_CONNECTION_STATE_ACCESS_NONE 4
-*/
-    if((m_pTNCStatusTextLabel != NULL) && (m_pTNCStatusImageText != NULL) && (m_pTNCStatusImagePic != NULL))
+    if((m_pTNCStatusTextLabel != NULL) && (m_pTNCStatusImageText != NULL) && (m_pTNCStatusImagePic != NULL) && (m_pTNCStatusButton != NULL))
     {
         if(m_connID == -1)
         {
@@ -464,6 +479,11 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
             }
         }
 
+/*
+#define TNC_CONNECTION_STATE_ACCESS_ALLOWED 2
+#define TNC_CONNECTION_STATE_ACCESS_ISOLATED 3
+#define TNC_CONNECTION_STATE_ACCESS_NONE 4
+*/
         switch(newState)
         {
             case 2:
@@ -474,6 +494,9 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
 				temp = "tnc_allowed.png";
 				setPixmapLabel(m_pTNCStatusImagePic, temp);
 				m_pTNCStatusImagePic->setHidden(false);
+
+                m_pTNCStatusButton->setIcon(QIcon(QPixmap(FormLoader::iconpath() + "tnc_allowed.png")));
+                m_pTNCStatusButton->setHidden(false);
             }break;
 
             case 3:
@@ -484,6 +507,9 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
 				temp = "tnc_isolated.png";
 				setPixmapLabel(m_pTNCStatusImagePic, temp);
 				m_pTNCStatusImagePic->setHidden(false);
+
+                m_pTNCStatusButton->setIcon(QIcon(QPixmap(FormLoader::iconpath() + "tnc_isolated.png")));
+                m_pTNCStatusButton->setHidden(false);
             }break;
 
             case 4:
@@ -494,6 +520,9 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
 				temp = "tnc_none.png";
 				setPixmapLabel(m_pTNCStatusImagePic, temp);
 				m_pTNCStatusImagePic->setHidden(false);
+
+                m_pTNCStatusButton->setIcon(QIcon(QPixmap(FormLoader::iconpath() + "tnc_none.png")));
+                m_pTNCStatusButton->setHidden(false);
             }break;
 
             default:
@@ -502,17 +531,36 @@ void LoginStatus::updateTNCStatus(unsigned int imc, unsigned int connID, unsigne
                 m_pTNCStatusTextLabel->setText(tr("Not Available"));
 				m_pTNCStatusImageText->setText(tr(""));
 				m_pTNCStatusImagePic->setHidden(true);
+
+                m_pTNCStatusButton->setIcon(QIcon(QPixmap("")));
+                m_pTNCStatusButton->setHidden(true);
             }break;
         };
 
         if(m_pTNCStatusTextLabel->isHidden())
         {
-            m_pTNCStatusTextLabel->show();
+            m_pTNCStatusTextLabel->show(); 
         }
 
 		if (m_pTNCStatusImageText->isHidden())
 		{
 			m_pTNCStatusImageText->show();
 		}
+
+        if(m_pTNCStatusButton != NULL) {
+            if(m_pTNCStatusButton->isHidden()) {
+                m_pTNCStatusButton->show();
+            }
+        }
+
+        // Keep track of the connection ID so we can tickle plugins with it, if necessary.
+        m_TNCConnectionID = connID;
+    }
+}
+
+void LoginStatus::sendTNCUIConnectionStatusRequest() 
+{
+    if(m_pEmitter != NULL) {
+        m_pEmitter->sendTNCUIConnectionStatusRequest(m_TNCConnectionID);
     }
 }

@@ -68,7 +68,7 @@ QWidget *FormLoader::buildform(QString formname)
 
 QPixmap *FormLoader::loadicon(QString iconname)
 {
-	QString path = QApplication::applicationDirPath() + "/Skins/Default/icons/" + iconname;
+	QString path =  iconpath() + iconname;
 	QPixmap *p;
 
 	p = new QPixmap(path);
@@ -76,4 +76,12 @@ QPixmap *FormLoader::loadicon(QString iconname)
 	return p;
 }
 
+QString FormLoader::skinpath()
+{
+    return QApplication::applicationDirPath() + QString(tr("/Skins/Default/"));
+}
 
+QString FormLoader::iconpath() 
+{
+    return QString(skinpath() + tr("icons/"));
+}
