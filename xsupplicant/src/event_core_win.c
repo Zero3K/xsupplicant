@@ -1210,6 +1210,7 @@ void event_core_waking_up()
 		if (events[i].ctx != NULL)
 		{
 			cardif_restart_io(events[i].ctx);
+			cardif_windows_restart_int_events(events[i].ctx);
 			events[i].flags &= (~EVENT_IGNORE_INT);
 
 			if (events[i].ctx->intType == ETH_802_11_INT)

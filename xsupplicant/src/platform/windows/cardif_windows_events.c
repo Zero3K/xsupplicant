@@ -692,7 +692,7 @@ int cardif_windows_int_event_callback(context *ctx, HANDLE evtHandle)
 {
 	LPOVERLAPPED ovr = NULL;
   struct win_sock_data *sockData = NULL;
-  DWORD ret;
+  DWORD ret = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
 
@@ -737,7 +737,7 @@ int cardif_windows_int_event_callback(context *ctx, HANDLE evtHandle)
 void cardif_windows_setup_int_events(context *ctx)
 {
   DWORD ret = 0;
-  LPOVERLAPPED ovr;
+  LPOVERLAPPED ovr = NULL;
   HANDLE hand = INVALID_HANDLE_VALUE;
   struct win_sock_data *sockData = NULL;
 
@@ -797,6 +797,45 @@ void cardif_windows_setup_int_events(context *ctx)
 			return;
 		}
   }
+}
+
+/**
+ * \brief Restart the IOCTL to get interface events.
+ **/
+int cardif_windows_restart_int_events(context *ctx)
+{
+  LPOVERLAPPED ovr = NULL;
+  struct win_sock_data *sockData = NULL;
+  DWORD ret = 0;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+
+  sockData = (struct win_sock_data *)ctx->sockData;
+
+  if (sockData == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "No valid socket data in %s()!\n", __FUNCTION__);
+	  return -1;
+  }
+
+  ovr = event_core_get_ovr(sockData->devHandle, EVENT_SECONDARY);
+
+  SetLastError(0);
+
+  // This IOCTL waits until something happens.  So the completion status returned is only
+  // an indication of if the IOCTL was recevied by the driver or not.
+  if (!DeviceIoControl(sockData->devHandle, IOCTL_NDISPROT_INDICATE_STATUS, NULL, 0,
+	  sockData->eventdata, 1500, NULL, ovr))
+  {
+		ret = GetLastError();
+		if (ret != ERROR_IO_PENDING)
+		{
+			debug_printf(DEBUG_NORMAL, "Error requesting status indications from interface '%s'.  (Error %d)\n", ctx->desc, ret);
+			return -1;
+		}
+  }
+
+	return 0;
 }
 
 void cardif_windows_events_set_bytes_rx(context *ctx, DWORD bytesrx)

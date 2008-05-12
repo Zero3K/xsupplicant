@@ -501,7 +501,7 @@ struct found_ssids *config_ssid_find_by_name(wireless_ctx *wctx, char *ssid_name
   // Start at the top of the list.
   cur = wctx->ssid_cache;
 
-  while ((cur != NULL) && (strcmp(ssid_name, cur->ssid_name) != 0))
+  while ((cur != NULL) && (cur->ssid_name != NULL) && (strcmp(ssid_name, cur->ssid_name) != 0))
     {
       cur = cur->next;
     }
