@@ -43,7 +43,7 @@
 ///< Status values that we want to know about.  (Taken from ndis.h)
 #define NDIS_STATUS_MEDIA_CONNECT						((NDIS_STATUS)0x4001000BL)
 #define NDIS_STATUS_MEDIA_DISCONNECT					((NDIS_STATUS)0x4001000CL)
-#define NDIS_STATUS_SCAN_CONFIRM						((NDIS_STATUS)0x40030000L)
+#define NDIS_STATUS_DOT11_SCAN_CONFIRM					((NDIS_STATUS)0x40030000L)
 #define NDIS_STATUS_DOT11_DISASSOCIATION				((NDIS_STATUS)0x40030008L)
 #define NDIS_STATUS_LINK_STATE							((NDIS_STATUS)0x40010017L)
 #define NDIS_STATUS_DOT11_LINK_QUALITY                  ((NDIS_STATUS)0x4003000CL)
@@ -233,14 +233,9 @@ void cardif_windows_int_event_disconnect(context *ctx)
 			return;
 		}
 
-		// Double check to make sure that we really are disconnected.  Sometimes weird things
-		// can happen because the events aren't being received in real time.
-		if (cardif_windows_wireless_get_bssid(ctx, bssid_dest) != XENONE)
-		{
-			UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
-			UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
-			memset(ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
-		}
+		UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
+		UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
+		memset(ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
 
 		if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
 		{
@@ -657,7 +652,7 @@ void cardif_windows_int_event_process(context *ctx, uint8_t *eventdata, DWORD ev
 	  cardif_windows_int_event_disconnect(ctx);
 	  break;
 
-  case NDIS_STATUS_SCAN_CONFIRM:
+  case NDIS_STATUS_DOT11_SCAN_CONFIRM:
 	  cardif_windows_int_event_scan_confirm(ctx);
 	  break;
 
@@ -693,6 +688,8 @@ int cardif_windows_int_event_callback(context *ctx, HANDLE evtHandle)
 	LPOVERLAPPED ovr = NULL;
   struct win_sock_data *sockData = NULL;
   DWORD ret = 0;
+  uint8_t mydata[1500];
+  DWORD dataSize = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
 
@@ -707,8 +704,8 @@ int cardif_windows_int_event_callback(context *ctx, HANDLE evtHandle)
 	debug_printf(DEBUG_INT, "Got an interface event on interface '%s'!\n", ctx->desc);
 	debug_hex_dump(DEBUG_INT, sockData->eventdata, sockData->evtSize);
 
-	//  Process the event we got.
-	cardif_windows_int_event_process(ctx, sockData->eventdata, sockData->evtSize);
+	dataSize = sockData->evtSize;
+	memcpy(&mydata[0], sockData->eventdata, dataSize);
 
     ovr = event_core_get_ovr(evtHandle, EVENT_SECONDARY);
 
@@ -726,6 +723,13 @@ int cardif_windows_int_event_callback(context *ctx, HANDLE evtHandle)
 			return -1;
 		}
   }
+
+	//  Process the event we got.  This should work fine for the current situation where we should only
+	//  ever have two events outstanding at any one time.  By processing the event last, the window for
+	//  missing events is pretty small.  If we ever believe that we will have three or more events outstanding
+    //  then we should try threading the event processing function.  Otherwise, we will have to queue
+    //  in the driver, and that isn't fun.
+	cardif_windows_int_event_process(ctx, mydata, dataSize);
 
 	return 0;
 }
