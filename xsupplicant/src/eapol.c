@@ -226,7 +226,7 @@ int eapol_execute(context *workint)
   // in the queue.
   sm_runs = 0;
 
-  while ((sm_runs < 0xff) && (workint->statemachine->eapolEap == TRUE))
+  while ((sm_runs < 0xff) && (workint->statemachine->eapolEap == TRUE) && (workint->conn != NULL))
     {
       statemachine_run(workint);
       sm_runs++;
