@@ -230,11 +230,18 @@ bool LoginStatus::getIPAddress()
 	bool bValue = m_supplicant.getIPInfo(devName, ipInfo, false);
 	if (bValue)
 	{
-		m_pIpAddressTextBox->setText(ipInfo.getIPAddress());
+		if (ipInfo.getIPAddress() == "")
+		{
+			m_pIpAddressTextBox->setText(tr("Updating. . ."));
+		}
+		else
+		{
+			m_pIpAddressTextBox->setText(ipInfo.getIPAddress());
+		}
 	}
 	else
 	{
-		m_pIpAddressTextBox->setText(tr(""));
+		m_pIpAddressTextBox->setText(tr("Updating. . ."));
 	}
 
 	return bValue;
