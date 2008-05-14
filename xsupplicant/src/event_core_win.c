@@ -793,6 +793,11 @@ void event_core()
 						events[i].silent++;
 					  }
 
+					  if ((events[i].flags & 0xf0) == EVENT_SECONDARY)
+					  {
+			  			cardif_windows_restart_int_events(events[i].ctx);
+					  }
+
 					  // If the interface has been broken for at least 31 seconds, we want to shut it down.
 					  if (events[i].silent >= 32)
 					  {

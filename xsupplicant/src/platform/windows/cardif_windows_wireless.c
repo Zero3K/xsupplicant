@@ -242,6 +242,7 @@ bad_strncpy:
   }
 
   UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
+  wctx->temp_ssid = NULL;
 
   return;
 }
