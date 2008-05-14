@@ -220,6 +220,8 @@ int statemachine_reinit(context *ctx)
 
   ctx->statemachine->curState = DISCONNECTED;
 
+  ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
+
   return XENONE;
 }
 
@@ -1245,7 +1247,7 @@ int statemachine_run(context *ctx)
     }
 
 //  ctx->statemachine->portEnabled = cardif_get_if_state(ctx);
-  ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
+//  ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
   
   /*
   if (ctx->statemachine->portEnabled == FALSE)

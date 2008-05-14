@@ -1092,14 +1092,12 @@ uint8_t *eapmschapv2_buildResp(eap_type_data *eapdata)
  ******************************************************************/
 uint8_t eapmschapv2_isKeyAvailable(eap_type_data *eapdata)
 {
-  struct mschapv2_vars *myvars;
+  struct mschapv2_vars *myvars = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;
 
-  if (!xsup_assert((eapdata->eap_data != NULL),
-                   "eapdata->eap_data != NULL", FALSE))
-    return FALSE;
+  if (eapdata->eap_data == NULL) return FALSE;
 
   myvars = (struct mschapv2_vars *)eapdata->eap_data;
 

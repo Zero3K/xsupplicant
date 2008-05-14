@@ -1085,6 +1085,8 @@ int cardif_init(context *ctx, char driver)
 
   event_core_register(sockData->devHandle, ctx, &cardif_handle_frame, EVENT_PRIMARY, LOW_PRIORITY, "frame handler");
 
+  ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
+
   return XENONE;
 }
 

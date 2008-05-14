@@ -129,6 +129,8 @@ void cardif_windows_int_event_connect(context *ctx)
 	debug_printf(DEBUG_INT, "!!!!!!!!!!!!!!!!!!!! Connect Event !!!!!!!!!!!!!!!!!!!!!\n");
 	debug_printf(DEBUG_INT, "    Device : %s\n", ctx->desc);
 
+	Sleep(1000);
+
 	// Send event.
 	ipc_events_ui(NULL, IPC_EVENT_UI_LINK_UP, ctx->desc);
 
@@ -200,6 +202,9 @@ void cardif_windows_int_event_connect(context *ctx)
 			// Reset the EAP state machine.
 			eap_sm_force_init(ctx->eap_state);
 		}
+
+		ctx->eap_state->portEnabled = TRUE;
+		ctx->statemachine->portEnabled = TRUE;
 }
 
 /**
@@ -248,10 +253,12 @@ void cardif_windows_int_event_disconnect(context *ctx)
 	else
 	{
 		debug_printf(DEBUG_NORMAL, "Interface '%s' no longer has link.\n", ctx->desc);
-		ctx->eap_state->portEnabled = FALSE;
 		ctx->statemachine->initialize = TRUE;
 		memcpy(&ctx->dest_mac[0], &dot1x_default_dest[0], 6);
 	}
+	
+	ctx->eap_state->portEnabled = FALSE;
+	ctx->statemachine->portEnabled = FALSE;
 }
 
 /**
