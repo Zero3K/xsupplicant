@@ -220,8 +220,6 @@ int statemachine_reinit(context *ctx)
 
   ctx->statemachine->curState = DISCONNECTED;
 
-  ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
-
   return XENONE;
 }
 
