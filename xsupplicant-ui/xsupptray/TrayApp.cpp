@@ -1239,6 +1239,13 @@ void TrayApp::slotCreateTroubleticket()
 
 void TrayApp::slotCreateTroubleticketDone()
 {
+	disconnectTTSignals();
+
+	QMessageBox::information(this, tr("Troubleticket Created"), tr("Your trouble ticket was created successfully."));
+}
+
+void TrayApp::disconnectTTSignals()
+{
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalTroubleTicketDone()), this, SLOT(slotCreateTroubleticketDone()));
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalTroubleTicketError()), this, SLOT(slotCreateTroubleticketError()));
 
@@ -1251,7 +1258,7 @@ void TrayApp::slotCreateTroubleticketDone()
 
 void TrayApp::slotCreateTroubleticketError()
 {
-	slotCreateTroubleticketDone();
+	disconnectTTSignals();
 
 	QMessageBox::critical(this, tr("Troubleticket Error"), tr("There was an error creating your troubleticket.  The troubleticket file may not exist, or may be incomplete."));
 }

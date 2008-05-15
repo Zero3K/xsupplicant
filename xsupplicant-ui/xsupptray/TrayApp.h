@@ -124,6 +124,7 @@ private:
 	void disconnectGlobalTrayIconSignals();
 	void populateGlobalTrayData(QString, QString);
 	void updateIntControlCheck();
+	void disconnectTTSignals();
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();
