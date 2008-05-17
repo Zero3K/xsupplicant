@@ -96,6 +96,8 @@ public:
 	int destroyWidget();
 	void setProfile(config_profiles *pProfile);
 	virtual void setEmitter(Emitter *pEmitter);
+	virtual void setCallbacks(UICallbacks uiCallbacks);
+	QString getPluginVersionString();
 	void updateEngineVersionString(QString m_newVersion);
 	bool save();
 	void show();

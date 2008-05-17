@@ -36,6 +36,7 @@
 
 #include "xsupcalls.h"
 #include "Emitter.h"
+#include "PluginCallbacks.h"
 
 class PluginWidget : public QWidget
  {
@@ -49,7 +50,7 @@ class PluginWidget : public QWidget
 
 	 Emitter *m_pEmitter;
 	 QString m_Version;
-	 //XSupCalls *m_pSupplicant;
+	 PluginCallbacks callbacks;
 
  public:
 	 PluginWidget();
@@ -61,8 +62,11 @@ class PluginWidget : public QWidget
 	 virtual void discard();
 	 virtual void setProfile(config_profiles *pProfile);
 	 virtual void setEmitter(Emitter *pEmitter);
+	 virtual void setCallbacks(UICallbacks uiCallbacks);
 	 virtual void setEngineVersionString(QString m_version);
-	 //virtual void setSupplicant(XSupCalls *pSupplicant);
+	 virtual QString getPluginVersionString();
+
+	 PluginCallbacks &getPluginCallbacks();
 
 signals:
 	 void signalDataChanged();

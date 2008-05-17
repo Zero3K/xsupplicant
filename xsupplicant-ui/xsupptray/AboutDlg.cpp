@@ -36,6 +36,7 @@
 #include "AboutDlg.h"
 #include "xsupcalls.h"
 #include "Util.h"
+#include "TrayApp.h"
 
 #include "version.h"
 #include "buildnum.h"
@@ -62,6 +63,8 @@ AboutWindow::AboutWindow(QWidget *parent)
 	m_pSupVersion      = NULL;
 	m_pGUIVersion      = NULL;
 	m_pbuttonClose     = NULL;
+
+	m_postureVersionString = ((TrayApp *)parent)->m_pluginVersionString;
 }
 
 
@@ -102,6 +105,8 @@ bool AboutWindow::create()
 	{
 		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'dataFieldGUIVersion' label.  The GUI version will not be displayed properly."));
 	}
+
+	m_pdataFieldPostureVersion = qFindChild<QLabel *>(m_pRealForm, "dataFieldPostureVersion");
 
 	m_pdataFieldPlugins = qFindChild<QLabel*>(m_pRealForm, "dataFieldPlugins");
 
@@ -154,11 +159,17 @@ void AboutWindow::updateData()
   m_supplicant.getAndCheckSupplicantVersion(fullVersion, numberString, false);
   m_pSupVersion->setText(tr("%1").arg(numberString));
 
-#ifdef TNC
+//#ifdef TNC
   m_pdataFieldPlugins->setText(tr("with Identity Engines Ignition Posture Module"));
-#else
+  if(m_pdataFieldPostureVersion != NULL) {
+	  m_pdataFieldPostureVersion->setText(m_postureVersionString);
+  }
+/*#else
   m_pdataFieldPlugins->setText("");
-#endif
+  if(m_pdataFieldPostureVersion != NULL) {
+	  m_pdataFieldPostureVersion->setText(QString(tr("No TNC")));
+  }
+#endif*/
 
   m_pGUIVersion->setText(tr("%1").arg(getGUIVersion()));
 }

@@ -314,6 +314,24 @@ void UIPlugins::setEmitter(Emitter *pEmitter)
 	}
 }
 
+void UIPlugins::setCallbacks(UICallbacks uiCallbacks)
+{
+	if(initialized)
+	{
+		plugin->setCallbacks(uiCallbacks);
+	}
+}
+
+QString UIPlugins::getPluginVersionString()
+{
+	if(initialized)
+	{
+		return plugin->getPluginVersionString();
+	}
+
+	return QString("Not Initialized");
+}
+
 void UIPlugins::show() 
 {
 	if(plugin != NULL)

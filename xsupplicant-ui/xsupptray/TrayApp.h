@@ -42,6 +42,7 @@
 #include "AboutDlg.h"
 #include "interfacectrl.h"
 #include "CreateTT.h"
+#include "UICallbacks.h"
 
 class TrayApp : public QWidget
 {
@@ -67,6 +68,8 @@ class TrayApp : public QWidget
 	};
 
 public:
+	QString m_pluginVersionString;
+
     TrayApp(QApplication &app);
     virtual ~TrayApp();
     MessageClass m_message;
@@ -160,6 +163,7 @@ private:
 	CreateTT *m_pCreateTT;
 
 	UIPlugins *m_pPlugins;
+	UICallbacks uiCallbacks;
 };
 
 #endif // _TRAYAPP_H_

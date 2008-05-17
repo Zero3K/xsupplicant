@@ -64,8 +64,10 @@ private:
   XSupCalls m_supplicant;
   QLabel *m_pSupVersion;
   QLabel *m_pGUIVersion;
+  QLabel *m_pdataFieldPostureVersion;
   QPushButton *m_pbuttonClose;
   QString m_versionString;
+  QString m_postureVersionString;
 
   void setupWindow();
 };

@@ -83,13 +83,23 @@ void PluginWidget::setEmitter(Emitter *pEmitter)
 	m_pEmitter = pEmitter;
 }
 
+void PluginWidget::setCallbacks(UICallbacks uiCallbacks)
+{
+	callbacks.uiCallbacks = uiCallbacks;
+}
+
 // This should be removed at some point in the future when we get something less hackish put in place.
 void PluginWidget::setEngineVersionString(QString m_version)
 {
 	m_Version = m_version;
 }
 
-/*void PluginWidget::setSupplicant(XSupCalls *pSupplicant)
+QString PluginWidget::getPluginVersionString() 
 {
-	m_pSupplicant = pSupplicant;
-}*/
+	return QString("Not Implemented");
+}
+
+PluginCallbacks &PluginWidget::getPluginCallbacks()
+{
+	return callbacks;
+}

@@ -82,6 +82,8 @@ TrayApp::TrayApp(QApplication &app):
   m_pPlugins             = NULL;
   m_pIntCtrl			 = NULL;
   m_pCreateTT			 = NULL;
+
+  uiCallbacks.launchHelpP = &HelpWindow::showPage;
 }
 
 //! Destructor
@@ -1373,6 +1375,9 @@ void TrayApp::loadPlugins()
 
 			m_pPlugins->instantiateWidget();
 			m_pPlugins->updateEngineVersionString(version);
+			m_pPlugins->setCallbacks(uiCallbacks);
+
+			m_pluginVersionString = m_pPlugins->getPluginVersionString();
 
 			if(m_pEmitter != NULL)
 			{
