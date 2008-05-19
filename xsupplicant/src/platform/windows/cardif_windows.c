@@ -1956,13 +1956,12 @@ int cardif_setup_recv(context *ctx)
   {
 	  // The last I/O request we had set up never finished.  So, we don't want to schedule a 
 	  // a new one.  (Or weird things happen.)
-	  debug_printf(DEBUG_NORMAL, "Windows reported that an overlapped I/O had not completed on interface '%s' even though the object was signaled.  Please attempt your authentication again.  If the problem persists, please report it to the Open1X mailing list.\n",
+	  debug_printf(DEBUG_INT, "Windows reported that an overlapped I/O had not completed on interface '%s' even though the object was signaled.  Please attempt your authentication again.  If the problem persists, please report it to the Open1X mailing list.\n",
 		  ctx->desc);
 	  return XENONE;
   }
 
-  // Clear the existing frame storage buffer.  (If needed.)
-//  FREE(sockData->frame);
+  // Clear the existing frame storage buffer.  
   sockData->size = 0;
 
 

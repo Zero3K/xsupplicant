@@ -726,7 +726,10 @@ int cardif_windows_int_event_callback(context *ctx, HANDLE evtHandle)
 		ret = GetLastError();
 		if (ret != ERROR_IO_PENDING)
 		{
-			debug_printf(DEBUG_NORMAL, "Error requesting status indications from interface '%s'.  (Error %d)\n", ctx->desc, ret);
+			if (ret != ERROR_BUSY)
+			{
+				debug_printf(DEBUG_NORMAL, "Error requesting status indications from interface '%s'.  (Error %d)\n", ctx->desc, ret);
+			}
 			return -1;
 		}
   }

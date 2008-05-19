@@ -1218,14 +1218,15 @@ void event_core_waking_up()
 			cardif_windows_restart_int_events(events[i].ctx);
 			events[i].flags &= (~EVENT_IGNORE_INT);
 
+			// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
+			events[i].ctx->auths = 0;
+
 			if (events[i].ctx->intType == ETH_802_11_INT)
 			{
 				wctx = events[i].ctx->intTypeData;
 				memset(wctx->cur_bssid, 0x00, 6);
+				wireless_sm_change_to_unassociated(events[i].ctx);
 			}
-
-			// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
-			events[i].ctx->auths = 0;
 		}
 	}
 
