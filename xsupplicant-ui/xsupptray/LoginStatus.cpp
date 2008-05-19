@@ -87,7 +87,7 @@ LoginStatus::~LoginStatus()
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalTNCUILoginWindowStatusUpdateEvent(unsigned int, unsigned int, unsigned int, unsigned int)), this, SLOT(updateTNCStatus(unsigned int, unsigned int, unsigned int, unsigned int)));
         
         if(m_pTNCStatusButton != NULL) {
-            Util::myDisconnect(m_pEmitter, SIGNAL(clicked(bool)), this, SLOT(sendTNCUIConnectionStatusRequest()));
+            Util::myDisconnect(m_pTNCStatusButton, SIGNAL(clicked(bool)), this, SLOT(sendTNCUIConnectionStatusRequest()));
         }
     }
 
