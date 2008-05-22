@@ -2466,6 +2466,16 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				e.sendTroubleTicketDone();
 				break;
 
+			case IPC_EVENT_UI_NEED_UPW:
+				temp = value;
+				e.sendRequestUPW(temp);
+				break;
+
+			case IPC_EVENT_UI_POST_CONNECT_TIMEOUT:
+				temp = value;
+				e.sendPostConnectTimeout(temp);
+				break;
+
             default:
             if (getUIEventString(uievent, desc))
             {
@@ -3581,14 +3591,13 @@ bool XSupCalls::networkDisconnect(QString &deviceName, QString &deviceDescriptio
   bool bValue = true;
   CharC d(deviceName);
 
-  // Call the supplicant an request that the logon be aborted
+  // Call the supplicant and request that the logon be aborted
   if (bWireless)
   {
     bValue = disassociateWireless(deviceName, deviceDescription);
-    if (bValue)
-    {
-      bValue = pauseWireless(deviceName, deviceDescription);
-    }
+
+	// Lock the connection in a disconnected state so that we don't change to something else.
+	xsupgui_request_set_connection_lock(d.charPtr(), TRUE);
   }
   else
   {

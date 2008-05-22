@@ -30,7 +30,8 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#pragma once
+#ifndef _ABOUTDLG_H_
+#define _ABOUTDLG_H_
 
 #include <QLabel>
 #include <QPushButton>
@@ -72,3 +73,4 @@ private:
   void setupWindow();
 };
 
+#endif  // _ABOUTDLG_H_

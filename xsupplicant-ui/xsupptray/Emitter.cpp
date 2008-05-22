@@ -456,3 +456,13 @@ void Emitter::sendTroubleTicketError()
 	emit signalTroubleTicketError();
 }
 
+void Emitter::sendRequestUPW(QString connName)
+{
+	emit signalRequestUPW(connName);
+}
+
+void Emitter::sendPostConnectTimeout(QString devName)
+{
+	emit signalPostConnectTimeout(devName);
+}
+

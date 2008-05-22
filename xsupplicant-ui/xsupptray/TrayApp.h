@@ -43,6 +43,7 @@
 #include "interfacectrl.h"
 #include "CreateTT.h"
 #include "UICallbacks.h"
+#include "CredentialsPopUp.h"
 
 class TrayApp : public QWidget
 {
@@ -97,6 +98,9 @@ private slots:
 	void slotControlInterfacesDone(bool);
 	void slotCreateTroubleticketDone();
 	void slotCreateTroubleticketError();
+	void slotRequestUPW(QString connName);
+	void slotCleanupUPW();
+	void slotConnectionTimeout(QString devName);
 
 signals:
 	// Signals that can be rebroadcast from the root that other objects can subscribe to.
@@ -161,6 +165,7 @@ private:
 
 	InterfaceCtrl *m_pIntCtrl;
 	CreateTT *m_pCreateTT;
+	CredentialsPopUp *m_pCreds;
 
 	UIPlugins *m_pPlugins;
 	UICallbacks uiCallbacks;

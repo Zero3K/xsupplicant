@@ -82,6 +82,7 @@ TrayApp::TrayApp(QApplication &app):
   m_pPlugins             = NULL;
   m_pIntCtrl			 = NULL;
   m_pCreateTT			 = NULL;
+  m_pCreds				 = NULL;
 
   uiCallbacks.launchHelpP = &HelpWindow::showPage;
 }
@@ -102,6 +103,7 @@ TrayApp::~TrayApp()
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalSupWarningEvent(const QString &)), this, SLOT(slotSupWarning(const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalRequestUPW(QString)), this, SLOT(slotRequestUPW(QString)));
 
 		delete m_pEmitter;
 		m_pEmitter = NULL;
@@ -125,7 +127,6 @@ TrayApp::~TrayApp()
 		m_pLoginDlg = NULL;
 	}
 
-  qInstallMsgHandler(0);
   delete m_pEventListenerThread;
   delete m_pLoggingCon;
   delete m_pTrayIcon;
@@ -528,6 +529,7 @@ void TrayApp::connectGlobalTrayIconSignals()
 
 		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
+		Util::myConnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(QString)), this, SLOT(slotConnectionTimeout(QString)));
 	}
 }
 
@@ -544,6 +546,7 @@ void TrayApp::disconnectGlobalTrayIconSignals()
 
 		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(QString)), this, SLOT(slotConnectionTimeout(QString)));
 	}
 }
 
@@ -708,6 +711,7 @@ bool TrayApp::postConnectActions()
   Util::myConnect(m_pEmitter, SIGNAL(signalSupWarningEvent(const QString &)), this, SLOT(slotSupWarning(const QString &)));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));  
+  Util::myConnect(m_pEmitter, SIGNAL(signalRequestUPW(QString)), this, SLOT(slotRequestUPW(QString)));
 
   updateIntControlCheck();
   setGlobalTrayIconState();
@@ -1189,6 +1193,69 @@ void TrayApp::slotExit()
   close();
 
   this->m_app.exit(0);
+}
+
+void TrayApp::slotRequestUPW(QString connName)
+{
+	// Only do something if it isn't already showing.
+	if (m_pCreds == NULL)
+	{
+		m_pCreds = new CredentialsPopUp(connName, this);
+		if (m_pCreds == NULL)
+		{
+			QMessageBox::critical(this, tr("Error"), tr("There was an error creating the credentials pop up."));
+			return;
+		}
+
+		if (m_pCreds->create() == false)
+		{
+			// The create method should have displayed any error dialogs needed.
+			delete m_pCreds;
+			m_pCreds = NULL;
+			return;
+		}
+
+		Util::myConnect(m_pCreds, SIGNAL(close()), this, SLOT(slotCleanupUPW()));
+
+		m_pCreds->show();
+	}
+}
+
+void TrayApp::slotCleanupUPW()
+{
+	Util::myDisconnect(m_pCreds, SIGNAL(close()), this, SLOT(slotCleanupUPW()));
+	delete m_pCreds;
+	m_pCreds = NULL;
+}
+
+void TrayApp::slotConnectionTimeout(QString devName)
+{
+	char *conname = NULL;
+	char *devname = NULL;
+	QString temp;
+
+	devname = _strdup(devName.toAscii());
+
+	if (xsupgui_request_get_conn_name_from_int(devname, &conname) == REQUEST_SUCCESS)
+	{
+		temp = conname;
+		if (QMessageBox::information(this, tr("Connection Lost"), tr("The connection '%1' has been lost.  Would you like the supplicant to attempt to connect to other priority networks?").arg(temp),
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+		{
+			if (xsupgui_request_set_connection_lock(devname, FALSE) != REQUEST_SUCCESS)
+			{
+				QMessageBox::critical(this, tr("Error"), tr("Unable to configure the interface to automatically select a new connection.  You will have to connect manually."));
+			}
+			else
+			{
+				QMessageBox::information(this, tr("Information"), tr("The supplicant will now look for other priority networks to connect to.  This may take several seconds."));
+			}
+		}
+
+		free(conname);
+	}
+
+	free(devname);
 }
 
 void TrayApp::slotCreateTroubleticket()

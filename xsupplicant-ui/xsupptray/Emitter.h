@@ -100,6 +100,8 @@ signals:
   void signalInterfaceControl(bool);
   void signalTroubleTicketDone();
   void signalTroubleTicketError();
+  void signalRequestUPW(QString);
+  void signalPostConnectTimeout(QString);
 
 public:
   Emitter();
@@ -150,6 +152,8 @@ public:
   void sendInterfaceControl(bool);
   void sendTroubleTicketDone();
   void sendTroubleTicketError();
+  void sendRequestUPW(QString);
+  void sendPostConnectTimeout(QString);
 };
 
 #endif  // _EMITTER_H_
