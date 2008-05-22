@@ -238,6 +238,8 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SelectTrustedServerWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ViewLogWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PSKWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\UPWWindow.ui"
 
         SetOutPath "$INSTDIR\Skins\Default\images"
 
