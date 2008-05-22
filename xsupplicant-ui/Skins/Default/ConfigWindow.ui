@@ -290,7 +290,7 @@
      <number>0</number>
     </property>
     <property name="currentIndex" >
-     <number>0</number>
+     <number>9</number>
     </property>
     <widget class="QWidget" name="widgetStackConnectionsTablePage" >
      <widget class="QFrame" name="backgroundHeaderConnectionsTable" >
@@ -7183,7 +7183,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex" >
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="widgetTabsProfilesProtocolSettingsPage" >
        <attribute name="title" >
@@ -12841,7 +12841,7 @@
          <x>10</x>
          <y>10</y>
          <width>520</width>
-         <height>221</height>
+         <height>234</height>
         </rect>
        </property>
        <property name="minimumSize" >
@@ -12953,7 +12953,7 @@
        <widget class="QLabel" name="labelAdvancedSettingsScanTimeoutUnits" >
         <property name="geometry" >
          <rect>
-          <x>180</x>
+          <x>220</x>
           <y>10</y>
           <width>64</width>
           <height>18</height>
@@ -13020,7 +13020,7 @@
        <widget class="QLabel" name="labelAdvancedSettingsAssociationTimeoutUnits" >
         <property name="geometry" >
          <rect>
-          <x>180</x>
+          <x>220</x>
           <y>38</y>
           <width>64</width>
           <height>18</height>
@@ -13154,7 +13154,7 @@
        <widget class="QLineEdit" name="dataFieldAdvancedSettingsScanTimeout" >
         <property name="geometry" >
          <rect>
-          <x>120</x>
+          <x>160</x>
           <y>7</y>
           <width>50</width>
           <height>25</height>
@@ -13221,7 +13221,7 @@
        <widget class="QLineEdit" name="dataFieldAdvancedSettingsAssociationTimeout" >
         <property name="geometry" >
          <rect>
-          <x>120</x>
+          <x>160</x>
           <y>35</y>
           <width>50</width>
           <height>25</height>
@@ -13288,8 +13288,8 @@
        <widget class="QComboBox" name="dataComboAdvancedSettingsWiredDefault" >
         <property name="geometry" >
          <rect>
-          <x>120</x>
-          <y>160</y>
+          <x>100</x>
+          <y>147</y>
           <width>335</width>
           <height>25</height>
          </rect>
@@ -13321,7 +13321,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>190</y>
+          <y>178</y>
           <width>450</width>
           <height>18</height>
          </rect>
@@ -13383,7 +13383,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>160</y>
+          <y>150</y>
           <width>111</width>
           <height>18</height>
          </rect>
@@ -13517,7 +13517,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>70</y>
+          <y>66</y>
           <width>110</width>
           <height>16</height>
          </rect>
@@ -13566,21 +13566,70 @@
        <widget class="QSpinBox" name="dataFieldAdvancedSettingsPassiveScanInterval" >
         <property name="geometry" >
          <rect>
-          <x>130</x>
-          <y>71</y>
-          <width>42</width>
-          <height>21</height>
+          <x>160</x>
+          <y>63</y>
+          <width>50</width>
+          <height>25</height>
          </rect>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>50</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>50</width>
+          <height>25</height>
+         </size>
         </property>
        </widget>
        <widget class="QLabel" name="labelAdvancedSettingsPassiveScanIntervalUnits" >
         <property name="geometry" >
          <rect>
-          <x>190</x>
-          <y>70</y>
+          <x>220</x>
+          <y>66</y>
           <width>46</width>
           <height>14</height>
          </rect>
+        </property>
+        <property name="palette" >
+         <palette>
+          <active>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>119</red>
+              <green>119</green>
+              <blue>119</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
         </property>
         <property name="text" >
          <string>Seconds</string>
@@ -13590,10 +13639,47 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>100</y>
+          <y>94</y>
           <width>143</width>
           <height>16</height>
          </rect>
+        </property>
+        <property name="palette" >
+         <palette>
+          <active>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>119</red>
+              <green>119</green>
+              <blue>119</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
         </property>
         <property name="text" >
          <string>PMKSA Cache Entry Timeout :</string>
@@ -13603,20 +13689,69 @@
         <property name="geometry" >
          <rect>
           <x>160</x>
-          <y>100</y>
-          <width>42</width>
-          <height>22</height>
+          <y>91</y>
+          <width>50</width>
+          <height>25</height>
          </rect>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>50</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>50</width>
+          <height>25</height>
+         </size>
         </property>
        </widget>
        <widget class="QLabel" name="labelAdvancedSettingsPMKSACacheTimeoutUnits" >
         <property name="geometry" >
          <rect>
-          <x>230</x>
-          <y>100</y>
+          <x>220</x>
+          <y>94</y>
           <width>46</width>
           <height>14</height>
          </rect>
+        </property>
+        <property name="palette" >
+         <palette>
+          <active>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>119</red>
+              <green>119</green>
+              <blue>119</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
         </property>
         <property name="text" >
          <string>Seconds</string>
@@ -13626,10 +13761,47 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>130</y>
+          <y>122</y>
           <width>114</width>
           <height>16</height>
          </rect>
+        </property>
+        <property name="palette" >
+         <palette>
+          <active>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>119</red>
+              <green>119</green>
+              <blue>119</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
         </property>
         <property name="text" >
          <string>PMKSA Cache Refresh :</string>
@@ -13638,24 +13810,135 @@
        <widget class="QSpinBox" name="dataFieldAdvancedSettingsPMKSACacheRefresh" >
         <property name="geometry" >
          <rect>
-          <x>130</x>
-          <y>130</y>
-          <width>42</width>
-          <height>22</height>
+          <x>160</x>
+          <y>119</y>
+          <width>50</width>
+          <height>25</height>
          </rect>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>50</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>50</width>
+          <height>25</height>
+         </size>
         </property>
        </widget>
        <widget class="QLabel" name="labelAdvancedSettingsPMKSACacheRefreshUnits" >
         <property name="geometry" >
          <rect>
-          <x>190</x>
-          <y>130</y>
+          <x>220</x>
+          <y>122</y>
           <width>46</width>
           <height>14</height>
          </rect>
         </property>
+        <property name="palette" >
+         <palette>
+          <active>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>119</red>
+              <green>119</green>
+              <blue>119</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
+        </property>
         <property name="text" >
          <string>Seconds</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="logoffDisconnect" >
+        <property name="geometry" >
+         <rect>
+          <x>10</x>
+          <y>206</y>
+          <width>450</width>
+          <height>18</height>
+         </rect>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>450</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>450</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="palette" >
+         <palette>
+          <active>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>0</red>
+              <green>0</green>
+              <blue>0</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="WindowText" >
+            <brush brushstyle="SolidPattern" >
+             <color alpha="255" >
+              <red>119</red>
+              <green>119</green>
+              <blue>119</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
+        </property>
+        <property name="text" >
+         <string>Disconnect on Logoff</string>
         </property>
        </widget>
       </widget>
@@ -13663,7 +13946,7 @@
        <property name="geometry" >
         <rect>
          <x>10</x>
-         <y>240</y>
+         <y>254</y>
          <width>75</width>
          <height>25</height>
         </rect>
