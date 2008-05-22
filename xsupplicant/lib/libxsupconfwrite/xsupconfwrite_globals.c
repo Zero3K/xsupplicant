@@ -578,6 +578,20 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
+	if ((write_all == TRUE) || ((conf_globals->dead_connection_timeout != DEAD_CONN_TIMEOUT) &&
+		(conf_globals->dead_connection_timeout != 0)))
+	{
+		sprintf((char *)&static_temp, "%d", conf_globals->dead_connection_timeout);
+		if (xmlNewChild(globalnode, NULL, (xmlChar *)"Dead_Connection_Timeout", (xmlChar *)static_temp) == NULL)
+		{
+#ifdef WRITE_GLOBALS_CONFIG
+			printf("Failed to create <Dead_Connection_Timeout> node!\n");
+#endif
+			xmlFreeNode(globalnode);
+			return NULL;
+		}
+	}
+
 	if ((write_all == TRUE) || ((conf_globals->pmksa_cache_check != PMKSA_CACHE_REFRESH) &&
 		(conf_globals->pmksa_cache_check != 0)))
 	{

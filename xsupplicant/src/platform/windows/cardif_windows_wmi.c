@@ -625,6 +625,7 @@ int cardif_windows_wmi_event_check_disconnect()
 	char *intdesc = NULL;
 	char bssid_dest[6];
 	char dot1x_default_dest[6] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x03};
+	config_globals *globals = NULL;
 
 	if (pDisconnectEvent == NULL) return -1;
 
@@ -701,7 +702,9 @@ int cardif_windows_wmi_event_check_disconnect()
 				// See if we need to set up a time out timer.
 				if (!TEST_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ))
 				{
-					timer_add_timer(ctx, CONN_DEATH_TIMER, DEAD_CONN_TIMEOUT, NULL, cardif_windows_wmi_disconnect_prompt);
+					globals = config_get_globals();
+
+					timer_add_timer(ctx, CONN_DEATH_TIMER, globals->dead_connection_timeout, NULL, cardif_windows_wmi_disconnect_prompt);
 				}
 			}
 		}

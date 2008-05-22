@@ -266,10 +266,12 @@ void cardif_windows_int_event_disconnect(context *ctx)
 		}
 		else
 		{
+			globals = config_get_globals();
+
 			// See if we need to set up a time out timer.
 			if (!TEST_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ))
 			{
-				timer_add_timer(ctx, CONN_DEATH_TIMER, DEAD_CONN_TIMEOUT, NULL, cardif_windows_int_disconnect_prompt);
+				timer_add_timer(ctx, CONN_DEATH_TIMER, globals->dead_connection_timeout, NULL, cardif_windows_int_disconnect_prompt);
 			}
 		}
 	}

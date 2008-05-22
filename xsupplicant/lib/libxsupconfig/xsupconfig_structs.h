@@ -291,6 +291,7 @@ struct config_globals
 
   uint16_t pmksa_age_out;        ///< The amount of time to wait (in seconds) before we age out a PMKSA entry.  Maximum time is ((65535/60)/60) = 18.20 hours.  (Which would be a silly amount of time to really wait. ;)
   uint8_t  pmksa_cache_check;    ///< The frequency that we should do cache maintenance on the various interface caches.  This value is only used to age out cache entries.  The passive scan timer is used to keep them up to date.
+  uint8_t  dead_connection_timeout;  ///< The length of time we wait after a network has "disappeared" before we ask the user if we should try to select a different connection.
 };
 
 struct config_profiles {

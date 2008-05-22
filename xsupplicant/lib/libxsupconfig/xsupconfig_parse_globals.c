@@ -1015,6 +1015,35 @@ void *xsupconfig_control_ints(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
+void *xsupconfig_parse_dead_connection_timeout(void **attr, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
+
+  value = xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Dead connection timeout : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+ 
+  if (xsupconfig_common_is_number(value) == 0)
+    {
+      xsupconfig_common_log("Value assigned to Dead_Connection_Timeout is not a number!  (Line %ld)"
+		  "   Using default!\n", xsupconfig_parse_get_line_num());
+	  myglobals->dead_connection_timeout = DEAD_CONN_TIMEOUT;
+    }
+  else
+    {
+		myglobals->dead_connection_timeout = atoi(value);
+    }
+
+  FREE(value);
+
+  return myglobals;
+}
+
 parser globals[] = {
   {"Log_Path", NULL, FALSE, &xsupconfig_parse_logpath},
   {"Log_Level", NULL, FALSE, &xsupconfig_parse_loglevel},
@@ -1045,4 +1074,5 @@ parser globals[] = {
   {"PMKSA_Refresh_Time", NULL, FALSE, &xsupconfig_parse_pmksa_refresh_time},
   {"Wireless_Only", NULL, FALSE, &xsupconfig_parse_wireless_only},    
   {"Control_Interfaces", NULL, FALSE, &xsupconfig_control_ints},
+  {"Dead_Connection_Timeout", NULL, FALSE, &xsupconfig_parse_dead_connection_timeout},
   {NULL, NULL, FALSE, NULL}};
