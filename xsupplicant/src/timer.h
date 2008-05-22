@@ -26,6 +26,7 @@
 #define SIG_STRENGTH           9
 #define PSK_DEATH_TIMER        10
 #define PMKSA_CACHE_MGMT_TIMER 11
+#define CONN_DEATH_TIMER	   12    // A timer to track how long a connection has been dead.
 
 struct timer_data
 {

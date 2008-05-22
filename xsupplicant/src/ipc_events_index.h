@@ -81,6 +81,8 @@
 #define IPC_EVENT_UI_INT_CTRL_CHANGED						   12  ///< The supplicant changed it's control posture.
 #define IPC_EVENT_UI_TROUBLETICKET_DONE						   13  ///< The requested trouble ticket has been created successfully.
 #define IPC_EVENT_UI_TROUBLETICKET_ERROR					   14  ///< The requested trouble ticket couldn't be created.
+#define IPC_EVENT_UI_NEED_UPW								   15  ///< The supplicant needs a username and password to be able to complete this connection.
+#define IPC_EVENT_UI_POST_CONNECT_TIMEOUT					   16  ///< The supplicant has been disconnect for some period of time.  So prompt the user to see if they want to try to connect to something else.
 
 // State machines that we may get state machine events for. 
 #define IPC_STATEMACHINE_PHYSICAL                              1   ///< Identify the physical state machine

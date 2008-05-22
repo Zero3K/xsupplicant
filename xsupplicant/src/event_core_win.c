@@ -1225,7 +1225,8 @@ void event_core_waking_up()
 			{
 				wctx = events[i].ctx->intTypeData;
 				memset(wctx->cur_bssid, 0x00, 6);
-				wireless_sm_change_to_unassociated(events[i].ctx);
+				wireless_sm_change_state(ASSOCIATING, events[i].ctx);
+				UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
 			}
 		}
 	}

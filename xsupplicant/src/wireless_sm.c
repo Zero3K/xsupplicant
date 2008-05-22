@@ -677,6 +677,9 @@ void wireless_sm_change_to_associated(context *ctx)
 	  statemachine_change_state(ctx, S_FORCE_AUTH);
 	  //cardif_operstate(ctx, XIF_OPER_UP);
   }
+
+  // If everything went well, make sure we lock to this connection.
+  SET_FLAG(ctx->flags, FORCED_CONN);
 }
 
 /**
@@ -1411,41 +1414,49 @@ void wireless_sm_do_active_scan(context *ctx)
 
   if ((!TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) && (!TEST_FLAG(wctx->flags, WIRELESS_CHECKED)))
     {
-      // We aren't scanning, so see if we have a valid SSID we can attach
-      // to.
-      newssid = config_ssid_get_desired_ssid(ctx);
-      if (newssid != NULL)
-	{
-	  debug_printf(DEBUG_PHYSICAL_STATE, "Switching to Associating mode to"
-		       " connect to %s.\n", newssid);
-
-	  // Clear out the SSID we are currently connected to.
-	  FREE(wctx->cur_essid);
-
-	  wctx->cur_essid = _strdup(newssid);
-
-	  config_build(ctx, wctx->cur_essid);
-
-	  if (ctx->conn != NULL)
-	  {
-		  if (TEST_FLAG(ctx->conn->flags, CONFIG_NET_DEST_MAC))
+        // We aren't scanning, so see if we have a valid SSID we can attach
+        // to.  (Assuming we are not in a force connection state.
+		if (!TEST_FLAG(ctx->flags, FORCED_CONN))
+		{
+			newssid = config_ssid_get_desired_ssid(ctx);
+			if (newssid != NULL)
 			{
-				// We need to search again, by MAC address this time.
-				config_ssid_get_by_mac(ctx, ctx->conn->dest_mac);
-			}
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_NORMAL, "No network configuration data is available.  Is this network configured in your configuration file?  Or are you using -p when you shouldn't be?\n");
-	  }
+				debug_printf(DEBUG_PHYSICAL_STATE, "Switching to Associating mode to"
+						" connect to %s.\n", newssid);
 
-	  wireless_sm_change_state(ASSOCIATING, ctx);
-	  return;
+				// Clear out the SSID we are currently connected to.
+				FREE(wctx->cur_essid);
+
+				wctx->cur_essid = _strdup(newssid);
+
+				config_build(ctx, wctx->cur_essid);
+
+				if (ctx->conn != NULL)
+				{
+					if (TEST_FLAG(ctx->conn->flags, CONFIG_NET_DEST_MAC))
+					{
+						// We need to search again, by MAC address this time.
+						config_ssid_get_by_mac(ctx, ctx->conn->dest_mac);
+					}
+				}
+				else
+				{
+					debug_printf(DEBUG_NORMAL, "No network configuration data is available.  Is this network configured in your configuration file?  Or are you using -p when you shouldn't be?\n");
+				}
+
+				wireless_sm_change_state(ASSOCIATING, ctx);
+		}
+		else
+		{
+			// If we don't know what to connect to, wait for a bit.
+			wireless_sm_change_state(INT_HELD, ctx);
+		}
+		return;
 	} else {
 	  // If we didn't find anything, sleep for a few seconds before we try
 	  // again. 
 		SET_FLAG(wctx->flags, WIRELESS_CHECKED);
-	  wireless_sm_set_rescan_timer(ctx);
+		wireless_sm_set_rescan_timer(ctx);
 	}
     } 
 }

@@ -55,11 +55,15 @@
 // we may want to provide the ability to change this in the future.
 #define ASSOCIATION_TIMEOUT           60    // in seconds.
 
+// The amount of time that needs to pass before we assume a connection is dead, and ask the user if we should
+// roam to a new one.
+#define DEAD_CONN_TIMEOUT			  15    // in seconds.
+
 // The length of time to wait before we attempt another passive scan.
 #define PASSIVE_TIMEOUT               30   // in seconds.
 
 // The length of time to wait before we attempt another active scan.
-#define RESCAN_TIMEOUT                15    // in seconds.
+#define RESCAN_TIMEOUT                30    // in seconds.
 
 // The length of time to stay in HELD state.
 #define HELD_STATE_TIMEOUT            60    // in seconds.

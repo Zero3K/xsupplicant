@@ -617,13 +617,14 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 		   cur->ssid_name, cur_pri);
 
 	  conf = config_find_connection_from_ssid(cur->ssid_name);
-
+/*
 	  if (conf != NULL)
 	  {
 		  retval = xsupconfcheck_conn_check(ctx, conf, FALSE);
 	  }
-
-	  if ((conf != NULL) && (retval >= 0))
+*/
+//	  if ((conf != NULL) && (retval >= 0))
+	  if (conf != NULL)
 	  {
 		if ((best != NULL) && (strcmp(cur->ssid_name, best->ssid_name) == 0))
 			{
@@ -642,10 +643,12 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 				best_pri = cur_pri;
 			}
 	  }
+	  /*
 	  else
 	  {
 		  debug_printf(DEBUG_PHYSICAL_STATE, "SSID '%s' doesn't have a complete configuration.\n", cur->ssid_name);
 	  }
+	  */
 
       cur = cur->next;
     }
@@ -656,6 +659,23 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 		   best->ssid_name);
       debug_printf(DEBUG_PHYSICAL_STATE, "    Signal : %d   Noise : %d   Quality : "
 		   "%d\n", best->signal, best->noise, best->quality);
+
+	  conf = config_find_connection_from_ssid(best->ssid_name);
+
+	  if (conf != NULL)
+	  {
+		  retval = xsupconfcheck_conn_check(ctx, conf, FALSE);
+
+		  if (retval < 0)   
+		  {
+			  // We need to ask the user for information.
+			  ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, conf->name);
+
+			  // If we return a value when we have less than all the info, we end up associating and not doing
+			  // anything useful.  So wait until we have enough data to complete the auth before returning a value.
+			  best = NULL;
+		  }
+	  }
     }
 
   return best;
@@ -748,7 +768,6 @@ char *config_ssid_get_desired_ssid(context *ctx)
 		  return NULL;
 	  }
 
-//	  wctx->active_ssid = config_ssid_find_by_name(wctx, ctx->conn->ssid);
 	  return ctx->conn->ssid;
   }
 

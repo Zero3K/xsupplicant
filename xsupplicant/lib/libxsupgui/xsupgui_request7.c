@@ -1008,7 +1008,7 @@ int xsupgui_request_get_link_state_from_int(char *intname, int *state)
 
 	if ((intname == NULL) || (state == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
 
-	(*state) = NULL;
+	(*state) = 0;
 
 	doc = xsupgui_xml_common_build_msg();
 	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
@@ -1275,3 +1275,105 @@ int xsupgui_request_get_tnc_conn_id(char *device, unsigned int *tnc_conn_id)
 	return xsupgui_request_get_some_value(device, "Get_TNC_Conn_ID", "TNC_Conn_ID", 
 			"Conn_ID", tnc_conn_id);
 }
+
+/**
+ *  \brief Tell XSupplicant to lock or unlock the connection in use on an interface.
+ *
+ *  This call will basically control if an interface should be allowed to automatically decide
+ *  which network it should be connected to.  
+ *
+ * @param[in] intname  The OS specific name of the device to pause.
+ * @param[in] endis    Set to TRUE to lock the connection, FALSE to unlock it.
+ *
+ * \retval REQUEST_SUCCESS on success 
+ * \retval REQUEST_TIMEOUT on timeout
+ * \retval >299 on other error
+ **/
+int xsupgui_request_set_connection_lock(char *intname, int endis)
+{
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int done = 0, err = 0;
+	char *temp = NULL;
+	char temp_static[10];
+
+	if (intname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) 
+	{
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto request_lock;
+	}
+
+	t = xmlNewChild(n, NULL, (xmlChar *)"Set_Connection_Lock", NULL);
+	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto request_lock;
+	}
+
+	xsupgui_xml_common_convert_amp(intname, &temp);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_INT_NODE;
+		free(temp);
+		goto request_lock;
+	}
+	free(temp);
+
+	memset(&temp_static, 0x00, sizeof(temp_static));
+	sprintf((char *)&temp_static, "%d", endis);
+
+	if (xmlNewChild(t, NULL, (xmlChar *)"Connection_Lock", (xmlChar*)&temp_static) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto request_lock;
+	}
+
+	err = xsupgui_request_send(doc, &retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		done = err;
+		goto request_lock;
+	}
+
+	// Otherwise, parse it and see if we got what we wanted.
+	err = xsupgui_request_check_exceptions(retdoc);
+	if (err != 0) 
+	{
+		done = err;
+		goto request_lock;
+	}
+
+	n = xmlDocGetRootElement(retdoc);
+	if (n == NULL)
+	{
+		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
+		goto request_lock;
+	}
+
+	// If we get here, then we know that the document passed the
+	// validation tests imposed.  So, we need to see if we got the result 
+	// we wanted.
+	n = n->children;
+	if (xsupgui_request_find_node(n, "ACK") != NULL)
+	{
+		done = REQUEST_SUCCESS;
+	}
+	else
+	{
+		done = IPC_ERROR_NOT_ACK;
+	}
+
+request_lock:
+	if (doc != NULL) xmlFreeDoc(doc);
+	if (retdoc != NULL) xmlFreeDoc(retdoc);
+
+	return done;
+}
+

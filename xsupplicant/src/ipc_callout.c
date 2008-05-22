@@ -163,6 +163,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_Interface_Capabilities", ipc_callout_get_interface_capabilities},
 	{"Add_Cert_to_Store", ipc_callout_add_cert_to_store},
 	{"Get_TNC_Conn_ID", ipc_callout_get_tnc_conn_id},
+	{"Set_Connection_Lock", ipc_callout_set_conn_lock},
 	{NULL, NULL}
 };
 
@@ -2861,6 +2862,9 @@ int ipc_callout_disassociate(xmlNodePtr innode, xmlNodePtr *outnode)
 	// connect/disconnect over and over again. ;)
 	UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
 
+	// Let ourselves know that a UI requested this disconnect.
+	SET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DISCONNECT_REQ);
+
 	// Force a state machine reinit.
 	eap_sm_force_init(ctx->eap_state);
 
@@ -2897,9 +2901,9 @@ disassoc_done:
 int ipc_callout_stop(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
-	int retval = IPC_SUCCESS, retval2 = IPC_SUCCESS;
+	int retval = IPC_SUCCESS;
 	char *iface = NULL;
-	context *ctx;
+	context *ctx = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -2946,9 +2950,10 @@ int ipc_callout_stop(xmlNodePtr innode, xmlNodePtr *outnode)
 	{
 		debug_printf(DEBUG_IPC, "Request to stop a wired interface! (Not implemented!)\n");
 		retval = ipc_callout_create_error(iface, "Request_Stop", IPC_ERROR_INVALID_INTERFACE, outnode);
+		goto stop_done;
 	}
 
-	retval2 = ipc_callout_create_ack(iface, "Request_Stop", outnode);
+	retval = ipc_callout_create_ack(iface, "Request_Stop", outnode);
 
 stop_done:
 	free(iface);
@@ -6190,7 +6195,6 @@ int ipc_callout_request_unbind_connection(xmlNodePtr innode, xmlNodePtr *outnode
 	ctx->conn = NULL;
 	FREE(ctx->conn_name);
 	ctx->prof = NULL;
-	UNSET_FLAG(ctx->flags, FORCED_CONN);
 
 #ifdef HAVE_TNC
 		// If we are using a TNC enabled build, signal the IMC to clean up.
@@ -6881,3 +6885,88 @@ int ipc_callout_get_tnc_conn_id(xmlNodePtr innode, xmlNodePtr *outnode)
 #endif // HAVE_TNC
 }
 
+/**
+ *  \brief Enable or Disable the FORCED_CONN lock on a context based on the interface name.
+ *
+ * \param[in] innode   The XML node tree that contains the request to set the
+ *                     context's connection lock.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \note While this function will operate on a wired interface, it may not do anything interesting
+ *       to that interface.  (The connection lock is mainly to avoid roaming to a different prioritized
+ *		 network.)
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_set_conn_lock(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	xmlNodePtr n = NULL, t = NULL;
+	int retval = IPC_SUCCESS, retval2 = IPC_SUCCESS;
+	char *iface = NULL;
+	context *ctx = NULL;
+	int newval = 0;
+
+	if (innode == NULL) return IPC_FAILURE;
+
+	debug_printf(DEBUG_IPC, "Got an IPC set connection lock request!\n");
+
+	n = ipc_callout_find_node(innode, "Set_Connection_Lock");
+	if (n == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Set_Connection_Lock' node.\n");
+		return IPC_FAILURE;
+	}
+
+	n = n->children;
+
+	t = ipc_callout_find_node(n, "Interface");
+	if (t == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't find the <Interface> node in the request!\n");
+		return ipc_callout_create_error(NULL, "Set_Connection_Lock", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
+	}
+
+	iface = (char *)xmlNodeGetContent(t);
+	if (iface == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "No interface specified to execute a conn lock change on!\n");
+		return ipc_callout_create_error(NULL, "Set_Connection_Lock", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
+	}
+
+	t = ipc_callout_find_node(n, "Connection_Lock");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't find the <Connection_Lock> node in the request!\n");
+		return ipc_callout_create_error(NULL, "Set_Connection_Lock", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	newval = atoi((char *)xmlNodeGetContent(t));
+
+	debug_printf(DEBUG_IPC, "Setting connlock on interface %s to %d.\n", iface, newval);
+
+	ctx = event_core_locate(iface);
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't locate the interface requested over IPC!\n");
+		retval = ipc_callout_create_error(iface, "Set_Connection_Lock", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
+		goto lock_done;
+	}
+
+	if (newval == TRUE)
+	{
+		SET_FLAG(ctx->flags, FORCED_CONN);
+	}
+	else
+	{
+		UNSET_FLAG(ctx->flags, FORCED_CONN);
+	}
+
+	retval = ipc_callout_create_ack(iface, "Set_Connection_Lock", outnode);
+
+lock_done:
+	free(iface);
+
+	return retval;
+}

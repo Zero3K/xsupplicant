@@ -36,6 +36,7 @@
 #include "../../ipc_events_index.h"
 #include "../../eap_sm.h"
 #include "../../error_prequeue.h"
+#include "../../timer.h"
 #include "cardif_windows_wmi_async.h"
 #include "cardif_windows_wmi.h"
 
@@ -158,6 +159,10 @@ int cardif_windows_wmi_event_check_connect()
 				return -1;
 			}
 
+			// Clear this flag if it is still hanging around for some reason.
+			UNSET_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ);
+			timer_cancel(ctx, CONN_DEATH_TIMER);
+
 			if (cardif_windows_wireless_get_bssid(ctx, &bssid) != 0)
 			{
 				debug_printf(DEBUG_NORMAL, "Unable to get BSSID for interface '%s'.\n", ctx->desc);
@@ -224,6 +229,16 @@ int cardif_windows_wmi_event_check_connect()
 	}
 
 	return 0;
+}
+
+/**
+ * \brief Fire an event to the UI to let it know to ask the user if they want to search for a different network.
+ **/
+void cardif_windows_wmi_disconnect_prompt(context *ctx)
+{
+	ipc_events_ui(ctx, IPC_EVENT_UI_POST_CONNECT_TIMEOUT, ctx->conn->name);
+
+	timer_cancel(ctx, CONN_DEATH_TIMER);
 }
 
 /**
@@ -680,6 +695,14 @@ int cardif_windows_wmi_event_check_disconnect()
 
 				// We sent the error so unset the flag.
 				UNSET_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK);
+			}
+			else
+			{
+				// See if we need to set up a time out timer.
+				if (!TEST_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ))
+				{
+					timer_add_timer(ctx, CONN_DEATH_TIMER, DEAD_CONN_TIMEOUT, NULL, cardif_windows_wmi_disconnect_prompt);
+				}
 			}
 		}
 		else

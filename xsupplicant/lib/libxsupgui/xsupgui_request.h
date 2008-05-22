@@ -5,7 +5,7 @@
  *
  * Windows specific IPC implementation for Xsupplicant.
  *
- * \note This header file covers xsupgui_request.h, xsupgui_request2.h, etc.
+ * \note This header file covers xsupgui_request.c, xsupgui_request2.c, etc.
  *
  * This code is released under both the GPL version 2 and BSD licenses.
  * Either license may be used.  The respective licenses are found below.
@@ -491,6 +491,7 @@ int xsupgui_request_get_interface_capabilities(char *device, int *capabilities);
 int xsupgui_request_get_link_state_from_int(char *intname, int *state);
 int xsupgui_request_add_root_ca_certificate(char *filename);
 int xsupgui_request_get_tnc_conn_id(char *device, unsigned int *tnc_conn_id);
+int xsupgui_request_set_connection_lock(char *intname, int endis);
 
 /** 
  * Calls that operate on the configuration file structures.  (Things that will become
