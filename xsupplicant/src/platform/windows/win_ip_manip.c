@@ -599,6 +599,32 @@ void win_ip_manip_release_renew_ip(context *ctx)
 }
 
 /**
+ * \brief Enable DHCP on an interface that is currently set to use a static IP address.
+ *
+ * @param[in] ctx   The context for the interface that we want to enable DHCP on.
+ *
+ * \retval 0 on success
+ **/
+int win_ip_manip_enable_dhcp(context *ctx)
+{
+	char *guid = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+
+	guid = cardif_windows_event_get_guid(ctx);
+
+	if (SetAdapterIpAddress(guid, 1, 0, 0, 0) != NO_ERROR) 
+	{
+		FREE(guid);
+		return -1;
+	}
+ 
+	FREE(guid);
+	
+	return 0;
+}
+
+/**
  * \brief Setting a static IP address can sometimes take a little time.  So we spawn a thread
  *        to let it do it's thing.
  *
@@ -607,13 +633,14 @@ void win_ip_manip_release_renew_ip(context *ctx)
 void win_ip_manip_set_static_ip_thread(void *dataPtr)
 {
 	struct tmpAddrStruct *addrData = NULL;
+	int error = 0;
 
 	if (!xsup_assert((dataPtr != NULL), "dataPtr != NULL", FALSE)) return;
 
 	addrData = (struct tmpAddrStruct *)dataPtr;
 
 	if (SetAdapterIpAddress(addrData->guid, 0, inet_addr(addrData->addr), inet_addr(addrData->netmask), 
-		inet_addr(addrData->gateway)) != NO_ERROR) return -1;
+		inet_addr(addrData->gateway)) != NO_ERROR) error = 1;
  
 	FREE(addrData->addr);
 	FREE(addrData->guid);
@@ -621,8 +648,11 @@ void win_ip_manip_set_static_ip_thread(void *dataPtr)
 	FREE(addrData->gateway);
 	FREE(addrData);
 
-	// Notify the UI that we changed IP addresses.
-	ipc_events_ui(NULL, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
+	if (error == 0)
+	{
+		// Notify the UI that we changed IP addresses.
+		ipc_events_ui(NULL, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
+	}
 
 	_endthread();
 }

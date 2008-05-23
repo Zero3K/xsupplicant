@@ -297,7 +297,7 @@ static int rotate_log_files()
 	  return -1;
 	}
 
-	num = globals->logs_to_keep;
+	num = globals->logs_to_keep-1;   // -1 because we want xsupplicant.log through xsupplicant_(logs_to_keep-1).log
 
 	if (globals->logpath == NULL)
 	{

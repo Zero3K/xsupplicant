@@ -1159,7 +1159,10 @@ void cardif_windows_events_interface_removed(void *devPtr)
 			"we aren't managing this interface?)\n");
 
 		FREE(interfaceName);
-		event_core_unlock();
+		if (event_core_unlock() != 0)
+		{
+			debug_printf(DEBUG_INT, "Unlock failure at %s():%d\n", __FUNCTION__, __LINE__);
+		}
 		_endthread();
 		return;
 	}
@@ -1212,18 +1215,10 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 		return;
 	}
 
-	if (event_core_lock() != 0)
-	{
-		debug_printf(DEBUG_NORMAL, "!!!!! Unable to acquire lock on the event core!  Interface will be ignored!\n");
-		_endthread();
-		return;
-	}
-
 	interfaceName = cardif_windows_events_get_interface_desc((wchar_t *)devPtr, TRUE);
 	if (interfaceName == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to locate information about the interface that was just inserted!\n");
-		event_core_unlock();
 		_endthread();
 		return;
 	}
@@ -1232,7 +1227,6 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 	if (longName == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to allocate memory in %s()!\n", __FUNCTION__);
-		event_core_unlock();
 		_endthread();
 		return;
 	}
@@ -1242,7 +1236,23 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 		debug_printf(DEBUG_NORMAL, "Unable to convert multi-byte character set to wide character set in %s()!\n", __FUNCTION__);
 		FREE(longName);
 		FREE(interfaceName);
-		event_core_unlock();
+		_endthread();
+		return;
+	}
+
+	// When we come out of sleep, sometimes we will get an insert event on interfaces that we never
+	// saw a remove event from.  In those cases, we want to complain a little, and bail out so that we
+	// don't complain a bunch about binding errors.
+	if (event_core_locate_by_desc(interfaceName) != NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Got an interface inserted event for an interface that is already inserted!  (Interface : %s)\n", interfaceName);
+		_endthread();
+		return;
+	}
+
+	if (event_core_lock() != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "!!!!! Unable to acquire lock on the event core!  Interface will be ignored!\n");
 		_endthread();
 		return;
 	}
@@ -1251,7 +1261,10 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 	{
 		// With service events, this first bind attempt pretty much always fails.  So don't complain about it
 		// because the driver will figure it out fairly quickly.
-		event_core_unlock();
+		if (event_core_unlock() != 0)
+		{
+			debug_printf(DEBUG_NORMAL, "Failed to release event core lock at %s():%d\n", __FUNCTION__, __LINE__);
+		}
 
 		Sleep(REBIND_ATTEMPT_INTERVAL*1000);
 
@@ -1278,12 +1291,20 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 			}
 
 			i++;
+
+			if (done == FALSE) Sleep(1000);  // Wait a second and try again.
+		}
+	}
+	else
+	{
+		if (event_core_unlock() != 0)
+		{
+			debug_printf(DEBUG_NORMAL, "Error releasing event core lock at %s():%d\n", __FUNCTION__, __LINE__);
 		}
 	}
 
 	FREE(longName);
 	FREE(interfaceName);
-	event_core_unlock();
 	_endthread();
 }
 

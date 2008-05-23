@@ -345,6 +345,34 @@ void TrayApp::slotConnectToSupplicant()
   }
 }
 
+void TrayApp::closeChildren()
+{
+	if (m_pLoginDlg)
+	{
+		delete m_pLoginDlg;
+		m_pLoginDlg = NULL;
+	}
+
+	if (m_pConfDlg)
+	{
+		delete m_pConfDlg;
+		m_pConfDlg = NULL;
+	}
+
+	if (m_pCreds)
+	{
+		delete m_pCreds;
+		m_pCreds = NULL;
+	}
+
+	if (m_pCreateTT)
+	{
+		delete m_pCreateTT;
+		m_pCreateTT = NULL;
+	}
+
+	if (m_pLoggingCon != NULL) m_pLoggingCon->hide();
+}
 
 void TrayApp::setEnabledMenuItems(bool bEnable)
 {
@@ -353,6 +381,8 @@ void TrayApp::setEnabledMenuItems(bool bEnable)
   m_pViewLogAction->setEnabled(bEnable);
   m_pTroubleticketAction->setEnabled(bEnable);
   m_p1XControl->setEnabled(bEnable);
+
+  if (bEnable == false) closeChildren();
 }
 
 void TrayApp::slotHideLog()
@@ -675,6 +705,8 @@ void TrayApp::updateIntControlCheck()
 		}
 
 		m_supplicant.freeConfigGlobals(&globals);
+
+		setTrayMenuBasedOnControl();
 	}
 }
 
@@ -891,6 +923,22 @@ void TrayApp::slotControlInterfaces()
 	m_pIntCtrl->exec();
 }
 
+void TrayApp::setTrayMenuBasedOnControl()
+{
+	if (m_p1XControl->isChecked())
+	{
+		// Turn on the tray icon options.
+		setEnabledMenuItems(true);
+	}
+	else
+	{
+		// Turn off the tray icon options.
+		setEnabledMenuItems(false);
+		m_p1XControl->setEnabled(true);
+		setTrayIconState(ENGINE_CONNECTED);  // Set us to our default icon color.
+	}
+}
+
 void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
 {
 	if (m_pIntCtrl != NULL)
@@ -900,6 +948,8 @@ void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
 	}
 
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceControl(bool)), this, SLOT(slotControlInterfacesDone(bool)));
+
+	setTrayMenuBasedOnControl();
 }
 
 //! 

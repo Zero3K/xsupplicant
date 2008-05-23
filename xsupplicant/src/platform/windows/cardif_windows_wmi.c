@@ -429,9 +429,6 @@ int cardif_windows_wmi_post_insert_bind(wchar_t *name)
 		return 0;
 	}
 
-	// Send event.
-	ipc_events_ui(NULL, IPC_EVENT_INTERFACE_INSERTED, intname);
-
 	if (get_mac_by_name(intname, (char *)&mac) != 0)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to get the MAC address for interface with description '%s'.  (OS Device Name : %s)\n", intdesc, intname);
@@ -474,6 +471,9 @@ int cardif_windows_wmi_post_insert_bind(wchar_t *name)
 	{
 		debug_printf(DEBUG_NORMAL, "Interface '%s' isn't in our configuration file.  We will not manage it.\n", intdesc);
 	}
+
+	// Send event.
+	ipc_events_ui(NULL, IPC_EVENT_INTERFACE_INSERTED, intname);
 
 	FREE(intname);
 	FREE(intdesc);

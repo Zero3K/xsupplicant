@@ -1979,6 +1979,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\buildnum.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\platform\cardif.h"
 				>
 			</File>
@@ -2264,6 +2268,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\eap_types\ttls\ttlsphase2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\version.h"
 				>
 			</File>
 			<File

@@ -722,7 +722,10 @@ void event_core()
 	  }
   }
 
-  event_core_unlock();
+  if (event_core_unlock() != 0)
+  {
+	  debug_printf(DEBUG_EVENT_CORE, "Lock failure in %s():%d\n", __FUNCTION__, __LINE__);
+  }
 
   if (numhandles <= 0)
   {
@@ -1218,6 +1221,15 @@ void event_core_waking_up()
 			cardif_windows_restart_int_events(events[i].ctx);
 			events[i].flags &= (~EVENT_IGNORE_INT);
 
+			// Depending on the order that things are restarted, and the events that 
+			// happened before we went to sleep, the UI may believe that some interfaces
+			// were removed, and never inserted again.  So, we generated inserted events
+			// for each interface we know about so that the UI is in sync with us.
+			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
+			{
+				ipc_events_ui(NULL, IPC_EVENT_INTERFACE_INSERTED, events[i].ctx->intName);
+			}
+
 			// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
 			events[i].ctx->auths = 0;
 
@@ -1225,7 +1237,12 @@ void event_core_waking_up()
 			{
 				wctx = events[i].ctx->intTypeData;
 				memset(wctx->cur_bssid, 0x00, 6);
-				wireless_sm_change_state(ASSOCIATING, events[i].ctx);
+
+				if (events[i].ctx->conn != NULL)
+				{
+					wireless_sm_change_state(ASSOCIATING, events[i].ctx);
+				}
+
 				UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
 			}
 		}

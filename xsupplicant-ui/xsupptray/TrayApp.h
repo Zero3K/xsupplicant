@@ -132,6 +132,8 @@ private:
 	void populateGlobalTrayData(QString, QString);
 	void updateIntControlCheck();
 	void disconnectTTSignals();
+	void setTrayMenuBasedOnControl();
+	void closeChildren();
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();

@@ -48,6 +48,7 @@
 #include "../../wpa.h"
 #include "../../wpa2.h"
 #include "../../pmksa.h"
+#include "../../statemachine.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -2296,6 +2297,8 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 {
 	int retval = 0;
 	int dhcpenabled = 0;
+	char *curip = NULL;
+	struct win_sock_data *sockData = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 
@@ -2329,29 +2332,61 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			
 			if (dhcpenabled == FALSE)  // If DHCP is already enabled, don't try to do it again.
 			{
-				debug_printf(DEBUG_INT, "Turning on DHCP.\n");
-				retval = cardif_windows_wmi_enable_dhcp(ctx);
-				if (retval == 94)
+				sockData = (struct win_sock_data *)ctx->sockData;
+
+				if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return;
+
+				if (sockData->osver < 2)
 				{
-					// Try again.
+					// Windows XP and earlier
+					if (win_ip_manip_enable_dhcp(ctx) != 0)
+					{
+						debug_printf(DEBUG_NORMAL, "Unable to enable DHCP!\n");
+					}
+				}
+				else
+				{
+					debug_printf(DEBUG_INT, "Turning on DHCP.\n");
 					retval = cardif_windows_wmi_enable_dhcp(ctx);
-					if (retval != 0)
+					if (retval == 94)
+					{
+						// Try again.
+						retval = cardif_windows_wmi_enable_dhcp(ctx);
+						if (retval != 0)
+						{
+							debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
+							break;
+						}
+					}
+					else if (retval != 0)
 					{
 						debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
 						break;
 					}
-				}
-				else if (retval != 0)
-				{
-					debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
-					break;
 				}
 			}
 
 			debug_printf(DEBUG_NORMAL, "Requesting DHCP information for '%s'.\n", ctx->desc);
 			if (ctx->auths == 1) //&& (ctx->intType == ETH_802_11_INT))
 			{
-				cardif_windows_release_renew(ctx);
+				// If we are in force auth state, only do this if we don't have a 'valid' IP address.
+				// 'Valid' addresses are all but 0.0.0.0 and 169.254.x.x
+				if (ctx->statemachine->curState == S_FORCE_AUTH)
+				{
+					curip = cardif_get_ip(ctx);
+					if ((curip == NULL) || (strcmp("0.0.0.0", curip) == 0) || (strncmp("169.254", curip, 7) == 0))
+					{
+						cardif_windows_release_renew(ctx);
+					}
+					else
+					{
+						debug_printf(DEBUG_NORMAL, "Skipping release/renew because interface '%s' already seems to have a valid address.\n", ctx->desc);
+					}
+				}
+				else
+				{
+					cardif_windows_release_renew(ctx);
+				}
 			}
 			else
 			{

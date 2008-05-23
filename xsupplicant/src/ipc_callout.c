@@ -2016,6 +2016,12 @@ int ipc_callout_request_logoff(xmlNodePtr innode, xmlNodePtr *outnode)
 
 		txLogoff(ctx);
 
+#ifdef WINDOWS
+		cardif_windows_release_ip(ctx);
+#else
+#warning Fill this in for your OS!
+#endif
+
 #ifdef HAVE_TNC
 		// If we are using a TNC enabled build, signal the IMC to clean up.
 		if(imc_disconnect_callback != NULL)
@@ -4716,7 +4722,7 @@ int ipc_callout_set_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
  **/
 int ipc_callout_set_managed_network_config(xmlNodePtr innode, xmlNodePtr *outnode)
 {
-	struct config_managed_network *newmn = NULL;
+	struct config_managed_networks *newmn = NULL;
 	xmlNodePtr n = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
