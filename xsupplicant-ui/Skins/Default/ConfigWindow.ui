@@ -290,7 +290,7 @@
      <number>0</number>
     </property>
     <property name="currentIndex" >
-     <number>9</number>
+     <number>5</number>
     </property>
     <widget class="QWidget" name="widgetStackConnectionsTablePage" >
      <widget class="QFrame" name="backgroundHeaderConnectionsTable" >
@@ -3759,7 +3759,7 @@
              </rect>
             </property>
             <property name="currentIndex" >
-             <number>2</number>
+             <number>0</number>
             </property>
             <widget class="QWidget" name="widgetStackWirelessAuthenticationProfilePage" >
              <widget class="QLabel" name="headerWirelessAuthenticationProfile" >
@@ -6812,6 +6812,9 @@
         <pointsize>8</pointsize>
        </font>
       </property>
+      <property name="maxLength" >
+       <number>255</number>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="widgetStackProfilesEditPage" >
@@ -9269,6 +9272,9 @@
         <pointsize>8</pointsize>
        </font>
       </property>
+      <property name="maxLength" >
+       <number>255</number>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="widgetStackTrustedServersEditPage" >
@@ -9358,6 +9364,9 @@
        <font>
         <pointsize>8</pointsize>
        </font>
+      </property>
+      <property name="maxLength" >
+       <number>255</number>
       </property>
      </widget>
      <widget class="QFrame" name="backgroundHeaderTrustedServersEdit" >
@@ -9718,6 +9727,70 @@
          <width>240</width>
          <height>25</height>
         </size>
+       </property>
+       <property name="palette" >
+        <palette>
+         <active>
+          <colorrole role="Base" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>236</red>
+             <green>234</green>
+             <blue>223</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </active>
+         <inactive>
+          <colorrole role="Base" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>255</red>
+             <green>255</green>
+             <blue>255</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>236</red>
+             <green>234</green>
+             <blue>223</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </inactive>
+         <disabled>
+          <colorrole role="Base" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>236</red>
+             <green>234</green>
+             <blue>223</blue>
+            </color>
+           </brush>
+          </colorrole>
+          <colorrole role="Window" >
+           <brush brushstyle="SolidPattern" >
+            <color alpha="255" >
+             <red>236</red>
+             <green>234</green>
+             <blue>223</blue>
+            </color>
+           </brush>
+          </colorrole>
+         </disabled>
+        </palette>
        </property>
        <property name="font" >
         <font>
@@ -12219,6 +12292,9 @@
           <pointsize>8</pointsize>
          </font>
         </property>
+        <property name="maxLength" >
+         <number>255</number>
+        </property>
        </widget>
        <widget class="QPushButton" name="buttonLoggingBrowse" >
         <property name="geometry" >
@@ -12338,7 +12414,7 @@
         <property name="geometry" >
          <rect>
           <x>220</x>
-          <y>150</y>
+          <y>178</y>
           <width>46</width>
           <height>18</height>
          </rect>
@@ -12387,8 +12463,8 @@
        <widget class="QLabel" name="labelLoggingNumberOfLogs" >
         <property name="geometry" >
          <rect>
-          <x>30</x>
-          <y>178</y>
+          <x>10</x>
+          <y>122</y>
           <width>120</width>
           <height>18</height>
          </rect>
@@ -12438,7 +12514,7 @@
         <property name="geometry" >
          <rect>
           <x>160</x>
-          <y>147</y>
+          <y>175</y>
           <width>50</width>
           <height>25</height>
          </rect>
@@ -12451,7 +12527,7 @@
         <property name="geometry" >
          <rect>
           <x>30</x>
-          <y>150</y>
+          <y>178</y>
           <width>120</width>
           <height>16</height>
          </rect>
@@ -12501,7 +12577,7 @@
         <property name="geometry" >
          <rect>
           <x>10</x>
-          <y>122</y>
+          <y>150</y>
           <width>101</width>
           <height>18</height>
          </rect>
@@ -12550,8 +12626,8 @@
        <widget class="QSpinBox" name="dataFieldNumberOfLogs" >
         <property name="geometry" >
          <rect>
-          <x>160</x>
-          <y>175</y>
+          <x>140</x>
+          <y>119</y>
           <width>50</width>
           <height>25</height>
          </rect>
