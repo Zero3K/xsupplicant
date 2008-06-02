@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
@@ -284,7 +284,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 			/>
@@ -499,7 +499,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/FIXED:NO"
-				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
@@ -729,7 +729,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_service.exe"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
@@ -953,7 +953,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT"
@@ -1168,7 +1168,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib libxsupconfcheck.lib iphlpapi.lib shlwapi.lib setupapi.lib"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib libxsupconfcheck.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_service.exe"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
@@ -1845,6 +1845,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\platform\windows\win_impersonate.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\platform\windows\win_ip_manip.c"
 				>
 			</File>
@@ -2276,6 +2280,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\platform\windows\win_cert_handler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\platform\windows\win_impersonate.h"
 				>
 			</File>
 			<File
