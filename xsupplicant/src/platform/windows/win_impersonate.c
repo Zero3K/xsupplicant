@@ -47,6 +47,8 @@ int win_impersonate_desktop_user()
 	if (ImpersonateLoggedOnUser(active_token) == FALSE)
 	{
 		debug_printf(DEBUG_NORMAL, "Couldn't impersonate logged on user. (Error : %d)\n", GetLastError());
+		CloseHandle(active_token);
+		active_token = NULL;
 		return IMPERSONATE_FAILURE;
 	}
 
@@ -70,5 +72,6 @@ void win_impersonate_back_to_self()
 	}
 
 	CloseHandle(active_token);
+	active_token = NULL;
 }
 

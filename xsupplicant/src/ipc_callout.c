@@ -164,6 +164,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Add_Cert_to_Store", ipc_callout_add_cert_to_store},
 	{"Get_TNC_Conn_ID", ipc_callout_get_tnc_conn_id},
 	{"Set_Connection_Lock", ipc_callout_set_conn_lock},
+	{"DHCP_Release_Renew", ipc_callout_dhcp_release_renew},
 	{NULL, NULL}
 };
 
@@ -6972,6 +6973,79 @@ int ipc_callout_set_conn_lock(xmlNodePtr innode, xmlNodePtr *outnode)
 	retval = ipc_callout_create_ack(iface, "Set_Connection_Lock", outnode);
 
 lock_done:
+	free(iface);
+
+	return retval;
+}
+
+/**
+ *  \brief Issue a DHCP release/renew for the specified interface.
+ *
+ * \param[in] innode   The XML node tree that contains the request to set the
+ *                     context's connection lock.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_dhcp_release_renew(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	xmlNodePtr n = NULL, t = NULL;
+	int retval = IPC_SUCCESS, retval2 = IPC_SUCCESS;
+	char *iface = NULL;
+	context *ctx = NULL;
+	int newval = 0;
+
+	if (innode == NULL) return IPC_FAILURE;
+
+	debug_printf(DEBUG_IPC, "Got an IPC DHCP release/renew request!\n");
+
+	n = ipc_callout_find_node(innode, "DHCP_Release_Renew");
+	if (n == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'DHCP_Release_Renew' node.\n");
+		return IPC_FAILURE;
+	}
+
+	n = n->children;
+
+	t = ipc_callout_find_node(n, "Interface");
+	if (t == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't find the <Interface> node in the request!\n");
+		return ipc_callout_create_error(NULL, "DHCP_Release_Renew", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
+	}
+
+	iface = (char *)xmlNodeGetContent(t);
+	if (iface == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "No interface specified to execute a conn lock change on!\n");
+		return ipc_callout_create_error(NULL, "DHCP_Release_Renew", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
+	}
+
+	debug_printf(DEBUG_IPC, "DHCP release/renew on interface %s.\n", iface);
+
+	ctx = event_core_locate(iface);
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't locate the interface requested over IPC!\n");
+		retval = ipc_callout_create_error(iface, "DHCP_Release_Renew", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
+		goto done;
+	}
+
+	// NOTE : The release/renew call CANNOT block!  If it does, then the UI may assume
+	// that the engine is dead.  If you *HAVE* to use a blocking call, it should be 
+	// threaded!
+#ifdef WINDOWS
+	cardif_windows_release_renew(ctx);
+#else
+#warning Add DHCP release/renew call for your OS here!
+#endif
+
+	retval = ipc_callout_create_ack(iface, "DHCP_Release_Renew", outnode);
+
+done:
 	free(iface);
 
 	return retval;

@@ -212,9 +212,9 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 	  config_ssid_add_bssid(wctx, pBssidEx->MacAddress);
 	  config_ssid_add_qual(wctx, 0, rssi, 0);
 
-	  debug_printf(DEBUG_INT, "Found SSID : %s\t\t BSSID : %02x:%02x:%02x:%02x:%02x:%02x\t RSSI : %d\n", ssid,
+	  debug_printf(DEBUG_INT, "Found SSID : %s\t\t BSSID : %02x:%02x:%02x:%02x:%02x:%02x\t RSSI : %d\t 802.11 Type : %d\n", ssid,
 		  pBssidEx->MacAddress[0], pBssidEx->MacAddress[1], pBssidEx->MacAddress[2], pBssidEx->MacAddress[3],
-		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi);
+		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi, pBssidEx->NetworkTypeInUse);
 
 	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ENC);
 

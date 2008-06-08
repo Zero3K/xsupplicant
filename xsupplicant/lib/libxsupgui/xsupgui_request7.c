@@ -1377,3 +1377,92 @@ request_lock:
 	return done;
 }
 
+/**
+ *  \brief Tell XSupplicant to do a DHCP release/renew on an interface.
+ *
+ * @param[in] intname  The OS specific name of the device to pause.
+ *
+ * \retval REQUEST_SUCCESS on success 
+ * \retval REQUEST_TIMEOUT on timeout
+ * \retval >299 on other error
+ **/
+int xsupgui_request_dhcp_release_renew(char *intname)
+{
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int done = 0, err = 0;
+	char *temp = NULL;
+	char temp_static[10];
+
+	if (intname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) 
+	{
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto request_done;
+	}
+
+	t = xmlNewChild(n, NULL, (xmlChar *)"DHCP_Release_Renew", NULL);
+	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto request_done;
+	}
+
+	xsupgui_xml_common_convert_amp(intname, &temp);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_INT_NODE;
+		free(temp);
+		goto request_done;
+	}
+	free(temp);
+
+	err = xsupgui_request_send(doc, &retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		done = err;
+		goto request_done;
+	}
+
+	// Otherwise, parse it and see if we got what we wanted.
+	err = xsupgui_request_check_exceptions(retdoc);
+	if (err != 0) 
+	{
+		done = err;
+		goto request_done;
+	}
+
+	n = xmlDocGetRootElement(retdoc);
+	if (n == NULL)
+	{
+		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
+		goto request_done;
+	}
+
+	// If we get here, then we know that the document passed the
+	// validation tests imposed.  So, we need to see if we got the result 
+	// we wanted.
+	n = n->children;
+	if (xsupgui_request_find_node(n, "ACK") != NULL)
+	{
+		done = REQUEST_SUCCESS;
+	}
+	else
+	{
+		done = IPC_ERROR_NOT_ACK;
+	}
+
+request_done:
+	if (doc != NULL) xmlFreeDoc(doc);
+	if (retdoc != NULL) xmlFreeDoc(retdoc);
+
+	return done;
+}
+
+

@@ -187,5 +187,6 @@ int ipc_callout_get_interface_capabilities(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_add_cert_to_store(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_tnc_conn_id(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_set_conn_lock(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_dhcp_release_renew(xmlNodePtr, xmlNodePtr *);
 
 #endif  // _IPC_CALLOUT_H_

@@ -9,6 +9,12 @@
 #ifndef __CONFIG_SSID_H__
 #define __CONFIG_SSID_H__
 
+#define DOT11_STANDARD  BIT(0)		// Straight 802.11  (1 or 2 MBps, DSS or FH)
+#define DOT11_A			BIT(1)		// 802.11a (54Mbps (max) 5.8 Ghz, OFDM)
+#define	DOT11_B			BIT(2)		// 802.11b (11Mbps (max) 2.4 Ghz, DSS)
+#define DOT11_G			BIT(3)		// 802.11g (54Mbps (max) 2.4 Ghz, OFDM)
+#define DOT11_N			BIT(4)		// 802.11n (???Mbps (max) 2.4 or 5.8 Ghz, MIMO)
+
 struct found_ssids {
   char *ssid_name;
   uint8_t abilities;
@@ -21,6 +27,8 @@ struct found_ssids {
   unsigned char quality;
   char signal;
   char noise;
+  uint8_t strength;
+  uint8_t radioTypes;
 
   struct found_ssids *next;
 };
