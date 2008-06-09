@@ -108,8 +108,6 @@ private slots:
 
 	 QWidget *m_pRealWidget;
 
-	 //QTabWidget *m_pProfileTabs;
-
 	 QCheckBox *m_pValidateServer;
 	 QComboBox *m_pTrustedServerCombo;
 	 QRadioButton *m_pUseThisIdent;

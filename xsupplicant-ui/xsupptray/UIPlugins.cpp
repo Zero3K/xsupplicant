@@ -340,3 +340,21 @@ void UIPlugins::show()
 	}
 }
 
+QString UIPlugins::getWidgetName()
+{
+	if (plugin != NULL)
+	{
+		return plugin->getWidgetName();
+	}
+
+	return QString("");
+}
+
+void UIPlugins::showHelp()
+{
+	if (plugin != NULL)
+	{
+		plugin->showHelp();
+	}
+}
+

@@ -34,6 +34,7 @@
 #include "Util.h"
 #include "FormLoader.h"
 #include "ConfigDlg.h"
+#include "helpbrowser.h"
 
 ConfigDlg::ConfigDlg(XSupCalls &sup, Emitter *e, QWidget *parent):
 	m_pEmitter(e), m_supplicant(sup)
@@ -50,6 +51,8 @@ ConfigDlg::ConfigDlg(XSupCalls &sup, Emitter *e, QWidget *parent):
 	m_pNavPanel = NULL;
 	m_pConfigInfo = NULL;
 	m_pPlugins = NULL;
+
+  uiCallbacks.launchHelpP = &HelpWindow::showPage;
 
 	// For now statically load the plugin and set its type.
 	// This definitely needs to be handled differently with multiple plugins
@@ -71,6 +74,8 @@ ConfigDlg::ConfigDlg(XSupCalls &sup, Emitter *e, QWidget *parent):
 		if(pluginStatus == PLUGIN_LOAD_SUCCESS)
 		{
 			m_pPlugins->setType(PLUGIN_TYPE_PROFILE_TAB);
+			m_pPlugins->instantiateWidget();    // This *MUST* come after the setType() call.
+			m_pPlugins->setCallbacks(uiCallbacks);
 		}
 		else
 		{

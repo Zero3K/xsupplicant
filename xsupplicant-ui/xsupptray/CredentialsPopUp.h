@@ -66,11 +66,10 @@ private:
   QDialog *m_pDialog;
 
   XSupCalls m_supplicant;
-  QPushButton *m_pDisconnectBtn;
-  QPushButton *m_pOkayBtn;
+  QDialogButtonBox *m_pButtonBox;
   QLineEdit *m_pUsername;
   QLineEdit *m_pPassword;
-  QLabel *m_pConnName;
+  QLabel *m_pDialogMsg;
   QString m_connName;
   bool m_doingPsk;
 

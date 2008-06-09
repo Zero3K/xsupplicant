@@ -73,6 +73,7 @@ signals:
 	 trusted_servers_enum *m_pTrustedServers;
 
 	 UIPlugins *m_pPlugins;
+  	 UICallbacks uiCallbacks;
 };
 
 #endif  // _CONFIGDLG_H_

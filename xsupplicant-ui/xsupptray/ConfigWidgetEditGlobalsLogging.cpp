@@ -180,12 +180,14 @@ bool ConfigWidgetEditGlobalsLogging::save()
 		m_pGlobals->logpath = NULL;
 
 		m_pGlobals->loglevel = 0;
+		m_pGlobals->logtype = LOGGING_NONE;
 	}
 	else
 	{
 		if (m_pGlobals->logpath != NULL) free(m_pGlobals->logpath);
 		m_pGlobals->logpath = NULL;
 
+		m_pGlobals->logtype = LOGGING_FILE;
 		m_pGlobals->logpath = _strdup(m_pLogDirectory->text().toAscii());
 
 		switch (m_pLogLevel->currentIndex())
@@ -273,7 +275,7 @@ void ConfigWidgetEditGlobalsLogging::updateWindow()
 	if (m_pSupplicant->getConfigGlobals(&m_pGlobals, true) == false) return;  // Nothing to do.
 
 	// Now, set up the data.
-	if (m_pGlobals->logpath != NULL)
+	if (m_pGlobals->logtype == LOGGING_FILE)
 	{
 		// Enable everything.
 		setEnabled(true);
@@ -331,7 +333,7 @@ void ConfigWidgetEditGlobalsLogging::updateWindow()
 
 	if (m_pRollBySize != NULL)
 	{
-		if ((m_pGlobals->flags & CONFIG_GLOBALS_ROLL_LOGS) == CONFIG_GLOBALS_ROLL_LOGS)
+		if ((m_pGlobals->logtype == LOGGING_FILE) && (m_pGlobals->flags & CONFIG_GLOBALS_ROLL_LOGS) == CONFIG_GLOBALS_ROLL_LOGS)
 		{
 			m_pRollBySize->setChecked(true);
 			m_pRollAtSize->setEnabled(true);
@@ -395,6 +397,9 @@ void ConfigWidgetEditGlobalsLogging::browseButtonClicked()
                              tr("Select Logging Folder"), logDir);
   if (!directory.isEmpty()) 
   {
+#ifdef WINDOWS
+	  directory.replace("/", "\\");   // Replace the / with a \ on Windows.
+#endif
     m_pLogDirectory->setText(directory);
   }
 }

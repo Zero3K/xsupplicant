@@ -101,6 +101,8 @@ public:
 	void updateEngineVersionString(QString m_newVersion);
 	bool save();
 	void show();
+	QString getWidgetName();
+	void showHelp();
 #ifdef WIN32
 	HINSTANCE getPlugin();
 #endif //WIN32

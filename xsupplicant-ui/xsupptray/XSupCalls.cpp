@@ -1907,8 +1907,7 @@ void XSupCalls::getAndDisplayErrors()
       // This box needs to be modeless - I have to create my own dialog box to go modeless
       QMessageBox::critical(NULL, tr("XSupplicant Error Summary"),
         tr("The following errors were returned from XSupplicant while starting up or attempting to connect.\n%1")
-        .arg(errors),
-        QString("top"));
+        .arg(errors));
     }
   }
   else

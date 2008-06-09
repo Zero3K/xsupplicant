@@ -216,7 +216,8 @@ void ConfigStackedWidget::changeWidget(int stackIdx, const QString &editItem, bo
 		break;
 	}
 
-	m_pNavPanel->changeSelectedItem(curPage, editItem);
+	// If this is a new connection, we should have already moved to the right place.
+	if (!isNew) m_pNavPanel->changeSelectedItem(curPage, editItem);
 }
 
 void ConfigStackedWidget::doConnectionsPanels(QString toEdit, bool isNew)

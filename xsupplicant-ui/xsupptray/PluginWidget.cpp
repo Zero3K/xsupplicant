@@ -103,3 +103,14 @@ PluginCallbacks &PluginWidget::getPluginCallbacks()
 {
 	return callbacks;
 }
+
+QString PluginWidget::getWidgetName()
+{
+	return QString("");
+}
+
+void PluginWidget::showHelp()
+{
+	QMessageBox::critical(this, tr("Code Error"), tr("The plugin didn't override the showHelp() method.  Help for this plugin will not be available!"));
+}
+

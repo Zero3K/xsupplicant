@@ -53,8 +53,8 @@ CredentialsPopUp::CredentialsPopUp(QString connName, QWidget *parent)
 {
 	m_pRealForm        = NULL;
 	m_pDialog          = NULL;
-	m_pDisconnectBtn	= NULL;
-	m_pOkayBtn			= NULL;
+	m_pDialogMsg		= NULL;
+	m_pButtonBox		= NULL;
 	m_pUsername			= NULL;
 	m_pPassword			= NULL;
 	p_user				= NULL;
@@ -72,14 +72,10 @@ CredentialsPopUp::~CredentialsPopUp()
 	if (p_user != NULL) free(p_user);
 	if (p_pass != NULL) free(p_pass);
 
-	if (m_pOkayBtn != NULL)
+	if (m_pButtonBox != NULL)
 	{
-		QObject::disconnect(m_pOkayBtn, SIGNAL(clicked()), this, SLOT(slotOkayBtn()));
-	}
-
-	if (m_pDisconnectBtn != NULL)
-	{
-	    QObject::disconnect(m_pDisconnectBtn, SIGNAL(clicked()), this, SLOT(slotDisconnectBtn()));
+		Util::myDisconnect(m_pButtonBox, SIGNAL(accepted()), this, SLOT(slotOkayBtn()));
+		Util::myDisconnect(m_pButtonBox, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 	}
 
 	if (m_pRealForm != NULL) 
@@ -125,7 +121,7 @@ bool CredentialsPopUp::createUPW()
 	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
-	m_pUsername = qFindChild<QLineEdit*>(m_pRealForm, "upwUsername");
+	m_pUsername = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldUserName");
 
 	if (m_pUsername == NULL)
 	{
@@ -133,7 +129,7 @@ bool CredentialsPopUp::createUPW()
 		return false;
 	}
 
-	m_pPassword = qFindChild<QLineEdit*>(m_pRealForm, "upwPassword");
+	m_pPassword = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldPassword");
 
 	if (m_pPassword == NULL)
 	{
@@ -141,31 +137,53 @@ bool CredentialsPopUp::createUPW()
 		return false;
 	}
 
-	m_pOkayBtn = qFindChild<QPushButton*>(m_pRealForm, "upwOkayBtn");
+	m_pButtonBox = qFindChild<QDialogButtonBox*>(m_pRealForm, "buttonBox");
 
-	if (m_pOkayBtn == NULL)
+	if (m_pButtonBox == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'upwOkayBtn' label."));
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'buttonBox' DialogButtonBox"));
 		return false;
 	}
 	else
 	{
-		QObject::connect(m_pOkayBtn, SIGNAL(clicked()), this, SLOT(slotOkayBtn()));
+		Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this, SLOT(slotOkayBtn()));
+		Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 	}
 
-	m_pConnName = qFindChild<QLabel*>(m_pRealForm, "upwConnName");
+	m_pDialogMsg = qFindChild<QLabel*>(m_pRealForm, "labelDialogMsg");
 
-	if (m_pConnName != NULL)
+	if (m_pDialogMsg != NULL)
 	{
-		m_pConnName->setText(m_connName);
-	}
+		QString networkName="";
+		
+		// if we have the name of the connection, try to retrieve the SSID of the network
+		// so that we can correctly prompt the user
+		if (m_connName.isEmpty() == false)
+		{
+			config_connection *pConnection = NULL;
+			if (m_supplicant.getConfigConnection(m_connName, &pConnection, false) == true)
+			{
+				if (pConnection != NULL && pConnection->ssid != NULL)
+					networkName = pConnection->ssid;
+				if (pConnection != NULL)
+					m_supplicant.freeConfigConnection(&pConnection);					
+			}
+		}
 
-	m_pDisconnectBtn = qFindChild<QPushButton*>(m_pRealForm, "upwDisconnectBtn");
-
-	// If m_pbuttonClose is NULL, then there isn't a close button.  We don't consider that to be a problem, so don't complain.
-	if (m_pDisconnectBtn != NULL)
-	{
-	    QObject::connect(m_pDisconnectBtn, SIGNAL(clicked()), this, SLOT(slotDisconnectBtn()));
+		// if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
+		// prompt message
+		QString dlgMsg;
+		if (networkName.isEmpty() == false)
+		{
+			dlgMsg.append(tr("The 802.1X network \""));
+			dlgMsg.append(networkName);
+			dlgMsg.append(tr("\" requires a username and password to connect"));
+		}
+		else
+		{
+			dlgMsg.append(tr("The network you are attempting to connect to requires a username and password"));
+		}
+		m_pDialogMsg->setText(dlgMsg);
 	}
 
 	setupWindow();
@@ -188,39 +206,61 @@ bool CredentialsPopUp::createPSK()
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
 	m_pUsername = NULL;
 
-	m_pPassword = qFindChild<QLineEdit*>(m_pRealForm, "pskEdit");
+	m_pPassword = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldPassword");
 
 	if (m_pPassword == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'pskEdit' label."));
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'dataFieldPassword' label."));
 		return false;
 	}
 
-	m_pOkayBtn = qFindChild<QPushButton*>(m_pRealForm, "OkayBtn");
+	m_pButtonBox = qFindChild<QDialogButtonBox*>(m_pRealForm, "buttonBox");
 
-	if (m_pOkayBtn == NULL)
+	if (m_pButtonBox == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'OkayBtn' label."));
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'buttonBox' DialogButtonBox"));
 		return false;
 	}
 	else
 	{
-		QObject::connect(m_pOkayBtn, SIGNAL(clicked()), this, SLOT(slotOkayBtn()));
+		Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this, SLOT(slotOkayBtn()));
+		Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 	}
 
-	m_pConnName = qFindChild<QLabel*>(m_pRealForm, "pskConnName");
+	m_pDialogMsg = qFindChild<QLabel*>(m_pRealForm, "labelDialogMsg");
 
-	if (m_pConnName != NULL)
+	if (m_pDialogMsg != NULL)
 	{
-		m_pConnName->setText(m_connName);
-	}
+		QString networkName="";
+		
+		// if we have the name of the connection, try to retrieve the SSID of the network
+		// so that we can correctly prompt the user
+		if (m_connName.isEmpty() == false)
+		{
+			config_connection *pConnection = NULL;
+			if (m_supplicant.getConfigConnection(m_connName, &pConnection, false) == true)
+			{
+				if (pConnection != NULL && pConnection->ssid != NULL)
+					networkName = pConnection->ssid;
+				if (pConnection != NULL)
+					m_supplicant.freeConfigConnection(&pConnection);
+			}
+		}
 
-	m_pDisconnectBtn = qFindChild<QPushButton*>(m_pRealForm, "disconnectBtn");
-
-	// If m_pDisconnectBtn is NULL, then there isn't a close button.  We don't consider that to be a problem, so don't complain.
-	if (m_pDisconnectBtn != NULL)
-	{
-	    QObject::connect(m_pDisconnectBtn, SIGNAL(clicked()), this, SLOT(slotDisconnectBtn()));
+		// if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
+		// prompt message
+		QString dlgMsg;
+		if (networkName.isEmpty() == false)
+		{
+			dlgMsg.append(tr("The network \""));
+			dlgMsg.append(networkName);
+			dlgMsg.append(tr("\" requires a WPA password to connect"));
+		}
+		else
+		{
+			dlgMsg.append(tr("The network you are trying to connect to requires a WPA password"));
+		}
+		m_pDialogMsg->setText(dlgMsg);
 	}
 
 	setupWindow();

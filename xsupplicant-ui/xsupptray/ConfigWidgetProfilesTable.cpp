@@ -69,20 +69,6 @@ ConfigWidgetProfilesTable::~ConfigWidgetProfilesTable()
 
 bool ConfigWidgetProfilesTable::attach()
 {
-	int i = 0;
-	QTableWidgetItem *newItem = NULL;
-
-	/*
-	while (m_pProfilesEnum[i].name != NULL)
-	{
-		m_pRealTable->insertRow(i);
-		newItem = new QTableWidgetItem(QString(m_pProfilesEnum[i].name), 0);
-		m_pRealTable->setItem(i, 0, newItem);
-
-		i++;
-	}
-*/
-
 	fillTable();
 
 	m_pRealTable->resizeColumnsToContents();

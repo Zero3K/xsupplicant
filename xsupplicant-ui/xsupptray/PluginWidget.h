@@ -65,6 +65,8 @@ class PluginWidget : public QWidget
 	 virtual void setCallbacks(UICallbacks uiCallbacks);
 	 virtual void setEngineVersionString(QString m_version);
 	 virtual QString getPluginVersionString();
+	 virtual QString getWidgetName();
+	 virtual void showHelp();
 
 	 PluginCallbacks &getPluginCallbacks();
 

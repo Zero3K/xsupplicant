@@ -82,6 +82,21 @@ ConfigWidgetEditAdvancedSettings::~ConfigWidgetEditAdvancedSettings()
 		Util::myDisconnect(m_pDisconnectOnLogoff, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
 	}
 
+	if (m_pPassiveScanInterval != NULL)
+	{
+		Util::myDisconnect(m_pPassiveScanInterval, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
+	if (m_pPMKSACacheTimeout != NULL)
+	{
+		Util::myDisconnect(m_pPMKSACacheTimeout, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
+	if (m_pPMKSACacheRefresh != NULL)
+	{
+		Util::myDisconnect(m_pPMKSACacheRefresh, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
 	Util::myDisconnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
 
 	Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
@@ -148,6 +163,21 @@ bool ConfigWidgetEditAdvancedSettings::attach()
 	if (m_pDisconnectOnLogoff != NULL)
 	{
 		Util::myConnect(m_pDisconnectOnLogoff, SIGNAL(stateChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
+	if (m_pPassiveScanInterval != NULL)
+	{
+		Util::myConnect(m_pPassiveScanInterval, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
+	if (m_pPMKSACacheTimeout != NULL)
+	{
+		Util::myConnect(m_pPMKSACacheTimeout, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
+	if (m_pPMKSACacheRefresh != NULL)
+	{
+		Util::myConnect(m_pPMKSACacheRefresh, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
 	}
 
 	Util::myConnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
@@ -323,6 +353,21 @@ void ConfigWidgetEditAdvancedSettings::slotResetValues()
 	{
 		sprintf((char *)&tempStr, "%d", RESCAN_TIMEOUT);
 		m_pScanTimeout->setText(QString(tempStr));
+	}
+
+	if (m_pPassiveScanInterval != NULL)
+	{
+		m_pPassiveScanInterval->setValue(PASSIVE_TIMEOUT);
+	}
+
+	if (m_pPMKSACacheTimeout != NULL)
+	{
+		m_pPMKSACacheTimeout->setValue(PMKSA_DEFAULT_AGEOUT_TIME);
+	}
+
+	if (m_pPMKSACacheRefresh != NULL)
+	{
+		m_pPMKSACacheRefresh->setValue(PMKSA_CACHE_REFRESH);
 	}
 
 	if (m_pCheckOtherSupplicants != NULL)

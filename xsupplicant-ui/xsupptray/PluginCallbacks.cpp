@@ -47,4 +47,6 @@ QString PluginCallbacks::pluginVersionString()
 	{
 		return pluginVersionString();
 	}
+
+	return QString("");
 }

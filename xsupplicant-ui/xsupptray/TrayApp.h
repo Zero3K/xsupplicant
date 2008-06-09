@@ -93,7 +93,6 @@ private slots:
 	void slotCleanupConfig();
 	void slotInterfaceInserted(char *);
 	void slotInterfaceRemoved(char *);
-	void slotWokeUp();
 	void slotControlInterfaces();
 	void slotControlInterfacesDone(bool);
 	void slotCreateTroubleticketDone();

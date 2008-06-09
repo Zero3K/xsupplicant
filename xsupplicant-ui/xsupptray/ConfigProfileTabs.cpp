@@ -1273,6 +1273,8 @@ void ConfigProfileTabs::discard()
 
 void ConfigProfileTabs::showHelp()
 {
+	UIPlugins *currentPlugin = (TabPlugins *)m_pPlugins;
+
 	switch (m_pProfileTabs->currentIndex())
 	{
 	case PROTOCOL_SETTINGS_TAB:
@@ -1284,8 +1286,23 @@ void ConfigProfileTabs::showHelp()
 		break;
 
 	default:
-		// XXX This is a band-aid fix to show posture help for the IDE version of the UI.
-		HelpWindow::showPage("xsupphelp.html", "idngcompliance");
+		while(currentPlugin != NULL)
+		{
+			if(currentPlugin->isType(PLUGIN_TYPE_PROFILE_TAB))
+			{
+				if (m_pProfileTabs->tabText(m_pProfileTabs->currentIndex()) == currentPlugin->getWidgetName())
+				{
+					break;
+				}
+			}
+
+			currentPlugin = currentPlugin->next;
+		}
+
+		if (currentPlugin != NULL)
+		{
+			currentPlugin->showHelp();
+		}
 		break;
 	}
 }

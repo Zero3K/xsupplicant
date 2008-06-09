@@ -216,9 +216,13 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(CONNECTIONS_ITEM, QString(""));
 		}
 
-		// Otherwise, do nothing.
-		activeType = CONNECTIONS_ITEM;
-		activeName = "";
+		// If we are still on the item we think we are, then update the values.  Otherwise
+		// the values should still be correct.
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = CONNECTIONS_ITEM;
+			activeName = "";
+		}
 	}
 	else if (selectedItem->parent() == m_pConnectionsItem)
 	{
@@ -230,8 +234,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(CONNECTIONS_ITEM, selectedItem->text(column));
 		}
 
-		activeType = CONNECTIONS_ITEM;
-		activeName = selectedItem->text(column);
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = CONNECTIONS_ITEM;
+			activeName = selectedItem->text(column);
+		}
 	}
 	else if (selectedItem == m_pProfilesItem)
 	{
@@ -244,8 +251,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(PROFILES_ITEM, QString(""));
 		}
 
-		activeType = PROFILES_ITEM;
-		activeName = "";
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = PROFILES_ITEM;
+			activeName = "";
+		}
 	}
 	else if (selectedItem->parent() == m_pProfilesItem)
 	{
@@ -257,8 +267,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(PROFILES_ITEM, selectedItem->text(column));
 		}
 
-		activeType = PROFILES_ITEM;
-		activeName = selectedItem->text(column);
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = PROFILES_ITEM;
+			activeName = selectedItem->text(column);
+		}
 	}
 	else if (selectedItem == m_pTrustedServersItem)
 	{
@@ -270,8 +283,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(TRUSTED_SERVERS_ITEM, QString(""));
 		}
 
-		activeType = TRUSTED_SERVERS_ITEM;
-		activeName = "";
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = TRUSTED_SERVERS_ITEM;
+			activeName = "";
+		}
 	}
 	else if (selectedItem->parent() == m_pTrustedServersItem)
 	{
@@ -282,8 +298,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(TRUSTED_SERVERS_ITEM, selectedItem->text(column));
 		}
 
-		activeType = TRUSTED_SERVERS_ITEM;
-		activeName = selectedItem->text(column);
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = TRUSTED_SERVERS_ITEM;
+			activeName = selectedItem->text(column);
+		}
 	}
 	else if (selectedItem == m_pGlobalsItem)
 	{
@@ -294,8 +313,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(GLOBALS_ITEM, QString(""));
 		}
 
-		activeType = GLOBALS_ITEM;
-		activeName = "";
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = GLOBALS_ITEM;
+			activeName = "";
+		}
 	}
 	else if (selectedItem->parent() == m_pGlobalsItem)
 	{
@@ -306,8 +328,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(GLOBALS_ITEM, QString("Global_Logging"));
 		}
 
-		activeType = GLOBALS_ITEM;
-		activeName = "Global_Logging";
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = GLOBALS_ITEM;
+			activeName = "Global_Logging";
+		}
 	}
 	else if (selectedItem == m_pAdvancedItem)
 	{
@@ -318,8 +343,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 			emit signalItemClicked(ADVANCED_ITEM, QString(""));
 		}
 
-		activeType = ADVANCED_ITEM;
-		activeName = "";
+		if (getSelectedItem() == selectedItem)
+		{
+			activeType = ADVANCED_ITEM;
+			activeName = "";
+		}
 	}
 	else if (selectedItem->parent() == m_pAdvancedItem)
 	{
@@ -332,8 +360,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 				emit signalItemClicked(ADVANCED_ITEM, QString("Advanced_Settings"));
 			}
 
-			activeType = ADVANCED_ITEM;
-			activeName = "Advanced_Settings";
+			if (getSelectedItem() == selectedItem)
+			{
+				activeType = ADVANCED_ITEM;
+				activeName = "Advanced_Settings";
+			}
 		}
 		else
 		{
@@ -344,8 +375,11 @@ void NavPanel::slotItemClicked(QTreeWidgetItem *selectedItem, int column)
 				emit signalItemClicked(ADVANCED_ITEM, QString("Advanced_Internals"));
 			}
 
-			activeType = ADVANCED_ITEM;
-			activeName = "Advanced_Internals";
+			if (getSelectedItem() == selectedItem)
+			{
+				activeType = ADVANCED_ITEM;
+				activeName = "Advanced_Internals";
+			}
 		}
 	}
 	else
@@ -389,8 +423,6 @@ void NavPanel::slotNewClicked()
 	{
 		QMessageBox::critical(this, tr("New Item Error"), tr("Somehow, you managed to click new on an item that doesn't allow new things to be created!"));
 	}
-
-//	m_bDontEmitChange = false;
 }
 
 void NavPanel::enableNavBtns()
@@ -531,7 +563,7 @@ void NavPanel::changeSelected(int index, const QString &itemName)
 		break;
 
 	case GLOBALS_ITEM:
-		if (itemName == "Global_Logging")
+		if ((itemName == "Global_Logging") || (itemName == "Logging"))
 		{
 			m_pManagedItems->setCurrentItem(m_pGlobalsItem->child(0));
 			activeType = GLOBALS_ITEM;
@@ -544,20 +576,20 @@ void NavPanel::changeSelected(int index, const QString &itemName)
 		}
 		else
 		{
-			QMessageBox::critical(this, tr("Programming Error"), tr("There was a request to change the navigation panel to a non-existant item under Globals!"));
+			QMessageBox::critical(this, tr("Programming Error"), tr("There was a request to change the navigation panel to a non-existant item under Globals! (Value : '%1')").arg(itemName));
 			activeType = GLOBALS_ITEM;
 			activeName = itemName;
 		}
 		break;
 
 	case ADVANCED_ITEM:
-		if (itemName == "Advanced_Settings")
+		if ((itemName == "Advanced_Settings") || (itemName == "Settings"))
 		{
 			m_pManagedItems->setCurrentItem(m_pAdvancedItem->child(ADVANCED_SETTINGS_ITEM));
 			activeType = ADVANCED_ITEM;
 			activeName = "Advanced_Settings";
 		}
-		else if (itemName == "Advanced_Internals")
+		else if ((itemName == "Advanced_Internals") || (itemName == "Internals"))
 		{
 			m_pManagedItems->setCurrentItem(m_pAdvancedItem->child(ADVANCED_INTERNAL_ITEM));
 			activeType = ADVANCED_ITEM;

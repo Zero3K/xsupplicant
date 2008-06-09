@@ -80,10 +80,10 @@ bool ConfigConnDNSTab::attach()
 		return false;
 	}
 
-	m_pSuffix = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticDNSSecondary");
+	m_pSuffix = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticDNSDomainSuffix");
 	if (m_pSuffix == NULL)
 	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'dataFieldStaticDNSSecondary'."));
+		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'dataFieldStaticDNSDomainSuffix'."));
 		return false;
 	}
 

@@ -75,7 +75,6 @@ ConfigConnAdaptTabWireless::~ConfigConnAdaptTabWireless()
 		Util::myDisconnect(m_pProfile, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 		Util::myDisconnect(m_pProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(slotProfileChanged(int)));
 		Util::myDisconnect(m_pPSK, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
-		Util::myDisconnect(m_pWEPLength, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 		Util::myDisconnect(m_pWEPLength, SIGNAL(currentIndexChanged(int)), this, SLOT(slotChangeBitDepth(int)));
 		Util::myDisconnect(m_pWEPKey, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 		Util::myDisconnect(m_pKeyTypeCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
@@ -186,7 +185,6 @@ bool ConfigConnAdaptTabWireless::attach()
 	 m_pHexKeyLabel = qFindChild<QLabel*>(m_pRealWidget, "dataFieldHexCharacters");
 
 	 m_pPSK->setEchoMode(QLineEdit::Password);
-	 updateWindow();
 
 	 // An SSID can be a MAX of 32 characters.
 	 m_pHiddenName->setValidator(new QRegExpValidator(QRegExp("^[\\w|\\W]{0,32}$"), m_pHiddenName));
@@ -197,6 +195,8 @@ bool ConfigConnAdaptTabWireless::attach()
 	 {
 		 m_pHexKeyLabel->setText(tr("Enter 10 characters 0-9 or A-F"));
 	 }
+
+	 updateWindow();
 
 	 // A PSK *MUST* be at least 8 characters, but less than 64.
 	 m_pPSK->setValidator(new QRegExpValidator(QRegExp("^[\\w|\\W]{8,32}$"), m_pPSK));
@@ -226,7 +226,6 @@ bool ConfigConnAdaptTabWireless::attach()
 	 Util::myConnect(m_pProfile, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(slotProfileChanged(int)));
 	 Util::myConnect(m_pPSK, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
-	 Util::myConnect(m_pWEPLength, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pWEPLength, SIGNAL(currentIndexChanged(int)), this, SLOT(slotChangeBitDepth(int)));
 	 Util::myConnect(m_pWEPKey, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pKeyTypeCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
@@ -375,11 +374,21 @@ void ConfigConnAdaptTabWireless::setOpenNoAuth()
 			{
 				m_pWEPLength->setCurrentIndex(1);
 				m_pWEPKey->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{26}$"), m_pWEPKey));
+
+				if (m_pHexKeyLabel != NULL)
+				{
+					 m_pHexKeyLabel->setText(tr("Enter 26 characters 0-9 or A-F"));
+				}
 			}
 			else
 			{
 				m_pWEPLength->setCurrentIndex(0);
 				m_pWEPKey->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{10}$"), m_pWEPKey));
+
+				if (m_pHexKeyLabel != NULL)
+				{
+					 m_pHexKeyLabel->setText(tr("Enter 10 characters 0-9 or A-F"));
+				}
 			}
 		}
 	}
@@ -1071,6 +1080,10 @@ void ConfigConnAdaptTabWireless::slotProfileChanged(int newSelection)
 
 void ConfigConnAdaptTabWireless::slotChangeBitDepth(int selected)
 {
+	QString temp;
+
+	slotDataChanged();
+
 	if (selected == 1)
 	{
 		m_pWEPKey->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{26}$"), m_pWEPKey));
@@ -1082,6 +1095,9 @@ void ConfigConnAdaptTabWireless::slotChangeBitDepth(int selected)
 	}
 	else
 	{
+		temp = m_pWEPKey->text();
+		temp.truncate(10);
+		m_pWEPKey->setText(temp);
 		m_pWEPKey->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{10}$"), m_pWEPKey));
 
 		if (m_pHexKeyLabel != NULL)

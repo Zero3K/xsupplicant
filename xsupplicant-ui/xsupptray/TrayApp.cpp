@@ -159,6 +159,9 @@ void TrayApp::checkOtherSupplicants()
 	}
 
 	m_supplicant.freeConfigGlobals(&globals);
+
+	// If we are not set to control the interfaces, don't run the check.
+	if ((m_p1XControl != NULL) && (m_p1XControl->isChecked() == false)) return;
 	
 	// Otherwise, move on.
 
@@ -255,11 +258,13 @@ void TrayApp::slotRestart()
   delete m_pConfDlg;
   delete m_pEventListenerThread;
   delete m_pLoggingCon;
+  delete m_pIntCtrl;
 
   m_pLoginDlg = NULL;
   m_pConfDlg = NULL;
   m_pEventListenerThread = NULL;
   m_pLoggingCon = NULL;
+  m_pIntCtrl = NULL;
 
   // Attempt to connect
   m_bConnectFailed = false;
@@ -285,7 +290,6 @@ void TrayApp::slotConnectToSupplicant()
     bcode = m_supplicant.connectToSupplicant();
     if (!bcode)
     {
-
 	  if(m_pEmitter != NULL)
 	  {
 		disconnect(m_pEmitter, SIGNAL(signalTNCReply(uint32_t, uint32_t, uint32_t, uint32_t, bool, int)), 
@@ -816,10 +820,12 @@ bool TrayApp::checkCommandLineParams(int argc)
 void TrayApp::start()
 {
   bool bValue = true;
+
   if (!m_bSupplicantConnected)
   {
     return;
   }
+
   switch(m_commandLineOption)
   {
     case NONE:
@@ -913,14 +919,21 @@ void TrayApp::slotControlInterfaces()
 		m_pIntCtrl = NULL;
 	}
 
+	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceControl(bool)), this, SLOT(slotControlInterfacesDone(bool)));
+
 	m_pIntCtrl = new InterfaceCtrl(m_p1XControl->isChecked(), m_pEmitter, &m_supplicant, this);
 
-	if (m_pIntCtrl->updateSupplicant() == true)
+	m_pIntCtrl->show();
+	if (m_pIntCtrl->updateSupplicant() != true)
 	{
-		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceControl(bool)), this, SLOT(slotControlInterfacesDone(bool)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceControl(bool)), this, SLOT(slotControlInterfacesDone(bool)));
+		delete m_pIntCtrl;
+		m_pIntCtrl = NULL;
 	}
-
-	m_pIntCtrl->exec();
+	else
+	{
+		m_pIntCtrl->exec();
+	}
 }
 
 void TrayApp::setTrayMenuBasedOnControl()
@@ -1032,7 +1045,6 @@ void TrayApp::setTrayIconState(int curState)
   {
     QIcon icon((*p));
     if (m_pTrayIcon != NULL) m_pTrayIcon->setIcon(icon);
-    setWindowIcon(icon);
 	m_pTrayIcon->show();
   }
 
@@ -1051,7 +1063,14 @@ void TrayApp::slotIconActivated(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::DoubleClick:
       if (m_bSupplicantConnected)
       {
-        slotLaunchLogin();
+		  if (m_p1XControl->isChecked())
+		  {
+			slotLaunchLogin();
+		  }
+		  else
+		  {
+			  QMessageBox::information(this, tr("Interface Management"), tr("XSupplicant is not currently managing your interfaces.  If you wish to have XSupplicant manage your interfaces, please right-click the icon, and select \"Manage Interfaces with XSupplicant\"."));
+		  }
       }
       else
       {
@@ -1143,6 +1162,9 @@ void TrayApp::slotLaunchLogin()
   }
   else
   {
+	  // If we aren't controlling the interface, don't allow the window to be displayed.
+	  if (!m_p1XControl->isChecked()) return;
+
 	  if (m_pLoginDlg == NULL)
 	  {
 		  m_pLoginDlg = new LoginMainDlg(m_supplicant, m_pEmitter, this);
@@ -1314,6 +1336,8 @@ void TrayApp::slotCreateTroubleticket()
     QString filePath = QDir::toNativeSeparators((QDir::homePath().append(tr("/Desktop/XSupplicant Trouble Ticket.zip"))));
 
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save Trouble ticket"), filePath, tr("Archives (*.zip)"));
+
+	if (fileName == "") return;
 
     char *path = _strdup(fileName.toAscii());
 
@@ -1594,9 +1618,4 @@ void TrayApp::unloadPlugins()
 	}
 
 	m_pPlugins = NULL;
-}
-
-void TrayApp::slotWokeUp()
-{
-	QMessageBox::information(NULL, tr("XSupplicant"), tr("Your machine just came out of sleep mode.  The supplicant will try to connect you to the last network(s) you were on.  If you want to connect to a different network, click Disconnect, and select the alternate network."));
 }
