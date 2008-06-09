@@ -1,6 +1,6 @@
 ; This variable can be overridden by passing /DVERSION=<whatever> to the nullsoft compiler.
 !ifndef VERSION
-	!define VERSION 2.1.1.080419
+	!define VERSION 2.1.1.080609
 !endif
 
 ; For official Open1X builds, the IDE supplicant checker is included.
@@ -13,7 +13,7 @@
 ; debugability of the supplicant in the event of crashes.
 ; Comment out "!define DEBUGFILES" to turn this off.
 ;
-!define DEBUGFILES
+;!define DEBUGFILES
 
 
 ;------------------------

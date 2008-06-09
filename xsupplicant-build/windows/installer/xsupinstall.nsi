@@ -199,13 +199,13 @@ Section "XSupplicant (required)"
 
 	; Make sure the redist is installed before going forward.
 	; 
-	;File "C:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\BootStrapper\Packages\vcredist_x86\vcredist_x86.exe"
-	;DetailPrint "Installing Microsoft Runtime."
-	;nsExec::Exec '"$INSTDIR\vcredist_x86.exe"'
-	;Pop $0
-	;DetailPrint "  VCRedist return value : $0"
-	;Delete $INSTDIR\vcredist_x86.exe
-	File "C:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
+	File "C:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\BootStrapper\Packages\vcredist_x86\vcredist_x86.exe"
+	DetailPrint "Installing Microsoft Runtime."
+	nsExec::Exec '"$INSTDIR\vcredist_x86.exe"'
+	Pop $0
+	DetailPrint "  VCRedist return value : $0"
+	Delete $INSTDIR\vcredist_x86.exe
+	;File "C:\Program Files\Microsoft Visual Studio 8\VC\redist\x86\Microsoft.VC80.CRT\msvcr80.dll"
 
 	File "${QTDIR}\bin\QtCore4.dll"
 	File "${QTDIR}\bin\QtGui4.dll"
@@ -240,6 +240,7 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PSKWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\UPWWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\GTCWindow.ui"
 
         SetOutPath "$INSTDIR\Skins\Default\images"
 
@@ -390,7 +391,7 @@ Section "Uninstall"
         Delete $INSTDIR\open1x.inf
         Delete $INSTDIR\open1x.sys
 	Delete $INSTDIR\uninstall.exe
-	Delete $INSTDIR\msvcr80.dll
+	;Delete $INSTDIR\msvcr80.dll
 
 	Delete $INSTDIR\Modules\BirdDog.dll
 
@@ -402,6 +403,10 @@ Section "Uninstall"
         Delete $INSTDIR\Skins\Default\SelectTrustedServerWindow.ui
         Delete $INSTDIR\Skins\Default\ViewLogWindow.ui
 	Delete $INSTDIR\Skins\Default\WirelessPriorityWindow.ui
+	Delete $INSTDIR\Skins\Default\PSKWindow.ui
+	Delete $INSTDIR\Skins\Default\UPWWindow.ui
+	Delete $INSTDIR\Skins\Default\GTCWindow.ui
+
 
         Delete $INSTDIR\Skins\Default\images\banner_left_short.png
         Delete $INSTDIR\Skins\Default\images\banner_right_short.png
