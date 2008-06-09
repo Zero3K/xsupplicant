@@ -41,7 +41,6 @@ void config_ssid_get_rsn_ie(wireless_ctx *, uint8_t **, uint8_t *);
 unsigned int config_ssid_get_freq(wireless_ctx *);
 uint8_t *config_ssid_get_mac(wireless_ctx *);
 void config_ssid_dump(wireless_ctx *);
-//void config_ssid_set_active_ssid(wireless_ctx *, char *);
 int config_ssid_using_wep(wireless_ctx *);
 int config_ssid_ssid_known(wireless_ctx *, char *);
 void config_ssid_get_by_mac(context *, uint8_t *);
@@ -55,6 +54,6 @@ void config_ssid_add_rsn_ie(wireless_ctx *, uint8_t *, uint8_t);
 void config_ssid_add_wpa_ie(wireless_ctx *, uint8_t *, uint8_t);
 void config_ssid_add_ssid_name(wireless_ctx *, char *);
 void config_ssid_update_abilities(wireless_ctx *, uint8_t);
-void config_ssid_add_qual(wireless_ctx *, unsigned char, char, char);
+void config_ssid_add_qual(wireless_ctx *, unsigned char, char, char, uint8_t);
 
 #endif

@@ -68,6 +68,7 @@
 #define IPC_ERROR_NAME_IN_USE         344   // The connection/profile/trusted server name is already in use.
 #define IPC_ERROR_GEN_TROUBLE_TICKET  345   // An unrecoverable error occurred while generating trouble tickets.
 #define IPC_ERROR_FILE_EXISTS         346   // A request was made to overwrite a file that already exists.
+#define IPC_ERROR_NOT_SUPPORTED		  347   // The request is not supported.
 
 /**
  *  Result values.
@@ -187,6 +188,7 @@ int ipc_callout_get_interface_capabilities(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_add_cert_to_store(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_tnc_conn_id(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_set_conn_lock(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_dhcp_release_renew(xmlNodePtr, xmlNodePtr *);
 
 #endif  // _IPC_CALLOUT_H_

@@ -274,29 +274,42 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_USE_SYSLOG)))
+	if ((write_all == TRUE) || (conf_globals->logtype != LOGGING_FILE))
 	{
-		if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_USE_SYSLOG))
+		switch (conf_globals->logtype)
 		{
-			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Use_Syslog", (xmlChar *)"yes") == NULL)
+		case LOGGING_NONE:
+			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Logging", (xmlChar *)"NONE") == NULL)
 			{
 #ifdef WRITE_GLOBALS_CONFIG
-				printf("Failed to create <Use_Syslog> node!\n");
+				printf("Failed to create <Logging> node!\n");
 #endif
 				xmlFreeNode(globalnode);
 				return NULL;
 			}
-		} 
-		else
-		{
-			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Use_Syslog", (xmlChar *)"no") == NULL)
+			break;
+
+		case LOGGING_FILE:
+			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Logging", (xmlChar *)"FILE") == NULL)
 			{
 #ifdef WRITE_GLOBALS_CONFIG
-				printf("Failed to create <Use_Syslog> node!\n");
+				printf("Failed to create <Logging> node!\n");
 #endif
 				xmlFreeNode(globalnode);
 				return NULL;
 			}
+			break;
+
+		case LOGGING_SYSLOG:
+			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Logging", (xmlChar *)"SYSLOG") == NULL)
+			{
+#ifdef WRITE_GLOBALS_CONFIG
+				printf("Failed to create <Logging> node!\n");
+#endif
+				xmlFreeNode(globalnode);
+				return NULL;
+			}
+			break;
 		}
 	}
 

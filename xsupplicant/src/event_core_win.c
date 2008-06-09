@@ -874,7 +874,10 @@ void event_core()
 			events[i].ctx->tick = TRUE;
  
 			// Tick clock.
-			timer_tick(events[i].ctx);
+			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
+			{
+				timer_tick(events[i].ctx);
+			}
 		  }
 	  }
   }
@@ -888,7 +891,7 @@ void event_core()
 		{
 			if (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
 			{
-				if (events[i].ctx->conn != NULL)
+				if ((events[i].ctx->conn != NULL) && ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY))
 				{
 					statemachine_run(events[i].ctx);
 				}
@@ -1455,7 +1458,7 @@ void event_core_drop_active_conns()
 				txLogoff(events[i].ctx);
 			}
 
-			if (events[i].ctx->intType = ETH_802_11_INT)
+			if (events[i].ctx->intType == ETH_802_11_INT)
 			{
 				// Send a disassociate.
 				cardif_disassociate(events[i].ctx, 0);
@@ -1523,12 +1526,12 @@ void event_core_change_wireless(config_globals *newsettings)
  *        control of them.
  *
  * @param[in] endis   TRUE if the interfaces should be controlled by XSupplicant.  FALSE if not.
- *
- * \todo Add mutex controls in when merged with HEAD.
  **/
 void event_core_change_os_ctrl_state(void *param)
 {
 	int i = 0;
+
+	event_core_lock();
 
 	for (i= 0; i< num_event_slots; i++)
 	{
@@ -1537,7 +1540,7 @@ void event_core_change_os_ctrl_state(void *param)
 			// XSupplicant should control this interface.
 			if (events[i].ctx != NULL)
 			{
-				windows_int_ctrl_take_ctrl(events[i].ctx);
+				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) windows_int_ctrl_take_ctrl(events[i].ctx);
 				cardif_restart_io(events[i].ctx);
 				events[i].flags &= (~EVENT_IGNORE_INT);
 			}
@@ -1547,14 +1550,27 @@ void event_core_change_os_ctrl_state(void *param)
 			// Windows should control this interface.
 			if (events[i].ctx != NULL)
 			{
-				windows_int_ctrl_give_to_windows(events[i].ctx);
+				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) windows_int_ctrl_give_to_windows(events[i].ctx);
 				cardif_cancel_io(events[i].ctx);
 				events[i].flags |= EVENT_IGNORE_INT;
 			}
 		}
 	}
 
+	event_core_unlock();
+
 	if (param != NULL) event_core_drop_active_conns();
 	ipc_events_ui(NULL, IPC_EVENT_UI_INT_CTRL_CHANGED, NULL);
 }
 
+/**
+ * \brief Determine if the machine is going to sleep.
+ *
+ * \retval TRUE if we are going to sleep (or already asleep ;)
+ **/
+int event_core_get_sleep_state()
+{
+	if ((sleep_state == PWR_STATE_SLEEPING) || (sleep_state == PWR_STATE_HELD)) return TRUE;
+
+	return FALSE;
+}

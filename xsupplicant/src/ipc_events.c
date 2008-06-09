@@ -896,7 +896,7 @@ void ipc_events_ui(context *ctx, unsigned int uiidx, char *param)
 	{
 		goto done;
 	}
-
+		
 	if (ipc_events_send(indoc) != XENONE)
 	{
 		goto done;

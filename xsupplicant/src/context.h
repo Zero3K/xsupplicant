@@ -171,8 +171,8 @@ typedef struct dot1x_state
   **/
 // The WIRELESS_SM_ flags belong in the second 8 bits.
 #define WIRELESS_SM_INIT               BIT(7)
-#define WIRELESS_SM_ASSOCIATED         BIT(8)   // Are we associated
-#define WIRELESS_SM_STALE_ASSOCIATION  BIT(9)   // Did we just associate?
+//#define WIRELESS_SM_ASSOCIATED         BIT(8)   // Are we associated
+//#define WIRELESS_SM_STALE_ASSOCIATION  BIT(9)   // Did we just associate?
 #define WIRELESS_SM_PORT_ACTIVE        BIT(10)  // Is the port alive, and ready to go?
 #define WIRELESS_SM_SSID_CHANGE        BIT(11)  // Did we just change SSIDs?
 #define WIRELESS_SM_DOING_PSK		   BIT(12)  // We are doing WPA(2)-PSK.  This can be used on OSes that

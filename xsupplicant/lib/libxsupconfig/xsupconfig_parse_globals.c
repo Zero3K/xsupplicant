@@ -33,6 +33,11 @@ multichoice association_choices[] = {
   { 1, "MANUAL" },
   { -1, NULL}};
 
+multichoice logging_choices[] = {
+	{ LOGGING_NONE, "NONE" },
+	{ LOGGING_FILE, "FILE" },
+	{ LOGGING_SYSLOG, "SYSLOG" }};
+
 multichoice destination_choices[] = {
   { DEST_AUTO, "AUTO" },
   { DEST_AUTO, "auto" },
@@ -100,8 +105,8 @@ void *xsupconfig_parse_build_globals(void **attr, xmlNodePtr node)
 
 void *xsupconfig_parse_logpath(void **attr, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -338,9 +343,9 @@ void *xsupconfig_parse_association(void **attr, xmlNodePtr node)
 
 void *xsupconfig_parse_destination(void **attr, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  int result;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  int result = -1;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -799,35 +804,25 @@ void *xsupconfig_parse_use_eap_hints(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_use_syslog(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_logging(void **attr, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  uint8_t result;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  int result = LOGGING_FILE;                 // Default is log to a file.
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Use_Syslog : %s\n", value);
+  printf("Logging : %s\n", value);
 #endif
 
   myglobals = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+  result = xsupconfig_common_select_from_list(logging_choices, value);
 
-  if (result == 1)
+  if (result > -1)
     {
-      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_USE_SYSLOG);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_USE_SYSLOG);
-    }
-  else
-    {
-      xsupconfig_common_log("Unknown value for Use_Syslog.  (Line %ld)    Using "
-	     "default of 'NO'.\n", xsupconfig_parse_get_line_num());
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_USE_SYSLOG);
+      myglobals->logtype = result;
     }
 
   FREE(value);
@@ -1064,7 +1059,7 @@ parser globals[] = {
   {"Use_EAP_Hints", NULL, FALSE, &xsupconfig_parse_use_eap_hints},
   {"Destination", NULL, FALSE, &xsupconfig_parse_destination},  ///XXX MOVE THIS!
   {"Association_Timeout", NULL, FALSE, &xsupconfig_parse_assoc_timeout},
-  {"Use_Syslog", NULL, FALSE, &xsupconfig_parse_use_syslog},
+  {"Logging", NULL, FALSE, &xsupconfig_parse_logging},
   {"Detect_on_startup", NULL, FALSE, &xsupconfig_parse_detect_on_startup},
   {"Logs_To_Keep", NULL, FALSE, &xsupconfig_parse_logs_to_keep},
   {"Log_Size_To_Roll", NULL, FALSE, &xsupconfig_parse_log_size_to_roll},

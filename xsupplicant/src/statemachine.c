@@ -440,6 +440,12 @@ int statemachine_change_to_logoff(context *ctx)
 
   if (ctx->intType == ETH_802_11_INT)
   {
+	// Kill passive scan timer.
+	if (timer_check_existing(ctx, PASSIVE_SCAN_TIMER) == FALSE)
+	{
+		timer_cancel(ctx, PASSIVE_SCAN_TIMER);
+	} 
+
 	// Clear our keys (since we logged off), and send a disassociate.
 	cardif_clear_keys(ctx);
 	// There doesn't seem to be a better reason for this disassociation.
@@ -496,6 +502,15 @@ int statemachine_change_to_disconnected(context *ctx)
 #endif
 
   ctx->statemachine->curState = DISCONNECTED;
+
+  if (ctx->intType == ETH_802_11_INT)
+	{
+		// Kill passive scan timer.
+		if (timer_check_existing(ctx, PASSIVE_SCAN_TIMER) == FALSE)
+		{
+			timer_cancel(ctx, PASSIVE_SCAN_TIMER);
+		} 
+  }
 
   return XENONE;
 }
@@ -1251,11 +1266,11 @@ int statemachine_run(context *ctx)
   if (ctx->statemachine->portEnabled == FALSE)
     {
       // Change our wireless state to port down state.
-      wireless_sm_change_state(PORT_DOWN, ctx);
+      wireless_sm_change_state(DISCONNECTED, ctx);
 
       return XENONE;
     }
-	*/
+*/
 
   switch(ctx->statemachine->curState)
     {

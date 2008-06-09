@@ -172,14 +172,21 @@ void cardif_windows_int_event_connect(context *ctx)
 					ctx->auths = 0;
 				}
 			}
+	
+			memset(&wctx->replay_counter, 0x00, 8);
+			wireless_sm_change_state(ASSOCIATED, ctx);
+			ctx->eap_state->reqId = 0xff;
+			ctx->eap_state->lastId = 0xff;
 
+			/*
 			if (memcmp(wctx->cur_bssid, &bssid, 6) != 0)
 			{
 				SET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now associated.
 				UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
 
 				// Reset the EAP state machine.
-				eap_sm_force_init(ctx->eap_state);
+				eap_sm_force_init(ctx->eap_state); 
+				wireless_sm_change_state(ASSOCIATED, ctx);
 				memcpy(wctx->cur_bssid, bssid, 6);
 			}
 			else
@@ -187,7 +194,8 @@ void cardif_windows_int_event_connect(context *ctx)
 				debug_printf(DEBUG_NORMAL, "Interface '%s' sent us an associate event about a BSSID we are already associated to.  This usually indicates a firmware, driver, or environmental issue.  This event has been ignored.\n", ctx->desc);
 				debug_printf(DEBUG_PHYSICAL_STATE, "Clearing replay counter.\n");
 				memset(&wctx->replay_counter, 0x00, 8);
-			}
+				wireless_sm_change_state(ASSOCIATED, ctx);
+			} */
 
 			if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
 			{
@@ -253,9 +261,10 @@ void cardif_windows_int_event_disconnect(context *ctx)
 			return;
 		}
 
-		UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
-		UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
+/*		UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
+		UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION); */
 		memset(ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
+		wireless_sm_change_state(UNASSOCIATED, ctx);
 
 		if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
 		{
@@ -1130,6 +1139,13 @@ void cardif_windows_events_interface_removed(void *devPtr)
 		return;
 	}
 
+	if (event_core_get_sleep_state() == TRUE)
+	{
+		debug_printf(DEBUG_INT, "Removal event for an interface when we are attempting to go to sleep.  Ignoring.\n");
+		_endthread();
+		return;
+	}
+
 	interfaceName = cardif_windows_events_get_interface_desc((wchar_t *)devPtr, FALSE);
 	if (interfaceName == NULL)
 	{
@@ -1240,19 +1256,24 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 		return;
 	}
 
-	// When we come out of sleep, sometimes we will get an insert event on interfaces that we never
-	// saw a remove event from.  In those cases, we want to complain a little, and bail out so that we
-	// don't complain a bunch about binding errors.
-	if (event_core_locate_by_desc(interfaceName) != NULL)
+	if (event_core_lock() != 0)
 	{
-		debug_printf(DEBUG_NORMAL, "Got an interface inserted event for an interface that is already inserted!  (Interface : %s)\n", interfaceName);
+		debug_printf(DEBUG_NORMAL, "!!!!! Unable to acquire lock on the event core!  Interface will be ignored!\n");
 		_endthread();
 		return;
 	}
 
-	if (event_core_lock() != 0)
+	// When we come out of sleep, sometimes we will get an insert event on interfaces that we never
+	// saw a remove event from.  In those cases, we want to complain a little, and bail out so that we
+	// don't complain a bunch about binding errors.
+	//
+	// NOTE : The event core lock should be obtained prior to this call so that we don't
+	// end up in a situation where we have checked while another thread is enabling.  This
+	// situation can happen on some drivers that like to send two insert events when coming 
+	// out of sleep.
+	if (event_core_locate_by_desc(interfaceName) != NULL)
 	{
-		debug_printf(DEBUG_NORMAL, "!!!!! Unable to acquire lock on the event core!  Interface will be ignored!\n");
+		debug_printf(DEBUG_NORMAL, "Got an interface inserted event for an interface that is already inserted!  (Interface : %s)\n", interfaceName);
 		_endthread();
 		return;
 	}

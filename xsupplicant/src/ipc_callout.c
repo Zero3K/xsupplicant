@@ -50,6 +50,7 @@
 #include "platform/cert_handler.h"
 #include "error_prequeue.h"
 #include "timer.h"
+#include "wpa_common.h"
 
 #ifdef WINDOWS
 #include "platform/windows/tthandler.h"
@@ -164,7 +165,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Add_Cert_to_Store", ipc_callout_add_cert_to_store},
 	{"Get_TNC_Conn_ID", ipc_callout_get_tnc_conn_id},
 	{"Set_Connection_Lock", ipc_callout_set_conn_lock},
-	{"DHCP_Release_Renew", ipc_callout_dhcp_release_renew},
+	{"Get_Interface_From_TNC_Conn_ID", ipc_callout_get_interface_from_tnc_connid},
 	{NULL, NULL}
 };
 
@@ -1325,7 +1326,8 @@ int ipc_callout_get_physical_state(xmlNodePtr innode, xmlNodePtr *outnode)
  **/
 int ipc_callout_get_pairwise_key_type(xmlNodePtr innode, xmlNodePtr *outnode)
 {
-	context *ctx;
+	context *ctx = NULL;
+	wireless_ctx *wctx = NULL;
 
 	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
 		return IPC_FAILURE;
@@ -1339,8 +1341,18 @@ int ipc_callout_get_pairwise_key_type(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	if (ctx->intType == ETH_802_11_INT)
 	{
-		return ipc_callout_some_state_response("Get_Pairwise_Key_Type", "Pairwise_Key_Type", ((wireless_ctx *)(ctx->intTypeData))->pairwiseKeyType, 
-				"Key_Type", ctx->intName, outnode);
+		wctx = ctx->intTypeData;
+
+		if ((wctx == NULL) || (wctx->state != ASSOCIATED))
+		{
+			return ipc_callout_some_state_response("Get_Pairwise_Key_Type", "Pairwise_Key_Type", CIPHER_NONE, 
+					"Key_Type", ctx->intName, outnode);			
+		}
+		else
+		{
+			return ipc_callout_some_state_response("Get_Pairwise_Key_Type", "Pairwise_Key_Type", wctx->pairwiseKeyType, 
+					"Key_Type", ctx->intName, outnode);
+		}
 	}
 
 	// Need to add support for wired state.
@@ -1361,6 +1373,7 @@ int ipc_callout_get_pairwise_key_type(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_get_group_key_type(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	context *ctx = NULL;
+	wireless_ctx *wctx = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -1373,8 +1386,18 @@ int ipc_callout_get_group_key_type(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	if (ctx->intType == ETH_802_11_INT)
 	{
-		return ipc_callout_some_state_response("Get_Group_Key_Type", "Group_Key_Type", ((wireless_ctx *)(ctx->intTypeData))->groupKeyType, 
-				"Key_Type", ctx->intName, outnode);
+		wctx = ctx->intTypeData;
+
+		if ((wctx == NULL) || (wctx->state != ASSOCIATED))
+		{
+			return ipc_callout_some_state_response("Get_Group_Key_Type", "Group_Key_Type", CIPHER_NONE, 
+					"Key_Type", ctx->intName, outnode);
+		}
+		else
+		{
+			return ipc_callout_some_state_response("Get_Group_Key_Type", "Group_Key_Type", wctx->groupKeyType, 
+					"Key_Type", ctx->intName, outnode);
+		}
 	}
 
 	// Need to add support for wired state.
@@ -4355,7 +4378,9 @@ int ipc_callout_delete_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outn
 int ipc_callout_set_globals_config(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	struct config_globals *newg = NULL;
+	struct config_globals *oldg = NULL;
 	xmlNodePtr n = NULL;
+	int change = FALSE;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -4382,6 +4407,8 @@ int ipc_callout_set_globals_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		debug_printf(DEBUG_IPC, "Couldn't parse config global information!\n");
 		return ipc_callout_create_error(NULL, "Set_Globals_Config", IPC_ERROR_PARSING, outnode);
 	}
+
+	oldg = config_get_globals();
     
 #ifdef WINDOWS
 	windows_int_ctrl_change(newg);
@@ -4389,16 +4416,21 @@ int ipc_callout_set_globals_config(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	event_core_change_wireless(newg);
 
-	reset_config_globals(newg);
-
-	if (logpath_changed(newg->logpath) == TRUE)
+	if ((oldg == NULL) || (newg->logtype != oldg->logtype) || (logpath_changed(newg->logpath) == TRUE))
 	{
-		debug_printf(DEBUG_NORMAL, "The path to the log file has changed.  The new log file will be located in '%s'.\n", newg->logpath);
+		debug_printf(DEBUG_NORMAL, "Log file settings have changed.  The new log file (if any) will be located in '%s'.\n", newg->logpath);
+		change = TRUE;
 		logfile_cleanup();
-		logfile_setup();
 	}
 
+	reset_config_globals(newg);
+
 	xsup_debug_set_level(newg->loglevel);
+
+	if (change == TRUE)
+	{
+		logfile_setup();
+	}
 
   return ipc_callout_create_ack(NULL, "Set_Globals_Config", outnode);
 }
@@ -4969,6 +5001,13 @@ int ipc_callout_enum_known_ssids(xmlNodePtr innode, xmlNodePtr *outnode)
 
 		sprintf((char *)&res, "%d", cur->abilities);
 		if (xmlNewChild(t, NULL, (xmlChar *)"SSID_Abilities", (xmlChar *)res) == NULL)
+		{
+			xmlFreeNode(n);
+			return ipc_callout_create_error(NULL, "Enum_Known_SSIDs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		sprintf((char *)&res, "%d", cur->strength);
+		if (xmlNewChild(t, NULL, (xmlChar *)"Signal_Strength", (xmlChar *)res) == NULL)
 		{
 			xmlFreeNode(n);
 			return ipc_callout_create_error(NULL, "Enum_Known_SSIDs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
@@ -6874,7 +6913,7 @@ int ipc_callout_add_cert_to_store(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_get_tnc_conn_id(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 #ifdef HAVE_TNC
-	context *ctx;
+	context *ctx = NULL;
 
 	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
 		return IPC_FAILURE;
@@ -6979,6 +7018,81 @@ lock_done:
 }
 
 /**
+ * \brief Request the interface name that maps to a specific TNC connection ID.
+ *
+ * \param[in] innode   The XML node tree that contains the request to get the
+ *                     interface name from the TNC connection ID.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+#ifndef HAVE_TNC
+	return ipc_callout_create_error(NULL, "Get_Interface_From_TNC_Conn_ID", IPC_ERROR_NOT_SUPPORTED, outnode);
+#else
+	xmlNodePtr n = NULL, t = NULL;
+	int retval = IPC_SUCCESS, retval2 = IPC_SUCCESS;
+	char *iface = NULL;
+	context *ctx = NULL;
+	int newval = 0;
+	char *temp = NULL;
+
+	if (innode == NULL) return IPC_FAILURE;
+
+	debug_printf(DEBUG_IPC, "Got an IPC set connection lock request!\n");
+
+	n = ipc_callout_find_node(innode, "Get_Interface_From_TNC_Conn_ID");
+	if (n == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Get_Interface_From_TNC_Conn_ID' node.\n");
+		return IPC_FAILURE;
+	}
+
+	n = n->children;
+
+	t = ipc_callout_find_node(n, "Connection_ID");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't find the <Connection_ID> node in the request!\n");
+		return ipc_callout_create_error(NULL, "Get_Interface_From_TNC_Conn_ID", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	newval = atoi((char *)xmlNodeGetContent(t));
+
+	debug_printf(DEBUG_IPC, "Getting interface for TNC ID %d.\n", newval);
+
+	event_core_reset_locator();
+
+	ctx = event_core_get_next_context();
+	while ((ctx != NULL) && (ctx->tnc_connID != newval))
+	{
+		ctx = event_core_get_next_context();
+	}
+
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't locate context that mapped to TNC ID %d.\n", newval);
+		return ipc_callout_create_error(NULL, "Get_Interface_From_TNC_Conn_ID", IPC_ERROR_INVALID_INTERFACE, outnode);
+	}
+
+	// Otherwise, we should have what we need to know.
+	ipc_callout_convert_amp(ctx->intName, &temp);
+	if (xmlNewChild(n, NULL, "Interface_Name", temp) == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Couldn't create <Interface_Name> node!\n");
+		free(temp);
+		return ipc_callout_create_error(NULL, "Get_Interface_From_TNC_Conn_ID", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
+	free(temp);
+
+	return retval;
+#endif
+}
+
+/**
  *  \brief Issue a DHCP release/renew for the specified interface.
  *
  * \param[in] innode   The XML node tree that contains the request to set the
@@ -7050,3 +7164,4 @@ done:
 
 	return retval;
 }
+

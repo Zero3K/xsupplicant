@@ -2329,21 +2329,12 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-#if 1
-	if (xsupgui_request_dhcp_release_renew("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}") != REQUEST_SUCCESS)
-	{
-		printf("Couldn't do DHCP release/renew.\n");
-	}
-
-	return 0;
-#endif
-
 #if 0
 	getcapabilities(intface);
 	return 0;
 #endif
 
-#if 0
+#if 1
 	nt("Terminate Supplicant");
 	doterminate();
 	exit(1);

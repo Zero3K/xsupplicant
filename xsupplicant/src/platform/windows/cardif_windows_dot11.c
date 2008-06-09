@@ -85,13 +85,14 @@ void cardif_windows_dot11_scan_timeout(context *ctx)
   PNDIS_802_11_BSSID_LIST_EX pBssidList;
   PNDIS_WLAN_BSSID_EX pBssidEx;
   PNDIS_802_11_SSID pSsid;
-  UCHAR *ofs;
+  UCHAR *ofs = NULL;
   char rssi;
   int i;
   char ssid[33];
-  struct win_sock_data *sockData;
+  struct win_sock_data *sockData = NULL;
   LPVOID lpMsgBuf;
-  wireless_ctx *wctx;
+  wireless_ctx *wctx = NULL;
+  uint8_t percentage;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 
@@ -161,8 +162,19 @@ void cardif_windows_dot11_scan_timeout(context *ctx)
 	  config_ssid_add_bssid(wctx, pBssidEx->MacAddress);
 
 	  rssi = pBssidEx->Rssi;
+
+	  // According to the windows documentation, the RSSI should vary between
+	  // -10 and -200 dBm.  So, we need to figure out a percentage based on that.
+
+	  // However, many examples on the net show that valid ranges will run from -50 to -100.
+
+	  percentage = (((rssi) + 100)*2);    // Make the dBm a positive number, and the lowest value
+	  	                                    // equal to 0.  (So, the range will now be 0 - 190.)
+
+	  if (percentage > 100) percentage = 100;  // Some cards may have a percentage > 100 depending on their sensativity.  In those cases, only return 100. ;)
+
 	  debug_printf(DEBUG_INT, "RSSI : %d\n", rssi);
-	  config_ssid_add_qual(wctx, 0, rssi, 0);
+	  config_ssid_add_qual(wctx, 0, rssi, 0, percentage);
 
 	  debug_printf(DEBUG_INT, "Privacy : %d\n", pBssidEx->Privacy);
 	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ENC);

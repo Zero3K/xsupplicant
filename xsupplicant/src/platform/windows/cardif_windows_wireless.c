@@ -135,6 +135,7 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
   wireless_ctx *wctx = NULL;
   DWORD lastError = 0;
   ULONG ielen = 0;
+  uint8_t percentage;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 
@@ -208,13 +209,23 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 
 	  rssi = pBssidEx->Rssi;
 
+	  // According to the windows documentation, the RSSI should vary between
+	  // -10 and -200 dBm.  So, we need to figure out a percentage based on that.
+
+	  // However, many examples on the net show that valid ranges will run from -50 to -100.
+
+	  percentage = (((rssi) + 100)*2);    // Make the dBm a positive number, and the lowest value
+	  	                                    // equal to 0.  (So, the range will now be 0 - 190.)
+
+	  if (percentage > 100) percentage = 100;  // Some cards may have a percentage > 100 depending on their sensativity.  In those cases, only return 100. ;)
+
 	  config_ssid_add_ssid_name(wctx, ssid);
 	  config_ssid_add_bssid(wctx, pBssidEx->MacAddress);
-	  config_ssid_add_qual(wctx, 0, rssi, 0);
+	  config_ssid_add_qual(wctx, 0, rssi, 0, percentage);
 
-	  debug_printf(DEBUG_INT, "Found SSID : %s\t\t BSSID : %02x:%02x:%02x:%02x:%02x:%02x\t RSSI : %d\t 802.11 Type : %d\n", ssid,
+	  debug_printf(DEBUG_INT, "Found SSID : %s\t\t BSSID : %02x:%02x:%02x:%02x:%02x:%02x\t RSSI : %d\t 802.11 Type : %d\t Percentage : %d\n", ssid,
 		  pBssidEx->MacAddress[0], pBssidEx->MacAddress[1], pBssidEx->MacAddress[2], pBssidEx->MacAddress[3],
-		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi, pBssidEx->NetworkTypeInUse);
+		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi, pBssidEx->NetworkTypeInUse, percentage);
 
 	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ENC);
 

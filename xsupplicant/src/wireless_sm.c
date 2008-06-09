@@ -416,7 +416,8 @@ void wireless_sm_change_to_unassociated(context *ctx)
   }
 #endif
 
-  statemachine_reinit(ctx);
+  //statemachine_reinit(ctx);
+  statemachine_change_state(ctx, DISCONNECTED);
 
   // Update our state variables to indicate what state we are in now.
   wctx->state = UNASSOCIATED;
@@ -629,7 +630,7 @@ void wireless_sm_change_to_associated(context *ctx)
 	  }
   }
 
-  SET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);  // Keep us from retriggering
+//  SET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);  // Keep us from retriggering
 														 // this state!
 
   // Make sure that last state we were in has a valid transition to this
@@ -657,16 +658,20 @@ void wireless_sm_change_to_associated(context *ctx)
   // We are associated, so clear the timer.
   timer_cancel(ctx, ASSOCIATION_TIMER);
 
+  // Be absolutely sure that the rescan timer was cancelled.
+  timer_cancel(ctx, SCANCHECK_TIMER);
+
   debug_printf(DEBUG_PHYSICAL_STATE, "Clearing replay counter.\n");
   memset(&wctx->replay_counter, 0x00, 8);
 
   wireless_sm_set_sig_strength_timer(ctx);
 
+  /*
   if (ctx->eap_state != NULL)
   {
 	  debug_printf(DEBUG_PHYSICAL_STATE, "Reset the EAP state machine..\n");
 	  eap_sm_force_init(ctx->eap_state);
-  }
+  }*/
 
   // Update our state variables to indicate what state we are in now.
   wctx->state = ASSOCIATED;
@@ -1055,7 +1060,7 @@ void wireless_sm_clear_interface(context *ctx)
  **/
 void wireless_sm_change_to_int_restart(context *ctx)
 {
-  wireless_ctx *wctx;
+  wireless_ctx *wctx = NULL;
 
 	TRACE
 
@@ -1186,7 +1191,7 @@ void wireless_sm_check_globals(context *ctx)
       wireless_sm_change_state(ACTIVE_SCAN, ctx);
     }
   */
-  if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED) && (!TEST_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION)))
+/*  if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED) && (!TEST_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION)))
     {
       wireless_sm_change_state(ASSOCIATED, ctx);
     }
@@ -1195,7 +1200,7 @@ void wireless_sm_check_globals(context *ctx)
     {
       wireless_sm_change_state(UNASSOCIATED, ctx);
     }
-
+*/
 }
 
 /********************************************************************
@@ -1323,11 +1328,12 @@ void wireless_sm_do_unassociated(context *ctx)
     } else {
       // Otherwise, we have nothing to do, so take a short nap.  (To avoid
       // hammering the processor.
-
+/*
       if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED))
 	  {
 		wireless_sm_change_state(ASSOCIATED, ctx);
 	  } 
+	  */
     }
 }
 

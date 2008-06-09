@@ -593,6 +593,18 @@ int xsupgui_request_enum_ssids(char *device, ssid_info_enum **ssids)
 		ssidarray[i].abil = atoi((char *)content);
 		xmlFree(content);
 
+		t = xsupgui_request_find_node(n->children, "Signal_Strength");
+		if (t == NULL)
+		{
+			if (ssidarray != NULL) free(ssidarray);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish_enum_ssids;
+		}
+
+		content = xmlNodeGetContent(t);
+		ssidarray[i].percentage = atoi((char *)content);
+		xmlFree(content);
+
 		n = n->next;
 	}
 

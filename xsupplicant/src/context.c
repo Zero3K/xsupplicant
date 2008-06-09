@@ -698,6 +698,8 @@ int context_destroy_wireless_ctx(wireless_ctx **dest_wctx)
 
 	wctx = (*dest_wctx);
 
+	if (wctx == NULL) return XENONE;  // Nothing to do.
+
     debug_printf(DEBUG_DEINIT, "Cleaning up SSID structs.\n");
 	config_ssid_clear(wctx);
 

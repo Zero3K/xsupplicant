@@ -362,7 +362,7 @@ void config_ssid_add_freq(wireless_ctx *wctx, unsigned int newfreq)
  * @param[in] signal   The signal strength.
  * @param[in] noise   The amount of noise.
  **/
-void config_ssid_add_qual(wireless_ctx *wctx, unsigned char qual, char signal, char noise)
+void config_ssid_add_qual(wireless_ctx *wctx, unsigned char qual, char signal, char noise, uint8_t percentage)
 {
 	struct found_ssids *working = NULL;
 
@@ -381,6 +381,7 @@ void config_ssid_add_qual(wireless_ctx *wctx, unsigned char qual, char signal, c
   working->quality = qual;
   working->signal = signal;
   working->noise = noise;
+  working->strength = percentage;
 }
 
 /**

@@ -348,17 +348,23 @@ TNC_UInt32 TNC_28383_TNCC_Reset_Connection(TNC_IMCID imcID, TNC_ConnectionID con
 
 	debug_printf(DEBUG_NORMAL, "IMC %d has requested that we reset the connection for ID %d.\n", imcID, connectionID);
 
-	if(find_context_for_imc_id_and_connection(&ctx, imcID, connectionID) == TNC_RESULT_SUCCESS)
+	if (find_context_for_imc_id_and_connection(&ctx, imcID, connectionID) == TNC_RESULT_SUCCESS)
 	{
 		// We found it!
 		if (ctx->intType == ETH_802_11_INT)
 		{
 			// Send a logoff, and disassociate.
 			txLogoff(ctx);
-			cardif_disassociate(ctx, 0);  
 
-			debug_printf(DEBUG_PHYSICAL_STATE, "!!!!! Bypassing scanning phase!\n");
-			wireless_sm_change_state(ASSOCIATING, ctx);
+			// If we are going to sleep, skip this part since the interface may not be 
+			// able to process it.
+			if (event_core_get_sleep_state() != TRUE)
+			{
+				cardif_disassociate(ctx, 0);  
+
+				//debug_printf(DEBUG_PHYSICAL_STATE, "!!!!! Bypassing scanning phase!\n");
+				wireless_sm_change_state(ASSOCIATING, ctx);
+			}
 		}
 		else
 		{

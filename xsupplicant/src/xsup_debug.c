@@ -87,7 +87,7 @@ void xsup_debug_check_log_roll()
 
 	if (active_logfile == NULL)
 	{
-		debug_printf(DEBUG_EVENT_CORE, "There is no long file defined.  Ignoring.\n");
+//		debug_printf(DEBUG_EVENT_CORE, "There is no log file defined.  Ignoring.\n");
 		return;
 	}
 
@@ -104,7 +104,7 @@ void xsup_debug_check_log_roll()
 
 	if (stat64(active_logfile, &statdata) != 0)
 	{
-		debug_printf(DEBUG_NORMAL, "Unable to get file status information for file '%s'.  Log will not be rolled.\n", active_logfile);
+//		debug_printf(DEBUG_NORMAL, "Unable to get file status information for file '%s'.  Log will not be rolled.\n", active_logfile);
 		next_logroll_check = LOGCHECK_INTERVAL;
 		return;
 	}
@@ -322,7 +322,14 @@ static int rotate_log_files()
 	}
 
 #ifdef WINDOWS
-	sprintf(full_filename, "%s\\%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp, DEFAULT_LOG_EXT);
+	if (globals->logpath[strlen(globals->logpath)-1] == '\\')
+	{
+		sprintf(full_filename, "%s%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp, DEFAULT_LOG_EXT);
+	}
+	else
+	{
+		sprintf(full_filename, "%s\\%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp, DEFAULT_LOG_EXT);
+	}
 #else
 	sprintf(full_filename, "%s/%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp);
 #endif
@@ -366,11 +373,25 @@ static int rotate_log_files()
 #ifdef WINDOWS
 		if (strlen(temp) != 0)
 		{
-			sprintf(full_filename, "%s\\%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp, DEFAULT_LOG_EXT);
+			if (globals->logpath[strlen(globals->logpath)-1] == '\\')
+			{
+				sprintf(full_filename, "%s%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp, DEFAULT_LOG_EXT);
+			}
+			else
+			{
+				sprintf(full_filename, "%s\\%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp, DEFAULT_LOG_EXT);
+			}
 		}
 		else
 		{
-			sprintf(full_filename, "%s\\%s.%s", globals->logpath, DEFAULT_LOG_NAME, DEFAULT_LOG_EXT);
+			if (globals->logpath[strlen(globals->logpath)-1] == '\\')
+			{
+				sprintf(full_filename, "%s%s.%s", globals->logpath, DEFAULT_LOG_NAME, DEFAULT_LOG_EXT);
+			}
+			else
+			{
+				sprintf(full_filename, "%s\\%s.%s", globals->logpath, DEFAULT_LOG_NAME, DEFAULT_LOG_EXT);
+			}
 		}
 #else
 		sprintf(full_filename, "%s/%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp);
@@ -388,7 +409,14 @@ static int rotate_log_files()
 			sprintf((char *)&temp2, "%d", i);
 
 #ifdef WINDOWS
-			sprintf(new_filename, "%s\\%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp2, DEFAULT_LOG_EXT);
+			if (globals->logpath[strlen(globals->logpath)-1] == '\\')
+			{	
+				sprintf(new_filename, "%s%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp2, DEFAULT_LOG_EXT);
+			}
+			else
+			{
+				sprintf(new_filename, "%s\\%s_%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp2, DEFAULT_LOG_EXT);
+			}
 #else
 			sprintf(new_filename, "%s/%s.%s", globals->logpath, DEFAULT_LOG_NAME, temp2);
 #endif
@@ -478,7 +506,7 @@ static int should_do_syslog()
 	  return XEMALLOC;
 	}
 
-	if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_USE_SYSLOG)) return 0;
+	if (globals->logtype != LOGGING_SYSLOG)) return 0;
 
     tempstr = globals->log_facility;
     lowercase(tempstr);
@@ -513,12 +541,12 @@ int logpath_changed(char *newpath)
 	if ((newpath == NULL) || (strlen(newpath) == 0)) 
 	{
 		// Turn off the log file if we are using it.
-		if (logfile != NULL)
+/*		if (logfile != NULL)
 		{
 			debug_printf(DEBUG_NORMAL, "Logging to a file has been disabled.\n");
 			fclose(logfile);
 			FREE(active_logpath);
-		}
+		}  */
 
 		return TRUE;
 	}
@@ -543,11 +571,6 @@ int logfile_setup()
   int result;
   struct config_globals *globals = NULL;
 
-  if (rotate_log_files() < 0)
-  {
-	  printf("Error rolling log files!\n");
-  }
-
   globals = config_get_globals();
 
   if (globals == NULL)
@@ -569,6 +592,9 @@ int logfile_setup()
 
 		if (result == 1) return XENONE;
 
+		// Make sure we want to log to a file.
+		if (globals->logtype != LOGGING_FILE) return 0;
+
 #ifdef WINDOWS
 		if (globals->logpath == NULL)
 		{
@@ -577,6 +603,8 @@ int logfile_setup()
 			  printf("Couldn't determine the path to the common app data.\n");
 			  return -1;
 		  }
+
+		  globals->logpath = _strdup(szMyPath);
 
 		  tempstr = (char *)Malloc(strlen(szMyPath)+strlen(DEFAULT_LOG_NAME)+strlen(DEFAULT_LOG_EXT)+4);
 		}
@@ -606,6 +634,11 @@ int logfile_setup()
 #else
 	    sprintf(tempstr, "%s/%s", globals->logpath, DEFAULT_LOG_NAME);
 #endif
+
+		if (rotate_log_files() < 0)
+		{
+			printf("Error rolling log files!\n");
+		}
 
         logfile = fopen(tempstr, "w+");
         if (!logfile)
@@ -651,6 +684,7 @@ void logfile_cleanup()
   if (logfile != NULL)
     {
       fclose(logfile);
+	  logfile = NULL;
 	  FREE(active_logpath);
     }
 
@@ -1326,14 +1360,14 @@ void debug_printf_nl(uint32_t level, char *fmt, ...)
 
       vsnprintf((char *)&temp, 2048, fmt, ap);
 
-	#ifdef DEBUG_LOG_PLUGINS
       if ((!(debug_level & level)) && (level != 0))
 	{
+#ifdef DEBUG_LOG_PLUGINS
 	  log_hook_full_debug(temp);
+#endif  // DEBUG_LOG_PLUGINS
 	  va_end(ap);
 	  return;
 	}
-      #endif // DEBUG_LOG_PLUGINS
 
       ufprintf(logfile, temp, level);
       

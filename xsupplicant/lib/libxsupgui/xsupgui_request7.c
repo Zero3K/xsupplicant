@@ -1378,6 +1378,108 @@ request_lock:
 }
 
 /**
+ * \brief Request the interface name from the supplicant given the TNC connection ID.
+ *
+ * @param[in] tnc_conn_id   The TNC connection ID that we want to determine the interface
+ *							binding for.
+ * @param[out] intname   The OS specific interface name that is bound to the TNC connection
+ *                       ID.
+ *
+ * \note This function will return IPC_ERROR_NOT_SUPPORTED if the engine is built without
+ *       TNC support!
+ *
+ * \retval REQUEST_SUCCESS on success 
+ * \retval REQUEST_TIMEOUT on timeout
+ * \retval >299 on other error
+ **/
+int xsupgui_request_intname_from_tnc_conn_id(unsigned int *tnc_conn_id, char **intname)
+{
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	char *value = NULL;
+	int retval = REQUEST_SUCCESS;
+	int err = 0;
+	char tempint[10];
+
+	if (intname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL)
+	{
+		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto done;
+	}
+
+	t = xmlNewChild(n, NULL, "Get_Interface_From_TNC_Conn_ID", NULL);
+	if (t == NULL)
+	{
+		retval = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto done;
+	}
+
+	memset(&tempint, 0x00, sizeof(tempint));
+	sprintf(&tempint, "%d", tnc_conn_id);
+	if (xmlNewChild(t, NULL, "Connection_ID", tempint) == NULL)
+	{
+		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
+		goto done;
+	}
+
+	err = xsupgui_request_send(doc, &retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		retval = err;
+		goto done;
+	}
+
+	err = xsupgui_request_check_exceptions(retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		retval = err;
+		goto done;
+	}
+
+	n = xmlDocGetRootElement(retdoc);
+	if (n == NULL)
+	{
+		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto done;
+	}
+
+	n = xsupgui_request_find_node(n->children, "Get_Interface_From_TNC_Conn_ID");
+	if (n == NULL)
+	{
+		retval = IPC_ERROR_BAD_RESPONSE;
+		goto done;
+	}
+
+	n = n->children;
+ 
+	t = xsupgui_request_find_node(n, "Interface_Name");
+	if (t == NULL)
+	{
+		retval = IPC_ERROR_BAD_RESPONSE_DATA;
+		goto done;
+	}
+
+	value = xmlNodeGetContent(t);
+
+	(*intname) = _strdup(value);
+
+	free(value);
+
+done:
+	xmlFreeDoc(doc);
+	xmlFreeDoc(retdoc);
+
+	return retval;
+}
+
+/**
  *  \brief Tell XSupplicant to do a DHCP release/renew on an interface.
  *
  * @param[in] intname  The OS specific name of the device to pause.
@@ -1464,5 +1566,4 @@ request_done:
 
 	return done;
 }
-
 

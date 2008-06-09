@@ -63,5 +63,6 @@ context *event_core_locate_by_connection(char *matchstr);
 void event_core_change_wireless(config_globals *newsettings);
 void event_core_change_os_ctrl_state(void *);
 int event_core_bind_hevent(HANDLE devHandle, HANDLE hEvent, unsigned char evtType);
+int event_core_get_sleep_state();
 
 #endif

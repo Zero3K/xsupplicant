@@ -39,6 +39,7 @@
 #include "../../timer.h"
 #include "cardif_windows_wmi_async.h"
 #include "cardif_windows_wmi.h"
+#include "../../wireless_sm.h"
 
 ///< The WQL select string that is needed to get adapter information for a specific interface.
 #define GET_ADAPTER_BY_IDX           L"SELECT * FROM Win32_NetworkAdapterConfiguration WHERE Index = %d"
@@ -188,6 +189,11 @@ int cardif_windows_wmi_event_check_connect()
 				}
 			}
 
+			memset(&wctx->replay_counter, 0x00, 8);
+			wireless_sm_change_state(ASSOCIATED, ctx);
+			ctx->eap_state->reqId = 0xff;
+			ctx->eap_state->lastId = 0xff;
+/*
 			if (memcmp(wctx->cur_bssid, &bssid, 6) != 0)
 			{
 				SET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now associated.
@@ -208,7 +214,7 @@ int cardif_windows_wmi_event_check_connect()
 				ctx->eap_state->reqId = 0xff;
 				ctx->eap_state->lastId = 0xff;
 			}
-
+*/
 			if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
 			{
 				ipc_events_ui(ctx, IPC_EVENT_BAD_PSK, ctx->intName);
@@ -683,11 +689,12 @@ int cardif_windows_wmi_event_check_disconnect()
 			// can happen because the events aren't being received in real time.
 			if (cardif_windows_wireless_get_bssid(ctx, bssid_dest) != XENONE)
 			{
-				UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
+/*				UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
 				UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
-
+*/
 				// Clear out our destination MAC, since we are disconnected now.
 				memset(&ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
+				wireless_sm_change_state(UNASSOCIATED, ctx);
 			}
 
 			if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))

@@ -261,12 +261,16 @@ struct config_connection
 #define CONFIG_GLOBALS_FIRMWARE_ROAM        BIT(4)
 #define CONFIG_GLOBALS_PASSIVE_SCAN         BIT(5)
 #define CONFIG_GLOBALS_NO_EAP_HINTS         BIT(6)
-#define CONFIG_GLOBALS_USE_SYSLOG           BIT(7)
+//#define CONFIG_GLOBALS_USE_SYSLOG           BIT(7)
 #define CONFIG_GLOBALS_DETECT_ON_STARTUP    BIT(8)  // Should we detect other supplicants when the UI starts?  (This has no bearing on the operation of the engine.)
 #define CONFIG_GLOBALS_ROLL_LOGS            BIT(9)  // Should we roll our log files?
 #define CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF BIT(10) // When Windows sends a user logoff signal, should we disconnect all of our active connections?
 #define CONFIG_GLOBALS_WIRELESS_ONLY        BIT(11) // Only manage wireless interfaces.
-#define CONFIG_GLOBALS_NO_INT_CTRL          BIT(10) // Should we allow the underlying OS to control the interfaces?
+#define CONFIG_GLOBALS_NO_INT_CTRL          BIT(12) // Should we allow the underlying OS to control the interfaces?
+
+#define LOGGING_NONE					0		// Don't log anything.
+#define LOGGING_FILE					1		// Log to a file.  (Default)
+#define LOGGING_SYSLOG					2		// Log to syslog.
 
 struct config_globals
 {
@@ -274,6 +278,7 @@ struct config_globals
   uint32_t loglevel;
   uint8_t logs_to_keep;          // Number of logs we should keep when rolling.
   uint16_t size_to_roll;         // The size (in MB) that we should roll the log at.
+  uint8_t logtype;				 // How should things be logged.  (Should be one of LOGGING_* from above.)
 
   char *log_facility;
   char *ipc_group_name;

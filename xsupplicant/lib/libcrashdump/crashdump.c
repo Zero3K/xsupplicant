@@ -17,7 +17,7 @@
 #define unlink  _unlink
 #endif
 
-#define DEBUG   1   ///< Uncomment this to have a file written with debug output.
+//#define DEBUG   1   ///< Uncomment this to have a file written with debug output.
 
 typedef struct {
 	char *filename;

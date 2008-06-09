@@ -295,6 +295,7 @@ typedef struct {
 typedef struct {
 	char *ssidname;
 	uint8_t abil;       ///< A bitmap made up of ABILITY_* #define values.
+	uint8_t percentage;
 } ssid_info_enum;
 
 typedef struct {
@@ -451,7 +452,6 @@ typedef struct _ipc_header ipc_header;
 #define	DOT11_B			BIT(2)		// 802.11b (11Mbps (max) 2.4 Ghz, DSS)
 #define DOT11_G			BIT(3)		// 802.11g (54Mbps (max) 2.4 Ghz, OFDM)
 #define DOT11_N			BIT(4)		// 802.11n (???Mbps (max) 2.4 or 5.8 Ghz, MIMO)
-
 /**
  * Calls that operate on things that are outside the configuration file.  (Live data,
  * calls to start and stop various things in the supplicant, etc.)
@@ -499,6 +499,7 @@ int xsupgui_request_get_link_state_from_int(char *intname, int *state);
 int xsupgui_request_add_root_ca_certificate(char *filename);
 int xsupgui_request_get_tnc_conn_id(char *device, unsigned int *tnc_conn_id);
 int xsupgui_request_set_connection_lock(char *intname, int endis);
+int xsupgui_request_intname_from_tnc_conn_id(unsigned int *tnc_conn_id, char **intname);
 int xsupgui_request_dhcp_release_renew(char *intname);
 
 /** 
