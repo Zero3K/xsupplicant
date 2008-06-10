@@ -618,13 +618,7 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 		   cur->ssid_name, cur_pri);
 
 	  conf = config_find_connection_from_ssid(cur->ssid_name);
-/*
-	  if (conf != NULL)
-	  {
-		  retval = xsupconfcheck_conn_check(ctx, conf, FALSE);
-	  }
-*/
-//	  if ((conf != NULL) && (retval >= 0))
+
 	  if (conf != NULL)
 	  {
 		if ((best != NULL) && (strcmp(cur->ssid_name, best->ssid_name) == 0))
@@ -644,12 +638,6 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 				best_pri = cur_pri;
 			}
 	  }
-	  /*
-	  else
-	  {
-		  debug_printf(DEBUG_PHYSICAL_STATE, "SSID '%s' doesn't have a complete configuration.\n", cur->ssid_name);
-	  }
-	  */
 
       cur = cur->next;
     }
@@ -851,7 +839,7 @@ int config_ssid_using_wep(wireless_ctx *wctx)
 
   abil = config_ssid_get_ssid_abilities(wctx);
 
-  if ((abil & WPA_IE) || (abil & RSN_IE)) return FALSE;
+  if ((abil & ABIL_WPA_IE) || (abil & ABIL_RSN_IE)) return FALSE;
 
   return TRUE;
 }

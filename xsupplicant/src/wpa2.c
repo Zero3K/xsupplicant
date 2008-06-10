@@ -600,3 +600,120 @@ int wpa2_parse_ie(char *iedata)
   return ie_struct->wpalen;
 }
 
+/**
+ * \brief Parse an RSN IE and determine the authentication methods that we should use.
+ *
+ * @param[in] iedata   The 
+ **/
+uint8_t wpa2_parse_auth_type(char *iedata)
+{
+  struct wpa2_ie_struct *ie_struct = NULL;
+  char suite_id[4];
+  int i, ieptr;
+  uint16_t value16 = 0;
+  uint8_t retval = 0;
+
+  if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
+    return XEMALLOC;
+
+  ie_struct = (struct wpa2_ie_struct *)iedata;
+
+  if (ie_struct->wpaid != WPA2_EID)
+    {
+      debug_printf(DEBUG_NORMAL, "IE is not a valid WPA2/802.11i IE! (Invalid vendor value!)\n");
+      return -1;
+    }
+
+  byte_swap(&ie_struct->rsn_ver);
+
+  if (ie_struct->rsn_ver > MAX_WPA2_VER)
+    {
+      debug_printf(DEBUG_NORMAL, "The IEEE 802.11i/WPA2 version requested is "
+		   "%d.  But we only support versions up to %d.\n",
+		   ie_struct->rsn_ver, MAX_WPA2_VER);
+      return -1;
+    }
+
+  if (ie_struct->wpalen <= 2)
+    {
+      debug_printf(DEBUG_NORMAL, "Short IE.  Should assume TKIP/TKIP for "
+		   "ciphers!\n");
+      return -1;
+    }
+
+  if (ie_struct->wpalen <= 6)
+    {
+      debug_printf(DEBUG_NORMAL, "Short IE.  Should assume TKIP for "
+		   "pairwise cipher.\n");
+      return -1;
+    }
+
+  byte_swap(&ie_struct->pk_suite_cnt);
+
+  ieptr = sizeof(struct wpa2_ie_struct);
+
+  for (i=0;i<ie_struct->pk_suite_cnt;i++)
+    {
+      if (ie_struct->wpalen < (ieptr-2) + 4)
+	{
+	  debug_printf(DEBUG_NORMAL, "Invalid IE!  The length specified by the"
+		       " IE isn't long enough to cover the number of "
+		       "pairwise ciphers the IE claims it lists!\n");
+	  return -1;
+	}
+
+      memcpy((char *)&suite_id, (char *)&iedata[ieptr], 4);
+
+      ieptr+=4;
+    }
+
+  if (ie_struct->wpalen < (ieptr - 2) + 2)
+    {
+      debug_printf(DEBUG_NORMAL, "Short IE.  Should assume an AKM of EAP!\n");
+      return RSN_DOT1X;
+    }
+
+  memcpy((char *)&value16, (char *)&iedata[ieptr], 2);
+  ieptr+=2;
+
+  for (i=0;i<value16;i++)
+    {
+      if (ie_struct->wpalen < (ieptr-2) + 4)
+	{
+	  debug_printf(DEBUG_NORMAL, "Invalid IE!  The length claimed by the "
+		       "IE isn't long enough to cover the number of "
+		       "Authenticated Key Management suites it claims!\n");
+	  return -1;
+	}
+
+      debug_printf(DEBUG_KEY, "Authentication Suite : ");
+      memcpy((char *)&suite_id, (char *)&iedata[ieptr], 4);
+
+      if (memcmp(suite_id, wpa2oui, 3) != 0)
+	{
+	  debug_printf_nl(DEBUG_KEY, "Proprietary\n");
+	} else {
+	  wpa_print_auth_suite(DEBUG_KEY, suite_id[3]);
+
+			switch (suite_id[3])
+		    {
+		    case AUTH_SUITE_RESERVED:
+			      debug_printf_nl(DEBUG_KEY, "Reserved\n");
+			      break;
+      
+		    case AUTH_SUITE_DOT1X:
+			      debug_printf_nl(DEBUG_KEY, "Unspecified authentication over 802.1X\n");
+				  retval |= RSN_DOT1X;
+			      break;
+
+		    case AUTH_SUITE_PSK:
+			      debug_printf_nl(DEBUG_KEY, "None/WPA-PSK\n");
+				  retval |= RSN_PSK;
+				  break;
+		    }
+	}
+      ieptr+=4;
+    }
+
+  return retval;
+}

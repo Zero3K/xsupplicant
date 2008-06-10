@@ -135,7 +135,7 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
   wireless_ctx *wctx = NULL;
   DWORD lastError = 0;
   ULONG ielen = 0;
-  uint8_t percentage;
+  uint8_t percentage = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 
@@ -227,7 +227,7 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 		  pBssidEx->MacAddress[0], pBssidEx->MacAddress[1], pBssidEx->MacAddress[2], pBssidEx->MacAddress[3],
 		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi, pBssidEx->NetworkTypeInUse, percentage);
 
-	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ENC);
+	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ABIL_ENC);
 
 	  // At least one card tested returned a bogus IELength value.  So we need to check it against the structure
 	  // length, and if it is invalid, we need to try to calculate the proper value.
@@ -516,6 +516,8 @@ void cardif_windows_wireless_parse_ies(context *ctx, uint8_t *iedata, uint16_t i
   int i = 0;
   int wpalen = 0;
   uint8_t wpaie[255];
+  uint8_t authtypes = 0;
+  uint8_t abilities = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
@@ -528,15 +530,33 @@ void cardif_windows_wireless_parse_ies(context *ctx, uint8_t *iedata, uint16_t i
 
   if (cardif_windows_wireless_find_wpa_ie(ctx, iedata, ielen, wpaie, &wpalen) == XENONE)
   {
+	  authtypes = wpa_parse_auth_type(wpaie);
+	  
+	  if (authtypes != 0xff)
+	  {
+		  if (TEST_FLAG(authtypes, WPA_PSK)) abilities |= ABIL_WPA_PSK;
+		  if (TEST_FLAG(authtypes, WPA_DOT1X)) abilities |= ABIL_WPA_DOT1X;
+	  }
+
 	  // We have a valid IE, save it.
-	  config_ssid_update_abilities(ctx->intTypeData, WPA_IE);
+	  abilities |= ABIL_WPA_IE;
+	  config_ssid_update_abilities(ctx->intTypeData, abilities);
 	  config_ssid_add_wpa_ie(ctx->intTypeData, wpaie, wpalen);
   }
 
   if (cardif_windows_wireless_find_wpa2_ie(ctx, iedata, ielen, wpaie, &wpalen) == XENONE)
   {
+	  authtypes = wpa2_parse_auth_type(wpaie);
+
+	  if (authtypes != 0xff)
+	  {
+		  if (TEST_FLAG(authtypes, RSN_PSK)) abilities |= ABIL_RSN_PSK;
+		  if (TEST_FLAG(authtypes, RSN_DOT1X)) abilities |= ABIL_RSN_DOT1X;
+	  }
+	
       // We have a valid IE, save it.
-	  config_ssid_update_abilities(ctx->intTypeData, RSN_IE);
+	  abilities |= ABIL_RSN_IE;
+	  config_ssid_update_abilities(ctx->intTypeData, abilities);
 	  config_ssid_add_rsn_ie(ctx->intTypeData, wpaie, wpalen);
   }
 }
@@ -1791,7 +1811,7 @@ void cardif_windows_wireless_associate(context *ctx)
 	  return;
   }
 
-  if ((config_ssid_get_ssid_abilities(ctx->intTypeData) & RSN_IE) ||
+  if ((config_ssid_get_ssid_abilities(ctx->intTypeData) & ABIL_RSN_IE) ||
 	  ((config_ssid_find_by_name(wctx, wctx->cur_essid) == NULL) &&
 	  ((ctx->conn != NULL) && (ctx->conn->association.association_type == ASSOC_TYPE_WPA2))))
   {
@@ -1844,7 +1864,7 @@ void cardif_windows_wireless_associate(context *ctx)
 			  wctx->pairwiseKeyType = CIPHER_WEP104;
 		  }
 	  }
-  } else if ((config_ssid_get_ssid_abilities(ctx->intTypeData) & WPA_IE) ||
+  } else if ((config_ssid_get_ssid_abilities(ctx->intTypeData) & ABIL_WPA_IE) ||
 	  	  ((config_ssid_find_by_name(wctx, wctx->cur_essid) == NULL) &&
 		  ((ctx->conn != NULL) && (ctx->conn->association.association_type == ASSOC_TYPE_WPA1))))
   {

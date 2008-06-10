@@ -435,6 +435,10 @@ typedef struct _ipc_header ipc_header;
 #define ABILITY_ENC       0x02
 #define ABILITY_WPA_IE    0x04
 #define ABILITY_RSN_IE    0x08
+#define ABILITY_WPA_DOT1X 0x10
+#define ABILITY_WPA_PSK	  0x20
+#define ABILITY_RSN_DOT1X 0x40
+#define ABILITY_RSN_PSK   0x80
  
 // Different encryption/authentication modes that are supported.  (Since
 // any interface should be able to do 802.1X, we don't flag that here.)

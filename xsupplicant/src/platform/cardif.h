@@ -23,9 +23,13 @@
 
 // Abilities that will be stored in the SSID cache, for a "quick look" at
 // what the SSID supports.
-#define ENC       0x02
-#define WPA_IE    0x04
-#define RSN_IE    0x08
+#define ABIL_ENC		  0x02
+#define ABIL_WPA_IE		  0x04
+#define ABIL_RSN_IE       0x08
+#define ABIL_WPA_DOT1X	  0x10
+#define ABIL_WPA_PSK	  0x20
+#define ABIL_RSN_DOT1X	  0x40
+#define ABIL_RSN_PSK	  0x80
 
 #define DRIVER_NONE        0
 #define DRIVER_WEXT        1

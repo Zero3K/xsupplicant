@@ -946,7 +946,7 @@ void wireless_sm_change_to_association_timeout(context *ctx)
 
   // If we are doing WPA or RSN, then we shouldn't mess with the zeros on
   // roam flag.
-  if ((!(abilities & WPA_IE)) && (!(abilities & RSN_IE)))
+  if ((!(abilities & ABIL_WPA_IE)) && (!(abilities & ABIL_RSN_IE)))
     {
       if (TEST_FLAG(wctx->flags, WIRELESS_ZEROS_ON_ROAM))
 	{

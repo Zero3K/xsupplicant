@@ -12,6 +12,9 @@
 #define WPA_EID        0xdd
 #define MAX_WPA_VER    1
 
+#define WPA_DOT1X		BIT(0)
+#define WPA_PSK			BIT(1)
+
 #ifdef WINDOWS
 #pragma pack(1)
 #endif
@@ -50,5 +53,6 @@ void wpa_gen_ie_caps(context *, char *);
 char *wpa_minmax(char *, char *, int, char);
 uint8_t wpa_get_pairwise_crypt(context *);
 uint8_t wpa_get_group_crypt(context *);
+uint8_t wpa_parse_auth_type(char *iedata);
 
 #endif

@@ -177,7 +177,7 @@ void cardif_windows_dot11_scan_timeout(context *ctx)
 	  config_ssid_add_qual(wctx, 0, rssi, 0, percentage);
 
 	  debug_printf(DEBUG_INT, "Privacy : %d\n", pBssidEx->Privacy);
-	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ENC);
+	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ABIL_ENC);
 
 	  cardif_windows_dot11_parse_ies(ctx, (uint8_t *)&pBssidEx->IEs[sizeof(NDIS_802_11_FIXED_IEs)], pBssidEx->IELength);
 
@@ -640,6 +640,8 @@ void cardif_windows_dot11_parse_ies(context *ctx, uint8_t *iedata, int ielen)
   int i = 0;
   int wpalen;
   uint8_t wpaie[255];
+  uint8_t abilities = 0;
+  uint8_t authtypes = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
@@ -655,15 +657,33 @@ void cardif_windows_dot11_parse_ies(context *ctx, uint8_t *iedata, int ielen)
 
   if (cardif_windows_dot11_find_wpa_ie(ctx, iedata, ielen, wpaie, &wpalen) == XENONE)
   {
+	  authtypes = wpa_parse_auth_type(wpaie);
+	  
+	  if (authtypes != 0xff)
+	  {
+		  if (TEST_FLAG(authtypes, WPA_PSK)) abilities |= ABIL_WPA_PSK;
+		  if (TEST_FLAG(authtypes, WPA_DOT1X)) abilities |= ABIL_WPA_DOT1X;
+	  }
+
 	  // We have a valid IE, save it.
-	  config_ssid_update_abilities(ctx->intTypeData, WPA_IE);
+	  abilities |= ABIL_WPA_IE;
+	  config_ssid_update_abilities(ctx->intTypeData, abilities);
 	  config_ssid_add_wpa_ie(ctx->intTypeData, wpaie, wpalen);
   }
 
   if (cardif_windows_dot11_find_wpa2_ie(ctx, iedata, ielen, wpaie, &wpalen) == XENONE)
   {
+	  authtypes = wpa2_parse_auth_type(wpaie);
+
+	  if (authtypes != 0xff)
+	  {
+		  if (TEST_FLAG(authtypes, RSN_PSK)) abilities |= ABIL_RSN_PSK;
+		  if (TEST_FLAG(authtypes, RSN_DOT1X)) abilities |= ABIL_RSN_DOT1X;
+	  }
+	
       // We have a valid IE, save it.
-	  config_ssid_update_abilities(ctx->intTypeData, RSN_IE);
+	  abilities |= ABIL_RSN_IE;
+	  config_ssid_update_abilities(ctx->intTypeData, abilities);
 	  config_ssid_add_rsn_ie(ctx->intTypeData, wpaie, wpalen);
   }
 }
@@ -1562,7 +1582,7 @@ void cardif_windows_dot11_associate(context *ctx)
 	  return;
   }*/
 
-  if (config_ssid_get_ssid_abilities(ctx->intTypeData) & RSN_IE)
+  if (config_ssid_get_ssid_abilities(ctx->intTypeData) & ABIL_RSN_IE)
   {
 	  wctx->assoc_type = ASSOC_TYPE_WPA2;
 	  // We are doing WPA2.
@@ -1588,7 +1608,7 @@ void cardif_windows_dot11_associate(context *ctx)
 	  wctx->groupKeyType = wpa2_get_group_crypt(ctx);
 	  wctx->pairwiseKeyType = wpa2_get_pairwise_crypt(ctx);
 
-  } else if (config_ssid_get_ssid_abilities(ctx->intTypeData) & WPA_IE)
+  } else if (config_ssid_get_ssid_abilities(ctx->intTypeData) & ABIL_WPA_IE)
   {
 	  wctx->assoc_type = ASSOC_TYPE_WPA1;
 	  // We are doing WPA1.

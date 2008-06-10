@@ -12,6 +12,9 @@
 #define WPA2_EID        0x30
 #define MAX_WPA2_VER    1
 
+#define RSN_DOT1X		BIT(0)
+#define RSN_PSK			BIT(1)
+
 #ifdef WINDOWS
 #pragma pack(1)
 #endif

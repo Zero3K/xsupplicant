@@ -2047,7 +2047,16 @@ void doget_ssids(char *devname)
 
 	while (ssids[i].ssidname != NULL)
 	{
-		printf("SSID : %s\n", ssids[i].ssidname);
+		printf("SSID : %s\t", ssids[i].ssidname);
+		if (ssids[i].abil & ABILITY_ENC) printf("Encrypted ");
+		if (ssids[i].abil & ABILITY_WPA_IE) printf("WPA1 ");
+		if (ssids[i].abil & ABILITY_RSN_IE) printf("WPA2 ");
+		if (ssids[i].abil & ABILITY_WPA_DOT1X) printf("WPA1-Enterprise ");
+		if (ssids[i].abil & ABILITY_WPA_PSK) printf("WPA1-PSK ");
+		if (ssids[i].abil & ABILITY_RSN_DOT1X) printf("WPA2-Enterprise ");
+		if (ssids[i].abil & ABILITY_RSN_PSK) printf("WPA2-PSK ");
+		printf("\n");
+
 		i++;
 	}
 
@@ -2329,12 +2338,17 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
+#if 1
+	doget_ssids("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
+	return 0;
+#endif
+
 #if 0
 	getcapabilities(intface);
 	return 0;
 #endif
 
-#if 1
+#if 0
 	nt("Terminate Supplicant");
 	doterminate();
 	exit(1);

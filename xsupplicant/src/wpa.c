@@ -599,6 +599,142 @@ int wpa_parse_ie(char *iedata)
   return ie_struct->wpalen;
 }
 
+/**
+ *  \brief Parse a WPA IE and return a byte that contains the bit flags indicating the
+ *			the type of authentication that is in use.
+ *
+ * @param[in] iedata   A well formed WPA information element
+ *
+ * \retval 0xff on error, otherwise WPA_DOT1X or WPA_PSK bitflags indicating the auth type in use.
+ **/
+uint8_t wpa_parse_auth_type(char *iedata)
+{
+  struct wpa_ie_struct *ie_struct = NULL;
+  char wpa_oui[3] = {0x00, 0x50, 0xf2};
+  char suite_id[4];
+  int i, ieptr;
+  uint16_t value16 = 0;
+  uint8_t retval = 0;
+
+  if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
+    return XEMALLOC;
+
+  ie_struct = (struct wpa_ie_struct *)iedata;
+
+  if (ie_struct->wpaid != 0xdd)
+    {
+      debug_printf(DEBUG_NORMAL, "IE is not a valid WPA IE! (Invalid vendor value!)\n");
+      return -1;
+    }
+  
+  if ((memcmp(ie_struct->oui, wpa_oui, 3) != 0) && (ie_struct->oui[3] != 0x01))
+    {
+      debug_printf(DEBUG_NORMAL, "IE is not a valid WPA IE! (Invalid OUI value!)\n");
+      return -1;
+    }
+
+  value16 = ie_struct->wpa_ver;
+  byte_swap(&value16);
+
+  if (value16 > MAX_WPA_VER)
+    {
+      debug_printf(DEBUG_NORMAL, "The requested WPA version of %d is greater"
+		   " than the highest version we support of %d.\n",
+		   value16, MAX_WPA_VER);
+      return -1;
+    }
+
+  // From here, everything else is technically optional.
+  if (ie_struct->wpalen <= 6)
+    {
+      // Nothing after the version #.
+      debug_printf(DEBUG_NORMAL, "Short WPA IE.  Should assume TKIP/TKIP for "
+		   "keying!\n");
+      return -1;
+    }  // Otherwise, we have a group cipher suite.
+
+  if (ie_struct->wpalen <= 10)
+    {
+      debug_printf(DEBUG_NORMAL, "Short WPA IE.  Should assume TKIP for "
+		   "pairwise cipher.\n");
+      return -1;
+    }
+
+  value16 = ie_struct->pk_suite_cnt;
+  byte_swap(&value16);
+
+  ieptr = sizeof(struct wpa_ie_struct);
+
+  for (i=0;i<value16;i++)
+    {
+      if (ie_struct->wpalen < (ieptr-2) + 4)
+	{
+	  debug_printf(DEBUG_NORMAL, "Invalid WPA IE!  The number of "
+		       "cipher suites is too high for the length of the IE!"
+		       "\n");
+	  return -1;
+	}
+
+      memcpy((char *)&suite_id, (char *)&iedata[ieptr], 4);
+
+      ieptr+=4;
+    }
+
+  if (ie_struct->wpalen < (ieptr-2) + 2)
+    {
+      debug_printf(DEBUG_NORMAL, "Short IE.  Should assume an AKM of EAP.\n");
+      return WPA_DOT1X;
+    }
+
+  memcpy((char *)&value16, (char *)&iedata[ieptr], 2);
+  ieptr+=2;
+  byte_swap(&value16);
+  debug_printf(DEBUG_KEY, "Authenticated Key Management Suite Count : %d\n",
+	       value16);
+
+  for (i=0;i<value16;i++)
+    {
+      if (ie_struct->wpalen < (ieptr-2) + 4)
+	{
+	  debug_printf(DEBUG_NORMAL, "Truncated IE!  The length provided in "
+		       "the IE isn't long enough to include the number of "
+		       "Authenticated Key Management Suites claimed!\n");
+	  return -1;
+	}
+
+      debug_printf(DEBUG_KEY, "Authentication Suite : ");
+      memcpy((char *)&suite_id, (char *)&iedata[ieptr], 4);
+
+      if (memcmp(suite_id, wpa_oui, 3) != 0)
+		{
+		  debug_printf_nl(DEBUG_KEY, "Proprietary\n");
+		} else {
+		  wpa_print_auth_suite(DEBUG_KEY, suite_id[3]);
+
+			switch (suite_id[3])
+		    {
+		    case AUTH_SUITE_RESERVED:
+			      debug_printf_nl(DEBUG_KEY, "Reserved\n");
+			      break;
+      
+		    case AUTH_SUITE_DOT1X:
+			      debug_printf_nl(DEBUG_KEY, "Unspecified authentication over 802.1X\n");
+				  retval |= WPA_DOT1X;
+			      break;
+
+		    case AUTH_SUITE_PSK:
+			      debug_printf_nl(DEBUG_KEY, "None/WPA-PSK\n");
+				  retval |= WPA_PSK;
+				  break;
+		    }
+		}
+
+      ieptr+=4;
+    }
+
+  return retval;
+}
+
 /* These functions are defined by 802.11i-D3.0 */
 void wpa_STADisconnect()
 {
