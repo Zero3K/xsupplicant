@@ -251,7 +251,11 @@ Section "XSupplicant (required)"
 
 
         SetOutPath "$INSTDIR\Skins\Default\icons"
-
+        
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_down.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_left.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_right.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_up.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lock.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lockedstate.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\key.png"
@@ -415,6 +419,10 @@ Section "Uninstall"
 
         SetOutPath "$INSTDIR\Skins\Default\icons"
 
+        Delete $INSTDIR\Skins\Default\icons\arrow_down.png
+        Delete $INSTDIR\Skins\Default\icons\arrow_left.png
+        Delete $INSTDIR\Skins\Default\icons\arrow_right.png
+        Delete $INSTDIR\Skins\Default\icons\arrow_up.png
         Delete $INSTDIR\Skins\Default\icons\lock.png
         Delete $INSTDIR\Skins\Default\icons\lockedstate.png
         Delete $INSTDIR\Skins\Default\icons\key.png
