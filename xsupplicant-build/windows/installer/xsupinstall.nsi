@@ -46,6 +46,10 @@
 	!define SKINDIR Default
 !endif
 
+!ifndef DOCDIR
+	!define DOCDIR .
+!endif 
+
 SetCompressor /SOLID lzma
 
 ;------------------------
@@ -62,6 +66,15 @@ RequestExecutionLevel user
 
    !include "xsupextras.nsi"
 
+;-----------------------
+; Interface Settings
+; Don't edit directly.
+; Define the necessary variables in xsupextras.nsi
+   !define MUI_HEADERIMAGE
+   !define MUI_HEADERIMAGE_BITMAP ${OPEN1X_MUI_HEADERIMAGE_BITMAP}
+   !define MUI_ICON ${OPEN1X_MUI_ICON}
+   !define MUI_UNICON ${OPEN1X_MUI_UNICON}
+   !define MUI_ABORTWARNING
 
 InstallDirRegKey HKLM "Software\XSupplicant" "Install_Dir"
 
@@ -141,8 +154,6 @@ Function .OnInstFailed
   UAC::Unload ; Must call unload!
 FunctionEnd
 
-
-
 Function CheckAdmin
 
         ClearErrors
@@ -168,6 +179,32 @@ Function CheckAdmin
 
 
 FunctionEnd   ; CheckAdmin
+
+Function un.CheckAdmin
+
+        ClearErrors
+        UserInfo::GetName
+        IfErrors Win9x
+        Pop $0
+        UserInfo::GetAccountType
+        Pop $1
+        UserInfo::GetOriginalAccountType
+        Pop $2
+
+        StrCmp $1 "Admin" +3 0
+                MessageBox MB_OK 'You must have administrator rights to uninstall this program.'
+                Abort
+
+        Goto done
+
+    Win9x:
+        MessageBox MB_OK 'This program will not operate on this version of Windows!'
+        Goto done
+
+    done:
+
+
+FunctionEnd   ; un.CheckAdmin
 
 Function CheckWinVer
 
@@ -200,7 +237,7 @@ Section "XSupplicant (required)"
 	; Make sure the redist is installed before going forward.
 	; 
 	File "C:\Program Files\Microsoft Visual Studio 8\SDK\v2.0\BootStrapper\Packages\vcredist_x86\vcredist_x86.exe"
-	DetailPrint "Installing Microsoft Runtime."
+	DetailPrint "Installing Microsoft Runtimes."
 	nsExec::Exec '"$INSTDIR\vcredist_x86.exe"'
 	Pop $0
 	DetailPrint "  VCRedist return value : $0"
@@ -221,17 +258,15 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\xsupplicant\vs2005\ndis_proto_driver\open1x.inf"
         File "${VENDORDIR}\ProtInstall\build-release\ProtInstall.exe"
 
-	SetOutPath "$INSTDIR\Modules"
-	File "${SRCDIR}\xsupplicant\plugins\vs2005\release\BirdDog.dll"
-
         SetOutPath "$INSTDIR\Docs"
 
-        File "xsupphelp.html"
+        File "${DOCDIR}\xsupphelp.html"
 
         SetOutPath "$INSTDIR\Skins\Default"
 
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\AboutWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConfigWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\GTCWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\HelpWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\LogWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\LoginWindow.ui"
@@ -240,7 +275,7 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PSKWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\UPWWindow.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\GTCWindow.ui"
+
 
         SetOutPath "$INSTDIR\Skins\Default\images"
 
@@ -256,9 +291,9 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_left.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_right.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_up.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\key.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lock.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lockedstate.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\key.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_color.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_eng_connected.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_green.png"
@@ -279,11 +314,11 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_globals.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_internals.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_logging.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_profiles.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_profile.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_profiles.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_settings.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_trustedservers.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_trustedserver.png"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_trustedservers.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\unlockedstate.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\wired.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\wireless.png"
@@ -310,6 +345,8 @@ Section "XSupplicant (required)"
 	abort
 
 continue_service_install:
+        SetOutPath $INSTDIR
+
         ; Get the windows version and determine how to install the service.
         ; The service won't start on Vista if we try to depend on wzc.
 	  ClearErrors
@@ -369,20 +406,21 @@ SectionEnd
 
 Section "Uninstall"
 
+	Call un.CheckAdmin
         Call un.ExtrasPreInstall
 
-        DetailPrint "Killing the tray icon.."
+        DetailPrint "Shutting down the XSupplicant UI..."
         push "XSupplicantUI.exe"
         processwork::KillProcess
         Sleep 2000
 
-	DetailPrint "Stopping the service.."
+	DetailPrint "Stopping XSupplicant..."
         nsExec::Exec '"$WINDIR\system32\net.exe" stop XSupplicant'
 
-        DetailPrint "Remove the service.."
+        DetailPrint "Unregistering XSupplicant..."
         nsExec::Exec '"$WINDIR\system32\sc.exe" delete XSupplicant'
 
-        DetailPrint "Uninstalling the protocol driver.."
+        DetailPrint "Uninstalling the protocol driver..."
         nsExec::Exec '"$INSTDIR\ProtInstall.exe" /Uninstall /hide open1x.inf'
 
 	DetailPrint "Removing program files..."
@@ -397,8 +435,6 @@ Section "Uninstall"
 	Delete $INSTDIR\uninstall.exe
 	;Delete $INSTDIR\msvcr80.dll
 
-	Delete $INSTDIR\Modules\BirdDog.dll
-
         Delete $INSTDIR\Skins\Default\AboutWindow.ui
         Delete $INSTDIR\Skins\Default\ConfigWindow.ui
         Delete $INSTDIR\Skins\Default\HelpWindow.ui
@@ -410,7 +446,6 @@ Section "Uninstall"
 	Delete $INSTDIR\Skins\Default\PSKWindow.ui
 	Delete $INSTDIR\Skins\Default\UPWWindow.ui
 	Delete $INSTDIR\Skins\Default\GTCWindow.ui
-
 
         Delete $INSTDIR\Skins\Default\images\banner_left_short.png
         Delete $INSTDIR\Skins\Default\images\banner_right_short.png
@@ -465,17 +500,21 @@ Section "Uninstall"
 	RMDir /r "$INSTDIR\Modules"
 
         Delete $INSTDIR\Docs\xsupphelp.html
-        RMDir "$INSTDIR\Docs"
+        RMDir /r "$INSTDIR\Docs"
 
         Call un.ExtrasPostInstall
 
 	DetailPrint "Removing Start Menu links..."
 	; Delete start menu programs
 	SetShellVarContext All
-        Delete "$SMPROGRAMS\XSupplicant\XSupplicant Tray Application.lnk"
-	RMDir $SMPROGRAMS\XSupplicant
+        Delete "$SMPROGRAMS\${TARGET}\XSupplicant Tray Application.lnk"
+	RMDir $SMPROGRAMS\${TARGET}
+
+	; remove Open1X.sys from the System Drivers directory
+	Delete %SYSTEMROOT%\system32\drivers\Open1X.sys
 
 	; Clean up registry keys.
+	DetailPrint "Cleaning up registry keys..."
 	DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant"
 	DeleteRegKey HKLM SOFTWARE\XSupplicant
         DeleteRegValue HKLM SOFTWARE\Microsoft\Windows\CurrentVersion\Run "XSupplicantUI"
