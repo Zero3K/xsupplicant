@@ -136,6 +136,8 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
   DWORD lastError = 0;
   ULONG ielen = 0;
   uint8_t percentage = 0;
+  int x = 0;
+  float rate = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 
@@ -226,6 +228,40 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 	  debug_printf(DEBUG_INT, "Found SSID : %s\t\t BSSID : %02x:%02x:%02x:%02x:%02x:%02x\t RSSI : %d\t 802.11 Type : %d\t Percentage : %d\n", ssid,
 		  pBssidEx->MacAddress[0], pBssidEx->MacAddress[1], pBssidEx->MacAddress[2], pBssidEx->MacAddress[3],
 		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi, pBssidEx->NetworkTypeInUse, percentage);
+
+	  if (pBssidEx->NetworkTypeInUse == Ndis802_11OFDM5)
+	  {
+		  config_ssid_update_abilities(wctx, ABIL_DOT11_A);
+	  }
+	  else if (pBssidEx->NetworkTypeInUse == Ndis802_11FH)
+	  {
+		  config_ssid_update_abilities(wctx, ABIL_DOT11_STD);
+	  }
+	  else if ((pBssidEx->NetworkTypeInUse == Ndis802_11DS) || (pBssidEx->NetworkTypeInUse == Ndis802_11OFDM24))
+	  {
+		  // We need to look at the bit rates to decide what is supported here.  (This is icky!)
+		  for (x = 0; x < 16; x++)
+		  {
+			  rate = ((pBssidEx->SupportedRates[x] & 0x7f)*0.5);
+
+			  if ((rate == 1.0) || (rate == 2.0))
+			  {
+				  config_ssid_update_abilities(wctx, ABIL_DOT11_STD);
+			  }
+			  else if ((rate == 5.5) || (rate == 11.0))
+			  {
+				  config_ssid_update_abilities(wctx, ABIL_DOT11_B);
+			  }
+			  else if ((rate > 11.0) && (rate <= 54.0))
+			  {
+				  config_ssid_update_abilities(wctx, ABIL_DOT11_G);
+			  }
+		  }
+	  }
+	  else
+	  {
+		  debug_printf(DEBUG_NORMAL, "Unknown network type in use.  Type %d.\n", pBssidEx->NetworkTypeInUse);
+	  }
 
 	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ABIL_ENC);
 

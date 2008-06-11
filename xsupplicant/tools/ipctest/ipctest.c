@@ -2055,6 +2055,11 @@ void doget_ssids(char *devname)
 		if (ssids[i].abil & ABILITY_WPA_PSK) printf("WPA1-PSK ");
 		if (ssids[i].abil & ABILITY_RSN_DOT1X) printf("WPA2-Enterprise ");
 		if (ssids[i].abil & ABILITY_RSN_PSK) printf("WPA2-PSK ");
+		if (ssids[i].abil & ABILITY_DOT11_STD) printf("802.11std ");
+		if (ssids[i].abil & ABILITY_DOT11_A) printf("802.11a ");
+		if (ssids[i].abil & ABILITY_DOT11_B) printf("802.11b ");
+		if (ssids[i].abil & ABILITY_DOT11_G) printf("802.11g ");
+		if (ssids[i].abil & ABILITY_DOT11_N) printf("802.11n ");
 		printf("\n");
 
 		i++;

@@ -314,7 +314,7 @@ void config_ssid_add_bssid(wireless_ctx *wctx, char *newmac)
  *                   want to add the flags to.
  * @param[in] newabil   The new value for the flags byte in the structure.
  **/
-void config_ssid_update_abilities(wireless_ctx *wctx, uint8_t newabil)
+void config_ssid_update_abilities(wireless_ctx *wctx, uint16_t newabil)
 {
 	struct found_ssids *working = NULL;
 

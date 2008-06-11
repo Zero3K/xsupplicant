@@ -23,13 +23,18 @@
 
 // Abilities that will be stored in the SSID cache, for a "quick look" at
 // what the SSID supports.
-#define ABIL_ENC		  0x02
-#define ABIL_WPA_IE		  0x04
-#define ABIL_RSN_IE       0x08
-#define ABIL_WPA_DOT1X	  0x10
-#define ABIL_WPA_PSK	  0x20
-#define ABIL_RSN_DOT1X	  0x40
-#define ABIL_RSN_PSK	  0x80
+#define ABIL_ENC		  0x0002
+#define ABIL_WPA_IE		  0x0004
+#define ABIL_RSN_IE       0x0008
+#define ABIL_WPA_DOT1X	  0x0010
+#define ABIL_WPA_PSK	  0x0020
+#define ABIL_RSN_DOT1X	  0x0040
+#define ABIL_RSN_PSK	  0x0080
+#define ABIL_DOT11_STD	  0x0100		// Straight 802.11  (1 or 2 MBps, DSS or FH)
+#define ABIL_DOT11_A	  0x0200		// 802.11a (54Mbps (max) 5.8 Ghz, OFDM)
+#define	ABIL_DOT11_B	  0x0400		// 802.11b (11Mbps (max) 2.4 Ghz, DSS)
+#define ABIL_DOT11_G	  0x0800		// 802.11g (54Mbps (max) 2.4 Ghz, OFDM)
+#define ABIL_DOT11_N	  0x1000		// 802.11n (???Mbps (max) 2.4 or 5.8 Ghz, MIMO)
 
 #define DRIVER_NONE        0
 #define DRIVER_WEXT        1

@@ -17,7 +17,7 @@
 
 struct found_ssids {
   char *ssid_name;
-  uint8_t abilities;
+  uint16_t abilities;
   uint8_t *wpa_ie;
   uint8_t wpa_ie_len;
   uint8_t *rsn_ie;
@@ -53,7 +53,7 @@ void config_ssid_add_bssid(wireless_ctx *, char *);
 void config_ssid_add_rsn_ie(wireless_ctx *, uint8_t *, uint8_t);
 void config_ssid_add_wpa_ie(wireless_ctx *, uint8_t *, uint8_t);
 void config_ssid_add_ssid_name(wireless_ctx *, char *);
-void config_ssid_update_abilities(wireless_ctx *, uint8_t);
+void config_ssid_update_abilities(wireless_ctx *, uint16_t);
 void config_ssid_add_qual(wireless_ctx *, unsigned char, char, char, uint8_t);
 
 #endif
