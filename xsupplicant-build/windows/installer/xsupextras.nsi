@@ -3,6 +3,11 @@
 	!define VERSION 2.1.1.080610
 !endif
 
+; This variable can be overridden by passing /DINSTALLER_NAME_PREFIX=<whatever> to the nullsoft compiler.
+!ifndef INSTALLER_NAME_PREFIX
+	!define INSTALLER_NAME_PREFIX xsupplicant-setup-v
+!endif
+
 ; For official Open1X builds, the IDE supplicant checker is included.
 ; Comment out "!define THIRDPARTYADDITIONS" to turn this off.
 ; if you need to create an installer for your own purposes.
@@ -26,7 +31,7 @@
 ; i.e. "XSupplicant"
 Name "XSupplicant"
 
-OutFile "xsupinst-v${VERSION}.exe"
+OutFile "${INSTALLER_NAME_PREFIX}${VERSION}.exe"
 
 InstallDir "$PROGRAMFILES\${TARGET}"
 
