@@ -12,7 +12,7 @@
 #define _TIMER_H_
 
 // Different types of timers that we will use.
-#define NUM_TIMER_IDS   12
+#define NUM_TIMER_IDS   13
 
 // BE SURE THAT IF YOU ADD A TIMER HERE, THAT YOU ADD IT'S DEF. IN timer.c!
 #define COUNTERMEASURE_TIMER   1

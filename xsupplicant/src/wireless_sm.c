@@ -630,8 +630,11 @@ void wireless_sm_change_to_associated(context *ctx)
 	  }
   }
 
-//  SET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);  // Keep us from retriggering
-														 // this state!
+  // If we transitioned here directly from ACTIVE_SCAN state, then we need to kill the rescan timer.
+  if (wctx->state == ACTIVE_SCAN)
+  {
+	timer_cancel(ctx, RESCAN_TIMER);
+  }
 
   // Make sure that last state we were in has a valid transition to this
   // state.
