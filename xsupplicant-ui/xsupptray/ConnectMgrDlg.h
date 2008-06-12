@@ -60,7 +60,7 @@ public:
 	bool create(void);
 	void show(void);
 	void hide(void);
-	bool visible(void);
+	bool isVisible(void);
 	void bringToFront(void);
 	
 private:

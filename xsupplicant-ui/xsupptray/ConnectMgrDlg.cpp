@@ -420,7 +420,7 @@ void ConnectMgrDlg::showPriorityDialog()
 {
 	if (m_pPrefDlg == NULL)
 	{
-		m_pPrefDlg = new PreferredConnections(m_pConnections, XSupCalls(m_pSupplicant), m_pRealForm);
+		m_pPrefDlg = new PreferredConnections(m_pConnections, XSupCalls(m_pSupplicant), this, m_pRealForm);
 		if (m_pPrefDlg != NULL)
 		{
 			if (m_pPrefDlg->attach() == false)
@@ -447,7 +447,7 @@ void ConnectMgrDlg::cleanupPriorityDialog(void)
 	}
 }
 
-bool ConnectMgrDlg::visible(void)
+bool ConnectMgrDlg::isVisible(void)
 {
 	if (m_pRealForm != NULL)
 		return m_pRealForm->isVisible();

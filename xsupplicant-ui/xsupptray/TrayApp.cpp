@@ -46,6 +46,8 @@
 #include "FormLoader.h"
 #include "version.h"
 #include "buildnum.h"
+#include "ConnectMgrDlg.h"
+#include "ConnectDlg.h"
 
 //! Constructor
 /*!
@@ -65,24 +67,26 @@ TrayApp::TrayApp(QApplication &app):
     exit(1);
   }
 
-  m_pEventListenerThread = NULL;
-  m_pQuitAction          = NULL;
-  m_pConfigAction        = NULL;
-  m_pLoginAction         = NULL;
-  m_pAboutAction         = NULL;
-  m_pViewLogAction       = NULL;
-  m_pTroubleticketAction = NULL;
-  m_pLoginDlg            = NULL;
-  m_pAboutWindow         = NULL;
-  m_pLoggingCon          = NULL;
-  m_pConfDlg             = NULL;
-  m_pEmitter             = NULL;
-  m_pTrayIcon            = NULL;
-  m_pTrayIconMenu        = NULL;
-  m_pPlugins             = NULL;
-  m_pIntCtrl			 = NULL;
-  m_pCreateTT			 = NULL;
-  m_pCreds				 = NULL;
+  m_pEventListenerThread	= NULL;
+  m_pQuitAction				= NULL;
+  m_pConfigAction			= NULL;
+  m_pLoginAction			= NULL;
+  m_pAboutAction			= NULL;
+  m_pViewLogAction			= NULL;
+  m_pTroubleticketAction	= NULL;
+  m_pLoginDlg				= NULL;
+  m_pAboutWindow			= NULL;
+  m_pLoggingCon				= NULL;
+  m_pConfDlg				= NULL;
+  m_pEmitter				= NULL;
+  m_pTrayIcon				= NULL;
+  m_pTrayIconMenu			= NULL;
+  m_pPlugins				= NULL;
+  m_pIntCtrl				= NULL;
+  m_pCreateTT				= NULL;
+  m_pCreds					= NULL;
+  m_pConnMgr				= NULL;
+  m_pConnectDlg				= NULL;
 
   uiCallbacks.launchHelpP = &HelpWindow::showPage;
 }
@@ -125,6 +129,18 @@ TrayApp::~TrayApp()
 	{
 		delete m_pLoginDlg;
 		m_pLoginDlg = NULL;
+	}
+	
+	if (m_pConnMgr != NULL)
+	{
+		delete m_pConnMgr;
+		m_pConnMgr = NULL;
+	}
+	
+	if (m_pConnectDlg != NULL)
+	{
+		delete m_pConnectDlg;
+		m_pConnectDlg = NULL;
 	}
 
   delete m_pEventListenerThread;
@@ -259,12 +275,16 @@ void TrayApp::slotRestart()
   delete m_pEventListenerThread;
   delete m_pLoggingCon;
   delete m_pIntCtrl;
+  delete m_pConnMgr;
+  delete m_pConnectDlg;
 
   m_pLoginDlg = NULL;
   m_pConfDlg = NULL;
   m_pEventListenerThread = NULL;
   m_pLoggingCon = NULL;
   m_pIntCtrl = NULL;
+  m_pConnMgr = NULL;
+  m_pConnectDlg = NULL;
 
   // Attempt to connect
   m_bConnectFailed = false;
@@ -373,6 +393,18 @@ void TrayApp::closeChildren()
 	{
 		delete m_pCreateTT;
 		m_pCreateTT = NULL;
+	}
+	
+	if (m_pConnMgr != NULL)
+	{
+		delete m_pConnMgr;
+		m_pConnMgr = NULL;
+	}
+	
+	if (m_pConnectDlg != NULL)
+	{
+		delete m_pConnectDlg;
+		m_pConnectDlg = NULL;
 	}
 
 	if (m_pLoggingCon != NULL) m_pLoggingCon->hide();
@@ -883,7 +915,8 @@ void TrayApp::createTrayActionsAndConnections()
 {
   QPixmap p;
 
-  m_pLoginAction = new QAction(tr("&Login..."), this);
+  m_pLoginAction = new QAction(tr("&Connect..."), this);
+  //Util::myConnect(this->m_pLoginAction, SIGNAL(triggered()), this, SLOT(showConnectDlg()));
   Util::myConnect(this->m_pLoginAction, SIGNAL(triggered()), this, SLOT(slotLaunchLogin()));
 
   m_pConfigAction = new QAction(tr("&Configure..."), this);
@@ -901,7 +934,7 @@ void TrayApp::createTrayActionsAndConnections()
   m_pAboutAction = new QAction(tr("&About"), this);
   Util::myConnect(m_pAboutAction, SIGNAL(triggered()), this, SLOT(slotAbout()));
 
-  m_pQuitAction = new QAction(tr("&Exit"), this);
+  m_pQuitAction = new QAction(tr("&Quit"), this);
   Util::myConnect(m_pQuitAction, SIGNAL(triggered()), this, SLOT(slotExit()));
 
   m_pTroubleticketAction = new QAction(tr("&Create Troubleticket..."), this);
@@ -973,15 +1006,17 @@ void TrayApp::createTrayIcon()
 {
   m_pTrayIconMenu = new QMenu(this);
   m_pTrayIconMenu->addAction(m_pLoginAction);
+  m_pTrayIconMenu->addSeparator();
   m_pTrayIconMenu->addAction(m_pConfigAction);
   m_pTrayIconMenu->addAction(m_pViewLogAction);
-  m_pTrayIconMenu->addAction(m_pTroubleticketAction);
+  //m_pTrayIconMenu->addAction(m_pTroubleticketAction);
   m_pTrayIconMenu->addSeparator();
 #ifdef WINDOWS
   m_pTrayIconMenu->addAction(m_p1XControl);
   m_pTrayIconMenu->addSeparator();
 #endif
   m_pTrayIconMenu->addAction(m_pAboutAction);
+  m_pTrayIconMenu->addSeparator();
   m_pTrayIconMenu->addAction(m_pQuitAction);
 
   m_pTrayIcon = new QSystemTrayIcon(this);
@@ -1065,7 +1100,8 @@ void TrayApp::slotIconActivated(QSystemTrayIcon::ActivationReason reason)
       {
 		  if (m_p1XControl->isChecked())
 		  {
-			slotLaunchLogin();
+			this->showConnectDlg();
+			//slotLaunchLogin();
 		  }
 		  else
 		  {
@@ -1089,40 +1125,14 @@ void TrayApp::slotIconActivated(QSystemTrayIcon::ActivationReason reason)
 */
 void TrayApp::slotLaunchConfig()
 {
-  // this will list the current adapters (interfaces) on this machine
-  // and add any that are not in the configuration file
-
-  // These dialogs must stay in scope the entire time.
-  // They won't get able to get the focus until the main
-  // window loses focus - what to do about this?
-  if (!m_bSupplicantConnected)
-  {
-    QMessageBox::warning(this,  tr("Service not connected yet."),
-      tr("You can't run the Configuration module until the service is connected"));
-  }
-  else
-  {
-	  if (m_pConfDlg == NULL)
-	  {
-		  m_pConfDlg = new ConfigDlg(m_supplicant, m_pEmitter, this);
-		  if (m_pConfDlg->create() == false)
-		  {
-			  QMessageBox::critical(this, tr("Form Creation Error"), tr("The Login Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
-			  delete m_pConfDlg;
-			  m_pConfDlg = NULL;
-		  }
-		  else
-		  {
-			  m_pConfDlg->show();
-
-			  Util::myConnect(m_pConfDlg, SIGNAL(close(void)), this, SLOT(slotCleanupConfig(void)));
-		  }
-	  }
-	  else
-	  {
-		  m_pConfDlg->show();
-	  }
-  }
+	// TODO: check settings to see which config to launch
+	if (m_pConfDlg != NULL && m_pConfDlg->isVisible())
+		m_pConfDlg->bringToFront();
+	else if (m_pConnMgr != NULL && m_pConnMgr->isVisible())
+		m_pConnMgr->bringToFront();
+	else
+		this->showBasicConfig();
+	// this->showAdvancedConfig();
 }
 
 void TrayApp::slotCleanupConfig()
@@ -1618,4 +1628,104 @@ void TrayApp::unloadPlugins()
 	}
 
 	m_pPlugins = NULL;
+}
+
+void TrayApp::showBasicConfig(void)
+{
+	if (!m_bSupplicantConnected)
+	{
+		QMessageBox::warning(this,  tr("Service not connected yet."),
+		tr("You can't run the Configuration module until the service is connected"));
+	}
+	else
+	{
+		if (m_pConnMgr == NULL)
+		{
+			m_pConnMgr = new ConnectMgrDlg(this, NULL, m_pEmitter, this);
+			if (m_pConnMgr == NULL || m_pConnMgr->create() == false)
+			{
+				QMessageBox::critical(this, tr("Form Creation Error"), tr("The Connection Manager Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
+				if (m_pConnMgr != NULL)
+				{
+					delete m_pConnMgr;
+					m_pConnMgr = NULL;
+				}
+			}
+			else
+			{
+				m_pConnMgr->show();
+			}
+		}
+		else
+		{
+			m_pConnMgr->show();
+		}
+	}
+}
+
+void TrayApp::showAdvancedConfig(void)
+{
+	if (!m_bSupplicantConnected)
+	{
+		QMessageBox::warning(this,  tr("Service not connected yet."),
+		tr("You can't run the Configuration module until the service is connected"));
+	}
+	else
+	{
+		if (m_pConfDlg == NULL)
+		{
+			m_pConfDlg = new ConfigDlg(m_supplicant, m_pEmitter, this);
+			if (m_pConfDlg == NULL || m_pConfDlg->create() == false)
+			{
+				QMessageBox::critical(this, tr("Form Creation Error"), tr("The Configuration Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
+				if (m_pConfDlg != NULL)
+				{
+					delete m_pConfDlg;
+					m_pConfDlg = NULL;
+				}
+			}
+			else
+			{
+				m_pConfDlg->show();
+				Util::myConnect(m_pConfDlg, SIGNAL(close(void)), this, SLOT(slotCleanupConfig(void)));
+			}
+		}
+		else
+		{
+			m_pConfDlg->show();
+		}
+	}
+}
+
+void TrayApp::showConnectDlg(void)
+{
+	if (!m_bSupplicantConnected)
+	{
+		QMessageBox::warning(this,  tr("Service not connected yet."),
+		tr("You can't run the Configuration module until the service is connected"));
+	}
+	else
+	{
+		if (m_pConnectDlg == NULL)
+		{
+			m_pConnectDlg = new ConnectDlg(this, NULL, m_pEmitter, this);
+			if (m_pConnectDlg == NULL || m_pConnectDlg->create() == false)
+			{
+				QMessageBox::critical(this, tr("Form Creation Error"), tr("The Connect Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
+				if (m_pConnectDlg != NULL)
+				{
+					delete m_pConnectDlg;
+					m_pConnectDlg = NULL;
+				}			
+			}
+			else
+			{
+				m_pConnectDlg->show();
+			}
+		}
+		else
+		{
+			m_pConnectDlg->show();
+		}
+	}
 }

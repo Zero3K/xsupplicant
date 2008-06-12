@@ -46,7 +46,7 @@ class PreferredConnections:public QWidget
 {
   Q_OBJECT
 public:
-  PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent);
+  PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow);
   ~PreferredConnections();
   bool attach();
   void show();
@@ -62,6 +62,7 @@ private:
 
   //! GUI variables
   QWidget *m_pRealForm;
+  QWidget *m_pParentWindow;
   QListWidget *m_pAvailableList;
   QListWidget *m_pPreferredList;
   QPushButton *m_pLeftButton;

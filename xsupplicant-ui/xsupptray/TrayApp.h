@@ -45,6 +45,9 @@
 #include "UICallbacks.h"
 #include "CredentialsPopUp.h"
 
+class ConnectDlg;
+class ConnectMgrDlg;
+
 class TrayApp : public QWidget
 {
     Q_OBJECT
@@ -76,6 +79,26 @@ public:
     MessageClass m_message;
     bool init(int argCount);
     void start();
+    
+public:
+	friend class ConnectDlg;
+	friend class ConnectMgrDlg;
+
+signals:
+	// Signals that can be rebroadcast from the root that other objects can subscribe to.
+	void signalStrengthChanged(int);
+	void signalStateChange(const QString &, int, int, int, unsigned int);
+	void signalIPAddressSet();
+
+public slots:
+	void slotHelp();
+	void slotSupError(const QString &error);
+	void slotSupWarning(const QString &warning);
+	void slotRestart();
+	void slotStateChange(const QString &, int, int, int, unsigned int);
+	void showBasicConfig(void);
+	void showAdvancedConfig(void);
+	void showConnectDlg(void);
 
 private slots:
     void slotIconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -100,20 +123,7 @@ private slots:
 	void slotRequestUPW(QString connName);
 	void slotCleanupUPW();
 	void slotConnectionTimeout(QString devName);
-
-signals:
-	// Signals that can be rebroadcast from the root that other objects can subscribe to.
-	void signalStrengthChanged(int);
-	void signalStateChange(const QString &, int, int, int, unsigned int);
-	void signalIPAddressSet();
-
-public slots:
-  void slotHelp();
-  void slotSupError(const QString &error);
-  void slotSupWarning(const QString &warning);
-  void slotRestart();
-	void slotStateChange(const QString &, int, int, int, unsigned int);
-
+	
 private:
     void createTrayActionsAndConnections();
     void createTrayIcon();
@@ -146,13 +156,17 @@ private:
     QAction *m_pTroubleticketAction;
 	QAction *m_p1XControl;
     QApplication &m_app;
+	Emitter *m_pEmitter;
+    QTimer m_timer;
+    bool m_bConnectFailed;
+    
+    // dialog window classes
     LoginMainDlg *m_pLoginDlg;
 	ConfigDlg *m_pConfDlg;
     LogWindow *m_pLoggingCon;
     AboutWindow *m_pAboutWindow;
-	Emitter *m_pEmitter;
-    QTimer m_timer;
-    bool m_bConnectFailed;
+    ConnectMgrDlg *m_pConnMgr;
+    ConnectDlg *m_pConnectDlg;    
 
 	QMultiHash<QString, QString> m_intStateHash;
 

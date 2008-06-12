@@ -187,3 +187,20 @@ void ConfigDlg::show()
 
 	m_pRealForm->show();
 }
+
+bool ConfigDlg::isVisible(void)
+{
+	if (m_pRealForm != NULL)
+		return m_pRealForm->isVisible();
+	else
+		return false;
+}
+
+void ConfigDlg::bringToFront(void)
+{
+	if (m_pRealForm != NULL)
+	{
+		m_pRealForm->raise();
+		m_pRealForm->activateWindow();
+	}
+}

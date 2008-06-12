@@ -50,6 +50,8 @@ class ConfigDlg : public QWidget
 
   bool create();
   void show();
+ 	bool isVisible(void);
+	void bringToFront(void); 
 
 signals:
   void close();

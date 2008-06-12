@@ -48,8 +48,8 @@
   \param[in] parent is the parent widget
   \return Nothing
 */
-PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent)
-     : QWidget(parent), m_pConns(pConn), m_supplicant(supplicant), m_bModified(false), m_message(this)
+PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow)
+     : QWidget(parent), m_pConns(pConn), m_supplicant(supplicant), m_bModified(false), m_message(this), m_pParentWindow(parentWindow)
  {
   m_pAvailableList = NULL;
   m_pPreferredList = NULL;
@@ -219,7 +219,7 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
 
  bool PreferredConnections::attach()
  {
-	m_pRealForm = FormLoader::buildform("WirelessPriorityWindow.ui");
+	m_pRealForm = FormLoader::buildform("WirelessPriorityWindow.ui", m_pParentWindow);
 
 	if (m_pRealForm == NULL) return false;
 
@@ -301,8 +301,8 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
 	Qt::WindowFlags flags;
 
 	flags = m_pRealForm->windowFlags();
-	flags &= (~Qt::WindowContextHelpButtonHint);
-	flags |= Qt::WindowMinimizeButtonHint;
+	flags &= ~Qt::WindowContextHelpButtonHint;
+	flags &= ~Qt::WindowMinimizeButtonHint;
 	m_pRealForm->setWindowFlags(flags);
 }
 
