@@ -1341,6 +1341,59 @@ int cardif_windows_wireless_get_bssid(context *ctx,
 }
 
 /**
+ * \brief Get the frequency of the current connection.
+ *
+ * @param[in] ctx   The context for the interface we want to get the BSSID for.
+ * @param[out] freq   The frequency (in kHz) of the channel we are on.
+ *
+ * \retval XENONE on success
+ * \retval -1 on error
+ **/
+int cardif_windows_wireless_get_freq(context *ctx, uint32_t *freq)
+{
+    DWORD  BytesReturned = 0;
+    DWORD  result = 0;
+    UCHAR  QueryBuffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_CONFIGURATION)];
+    PNDISPROT_QUERY_OID pQueryOid = NULL;
+	PNDIS_802_11_CONFIGURATION pConf = NULL;
+	struct win_sock_data *sockData = NULL;
+	LPVOID lpMsgBuf = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
+
+	if (!xsup_assert((freq != NULL), "freq != NULL", FALSE))
+		return -1;
+
+	sockData = (struct win_sock_data *)ctx->sockData;
+
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
+
+	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid->Oid = OID_802_11_CONFIGURATION;
+
+	result = devioctl(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
+			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer),
+			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned);
+
+    if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION))
+    {
+		lpMsgBuf = GetLastErrorStr(GetLastError());
+		debug_printf(DEBUG_NORMAL, "Get BSSID IOCTL failed on interface '%s'.  Reason was : %s\n", 
+			ctx->desc, lpMsgBuf);
+		LocalFree(lpMsgBuf);
+        return -1;
+    }
+
+	// Otherwise, pQueryOid->Data should contain the BSSID.
+	pConf = pQueryOid->Data;
+	(*freq) = pConf->DSConfig;
+
+	return XENONE;
+}
+
+/**
  * Ask the wireless card for the ESSID that we are currently connected to.  If
  * this is not a wireless card, or the information is not available, we should
  * return an error.
@@ -2636,5 +2689,6 @@ struct cardif_funcs cardif_windows_wireless_driver = {
   NULL,												  // .set_linkmode
   cardif_windows_wireless_get_percent,                // .get_signal_percent
   cardif_windows_wireless_apply_pmkids,				  // .apply_pmkid_data
+  cardif_windows_wireless_get_freq,                   // .get_freq
 };
 

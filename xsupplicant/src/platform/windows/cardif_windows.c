@@ -1373,6 +1373,28 @@ void cardif_associate(context *ctx)
 }
 
 /**
+ * \brief Get the frequency of the connection we are on.
+ *
+ * @param[in] ctx   The context that contains the interface that we want to try to
+ *                  associate with.
+ * @param[out] freq   The frequency (in kHz) of the channel we are currently on.
+ *
+ * \retval XENONE on success
+ **/
+int cardif_get_freq(context *ctx, uint32_t *freq)
+{
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((freq != NULL), "freq != NULL", FALSE))
+	  return;
+
+  if (wireless->get_freq == NULL) return -1;
+
+  return wireless->get_freq(ctx, freq);
+}
+
+/**
  * \brief Request that the card/driver tell us which ESSID we are connected to.
  *
  * Ask the wireless card for the ESSID that we are currently connected to.  If

@@ -1567,3 +1567,19 @@ request_done:
 	return done;
 }
 
+/**
+ * \brief Request the frequency an interface is using.
+ *
+ * @param[in] device   The OS specific device name that we want to get the association type
+ *                     from.
+ * @param[out] freq   The frequency in use.
+ *
+ * \retval REQUEST_FAILURE on failure
+ * \retval REQUEST_SUCCESS on success
+ * \retval >299 on other error.
+ **/
+int xsupgui_request_get_freq(char *device, unsigned int *freq)
+{
+	return xsupgui_request_get_some_value(device, "Get_Frequency", "Frequency", 
+			"Freq", freq);
+}

@@ -504,6 +504,7 @@ int xsupgui_request_get_tnc_conn_id(char *device, unsigned int *tnc_conn_id);
 int xsupgui_request_set_connection_lock(char *intname, int endis);
 int xsupgui_request_intname_from_tnc_conn_id(unsigned int *tnc_conn_id, char **intname);
 int xsupgui_request_dhcp_release_renew(char *intname);
+int xsupgui_request_get_freq(char *device, unsigned int *freq);
 
 /** 
  * Calls that operate on the configuration file structures.  (Things that will become

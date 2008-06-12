@@ -2282,6 +2282,17 @@ void dochange_logpath()
 	printf("Success...\n\n");
 }
 
+void doget_freq(char *intname)
+{
+	uint32_t freq;
+
+	if (xsupgui_request_get_freq(intname, &freq) == REQUEST_SUCCESS)
+	{
+		printf("Frequency : %d\n", freq);
+	}
+}
+
+
 /**
  *  \brief  Display a header that indicates the test that is about to be run.
  *
@@ -2343,8 +2354,13 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-#if 1
+#if 0
 	doget_ssids("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
+	return 0;
+#endif
+
+#if 1
+	doget_freq("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
 	return 0;
 #endif
 

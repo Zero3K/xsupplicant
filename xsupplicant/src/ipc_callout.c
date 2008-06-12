@@ -166,6 +166,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_TNC_Conn_ID", ipc_callout_get_tnc_conn_id},
 	{"Set_Connection_Lock", ipc_callout_set_conn_lock},
 	{"Get_Interface_From_TNC_Conn_ID", ipc_callout_get_interface_from_tnc_connid},
+	{"Get_Frequency", ipc_callout_get_frequency},
 	{NULL, NULL}
 };
 
@@ -7163,5 +7164,48 @@ done:
 	free(iface);
 
 	return retval;
+}
+
+/**
+ *  \brief Return the frequency used for the specified interface.
+ *
+ * \param[in] innode   The XML node tree that contains the request to get the
+ *                     interface's connection ID.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_get_frequency(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	context *ctx = NULL;
+	uint32_t freq = 0;
+
+	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
+		return IPC_FAILURE;
+
+	ctx = ipc_callout_get_context_from_int(innode);
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_VERBOSE, "Unable to locate context for IPC request.\n");
+		return ipc_callout_create_error(NULL, "Get_Frequency", IPC_ERROR_INVALID_CONTEXT, outnode);
+	}
+
+	if (ctx->intType != ETH_802_11_INT)
+	{
+		debug_printf(DEBUG_VERBOSE, "UI requested the frequency for a wired interface?\n");
+		return ipc_callout_create_error(NULL, "Get_Frequency", IPC_ERROR_INT_NOT_WIRELESS, outnode);
+	}
+
+	if (cardif_get_freq(ctx, &freq) != XENONE)
+	{
+		debug_printf(DEBUG_VERBOSE, "Unable to determine the frequency that interface '%s' is on!\n", ctx->desc);
+		return ipc_callout_create_error(NULL, "Get_Frequency", IPC_ERROR_CANT_GET_CONFIG, outnode);
+	}
+
+	debug_printf(DEBUG_VERBOSE, "Returning Freq : %d\n", freq);
+	return ipc_callout_some_state_response("Get_Frequency", "Frequency", freq, 
+		"Freq", ctx->intName, outnode);
 }
 
