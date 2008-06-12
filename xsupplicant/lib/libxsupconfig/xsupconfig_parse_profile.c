@@ -196,10 +196,47 @@ void *xsupconfig_parse_profile_identity(void **attr, xmlNodePtr node)
   return cur;
 }
 
+void *xsupconfig_parse_profile_volatile(void **attr, xmlNodePtr node)
+{
+  char *value = NULL;
+  struct config_profiles *prof = NULL;
+  uint8_t result = 0;
+
+  prof = (struct config_profile *)(*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Volatile : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(prof->flags, CONFIG_VOLATILE_PROFILE);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(prof->flags, CONFIG_VOLATILE_PROFILE);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for Volatile at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(prof->flags, CONFIG_VOLATILE_PROFILE);
+    }
+
+  FREE(value);
+
+  return prof;
+}
+
 parser profile[] = {
 	{"Name", NULL, FALSE, xsupconfig_parse_profile_name},
 	{"Identity", NULL, FALSE, xsupconfig_parse_profile_identity},
 	{"EAP", NULL, FALSE, xsupconfig_parse_eap},
+	{"Volatile", NULL, FALSE, xsupconfig_parse_profile_volatile},
 	{"Compliance", compliance, TRUE, xsupconfig_parse_profile_compliance},
 
     {NULL, NULL, FALSE, NULL}};

@@ -253,6 +253,7 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs,
 	xmlNodePtr profnode = NULL;
 	xmlNodePtr eapnode = NULL;
 	char *temp = NULL;
+	char temp_str[10];
 	
 	if (profs == NULL) return NULL;
 
@@ -303,6 +304,32 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs,
 		free(temp);
 	}
 
+	if ((write_all == TRUE) || (TEST_FLAG(profs->flags, CONFIG_VOLATILE_PROFILE)))
+	{
+		if (TEST_FLAG(profs->flags, CONFIG_VOLATILE_PROFILE))
+		{
+			if (xmlNewChild(profnode, NULL, (xmlChar *)"Volatile", (xmlChar *)"yes") == NULL)
+			{
+#ifdef WRITE_PROFILES_CONFIG
+				printf("Couldn't allocate memory to store <Volatile> node!\n");
+#endif
+				xmlFreeNode(profnode);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xmlNewChild(profnode, NULL, (xmlChar *)"Volatile", (xmlChar *)"no") == NULL)
+			{
+#ifdef WRITE_PROFILES_CONFIG
+				printf("Couldn't allocate memory to store <Volatile> node!\n");
+#endif
+				xmlFreeNode(profnode);
+				return NULL;
+			}
+		}
+	}
+
 	eapnode = xsupconfwrite_eap_create_tree(profs->method, write_all);
 	if (eapnode == NULL)
 	{
@@ -349,7 +376,7 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs,
  *         libxml2.
  **/
 xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles *profs, 
-													 char write_all)
+													 char write_all, char write_to_disk)
 {
 	xmlNodePtr profsnode = NULL;
 	xmlNodePtr profnode = NULL;
@@ -371,24 +398,27 @@ xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles *profs,
 
 	while (cur != NULL)
 	{
-		profnode = xsupconfwrite_profile_create_tree(cur, write_all);
-		if (profnode == NULL)
+		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_PROFILE)) || (write_to_disk == FALSE))
 		{
+			profnode = xsupconfwrite_profile_create_tree(cur, write_all);
+			if (profnode == NULL)
+			{
 #ifdef WRITE_PROFILES_CONFIG
-			printf("Couldn't create <Profile> block!\n");
+				printf("Couldn't create <Profile> block!\n");
 #endif
-			xmlFreeNode(profsnode);
-			return NULL;
-		}
+				xmlFreeNode(profsnode);
+				return NULL;
+			}
 
-		if (xmlAddChild(profsnode, profnode) == NULL)
-		{
+			if (xmlAddChild(profsnode, profnode) == NULL)
+			{
 #ifdef WRITE_PROFILES_CONFIG
-			printf("Couldn't add <Profile> child node!\n");
+				printf("Couldn't add <Profile> child node!\n");
 #endif
-			xmlFreeNode(profsnode);
-			xmlFreeNode(profnode);
-			return NULL;
+				xmlFreeNode(profsnode);
+				xmlFreeNode(profnode);
+				return NULL;
+			}
 		}
 
 		cur = cur->next;

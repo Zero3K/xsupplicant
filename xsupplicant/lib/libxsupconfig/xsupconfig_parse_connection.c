@@ -413,6 +413,42 @@ void *xsupconfig_parse_connection_hidden_ssid(void **attr, xmlNodePtr node)
 
   return conn;
 }
+
+void *xsupconfig_parse_connection_volatile(void **attr, xmlNodePtr node)
+{
+  char *value = NULL;
+  struct config_connection *conn = NULL;
+  uint8_t result = 0;
+
+  conn = (struct config_connection *)(*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Volatile : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for Volatile at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
+    }
+
+  FREE(value);
+
+  return conn;
+}
   
 parser connection[] = {
   {"Name", NULL, FALSE, xsupconfig_parse_connection_name},
@@ -420,6 +456,7 @@ parser connection[] = {
   {"Profile", NULL, FALSE, &xsupconfig_parse_connection_profile},
   {"Force_EAPoL_Version", NULL, FALSE, &xsupconfig_parse_connection_eapol_ver},
   {"SSID", NULL, FALSE, xsupconfig_parse_connection_ssid},
+  {"Volatile", NULL, FALSE, xsupconfig_parse_connection_volatile},
   {"Interface", NULL, FALSE, xsupconfig_parse_connection_device},
   {"Association", (struct conf_parse_struct *)&conn_association, TRUE, xsupconfig_parse_conn_association},
   {"Destination_MAC", NULL, FALSE, &xsupconfig_parse_connection_mac_addr},

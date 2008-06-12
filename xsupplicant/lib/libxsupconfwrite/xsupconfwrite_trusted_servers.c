@@ -53,7 +53,7 @@
  *         libxml2.
  **/
 xmlNodePtr xsupconfwrite_trusted_servers_create_tree(struct config_trusted_servers *cts, 
-													 char write_all)
+													 char write_all, char write_to_disk)
 {
 	xmlNodePtr tssnode = NULL;
 	xmlNodePtr tsnode = NULL;
@@ -75,24 +75,27 @@ xmlNodePtr xsupconfwrite_trusted_servers_create_tree(struct config_trusted_serve
 
 	while (cur != NULL)
 	{
-		tsnode = xsupconfwrite_trusted_server_create_tree(cur, write_all);
-		if (tsnode == NULL)
+		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_SERVER)) || (write_to_disk == FALSE))
 		{
+			tsnode = xsupconfwrite_trusted_server_create_tree(cur, write_all);
+			if (tsnode == NULL)
+			{
 #ifdef WRITE_TSS_CONFIG
-			printf("Couldn't allocate memory to store <Trusted_Server> block!\n");
+				printf("Couldn't allocate memory to store <Trusted_Server> block!\n");
 #endif
-			xmlFreeNode(tssnode);
-			return NULL;
-		}
+				xmlFreeNode(tssnode);
+				return NULL;
+			}
 
-		if (xmlAddChild(tssnode, tsnode) == NULL)
-		{
+			if (xmlAddChild(tssnode, tsnode) == NULL)
+			{
 #ifdef WRITE_TSS_CONFIG
-			printf("Couldn't allcoate memory to store <Trusted_Server> node!\n");
+				printf("Couldn't allcoate memory to store <Trusted_Server> node!\n");
 #endif
-			xmlFreeNode(tssnode);
-			xmlFreeNode(tsnode);
-			return NULL;
+				xmlFreeNode(tssnode);
+				xmlFreeNode(tsnode);
+				return NULL;
+			}
 		}
 
 		cur = cur->next;

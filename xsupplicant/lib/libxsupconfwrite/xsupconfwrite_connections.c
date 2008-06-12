@@ -52,7 +52,7 @@
  *         libxml2.
  **/
 xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *cons, 
-									 char write_all)
+									 char write_all, char write_to_disk)
 {
 	xmlNodePtr consnode = NULL;
 	xmlNodePtr connode = NULL;
@@ -74,26 +74,28 @@ xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *cons,
 
 	while (cur != NULL)
 	{
-		connode = xsupconfwrite_connection_create_tree(cur, write_all);
-		if (connode == NULL)
+		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_CONN)) || (write_to_disk == FALSE))
 		{
+			connode = xsupconfwrite_connection_create_tree(cur, write_all);
+			if (connode == NULL)
+			{
 #ifdef WRITE_CONNECTIONS_CONFIG
-			printf("Couldn't create <Connection> block!\n");
+				printf("Couldn't create <Connection> block!\n");
 #endif
-			xmlFreeNode(consnode);
-			return NULL;
-		}
+				xmlFreeNode(consnode);
+				return NULL;
+			}
 
-		if (xmlAddChild(consnode, connode) == NULL)
-		{
+			if (xmlAddChild(consnode, connode) == NULL)
+			{
 #ifdef WRITE_CONNECTIONS_CONFIG
-			printf("Couldn't add <Connection> node to the <Connections> block!\n");
+				printf("Couldn't add <Connection> node to the <Connections> block!\n");
 #endif
-			xmlFreeNode(consnode);
-			xmlFreeNode(connode);
-			return NULL;
+				xmlFreeNode(consnode);
+				xmlFreeNode(connode);
+				return NULL;
+			}
 		}
-
 		cur = cur->next;
 	}
 

@@ -134,6 +134,32 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 		free(temp);
 	}
 
+	if ((write_all == TRUE) || (TEST_FLAG(cts->flags, CONFIG_VOLATILE_SERVER)))
+	{
+		if (TEST_FLAG(cts->flags, CONFIG_VOLATILE_SERVER))
+		{
+			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Volatile", (xmlChar *)"yes") == NULL)
+			{
+#ifdef WRITE_TS_CONFIG
+				printf("Couldn't allocate memory to store <Volatile> node!\n");
+#endif
+				xmlFreeNode(tsnode);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Volatile", (xmlChar *)"no") == NULL)
+			{
+#ifdef WRITE_TS_CONFIG
+				printf("Couldn't allocate memory to store <Volatile> node!\n");
+#endif
+				xmlFreeNode(tsnode);
+				return NULL;
+			}
+		}
+	}
+
 	if ((write_all == TRUE) || (cts->exact_common_name != FALSE))
 	{
 		if (cts->exact_common_name != FALSE)

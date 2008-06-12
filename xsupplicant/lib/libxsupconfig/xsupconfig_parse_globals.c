@@ -304,9 +304,9 @@ void *xsupconfig_parse_idle_while(void **attr, xmlNodePtr node)
 
 void *xsupconfig_parse_association(void **attr, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  int result;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  int result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 

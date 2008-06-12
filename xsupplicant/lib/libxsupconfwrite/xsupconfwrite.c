@@ -100,9 +100,9 @@ xmlNodePtr xsupconfwrite_create_devices(struct xsup_devices *conf_devices)
  * \retval xmlNodePtr pointing to a tree of nodes that contains the <Trusted_Servers> piece
  *                    of a configuration file.
  **/
-xmlNodePtr xsupconfwrite_create_trusted_servers(struct config_trusted_servers *conf_trusted_servers)
+xmlNodePtr xsupconfwrite_create_trusted_servers(struct config_trusted_servers *conf_trusted_servers, char write_to_disk)
 {
-	return xsupconfwrite_trusted_servers_create_tree(conf_trusted_servers, FALSE);
+	return xsupconfwrite_trusted_servers_create_tree(conf_trusted_servers, FALSE, write_to_disk);
 }
 
 /**
@@ -115,9 +115,9 @@ xmlNodePtr xsupconfwrite_create_trusted_servers(struct config_trusted_servers *c
  * \retval xmlNodePtr pointing to a tree of nodes that contains the <Connections> piece
  *                    of a configuration file.
  **/
-xmlNodePtr xsupconfwrite_create_connections(struct config_connection *conf_connections)
+xmlNodePtr xsupconfwrite_create_connections(struct config_connection *conf_connections, char write_to_disk)
 {
-	return xsupconfwrite_connections_create_tree(conf_connections, FALSE);
+	return xsupconfwrite_connections_create_tree(conf_connections, FALSE, write_to_disk);
 }
 
 /**
@@ -145,9 +145,9 @@ xmlNodePtr xsupconfwrite_create_managed_nets(struct config_managed_networks *con
  * \retval xmlNodePtr pointing to a tree of nodes that contains the <Profiles> piece
  *                    of a configuration file.
  **/
-xmlNodePtr xsupconfwrite_create_profiles(struct config_profiles *conf_profiles)
+xmlNodePtr xsupconfwrite_create_profiles(struct config_profiles *conf_profiles, char write_to_disk)
 {
-	return xsupconfwrite_profiles_create_tree(conf_profiles, FALSE);
+	return xsupconfwrite_profiles_create_tree(conf_profiles, FALSE, write_to_disk);
 }
 
 
@@ -201,7 +201,7 @@ int xsupconfwrite_write_config(char *destfile)
 #ifdef WINDOWS
   GetLocalTime(&systime);
 
-  sprintf((char *)&tempstatic, "%d", systime.wMonth, systime.wDay, systime.wYear);
+  sprintf((char *)&tempstatic, "%d/%d/%d", systime.wMonth, systime.wDay, systime.wYear);
 #else
   time(&systime);
   
@@ -246,7 +246,7 @@ int xsupconfwrite_write_config(char *destfile)
 
   if (conf_connections != NULL)
   {
-	connections = xsupconfwrite_create_connections(conf_connections);
+	connections = xsupconfwrite_create_connections(conf_connections, TRUE);
 	if (connections == NULL)
 	{
 #ifdef DEBUG
@@ -260,7 +260,7 @@ int xsupconfwrite_write_config(char *destfile)
 
   if (conf_profiles != NULL)
   {
-	profiles = xsupconfwrite_create_profiles(conf_profiles);
+	profiles = xsupconfwrite_create_profiles(conf_profiles, TRUE);
 	if (profiles == NULL)
 	{
 #ifdef DEBUG
@@ -274,7 +274,7 @@ int xsupconfwrite_write_config(char *destfile)
 
   if (conf_trusted_servers != NULL)
   {
-	trusted_servers = xsupconfwrite_create_trusted_servers(conf_trusted_servers);
+	trusted_servers = xsupconfwrite_create_trusted_servers(conf_trusted_servers, TRUE);
 	if (trusted_servers == NULL)
 	{
 #ifdef DEBUG

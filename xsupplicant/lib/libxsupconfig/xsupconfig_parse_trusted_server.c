@@ -253,9 +253,9 @@ void *xsupconfig_parse_trusted_server_cn(void **attr, xmlNodePtr node)
 
 void *xsupconfig_parse_trusted_server_ecn(void **attr, xmlNodePtr node)
 {
-  struct config_trusted_server *myserver;
-  uint8_t result;
-  char *value;
+  struct config_trusted_server *myserver = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   myserver = (*attr);
 
@@ -284,11 +284,45 @@ void *xsupconfig_parse_trusted_server_ecn(void **attr, xmlNodePtr node)
   return myserver;
 }
 
+void *xsupconfig_parse_volatile(void **attr, xmlNodePtr node)
+{
+  struct config_trusted_server *myserver = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+
+  myserver = (*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Volatile : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result > 1)
+    {
+      printf("Invalid value was passed for 'Volatile'!  Will use the "
+             "default value of no.  (Line %ld)\n",
+	     xsupconfig_parse_get_line_num());
+	  UNSET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
+    }
+  else
+    {
+		SET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
+    }
+
+  FREE(value);
+
+  return myserver;
+}
+
 parser trusted_server[] = {
   {"Name", NULL, FALSE, xsupconfig_parse_trusted_server_name},
   {"Store_Type", NULL, FALSE, xsupconfig_parse_trusted_server_type},
   {"Location", NULL, FALSE, xsupconfig_parse_trusted_server_location},
   {"Common_Name", NULL, FALSE, xsupconfig_parse_trusted_server_cn},
+  {"Volatile", NULL, FALSE, xsupconfig_parse_volatile},
   {"Exact_Common_Name", NULL, FALSE, xsupconfig_parse_trusted_server_ecn},
 
   {NULL, NULL, FALSE, NULL}};

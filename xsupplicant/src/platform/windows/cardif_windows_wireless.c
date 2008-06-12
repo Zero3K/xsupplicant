@@ -229,6 +229,9 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 		  pBssidEx->MacAddress[0], pBssidEx->MacAddress[1], pBssidEx->MacAddress[2], pBssidEx->MacAddress[3],
 		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi, pBssidEx->NetworkTypeInUse, percentage);
 
+	  debug_printf(DEBUG_INT, "IE(s) :\n");
+	  debug_hex_dump(DEBUG_INT, pBssidEx->IEs, pBssidEx->IELength);
+
 	  if (pBssidEx->NetworkTypeInUse == Ndis802_11OFDM5)
 	  {
 		  config_ssid_update_abilities(wctx, ABIL_DOT11_A);
@@ -284,6 +287,11 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 	  }
 
 	  if (ielen > 0) cardif_windows_wireless_parse_ies(ctx, (uint8_t *)&pBssidEx->IEs[sizeof(NDIS_802_11_FIXED_IEs)], ielen);
+
+	  if ((ielen > 0) && (cardif_windows_wireless_find_ht_ie(ctx, (uint8_t *)&pBssidEx->IEs[sizeof(NDIS_802_11_FIXED_IEs)], ielen) == TRUE))
+	  {
+		  config_ssid_update_abilities(wctx, ABIL_DOT11_N);
+	  }
 
 bad_strncpy:
 	  ofs += pBssidEx->Length;
@@ -1005,37 +1013,6 @@ int cardif_windows_set_infra_mode(context *ctx)
   return XENONE;
 }
 
-#if 0
-void cardif_windows_get_events(void *pValue)
-{
-	unsigned char Buffer[2048];
-	PNDISPROT_INDICATE_STATUS pData = NULL;
-	context *ctx = NULL;
-	DWORD BytesReturned;
-  struct win_sock_data *sockData = NULL;
-
-	ctx = (context *)pValue;
-
-  sockData = ctx->sockData;
-
-	pData = (NDISPROT_INDICATE_STATUS *)&Buffer;
-
-	printf("Set up event listener for %d\n", sockData->devHandle);
-
-  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_INDICATE_STATUS, 
-					pData, sizeof(Buffer), (LPVOID)pData, sizeof(Buffer), &BytesReturned) == FALSE)
-  {
-	  debug_printf(DEBUG_NORMAL, "No event!\n");
-	  printf("No event!\n");
-	  //ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_802_11_INFRA_MODE, ctx->desc);
-	  return;
-  }
-
-  printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Got an event.  id %d\n", pData->IndicatedStatus);
-
-}
-#endif
-
 /**
  * Disable encryption on the wireless card.  This is used in cases
  * where we roam to a different AP and the card needs to have WEP
@@ -1044,6 +1021,37 @@ void cardif_windows_get_events(void *pValue)
 int cardif_windows_wireless_enc_disable(context *ctx)
 {
 	return cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeOpen, TRUE);
+}
+
+/**
+ *  Take a block of IE data specified by "in_ie" and parse it, looking for a
+ *  HT (802.11n) information element.  
+ **/
+int cardif_windows_wireless_find_ht_ie(context *ctx, uint8_t *in_ie, unsigned int in_size)
+{
+	unsigned int i = 0;
+	char done = 0;
+	wireless_ctx *wctx = NULL;
+
+	i = 0;
+	done = FALSE;
+
+	while ((i < in_size) && (done == FALSE))
+	{
+		if (in_ie[i] == 45)   // 45 = HT Capabilities IE which is only in 802.11n capable beacons.
+		{
+			done = TRUE;
+		}
+		if (done == FALSE) i+=(unsigned char)(in_ie[i+1]+2);
+	}
+					
+	if (done == TRUE)
+	{
+		debug_printf(DEBUG_INT, "HT IE (%d) : ", in_ie[i+1]);
+		debug_hex_printf(DEBUG_INT, &in_ie[i], in_ie[i+1]+2);
+	}
+
+	return done;
 }
 
 /**

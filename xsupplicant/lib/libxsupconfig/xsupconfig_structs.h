@@ -195,6 +195,7 @@ struct config_eap_method
 #define CONFIG_NET_DEST_MAC     BIT(0)    // indicates the variable below is set and should be used
 #define CONFIG_NET_USE_OSC_TNC  BIT(1)    // indicates that we should, or shouldn't use TNC
 #define CONFIG_NET_IS_HIDDEN    BIT(2)    // indicates that the SSID is hidden.
+#define CONFIG_VOLATILE_CONN    BIT(3)    // the connection is volatile and shouldn't be saved.
 
 #define ASSOC_AUTO     0
 #define ASSOC_OPEN     1
@@ -299,10 +300,13 @@ struct config_globals
   uint8_t  dead_connection_timeout;  ///< The length of time we wait after a network has "disappeared" before we ask the user if we should try to select a different connection.
 };
 
+#define CONFIG_VOLATILE_PROFILE   BIT(0)
+
 struct config_profiles {
 		char *name;
 		char *identity;
 		char *ou;
+		uint8_t flags;
 		uint32_t compliance;                   ///< A bit map of compliance enable/disable settings.  Look in tnc_compliance.h in the src/eap_types/tnc directory.
 
 		char *temp_username;                   ///< A user provided username.  This value should *NEVER* be sent to a UI!
@@ -313,12 +317,15 @@ struct config_profiles {
 		struct config_profiles *next;
 };
 
+#define CONFIG_VOLATILE_SERVER   BIT(0)
+
 struct config_trusted_server {
 	char *name;
 	char *store_type;
 	char *location;
 	char *common_name;
 	char exact_common_name;
+	uint8_t flags;
 
 	struct config_trusted_server *next;
 };

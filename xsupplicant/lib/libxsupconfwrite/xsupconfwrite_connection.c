@@ -697,6 +697,32 @@ xmlNodePtr xsupconfwrite_connection_create_tree(struct config_connection *con,
 		}
 	}
 
+	if ((write_all == TRUE) || (TEST_FLAG(con->flags, CONFIG_VOLATILE_CONN)))
+	{
+		if (TEST_FLAG(con->flags, CONFIG_VOLATILE_CONN))
+		{
+			if (xmlNewChild(connode, NULL, (xmlChar *)"Volatile", (xmlChar *)"yes") == NULL)
+			{
+#ifdef WRITE_CONNECTION_CONFIG
+				printf("Couldn't allocate memory to store <Volatile> node!\n");
+#endif
+				xmlFreeNode(connode);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xmlNewChild(connode, NULL, (xmlChar *)"Volatile", (xmlChar *)"no") == NULL)
+			{
+#ifdef WRITE_CONNECTION_CONFIG
+				printf("Couldn't allocate memory to store <Volatile> node!\n");
+#endif
+				xmlFreeNode(connode);
+				return NULL;
+			}
+		}
+	}
+
 	assocNode = xsupconfwrite_connection_association(&con->association, write_all);
 	if (assocNode == NULL)
 	{
