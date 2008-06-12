@@ -57,6 +57,8 @@ private:
 	bool initUI(void);
 	void populateWirelessAdapterList(void);
 	void populateWiredAdapterList(void);
+	void populateWirelessConnectionList(void);
+	void populateWiredConnectionList(void);
 	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
 	
 private slots:
@@ -65,6 +67,7 @@ private slots:
 	void selectWiredAdapter(int);
 	void selectWirelessConnection(int);
 	void selectWiredConnection(int);
+	void populateConnectionLists(void);
 		
 private:
 	Emitter *m_pEmitter;
