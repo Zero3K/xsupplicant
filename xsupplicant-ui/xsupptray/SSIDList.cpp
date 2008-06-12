@@ -319,7 +319,7 @@ void SSIDList::getNetworkInfo(QString adapterName)
 							// jking -- hack for right now to assume only one association mode is
 							// supported.  Do so by setting precedence (WPA2 before WPA1, 802.1X before PSK)
 							// and go with highest precedence association mode
-							unsigned int abilities = pSSIDList[i].abil;
+							unsigned int abilities = pSSIDList[j].abil;
 							if ((abilities & ABILITY_ENC) != 0)
 							{
 								if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
