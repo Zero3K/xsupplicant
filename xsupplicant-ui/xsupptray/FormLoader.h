@@ -47,7 +47,7 @@ public:
 
 
 #ifdef WINDOWS
-  static QWidget *FormLoader::buildform(QString formname);
+  static QWidget *FormLoader::buildform(QString formname, QWidget *parent=NULL);
   static QPixmap *FormLoader::loadicon(QString iconname);
   static QString FormLoader::skinpath();
   static QString FormLoader::iconpath();

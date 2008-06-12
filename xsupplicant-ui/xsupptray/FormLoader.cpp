@@ -45,7 +45,7 @@ FormLoader::~FormLoader()
 {
 }
 
-QWidget *FormLoader::buildform(QString formname)
+QWidget *FormLoader::buildform(QString formname, QWidget *parent /* = NULL */)
 {
 	QUiLoader loader;   // Used to load the .ui file to generate the form.
 	QString shortpath = QApplication::applicationDirPath() + "/Skins/Default/";
@@ -59,7 +59,7 @@ QWidget *FormLoader::buildform(QString formname)
 	QDir mydir(shortpath);
 
 	loader.setWorkingDirectory(mydir);
-	m_pForm = loader.load(&file, NULL);
+	m_pForm = loader.load(&file, parent);
 
 	file.close();
 
