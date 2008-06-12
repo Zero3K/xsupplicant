@@ -91,18 +91,16 @@ signals:
 	void signalIPAddressSet();
 
 public slots:
-	void slotHelp();
+	void slotHelp(void);
 	void slotSupError(const QString &error);
 	void slotSupWarning(const QString &warning);
-	void slotRestart();
+	void slotRestart(void);
 	void slotStateChange(const QString &, int, int, int, unsigned int);
-	void showBasicConfig(void);
-	void showAdvancedConfig(void);
 	void showConnectDlg(void);
+	void slotLaunchConfig(void);
 
 private slots:
     void slotIconActivated(QSystemTrayIcon::ActivationReason reason);
-    void slotLaunchConfig();
     void slotLaunchLogin();
     void slotViewLog();
     void slotAbout();
@@ -123,6 +121,8 @@ private slots:
 	void slotRequestUPW(QString connName);
 	void slotCleanupUPW();
 	void slotConnectionTimeout(QString devName);
+	void showBasicConfig(void);
+	void showAdvancedConfig(void);	
 	
 private:
     void createTrayActionsAndConnections();

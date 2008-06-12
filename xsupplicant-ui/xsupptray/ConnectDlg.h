@@ -56,10 +56,15 @@ public:
 private:
 	bool initUI(void);
 	void populateWirelessAdapterList(void);
+	void populateWiredAdapterList(void);
+	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
 	
 private slots:
 	void showSSIDList(void);
 	void selectWirelessAdapter(int);
+	void selectWiredAdapter(int);
+	void selectWirelessConnection(int);
+	void selectWiredConnection(int);
 		
 private:
 	Emitter *m_pEmitter;
@@ -69,12 +74,20 @@ private:
 	
 	QTabWidget	*m_pAdapterTabControl;
 	QComboBox	*m_pWirelessAdapterList;
+	QComboBox	*m_pWiredAdapterList;
+	QComboBox	*m_pWirelessConnectionList;
+	QComboBox	*m_pWiredConnectionList;
 	QPushButton *m_pCloseButton;
 	QPushButton *m_pBrowseWirelessNetworksButton;
+	QPushButton *m_pWiredConnectButton;
+	QPushButton *m_pWirelessConnectButton;
 
 	TrayApp *m_pSupplicant;
 	SSIDListDlg *m_pSSIDListDlg;
 	QString	m_currentWirelessAdapter;
+	QString m_currentWiredAdapter;
+	int m_lastWirelessConnectionIdx;
+	int m_lastWiredConnectionIdx;
 };
      
 #endif

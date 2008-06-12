@@ -37,6 +37,12 @@
 #include "Emitter.h"
 #include "TrayApp.h"
 #include "SSIDListDlg.h"
+#include <QVector>
+#include <algorithm>
+
+extern "C" {
+#include "libxsupgui/xsupgui_request.h"
+}
 
 ConnectDlg::ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant)
 	: QWidget(parent), 
@@ -55,7 +61,18 @@ ConnectDlg::~ConnectDlg()
 	
 	if (m_pBrowseWirelessNetworksButton != NULL)
 		Util::myDisconnect(m_pBrowseWirelessNetworksButton, SIGNAL(clicked()), this, SLOT(showSSIDList()));
+		
+	if (m_pWirelessAdapterList != NULL)
+		Util::myConnect(m_pWirelessAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWirelessAdapter(int)));
+				
+	if (m_pWirelessConnectionList != NULL)
+		Util::myDisconnect(m_pWirelessConnectionList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWirelessConnection(int)));		
 	
+	if (m_pWiredAdapterList != NULL)
+		Util::myConnect(m_pWiredAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWiredAdapter(int)));
+				
+	if (m_pWiredConnectionList != NULL)
+		Util::myDisconnect(m_pWiredConnectionList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWiredConnection(int)));	
 	if (m_pSSIDListDlg != NULL)
 		delete m_pSSIDListDlg;
 		
@@ -88,7 +105,11 @@ bool ConnectDlg::initUI(void)
 	m_pBrowseWirelessNetworksButton = qFindChild<QPushButton*>(m_pRealForm, "buttonBrowseWireless");
 	m_pAdapterTabControl = qFindChild<QTabWidget*>(m_pRealForm, "adapterTypeTabControl");
 	m_pWirelessAdapterList = qFindChild<QComboBox*>(m_pRealForm, "comboBoxWirelessAdapter");
-	
+	m_pWirelessConnectionList = qFindChild<QComboBox*>(m_pRealForm, "comboBoxWirelessConnection");
+	m_pWiredAdapterList = qFindChild<QComboBox*>(m_pRealForm, "comboBoxWiredAdapter");
+	m_pWiredConnectionList = qFindChild<QComboBox*>(m_pRealForm, "comboBoxWiredConnection");
+	m_pWirelessConnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessConnect");
+	m_pWiredConnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWiredConnect");
 	
 	// populate text
 	
@@ -111,10 +132,26 @@ bool ConnectDlg::initUI(void)
 	if (pConnectionLabel != NULL)
 		pConnectionLabel->setText(tr("Connection:"));
 		
-	pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessConnectedConnection");
+	pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnectedConnection");
 	if (pConnectionLabel != NULL)
 		pConnectionLabel->setText(tr("Connection:"));
 			
+	pAdapterLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredAdapter");
+	if (pAdapterLabel != NULL)
+		pAdapterLabel->setText(tr("Adapter:"));
+		
+	pStatusLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredStatus");
+	if (pStatusLabel != NULL)
+		pStatusLabel->setText(tr("Status:"));
+		
+	pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnectConnection");
+	if (pConnectionLabel != NULL)
+		pConnectionLabel->setText(tr("Connection:"));
+		
+	pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnectedConnection");
+	if (pConnectionLabel != NULL)
+		pConnectionLabel->setText(tr("Connection:"));
+					
 	if (m_pAdapterTabControl != NULL)
 	{
 		m_pAdapterTabControl->setTabText(0,tr("Wireless"));
@@ -131,6 +168,15 @@ bool ConnectDlg::initUI(void)
 	if (m_pWirelessAdapterList != NULL)
 		Util::myConnect(m_pWirelessAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWirelessAdapter(int)));
 		
+	if (m_pWirelessConnectionList != NULL)
+		Util::myConnect(m_pWirelessConnectionList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWirelessConnection(int)));
+		
+	if (m_pWiredAdapterList != NULL)
+		Util::myConnect(m_pWiredAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWiredAdapter(int)));
+		
+	if (m_pWiredConnectionList != NULL)
+		Util::myConnect(m_pWiredConnectionList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWiredConnection(int)));		
+		
 	
 	// set initial state of UI - mainly setting the active tab
 	if (m_pAdapterTabControl != NULL)
@@ -142,6 +188,12 @@ bool ConnectDlg::initUI(void)
 	{
 		populateWirelessAdapterList();
 		selectWirelessAdapter(0);
+	}
+	
+	if (m_pWiredAdapterList != NULL)
+	{
+		populateWiredAdapterList();
+		selectWiredAdapter(0);
 	}
 					
 	return true;
@@ -183,11 +235,96 @@ void ConnectDlg::populateWirelessAdapterList(void)
 	}
 }
 
+void ConnectDlg::populateWiredAdapterList(void)
+{
+	int_enum *pInterfaceList = NULL;
+	int retVal;	
+	
+	m_pWiredAdapterList->clear();
+	
+	retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+	{
+		int i = 0;
+		while (pInterfaceList[i].desc != NULL)
+		{
+			if (pInterfaceList[i].is_wireless == FALSE)
+			{
+				m_pWiredAdapterList->addItem(QString(pInterfaceList[i].desc));
+			}
+			
+			++i;
+		}
+		xsupgui_request_free_int_enum(&pInterfaceList);
+		pInterfaceList = NULL;
+	}
+	else
+	{
+		// bad things man
+	}
+}
+
 void ConnectDlg::selectWirelessAdapter(int index)
 {
 	if (m_pWirelessAdapterList != NULL)
 		m_currentWirelessAdapter = m_pWirelessAdapterList->itemText(index);
+	
+	if (m_pWirelessConnectionList != NULL)
+	{
+		m_pWirelessConnectionList->clear();
 		
+		QVector<QString> *connVector;
+		connVector = this->getConnectionListForAdapter(m_currentWirelessAdapter);
+		if (connVector != NULL)
+		{
+			std::sort(connVector->begin(), connVector->end());
+			int i;
+			for (i=0; i<connVector->size(); i++)
+				m_pWirelessConnectionList->addItem(connVector->at(i));
+				
+			delete connVector;
+		}
+		if (m_pWirelessConnectionList->count() == 0)
+			m_pWirelessConnectionList->addItem(QString(""));
+		m_pWirelessConnectionList->addItem(QString("-----"));		
+		m_pWirelessConnectionList->addItem(tr("Edit Connections..."));
+		m_pWirelessConnectionList->setCurrentIndex(0);
+		m_lastWirelessConnectionIdx = 0;
+		
+		
+	}
+	// need to update status and all that jazz
+}
+
+void ConnectDlg::selectWiredAdapter(int index)
+{
+	if (m_pWiredAdapterList != NULL)
+		m_currentWiredAdapter = m_pWiredAdapterList->itemText(index);
+	
+	if (m_pWiredConnectionList != NULL)
+	{
+		m_pWiredConnectionList->clear();
+		
+		QVector<QString> *connVector;
+		connVector = this->getConnectionListForAdapter(m_currentWiredAdapter);
+		if (connVector != NULL)
+		{
+			std::sort(connVector->begin(), connVector->end());
+			int i;
+			for (i=0; i<connVector->size(); i++)
+				m_pWiredConnectionList->addItem(connVector->at(i));
+				
+			delete connVector;
+		}
+		if (m_pWiredConnectionList->count() == 0)
+			m_pWiredConnectionList->addItem(QString(""));
+		m_pWiredConnectionList->addItem(QString("-----"));
+		m_pWiredConnectionList->addItem(tr("Edit Connections..."));
+		m_pWiredConnectionList->setCurrentIndex(0);
+		m_lastWiredConnectionIdx = 0;
+		
+		
+	}
 	// need to update status and all that jazz
 }
 
@@ -218,4 +355,83 @@ void ConnectDlg::showSSIDList()
 		m_pSSIDListDlg->show();
 	}
 
+}
+
+QVector<QString> *ConnectDlg::getConnectionListForAdapter(const QString &adapterDesc)
+{
+	if (adapterDesc.isEmpty())
+		return NULL;
+	
+	QVector<QString> *retVector = new QVector<QString>();
+	if (retVector != NULL)
+	{
+		conn_enum *pConn;
+		int retVal = xsupgui_request_enum_connections(&pConn);
+		if (retVal == REQUEST_SUCCESS && pConn != NULL)
+		{
+			int i = 0;
+			while (pConn[i].name != NULL)
+			{
+				if (pConn[i].dev_desc == adapterDesc)
+					retVector->append(QString(pConn[i].name));
+				++i;
+			}
+		}
+		
+		xsupgui_request_free_conn_enum(&pConn);
+	}
+	
+	return retVector;
+}
+
+void ConnectDlg::selectWirelessConnection(int connIdx)
+{
+	if (m_pWirelessConnectionList != NULL)
+	{
+		if (connIdx == (m_pWirelessConnectionList->count() - 1))
+		{
+			// this is the "edit connections..." item.  Launch config
+			m_pSupplicant->slotLaunchConfig();
+			m_pWirelessConnectionList->setCurrentIndex(m_lastWirelessConnectionIdx);
+		}
+		else if (connIdx == (m_pWirelessConnectionList->count() - 2))
+		{
+			// not a valid selection. The "-----" item/separator
+			m_pWirelessConnectionList->setCurrentIndex(m_lastWirelessConnectionIdx);
+		}
+		else
+			m_lastWirelessConnectionIdx = connIdx;
+			
+		if (m_pWirelessConnectButton != NULL)
+		{
+			QString curConnName = m_pWirelessConnectionList->itemText(m_pWirelessConnectionList->currentIndex());
+			m_pWirelessConnectButton->setEnabled(!curConnName.isEmpty());
+		}			
+	}
+}
+
+void ConnectDlg::selectWiredConnection(int connIdx)
+{
+	if (m_pWiredConnectionList != NULL)
+	{
+		if (connIdx == (m_pWiredConnectionList->count() - 1))
+		{
+			// this is the "edit connections..." item.  Launch config
+			m_pSupplicant->slotLaunchConfig();
+			m_pWiredConnectionList->setCurrentIndex(m_lastWiredConnectionIdx);
+		}
+		else if (connIdx == (m_pWiredConnectionList->count() - 2))
+		{
+			// not a valid selection. The "-----" item/separator
+			m_pWiredConnectionList->setCurrentIndex(m_lastWiredConnectionIdx);
+		}
+		else
+			m_lastWiredConnectionIdx = connIdx;
+			
+		if (m_pWiredConnectButton != NULL)
+		{
+			QString curConnName = m_pWiredConnectionList->itemText(m_pWiredConnectionList->currentIndex());
+			m_pWiredConnectButton->setEnabled(!curConnName.isEmpty());
+		}
+	}
 }
