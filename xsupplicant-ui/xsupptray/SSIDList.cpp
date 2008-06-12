@@ -243,6 +243,41 @@ void SSIDList::refreshList(const QString &adapterName)
 			securityItem = new QTableWidgetItem(securityText,1000+i);
 			if (securityItem != NULL)
 				m_pTableWidget->setItem(i,SSIDList::COL_SECURITY,securityItem);
+			
+			// if none of modes a,b,g,n supported, nothing to show here	
+			if (m_curNetworks->at(i).m_modes != 0)
+			{
+				// build filename for icon image to load into table
+				unsigned char modes = m_curNetworks->at(i).m_modes;
+				
+				QString labelFileName = "802_11_";
+				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_A) != 0)
+					labelFileName.append("a");
+				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_B) != 0)
+					labelFileName.append("b");
+				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_G) != 0)
+					labelFileName.append("g");
+				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_N) != 0)
+					labelFileName.append("n");	
+				labelFileName.append(".png");
+
+				QPixmap *p;
+				p = FormLoader::loadicon(labelFileName);
+
+				if (p != NULL)
+				{
+					QLabel *tmpLabel;
+					tmpLabel = new QLabel();
+					if (tmpLabel != NULL)
+					{
+						tmpLabel->setPixmap(*p);
+						tmpLabel->setAlignment(Qt::AlignCenter);
+						m_pTableWidget->setCellWidget(i, SSIDList::COL_802_11, tmpLabel);
+					}
+					delete p;
+					p = NULL;
+				}																	
+			}
 		}
 	}
 	m_pTableWidget->setSortingEnabled(true);
@@ -284,22 +319,33 @@ void SSIDList::getNetworkInfo(QString adapterName)
 							// jking -- hack for right now to assume only one association mode is
 							// supported.  Do so by setting precedence (WPA2 before WPA1, 802.1X before PSK)
 							// and go with highest precedence association mode
-							unsigned char assoc_modes = pSSIDList[i].abil;
-							if ((assoc_modes & ABILITY_ENC) != 0)
+							unsigned int abilities = pSSIDList[i].abil;
+							if ((abilities & ABILITY_ENC) != 0)
 							{
-								if ((assoc_modes & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
+								if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
 									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_STATIC_WEP;
-								else if ((assoc_modes & ABILITY_RSN_DOT1X) != 0)
+								else if ((abilities & ABILITY_RSN_DOT1X) != 0)
 									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE;
-								else if ((assoc_modes & ABILITY_WPA_DOT1X) != 0)
+								else if ((abilities & ABILITY_WPA_DOT1X) != 0)
 									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE;
-								else if ((assoc_modes & ABILITY_RSN_PSK) != 0)
+								else if ((abilities & ABILITY_RSN_PSK) != 0)
 									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_PSK;
-								else if ((assoc_modes & ABILITY_WPA_PSK) != 0)
+								else if ((abilities & ABILITY_WPA_PSK) != 0)
 									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_PSK;									
 							}
 							else
 								networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_NONE;
+								
+							if ((abilities & ABILITY_DOT11_STD) != 0)
+								; // no flags to pass on
+							if ((abilities & ABILITY_DOT11_A) != 0)
+								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_A;
+							if ((abilities & ABILITY_DOT11_B) != 0)
+								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_B;
+							if ((abilities & ABILITY_DOT11_G) != 0)
+								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_G;
+							if ((abilities & ABILITY_DOT11_N) != 0)
+								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_N;
 								
 							m_curNetworks->append(networkInfo);
 							++j;
