@@ -36,6 +36,12 @@
 #include "CredentialsPopUp.h"
 #include "xsupcalls.h"
 #include "Util.h"
+#include "XSupWrapper.h"
+
+extern "C"
+{
+#include "libxsupgui/xsupgui_request.h"
+}
 
 //! Constructor
 /*!
@@ -136,6 +142,13 @@ bool CredentialsPopUp::createUPW()
 		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'upwPassword' label."));
 		return false;
 	}
+	
+	m_pRememberCreds = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxRemember");
+	if (m_pRememberCreds == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'rememberCredentials' checkbox."));
+		return false;
+	}	
 
 	m_pButtonBox = qFindChild<QDialogButtonBox*>(m_pRealForm, "buttonBox");
 
@@ -213,6 +226,14 @@ bool CredentialsPopUp::createPSK()
 		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'dataFieldPassword' label."));
 		return false;
 	}
+
+	m_pRememberCreds = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxRemember");
+	
+	if (m_pRememberCreds == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'rememberCredentials' checkbox."));
+		return false;
+	}	
 
 	m_pButtonBox = qFindChild<QDialogButtonBox*>(m_pRealForm, "buttonBox");
 
@@ -314,6 +335,7 @@ void CredentialsPopUp::slotOkayBtn()
 		// Set our PSK.
 		temp = _strdup(m_connName.toAscii());
 		pwd = _strdup(m_pPassword->text().toAscii());
+		
 		if (xsupgui_request_set_connection_pw(temp, pwd) != XENONE)
 		{
 			QMessageBox::critical(this, tr("Error"), tr("Unable to set your preshared key."));
@@ -326,6 +348,27 @@ void CredentialsPopUp::slotOkayBtn()
 			}
 			else
 			{
+				// if "remember credentials" is checked, make sure this isn't marked as volatile
+				if (m_pRememberCreds->checkState() == Qt::Checked)
+				{
+					cconf->flags &= ~CONFIG_VOLATILE_CONN;
+					
+					// clear out any credentials that presently are stored
+					if (cconf->association.psk != NULL)
+					{
+						free(cconf->association.psk);
+						cconf->association.psk = NULL;
+					}
+					
+					cconf->association.psk = _strdup(pwd);
+					
+					// save off changes to config
+					xsupgui_request_set_connection_config(cconf);
+					
+					// this may fail.  No need to prompt user if it does
+					XSupWrapper::writeConfig();	
+				}
+					
 				if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
 				{
 					QMessageBox::critical(this, tr("Error"), tr("Couldn't determine the interface the desired connection is bound to!"));

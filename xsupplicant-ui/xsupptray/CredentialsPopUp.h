@@ -36,6 +36,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QWidget>
+#include <QCheckBox>
 #include "xsupcalls.h"
 #include "MessageClass.h"
 #include "Util.h"
@@ -71,6 +72,7 @@ private:
   QLineEdit *m_pPassword;
   QLabel *m_pDialogMsg;
   QString m_connName;
+  QCheckBox *m_pRememberCreds;
   bool m_doingPsk;
 
   char *p_user;

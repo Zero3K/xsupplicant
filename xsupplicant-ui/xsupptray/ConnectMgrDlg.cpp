@@ -316,21 +316,36 @@ void ConnectMgrDlg::populateConnectionsList(void)
 		
 		for (i=0; i<m_nConnections; i++)
 		{
-			QTableWidgetItem *nameItem=NULL;
-			nameItem = new QTableWidgetItem(m_pConnections[i].name, 0);
-			if (nameItem != NULL)
-				m_pConnectionsTable->setItem(i, 0, nameItem);
-				
-			QTableWidgetItem *adapterItem=NULL;
-			QString adapterTypeStr;
-			if (m_pConnections[i].ssid != NULL)
-				adapterTypeStr = tr("Wireless");
-			else
-				adapterTypeStr = tr("Wired");
-				
-			adapterItem = new QTableWidgetItem(adapterTypeStr, 0);
-			if (adapterItem != NULL)
-				m_pConnectionsTable->setItem(i, 1, adapterItem);		
+			// check if connection is volatile
+			bool bVolatile = false;
+			config_connection *pConfig;
+			int retVal = xsupgui_request_get_connection_config(m_pConnections[i].name, &pConfig);
+			if (retVal == REQUEST_SUCCESS && pConfig != NULL)
+			{
+				if ((pConfig->flags & CONFIG_VOLATILE_CONN) != 0)
+					bVolatile = true;
+				xsupgui_request_free_connection_config(&pConfig);	
+			}		
+			
+			// don't include volatile connectiions in list
+			if (bVolatile == false)
+			{
+				QTableWidgetItem *nameItem=NULL;
+				nameItem = new QTableWidgetItem(m_pConnections[i].name, 0);
+				if (nameItem != NULL)
+					m_pConnectionsTable->setItem(i, 0, nameItem);
+					
+				QTableWidgetItem *adapterItem=NULL;
+				QString adapterTypeStr;
+				if (m_pConnections[i].ssid != NULL && m_pConnections[i].ssid[0] != '\0')
+					adapterTypeStr = tr("Wireless");
+				else
+					adapterTypeStr = tr("Wired");
+					
+				adapterItem = new QTableWidgetItem(adapterTypeStr, 0);
+				if (adapterItem != NULL)
+					m_pConnectionsTable->setItem(i, 1, adapterItem);
+			}	
 		}
 		m_pConnectionsTable->setSortingEnabled(true);
 	}

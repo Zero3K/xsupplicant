@@ -445,7 +445,19 @@ QVector<QString> *ConnectDlg::getConnectionListForAdapter(const QString &adapter
 			while (pConn[i].name != NULL)
 			{
 				if (pConn[i].dev_desc == adapterDesc)
-					retVector->append(QString(pConn[i].name));
+				{
+					config_connection *pConfig;
+					retVal = xsupgui_request_get_connection_config(pConn[i].name, &pConfig);
+					if (retVal == REQUEST_SUCCESS && pConfig != NULL)
+					{
+						if ((pConfig->flags & CONFIG_VOLATILE_CONN) == 0)
+							retVector->append(QString(pConn[i].name));
+						xsupgui_request_free_connection_config(&pConfig);
+						
+					}
+					else
+						retVector->append(QString(pConn[i].name));
+				}
 				++i;
 			}
 		}

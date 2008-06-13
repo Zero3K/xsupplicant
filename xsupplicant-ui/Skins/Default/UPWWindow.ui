@@ -6,19 +6,25 @@
     <x>0</x>
     <y>0</y>
     <width>500</width>
-    <height>268</height>
+    <height>285</height>
    </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize" >
    <size>
     <width>500</width>
-    <height>268</height>
+    <height>285</height>
    </size>
   </property>
   <property name="maximumSize" >
    <size>
     <width>500</width>
-    <height>268</height>
+    <height>285</height>
    </size>
   </property>
   <property name="windowTitle" >
@@ -28,7 +34,7 @@
    <iconset>icons/prod_color.png</iconset>
   </property>
   <property name="sizeGripEnabled" >
-   <bool>true</bool>
+   <bool>false</bool>
   </property>
   <property name="modal" >
    <bool>true</bool>
@@ -116,6 +122,12 @@
    </item>
    <item>
     <widget class="QFrame" name="mainFrame" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="palette" >
       <palette>
        <active>
@@ -346,7 +358,7 @@
            <property name="maximumSize" >
             <size>
              <width>16777215</width>
-             <height>118</height>
+             <height>150</height>
             </size>
            </property>
            <property name="palette" >
@@ -466,7 +478,7 @@
              <number>10</number>
             </property>
             <item>
-             <widget class="QFrame" name="frame_2" >
+             <widget class="QFrame" name="labelFrame" >
               <property name="sizePolicy" >
                <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
                 <horstretch>0</horstretch>
@@ -484,13 +496,13 @@
                 <number>0</number>
                </property>
                <property name="leftMargin" >
-                <number>14</number>
+                <number>12</number>
                </property>
                <property name="topMargin" >
                 <number>0</number>
                </property>
                <property name="rightMargin" >
-                <number>14</number>
+                <number>12</number>
                </property>
                <property name="bottomMargin" >
                 <number>0</number>
@@ -542,8 +554,8 @@
                  </property>
                  <property name="font" >
                   <font>
-                   <family>MS Shell Dlg 2</family>
-                   <pointsize>9</pointsize>
+                   <family>Arial</family>
+                   <pointsize>10</pointsize>
                    <weight>75</weight>
                    <bold>true</bold>
                   </font>
@@ -604,7 +616,7 @@
                <item>
                 <widget class="QFrame" name="labelsFrame" >
                  <property name="sizePolicy" >
-                  <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                  <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
                    <horstretch>0</horstretch>
                    <verstretch>0</verstretch>
                   </sizepolicy>
@@ -617,7 +629,7 @@
                  </property>
                  <layout class="QVBoxLayout" >
                   <property name="spacing" >
-                   <number>8</number>
+                   <number>6</number>
                   </property>
                   <property name="leftMargin" >
                    <number>0</number>
@@ -632,7 +644,7 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QFrame" name="frame_7" >
+                   <widget class="QFrame" name="frame_9" >
                     <property name="sizePolicy" >
                      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
                       <horstretch>0</horstretch>
@@ -681,7 +693,7 @@
                        <property name="sizeHint" >
                         <size>
                          <width>40</width>
-                         <height>20</height>
+                         <height>2</height>
                         </size>
                        </property>
                       </spacer>
@@ -745,7 +757,8 @@
                        </property>
                        <property name="font" >
                         <font>
-                         <family>MS Shell Dlg 2</family>
+                         <family>Arial</family>
+                         <pointsize>9</pointsize>
                         </font>
                        </property>
                        <property name="text" >
@@ -757,7 +770,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QFrame" name="frame_8" >
+                   <widget class="QFrame" name="frame_10" >
                     <property name="sizePolicy" >
                      <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
                       <horstretch>0</horstretch>
@@ -806,7 +819,7 @@
                        <property name="sizeHint" >
                         <size>
                          <width>40</width>
-                         <height>20</height>
+                         <height>2</height>
                         </size>
                        </property>
                       </spacer>
@@ -870,7 +883,8 @@
                        </property>
                        <property name="font" >
                         <font>
-                         <family>MS Shell Dlg 2</family>
+                         <family>Arial</family>
+                         <pointsize>9</pointsize>
                         </font>
                        </property>
                        <property name="text" >
@@ -881,11 +895,24 @@
                     </layout>
                    </widget>
                   </item>
+                  <item>
+                   <spacer>
+                    <property name="orientation" >
+                     <enum>Qt::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" >
+                     <size>
+                      <width>20</width>
+                      <height>2</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
                  </layout>
                 </widget>
                </item>
                <item>
-                <widget class="QFrame" name="credentialsFrame" >
+                <widget class="QFrame" name="inputFrame" >
                  <property name="sizePolicy" >
                   <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
                    <horstretch>0</horstretch>
@@ -900,7 +927,7 @@
                  </property>
                  <layout class="QVBoxLayout" >
                   <property name="spacing" >
-                   <number>8</number>
+                   <number>2</number>
                   </property>
                   <property name="leftMargin" >
                    <number>0</number>
@@ -915,68 +942,164 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLineEdit" name="dataFieldUserName" >
-                    <property name="minimumSize" >
-                     <size>
-                      <width>200</width>
-                      <height>22</height>
-                     </size>
+                   <widget class="QFrame" name="credentialsFrame" >
+                    <property name="sizePolicy" >
+                     <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
                     </property>
-                    <property name="palette" >
-                     <palette>
-                      <active>
-                       <colorrole role="WindowText" >
-                        <brush brushstyle="SolidPattern" >
-                         <color alpha="255" >
-                          <red>0</red>
-                          <green>0</green>
-                          <blue>0</blue>
-                         </color>
-                        </brush>
-                       </colorrole>
-                      </active>
-                      <inactive>
-                       <colorrole role="WindowText" >
-                        <brush brushstyle="SolidPattern" >
-                         <color alpha="255" >
-                          <red>0</red>
-                          <green>0</green>
-                          <blue>0</blue>
-                         </color>
-                        </brush>
-                       </colorrole>
-                      </inactive>
-                      <disabled>
-                       <colorrole role="WindowText" >
-                        <brush brushstyle="SolidPattern" >
-                         <color alpha="255" >
-                          <red>127</red>
-                          <green>127</green>
-                          <blue>127</blue>
-                         </color>
-                        </brush>
-                       </colorrole>
-                      </disabled>
-                     </palette>
+                    <property name="frameShape" >
+                     <enum>QFrame::NoFrame</enum>
                     </property>
-                    <property name="font" >
-                     <font>
-                      <family>MS Shell Dlg 2</family>
-                     </font>
+                    <property name="frameShadow" >
+                     <enum>QFrame::Raised</enum>
                     </property>
-                    <property name="echoMode" >
-                     <enum>QLineEdit::Normal</enum>
-                    </property>
+                    <layout class="QVBoxLayout" >
+                     <property name="spacing" >
+                      <number>6</number>
+                     </property>
+                     <property name="leftMargin" >
+                      <number>0</number>
+                     </property>
+                     <property name="topMargin" >
+                      <number>0</number>
+                     </property>
+                     <property name="rightMargin" >
+                      <number>0</number>
+                     </property>
+                     <property name="bottomMargin" >
+                      <number>0</number>
+                     </property>
+                     <item>
+                      <widget class="QLineEdit" name="dataFieldUserName" >
+                       <property name="minimumSize" >
+                        <size>
+                         <width>200</width>
+                         <height>22</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize" >
+                        <size>
+                         <width>16777215</width>
+                         <height>22</height>
+                        </size>
+                       </property>
+                       <property name="palette" >
+                        <palette>
+                         <active>
+                          <colorrole role="WindowText" >
+                           <brush brushstyle="SolidPattern" >
+                            <color alpha="255" >
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </active>
+                         <inactive>
+                          <colorrole role="WindowText" >
+                           <brush brushstyle="SolidPattern" >
+                            <color alpha="255" >
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </inactive>
+                         <disabled>
+                          <colorrole role="WindowText" >
+                           <brush brushstyle="SolidPattern" >
+                            <color alpha="255" >
+                             <red>127</red>
+                             <green>127</green>
+                             <blue>127</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </disabled>
+                        </palette>
+                       </property>
+                       <property name="font" >
+                        <font>
+                         <family>Arial</family>
+                         <pointsize>9</pointsize>
+                        </font>
+                       </property>
+                       <property name="echoMode" >
+                        <enum>QLineEdit::Normal</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLineEdit" name="dataFieldPassword" >
+                       <property name="minimumSize" >
+                        <size>
+                         <width>200</width>
+                         <height>22</height>
+                        </size>
+                       </property>
+                       <property name="maximumSize" >
+                        <size>
+                         <width>16777215</width>
+                         <height>22</height>
+                        </size>
+                       </property>
+                       <property name="palette" >
+                        <palette>
+                         <active>
+                          <colorrole role="WindowText" >
+                           <brush brushstyle="SolidPattern" >
+                            <color alpha="255" >
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </active>
+                         <inactive>
+                          <colorrole role="WindowText" >
+                           <brush brushstyle="SolidPattern" >
+                            <color alpha="255" >
+                             <red>0</red>
+                             <green>0</green>
+                             <blue>0</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </inactive>
+                         <disabled>
+                          <colorrole role="WindowText" >
+                           <brush brushstyle="SolidPattern" >
+                            <color alpha="255" >
+                             <red>127</red>
+                             <green>127</green>
+                             <blue>127</blue>
+                            </color>
+                           </brush>
+                          </colorrole>
+                         </disabled>
+                        </palette>
+                       </property>
+                       <property name="font" >
+                        <font>
+                         <family>Arial</family>
+                         <pointsize>9</pointsize>
+                        </font>
+                       </property>
+                       <property name="echoMode" >
+                        <enum>QLineEdit::Password</enum>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="dataFieldPassword" >
-                    <property name="minimumSize" >
-                     <size>
-                      <width>200</width>
-                      <height>22</height>
-                     </size>
-                    </property>
+                   <widget class="QCheckBox" name="checkBoxRemember" >
                     <property name="palette" >
                      <palette>
                       <active>
@@ -1016,11 +1139,12 @@
                     </property>
                     <property name="font" >
                      <font>
-                      <family>MS Shell Dlg 2</family>
+                      <family>Arial</family>
+                      <pointsize>9</pointsize>
                      </font>
                     </property>
-                    <property name="echoMode" >
-                     <enum>QLineEdit::Password</enum>
+                    <property name="text" >
+                     <string>Remember Credentials</string>
                     </property>
                    </widget>
                   </item>
@@ -1054,6 +1178,24 @@
       </item>
       <item>
        <widget class="QDialogButtonBox" name="buttonBox" >
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>16777215</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="font" >
+         <font>
+          <family>Arial</family>
+          <pointsize>9</pointsize>
+         </font>
+        </property>
         <property name="standardButtons" >
          <set>QDialogButtonBox::Cancel|QDialogButtonBox::NoButton|QDialogButtonBox::Ok</set>
         </property>

@@ -35,12 +35,16 @@
 #include "SSIDListDlg.h"
 #include "FormLoader.h"
 #include "Util.h"
-#include "libxsupgui/xsupgui_request.h"
 #include "wirelessScanDlg.h"
 #include "TrayApp.h"
 #include "SSIDList.h"
 #include "Emitter.h"
 #include "XSupWrapper.h"
+
+extern "C"
+{
+#include "libxsupgui/xsupgui_request.h"
+}
 
 
 SSIDListDlg::SSIDListDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant)
@@ -313,6 +317,9 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 		config_connection *pNewConn;
 		if (XSupWrapper::createNewConnection(connName,&pNewConn) && pNewConn != NULL)
 		{
+			// set this connection as volatile
+			pNewConn->flags |= CONFIG_VOLATILE_CONN;
+			
 			pNewConn->ssid = _strdup(netInfo.m_name.toAscii().data());
 			
 			// jking - note this is a temporary hack.  This is really a bitfield, not a

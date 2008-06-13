@@ -185,6 +185,9 @@ void SSIDList::refreshList(const QString &adapterName)
 		for (int i=0; i<m_curNetworks->size(); i++)
 		{
 			QTableWidgetItem *nameItem=NULL;
+			
+			// use the custom item type to store index into our cached array of networks
+			// so that we can index back into the array even after table's been sorted
 			nameItem = new QTableWidgetItem(m_curNetworks->at(i).m_name, 1000+i);
 			if (nameItem != NULL)
 				m_pTableWidget->setItem(i, SSIDList::COL_NAME, nameItem);	
@@ -367,11 +370,6 @@ void SSIDList::getNetworkInfo(QString adapterName)
 			}
 			xsupgui_request_free_int_enum(&pInterfaceList);
 			pInterfaceList = NULL;
-			
-			for (i=0; i<m_curNetworks->size(); i++)
-			{
-				// get other details about network
-			}
 		}
 		else
 		{
