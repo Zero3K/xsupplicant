@@ -192,6 +192,7 @@ struct config_eap_method
   struct config_eap_method *next;
 };
 
+// flags relevant to config_connection
 #define CONFIG_NET_DEST_MAC     BIT(0)    // indicates the variable below is set and should be used
 #define CONFIG_NET_USE_OSC_TNC  BIT(1)    // indicates that we should, or shouldn't use TNC
 #define CONFIG_NET_IS_HIDDEN    BIT(2)    // indicates that the SSID is hidden.
