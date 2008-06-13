@@ -41,6 +41,7 @@
  *
  * \retval -1 on error
  * \retval 0 on success
+ * \retval CONNECTION_NEED_* if something more is needed.
  **/
 int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int log)
 {
@@ -91,7 +92,7 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 			if ((conn->association.psk == NULL) && (conn->association.psk_hex == NULL) && (conn->association.temp_psk == NULL))
 			{
 				if (log == TRUE) error_prequeue_add("The connection configuration is set to PSK, but there is no pre-shared key configured.");
-				retval = -1;
+				retval = CONNECTION_NEED_PSK;
 			}
 		}
 
@@ -106,10 +107,19 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 			else
 			{
 				// Check to see that the profile is valid.
-				if (xsupconfcheck_check_profile(conn->profile, log) != 0)
+				switch (xsupconfcheck_check_profile(conn->profile, log))
 				{
+				case PROFILE_NEED_UPW:
+					retval = CONNECTION_NEED_UPW;
+					break;
+
+				case 0:
+					break;
+
+				default:
 					// No need to queue an error message here, since the profile should have already set all of the needed error strings.
 					retval = -1;
+					break;
 				}
 			}
 		}
@@ -118,9 +128,18 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 		{
 			if (conn->profile != NULL)
 			{
-				if (xsupconfcheck_check_profile(conn->profile, log) != 0)
+				switch (xsupconfcheck_check_profile(conn->profile, log))
 				{
+				case PROFILE_NEED_UPW:
+					retval = PROFILE_NEED_UPW;
+					break;
+
+				case 0:
+					break;
+
+				default:
 					retval = -1;
+					break;
 				}
 			}
 		}
@@ -292,8 +311,16 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 	else
 	{
 		// If the interface is wired, then make sure we have a profile set, and it is valid.
-		if (xsupconfcheck_check_profile(conn->profile, log) != 0)
+		switch (xsupconfcheck_check_profile(conn->profile, log))
 		{
+		case PROFILE_NEED_UPW:
+			retval = CONNECTION_NEED_UPW;
+			break;
+
+		case 0:
+			break;
+
+		default:
 			// Don't need to write an error string here.
 			retval = -1;
 		}

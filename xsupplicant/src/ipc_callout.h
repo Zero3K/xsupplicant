@@ -69,6 +69,7 @@
 #define IPC_ERROR_GEN_TROUBLE_TICKET  345   // An unrecoverable error occurred while generating trouble tickets.
 #define IPC_ERROR_FILE_EXISTS         346   // A request was made to overwrite a file that already exists.
 #define IPC_ERROR_NOT_SUPPORTED		  347   // The request is not supported.
+#define IPC_ERROR_SSID_NOT_FOUND      348   // The requested SSID is not found in the scan cache.
 
 /**
  *  Result values.

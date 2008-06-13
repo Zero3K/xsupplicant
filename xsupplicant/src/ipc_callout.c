@@ -51,6 +51,7 @@
 #include "error_prequeue.h"
 #include "timer.h"
 #include "wpa_common.h"
+#include "ipc_events_index.h"
 
 #ifdef WINDOWS
 #include "platform/windows/tthandler.h"
@@ -2494,7 +2495,7 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 	// Done with 'request'.
 	FREE(request);
 
-	if (conn->association.auth_type != AUTH_PSK)
+	if (conn->association.auth_type == AUTH_EAP)
 	{
 		prof = config_find_profile(conn->profile);
 		if (prof == NULL)
@@ -2520,7 +2521,7 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_NEED_PASSWORD, outnode);
 	}
 
-	if (conn->association.auth_type != AUTH_PSK)
+	if (conn->association.auth_type == AUTH_EAP)
 	{
 		if (ipc_callout_set_profile_upw(prof, username, password) != 0)
 		{
@@ -2530,7 +2531,7 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 			return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_COULDNT_CHANGE_UPW, outnode);
 		}
 	}
-	else
+	else if (conn->association.auth_type == AUTH_PSK)
 	{
 		if (ipc_callout_set_connection_psk(conn, password) != 0)
 		{
@@ -2540,6 +2541,20 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 			FREE(username);
 			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_COULDNT_CHANGE_UPW, outnode);
 		}
+	}
+	else if (conn->association.association_type == AUTH_NONE)
+	{
+		// Set our static WEP key.
+		conn->association.keys[1] = _strdup(password);
+		conn->association.txkey = 1;
+	}
+	else
+	{
+		debug_printf(DEBUG_IPC, "The UI sent us an invalid request.!\n");
+		FREE(password);
+		// Username should already be NULL.  But make sure it is.
+		FREE(username);
+		return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
 	FREE(username);
@@ -2657,6 +2672,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	char *conn_name = NULL;
 	context *ctx = NULL;
 	wireless_ctx *wctx = NULL;
+	struct found_ssids *ssid = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -2712,15 +2728,33 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(iface, "Request_Connection_Change", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
 	}
 
-	if (xsupconfcheck_check_connection(ctx, conn_name, TRUE) != 0)
+	switch (xsupconfcheck_check_connection(ctx, conn_name, TRUE))
 	{
+	case CONNECTION_NEED_UPW:
+	case CONNECTION_NEED_PSK:
+		// We need to ask the user for information.
+		ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, conn_name);
+
+		free(conn_name);
+
+		// We return an ACK in this case because technically we are doing what was asked.  We
+		// notifed the UI that we need more data, so the call was a success.
+		retval2 = ipc_callout_create_ack(NULL, "Request_Connection_Change", outnode);
+		return retval2;
+		break;
+
+	case 0:
+		// Do nothing.
+		break;
+
+	default:
 		free(conn_name);
 		FREE(ctx->conn_name);
 		debug_printf(DEBUG_NORMAL, "A configuration issue was discovered.  Notifying the UI.\n");
 		return ipc_callout_create_error(ctx->intName, "Request_Connection_Change", IPC_ERROR_NEW_ERRORS_IN_QUEUE, outnode);
+		break;
 	}
 
-	SET_FLAG(ctx->flags, FORCED_CONN);
 	ctx->conn = config_find_connection(conn_name);
 	if (ctx->conn == NULL)
 	{
@@ -2729,7 +2763,43 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(iface, "Request_Connection_Change", IPC_ERROR_INVALID_CONN_NAME, outnode);
 	}
 
+	if (ctx->intType == ETH_802_11_INT)
+	{
+		// Check if the SSID is a static WEP SSID.
+		ssid = config_ssid_find_by_name(ctx->intTypeData, ctx->conn->ssid);
+		if (ssid == NULL)
+		{
+			debug_printf(DEBUG_IPC, "Unable to find the desired SSID in the scan cache!\n");
+			free(conn_name);
+			return ipc_callout_create_error(iface, "Request_Connection_Change", IPC_ERROR_SSID_NOT_FOUND, outnode);
+		}
+
+		if ((ctx->conn->association.association_type == AUTH_NONE) && (TEST_FLAG(ssid->abilities, ABIL_ENC)) &&
+			(!TEST_FLAG(ssid->abilities, ABIL_WPA_IE)) && (!TEST_FLAG(ssid->abilities, ABIL_RSN_IE)))
+		{
+			// This SSID is *PROBABLY* using static WEP.  We have no way to be sure that it isn't
+			// a dynamic WEP connection.  But, if the user is using dynamic WEP, they shouldn't. ;)
+			// (They shouldn't use static WEP either...  But I digress.)
+
+			// We need to ask the user for information.  (NOTE: It is safe here not to specifically
+			// notify the UI that we are looking for a static WEP key.  The UI should read the
+			// configuration determine that there is no authentication configured, and assume
+			// that if it got this signal the engine wants a WEP key.  The reason is that there 
+			// shouldn't be any other unauthenticated, open, wireless permutation that would
+			// generate this event for that connection.)
+			ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, conn_name);
+			free(conn_name);
+
+			// We return an ACK in this case because technically we are doing what was asked.  We
+			// notifed the UI that we need more data, so the call was a success.
+			retval2 = ipc_callout_create_ack(NULL, "Request_Connection_Change", outnode);
+			return retval2;		
+		}
+	}
+
+
 	// We found it, so validate it, and update the connection name.
+	SET_FLAG(ctx->flags, FORCED_CONN);
 	FREE(ctx->conn_name);
 
 	ctx->conn_name = _strdup(conn_name);

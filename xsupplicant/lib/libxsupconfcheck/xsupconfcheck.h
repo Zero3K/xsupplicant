@@ -11,6 +11,11 @@
 
 #include "../../src/context.h"
 
+#define CONNECTION_NEED_PSK     1
+#define CONNECTION_NEED_UPW     2
+
+#define PROFILE_NEED_UPW		1
+
 int xsupconfcheck_trusted_server(char *, int);
 int xsupconfcheck_check_profile(char *, int);
 int xsupconfcheck_check_interface(char *, int);
