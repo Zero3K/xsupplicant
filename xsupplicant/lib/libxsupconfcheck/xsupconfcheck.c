@@ -161,11 +161,5 @@ int xsupconfcheck_check_connection(context *ctx, char *connname, int log)
 		return -1;
 	}
 
-	if (xsupconfcheck_conn_check(ctx, conn, log) != 0)
-	{
-		// No need to queue errors here.  They should already be queued.
-		return -1;
-	}
-
-	return 0;
+	return xsupconfcheck_conn_check(ctx, conn, log);
 }
