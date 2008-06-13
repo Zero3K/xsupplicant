@@ -417,6 +417,9 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 					
 					// save off the config since it changed
 					XSupWrapper::writeConfig();
+					
+					// tell everyone we changed the config
+					m_pEmitter->sendConnConfigUpdate();
 				}
 			}		
 		}	

@@ -1282,7 +1282,7 @@ void TrayApp::slotRequestUPW(QString connName)
 	// Only do something if it isn't already showing.
 	if (m_pCreds == NULL)
 	{
-		m_pCreds = new CredentialsPopUp(connName, this);
+		m_pCreds = new CredentialsPopUp(connName, this, m_pEmitter);
 		if (m_pCreds == NULL)
 		{
 			QMessageBox::critical(this, tr("Error"), tr("There was an error creating the credentials pop up."));

@@ -41,12 +41,14 @@
 #include "MessageClass.h"
 #include "Util.h"
 
+class Emitter;
+
 class CredentialsPopUp : public QWidget
 {
   Q_OBJECT
 
 public:
-  CredentialsPopUp(QString connName, QWidget *parent);
+  CredentialsPopUp(QString connName, QWidget *parent, Emitter *e);
   bool create();
   void updateData();
   void show();
@@ -67,6 +69,7 @@ private:
   QDialog *m_pDialog;
 
   XSupCalls m_supplicant;
+  Emitter *m_pEmitter;
   QDialogButtonBox *m_pButtonBox;
   QLineEdit *m_pUsername;
   QLineEdit *m_pPassword;

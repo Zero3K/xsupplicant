@@ -37,6 +37,7 @@
 #include "xsupcalls.h"
 #include "Util.h"
 #include "XSupWrapper.h"
+#include "Emitter.h"
 
 extern "C"
 {
@@ -53,9 +54,10 @@ extern "C"
   \param[in] parent
   \return nothing
 */
-CredentialsPopUp::CredentialsPopUp(QString connName, QWidget *parent)
+CredentialsPopUp::CredentialsPopUp(QString connName, QWidget *parent, Emitter *e)
      : QWidget(parent),
-     m_connName(connName), m_supplicant(this)
+     m_connName(connName), m_supplicant(this),
+     m_pEmitter(e)
 {
 	m_pRealForm        = NULL;
 	m_pDialog          = NULL;
@@ -365,6 +367,9 @@ void CredentialsPopUp::slotOkayBtn()
 					// save off changes to config
 					xsupgui_request_set_connection_config(cconf);
 					
+					// tell everyone we changed the config
+					m_pEmitter->sendConnConfigUpdate();
+										
 					// this may fail.  No need to prompt user if it does
 					XSupWrapper::writeConfig();	
 				}
