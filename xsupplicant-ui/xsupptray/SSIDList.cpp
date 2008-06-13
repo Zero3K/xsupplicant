@@ -312,42 +312,46 @@ void SSIDList::getNetworkInfo(QString adapterName)
 						int j = 0;
 						while (pSSIDList[j].ssidname != NULL)
 						{
-							WirelessNetworkInfo networkInfo;
-							networkInfo.m_name = pSSIDList[j].ssidname;
-							networkInfo.m_signalStrength = int(pSSIDList[j].percentage);
-							
-							// jking -- hack for right now to assume only one association mode is
-							// supported.  Do so by setting precedence (WPA2 before WPA1, 802.1X before PSK)
-							// and go with highest precedence association mode
-							unsigned int abilities = pSSIDList[j].abil;
-							if ((abilities & ABILITY_ENC) != 0)
+							// if not empty ssid (this represents a non-broadcast SSID)
+							if (pSSIDList[j].ssidname[0] != '\0')
 							{
-								if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
-									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_STATIC_WEP;
-								else if ((abilities & ABILITY_RSN_DOT1X) != 0)
-									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE;
-								else if ((abilities & ABILITY_WPA_DOT1X) != 0)
-									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE;
-								else if ((abilities & ABILITY_RSN_PSK) != 0)
-									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_PSK;
-								else if ((abilities & ABILITY_WPA_PSK) != 0)
-									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_PSK;									
+								WirelessNetworkInfo networkInfo;
+								networkInfo.m_name = pSSIDList[j].ssidname;
+								networkInfo.m_signalStrength = int(pSSIDList[j].percentage);
+								
+								// jking -- hack for right now to assume only one association mode is
+								// supported.  Do so by setting precedence (WPA2 before WPA1, 802.1X before PSK)
+								// and go with highest precedence association mode
+								unsigned int abilities = pSSIDList[j].abil;
+								if ((abilities & ABILITY_ENC) != 0)
+								{
+									if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
+										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_STATIC_WEP;
+									else if ((abilities & ABILITY_RSN_DOT1X) != 0)
+										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE;
+									else if ((abilities & ABILITY_WPA_DOT1X) != 0)
+										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE;
+									else if ((abilities & ABILITY_RSN_PSK) != 0)
+										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_PSK;
+									else if ((abilities & ABILITY_WPA_PSK) != 0)
+										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_PSK;									
+								}
+								else
+									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_NONE;
+									
+								if ((abilities & ABILITY_DOT11_STD) != 0)
+									; // no flags to pass on
+								if ((abilities & ABILITY_DOT11_A) != 0)
+									networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_A;
+								if ((abilities & ABILITY_DOT11_B) != 0)
+									networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_B;
+								if ((abilities & ABILITY_DOT11_G) != 0)
+									networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_G;
+								if ((abilities & ABILITY_DOT11_N) != 0)
+									networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_N;
+									
+								m_curNetworks->append(networkInfo);
 							}
-							else
-								networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_NONE;
-								
-							if ((abilities & ABILITY_DOT11_STD) != 0)
-								; // no flags to pass on
-							if ((abilities & ABILITY_DOT11_A) != 0)
-								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_A;
-							if ((abilities & ABILITY_DOT11_B) != 0)
-								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_B;
-							if ((abilities & ABILITY_DOT11_G) != 0)
-								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_G;
-							if ((abilities & ABILITY_DOT11_N) != 0)
-								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_N;
-								
-							m_curNetworks->append(networkInfo);
 							++j;
 						}
 						xsupgui_request_free_ssid_enum(&pSSIDList);
