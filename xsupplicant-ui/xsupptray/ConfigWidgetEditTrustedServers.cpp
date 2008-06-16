@@ -270,7 +270,7 @@ void ConfigWidgetEditTrustedServers::updateCertData()
 	QString temp, temp2;
 
 	temp = m_pTrustedServer->store_type;
-	temp2 = m_pTrustedServer->location;
+	temp2 = m_pTrustedServer->location[0];
 	if (m_pSupplicant->getCertInfo(temp, temp2, &myCertInfo, true) == true)
 	{
 		QFontMetrics pMet = fontMetrics();	
@@ -431,13 +431,14 @@ void ConfigWidgetEditTrustedServers::slotServerSelected()
 		
 		if (location != "")
 		{
-			if (m_pTrustedServer->location != NULL)
+			if (m_pTrustedServer->location[0] != NULL)
 			{
-				free(m_pTrustedServer->location);
-				m_pTrustedServer->location = NULL;
+				free(m_pTrustedServer->location[0]);
+				m_pTrustedServer->location[0] = NULL;
 			}
 
-			m_pTrustedServer->location = _strdup(location.toAscii());
+			m_pTrustedServer->location[0] = _strdup(location.toAscii());
+			m_pTrustedServer->num_locations = 1;
 			slotDataChanged();
 		}
 	}
