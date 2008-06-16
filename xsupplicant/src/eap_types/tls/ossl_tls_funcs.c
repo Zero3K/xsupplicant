@@ -937,6 +937,46 @@ int tls_funcs_get_packet(struct tls_vars *mytls_vars, int maxsize,
 	  return XENONE;
 }
 
+/**
+ * \brief Search a target string to see if it matches with the string provided by pattern.
+ *
+ * @param [in] pattern   The wildcarded string that we need to match.
+ * @param [in] target   The string we are matching against.
+ *
+ * \note For now, we only allow leading astrisks.
+ *
+ * \retval XENONE on match success
+ * \retval XEBADCN on match failure
+ **/
+int tls_funcs_wildcard_match(char *pattern, char *target)
+{
+	char *temp = NULL;
+	char *offset = NULL;
+
+	if (!xsup_assert((pattern != NULL), "pattern != NULL", FALSE)) return XEBADCN;
+
+	if (!xsup_assert((target != NULL), "target != NULL", FALSE)) return XEBADCN;
+
+	temp = pattern;
+
+	while (temp[0] != '*') temp++;
+
+	// We are pointing at the '*' now, we want to go one farther.
+	temp++;
+
+	offset = strstr(target, temp);
+
+	if (offset == NULL) return XEBADCN;   // The substring wasn't found.  The CN is invalid.
+
+	// Check that the string pointed to by offset, and the string pointed to by temp are the
+	// same length.  If they aren't, then the string pointed to by offset isn't located at the
+	// end of the target string.  Since we want to do an exact match beyond the wildcard, this 
+	// would be considered a failure.
+	if (strlen(offset) != strlen(temp)) return XEBADCN;
+
+	return XENONE;
+}
+
 /***********************************************************************
  *
  *  Check the CN field of a certificate against what the user has requested
@@ -947,6 +987,7 @@ int tls_funcs_cn_check(struct tls_vars *mytls_vars)
 {
   char *cnname = NULL;
   char *temp = NULL;
+  int retval = XENONE;
 
   TRACE
 
@@ -984,15 +1025,25 @@ int tls_funcs_cn_check(struct tls_vars *mytls_vars)
 	  temp = mytls_vars->cncheck;
 	  if (cnname != NULL)
 	    {
-	      if (strstr(cnname, temp) == NULL)
-		{
-		  debug_printf(DEBUG_NORMAL, "Certificate CN didn't "
-			  "match!   (Server : %s    Us : %s)\n", cnname, temp);
-		  FREE(cnname);
-		  return XEBADCN;
-		} else {
-		  debug_printf(DEBUG_TLS_CORE, "Certificate CN matched!\n");
-		}
+			// Determine if the search string is the old style (i.e. doesn't use * for a wildcard,
+			// and assumes that mytls_vars->cncheck must be a substring of the one provided), or
+			// is the new style (where * is used as a wildcard.)
+			if (strstr(temp, "*") == NULL)
+			{
+		      if (strstr(cnname, temp) == NULL)
+				{
+				  debug_printf(DEBUG_NORMAL, "Certificate CN didn't "
+					  "match!   (Server : %s    Us : %s)\n", cnname, temp);
+				  FREE(cnname);
+				  return XEBADCN;
+				} else {
+				  debug_printf(DEBUG_TLS_CORE, "Certificate CN matched!\n");
+				}
+			}
+			else
+			{
+				retval = tls_funcs_wildcard_match(temp, cnname);
+			}
 	    }
 	}
     }
