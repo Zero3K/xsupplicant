@@ -1414,6 +1414,7 @@ void wireless_sm_do_active_scan(context *ctx)
 {
   char *newssid = NULL;
   wireless_ctx *wctx = NULL;
+  struct found_ssids *found_ssid = NULL;
 
   xsup_assert((ctx != NULL), "ctx != NULL", TRUE);
 
@@ -1457,8 +1458,36 @@ void wireless_sm_do_active_scan(context *ctx)
 		}
 		else
 		{
-			// If we don't know what to connect to, wait for a bit.
-			wireless_sm_change_state(INT_HELD, ctx);
+			// If we have a forced connection, but are in active scan mode, we need to
+			// determine if we can see the SSID that we are supposed to be connected to.  If we can,
+			// then we should try to connect to it again in order to deal with wireless cards that
+			// may have "forgotten" which network they were connected to.
+			found_ssid = config_ssid_find_by_name(wctx, wctx->cur_essid);
+
+			if (found_ssid != NULL)
+			{
+				config_build(ctx, wctx->cur_essid);
+
+				if (ctx->conn != NULL)
+				{
+					if (TEST_FLAG(ctx->conn->flags, CONFIG_NET_DEST_MAC))
+					{
+						// We need to search again, by MAC address this time.
+						config_ssid_get_by_mac(ctx, ctx->conn->dest_mac);
+					}
+				}
+				else
+				{
+					debug_printf(DEBUG_NORMAL, "No network configuration data is available.  Is this network configured in your configuration file?  Or are you using -p when you shouldn't be?\n");
+				}
+
+				wireless_sm_change_state(ASSOCIATING, ctx);
+			}
+			else
+			{
+				// If we don't know what to connect to, wait for a bit.
+				wireless_sm_change_state(INT_HELD, ctx);
+			}
 		}
 		return;
 	} else {
