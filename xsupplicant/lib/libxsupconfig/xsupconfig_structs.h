@@ -323,7 +323,8 @@ struct config_profiles {
 struct config_trusted_server {
 	char *name;
 	char *store_type;
-	char *location;
+	uint16_t num_locations;
+	char **location;
 	char *common_name;
 	char exact_common_name;
 	uint8_t flags;

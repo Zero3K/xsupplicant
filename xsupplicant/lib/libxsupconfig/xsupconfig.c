@@ -2046,12 +2046,20 @@ void delete_config_devices(struct xsup_devices **head)
  **/
 void delete_config_trusted_server(struct config_trusted_server **tmp_server)
 {
+	int i = 0;
+
   if (((*tmp_server) == NULL) || (tmp_server == NULL))
     return;
 
   FREE_STRING((*tmp_server)->name);
   FREE_STRING((*tmp_server)->store_type);
-  FREE_STRING((*tmp_server)->location);
+
+  for (i = 0; i < (*tmp_server)->num_locations; i++)
+  {
+	FREE_STRING((*tmp_server)->location[i]);
+  }
+  FREE((*tmp_server)->location);
+
   FREE_STRING((*tmp_server)->common_name);
 
   free ((*tmp_server));
@@ -2535,12 +2543,19 @@ void dump_config_devices(struct xsup_devices *data)
  **/
 void dump_config_trusted_server(struct config_trusted_server *start)
 {
+	int i = 0;
+
 	while (start != NULL)
 	{
 		printf("\t--------- Trusted Server ----------\n");
 		printf("\tName        : %s\n", start->name);
 		printf("\tStore Type  : %s\n", start->store_type);
-		printf("\tLocation    : %s\n", start->location);
+
+		for (i = 0; i<start->num_locations; i++)
+		{
+			printf("\tLocation %d  : %s\n", i, start->location[i]);
+		}
+
 		printf("\tCommon Name : %s\n", start->common_name);
 
 		printf("\t------------------------------------\n");

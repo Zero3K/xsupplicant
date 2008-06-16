@@ -1684,20 +1684,24 @@ void doget_connection()
  **/
 void doget_ts()
 {
-	struct config_trusted_server *ts;
+	struct config_trusted_server *ts = NULL;
+	int i =0;
 
 	printf("Getting trusted server settings...");
 
-	if (xsupgui_request_get_trusted_server_config("Test Server", &ts) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_trusted_server_config("Equifax Cert Test", &ts) != REQUEST_SUCCESS)
 	{
 		printf("Failed!\n");
 		//die();
 		return;
 	}
 
-	printf("Success...\n\n");
+	printf("Success... (Found %d locations.)\n\n", ts->num_locations);
 
-	printf("Location = %s\n", ts->location);
+	for (i = 0; i<ts->num_locations; i++)
+	{
+		printf("Location %d = %s\n", i, ts->location[i]);
+	}
 }
 
 /**
@@ -1966,7 +1970,7 @@ void change_ts()
 	struct config_trusted_server *ts = NULL;
 	char *val = NULL;
 
-	if (xsupgui_request_get_trusted_server_config("Test Server 2", &ts) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_trusted_server_config("Equifax Cert Test", &ts) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't get trusted server settings.\n");
 		die();
@@ -1977,6 +1981,10 @@ void change_ts()
 	free(ts->store_type);
 	ts->store_type = _strdup("Mac OS X Store");
 
+	ts->num_locations++;
+	ts->location = realloc(ts->location, ts->num_locations*(sizeof(ts->location)));
+	ts->location[ts->num_locations-1] = _strdup("This won't work!  (But is an okay test. ;)");
+
 	if (xsupgui_request_set_trusted_server_config(ts) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't set trusted server settings.\n");
@@ -1984,7 +1992,7 @@ void change_ts()
 		return;
 	}
 
-	if (xsupgui_request_get_trusted_server_config("Test Server 2", &ts)  != REQUEST_SUCCESS)
+	if (xsupgui_request_get_trusted_server_config("Equifax Cert Test", &ts)  != REQUEST_SUCCESS)
 	{
 		printf("Couldn't get trusted server settings the second time!\n");
 		die();
@@ -2361,6 +2369,9 @@ int main(int argc, char *argv[])
 
 #if 1
 	doget_freq("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
+	doget_ts();
+	change_ts();
+	doget_ts();
 	return 0;
 #endif
 

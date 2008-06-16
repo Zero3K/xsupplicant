@@ -199,10 +199,22 @@ void *xsupconfig_parse_trusted_server_type(void **attr, xmlNodePtr node)
   return myserver;
 }
 
+/**
+ * \brief Parse a <Location> tag for a trusted server block.
+ *
+ * @param[in] attr   Points to the active structure that we are populating in memory.  It should
+ *                   by type cast to the proper type for manipulation.
+ * @param[in] node   Points to the <Location> node that we are currently processing.
+ *
+ * \warning Multiple <Location> tags can be specified in a <Trusted_Server> block.  Be sure that anything
+ *			you do in this function doesn't destroy data that may already exist!
+ *
+ * \retval ptr to the active configuration structure that we are populating in memory.
+ **/
 void *xsupconfig_parse_trusted_server_location(void **attr, xmlNodePtr node)
 {
-  struct config_trusted_server *myserver;
-  char *value;
+  struct config_trusted_server *myserver = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -214,12 +226,16 @@ void *xsupconfig_parse_trusted_server_location(void **attr, xmlNodePtr node)
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
+		// Since we can have more than one location in a trusted server, we should just free the
+		// "value" variable.  If we set myserver->location to NULL, then we would end up leaking memory
+		// and making a big mess.  ;)
 		free(value);
-		myserver->location = NULL;
 	}
 	else
 	{
-		myserver->location = value;
+		myserver->num_locations++;
+		myserver->location = realloc(myserver->location, myserver->num_locations*(sizeof(myserver->location)));
+		myserver->location[myserver->num_locations-1] = value;
 	}
 
   return myserver;

@@ -57,6 +57,7 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 {
 	xmlNodePtr tsnode = NULL;
 	char *temp = NULL;
+	int i = 0;
 	
 	if (cts == NULL) return NULL;
 
@@ -118,20 +119,23 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (cts->location != NULL))
+	for (i = 0; i < cts->num_locations; i++)
 	{
-		xsupconfwrite_convert_amp(cts->location, &temp);
-		if (xmlNewChild(tsnode, NULL, (xmlChar *)"Location", (xmlChar *)temp) == NULL)
+		if ((write_all == TRUE) || (cts->location[i] != NULL))
 		{
+			xsupconfwrite_convert_amp(cts->location[i], &temp);
+			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Location", (xmlChar *)temp) == NULL)
+			{
 #ifdef WRITE_TS_CONFIG
-			printf("Couldn't allocate memory to store <Location> node!\n");
+				printf("Couldn't allocate memory to store <Location> node!\n");
 #endif
-			free(temp);
-			xmlFreeNode(tsnode);
-			return NULL;
-		}
+				free(temp);
+				xmlFreeNode(tsnode);
+				return NULL;
+			}
 
-		free(temp);
+			free(temp);
+		}
 	}
 
 	if ((write_all == TRUE) || (TEST_FLAG(cts->flags, CONFIG_VOLATILE_SERVER)))

@@ -358,6 +358,7 @@ int certificates_windows_load_root_certs(struct tls_vars *mytls_vars, char *loca
 int certificates_load_root(struct tls_vars *mytls_vars, char *trusted_servername)
 {
 	struct config_trusted_server *svr = NULL;
+	int i = 0;
 
 	svr = certificates_find_trusted_server(config_get_trusted_servers(), trusted_servername);
 	if (svr == NULL)
@@ -376,12 +377,15 @@ int certificates_load_root(struct tls_vars *mytls_vars, char *trusted_servername
 		return -1;
 #else
 		// Get the certificate out of the WINDOWS certificate store.  (If we are using Windows. ;)
-		if (certificates_windows_load_root_certs(mytls_vars, svr->location) != XENONE)
+		for (i = 0; i < svr->num_locations; i++)
 		{
-			debug_printf(DEBUG_NORMAL, "Unable to load the root certificate from the Windows "
-					"certificate store!\n");
-			ipc_events_error(NULL, IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD, NULL);
-			return -1;
+			if (certificates_windows_load_root_certs(mytls_vars, svr->location[i]) != XENONE)
+			{
+				debug_printf(DEBUG_NORMAL, "Unable to load the root certificate from the Windows "
+						"certificate store!\n");
+				ipc_events_error(NULL, IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD, NULL);
+				return -1;
+			}
 		}
 
 		return XENONE;
@@ -391,26 +395,33 @@ int certificates_load_root(struct tls_vars *mytls_vars, char *trusted_servername
 	if (strcmp(svr->store_type, "FILE") == 0)
 	{
 		// Get the certificate out of a FILE on the filesystem.
-		if (tls_funcs_load_root_certs(mytls_vars, svr->location, NULL, NULL) != XENONE)
-			{
-			  debug_printf(DEBUG_NORMAL, "Unable to load the root certificate from file "
-				  "'%s'!\n", svr->location);
-			  ipc_events_error(NULL, IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD, NULL);
-			  return -1;
-			}
+		for (i = 0; i < svr->num_locations; i++)
+		{
+			if (tls_funcs_load_root_certs(mytls_vars, svr->location[i], NULL, NULL) != XENONE)
+				{
+				  debug_printf(DEBUG_NORMAL, "Unable to load the root certificate from file "
+					  "'%s'!\n", svr->location[i]);
+				  ipc_events_error(NULL, IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD, NULL);
+				  return -1;
+				}
+		}
+
 		return XENONE;
 	}
 
 	if (strcmp(svr->store_type, "DIRECTORY") == 0)
 	{
 		// Get the certificate out of an OpenSSL directory.
-		if (tls_funcs_load_root_certs(mytls_vars, NULL, svr->location, NULL) != XENONE)
-			{
-			  debug_printf(DEBUG_NORMAL, "Unable to load the root certificate from directory "
-				  "'%s'!\n", svr->location);
-			  ipc_events_error(NULL, IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD, NULL);
-			  return -1;
-			}
+		for (i = 0; i < svr->num_locations; i++)
+		{
+			if (tls_funcs_load_root_certs(mytls_vars, NULL, svr->location[i], NULL) != XENONE)
+				{
+				  debug_printf(DEBUG_NORMAL, "Unable to load the root certificate from directory "
+					  "'%s'!\n", svr->location[i]);
+				  ipc_events_error(NULL, IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD, NULL);
+				  return -1;
+				}
+		}
 		return XENONE;
 	}
 

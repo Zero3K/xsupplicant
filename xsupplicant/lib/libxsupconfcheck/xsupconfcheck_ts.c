@@ -66,6 +66,7 @@ int xsupconfcheck_ts_file_exists(char *filename)
 int xsupconfcheck_ts_check(struct config_trusted_server *ts, int log)
 {
 	int retval = 0;
+	int i = 0;
 
 #ifdef WINDOWS
 	PCCERT_CONTEXT mycert = NULL;
@@ -84,21 +85,27 @@ int xsupconfcheck_ts_check(struct config_trusted_server *ts, int log)
 		retval = -1;
 #else
 		// Now that we have cert chaining, the code below seems broken.
-		mycert = win_cert_handler_get_from_win_store(ts->store_type, ts->location);
-		if (mycert == NULL)
+		for (i = 0; i < ts->num_locations; i++)
 		{
-			if (log == TRUE) error_prequeue_add("Certificate specified by the trusted server configuration couldn't be found!");
-			retval = -1;
+			mycert = win_cert_handler_get_from_win_store(ts->store_type, ts->location[i]);
+			if (mycert == NULL)
+			{
+				if (log == TRUE) error_prequeue_add("Certificate specified by the trusted server configuration couldn't be found!");
+				retval = -1;
+			}
 		}
 #endif
 	}
 
 	if (strcmp(ts->store_type, "FILE") == 0)
 	{
-		if (xsupconfcheck_ts_file_exists(ts->location) != 1)
+		for (i = 0; i < ts->num_locations; i++)
 		{
-			if (log == TRUE) error_prequeue_add("Certificate file specified by the trusted server configuration doesn't exist!");
-			retval = -1;
+			if (xsupconfcheck_ts_file_exists(ts->location[i]) != 1)
+			{
+				if (log == TRUE) error_prequeue_add("Certificate file specified by the trusted server configuration doesn't exist!");
+				retval = -1;
+			}
 		}
 	}
 
