@@ -2837,7 +2837,6 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 
 		// Make sure we weren't doing PSK before.  If we were, then we could get bogus error messages.
 		UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
-		timer_cancel(ctx, PSK_DEATH_TIMER);
 
 		FREE(wctx->cur_essid);
 		wctx->cur_essid = _strdup(ctx->conn->ssid);

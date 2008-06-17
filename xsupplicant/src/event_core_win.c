@@ -909,6 +909,12 @@ void event_core()
 			if (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
 			{
 				wireless_sm_do_state(events[i].ctx);
+
+				if (TEST_FLAG(events[i].ctx->flags, WIRELESS_SM_PSK_DONE))
+				{
+					UNSET_FLAG(events[i].ctx->flags, WIRELESS_SM_PSK_DONE);
+					UNSET_FLAG(events[i].ctx->flags, WIRELESS_SM_DOING_PSK);
+				}
 			}
 		}
 	}

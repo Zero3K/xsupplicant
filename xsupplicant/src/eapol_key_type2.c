@@ -1017,19 +1017,6 @@ void eapol_key_type2_do_type1(context *intdata)
 }
 
 /**
- * \brief Clear our "bad PSK" flag.
- **/
-int8_t eapol_key_type2_psk_timeout(context *ctx)
-{
-	debug_printf(DEBUG_INT, "Clearing bad PSK flag.\n");
-	UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
-
-	timer_cancel(ctx, PSK_DEATH_TIMER);
-
-	return 0;
-}
-
-/**
  * Handle the third packet in the 4 way handshake.  We should be able to
  * generate the pairwise key at this point.
  **/
@@ -1267,11 +1254,12 @@ void eapol_key_type2_do_type3(context *intdata)
   debug_printf(DEBUG_NORMAL, "Interface '%s' set new pairwise IEEE 802.11i/WPA2 key.\n", intdata->desc);
 
 #ifdef WINDOWS
-  // If we get here (and are doing PSK) we need to set a timer to let us know if the PSK is wrong.  The
-  // *proper* way to handle this is to check the disassociate value from the AP to see if it indicates
-  // that the PSK is wrong.  But, Windows doesn't give us access to that, so we will have to play with some
-  // timer magic instead. :-/
-  timer_add_timer(intdata, PSK_DEATH_TIMER, 5, NULL, eapol_key_type2_psk_timeout);
+	// We need to let the event core know that we are done doing the PSK handshake.  This allows it to
+	// go through the event loop one more time to verify that the AP didn't drop us.  If it did drop us,
+	// it is a pretty sure indication that our PSK is invalid.  If it didn't, then we should be good.
+	// Note that sometimes APs will drop us a few seconds after the association, even if the PSK is
+	// valid.  This is *NOT* an indication that the key is wrong!
+  	UNSET_FLAG(((wireless_ctx *)intdata->intTypeData)->flags, WIRELESS_SM_PSK_DONE);
 #endif
 }
 

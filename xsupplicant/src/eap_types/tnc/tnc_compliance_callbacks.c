@@ -168,7 +168,6 @@ int tnc_compliance_callbacks_call(TNC_IMCID imcID, TNC_ConnectionID connID, uint
 	if (cur->callback != NULL)
 	{
 		mycall = cur->callback;
-//		(cur->callback)(imcID, connID, result);
 	}
 
 	if (last == NULL)
