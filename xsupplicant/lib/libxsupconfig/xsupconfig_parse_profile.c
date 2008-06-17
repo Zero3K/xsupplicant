@@ -202,7 +202,7 @@ void *xsupconfig_parse_profile_volatile(void **attr, xmlNodePtr node)
   struct config_profiles *prof = NULL;
   uint8_t result = 0;
 
-  prof = (struct config_profile *)(*attr);
+  prof = (struct config_profiles *)(*attr);
 
   value = (char *)xmlNodeGetContent(node);
 

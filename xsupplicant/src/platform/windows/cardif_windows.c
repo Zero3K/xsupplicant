@@ -1384,10 +1384,10 @@ void cardif_associate(context *ctx)
 int cardif_get_freq(context *ctx, uint32_t *freq)
 {
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+    return -1;
 
   if (!xsup_assert((freq != NULL), "freq != NULL", FALSE))
-	  return;
+	  return -1;
 
   if (wireless->get_freq == NULL) return -1;
 
@@ -3389,9 +3389,9 @@ char *cardif_get_gw(context *ctx)
 	struct win_sock_data *sockData = NULL;
 	int retval = 0;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return NULL;
 
-	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return NULL;
 
 	sockData = (struct win_sock_data *)ctx->sockData;
 
@@ -3424,9 +3424,9 @@ char *cardif_get_netmask(context *ctx)
 	struct win_sock_data *sockData = NULL;
 	int retval = 0;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return NULL;
 
-	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return NULL;
 
 	sockData = (struct win_sock_data *)ctx->sockData;
 
@@ -3558,9 +3558,9 @@ char *cardif_get_ip(context *ctx)
 	struct win_sock_data *sockData = NULL;
 	int retval = 0;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return NULL;
 
-	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return;
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return NULL;
 
 	sockData = (struct win_sock_data *)ctx->sockData;
 

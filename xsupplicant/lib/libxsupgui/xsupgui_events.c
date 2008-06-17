@@ -743,7 +743,7 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 		break;
 
 	case IPC_EVENT_ERROR_CERT_CHAIN_IS_INVALID:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CERT_CHAIN_IS_INVALID, value);
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CERT_CHAIN_IS_INVALID_STR, value);
 		break;
 
 	case IPC_EVENT_ERROR_NOT_SUPPORTED:

@@ -1422,7 +1422,7 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int *tnc_conn_id, char **i
 	}
 
 	memset(&tempint, 0x00, sizeof(tempint));
-	sprintf(&tempint, "%d", tnc_conn_id);
+	sprintf((char *)&tempint, "%d", tnc_conn_id);
 	if (xmlNewChild(t, NULL, "Connection_ID", tempint) == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;

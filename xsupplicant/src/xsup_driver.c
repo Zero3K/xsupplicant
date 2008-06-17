@@ -192,6 +192,7 @@ void xsup_driver_init_config(char *config)
 #ifndef WINDOWS
       config = default_cfg;
 #else
+		// Use CSIDL_SYSTEM for global system config?
 	  if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
 	  {
 		  printf("Couldn't determine the path to the common app data.\n");
