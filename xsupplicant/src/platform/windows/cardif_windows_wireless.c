@@ -229,9 +229,6 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 		  pBssidEx->MacAddress[0], pBssidEx->MacAddress[1], pBssidEx->MacAddress[2], pBssidEx->MacAddress[3],
 		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi, pBssidEx->NetworkTypeInUse, percentage);
 
-	  debug_printf(DEBUG_INT, "IE(s) :\n");
-	  debug_hex_dump(DEBUG_INT, pBssidEx->IEs, pBssidEx->IELength);
-
 	  if (pBssidEx->NetworkTypeInUse == Ndis802_11OFDM5)
 	  {
 		  config_ssid_update_abilities(wctx, ABIL_DOT11_A);

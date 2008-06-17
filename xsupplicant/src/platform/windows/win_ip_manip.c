@@ -33,6 +33,7 @@ struct tmpAddrStruct {
 	char *addr;
 	char *netmask;
 	char *gateway;
+	char *ctx;
 };
 
 ///< A couple of APIs we need aren't normally exported.  So we need to handle that.
@@ -158,6 +159,15 @@ int RegSetDomain(LPCTSTR lpszAdapterName, LPCTSTR pDomain)
 	return TRUE;
 }
 
+/**
+ * \brief Issue an event to Windows to let it know that it needs up date the DNS information
+ *        for the adapter GUID specified by \ref lpszAdapterName.
+ *
+ * @param[in] lpszAdapterName   The GUID of the adapter that we want to notify Windows has been
+ *								updated.
+ *
+ * \retval TRUE on success.
+ **/
 int NotifyDNSChange(LPCTSTR lpszAdapterName)
 {
 	BOOL			bResult = FALSE;
@@ -178,6 +188,12 @@ int NotifyDNSChange(LPCTSTR lpszAdapterName)
 	return bResult;
 }
 
+/**
+ * \brief Flush the DNS resolver cache.
+ *
+ * \retval FALSE on failure.
+ * \retval TRUE on success.
+ **/
 int FlushDNS()
 {
 	int 			bResult = TRUE;
@@ -199,6 +215,16 @@ int FlushDNS()
 	return bResult;
 }
 
+/** 
+ * \brief Delete the DNS servers listed for the interface pointed to by \ref ctx.
+ *
+ * @param[in] ctx   The context for the interface that we want to delete the DNS servers on.
+ *
+ * \note You need to call NotifyDNSChange() to get Windows to recognize the change has been made.
+ *
+ * \retval TRUE on success.
+ * \retval FALSE on failure.
+ **/
 int win_ip_manip_delete_dns_servers(context *ctx)
 {
 	char *dnsList = NULL;
@@ -248,6 +274,18 @@ int win_ip_manip_delete_dns_servers(context *ctx)
 	return TRUE;
 }
 
+/**
+ * \brief Set three DNS server entries for the interface pointed to by \ref ctx.
+ *
+ * @param[in] ctx   The context of the interface that we want to set the DNS addresses
+ *					for.
+ * @param[in] dns1   A string that represents the IP address of the primary DNS server.
+ * @param[in] dns2   A string that represents the IP address of the secondary DNS server.
+ * @param[in] dns3   A string that represents the IP address of the ternary DNS server.
+ *
+ * \retval TRUE on success
+ * \retval FALSE on failure.
+ **/
 int win_ip_manip_set_dns_servers(context *ctx, char *dns1, char *dns2, char *dns3)
 {
 	char *dnsList = NULL;
@@ -310,6 +348,16 @@ int win_ip_manip_set_dns_servers(context *ctx, char *dns1, char *dns2, char *dns
 	return retval;
 }
 
+/**
+ * \brief Set the DNS search domain for the interface specified by \ref ctx.
+ * 
+ * @param[in] ctx   The context of the interface that we want to set the DNS search
+ *					domain for.
+ * @param[in] newdomain   The new domain that we want to be set as the search domain.
+ *
+ * \retval TRUE on success
+ * \retval FALSE on error.
+ **/
 int win_ip_manip_set_dns_domain(context *ctx, char *newdomain)
 {
 	char *guid = NULL;
@@ -625,6 +673,62 @@ int win_ip_manip_enable_dhcp(context *ctx)
 }
 
 /**
+ * \brief Set the default gateway using IP Helper calls.
+ *
+ * @param[in] ctx   The context for the interface that we want to set that gateway on.
+ * @param[in] gw   A string that represents the IP address of the default gateway.
+ **/
+void win_ip_manip_set_gw(context *ctx, char *gw)
+{
+	MIB_IPFORWARDROW row;
+	DWORD retval = 0;
+	wchar_t *ippath = NULL;
+	ULONG ifIndex = 0;
+	DWORD dwRetVal = 0;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	if (!xsup_assert((gw != NULL), "gw != NULL", FALSE)) return;
+
+
+	ippath = cardif_windows_events_get_ip_guid_str(ctx);
+
+	if (ippath == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to determine the interface GUID for interface '%s'!\n", ctx->desc);
+		_endthread();
+		return;
+	}
+
+	if ((dwRetVal = GetAdapterIndex(ippath, &ifIndex)) != NO_ERROR)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to determine interface index for interface '%ws'.  (Error : %d)\n", ippath, dwRetVal);
+		_endthread();
+		return;
+	}
+
+	memset(&row, 0x00, sizeof(row));
+
+	row.dwForwardDest = 0;
+	row.dwForwardMask = 0;
+	row.dwForwardPolicy = 0;
+	row.dwForwardNextHop = inet_addr(gw);
+	row.dwForwardIfIndex = ifIndex;
+	row.dwForwardType = MIB_IPROUTE_TYPE_DIRECT;
+	row.dwForwardProto = MIB_IPPROTO_NETMGMT;
+	row.dwForwardAge = 0;
+	row.dwForwardNextHopAS = 0;
+	row.dwForwardMetric1 = 1;
+	row.dwForwardMetric2 = -1;
+	row.dwForwardMetric3 = -1;
+	row.dwForwardMetric4 = -1;
+	row.dwForwardMetric5 = -1;
+
+	retval = CreateIpForwardEntry(&row);
+	if (retval != NO_ERROR) debug_printf(DEBUG_NORMAL, "Error setting default route for interface '%s'. (Error : %d).\n", ctx->desc, retval);
+}
+
+/**
  * \brief Setting a static IP address can sometimes take a little time.  So we spawn a thread
  *        to let it do it's thing.
  *
@@ -634,14 +738,21 @@ void win_ip_manip_set_static_ip_thread(void *dataPtr)
 {
 	struct tmpAddrStruct *addrData = NULL;
 	int error = 0;
+	DWORD lastErr;
 
 	if (!xsup_assert((dataPtr != NULL), "dataPtr != NULL", FALSE)) return;
 
 	addrData = (struct tmpAddrStruct *)dataPtr;
 
-	if (SetAdapterIpAddress(addrData->guid, 0, inet_addr(addrData->addr), inet_addr(addrData->netmask), 
-		inet_addr(addrData->gateway)) != NO_ERROR) error = 1;
- 
+	// As of XP SP 3, this will always return an error.  But, it still does the right thing. :-/
+	SetAdapterIpAddress(addrData->guid, 0, inet_addr(addrData->addr), inet_addr(addrData->netmask), 0);
+
+	NotifyDNSChange(addrData->guid);
+
+	// Set the gateway using IP Helper calls, since SetAdapterIpAddress is broken in XP SP3.
+	win_ip_manip_set_gw(addrData->ctx, addrData->gateway);
+
+	// !!!! DO NOT FREE CTX HERE!  It will do *REALLY* bad things.
 	FREE(addrData->addr);
 	FREE(addrData->guid);
 	FREE(addrData->netmask);
@@ -686,6 +797,7 @@ int win_ip_manip_set_static_ip(context *ctx, char *addr, char *netmask, char *ga
 	addrData->addr = _strdup(addr);
 	addrData->netmask = _strdup(netmask);
 	addrData->gateway = _strdup(gateway);
+	addrData->ctx = ctx;						// DO NOT FREE THIS IN THE THREAD!!!
 
 	_beginthread(win_ip_manip_set_static_ip_thread, 0, addrData);
 

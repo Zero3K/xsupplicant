@@ -2811,7 +2811,10 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	else
 	{
 		ctx->prof = config_find_profile(ctx->conn->profile);
-		if (ctx->prof == NULL)
+
+		// We only care that there is a profile if we are using wireless.  On wired, it is
+		// okay not to have one as that would be a case where we only want to set IP information.
+		if ((ctx->prof == NULL) && (ctx->intType == ETH_802_11_INT))
 		{
 			debug_printf(DEBUG_IPC, "Couldn't find profile '%s'!\n", ctx->conn->profile);
 			free(conn_name);
@@ -2846,13 +2849,25 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		// If it is wireless, disassociating should reset all of the state machines
 		// that need to be reset.
 		statemachine_reinit(ctx);
-//		statemachine_change_state(ctx, DISCONNECTED);
 		wireless_sm_change_state(ASSOCIATING, ctx);
 	}
 	else
 	{
-		// Send a logoff, followed by a start.
-		statemachine_change_state(ctx, LOGOFF);
+		// Wired.
+
+		// If we don't have a profile defined, then we want to jump to force authed state so
+		// that IP address information still gets set.
+		if (ctx->prof == NULL)
+		{
+			debug_printf(DEBUG_IPC, "Wired interface that doesn't do 802.1X.\n");
+			statemachine_change_state(ctx, S_FORCE_AUTH);
+		}
+		else
+		{
+			// Otherwise, if we want to do 802.1X, send a logoff. (Which will implicitly be followed
+			// by a start.)
+			statemachine_change_state(ctx, LOGOFF);
+		}
 	}
 
 	free(conn_name);

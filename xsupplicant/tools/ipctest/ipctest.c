@@ -2368,6 +2368,11 @@ int main(int argc, char *argv[])
 #endif
 
 #if 1
+	dochangeconn("\\DEVICE\\{4DACA2DF-2701-4B9A-81EC-27FA9EADF721}", "New Connection");
+	return 0;
+#endif
+
+#if 0
 	doget_freq("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
 	doget_ts();
 	change_ts();

@@ -310,19 +310,22 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 	}
 	else
 	{
-		// If the interface is wired, then make sure we have a profile set, and it is valid.
-		switch (xsupconfcheck_check_profile(conn->profile, log))
+		if (conn->profile != NULL)
 		{
-		case PROFILE_NEED_UPW:
-			retval = CONNECTION_NEED_UPW;
-			break;
+			// If the interface is wired, and we have a profile, make sure it is valid.
+			switch (xsupconfcheck_check_profile(conn->profile, log))
+			{
+			case PROFILE_NEED_UPW:
+				retval = CONNECTION_NEED_UPW;
+				break;
 
-		case 0:
-			break;
+			case 0:
+				break;
 
-		default:
-			// Don't need to write an error string here.
-			retval = -1;
+			default:
+				// Don't need to write an error string here.
+				retval = -1;
+			}
 		}
 	}
 
