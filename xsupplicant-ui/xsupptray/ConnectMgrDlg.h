@@ -49,6 +49,7 @@ extern "C"
 class TrayApp;
 class Emitter;
 class PreferredConnections;
+class ConnectionWizard;
 
 class ConnectMgrDlg : public QWidget
 {
@@ -76,6 +77,7 @@ private slots:
 	void wiredAutoConnectStateChanged(int);
 	void showPriorityDialog(void);
 	void cleanupPriorityDialog(void);
+	void launchConnectionWizard(void);
 	
 private:
 	QWidget *m_pParent;
@@ -102,6 +104,7 @@ private:
 	QCheckBox *m_pWiredAutoConnect;
 	
 	PreferredConnections *m_pPrefDlg;
+	ConnectionWizard *m_pConnWizard;
 	
 	static const int m_minConnListRowCount = 6;
 	

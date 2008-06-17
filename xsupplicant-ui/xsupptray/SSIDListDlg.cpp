@@ -71,15 +71,15 @@ SSIDListDlg::~SSIDListDlg()
 	if (m_pConnectButton != NULL)
 		Util::myDisconnect(m_pConnectButton, SIGNAL(clicked()), this, SLOT(connectToSelectedNetwork()));
 	
-	if (m_pRealForm != NULL) 
-		delete m_pRealForm;	
-		
 	if (m_pSSIDList != NULL)
 	{
 		Util::myDisconnect(m_pSSIDList, SIGNAL(ssidSelectionChange(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListSelectionChange(const WirelessNetworkInfo &)));
 		Util::myDisconnect(m_pSSIDList, SIGNAL(ssidDoubleClick(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListDoubleClick(const WirelessNetworkInfo &)));
 		delete m_pSSIDList;
 	}
+		
+	if (m_pRealForm != NULL) 
+		delete m_pRealForm;	
 }
 
 bool SSIDListDlg::initUI()

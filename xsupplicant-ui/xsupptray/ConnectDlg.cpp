@@ -32,13 +32,15 @@
 
 #include "stdafx.h"
 
+#include <QVector>
+#include <algorithm>
+
 #include "ConnectDlg.h"
 #include "FormLoader.h"
 #include "Emitter.h"
 #include "TrayApp.h"
 #include "SSIDListDlg.h"
-#include <QVector>
-#include <algorithm>
+#include "ConnectionWizard.h"
 
 extern "C" {
 #include "libxsupgui/xsupgui_request.h"
@@ -55,6 +57,7 @@ ConnectDlg::ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayA
 	m_pSupplicant(supplicant)
 {
 	m_pSSIDListDlg = NULL;
+	m_pConnWizard = NULL;
 }
 
 ConnectDlg::~ConnectDlg()
@@ -77,6 +80,9 @@ ConnectDlg::~ConnectDlg()
 	if (m_pWiredConnectionList != NULL)
 		Util::myDisconnect(m_pWiredConnectionList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWiredConnection(int)));	
 		
+	if (m_pConnWizardButton != NULL)
+		Util::myDisconnect(m_pConnWizardButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
+				
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
 		
 	if (m_pSSIDListDlg != NULL)
@@ -116,12 +122,16 @@ bool ConnectDlg::initUI(void)
 	m_pWiredConnectionList = qFindChild<QComboBox*>(m_pRealForm, "comboBoxWiredConnection");
 	m_pWirelessConnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessConnect");
 	m_pWiredConnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWiredConnect");
+	m_pConnWizardButton = qFindChild<QPushButton*>(m_pRealForm, "buttonNewConnection");
 	
 	// populate text
 	
 	// wireless tab
 	if (m_pCloseButton != NULL)
 		m_pCloseButton->setText(tr("Close"));
+		
+	if (m_pConnWizardButton != NULL)
+		m_pConnWizardButton->setText(tr("New Connection"));
 	
 	if (m_pBrowseWirelessNetworksButton != NULL)
 		m_pBrowseWirelessNetworksButton->setText(tr("Browse Networks"));
@@ -182,6 +192,9 @@ bool ConnectDlg::initUI(void)
 		
 	if (m_pWiredConnectionList != NULL)
 		Util::myConnect(m_pWiredConnectionList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWiredConnection(int)));
+		
+	if (m_pConnWizardButton != NULL)
+		Util::myConnect(m_pConnWizardButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
 		
 	Util::myConnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
 	//Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
@@ -314,8 +327,10 @@ void ConnectDlg::populateWirelessConnectionList(void)
 
 void ConnectDlg::selectWirelessAdapter(int index)
 {
-	if (m_pWirelessAdapterList != NULL)
+	if (m_pWirelessAdapterList != NULL) {
 		m_currentWirelessAdapter = m_pWirelessAdapterList->itemText(index);
+		m_pWirelessAdapterList->setToolTip(m_currentWirelessAdapter);
+	}
 	
 	this->populateWirelessConnectionList();
 	
@@ -386,8 +401,10 @@ void ConnectDlg::populateWiredConnectionList(void)
 
 void ConnectDlg::selectWiredAdapter(int index)
 {
-	if (m_pWiredAdapterList != NULL)
+	if (m_pWiredAdapterList != NULL) {
 		m_currentWiredAdapter = m_pWiredAdapterList->itemText(index);
+		m_pWiredAdapterList->setToolTip(m_currentWiredAdapter);
+	}
 	
 	this->populateWiredConnectionList();
 	
@@ -517,5 +534,27 @@ void ConnectDlg::selectWiredConnection(int connIdx)
 			QString curConnName = m_pWiredConnectionList->itemText(m_pWiredConnectionList->currentIndex());
 			m_pWiredConnectButton->setEnabled(!curConnName.isEmpty());
 		}
+	}
+}
+
+void ConnectDlg::launchConnectionWizard(void)
+{
+	if (m_pConnWizard == NULL)
+	{
+		// create the wizard if it doesn't already exist
+		m_pConnWizard = new ConnectionWizard(this, m_pRealForm);
+		if (m_pConnWizard != NULL)
+		{
+			if (m_pConnWizard->create() == true)
+			{
+				m_pConnWizard->show();
+			}
+			// else show error?
+		}
+		// else show error?
+	}
+	else
+	{
+		m_pConnWizard->show();
 	}
 }

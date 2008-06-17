@@ -30,71 +30,65 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#ifndef _CONNECTDLG_H_
-#define _CONNECTDLG_H_
+#ifndef _CONNECTIONWIZARD_H_
+#define _CONNECTIONWIZARD_H_
 
-#include <QPushButton>
 #include <QWidget>
 #include <QLabel>
-#include <QTabWidget>
-#include <QComboBox>
+#include <QPushButton>
+#include <QString>
+#include <QStackedWidget>
+#include <QStack>
 
-class TrayApp;
-class Emitter;
-class SSIDListDlg;
-class ConnectionWizard;
+class WizardPage;
 
-class ConnectDlg : public QWidget
+class ConnectionWizard : public QWidget
 {
 	Q_OBJECT
 	
-public: 
-	ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant);
-	~ConnectDlg();
-	void show(void);
+public:
+	ConnectionWizard(QWidget *parent, QWidget *parentWindow);
+	~ConnectionWizard(void);
 	bool create(void);
+	void show(void);
+	
+	typedef enum {
+		pageNoPage=-1,
+		pageNetworkType=0,
+		pageWiredSecurity,
+		pageWirelessNetwork,
+		pageWirelessInfo,
+		pageIPOptions,
+		pageStaticIP,
+		pageFinishPage,
+		pageLastPage,
+	} wizardPages;
+	
+public:
+	// add classes for all wozard pages here
+	friend class WizardPageNetworkType;
 	
 private:
 	bool initUI(void);
-	void populateWirelessAdapterList(void);
-	void populateWiredAdapterList(void);
-	void populateWirelessConnectionList(void);
-	void populateWiredConnectionList(void);
-	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
+	bool loadPages(void);
+	void gotoPage(wizardPages newPageIdx);
 	
 private slots:
-	void showSSIDList(void);
-	void selectWirelessAdapter(int);
-	void selectWiredAdapter(int);
-	void selectWirelessConnection(int);
-	void selectWiredConnection(int);
-	void populateConnectionLists(void);
-	void launchConnectionWizard(void);
-		
+	void gotoNextPage(void);
+	void gotoPrevPage(void);
+	
 private:
-	Emitter *m_pEmitter;
-	QWidget *m_pRealForm;
 	QWidget *m_pParent;
 	QWidget *m_pParentWindow;
+	QWidget *m_pRealForm;
+	QPushButton *m_pCancelButton;
+	QPushButton *m_pBackButton;
+	QPushButton *m_pNextButton;
+	QLabel *m_pHeaderLabel;
+	QStackedWidget *m_pStackedWidget;
+	WizardPage *m_wizardPages[pageLastPage];
 	
-	QTabWidget	*m_pAdapterTabControl;
-	QComboBox	*m_pWirelessAdapterList;
-	QComboBox	*m_pWiredAdapterList;
-	QComboBox	*m_pWirelessConnectionList;
-	QComboBox	*m_pWiredConnectionList;
-	QPushButton *m_pCloseButton;
-	QPushButton *m_pBrowseWirelessNetworksButton;
-	QPushButton *m_pWiredConnectButton;
-	QPushButton *m_pWirelessConnectButton;
-	QPushButton *m_pConnWizardButton;
-
-	TrayApp *m_pSupplicant;
-	SSIDListDlg *m_pSSIDListDlg;
-	ConnectionWizard *m_pConnWizard;
-	QString	m_currentWirelessAdapter;
-	QString m_currentWiredAdapter;
-	int m_lastWirelessConnectionIdx;
-	int m_lastWiredConnectionIdx;
+	QStack<wizardPages> m_wizardHistory;
+	wizardPages m_currentPage;
 };
-     
 #endif

@@ -38,6 +38,7 @@
 #include "TrayApp.h"
 #include "XSupWrapper.h"
 #include "PreferredConnections.h"
+#include "ConnectionWizard.h"
 #include <QLabel>
 #include <QList>
 
@@ -52,6 +53,7 @@ ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e,
 {
 	m_pConnections = NULL;
 	m_pPrefDlg = NULL;
+	m_pConnWizard = NULL;
 }
 
 ConnectMgrDlg::~ConnectMgrDlg()
@@ -69,7 +71,10 @@ ConnectMgrDlg::~ConnectMgrDlg()
 		Util::myDisconnect(m_pDeleteConnButton, SIGNAL(clicked()), this, SLOT(deleteSelectedConnection()));
 		
 	if (m_pWiredAutoConnect != NULL)
-		Util::myDisconnect(m_pWiredAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(wiredAutoConnectStateChanged(int)));		
+		Util::myDisconnect(m_pWiredAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(wiredAutoConnectStateChanged(int)));	
+		
+	if (m_pNewConnButton != NULL)
+		Util::myDisconnect(m_pNewConnButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));	
 
 	if (m_pPrefDlg != NULL)
 		delete m_pPrefDlg;
@@ -188,6 +193,9 @@ bool ConnectMgrDlg::initUI(void)
 		
 	if (m_pNetworkPrioritiesButton != NULL)
 		Util::myConnect(m_pNetworkPrioritiesButton, SIGNAL(clicked()), this, SLOT(showPriorityDialog()));
+		
+	if (m_pNewConnButton != NULL)
+		Util::myConnect(m_pNewConnButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
 		
 	// other initializations
 	if (m_pMainTab != NULL)
@@ -479,5 +487,27 @@ void ConnectMgrDlg::bringToFront(void)
 	{
 		m_pRealForm->raise();
 		m_pRealForm->activateWindow();
+	}
+}
+
+void ConnectMgrDlg::launchConnectionWizard(void)
+{
+	if (m_pConnWizard == NULL)
+	{
+		// create the wizard if it doesn't already exist
+		m_pConnWizard = new ConnectionWizard(this, m_pRealForm);
+		if (m_pConnWizard != NULL)
+		{
+			if (m_pConnWizard->create() == true)
+			{
+				m_pConnWizard->show();
+			}
+			// else show error?
+		}
+		// else show error?
+	}
+	else
+	{
+		m_pConnWizard->show();
 	}
 }
