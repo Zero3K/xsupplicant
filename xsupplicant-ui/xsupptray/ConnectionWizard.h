@@ -42,6 +42,38 @@
 
 class WizardPage;
 
+class ConnectionWizardData
+{
+public:
+
+	bool m_wireless;
+	QString adapterDesc;
+	QString networkName;
+	QString connectionName;
+	
+	typedef enum {
+		assoc_none,
+		assoc_WEP,
+		assoc_WPA_PSK,
+		assoc_WPA_Ent,
+		assoc_WPA2_PSK,
+		assoc_WPA2_Ent
+	} assocMode;
+	
+	assocMode wirelessAssocMode;
+	
+	typedef enum {
+		encrypt_WEP,
+		encrypt_TKIP,
+		encrypt_AES
+	} encryptMethod;
+	
+	encryptMethod wirelessEncryptMeth;
+	
+	bool staticIP;
+	
+};
+
 class ConnectionWizard : public QWidget
 {
 	Q_OBJECT
@@ -60,13 +92,12 @@ public:
 		pageWirelessInfo,
 		pageIPOptions,
 		pageStaticIP,
+		pageDot1XProtocol,
+		pageDot1XInnerProtocol,
+		pageDot1XCert,
 		pageFinishPage,
 		pageLastPage,
 	} wizardPages;
-	
-public:
-	// add classes for all wozard pages here
-	friend class WizardPageNetworkType;
 	
 private:
 	bool initUI(void);
@@ -87,6 +118,7 @@ private:
 	QLabel *m_pHeaderLabel;
 	QStackedWidget *m_pStackedWidget;
 	WizardPage *m_wizardPages[pageLastPage];
+	ConnectionWizardData *m_pConnData;
 	
 	QStack<wizardPages> m_wizardHistory;
 	wizardPages m_currentPage;

@@ -176,7 +176,16 @@ bool ConnectionWizard::loadPages(void)
 					break;
 				case ConnectionWizard::pageWirelessInfo:
 					newPage = new WizardPageWirelessInfo(this, m_pStackedWidget);
-					break;														
+					break;
+				case ConnectionWizard::pageDot1XProtocol:
+					newPage = new WizardPageDot1XProtocol(this, m_pStackedWidget);
+					break;
+				case ConnectionWizard::pageDot1XInnerProtocol:
+					newPage = new WizardPageDot1XInnerProtocol(this, m_pStackedWidget);
+					break;	
+				case ConnectionWizard::pageDot1XCert:
+					newPage = new WizardPageDot1XCert(this, m_pStackedWidget);
+					break;																													
 				default:
 					break;
 			}

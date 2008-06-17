@@ -166,7 +166,7 @@ class WizardPageWirelessInfo : public WizardPage
 public:
 	WizardPageWirelessInfo(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
-	virtual ConnectionWizard::wizardPages getNextPage(void) { return ConnectionWizard::pageIPOptions; };
+	virtual ConnectionWizard::wizardPages getNextPage(void);
 	virtual void init(void) {};
 	virtual QString getHeaderString(void) { return tr("Wireless Network Settings"); };
 private slots:
@@ -177,5 +177,51 @@ private:
 	QComboBox *m_pEncryption;
 	QCheckBox *m_pHiddenNetwork;
 	QLabel *m_pEncryptionLabel;
+};
+
+class WizardPageDot1XProtocol : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageDot1XProtocol(QWidget *parent, QWidget *parentWidget);
+	virtual bool create(void);
+	virtual ConnectionWizard::wizardPages getNextPage(void);
+	virtual void init(void) {};
+	virtual QString getHeaderString(void) { return tr("802.1X Settings"); };
+private:
+	QComboBox *m_pProtocol;
+};
+
+class WizardPageDot1XInnerProtocol : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageDot1XInnerProtocol(QWidget *parent, QWidget *parentWidget);
+	virtual bool create(void);
+	virtual ConnectionWizard::wizardPages getNextPage(void);
+	virtual void init(void) {};
+	virtual QString getHeaderString(void) { return tr("802.1X Settings"); };
+private:
+	QComboBox *m_pProtocol;
+	QLineEdit *m_pOuterID;
+	QCheckBox *m_pValidateCert;
+};
+
+class WizardPageDot1XCert : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageDot1XCert(QWidget *parent, QWidget *parentWidget);
+	virtual bool create(void);
+	virtual ConnectionWizard::wizardPages getNextPage(void) { return ConnectionWizard::pageIPOptions; };
+	virtual void init(void) {};
+	virtual QString getHeaderString(void) { return tr("802.1X Settings"); };
+private:
+	QTableWidget *m_pCertTable;
+	QLineEdit *m_pNameField;
+	QCheckBox *m_pVerifyName;
 };
 #endif

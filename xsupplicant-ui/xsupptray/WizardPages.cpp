@@ -118,7 +118,7 @@ bool WizardPageWiredSecurity::create(void)
 ConnectionWizard::wizardPages WizardPageWiredSecurity::getNextPage(void)
 {
 	if (m_pRadioButtonDot1X != NULL && m_pRadioButtonDot1X->isChecked() == true)
-		return ConnectionWizard::pageNoPage; // update this
+		return ConnectionWizard::pageDot1XProtocol;
 	else if (m_pRadioButtonNone != NULL && m_pRadioButtonNone->isChecked() == true)
 		return ConnectionWizard::pageIPOptions;
 	else
@@ -159,7 +159,7 @@ bool WizardPageIPOptions::create(void)
 ConnectionWizard::wizardPages WizardPageIPOptions::getNextPage(void)
 {
 	if (m_pRadioButtonAuto != NULL && m_pRadioButtonAuto->isChecked() == true)
-		return ConnectionWizard::pageFinishPage; // update this
+		return ConnectionWizard::pageFinishPage;
 	else if (m_pRadioButtonStatic != NULL && m_pRadioButtonStatic->isChecked() == true)
 		return ConnectionWizard::pageStaticIP;
 	else
@@ -375,6 +375,22 @@ bool WizardPageWirelessInfo::create(void)
 		
 	return true;
 }
+ConnectionWizard::wizardPages WizardPageWirelessInfo::getNextPage(void)
+{
+	if (m_pAssocMode != NULL)
+	{
+		// if WPA-Ent or WPA2-Ent, get 802.1X settings
+		if (m_pAssocMode->currentIndex() == 3 || m_pAssocMode->currentIndex() == 5)
+			return ConnectionWizard::pageDot1XProtocol;
+		else
+			return ConnectionWizard::pageIPOptions;
+	}
+	else
+	{
+		// bad stuff.  Need to do something better than this
+		return ConnectionWizard::pageNoPage;
+	}
+}
 
 void WizardPageWirelessInfo::hiddenStateChanged(int newState)
 {
@@ -394,4 +410,194 @@ void WizardPageWirelessInfo::hiddenStateChanged(int newState)
 		default:
 			break;
 	}
+}
+
+WizardPageDot1XProtocol::WizardPageDot1XProtocol(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+}
+
+bool WizardPageDot1XProtocol::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageDot1XProtocol.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// cache off pointers to objects	
+	m_pProtocol = qFindChild<QComboBox*>(m_pRealForm, "comboBoxProtocol");
+		
+	// dynamically populate text
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("Indicate the EAP protocol to use for 802.1X authentication:"));	
+
+	QLabel *pProtocolLabel = qFindChild<QLabel*>(m_pRealForm, "labelProtocol");
+	if (pProtocolLabel != NULL)
+		pProtocolLabel->setText(tr("Protocol:"));
+		
+	if (m_pProtocol != NULL)
+	{
+		m_pProtocol->clear();
+		m_pProtocol->addItem(tr("EAP-PEAP"));
+		m_pProtocol->addItem(tr("EAP-TTLS"));
+		m_pProtocol->addItem(tr("EAP-MD5"));
+	}
+		
+	return true;
+}
+
+ConnectionWizard::wizardPages WizardPageDot1XProtocol::getNextPage(void)
+{
+	if (m_pProtocol != NULL)
+	{
+		// if EAP-MD5
+		if (m_pProtocol->currentIndex() == 2)
+			return ConnectionWizard::pageIPOptions;
+		else
+			return ConnectionWizard::pageDot1XInnerProtocol;
+	}
+	else
+	{
+		// bad. what to do?
+		return ConnectionWizard::pageNoPage;
+	}
+}
+
+WizardPageDot1XInnerProtocol::WizardPageDot1XInnerProtocol(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+}
+
+bool WizardPageDot1XInnerProtocol::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageDot1XInnerProtocol.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// cache off pointers to objects	
+	m_pProtocol = qFindChild<QComboBox*>(m_pRealForm, "comboBoxProtocol");
+	m_pOuterID = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldOuterID");
+	m_pValidateCert = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxValidateCert");
+		
+	// dynamically populate text
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("Enter your PEAP settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));	
+
+	QLabel *pProtocolLabel = qFindChild<QLabel*>(m_pRealForm, "labelProtocol");
+	if (pProtocolLabel != NULL)
+		pProtocolLabel->setText(tr("Tunnel Protocol:"));
+		
+	QLabel *pOuterIDLabel = qFindChild<QLabel*>(m_pRealForm, "labelOuterID");
+	if (pOuterIDLabel != NULL)
+		pOuterIDLabel->setText(tr("Outer Identity:"));
+		
+	QLabel *pOptionalLabel = qFindChild<QLabel*>(m_pRealForm, "labelOptional");
+	if (pOptionalLabel != NULL)
+		pOptionalLabel->setText(tr("(Optional)"));			
+		
+	if (m_pValidateCert != NULL)
+		m_pValidateCert->setText(tr("Validate Server Certificate"));
+		
+	if (m_pProtocol != NULL)
+	{
+		// !!! need to populate based on outer protocol
+		m_pProtocol->clear();
+		m_pProtocol->addItem(tr("EAP-MSCHAPv2"));
+		m_pProtocol->addItem(tr("EAP-GTC"));
+	}
+		
+	return true;
+}
+
+ConnectionWizard::wizardPages WizardPageDot1XInnerProtocol::getNextPage(void)
+{
+	if (m_pValidateCert != NULL)
+	{
+		// if not set to validate server cert
+		if (m_pValidateCert->checkState() == Qt::Unchecked)
+			return ConnectionWizard::pageIPOptions;
+		else
+			return ConnectionWizard::pageDot1XCert;
+	}
+	else
+	{
+		// bad. what to do?
+		return ConnectionWizard::pageNoPage;
+	}
+}
+
+WizardPageDot1XCert::WizardPageDot1XCert(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+}
+
+bool WizardPageDot1XCert::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageDot1XCert.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// cache off pointers to objects	
+	m_pCertTable = qFindChild<QTableWidget*>(m_pRealForm, "tableCertList");
+	m_pNameField = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldCommonName");
+	m_pVerifyName = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxVerifyName");
+		
+	// dynamically populate text
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("Choose a server certificate to validate against:"));	
+
+	QLabel *pLabel = qFindChild<QLabel*>(m_pRealForm, "labelNameInstructions");
+	if (pLabel != NULL)
+		pLabel->setText(tr("Use \"*\" for prefix wildcarding.  For example: \"*.utah.edu\""));		
+		
+	if (m_pVerifyName != NULL)
+		m_pVerifyName->setText(tr("Verify Common Name"));
+		
+	// other initializations
+	if (m_pCertTable != NULL)
+	{
+		// disallow user from sizing columns
+		m_pCertTable->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
+		
+		// network name
+		m_pCertTable->horizontalHeaderItem(0)->setText(tr(""));
+		m_pCertTable->horizontalHeader()->resizeSection(0,16);	
+		
+		// signal
+		m_pCertTable->horizontalHeaderItem(1)->setText(tr("Name"));
+		m_pCertTable->horizontalHeader()->setResizeMode(1,QHeaderView::Stretch);
+		
+		// don't draw header any differently when row is selected
+		m_pCertTable->horizontalHeader()->setHighlightSections(false);
+		m_pCertTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		
+		QCheckBox *pCheckBox;
+		m_pCertTable->clearContents();
+		m_pCertTable->verticalHeader()->hide();
+		m_pCertTable->setRowCount(5);
+		
+		m_pCertTable->setRowHeight(0,20);
+		pCheckBox = new QCheckBox();
+		m_pCertTable->setCellWidget(0,0,pCheckBox);
+		
+		m_pCertTable->setRowHeight(1,20);
+		pCheckBox = new QCheckBox();
+		m_pCertTable->setCellWidget(1,0,pCheckBox);
+				
+		m_pCertTable->setRowHeight(2,20);
+		pCheckBox = new QCheckBox();
+		m_pCertTable->setCellWidget(2,0,pCheckBox);
+				
+		m_pCertTable->setRowHeight(3,20);
+		pCheckBox = new QCheckBox();
+		m_pCertTable->setCellWidget(3,0,pCheckBox);
+				
+		m_pCertTable->setRowHeight(4,20);
+		pCheckBox = new QCheckBox();
+		m_pCertTable->setCellWidget(4,0,pCheckBox);		
+	}
+		
+	return true;
 }

@@ -31,7 +31,7 @@
    </size>
   </property>
   <property name="windowTitle" >
-   <string>Connection Wizard</string>
+   <string>Connection Wizard - XSupplicant</string>
   </property>
   <property name="windowIcon" >
    <iconset>icons/prod_color.png</iconset>
