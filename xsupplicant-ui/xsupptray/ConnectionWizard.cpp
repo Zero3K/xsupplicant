@@ -39,8 +39,43 @@
 #include "FormLoader.h"
 #include "Util.h"
 
-extern "C" {
-#include "libxsupgui/xsupgui_request.h"
+ConnectionWizardData::ConnectionWizardData()
+{
+	// default to wired connection
+	m_wireless = false;
+	
+	m_adapterDesc = "";
+	m_connectionName = QWidget::tr("New Connection");
+	
+	m_networkName = "";
+	m_wirelessAssocMode = ConnectionWizardData::assoc_none;
+	m_wirelessEncryptMeth = ConnectionWizardData::encrypt_TKIP;
+	
+	// default to 802.1X for wired
+	m_wiredSecurity = true;
+	
+	// default to DHCP
+	m_staticIP = false;
+	
+	// !!! need better defaults for these 
+	m_IPAddress = "";
+	m_netmask = "";
+	m_gateway = "";
+	m_primaryDNS = "";
+	m_secondaryDNS = "";
+	
+	m_eapProtocol = ConnectionWizardData::eap_peap;
+	m_outerIdentity = "";
+	m_validateCert = true;
+	m_innerProtocol = ConnectionWizardData::inner_mschapv2;
+	m_serverCerts = QStringList();
+	m_verifyCommonName = false;
+	m_commonNames = QStringList();
+}
+
+ConnectionWizardData::~ConnectionWizardData()
+{
+	// nothing special to do. No pointers.
 }
 
 ConnectionWizard::ConnectionWizard(QWidget *parent, QWidget *parentWindow)
@@ -52,6 +87,7 @@ ConnectionWizard::ConnectionWizard(QWidget *parent, QWidget *parentWindow)
 	for (i=0; i<ConnectionWizard::pageLastPage; i++)
 		m_wizardPages[i] = NULL;
 	m_currentPage = pageNoPage;
+	m_pConnData = NULL;
 }
 
 ConnectionWizard::~ConnectionWizard(void)
@@ -116,7 +152,6 @@ bool ConnectionWizard::initUI(void)
 		Util::myConnect(m_pBackButton, SIGNAL(clicked()), this ,SLOT(gotoPrevPage()));
 		
 	this->loadPages();
-	this->gotoNextPage();
 		
 	return true;
 }
@@ -219,7 +254,7 @@ void ConnectionWizard::gotoPage(ConnectionWizard::wizardPages newPageIdx)
 			m_pHeaderLabel->setText(headerString);
 		}
 		
-		m_wizardPages[newPageIdx]->init();
+		m_wizardPages[newPageIdx]->init(m_pConnData);
 		
 		if (m_wizardPages[newPageIdx]->isFinalPage() == true)
 			m_pNextButton->setText(tr("Finish"));
@@ -244,12 +279,21 @@ void ConnectionWizard::gotoNextPage(void)
 	if (m_currentPage == pageNoPage)
 		nextPage = pageNetworkType;
 	else if (m_wizardPages[m_currentPage] != NULL)
-		nextPage = m_wizardPages[m_currentPage]->getNextPage();
+	{
+		if (m_wizardPages[m_currentPage]->validate() == true)
+		{
+			m_pConnData = m_wizardPages[m_currentPage]->wizardData();
+			nextPage = m_wizardPages[m_currentPage]->getNextPage();
+		}
+		else
+			nextPage = pageNoPage;
+	}
 	
 	if (m_currentPage != pageNoPage && nextPage != pageNoPage)
 		m_wizardHistory.push(m_currentPage);
 			
-	this->gotoPage(nextPage);
+	if (nextPage != pageNoPage)
+		this->gotoPage(nextPage);
 }
 
 void ConnectionWizard::gotoPrevPage(void)
@@ -260,5 +304,19 @@ void ConnectionWizard::gotoPrevPage(void)
 		
 	wizardPages prevPage = m_wizardHistory.pop();
 	
+	// store off data for when they return.  Don't validate tho
+	m_pConnData = m_wizardPages[m_currentPage]->wizardData();
 	this->gotoPage(prevPage);
+}
+
+void ConnectionWizard::init(void)
+{
+	// start with fresh connection data
+	if (m_pConnData != NULL)
+		delete m_pConnData;
+	m_pConnData = new ConnectionWizardData();
+	
+	// load up first page
+	m_currentPage = pageNoPage;
+	this->gotoNextPage();
 }

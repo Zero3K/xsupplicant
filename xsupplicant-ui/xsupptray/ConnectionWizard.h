@@ -45,22 +45,29 @@ class WizardPage;
 class ConnectionWizardData
 {
 public:
+	ConnectionWizardData();
+	~ConnectionWizardData();
+	
+public:
 
+	// general settings
 	bool m_wireless;
-	QString adapterDesc;
-	QString networkName;
-	QString connectionName;
+	QString m_adapterDesc;
+	QString m_connectionName;
+	
+	// wireless settings
+	QString m_networkName;
 	
 	typedef enum {
 		assoc_none,
 		assoc_WEP,
 		assoc_WPA_PSK,
-		assoc_WPA_Ent,
+		assoc_WPA_ENT,
 		assoc_WPA2_PSK,
-		assoc_WPA2_Ent
+		assoc_WPA2_ENT
 	} assocMode;
 	
-	assocMode wirelessAssocMode;
+	assocMode m_wirelessAssocMode;
 	
 	typedef enum {
 		encrypt_WEP,
@@ -68,9 +75,43 @@ public:
 		encrypt_AES
 	} encryptMethod;
 	
-	encryptMethod wirelessEncryptMeth;
+	encryptMethod m_wirelessEncryptMeth;
 	
-	bool staticIP;
+	// wired settings
+	bool m_wiredSecurity;
+	
+	// IP settings
+	bool m_staticIP;
+	QString m_IPAddress;
+	QString m_netmask;
+	QString m_gateway;
+	QString m_primaryDNS;
+	QString m_secondaryDNS;
+	
+	// 802.1X settings
+	typedef enum {
+		eap_peap,
+		eap_ttls,
+		eap_md5
+	} Dot1XProtocol;
+	
+	typedef enum {
+		inner_pap,
+		inner_chap,
+		inner_mschap,
+		inner_mschapv2,
+		inner_eap_md5,
+		inner_eap_mschapv2,
+		inner_eap_gtc
+	} Dot1XInnerProtocol;
+	
+	Dot1XProtocol m_eapProtocol;
+	QString m_outerIdentity;
+	bool m_validateCert;
+	Dot1XInnerProtocol m_innerProtocol;
+	QStringList m_serverCerts;
+	bool m_verifyCommonName;
+	QStringList m_commonNames;
 	
 };
 
@@ -82,6 +123,7 @@ public:
 	ConnectionWizard(QWidget *parent, QWidget *parentWindow);
 	~ConnectionWizard(void);
 	bool create(void);
+	void init(void);
 	void show(void);
 	
 	typedef enum {

@@ -41,8 +41,7 @@
 #include <QComboBox>
 
 #include "ConnectionWizard.h"
-
-class SSIDList;
+#include "SSIDList.h"
 
 class WizardPage : public QWidget
 {
@@ -51,17 +50,50 @@ class WizardPage : public QWidget
 public:
 	WizardPage(QWidget *parent, QWidget *parentWidget);
 	virtual ~WizardPage() { if (m_pRealForm) delete m_pRealForm; };
+	
+	// called to perform initialization on page independent of data,
+	// namely loading form representing page, populating any static
+	// text, etc. Returns "true" if everything loaded/initialized
+	// successfully
 	virtual bool create(void) = 0;
+	
+	// return QWidget representing UI of this page.  Page class
+	// is responsible for loading this
 	QWidget *getWidget(void) { return m_pRealForm; };
+	
+	// return index of next page for wizard to visit, given
+	// selections on current page
 	virtual ConnectionWizard::wizardPages getNextPage(void) = 0;
-	virtual void init(void) = 0;
+	
+	// initialize page with data from wizard
+	virtual void init(ConnectionWizardData *data) = 0;
+	
+	// is this a terminal page in wizard
 	virtual bool isFinalPage(void) { return false; }
+	
+	// return string to display in wizard header for this page
 	virtual QString getHeaderString(void) { return QString(""); };
+	
+	// called before transitioning away from page. Validate user input, prompting if input
+	// is invalid.  Returns "true" if info is valid and can leave page
+	virtual bool validate(void) = 0;
+	
+	// return Connection Wizard data with info from this page filled in
+	virtual ConnectionWizardData *wizardData(void) = 0;
 
 protected:
+
+	// QWidget representing wizard page
 	QWidget *m_pRealForm;
+	
+	//parent object(should be connection wizard)
 	QWidget *m_pParent;
-	QWidget *m_pParentWidget;	
+	
+	// QWidget represenging parent object
+	QWidget *m_pParentWidget;
+	
+	// pointer to wizard data for current connection.
+	ConnectionWizardData *m_curData;
 };
 
 class WizardPageNetworkType : public WizardPage
@@ -72,10 +104,14 @@ public:
 	WizardPageNetworkType(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(void) {};
+	virtual void init(ConnectionWizardData *data);
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void);
 private:
 	QRadioButton *m_pRadioButtonWireless;
 	QRadioButton *m_pRadioButtonWired;
+	int m_numWiredAdapters;
+	int m_numWirelessAdapters;
 };
 
 class WizardPageWiredSecurity : public WizardPage
@@ -86,8 +122,10 @@ public:
 	WizardPageWiredSecurity(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(void) {};
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("Network Security Type"); };
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void);	
 private:
 	QRadioButton *m_pRadioButtonDot1X;
 	QRadioButton *m_pRadioButtonNone;
@@ -101,8 +139,10 @@ public:
 	WizardPageIPOptions(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(void) {};
+	virtual void init(ConnectionWizardData *data) { m_curData = data; };
 	virtual QString getHeaderString(void) { return tr("IP Address"); };
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
 private:
 	QRadioButton *m_pRadioButtonAuto;
 	QRadioButton *m_pRadioButtonStatic;
@@ -116,8 +156,10 @@ public:
 	WizardPageStaticIP(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void) { return ConnectionWizard::pageFinishPage; };
-	virtual void init(void) {};
+	virtual void init(ConnectionWizardData *data) { m_curData = data; };
 	virtual QString getHeaderString(void) { return tr("Static IP Settings"); };
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
 private:
 	QLineEdit *m_pIPAddress;
 	QLineEdit *m_pNetmask;
@@ -134,9 +176,11 @@ public:
 	WizardPageFinished(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void) { return ConnectionWizard::pageNoPage; };
-	virtual void init(void) {};
+	virtual void init(ConnectionWizardData *data) { m_curData = data; };
 	virtual QString getHeaderString(void) { return tr("Finished"); };
-	virtual bool isFinalPage(void) { return true; }
+	virtual bool isFinalPage(void) { return true; };
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
 private:
 	QPushButton *m_pConnectButton;
 	QLineEdit *m_pConnectionName;
@@ -148,15 +192,24 @@ class WizardPageWirelessNetwork : public WizardPage
 	
 public:
 	WizardPageWirelessNetwork(QWidget *parent, QWidget *parentWidget);
+	virtual ~WizardPageWirelessNetwork();
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(void) {};
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("Choose Wireless Network"); };
+	virtual bool validate(void);
+	virtual ConnectionWizardData *wizardData(void);
+	
+private slots:
+	void handleVisibleClicked(bool);
+	void handleSSIDSelection(const WirelessNetworkInfo &);
+	
 private:
 	QRadioButton *m_pRadioButtonVisible;
 	QRadioButton *m_pRadioButtonOther;
 	QTableWidget *m_pTableWidget;
 	SSIDList *m_pSSIDList;
+	WirelessNetworkInfo m_networkInfo;
 };
 
 class WizardPageWirelessInfo : public WizardPage
@@ -167,8 +220,10 @@ public:
 	WizardPageWirelessInfo(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(void) {};
+	virtual void init(ConnectionWizardData *data) { m_curData = data; };
 	virtual QString getHeaderString(void) { return tr("Wireless Network Settings"); };
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
 private slots:
 	void hiddenStateChanged(int);
 private:
@@ -187,8 +242,10 @@ public:
 	WizardPageDot1XProtocol(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(void) {};
-	virtual QString getHeaderString(void) { return tr("802.1X Settings"); };
+	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual QString getHeaderString(void) { return tr("802.1X Protocol"); };
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
 private:
 	QComboBox *m_pProtocol;
 };
@@ -201,8 +258,10 @@ public:
 	WizardPageDot1XInnerProtocol(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(void) {};
-	virtual QString getHeaderString(void) { return tr("802.1X Settings"); };
+	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual QString getHeaderString(void) { return tr("802.1X Protocol Settings"); };
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
 private:
 	QComboBox *m_pProtocol;
 	QLineEdit *m_pOuterID;
@@ -217,8 +276,10 @@ public:
 	WizardPageDot1XCert(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void) { return ConnectionWizard::pageIPOptions; };
-	virtual void init(void) {};
-	virtual QString getHeaderString(void) { return tr("802.1X Settings"); };
+	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual QString getHeaderString(void) { return tr("802.1X Server Certificate"); };
+	virtual bool validate(void) { return true; };
+	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
 private:
 	QTableWidget *m_pCertTable;
 	QLineEdit *m_pNameField;

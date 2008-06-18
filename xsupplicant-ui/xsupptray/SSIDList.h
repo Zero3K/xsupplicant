@@ -84,6 +84,7 @@ public:
 	void refreshList(const QString &adapterName);
 	void hideColumn(SSIDListCol colIndex);
 	void showColumn(SSIDListCol colIndex);
+	bool selectNetwork(const QString &networkName);
 	
 signals:
 	void ssidSelectionChange(const WirelessNetworkInfo &);

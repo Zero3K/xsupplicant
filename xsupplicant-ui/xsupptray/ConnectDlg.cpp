@@ -547,6 +547,7 @@ void ConnectDlg::launchConnectionWizard(void)
 		{
 			if (m_pConnWizard->create() == true)
 			{
+				m_pConnWizard->init();
 				m_pConnWizard->show();
 			}
 			// else show error?
@@ -555,6 +556,7 @@ void ConnectDlg::launchConnectionWizard(void)
 	}
 	else
 	{
+		m_pConnWizard->init();
 		m_pConnWizard->show();
 	}
 }

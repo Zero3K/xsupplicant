@@ -36,6 +36,10 @@
  #include "FormLoader.h"
  #include "SSIDList.h"
  
+ extern "C" {
+#include "libxsupgui/xsupgui_request.h"
+}
+
  WizardPage::WizardPage(QWidget *parent, QWidget *parentWidget)
 	: QWidget(parent)
 {
@@ -71,17 +75,135 @@ bool WizardPageNetworkType::create(void)
 	if (m_pRadioButtonWired != NULL)
 		m_pRadioButtonWired->setChecked(true);
 		
+	// get list of adapters. If no wireless or no wired, disable that option
+	int_enum *pInterfaceList = NULL;
+	int retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+	{
+		m_numWiredAdapters = 0;
+		m_numWirelessAdapters = 0;
+		int i = 0;
+		while (pInterfaceList[i].desc != NULL)
+		{
+			if (pInterfaceList[i].is_wireless == TRUE)
+				++m_numWirelessAdapters;
+			else
+				++m_numWiredAdapters;
+				
+			++i;
+		}		
+		xsupgui_request_free_int_enum(&pInterfaceList);
+		pInterfaceList = NULL;
+		
+		// if no adapters, don't want to disable both so do nothing
+		if (m_numWiredAdapters != 0 || m_numWirelessAdapters != 0)
+		{
+			if (m_pRadioButtonWireless != NULL)
+				m_pRadioButtonWireless->setDisabled(m_numWirelessAdapters == 0);
+				
+			if (m_pRadioButtonWired != NULL)
+				m_pRadioButtonWired->setDisabled(m_numWiredAdapters == 0);
+		}
+				
+	}
+		
 	return true;
+}
+
+void WizardPageNetworkType::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	if (m_curData != NULL)
+	{
+		// assume one of radio buttons isn't diabled
+		if (m_curData->m_wireless == true)
+		{
+			if (m_pRadioButtonWireless != NULL)
+			{
+				if (m_pRadioButtonWireless->isEnabled() == true)
+					m_pRadioButtonWireless->setChecked(true);
+				else
+				{
+					// if no wireless adapters, connection must be wired
+					m_curData->m_wireless = false;
+					if (m_pRadioButtonWired != NULL)
+					{
+						// assume it's enabled. Should check, and error out if not
+						m_pRadioButtonWired->setChecked(true);
+					}
+				}
+			}
+		}
+		else
+		{
+			if (m_pRadioButtonWired != NULL)
+			{
+				if (m_pRadioButtonWired->isEnabled() == true)
+					m_pRadioButtonWired->setChecked(true);
+				else
+				{
+					// if no wireless adapters, connection must be wired
+					m_curData->m_wireless = true;
+					if (m_pRadioButtonWireless != NULL)
+					{
+						// assume it's enabled. Should check, and error out if not
+						m_pRadioButtonWireless->setChecked(true);
+					}
+				}
+			}
+		}
+	}
 }
 
 ConnectionWizard::wizardPages WizardPageNetworkType::getNextPage(void)
 {
+	// jking - TODO: need to go to adapter selection page if more than one adapter!!!
 	if (m_pRadioButtonWired != NULL && m_pRadioButtonWired->isChecked() == true)
 		return ConnectionWizard::pageWiredSecurity;
 	else if (m_pRadioButtonWireless != NULL && m_pRadioButtonWireless->isChecked() == true)
 		return ConnectionWizard::pageWirelessNetwork;
 	else
 		return ConnectionWizard::pageNoPage;
+}
+
+ConnectionWizardData *WizardPageNetworkType::wizardData(void)
+{
+	if (m_curData != NULL)
+	{
+		if (m_pRadioButtonWireless != NULL && m_pRadioButtonWireless->isChecked() == true)
+			m_curData->m_wireless = true;
+		else
+			m_curData->m_wireless = false;
+			
+		// assume one adapter and fill out connection data with first adapter of its kind
+		int_enum *pInterfaceList = NULL;
+		int retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+		if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+		{
+			int i=0;
+			while (pInterfaceList[i].desc != NULL)
+			{
+				if (pInterfaceList[i].is_wireless == TRUE && m_curData->m_wireless == true)
+				{
+					m_curData->m_adapterDesc = pInterfaceList[i].desc;
+					break;
+				}
+				else if (pInterfaceList[i].is_wireless == FALSE && m_curData->m_wireless == false)
+				{
+					m_curData->m_adapterDesc = pInterfaceList[i].desc;
+					break;				
+				}
+				++i;
+			}
+			xsupgui_request_free_int_enum(&pInterfaceList);
+			pInterfaceList = NULL;				
+		}
+		else
+		{
+			// error. How do we alert user?
+		}		
+	}
+	return m_curData;
 }
 
 WizardPageWiredSecurity::WizardPageWiredSecurity(QWidget *parent, QWidget *parentWidget)
@@ -113,6 +235,40 @@ bool WizardPageWiredSecurity::create(void)
 		m_pRadioButtonDot1X->setChecked(true);
 		
 	return true;
+}
+
+void WizardPageWiredSecurity::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	if (m_curData != NULL)
+	{
+		if (m_curData->m_wiredSecurity == true)
+		{
+			if (m_pRadioButtonDot1X != NULL)
+				m_pRadioButtonDot1X->setChecked(true);
+		}
+		else
+		{
+			if (m_pRadioButtonNone != NULL)
+				m_pRadioButtonNone->setChecked(true);
+		}
+	}
+}
+
+ConnectionWizardData* WizardPageWiredSecurity::wizardData(void)
+{
+	if (m_pRadioButtonDot1X != NULL && m_pRadioButtonDot1X->isChecked() == true)
+	{
+		if (m_curData != NULL)
+			m_curData->m_wiredSecurity = true;
+	}
+	else if (m_pRadioButtonNone != NULL && m_pRadioButtonNone->isChecked() == true)
+	{
+		if (m_curData != NULL)
+			m_curData->m_wiredSecurity = false;
+	}
+	
+	return m_curData;
 }
 
 ConnectionWizard::wizardPages WizardPageWiredSecurity::getNextPage(void)
@@ -254,6 +410,17 @@ WizardPageWirelessNetwork::WizardPageWirelessNetwork(QWidget *parent, QWidget *p
 {
 }
 
+WizardPageWirelessNetwork::~WizardPageWirelessNetwork()
+{
+	if (m_pRadioButtonVisible != NULL)
+		Util::myDisconnect(m_pRadioButtonVisible, SIGNAL(clicked(bool)), this, SLOT(handleVisibleClicked(bool)));
+	if (m_pSSIDList != NULL) 
+	{
+		Util::myDisconnect(m_pSSIDList, SIGNAL(ssidSelectionChange(const WirelessNetworkInfo &)), this, SLOT(handleSSIDSelection(const WirelessNetworkInfo &)));	
+		delete m_pSSIDList;
+	}
+}
+
 bool WizardPageWirelessNetwork::create(void)
 {
 	m_pRealForm = FormLoader::buildform("wizardPageWirelessNetwork.ui", m_pParentWidget);
@@ -275,11 +442,7 @@ bool WizardPageWirelessNetwork::create(void)
 		
 	if (m_pRadioButtonOther != NULL)
 		m_pRadioButtonOther->setText(tr("Other"));
-		
-	// other initializations
-	if (m_pRadioButtonVisible != NULL)
-		m_pRadioButtonVisible->setChecked(true);
-		
+				
 	if (m_pTableWidget != NULL)
 	{
 		m_pSSIDList = new SSIDList(this, m_pTableWidget,m_pTableWidget->rowCount());
@@ -293,8 +456,129 @@ bool WizardPageWirelessNetwork::create(void)
 			m_pSSIDList->hideColumn(SSIDList::COL_802_11);
 		}
 	}
+
+	// set up event handling
+	if (m_pRadioButtonVisible != NULL)
+		Util::myConnect(m_pRadioButtonVisible, SIGNAL(clicked(bool)), this, SLOT(handleVisibleClicked(bool)));	
+	if (m_pSSIDList != NULL)
+		Util::myConnect(m_pSSIDList, SIGNAL(ssidSelectionChange(const WirelessNetworkInfo &)), this, SLOT(handleSSIDSelection(const WirelessNetworkInfo &)));			
+	
 		
 	return true;
+}
+
+void WizardPageWirelessNetwork::handleVisibleClicked(bool checked)
+{
+	if (checked == true && m_pTableWidget != NULL)
+		m_pTableWidget->setFocus();
+}
+
+void WizardPageWirelessNetwork::handleSSIDSelection(const WirelessNetworkInfo &networkData)
+{
+	// if user selects network, check the "visible" radio button
+	if (networkData.m_name.isEmpty() == false)
+	{
+		if (m_pRadioButtonVisible != NULL)
+		{
+			m_pRadioButtonVisible->setChecked(true);
+			this->handleVisibleClicked(true);
+		}
+	}
+	m_networkInfo = networkData;
+}
+
+void WizardPageWirelessNetwork::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	if (m_pSSIDList != NULL) {
+		m_pSSIDList->refreshList(m_curData->m_adapterDesc);
+		
+		// ensure something's selected
+		if (m_pTableWidget != NULL)
+			m_pTableWidget->selectRow(0);
+	}
+	if (m_curData != NULL)
+	{
+		if (m_curData->m_networkName.isEmpty() == true)
+		{
+			// if nothing selected yet, just choose one
+			if (m_pTableWidget != NULL)
+				m_pTableWidget->selectRow(0);
+			if (m_pRadioButtonVisible != NULL) 
+			{
+				m_pRadioButtonVisible->setChecked(true);
+				this->handleVisibleClicked(true);
+			}
+		}
+		else
+		{
+			// look if it's in list. If so, choose it.  Otherwise select "other"
+			if (m_pSSIDList->selectNetwork(m_curData->m_networkName) == true)
+			{
+				if(m_pRadioButtonVisible != NULL)
+				{
+					m_pRadioButtonVisible->setChecked(true);
+					this->handleVisibleClicked(true);
+				}
+			}
+			else
+			{
+				if (m_pRadioButtonOther != NULL)
+				{
+					m_pRadioButtonOther->setChecked(true);
+				}
+			}
+			
+		}
+	}
+}
+
+ConnectionWizardData *WizardPageWirelessNetwork::wizardData(void)
+{
+	if (m_curData != NULL)
+	{
+		m_curData->m_networkName = m_networkInfo.m_name;
+		if (!m_networkInfo.m_name.isEmpty())
+		{
+			// set association mode. This is really a bitfield, but for now
+			// the SSIDList sets modes as mutually exclusive
+			switch (m_networkInfo.m_assoc_modes) {
+				case WirelessNetworkInfo::SECURITY_NONE:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_none;			
+					break;
+				case WirelessNetworkInfo::SECURITY_STATIC_WEP:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;		
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA2_PSK:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_PSK;				
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA_PSK:	
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;		
+					break;					
+				case WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_ENT;
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
+					break;
+			}
+		}
+	}
+	
+	return m_curData;
+}
+
+bool WizardPageWirelessNetwork::validate(void)
+{
+	if (m_pRadioButtonOther != NULL && m_pRadioButtonOther->isChecked() == true)
+		return true;
+	else if (m_pRadioButtonVisible != NULL && m_pRadioButtonVisible->isChecked() == true)
+	{
+		if (!m_networkInfo.m_name.isEmpty())
+			return true;
+	}
+	
+	return false;
 }
 
 ConnectionWizard::wizardPages WizardPageWirelessNetwork::getNextPage(void)

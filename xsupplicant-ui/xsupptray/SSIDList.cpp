@@ -101,6 +101,8 @@ void SSIDList::initUI(void)
 		
 		m_pTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 		
+		m_pTableWidget->verticalHeader()->setVisible(false);
+		
 		m_pTableWidget->clearContents();
 		
 		Util::myConnect(m_pTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(handleSSIDTableSelectionChange()));
@@ -419,3 +421,26 @@ void SSIDList::handleSSIDTableDoubleClick(int row, int)
 	}
 }
 
+bool SSIDList::selectNetwork(const QString &networkName)
+{
+	bool retVal = false;
+	if (m_pTableWidget != NULL && !networkName.isEmpty())
+	{
+		// don't let user re-sort while we're doing this.  It'll mess us up
+		bool sortable = m_pTableWidget->isSortingEnabled();
+		if (sortable == true)
+			m_pTableWidget->setSortingEnabled(false);
+			
+		for (int i=0; i<m_pTableWidget->rowCount(); i++)
+		{
+			if (m_pTableWidget->item(i,0)->text() == networkName)
+			{
+				m_pTableWidget->selectRow(i);
+				retVal = true;
+				break;
+			}
+		}
+	}
+	
+	return retVal;
+}
