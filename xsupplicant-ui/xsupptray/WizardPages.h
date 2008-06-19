@@ -43,6 +43,10 @@
 #include "ConnectionWizard.h"
 #include "SSIDList.h"
 
+extern "C" {
+#include "libxsupgui/xsupgui_request.h"
+}
+
 class WizardPage : public QWidget
 {
 	Q_OBJECT
@@ -139,10 +143,10 @@ public:
 	WizardPageIPOptions(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("IP Address"); };
 	virtual bool validate(void) { return true; };
-	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
+	virtual ConnectionWizardData *wizardData(void);	
 private:
 	QRadioButton *m_pRadioButtonAuto;
 	QRadioButton *m_pRadioButtonStatic;
@@ -156,10 +160,10 @@ public:
 	WizardPageStaticIP(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void) { return ConnectionWizard::pageFinishPage; };
-	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("Static IP Settings"); };
-	virtual bool validate(void) { return true; };
-	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
+	virtual bool validate(void);
+	virtual ConnectionWizardData *wizardData(void);	
 private:
 	QLineEdit *m_pIPAddress;
 	QLineEdit *m_pNetmask;
@@ -176,11 +180,11 @@ public:
 	WizardPageFinished(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void) { return ConnectionWizard::pageNoPage; };
-	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("Finished"); };
 	virtual bool isFinalPage(void) { return true; };
-	virtual bool validate(void) { return true; };
-	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
+	virtual bool validate(void);
+	virtual ConnectionWizardData *wizardData(void);	
 private:
 	QPushButton *m_pConnectButton;
 	QLineEdit *m_pConnectionName;
@@ -218,14 +222,16 @@ class WizardPageWirelessInfo : public WizardPage
 	
 public:
 	WizardPageWirelessInfo(QWidget *parent, QWidget *parentWidget);
+	virtual ~WizardPageWirelessInfo();
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("Wireless Network Settings"); };
-	virtual bool validate(void) { return true; };
-	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
+	virtual bool validate(void);
+	virtual ConnectionWizardData *wizardData(void);	
 private slots:
 	void hiddenStateChanged(int);
+	void assocModeChanged(int newIndex);
 private:
 	QLineEdit *m_pNetworkName;
 	QComboBox *m_pAssocMode;
@@ -242,10 +248,10 @@ public:
 	WizardPageDot1XProtocol(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("802.1X Protocol"); };
 	virtual bool validate(void) { return true; };
-	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
+	virtual ConnectionWizardData *wizardData(void);	
 private:
 	QComboBox *m_pProtocol;
 };
@@ -258,10 +264,10 @@ public:
 	WizardPageDot1XInnerProtocol(QWidget *parent, QWidget *parentWidget);
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void);
-	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("802.1X Protocol Settings"); };
 	virtual bool validate(void) { return true; };
-	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
+	virtual ConnectionWizardData *wizardData(void);	
 private:
 	QComboBox *m_pProtocol;
 	QLineEdit *m_pOuterID;
@@ -274,15 +280,17 @@ class WizardPageDot1XCert : public WizardPage
 	
 public:
 	WizardPageDot1XCert(QWidget *parent, QWidget *parentWidget);
+	virtual ~WizardPageDot1XCert();
 	virtual bool create(void);
 	virtual ConnectionWizard::wizardPages getNextPage(void) { return ConnectionWizard::pageIPOptions; };
-	virtual void init(ConnectionWizardData *data) { m_curData = data; };
+	virtual void init(ConnectionWizardData *data);
 	virtual QString getHeaderString(void) { return tr("802.1X Server Certificate"); };
-	virtual bool validate(void) { return true; };
-	virtual ConnectionWizardData *wizardData(void) { return m_curData; };	
+	virtual bool validate(void);
+	virtual ConnectionWizardData *wizardData(void);	
 private:
 	QTableWidget *m_pCertTable;
 	QLineEdit *m_pNameField;
 	QCheckBox *m_pVerifyName;
+	cert_enum *m_pCertArray; // hate to use this datatype here
 };
 #endif

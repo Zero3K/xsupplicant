@@ -50,6 +50,7 @@ public:
 	static bool createNewConnectionDefaults(config_connection **pConfig);
 	static bool deleteConnectionConfig(const QString &connName);
 	static bool writeConfig(void);
+	static QString getUniqueConnectionName(const QString &suggestedName);
 };
 
 #endif

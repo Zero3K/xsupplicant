@@ -412,6 +412,9 @@
               <property name="horizontalScrollBarPolicy" >
                <enum>Qt::ScrollBarAlwaysOff</enum>
               </property>
+              <property name="sortingEnabled" >
+               <bool>true</bool>
+              </property>
               <property name="rowCount" >
                <number>5</number>
               </property>
@@ -425,7 +428,7 @@
               <row/>
               <column>
                <property name="text" >
-                <string> </string>
+                <string/>
                </property>
               </column>
               <column>

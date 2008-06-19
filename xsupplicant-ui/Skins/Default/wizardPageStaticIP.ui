@@ -530,7 +530,7 @@
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit" >
+                   <widget class="QLineEdit" name="dataFieldIPAddress" >
                     <property name="minimumSize" >
                      <size>
                       <width>130</width>
@@ -651,7 +651,7 @@
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit_2" >
+                   <widget class="QLineEdit" name="dataFieldNetmask" >
                     <property name="minimumSize" >
                      <size>
                       <width>130</width>
@@ -772,7 +772,7 @@
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit_3" >
+                   <widget class="QLineEdit" name="dataFieldGateway" >
                     <property name="minimumSize" >
                      <size>
                       <width>130</width>
@@ -1175,7 +1175,7 @@
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit_4" >
+                   <widget class="QLineEdit" name="dataFieldPrimaryDNS" >
                     <property name="minimumSize" >
                      <size>
                       <width>130</width>
@@ -1296,7 +1296,7 @@
                    </spacer>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="lineEdit_5" >
+                   <widget class="QLineEdit" name="dataFieldSecondaryDNS" >
                     <property name="minimumSize" >
                      <size>
                       <width>130</width>

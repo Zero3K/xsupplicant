@@ -72,10 +72,11 @@ public:
 	typedef enum {
 		encrypt_WEP,
 		encrypt_TKIP,
-		encrypt_AES
+		encrypt_CCMP
 	} encryptMethod;
 	
 	encryptMethod m_wirelessEncryptMeth;
+	bool m_hiddenNetwork;
 	
 	// wired settings
 	bool m_wiredSecurity;

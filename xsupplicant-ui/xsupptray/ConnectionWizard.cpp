@@ -38,6 +38,7 @@
 #include "WizardPages.h"
 #include "FormLoader.h"
 #include "Util.h"
+#include "XSupWrapper.h"
 
 ConnectionWizardData::ConnectionWizardData()
 {
@@ -45,9 +46,12 @@ ConnectionWizardData::ConnectionWizardData()
 	m_wireless = false;
 	
 	m_adapterDesc = "";
-	m_connectionName = QWidget::tr("New Connection");
+	
+	// get distinct name
+	m_connectionName = XSupWrapper::getUniqueConnectionName(QWidget::tr("New Connection"));
 	
 	m_networkName = "";
+	m_hiddenNetwork = false;
 	m_wirelessAssocMode = ConnectionWizardData::assoc_none;
 	m_wirelessEncryptMeth = ConnectionWizardData::encrypt_TKIP;
 	

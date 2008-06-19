@@ -35,8 +35,9 @@
  #include "WizardPages.h"
  #include "FormLoader.h"
  #include "SSIDList.h"
+ #include "XSupWrapper.h"
  
- extern "C" {
+extern "C" {
 #include "libxsupgui/xsupgui_request.h"
 }
 
@@ -312,6 +313,39 @@ bool WizardPageIPOptions::create(void)
 	return true;
 }
 
+void WizardPageIPOptions::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	if (m_curData != NULL)
+	{
+		if (m_curData->m_staticIP == true)
+		{
+			if (m_pRadioButtonStatic != NULL)
+				m_pRadioButtonStatic->setChecked(true);
+		}
+		else
+		{
+			if (m_pRadioButtonAuto != NULL)
+				m_pRadioButtonAuto->setChecked(true);
+		}
+	}
+}
+
+ConnectionWizardData *WizardPageIPOptions::wizardData(void)
+{
+	if (m_pRadioButtonAuto != NULL && m_pRadioButtonAuto->isChecked())
+	{
+		if (m_curData != NULL)
+			m_curData->m_staticIP = false;
+	}
+	else if (m_pRadioButtonStatic != NULL && m_pRadioButtonStatic->isChecked())
+	{
+		if (m_curData != NULL)
+			m_curData->m_staticIP = true;
+	}
+	return m_curData;
+}
+
 ConnectionWizard::wizardPages WizardPageIPOptions::getNextPage(void)
 {
 	if (m_pRadioButtonAuto != NULL && m_pRadioButtonAuto->isChecked() == true)
@@ -332,6 +366,13 @@ bool WizardPageStaticIP::create(void)
 	m_pRealForm = FormLoader::buildform("wizardPageStaticIP.ui", m_pParentWidget);
 	if (m_pRealForm == NULL)
 		return false;
+		
+	// cache off pointers to UI objects
+	m_pIPAddress = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldIPAddress");
+	m_pNetmask = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldNetmask");
+	m_pGateway = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldGateway");
+	m_pPrimaryDNS = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldPrimaryDNS");
+	m_pSecondaryDNS = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldSecondaryDNS");
 	
 	// dynamically populate text
 	QLabel *pLabel = qFindChild<QLabel*>(m_pRealForm, "headerStaticIP");
@@ -363,7 +404,113 @@ bool WizardPageStaticIP::create(void)
 		pLabel->setText(tr("Secondary:"));								
 		
 	// other initializations
+	if (m_pIPAddress != NULL)
+		m_pIPAddress->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pIPAddress));
+	if (m_pNetmask != NULL)
+		m_pNetmask->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pNetmask));
+	if (m_pGateway != NULL)
+		m_pGateway->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pGateway));
+	if (m_pPrimaryDNS != NULL)
+		m_pPrimaryDNS->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pPrimaryDNS));
+	if (m_pSecondaryDNS != NULL)
+		m_pSecondaryDNS->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pSecondaryDNS));
 		
+	return true;
+}
+
+void WizardPageStaticIP::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	if (m_curData != NULL)
+	{
+		if (m_pIPAddress != NULL)
+			m_pIPAddress->setText(m_curData->m_IPAddress);
+			
+		if (m_pNetmask != NULL)
+			m_pNetmask->setText(m_curData->m_netmask);
+			
+		if (m_pGateway != NULL)
+			m_pGateway->setText(m_curData->m_gateway);
+			
+		if (m_pPrimaryDNS != NULL)
+			m_pPrimaryDNS->setText(m_curData->m_primaryDNS);
+			
+		if (m_pSecondaryDNS != NULL)
+			m_pSecondaryDNS->setText(m_curData->m_secondaryDNS);
+	}
+}
+
+ConnectionWizardData *WizardPageStaticIP::wizardData(void)
+{
+	if (m_curData != NULL)
+	{
+		if (m_pIPAddress != NULL)
+			m_curData->m_IPAddress = m_pIPAddress->text();
+			
+		if (m_pNetmask != NULL)
+			m_curData->m_netmask = m_pNetmask->text();
+			
+		if (m_pGateway != NULL)
+			m_curData->m_gateway = m_pGateway->text();
+			
+		if (m_pPrimaryDNS != NULL)
+			m_curData->m_primaryDNS = m_pPrimaryDNS->text();
+			
+		if (m_pSecondaryDNS != NULL)
+			m_curData->m_secondaryDNS = m_pSecondaryDNS->text();	
+	}
+	return m_curData;
+}
+
+bool WizardPageStaticIP::validate(void)
+{
+	// the QLineEdit validator does most of the work for us.
+	// just query the text fields
+	if (m_pIPAddress != NULL)
+	{
+		if (m_pIPAddress->hasAcceptableInput() == false)
+		{
+			QMessageBox::warning(m_pRealForm, tr("Invalid IP Address"), tr("Please input a valid IP Address"));
+			return false;
+		}
+	}
+	
+	if (m_pNetmask != NULL)
+	{
+		if (m_pNetmask->hasAcceptableInput() == false)
+		{
+			QMessageBox::warning(m_pRealForm, tr("Invalid Netmask"), tr("Please input a valid Netmask"));
+			return false;
+		}	
+	}
+	
+	if (m_pGateway != NULL)
+	{
+		if (m_pGateway->hasAcceptableInput() == false)
+		{
+			QMessageBox::warning(m_pRealForm, tr("Invalid Gateway Address"), tr("Please input a valid Gateway address"));
+			return false;
+		}		
+	}
+	
+	if (m_pPrimaryDNS != NULL)
+	{
+		if (m_pPrimaryDNS->hasAcceptableInput() == false)
+		{
+			QMessageBox::warning(m_pRealForm, tr("Invalid Primary DNS Server"), tr("Please input a valid Primary DNS Server address"));
+			return false;
+		}			
+	}	
+	
+	if (m_pSecondaryDNS != NULL)
+	{
+		if (m_pSecondaryDNS->hasAcceptableInput() == false)
+		{
+			QMessageBox::warning(m_pRealForm, tr("Invalid Primary DNS Server"), tr("Please input a valid Primary DNS Server address"));
+			return false;
+		}			
+	}
+	
 	return true;
 }
 
@@ -394,15 +541,54 @@ bool WizardPageFinished::create(void)
 	if (m_pConnectButton != NULL)
 		m_pConnectButton->setText(tr("Connect"));
 		
+	return true;
+}
+
+void WizardPageFinished::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	if (m_curData != NULL)
+	{
+		if (m_pConnectionName != NULL)
+		{
+			m_pConnectionName->setText(m_curData->m_connectionName);
+			m_pConnectionName->selectAll();
+			m_pConnectionName->setFocus();
+		}
+	}
+}
+
+bool WizardPageFinished::validate(void)
+{
 	if (m_pConnectionName != NULL)
 	{
-		// TODO: populate default name
-		m_pConnectionName->setText(tr("New Connection"));
-		m_pConnectionName->selectAll();
-		m_pConnectionName->setFocus();
-	}
+		config_connection *pConfig = NULL;	
+  
+		QString connName = m_pConnectionName->text();
+		if (XSupWrapper::getConfigConnection(connName, &pConfig) == true)
+		{
+			XSupWrapper::freeConfigConnection(&pConfig);
+			pConfig = NULL;
+			
+			//show dialog
+			QMessageBox::warning(m_pRealForm, tr("Duplicate Connection Name"), tr("A connection already exists with the name you have provided.  Please choose another name."));
+			return false;
+		}
 		
-	return true;
+		return true;
+	}
+	
+	return false;
+}
+ConnectionWizardData *WizardPageFinished::wizardData(void)
+{
+	if (m_curData != NULL)
+	{
+		if (m_pConnectionName != NULL)
+			m_curData->m_connectionName = m_pConnectionName->text();
+	}
+	
+	return m_curData;
 }
 
 WizardPageWirelessNetwork::WizardPageWirelessNetwork(QWidget *parent, QWidget *parentWidget)
@@ -419,6 +605,9 @@ WizardPageWirelessNetwork::~WizardPageWirelessNetwork()
 		Util::myDisconnect(m_pSSIDList, SIGNAL(ssidSelectionChange(const WirelessNetworkInfo &)), this, SLOT(handleSSIDSelection(const WirelessNetworkInfo &)));	
 		delete m_pSSIDList;
 	}
+	
+	if (m_pRealForm != NULL)
+		delete m_pRealForm;
 }
 
 bool WizardPageWirelessNetwork::create(void)
@@ -537,30 +726,34 @@ ConnectionWizardData *WizardPageWirelessNetwork::wizardData(void)
 {
 	if (m_curData != NULL)
 	{
-		m_curData->m_networkName = m_networkInfo.m_name;
-		if (!m_networkInfo.m_name.isEmpty())
+		// if "other" is checked, no data on this screen worth saving off
+		if (m_pRadioButtonVisible != NULL && m_pRadioButtonVisible->isChecked() == true)
 		{
-			// set association mode. This is really a bitfield, but for now
-			// the SSIDList sets modes as mutually exclusive
-			switch (m_networkInfo.m_assoc_modes) {
-				case WirelessNetworkInfo::SECURITY_NONE:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_none;			
-					break;
-				case WirelessNetworkInfo::SECURITY_STATIC_WEP:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;		
-					break;
-				case WirelessNetworkInfo::SECURITY_WPA2_PSK:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_PSK;				
-					break;
-				case WirelessNetworkInfo::SECURITY_WPA_PSK:	
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;		
-					break;					
-				case WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_ENT;
-					break;
-				case WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
-					break;
+			m_curData->m_networkName = m_networkInfo.m_name;
+			if (!m_networkInfo.m_name.isEmpty())
+			{
+				// set association mode. This is really a bitfield, but for now
+				// the SSIDList sets modes as mutually exclusive
+				switch (m_networkInfo.m_assoc_modes) {
+					case WirelessNetworkInfo::SECURITY_NONE:
+						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_none;			
+						break;
+					case WirelessNetworkInfo::SECURITY_STATIC_WEP:
+						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;		
+						break;
+					case WirelessNetworkInfo::SECURITY_WPA2_PSK:
+						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_PSK;				
+						break;
+					case WirelessNetworkInfo::SECURITY_WPA_PSK:	
+						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;		
+						break;					
+					case WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE:
+						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_ENT;
+						break;
+					case WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE:
+						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
+						break;
+				}
 			}
 		}
 	}
@@ -584,7 +777,14 @@ bool WizardPageWirelessNetwork::validate(void)
 ConnectionWizard::wizardPages WizardPageWirelessNetwork::getNextPage(void)
 {
 	if (m_pRadioButtonVisible != NULL && m_pRadioButtonVisible->isChecked() == true)
-		return ConnectionWizard::pageIPOptions;
+	{
+		// !!! m_assocModes is really a bitfield. Right now SSIDList makes sure only one bit is set.
+		// need to update logic in future
+		if (m_networkInfo.m_assoc_modes == WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE || m_networkInfo.m_assoc_modes == WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE)
+			return ConnectionWizard::pageDot1XProtocol;
+		else
+			return ConnectionWizard::pageIPOptions;
+	}
 	else if (m_pRadioButtonOther != NULL && m_pRadioButtonOther->isChecked() == true)
 		return ConnectionWizard::pageWirelessInfo;
 	else
@@ -594,6 +794,18 @@ ConnectionWizard::wizardPages WizardPageWirelessNetwork::getNextPage(void)
 WizardPageWirelessInfo::WizardPageWirelessInfo(QWidget *parent, QWidget *parentWidget)
 	:WizardPage(parent,parentWidget)
 {
+}
+
+WizardPageWirelessInfo::~WizardPageWirelessInfo()
+{
+	if (m_pHiddenNetwork != NULL)
+		Util::myDisconnect(m_pHiddenNetwork,SIGNAL(stateChanged(int)), this, SLOT(hiddenStateChanged(int)));
+		
+	if (m_pAssocMode != NULL)
+		Util::myDisconnect(m_pAssocMode, SIGNAL(currentIndexChanged(int)), this, SLOT(assocModeChanged(int)));
+		
+	if (m_pRealForm != NULL)
+		delete m_pRealForm;
 }
 
 bool WizardPageWirelessInfo::create(void)
@@ -642,23 +854,162 @@ bool WizardPageWirelessInfo::create(void)
 	if (m_pEncryption != NULL)
 	{
 		m_pEncryption->clear();
-		m_pEncryption->addItem(tr("WEP"));
 		m_pEncryption->addItem(tr("TKIP"));
-		m_pEncryption->addItem(tr("AES"));
+		m_pEncryption->addItem(tr("CCMP"));
+		m_pEncryption->addItem(tr("WEP"));		
 	}
 		
 	// set up event handling
 	if (m_pHiddenNetwork != NULL)
 		Util::myConnect(m_pHiddenNetwork,SIGNAL(stateChanged(int)), this, SLOT(hiddenStateChanged(int)));
+		
+	if (m_pAssocMode != NULL)
+		Util::myConnect(m_pAssocMode, SIGNAL(currentIndexChanged(int)), this, SLOT(assocModeChanged(int)));
 	
 	// other initializations
 	if (m_pHiddenNetwork != NULL) {
 		m_pHiddenNetwork->setCheckState(Qt::Unchecked);
 		this->hiddenStateChanged(Qt::Unchecked);	
 	}
-		
+	
+	if (m_pNetworkName != NULL)
+		m_pNetworkName->setValidator(new QRegExpValidator(QRegExp("^[\\w|\\W]{1,32}$"), m_pNetworkName));
 	return true;
 }
+
+void WizardPageWirelessInfo::init(ConnectionWizardData *data)
+{
+	m_curData =  data;
+	if (m_curData != NULL)
+	{
+		if (m_pNetworkName != NULL)
+			m_pNetworkName->setText(m_curData->m_networkName);
+			
+		// update assoc mode first before updating UI based on hidden state
+		if (m_pAssocMode != NULL)
+		{
+			switch (m_curData->m_wirelessAssocMode)
+			{
+				case ConnectionWizardData::assoc_none:
+					m_pAssocMode->setCurrentIndex(0);
+					break;
+				case ConnectionWizardData::assoc_WEP:
+					m_pAssocMode->setCurrentIndex(1);
+					break;
+				case ConnectionWizardData::assoc_WPA_PSK:
+					m_pAssocMode->setCurrentIndex(2);
+					break;
+				case ConnectionWizardData::assoc_WPA_ENT:
+					m_pAssocMode->setCurrentIndex(3);
+					break;
+				case ConnectionWizardData::assoc_WPA2_PSK:
+					m_pAssocMode->setCurrentIndex(4);
+					break;
+				case ConnectionWizardData::assoc_WPA2_ENT:
+					m_pAssocMode->setCurrentIndex(5);
+					break;
+			}
+		}
+		
+		if (m_pEncryption != NULL)
+		{
+			switch (m_curData->m_wirelessEncryptMeth)
+			{
+				case ConnectionWizardData::encrypt_CCMP:
+					m_pEncryption->setCurrentIndex(1);
+					break;
+				case ConnectionWizardData::encrypt_TKIP:
+					m_pEncryption->setCurrentIndex(0);
+					break;
+				case ConnectionWizardData::encrypt_WEP:
+					m_pEncryption->setCurrentIndex(2);
+					break;
+			}
+		}
+		
+		if (m_pHiddenNetwork != NULL) {
+			m_pHiddenNetwork->setChecked(m_curData->m_hiddenNetwork);
+			this->hiddenStateChanged(m_curData->m_hiddenNetwork ? Qt::Checked : Qt::Unchecked);
+		}	
+	}
+}
+
+ConnectionWizardData *WizardPageWirelessInfo::wizardData(void)
+{
+	if (m_curData != NULL)
+	{
+		if (m_pNetworkName != NULL)
+			m_curData->m_networkName = m_pNetworkName->text();
+			
+		if (m_pAssocMode != NULL)
+		{
+			int curIdx = m_pAssocMode->currentIndex();
+			switch (curIdx)
+			{
+				case 0:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_none;
+					break;
+				case 1:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;
+					break;
+				case 2:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;
+					break;
+				case 3:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
+					break;
+				case 4:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_PSK;
+					break;
+				case 5:
+					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_ENT;
+					break;																									
+				default:
+					// error
+					break;
+			}
+		}
+					
+		if (m_pEncryption != NULL)
+		{
+			int curIdx = m_pEncryption->currentIndex();
+			switch (curIdx)
+			{
+				case 0:
+					m_curData->m_wirelessEncryptMeth = ConnectionWizardData::encrypt_TKIP;
+					break;
+				case 1:
+					m_curData->m_wirelessEncryptMeth = ConnectionWizardData::encrypt_CCMP;
+					break;
+				case 2:
+					m_curData->m_wirelessEncryptMeth = ConnectionWizardData::encrypt_WEP;
+					break;
+				default:
+					// error
+					break;
+			}
+		}
+		
+		if (m_pHiddenNetwork != NULL)
+			m_curData->m_hiddenNetwork = m_pHiddenNetwork->isChecked();	
+	}
+	return m_curData;
+}
+
+bool WizardPageWirelessInfo::validate(void)
+{
+	if (m_pNetworkName != NULL)
+	{
+		if (m_pNetworkName->hasAcceptableInput() == false)
+		{
+			QMessageBox::warning(m_pRealForm, tr("Invalid Network Name"), tr("The name you entered for the wireless network is invalid"));
+			return false;
+		}
+	}
+	
+	return true;
+}
+
 ConnectionWizard::wizardPages WizardPageWirelessInfo::getNextPage(void)
 {
 	if (m_pAssocMode != NULL)
@@ -676,24 +1027,50 @@ ConnectionWizard::wizardPages WizardPageWirelessInfo::getNextPage(void)
 	}
 }
 
+void WizardPageWirelessInfo::assocModeChanged(int newIndex)
+{
+	if (m_pAssocMode != NULL && m_pHiddenNetwork != NULL)
+	{
+		// only care about changes if network is hidden
+		if (m_pHiddenNetwork->isChecked() == true)
+		{
+			bool enable = true;
+			
+			// if "none" or "WEP", don't need encryption mode
+			if (newIndex == 0 || newIndex == 1)
+				enable = false;
+				
+		if (m_pEncryption != NULL)
+			m_pEncryption->setEnabled(enable);
+		if (m_pEncryptionLabel != NULL)
+			m_pEncryptionLabel->setEnabled(enable);					
+		} 
+	}
+}
+
 void WizardPageWirelessInfo::hiddenStateChanged(int newState)
 {
+	bool enable = true;
 	switch (newState) {
 		case Qt::Unchecked:
-			if (m_pEncryption != NULL)
-				m_pEncryption->setEnabled(false);
-			if (m_pEncryptionLabel != NULL)
-				m_pEncryptionLabel->setEnabled(false);	
+			enable = false;
 			break;
 		case Qt::Checked:
-			if (m_pEncryption != NULL)
-				m_pEncryption->setEnabled(true);
-			if (m_pEncryptionLabel != NULL)
-				m_pEncryptionLabel->setEnabled(true);					
+			{
+			// if WPA/WPA2-PSK/ENT, we need to know the encryption method to use
+			if (m_pAssocMode != NULL && (m_pAssocMode->currentIndex() == 0 || m_pAssocMode->currentIndex() == 1))
+				enable = false;
+			else
+				enable = true;				
 			break;
+			}
 		default:
 			break;
 	}
+	if (m_pEncryption != NULL)
+		m_pEncryption->setEnabled(enable);
+	if (m_pEncryptionLabel != NULL)
+		m_pEncryptionLabel->setEnabled(enable);		
 }
 
 WizardPageDot1XProtocol::WizardPageDot1XProtocol(QWidget *parent, QWidget *parentWidget)
@@ -728,6 +1105,60 @@ bool WizardPageDot1XProtocol::create(void)
 	}
 		
 	return true;
+}
+
+void WizardPageDot1XProtocol::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	if (m_curData != NULL)
+	{
+		if (m_pProtocol != NULL)
+		{
+			switch (m_curData->m_eapProtocol)
+			{
+				case ConnectionWizardData::eap_peap:
+					m_pProtocol->setCurrentIndex(0);
+					break;
+				case ConnectionWizardData::eap_ttls:
+					m_pProtocol->setCurrentIndex(1);
+					break;
+				case ConnectionWizardData::eap_md5:
+					m_pProtocol->setCurrentIndex(2);
+					break;
+				default:
+					m_pProtocol->setCurrentIndex(0);
+					break;
+			}
+		}
+	}
+}
+
+ConnectionWizardData *WizardPageDot1XProtocol::wizardData(void)
+{
+	if (m_curData != NULL)
+	{
+		if (m_pProtocol != NULL)
+		{
+			switch (m_pProtocol->currentIndex())
+			{
+				case 0:
+					// EAP-PEAP
+					m_curData->m_eapProtocol = ConnectionWizardData::eap_peap;
+					break;
+				case 1:
+					// EAP-TTLS
+					m_curData->m_eapProtocol = ConnectionWizardData::eap_ttls;
+					break;
+				case 2:
+					// EAP-MD5
+					m_curData->m_eapProtocol = ConnectionWizardData::eap_md5;
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	return m_curData;
 }
 
 ConnectionWizard::wizardPages WizardPageDot1XProtocol::getNextPage(void)
@@ -784,14 +1215,103 @@ bool WizardPageDot1XInnerProtocol::create(void)
 		m_pValidateCert->setText(tr("Validate Server Certificate"));
 		
 	if (m_pProtocol != NULL)
-	{
-		// !!! need to populate based on outer protocol
 		m_pProtocol->clear();
-		m_pProtocol->addItem(tr("EAP-MSCHAPv2"));
-		m_pProtocol->addItem(tr("EAP-GTC"));
-	}
 		
 	return true;
+}
+
+void WizardPageDot1XInnerProtocol::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	
+	if (m_curData != NULL)
+	{
+		if (m_pOuterID != NULL)
+			m_pOuterID->setText(m_curData->m_outerIdentity);
+			
+		if (m_pValidateCert != NULL)
+			m_pValidateCert->setChecked(m_curData->m_validateCert);
+		
+		if (m_pProtocol != NULL)
+		{
+			m_pProtocol->clear();	
+			if (m_curData->m_eapProtocol == ConnectionWizardData::eap_peap)
+			{
+				m_pProtocol->addItem("EAP-MSCHAPv2");
+				m_pProtocol->addItem("EAP-GTC");
+				
+				if (m_curData->m_innerProtocol == ConnectionWizardData::inner_eap_mschapv2)
+					m_pProtocol->setCurrentIndex(0);
+				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_eap_gtc)
+					m_pProtocol->setCurrentIndex(1);
+				else
+					; // error
+			}
+			else if (m_curData->m_eapProtocol == ConnectionWizardData::eap_ttls)
+			{
+				m_pProtocol->addItem("PAP");
+				m_pProtocol->addItem("CHAP");
+				m_pProtocol->addItem("MSCHAP");
+				m_pProtocol->addItem("MSCHAPv2");
+				m_pProtocol->addItem("EAP-MD5");
+				
+				if (m_curData->m_innerProtocol == ConnectionWizardData::inner_pap)
+					m_pProtocol->setCurrentIndex(0);
+				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_chap)
+					m_pProtocol->setCurrentIndex(1);
+				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_mschap)
+					m_pProtocol->setCurrentIndex(2);
+				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_mschapv2)
+					m_pProtocol->setCurrentIndex(3);
+				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_eap_md5)
+					m_pProtocol->setCurrentIndex(4);															
+				else
+					; // error										
+			}
+		}
+	}
+}
+
+ConnectionWizardData *WizardPageDot1XInnerProtocol::wizardData(void)
+{
+	if (m_curData != NULL)
+	{
+		if (m_pOuterID != NULL)
+			m_curData->m_outerIdentity = m_pOuterID->text();
+			
+		if (m_pValidateCert != NULL)
+			m_curData->m_validateCert = m_pValidateCert->isChecked();
+			
+		if (m_pProtocol != NULL)
+		{
+			if (m_curData->m_eapProtocol == ConnectionWizardData::eap_peap)
+			{
+				if (m_pProtocol->currentIndex() == 0)
+					m_curData->m_innerProtocol = ConnectionWizardData::inner_eap_mschapv2;
+				else if (m_pProtocol->currentIndex() == 1)
+					m_curData->m_innerProtocol = ConnectionWizardData::inner_eap_gtc;
+				else
+					; // error
+			}
+			else if (m_curData->m_eapProtocol == ConnectionWizardData::eap_ttls)
+			{
+				if (m_pProtocol->currentIndex() == 0)
+					m_curData->m_innerProtocol = ConnectionWizardData::inner_pap;
+				else if (m_pProtocol->currentIndex() == 1)
+					m_curData->m_innerProtocol = ConnectionWizardData::inner_chap;
+				else if (m_pProtocol->currentIndex() == 2)
+					m_curData->m_innerProtocol = ConnectionWizardData::inner_mschap;
+				else if (m_pProtocol->currentIndex() == 3)
+					m_curData->m_innerProtocol = ConnectionWizardData::inner_mschapv2;
+				else if (m_pProtocol->currentIndex() == 4)
+					m_curData->m_innerProtocol = ConnectionWizardData::inner_eap_md5;																												
+				else
+					; // error										
+			}
+		}			
+	}
+	
+	return m_curData;
 }
 
 ConnectionWizard::wizardPages WizardPageDot1XInnerProtocol::getNextPage(void)
@@ -814,7 +1334,15 @@ ConnectionWizard::wizardPages WizardPageDot1XInnerProtocol::getNextPage(void)
 WizardPageDot1XCert::WizardPageDot1XCert(QWidget *parent, QWidget *parentWidget)
 	:WizardPage(parent,parentWidget)
 {
+	m_pCertArray = NULL;
 }
+
+WizardPageDot1XCert::~WizardPageDot1XCert()
+{
+	if (m_pCertArray != NULL)
+		xsupgui_request_free_cert_enum(&m_pCertArray);
+}
+
 
 bool WizardPageDot1XCert::create(void)
 {
@@ -840,8 +1368,16 @@ bool WizardPageDot1XCert::create(void)
 		m_pVerifyName->setText(tr("Verify Common Name"));
 		
 	// other initializations
+	if (m_pNameField != NULL)
+	{
+		// set validator
+	}
+	
 	if (m_pCertTable != NULL)
 	{
+		// min # of rows to show...assume form was properly set up
+		int minRows = m_pCertTable->rowCount();
+		
 		// disallow user from sizing columns
 		m_pCertTable->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
 		
@@ -857,31 +1393,130 @@ bool WizardPageDot1XCert::create(void)
 		m_pCertTable->horizontalHeader()->setHighlightSections(false);
 		m_pCertTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 		
-		QCheckBox *pCheckBox;
-		m_pCertTable->clearContents();
 		m_pCertTable->verticalHeader()->hide();
-		m_pCertTable->setRowCount(5);
+		m_pCertTable->setRowCount(0);
 		
-		m_pCertTable->setRowHeight(0,20);
-		pCheckBox = new QCheckBox();
-		m_pCertTable->setCellWidget(0,0,pCheckBox);
+		int retVal;
+		int i=0;
 		
-		m_pCertTable->setRowHeight(1,20);
-		pCheckBox = new QCheckBox();
-		m_pCertTable->setCellWidget(1,0,pCheckBox);
+		// turn off sorting while table is populated
+		bool sortable = m_pCertTable->isSortingEnabled();
+		m_pCertTable->setSortingEnabled(false);
+		
+		retVal = xsupgui_request_enum_root_ca_certs(&m_pCertArray);
+		if (retVal == REQUEST_SUCCESS && m_pCertArray != NULL)
+		{
+			while (m_pCertArray[i].certname != NULL)
+			{
+				m_pCertTable->insertRow(i);
+				m_pCertTable->setRowHeight(i,20);
 				
-		m_pCertTable->setRowHeight(2,20);
-		pCheckBox = new QCheckBox();
-		m_pCertTable->setCellWidget(2,0,pCheckBox);
+				// use item type as index into original array
+				QTableWidgetItem *item = new QTableWidgetItem(QString(m_pCertArray[i].friendlyname), i+1000);
+				m_pCertTable->setItem(i,1,item);
 				
-		m_pCertTable->setRowHeight(3,20);
-		pCheckBox = new QCheckBox();
-		m_pCertTable->setCellWidget(3,0,pCheckBox);
-				
-		m_pCertTable->setRowHeight(4,20);
-		pCheckBox = new QCheckBox();
-		m_pCertTable->setCellWidget(4,0,pCheckBox);		
+				QCheckBox *pCheckBox = new QCheckBox();
+				m_pCertTable->setCellWidget(i,0,pCheckBox);
+				++i;
+			}
+		}
+		for (;i<minRows;i++)
+		{
+			m_pCertTable->insertRow(i);
+			m_pCertTable->setRowHeight(i,20);
+		}
+		
+		// restore sorting behavior and sort by name
+		if (sortable == true)
+		{
+			m_pCertTable->setSortingEnabled(true);
+			m_pCertTable->sortByColumn(1, Qt::AscendingOrder);
+		}	
 	}
 		
 	return true;
+}
+
+void WizardPageDot1XCert::init(ConnectionWizardData *data)
+{
+	m_curData = data;
+	
+	if (m_curData != NULL)
+	{
+		if (m_pVerifyName != NULL)
+			m_pVerifyName->setChecked(m_curData->m_verifyCommonName);
+			
+		if (m_pNameField != NULL)
+			m_pNameField->setText(m_curData->m_commonNames.join(QString(",")));
+		
+		// check those that are selected	
+		if (m_pCertTable != NULL)
+		{
+			int nRows = m_pCertTable->rowCount();
+			
+			for (int i=0; i<nRows; i++)
+			{
+				QTableWidgetItem *item = m_pCertTable->item(i,1);
+				if (item != NULL)
+				{
+					QWidget *widget = m_pCertTable->cellWidget(i,0); 
+					if (widget != NULL)
+					{
+						// TODO: range check index before indexing m_pCertArray
+						if (m_pCertArray != NULL && m_curData->m_serverCerts.contains(m_pCertArray[item->type() - 1000].location))
+							((QCheckBox*)widget)->setChecked(true);
+						else
+							((QCheckBox*)widget)->setChecked(false);
+					}
+				}
+			}		
+		}
+	}
+}
+
+bool WizardPageDot1XCert::validate(void)
+{
+	if (m_pNameField != NULL)
+	{
+		if (m_pNameField->hasAcceptableInput() == false)
+		{
+			QMessageBox::warning(m_pRealForm, tr("Invalid Common Name String"), tr("Please input a valid common name string"));
+			return false;
+		}
+	}
+	return true;
+}
+
+ConnectionWizardData *WizardPageDot1XCert::wizardData()
+{
+	if (m_curData != NULL)
+	{
+		if (m_pVerifyName != NULL)
+			m_curData->m_verifyCommonName = m_pVerifyName->isChecked();	
+		if (m_pNameField != NULL)
+			m_curData->m_commonNames = m_pNameField->text().split(QString(","));	
+			
+		if (m_pCertTable != NULL)
+		{
+			// check for checked rows
+			m_curData->m_serverCerts.clear();
+			int nRows = m_pCertTable->rowCount();
+			
+			for (int i=0; i<nRows; i++)
+			{
+				QWidget *widget = m_pCertTable->cellWidget(i,0);
+				if (widget != NULL && ((QCheckBox*)widget)->isChecked())
+				{
+					// if user selected item, add cert's location to list. 
+					// (location is guaranteed to be unique)
+					QTableWidgetItem *item = m_pCertTable->item(i,1);
+					
+					// TODO: range check index before indexing m_pCertArray
+					if (item != NULL && m_pCertArray != NULL)
+						m_curData->m_serverCerts.append(m_pCertArray[item->type() - 1000].location);
+				}
+			}
+		}
+	}
+	return m_curData;
 }

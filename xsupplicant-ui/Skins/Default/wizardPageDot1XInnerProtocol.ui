@@ -675,6 +675,9 @@
                    <pointsize>9</pointsize>
                   </font>
                  </property>
+                 <property name="maxLength" >
+                  <number>256</number>
+                 </property>
                 </widget>
                </item>
                <item>

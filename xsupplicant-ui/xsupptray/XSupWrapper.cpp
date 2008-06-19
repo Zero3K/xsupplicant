@@ -48,21 +48,8 @@ bool XSupWrapper::createNewConnection(const QString &suggName, config_connection
 {
 	// First, ensure a connection with this name doesn't already exist
 	// If it does, add a _1 _2 etc., to the name until a unique name is found
-	QString newName(suggName);
+	QString newName = XSupWrapper::getUniqueConnectionName(suggName);
 	config_connection *pConfig = NULL;	
-  
-	int i=1;
-	while (getConfigConnection(newName, &pConfig) == true)
-	{
-		newName = QString ("%1_%2").arg(suggName).arg(i);
-		i++;
-
-		freeConfigConnection(&pConfig);
-		pConfig = NULL;
-	}
-	
-	// free connection info from last iteration of loop
-	freeConfigConnection(&pConfig);
 	
 	if (!createNewConnectionDefaults(&pConfig) || pConfig == NULL)
 	{
@@ -135,4 +122,22 @@ bool XSupWrapper::writeConfig()
 		return true;
 	else
 		return false;
+}
+
+QString XSupWrapper::getUniqueConnectionName(const QString &suggestedName)
+{
+	QString newName(suggestedName);
+	config_connection *pConfig = NULL;	
+  
+	int i=1;
+	while (getConfigConnection(newName, &pConfig) == true)
+	{
+		newName = QString ("%1_%2").arg(suggestedName).arg(i);
+		++i;
+
+		freeConfigConnection(&pConfig);
+		pConfig = NULL;
+	}
+
+	return newName;
 }

@@ -187,8 +187,8 @@ bool ConfigConnAdaptTabWireless::attach()
 	 m_pPSK->setEchoMode(QLineEdit::Password);
 
 	 // An SSID can be a MAX of 32 characters.
-	 m_pHiddenName->setValidator(new QRegExpValidator(QRegExp("^[\\w|\\W]{0,32}$"), m_pHiddenName));
-	 m_pBroadcastCombo->setValidator(new QRegExpValidator(QRegExp("^[\\w|\\W]{0,32}$"), m_pBroadcastCombo));
+	 m_pHiddenName->setValidator(new QRegExpValidator(QRegExp("^[\\w|\\W]{1,32}$"), m_pHiddenName));
+	 m_pBroadcastCombo->setValidator(new QRegExpValidator(QRegExp("^[\\w|\\W]{1,32}$"), m_pBroadcastCombo));
 	 m_pWEPKey->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{10,10}$"), m_pWEPKey));
 
 	 if (m_pHexKeyLabel != NULL)
