@@ -57,7 +57,6 @@ SSIDList::SSIDList(QWidget *parent, QTableWidget *tableWidget, int minRowCount/*
 	m_pTableWidget(tableWidget),
 	m_minRowCount(minRowCount)
 {
-	m_curNetworks = NULL;
 	this->initUI();
 }
 
@@ -68,9 +67,6 @@ SSIDList::~SSIDList()
 		Util::myDisconnect(m_pTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(handleSSIDTableSelectionChange()));
 		Util::myDisconnect(m_pTableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(handleSSIDTableDoubleClick(int, int)));	
 	}
-	
-	if (m_curNetworks != NULL)
-		delete m_curNetworks;
 }
 
 void SSIDList::initUI(void)
@@ -133,13 +129,11 @@ void SSIDList::refreshList(const QString &adapterName)
 	m_pTableWidget->clearContents();
 	
 	// make sure we have enough rows in the table
-	int nNetworks=0;
-	if (m_curNetworks != NULL)
-		nNetworks = m_curNetworks->size();
+	int nNetworks = m_curNetworks.size();
 	m_pTableWidget->setRowCount(std::max<int>(this->m_minRowCount, nNetworks));
 	m_pTableWidget->setSortingEnabled(false);
 	
-	if (m_curNetworks != NULL)
+	if (!m_curNetworks.empty())
 	{
 		QIcon iconSignal_0;
 		QIcon iconSignal_1;
@@ -184,17 +178,17 @@ void SSIDList::refreshList(const QString &adapterName)
 			delete p;		
 		}
 								
-		for (int i=0; i<m_curNetworks->size(); i++)
+		for (int i=0; i<m_curNetworks.size(); i++)
 		{
 			QTableWidgetItem *nameItem=NULL;
 			
 			// use the custom item type to store index into our cached array of networks
 			// so that we can index back into the array even after table's been sorted
-			nameItem = new QTableWidgetItem(m_curNetworks->at(i).m_name, 1000+i);
+			nameItem = new QTableWidgetItem(m_curNetworks.at(i).m_name, 1000+i);
 			if (nameItem != NULL)
 				m_pTableWidget->setItem(i, SSIDList::COL_NAME, nameItem);	
 			
-			int strength = m_curNetworks->at(i).m_signalStrength;
+			int strength = m_curNetworks.at(i).m_signalStrength;
 			QString signalText = "";
 			signalText.setNum(strength);
 			signalText.append(tr("%"));
@@ -220,7 +214,7 @@ void SSIDList::refreshList(const QString &adapterName)
 			}
 			
 			QString securityText = "";
-			switch (m_curNetworks->at(i).m_assoc_modes)
+			switch (m_curNetworks.at(i).m_assoc_modes)
 			{
 				case WirelessNetworkInfo::SECURITY_NONE:
 					securityText = tr("None");
@@ -250,10 +244,10 @@ void SSIDList::refreshList(const QString &adapterName)
 				m_pTableWidget->setItem(i,SSIDList::COL_SECURITY,securityItem);
 			
 			// if none of modes a,b,g,n supported, nothing to show here	
-			if (m_curNetworks->at(i).m_modes != 0)
+			if (m_curNetworks.at(i).m_modes != 0)
 			{
 				// build filename for icon image to load into table
-				unsigned char modes = m_curNetworks->at(i).m_modes;
+				unsigned char modes = m_curNetworks.at(i).m_modes;
 				
 				QString labelFileName = "802_11_";
 				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_A) != 0)
@@ -291,92 +285,107 @@ void SSIDList::refreshList(const QString &adapterName)
 
 void SSIDList::getNetworkInfo(QString adapterName)
 {
-	// temporary solution for now - get list of SSIDs for all wireless adapters
-	if (m_curNetworks == NULL)
-		m_curNetworks = new QVector<WirelessNetworkInfo>();
-	else
-		m_curNetworks->clear();
+	// clear our list of networks
+	m_curNetworks.clear();
 	
-	if (m_curNetworks != NULL)
+	int_enum *pInterfaceList = NULL;
+	int retVal;	
+	
+	retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
 	{
-		int_enum *pInterfaceList = NULL;
-		int retVal;	
-		
-		retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
-		if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+		int i = 0;
+		while (pInterfaceList[i].desc != NULL)
 		{
-			int i = 0;
-			while (pInterfaceList[i].desc != NULL)
+			if (adapterName == pInterfaceList[i].desc)
 			{
-				if (adapterName == pInterfaceList[i].desc)
+				ssid_info_enum *pSSIDList = NULL;
+				retVal = xsupgui_request_enum_ssids(pInterfaceList[i].name,&pSSIDList);
+				if (retVal == REQUEST_SUCCESS && pSSIDList != NULL)
 				{
-					ssid_info_enum *pSSIDList = NULL;
-					retVal = xsupgui_request_enum_ssids(pInterfaceList[i].name,&pSSIDList);
-					if (retVal == REQUEST_SUCCESS && pSSIDList != NULL)
+					int j = 0;
+					QHash<QString, WirelessNetworkInfo> networkHashTable;
+					while (pSSIDList[j].ssidname != NULL)
 					{
-						int j = 0;
-						while (pSSIDList[j].ssidname != NULL)
+						// if not empty ssid (this represents a non-broadcast SSID)
+						if (pSSIDList[j].ssidname[0] != '\0')
 						{
-							// if not empty ssid (this represents a non-broadcast SSID)
-							if (pSSIDList[j].ssidname[0] != '\0')
+							WirelessNetworkInfo networkInfo;
+							networkInfo.m_name = pSSIDList[j].ssidname;
+							networkInfo.m_signalStrength = int(pSSIDList[j].percentage);
+							networkInfo.m_assoc_modes = 0;
+							
+							unsigned int abilities = pSSIDList[j].abil;
+							if ((abilities & ABILITY_ENC) != 0)
 							{
-								WirelessNetworkInfo networkInfo;
-								networkInfo.m_name = pSSIDList[j].ssidname;
-								networkInfo.m_signalStrength = int(pSSIDList[j].percentage);
-								
-								// jking -- hack for right now to assume only one association mode is
-								// supported.  Do so by setting precedence (WPA2 before WPA1, 802.1X before PSK)
-								// and go with highest precedence association mode
-								unsigned int abilities = pSSIDList[j].abil;
-								if ((abilities & ABILITY_ENC) != 0)
-								{
-									if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
-										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_STATIC_WEP;
-									else if ((abilities & ABILITY_RSN_DOT1X) != 0)
-										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE;
-									else if ((abilities & ABILITY_WPA_DOT1X) != 0)
-										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE;
-									else if ((abilities & ABILITY_RSN_PSK) != 0)
-										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_PSK;
-									else if ((abilities & ABILITY_WPA_PSK) != 0)
-										networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_PSK;									
-								}
-								else
-									networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_NONE;
-									
-								if ((abilities & ABILITY_DOT11_STD) != 0)
-									; // no flags to pass on
-								if ((abilities & ABILITY_DOT11_A) != 0)
-									networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_A;
-								if ((abilities & ABILITY_DOT11_B) != 0)
-									networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_B;
-								if ((abilities & ABILITY_DOT11_G) != 0)
-									networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_G;
-								if ((abilities & ABILITY_DOT11_N) != 0)
-									networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_N;
-									
-								m_curNetworks->append(networkInfo);
+								if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
+									networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_STATIC_WEP;
+								if ((abilities & ABILITY_RSN_DOT1X) != 0)
+									networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE;
+								if ((abilities & ABILITY_WPA_DOT1X) != 0)
+									networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE;
+								if ((abilities & ABILITY_RSN_PSK) != 0)
+									networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_WPA2_PSK;
+								if ((abilities & ABILITY_WPA_PSK) != 0)
+									networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_WPA_PSK;									
 							}
-							++j;
+							else
+								networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_NONE;
+								
+							if ((abilities & ABILITY_DOT11_STD) != 0)
+								; // no flags to pass on
+							if ((abilities & ABILITY_DOT11_A) != 0)
+								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_A;
+							if ((abilities & ABILITY_DOT11_B) != 0)
+								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_B;
+							if ((abilities & ABILITY_DOT11_G) != 0)
+								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_G;
+							if ((abilities & ABILITY_DOT11_N) != 0)
+								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_N;
+								
+							if (networkHashTable.contains(networkInfo.m_name))
+							{
+								// entry already exists for SSID.  Or in network capabiities
+								WirelessNetworkInfo item;
+								item = networkHashTable.value(networkInfo.m_name);
+								item.m_assoc_modes |= networkInfo.m_assoc_modes;
+								item.m_modes |= networkInfo.m_modes;
+								item.m_signalStrength = std::max<int>(networkInfo.m_signalStrength, item.m_signalStrength);
+								
+								// replace item in table;
+								networkHashTable[item.m_name] = item;
+							}
+							else
+							{
+								// else just insert new item into table
+								networkHashTable[networkInfo.m_name] = networkInfo;
+							}
 						}
-						xsupgui_request_free_ssid_enum(&pSSIDList);
-						pSSIDList = NULL;
+						++j;
 					}
-					else
-					{
-						// problem or no SSIDs for this adapter
-					}
+					m_curNetworks = networkHashTable.values();
+					
+					// name says it all.  make assoc mode only one value (best), rather than bitfield.
+					// temporary until we have better UI solution
+					this->tempAssocModeHack();
+					
+					xsupgui_request_free_ssid_enum(&pSSIDList);
+					pSSIDList = NULL;
 				}
-				
-				++i;
+				else
+				{
+					// problem or no SSIDs for this adapter
+				}
 			}
-			xsupgui_request_free_int_enum(&pInterfaceList);
-			pInterfaceList = NULL;
+			
+			++i;
 		}
-		else
-		{
-			// bad things man
-		}
+		xsupgui_request_free_int_enum(&pInterfaceList);
+		pInterfaceList = NULL;
+	}
+	else
+	{
+		// bad things man
 	}
 }
 
@@ -395,7 +404,7 @@ void SSIDList::handleSSIDTableSelectionChange(void)
 			{
 				if (selectedItems.at(i)->column() == SSIDList::COL_NAME)
 				{
-					emit ssidSelectionChange(m_curNetworks->at(selectedItems.at(i)->type() - 1000));
+					emit ssidSelectionChange(m_curNetworks.at(selectedItems.at(i)->type() - 1000));
 					break;
 				}
 			}
@@ -416,7 +425,7 @@ void SSIDList::handleSSIDTableDoubleClick(int row, int)
 		// check if they clicked in a row w/ a network listed
 		if (item != NULL)
 		{
-			emit ssidDoubleClick(m_curNetworks->at(item->type() - 1000));
+			emit ssidDoubleClick(m_curNetworks.at(item->type() - 1000));
 		}
 	}
 }
@@ -443,4 +452,25 @@ bool SSIDList::selectNetwork(const QString &networkName)
 	}
 	
 	return retVal;
+}
+
+// jking -- hack for right now to assume only one association mode is
+// supported.  Do so by setting precedence (WPA2 before WPA1, 802.1X before PSK)
+// and go with highest precedence association mode
+void SSIDList::tempAssocModeHack(void)
+{
+	QList<WirelessNetworkInfo>::iterator iter;
+	QList<WirelessNetworkInfo>::iterator end = m_curNetworks.end();
+	
+	for (iter=m_curNetworks.begin(); iter != end; iter++)
+	{
+		if ((iter->m_assoc_modes & WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE) != 0)
+			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE;
+		else if ((iter->m_assoc_modes & WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE) != 0)
+			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE;
+		else if ((iter->m_assoc_modes & WirelessNetworkInfo::SECURITY_WPA2_PSK) != 0)
+			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_PSK;			
+		else if ((iter->m_assoc_modes & WirelessNetworkInfo::SECURITY_WPA_PSK) != 0)
+			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_PSK;						
+	}
 }

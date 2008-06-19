@@ -35,7 +35,7 @@
 
 #include <QWidget>
 #include <QTableWidget>
-#include <QVector>
+#include <QList>
 
 		
 class WirelessNetworkInfo
@@ -93,6 +93,7 @@ signals:
 private:
 	void getNetworkInfo(QString adapterName);
 	void initUI(void);
+	void tempAssocModeHack(void);
 	
 private slots:
 	void handleSSIDTableSelectionChange(void);
@@ -103,6 +104,6 @@ private:
 	QTableWidget *m_pTableWidget;
 	int m_minRowCount;
 	QString m_curWirelessAdapter;
-	QVector<WirelessNetworkInfo> *m_curNetworks;
+	QList<WirelessNetworkInfo> m_curNetworks;
 };
 #endif
