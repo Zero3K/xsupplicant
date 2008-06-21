@@ -88,6 +88,8 @@ ConnectDlg::~ConnectDlg()
 	if (m_pSSIDListDlg != NULL)
 		delete m_pSSIDListDlg;
 		
+	this->cleanupConnectionWizard();
+		
 	if (m_pRealForm != NULL) 
 		delete m_pRealForm;	
 }
@@ -197,7 +199,7 @@ bool ConnectDlg::initUI(void)
 		Util::myConnect(m_pConnWizardButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
 		
 	Util::myConnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
-	//Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
+	//Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(handleInterfaceInserted(char *)));
 	//Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));		
 	
 	// set initial state of UI - mainly setting the active tab
@@ -217,7 +219,10 @@ bool ConnectDlg::initUI(void)
 		populateWiredAdapterList();
 		selectWiredAdapter(0);
 	}
-					
+				
+	// jking - not sure this button should exist on this screen. hiding for now			
+	if (m_pConnWizardButton != NULL)
+		m_pConnWizardButton->hide();				
 	return true;
 }
 
@@ -330,6 +335,10 @@ void ConnectDlg::selectWirelessAdapter(int index)
 	if (m_pWirelessAdapterList != NULL) {
 		m_currentWirelessAdapter = m_pWirelessAdapterList->itemText(index);
 		m_pWirelessAdapterList->setToolTip(m_currentWirelessAdapter);
+		
+		// if selected adapter is invalid, disable browse button
+		if (m_pBrowseWirelessNetworksButton != NULL)
+			m_pBrowseWirelessNetworksButton->setEnabled(!m_currentWirelessAdapter.isEmpty());
 	}
 	
 	this->populateWirelessConnectionList();
@@ -542,11 +551,13 @@ void ConnectDlg::launchConnectionWizard(void)
 	if (m_pConnWizard == NULL)
 	{
 		// create the wizard if it doesn't already exist
-		m_pConnWizard = new ConnectionWizard(this, m_pRealForm);
+		m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
 		if (m_pConnWizard != NULL)
 		{
 			if (m_pConnWizard->create() == true)
 			{
+				Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+				Util::myConnect(m_pConnWizard, SIGNAL(finished(bool)), this, SLOT(finishConnectionWizard(bool)));
 				m_pConnWizard->init();
 				m_pConnWizard->show();
 			}
@@ -558,5 +569,22 @@ void ConnectDlg::launchConnectionWizard(void)
 	{
 		m_pConnWizard->init();
 		m_pConnWizard->show();
+	}
+}
+
+void ConnectDlg::finishConnectionWizard(bool success)
+{
+	this->cleanupConnectionWizard();
+}
+
+void ConnectDlg::cleanupConnectionWizard(void)
+{
+	if (m_pConnWizard != NULL)
+	{
+		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool)), this, SLOT(finishConnectionWizard(bool)));
+	
+		delete m_pConnWizard;
+		m_pConnWizard = NULL;
 	}
 }

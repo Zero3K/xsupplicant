@@ -69,15 +69,22 @@ private:
 	void populateConnectionsList(void);
 	void refreshConnectionList(void);
 	void populateWiredConnectionsCombo(void);
+	void updateWirelessAutoConnectState(void);
+	void updateWiredAutoConnectState(void);
 	
 private slots:
 	void showAdvancedConfig(void);
 	void handleConnectionListSelectionChange(void);
 	void deleteSelectedConnection(void);
-	void wiredAutoConnectStateChanged(int);
 	void showPriorityDialog(void);
 	void cleanupPriorityDialog(void);
 	void launchConnectionWizard(void);
+	void cleanupConnectionWizard(void);
+	void finishConnectionWizard(bool);
+	void enableDisableWirelessAutoConnect(int);
+	void enableDisableWiredAutoConnect(int);
+	void setWiredAutoConnection(const QString &connectionName);
+	void updateConnectionLists(void);
 	
 private:
 	QWidget *m_pParent;
@@ -95,13 +102,14 @@ private:
 	QPushButton *m_pAdvancedButton;
 	QPushButton *m_pNetworkPrioritiesButton;
 	QComboBox *m_pWiredConnections;
+	QCheckBox *m_pWiredAutoConnect;
+	QCheckBox *m_pWirelessAutoConnect;
 	
 	// connections tab objects
 	QPushButton *m_pDeleteConnButton;
 	QPushButton *m_pEditConnButton;
 	QPushButton *m_pNewConnButton;
 	QTableWidget *m_pConnectionsTable;
-	QCheckBox *m_pWiredAutoConnect;
 	
 	PreferredConnections *m_pPrefDlg;
 	ConnectionWizard *m_pConnWizard;

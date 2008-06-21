@@ -46,12 +46,15 @@ extern "C"
 // NOTE: this function may create a connection with a different name than is passed in
 bool XSupWrapper::createNewConnection(const QString &suggName, config_connection **newConnection)
 {
+	if (newConnection == NULL)
+		return false;
+		
 	// First, ensure a connection with this name doesn't already exist
 	// If it does, add a _1 _2 etc., to the name until a unique name is found
 	QString newName = XSupWrapper::getUniqueConnectionName(suggName);
 	config_connection *pConfig = NULL;	
 	
-	if (!createNewConnectionDefaults(&pConfig) || pConfig == NULL)
+	if (createNewConnectionDefaults(&pConfig) == false || pConfig == NULL)
 	{
 		return false;
 	}
@@ -69,7 +72,9 @@ bool XSupWrapper::createNewConnection(const QString &suggName, config_connection
 
 bool XSupWrapper::getConfigConnection(const QString &connName, config_connection **pConfig)
 {
-	Q_ASSERT(pConfig);
+	if (pConfig == NULL)
+		return false;
+		
 	*pConfig = NULL;
 
 	if (connName.isEmpty())
@@ -135,9 +140,132 @@ QString XSupWrapper::getUniqueConnectionName(const QString &suggestedName)
 		newName = QString ("%1_%2").arg(suggestedName).arg(i);
 		++i;
 
-		freeConfigConnection(&pConfig);
+		XSupWrapper::freeConfigConnection(&pConfig);
 		pConfig = NULL;
 	}
 
 	return newName;
+}
+
+QString XSupWrapper::getUniqueProfileName(const QString &suggestedName)
+{
+	QString newName(suggestedName);
+	config_profiles *pProfile = NULL;	
+  
+	int i=1;
+	while (getConfigProfile(newName, &pProfile) == true)
+	{
+		newName = QString ("%1_%2").arg(suggestedName).arg(i);
+		++i;
+
+		freeConfigProfile(&pProfile);
+		pProfile = NULL;
+	}
+
+	return newName;
+}
+
+void XSupWrapper::freeConfigProfile(config_profiles **pProfile)
+{
+ if (pProfile != NULL)
+	 xsupgui_request_free_profile_config(pProfile);
+}
+
+bool XSupWrapper::getConfigProfile(const QString &profileName, config_profiles **pProfile)
+{
+	if (pProfile == NULL)
+		return false;
+		
+	*pProfile = NULL;
+
+	if (profileName.isEmpty())
+		return false;
+
+	int retVal = xsupgui_request_get_profile_config(profileName.toAscii().data(), pProfile);
+	if (retVal != REQUEST_SUCCESS || *pProfile == NULL)
+	{
+		*pProfile = NULL;
+		return false;
+	}
+	
+	return true;
+}
+
+bool XSupWrapper::createNewProfile(const QString &suggName, config_profiles **newProfile)
+{
+	if (newProfile == NULL)
+		return false;
+		
+	// First, ensure a connection with this name doesn't already exist
+	// If it does, add a _1 _2 etc., to the name until a unique name is found
+	QString newName = XSupWrapper::getUniqueProfileName(suggName);
+	config_profiles *pProfile = NULL;	
+	
+	if (createNewProfileDefaults(&pProfile) == false || pProfile == NULL)
+	{
+		return false;
+	}
+	
+	pProfile->name = _strdup(newName.toAscii().data());
+
+	(*newProfile) = pProfile;
+	return true;
+}
+
+bool XSupWrapper::createNewProfileDefaults(config_profiles **pProfile)
+{
+	int retVal = xsupconfig_defaults_create_profile(pProfile);
+	if (retVal != REQUEST_SUCCESS || pProfile == NULL)
+		return false;
+	return true;
+}
+
+bool XSupWrapper::isDefaultWiredConnection(const QString &connName)
+{
+	bool success;
+	bool isDefault = false;
+	if (connName.isEmpty())
+		return false;
+		
+	// first, check if wired
+	config_connection *pConn;
+	success = XSupWrapper::getConfigConnection(connName,&pConn);
+	if (success == true)
+	{
+		// check if wired
+		if (pConn->ssid == NULL || QString(pConn->ssid).isEmpty())
+		{
+			int_config_enum *pInterfaceList = NULL;
+			int retVal;
+			
+			retVal = xsupgui_request_enum_ints_config(&pInterfaceList);
+			if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+			{
+				int i = 0;
+				while (pInterfaceList[i].desc != NULL)
+				{
+					if (pInterfaceList[i].is_wireless == FALSE)
+					{
+						if (pInterfaceList[i].default_connection != NULL)
+						{
+							if (QString(pInterfaceList[i].default_connection) == connName)
+							{
+								isDefault = true;
+								break;
+							}	
+						}
+					}
+					++i;	
+				}
+				xsupgui_request_free_int_config_enum(&pInterfaceList);
+			}			
+		}
+	}
+	return isDefault;
+}
+
+void XSupWrapper::freeConfigEAPMethod(config_eap_method **method)
+{
+	if (method != NULL)
+		delete_config_eap_method(method);
 }

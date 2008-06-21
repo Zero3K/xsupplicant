@@ -44,6 +44,10 @@
 
 #include <algorithm>
 
+
+// TODO:  disable wired options if no wired interface present
+// TODO:  disable wireless options if no wireless interfaces present
+
 ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant)
 	: QWidget(parent),
 	m_pParent(parent),
@@ -70,14 +74,27 @@ ConnectMgrDlg::~ConnectMgrDlg()
 	if (m_pDeleteConnButton != NULL)
 		Util::myDisconnect(m_pDeleteConnButton, SIGNAL(clicked()), this, SLOT(deleteSelectedConnection()));
 		
-	if (m_pWiredAutoConnect != NULL)
-		Util::myDisconnect(m_pWiredAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(wiredAutoConnectStateChanged(int)));	
+	if (m_pNetworkPrioritiesButton != NULL)
+		Util::myDisconnect(m_pNetworkPrioritiesButton, SIGNAL(clicked()), this, SLOT(showPriorityDialog()));		
 		
 	if (m_pNewConnButton != NULL)
 		Util::myDisconnect(m_pNewConnButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));	
+		
+	if (m_pWirelessAutoConnect != NULL)
+		Util::myDisconnect(m_pWirelessAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(enableDisableWirelessAutoConnect(int)));
+		
+	if (m_pWiredAutoConnect != NULL)
+		Util::myDisconnect(m_pWiredAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(enableDisableWiredAutoConnect(int)));
+		
+	if (m_pWiredConnections != NULL)
+		Util::myDisconnect(m_pWiredConnections, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setWiredAutoConnection(const QString &)));						
+
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(updateConnectionLists()));
 
 	if (m_pPrefDlg != NULL)
 		delete m_pPrefDlg;
+		
+	this->cleanupConnectionWizard();
 		
 	if (m_pRealForm != NULL)
 		delete m_pRealForm;
@@ -110,6 +127,7 @@ bool ConnectMgrDlg::initUI(void)
 	m_pAdvancedButton = qFindChild<QPushButton*>(m_pRealForm, "buttonOptionsAdvancedConfig");
 	m_pWiredConnections = qFindChild<QComboBox*>(m_pRealForm, "comboOptionsWirelessConnections");
 	m_pWiredAutoConnect = qFindChild<QCheckBox*>(m_pRealForm, "checkboxWiredAutoConnect");
+	m_pWirelessAutoConnect = qFindChild<QCheckBox*>(m_pRealForm, "checkboxWirelessAutoConnect");
 	
 	m_pDeleteConnButton = qFindChild<QPushButton*>(m_pRealForm, "buttonDeleteConnection");
 	m_pEditConnButton = qFindChild<QPushButton*>(m_pRealForm, "buttonEditConnection");
@@ -132,6 +150,9 @@ bool ConnectMgrDlg::initUI(void)
 	
 	if (m_pWiredAutoConnect != NULL)
 		m_pWiredAutoConnect->setText(tr("Automatically Establish Connection"));
+		
+	if (m_pWirelessAutoConnect != NULL)
+		m_pWirelessAutoConnect->setText(tr("Automatically Establish Connection"));		
 		
 	if (m_pDeleteConnButton != NULL)
 		m_pDeleteConnButton->setText(tr("Delete"));
@@ -188,15 +209,23 @@ bool ConnectMgrDlg::initUI(void)
 	if (m_pDeleteConnButton != NULL)
 		Util::myConnect(m_pDeleteConnButton, SIGNAL(clicked()), this, SLOT(deleteSelectedConnection()));
 		
-	if (m_pWiredAutoConnect != NULL)
-		Util::myConnect(m_pWiredAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(wiredAutoConnectStateChanged(int)));
-		
 	if (m_pNetworkPrioritiesButton != NULL)
 		Util::myConnect(m_pNetworkPrioritiesButton, SIGNAL(clicked()), this, SLOT(showPriorityDialog()));
 		
 	if (m_pNewConnButton != NULL)
 		Util::myConnect(m_pNewConnButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
 		
+	if (m_pWirelessAutoConnect != NULL)
+		Util::myConnect(m_pWirelessAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(enableDisableWirelessAutoConnect(int)));
+		
+	if (m_pWiredAutoConnect != NULL)
+		Util::myConnect(m_pWiredAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(enableDisableWiredAutoConnect(int)));
+		
+	if (m_pWiredConnections != NULL)
+		Util::myConnect(m_pWiredConnections, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setWiredAutoConnection(const QString &)));			
+		
+	Util::myConnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(updateConnectionLists()));
+	
 	// other initializations
 	if (m_pMainTab != NULL)
 		m_pMainTab->setCurrentIndex(0);
@@ -222,10 +251,6 @@ bool ConnectMgrDlg::initUI(void)
 		// enable/disable buttons dependent on selection
 		handleConnectionListSelectionChange();
 	}
-	
-	// TODO: read state from config file rather than init here
-	if (m_pWiredAutoConnect != NULL)
-		this->wiredAutoConnectStateChanged(m_pWiredAutoConnect->checkState());
 		
 	return true;	
 }
@@ -235,13 +260,236 @@ bool ConnectMgrDlg::create(void)
 	return this->initUI();
 }
 
+void ConnectMgrDlg::updateWirelessAutoConnectState(void)
+{
+	if (m_pWirelessAutoConnect != NULL)
+	{
+		int retVal;
+		config_globals *pConfig;
+		
+		retVal = xsupgui_request_get_globals_config(&pConfig);
+		if (retVal == REQUEST_SUCCESS && pConfig != NULL) {
+			m_pWirelessAutoConnect->setChecked((pConfig->flags & CONFIG_GLOBALS_ASSOC_AUTO) == CONFIG_GLOBALS_ASSOC_AUTO);
+			if (m_pNetworkPrioritiesButton != NULL)
+				m_pNetworkPrioritiesButton->setEnabled((pConfig->flags & CONFIG_GLOBALS_ASSOC_AUTO) == CONFIG_GLOBALS_ASSOC_AUTO);			
+		}
+		else
+		{
+			// if we can't get data we need, make sure everything's enabled
+			if (m_pNetworkPrioritiesButton != NULL)
+				m_pNetworkPrioritiesButton->setEnabled(true);			
+		}
+			
+		if (pConfig != NULL)
+			xsupgui_request_free_config_globals(&pConfig);
+	}
+}
+
+void ConnectMgrDlg::enableDisableWirelessAutoConnect(int newState)
+{
+	if (m_pWirelessAutoConnect != NULL)
+	{
+		int retVal;
+		config_globals *pConfig;
+		
+		retVal = xsupgui_request_get_globals_config(&pConfig);
+		if (retVal == REQUEST_SUCCESS && pConfig != NULL)	
+		{
+			if (newState == Qt::Checked)
+			{
+				pConfig->flags |= CONFIG_GLOBALS_ASSOC_AUTO;
+				if (m_pNetworkPrioritiesButton != NULL)
+					m_pNetworkPrioritiesButton->setEnabled(true);
+			}
+			else 
+			{
+				pConfig->flags &= ~CONFIG_GLOBALS_ASSOC_AUTO;
+				if (m_pNetworkPrioritiesButton != NULL)
+					m_pNetworkPrioritiesButton->setEnabled(false);
+			}
+				
+			retVal = xsupgui_request_set_globals_config(pConfig);
+			
+			if (retVal == REQUEST_SUCCESS)
+				XSupWrapper::writeConfig();
+		}
+		
+		if (pConfig != NULL)
+			xsupgui_request_free_config_globals(&pConfig);
+			
+		retVal = xsupgui_request_get_globals_config(&pConfig);
+		if (retVal == REQUEST_SUCCESS && pConfig != NULL)
+		{
+			if ((pConfig->flags & CONFIG_GLOBALS_ASSOC_AUTO) == CONFIG_GLOBALS_ASSOC_AUTO)
+				;
+			else
+				QMessageBox::information(NULL,"","check");
+		}	
+		if (pConfig != NULL)
+			xsupgui_request_free_config_globals(&pConfig);			
+	}
+}
+
+void ConnectMgrDlg::updateWiredAutoConnectState(void)
+{
+	// don't bother doing any work if the UI elements aren't present
+	if (m_pWiredAutoConnect != NULL && m_pWiredConnections != NULL)
+	{
+		int_config_enum *pInterfaceList = NULL;
+		int retVal;
+		
+		// jking !!! for now just assume there's only one wired adapter
+		// The UI needs to be updated to handle the multi-adapter case.
+		retVal = xsupgui_request_enum_ints_config(&pInterfaceList);
+		if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+		{
+			int i = 0;
+			while (pInterfaceList[i].desc != NULL)
+			{
+				if (pInterfaceList[i].is_wireless == FALSE)
+				{
+					if (pInterfaceList[i].default_connection != NULL)
+					{										
+						// ensure connection is in list before checking option
+						QString connName = pInterfaceList[i].default_connection;
+						int index = m_pWiredConnections->findText(connName);
+						if (index != -1)
+						{
+							// !!!! this causes event to be fired?!
+							m_pWiredAutoConnect->setCheckState(Qt::Checked);
+							this->enableDisableWiredAutoConnect(Qt::Checked);
+							m_pWiredConnections->setCurrentIndex(index);
+						}
+						else
+						{
+							m_pWiredAutoConnect->setCheckState(Qt::Unchecked);
+							enableDisableWiredAutoConnect(Qt::Unchecked);
+							
+						}
+					}
+					else
+					{
+						m_pWiredAutoConnect->setCheckState(Qt::Unchecked);
+						this->enableDisableWiredAutoConnect(Qt::Unchecked);
+					}
+					break;
+				}
+				
+				++i;
+			}
+			xsupgui_request_free_int_config_enum(&pInterfaceList);
+			pInterfaceList = NULL;	
+		}
+	}
+}
+
+
+void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
+{
+	bool success = false;
+	int_config_enum *pInterfaceList = NULL;
+	int retVal;
+		
+	// jking !!! for now just assume there's only one wired adapter
+	// The UI needs to be updated to handle the multi-adapter case.
+	retVal = xsupgui_request_enum_ints_config(&pInterfaceList);
+	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+	{
+		int i = 0;
+		bool found = false;
+		
+		// find the first wired interface
+		while (pInterfaceList[i].desc != NULL)
+		{
+			if (pInterfaceList[i].is_wireless == FALSE)
+			{
+				found = true;
+				break;
+			}
+			++i;
+		}
+		
+		// do nothing if no wired interfaces found
+		if (found == true)
+		{
+			config_interfaces *pInterface;
+			retVal = xsupgui_request_get_interface_config(pInterfaceList[i].desc, &pInterface);
+			if (retVal == REQUEST_SUCCESS && pInterface != NULL)
+			{
+				if (!connectionName.isEmpty())
+				{
+					// save off new string
+					char *oldPtr = pInterface->default_connection;
+					pInterface->default_connection = _strdup(connectionName.toAscii().data());
+					
+					// free memory holding old string
+					if (oldPtr != NULL)
+						xsupgui_request_free_str(&oldPtr);					
+				}
+				else
+				{
+					// clear out old setting
+					char *oldPtr = pInterface->default_connection;
+					pInterface->default_connection = NULL;
+					
+					// free memory holding old string
+					if (oldPtr != NULL)
+						xsupgui_request_free_str(&oldPtr);
+				}
+				
+				// save off new setting
+				retVal = xsupgui_request_set_interface_config(pInterface);
+				if (retVal == REQUEST_SUCCESS)
+				{
+					success = true;
+					
+					// write out configuration
+					// no biggie if this fails
+					XSupWrapper::writeConfig();
+				}
+								
+				xsupgui_request_free_interface_config(&pInterface);
+				
+			}	
+		}
+				
+		xsupgui_request_free_int_config_enum(&pInterfaceList);
+		pInterfaceList = NULL;
+	}
+	//return success;
+}
+
+void ConnectMgrDlg::enableDisableWiredAutoConnect(int newState)
+{
+	if (m_pWiredAutoConnect != NULL && m_pWiredConnections != NULL)
+	{
+		if (newState == Qt::Checked)
+		{
+			setWiredAutoConnection(m_pWiredConnections->currentText());
+			m_pWiredConnections->setEnabled(true);
+		}
+		else
+		{
+			this->setWiredAutoConnection(QString(""));
+			m_pWiredConnections->setEnabled(false);
+		}
+
+	}
+}
+
 void ConnectMgrDlg::show(void)
 {
 	// every time we show this, refresh the connection list in case it changed
 	this->refreshConnectionList();
 	this->populateConnectionsList();
 	this->populateWiredConnectionsCombo();
+	this->updateWirelessAutoConnectState();
+	this->updateWiredAutoConnectState();
 
+	// always come up with first tab visible, regardless of state user left it in
+	if (m_pMainTab != NULL)
+		m_pMainTab->setCurrentIndex(0);
+		
 	if (m_pRealForm != NULL)
 		m_pRealForm->show();
 }
@@ -285,9 +533,15 @@ void ConnectMgrDlg::populateWiredConnectionsCombo(void)
 {
 	if (m_pWiredConnections != NULL)
 	{
+		// disconnect this slot while populate combo box
+		// QT is silly and emits signals for index changed as it populates
+		Util::myDisconnect(m_pWiredConnections, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setWiredAutoConnection(const QString &)));						
+
 		m_pWiredConnections->clear();
-		m_pWiredConnections->addItem(tr("<None>"));	
 		
+		// jking - !!! right now this assumes only one wired interface
+		// We really need to filter this list by selected interface once
+		// the UI supports it
 		if (m_pConnections != NULL)
 		{	
 			// create sorted list of wired connections
@@ -296,7 +550,7 @@ void ConnectMgrDlg::populateWiredConnectionsCombo(void)
 			int i;
 			for (i=0; i<m_nConnections; i++)
 			{
-				if (m_pConnections[i].ssid == NULL)
+				if (m_pConnections[i].ssid == NULL || QString(m_pConnections[i].ssid).isEmpty())
 					wiredConnVector.append(QString(m_pConnections[i].name));
 			}
 			
@@ -306,6 +560,8 @@ void ConnectMgrDlg::populateWiredConnectionsCombo(void)
 			for (i=0; i<wiredConnVector.size(); i++)
 				m_pWiredConnections->addItem(wiredConnVector.at(i));
 		}
+		Util::myConnect(m_pWiredConnections, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setWiredAutoConnection(const QString &)));			
+
 	}
 }
 
@@ -406,9 +662,23 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 		{
 			QTableWidgetItem *nameItem = m_pConnectionsTable->item(selItem->row(), 0);
 			QString connName = nameItem->text();
+			QString message;
 			
-			if (QMessageBox::question(m_pRealForm, tr("Delete a Connection"), 
-				tr("Are you sure you want to delete the connection '%1'?").arg(connName), 
+			// check if is wired and if so is default connection
+			if (XSupWrapper::isDefaultWiredConnection(connName))
+			{
+				message = tr("The connection '%1' is set as the default connection for one of your wired adapters.  Are you sure you want to delete it?").arg(connName);
+			}
+			else
+			{
+				message = tr("Are you sure you want to delete the connection '%1'?").arg(connName);
+			}
+				
+			
+			// check if wireless and is in preferred list?
+			
+			if (QMessageBox::question(m_pRealForm, tr("Delete Connection"), 
+				message, 
 				QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 			{
 				bool success;
@@ -418,11 +688,7 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 					QMessageBox::critical(m_pRealForm,tr("Error Deleting Connection"), tr("An error occurred when attempting to delete the connection '%1'.  If the connection is in use, please disconnect and try again.").arg(connName));
 				}
 				else
-				{
-					// need to refresh the list of connections
-					this->refreshConnectionList();
-					this->populateConnectionsList();
-					
+				{	
 					// save off the config since it changed
 					XSupWrapper::writeConfig();
 					
@@ -431,14 +697,6 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 				}
 			}		
 		}	
-	}
-}
-
-void ConnectMgrDlg::wiredAutoConnectStateChanged(int newState)
-{
-	if (m_pWiredConnections != NULL)
-	{
-		m_pWiredConnections->setEnabled(newState != Qt::Unchecked);
 	}
 }
 
@@ -495,11 +753,13 @@ void ConnectMgrDlg::launchConnectionWizard(void)
 	if (m_pConnWizard == NULL)
 	{
 		// create the wizard if it doesn't already exist
-		m_pConnWizard = new ConnectionWizard(this, m_pRealForm);
+		m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
 		if (m_pConnWizard != NULL)
 		{
 			if (m_pConnWizard->create() == true)
 			{
+				Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+				Util::myConnect(m_pConnWizard, SIGNAL(finished(bool)), this, SLOT(finishConnectionWizard(bool)));			
 				m_pConnWizard->init();
 				m_pConnWizard->show();
 			}
@@ -512,4 +772,35 @@ void ConnectMgrDlg::launchConnectionWizard(void)
 		m_pConnWizard->init();
 		m_pConnWizard->show();
 	}
+}
+
+void ConnectMgrDlg::finishConnectionWizard(bool success)
+{
+	if (success == false)
+		QMessageBox::critical(m_pRealForm,tr("Error saving connection data"), tr("An error occurred while saving the configuration data you provided."));
+	this->cleanupConnectionWizard();
+}
+
+void ConnectMgrDlg::cleanupConnectionWizard(void)
+{
+	if (m_pConnWizard != NULL)
+	{
+		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool)), this, SLOT(finishConnectionWizard(bool)));				
+		delete m_pConnWizard;
+		m_pConnWizard = NULL;
+	}
+}
+
+void ConnectMgrDlg::updateConnectionLists(void)
+{
+	// need to refresh the list of connections
+	this->refreshConnectionList();
+	this->populateConnectionsList();
+	
+	// connections changed.  Repopulate combo box
+	this->populateWiredConnectionsCombo();
+	
+	// since the combo box items may have changed, make sure to re-select the right item
+	this->updateWiredAutoConnectState();
 }

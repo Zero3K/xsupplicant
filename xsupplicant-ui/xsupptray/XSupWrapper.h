@@ -51,6 +51,13 @@ public:
 	static bool deleteConnectionConfig(const QString &connName);
 	static bool writeConfig(void);
 	static QString getUniqueConnectionName(const QString &suggestedName);
+	static QString getUniqueProfileName(const QString &suggestedName);
+	static bool createNewProfile(const QString &suggName, config_profiles **newProfile);
+	static bool createNewProfileDefaults(config_profiles **pProfile);
+	static bool getConfigProfile(const QString &profileName, config_profiles **pProfile);
+	static void freeConfigProfile(config_profiles **p);
+	static bool isDefaultWiredConnection(const QString &connName);
+	static void freeConfigEAPMethod(config_eap_method **);
 };
 
 #endif

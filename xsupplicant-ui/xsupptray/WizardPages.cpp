@@ -111,99 +111,86 @@ bool WizardPageNetworkType::create(void)
 	return true;
 }
 
-void WizardPageNetworkType::init(ConnectionWizardData *data)
+void WizardPageNetworkType::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
-	if (m_curData != NULL)
+
+	// assume one of radio buttons isn't diabled
+	if (m_curData.m_wireless == true)
 	{
-		// assume one of radio buttons isn't diabled
-		if (m_curData->m_wireless == true)
+		if (m_pRadioButtonWireless != NULL)
 		{
-			if (m_pRadioButtonWireless != NULL)
+			if (m_pRadioButtonWireless->isEnabled() == true)
+				m_pRadioButtonWireless->setChecked(true);
+			else
 			{
-				if (m_pRadioButtonWireless->isEnabled() == true)
-					m_pRadioButtonWireless->setChecked(true);
-				else
+				// if no wireless adapters, connection must be wired
+				m_curData.m_wireless = false;
+				if (m_pRadioButtonWired != NULL)
 				{
-					// if no wireless adapters, connection must be wired
-					m_curData->m_wireless = false;
-					if (m_pRadioButtonWired != NULL)
-					{
-						// assume it's enabled. Should check, and error out if not
-						m_pRadioButtonWired->setChecked(true);
-					}
-				}
-			}
-		}
-		else
-		{
-			if (m_pRadioButtonWired != NULL)
-			{
-				if (m_pRadioButtonWired->isEnabled() == true)
+					// assume it's enabled. Should check, and error out if not
 					m_pRadioButtonWired->setChecked(true);
-				else
-				{
-					// if no wireless adapters, connection must be wired
-					m_curData->m_wireless = true;
-					if (m_pRadioButtonWireless != NULL)
-					{
-						// assume it's enabled. Should check, and error out if not
-						m_pRadioButtonWireless->setChecked(true);
-					}
 				}
 			}
 		}
 	}
-}
-
-ConnectionWizard::wizardPages WizardPageNetworkType::getNextPage(void)
-{
-	// jking - TODO: need to go to adapter selection page if more than one adapter!!!
-	if (m_pRadioButtonWired != NULL && m_pRadioButtonWired->isChecked() == true)
-		return ConnectionWizard::pageWiredSecurity;
-	else if (m_pRadioButtonWireless != NULL && m_pRadioButtonWireless->isChecked() == true)
-		return ConnectionWizard::pageWirelessNetwork;
 	else
-		return ConnectionWizard::pageNoPage;
+	{
+		if (m_pRadioButtonWired != NULL)
+		{
+			if (m_pRadioButtonWired->isEnabled() == true)
+				m_pRadioButtonWired->setChecked(true);
+			else
+			{
+				// if no wireless adapters, connection must be wired
+				m_curData.m_wireless = true;
+				if (m_pRadioButtonWireless != NULL)
+				{
+					// assume it's enabled. Should check, and error out if not
+					m_pRadioButtonWireless->setChecked(true);
+				}
+			}
+		}
+	}
 }
 
-ConnectionWizardData *WizardPageNetworkType::wizardData(void)
+
+const ConnectionWizardData &WizardPageNetworkType::wizardData(void)
 {
-	if (m_curData != NULL)
+
+	if (m_pRadioButtonWireless != NULL && m_pRadioButtonWireless->isChecked() == true)
+		m_curData.m_wireless = true;
+	else
+		m_curData.m_wireless = false;
+		
+	// assume one adapter and fill out connection data with first adapter of its kind
+	int_enum *pInterfaceList = NULL;
+	int retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
 	{
-		if (m_pRadioButtonWireless != NULL && m_pRadioButtonWireless->isChecked() == true)
-			m_curData->m_wireless = true;
-		else
-			m_curData->m_wireless = false;
-			
-		// assume one adapter and fill out connection data with first adapter of its kind
-		int_enum *pInterfaceList = NULL;
-		int retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
-		if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+		int i=0;
+		while (pInterfaceList[i].desc != NULL)
 		{
-			int i=0;
-			while (pInterfaceList[i].desc != NULL)
+			if (pInterfaceList[i].is_wireless == TRUE && m_curData.m_wireless == true)
 			{
-				if (pInterfaceList[i].is_wireless == TRUE && m_curData->m_wireless == true)
-				{
-					m_curData->m_adapterDesc = pInterfaceList[i].desc;
-					break;
-				}
-				else if (pInterfaceList[i].is_wireless == FALSE && m_curData->m_wireless == false)
-				{
-					m_curData->m_adapterDesc = pInterfaceList[i].desc;
-					break;				
-				}
-				++i;
+				m_curData.m_adapterDesc = pInterfaceList[i].desc;
+				break;
 			}
-			xsupgui_request_free_int_enum(&pInterfaceList);
-			pInterfaceList = NULL;				
+			else if (pInterfaceList[i].is_wireless == FALSE && m_curData.m_wireless == false)
+			{
+				m_curData.m_adapterDesc = pInterfaceList[i].desc;
+				break;				
+			}
+			++i;
 		}
-		else
-		{
-			// error. How do we alert user?
-		}		
+		xsupgui_request_free_int_enum(&pInterfaceList);
+		pInterfaceList = NULL;				
 	}
+	else
+	{
+		// error. How do we alert user?
+	}		
+
 	return m_curData;
 }
 
@@ -238,48 +225,30 @@ bool WizardPageWiredSecurity::create(void)
 	return true;
 }
 
-void WizardPageWiredSecurity::init(ConnectionWizardData *data)
+void WizardPageWiredSecurity::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
-	if (m_curData != NULL)
+
+	if (m_curData.m_wiredSecurity == true)
 	{
-		if (m_curData->m_wiredSecurity == true)
-		{
-			if (m_pRadioButtonDot1X != NULL)
-				m_pRadioButtonDot1X->setChecked(true);
-		}
-		else
-		{
-			if (m_pRadioButtonNone != NULL)
-				m_pRadioButtonNone->setChecked(true);
-		}
+		if (m_pRadioButtonDot1X != NULL)
+			m_pRadioButtonDot1X->setChecked(true);
+	}
+	else
+	{
+		if (m_pRadioButtonNone != NULL)
+			m_pRadioButtonNone->setChecked(true);
 	}
 }
 
-ConnectionWizardData* WizardPageWiredSecurity::wizardData(void)
+const ConnectionWizardData& WizardPageWiredSecurity::wizardData(void)
 {
 	if (m_pRadioButtonDot1X != NULL && m_pRadioButtonDot1X->isChecked() == true)
-	{
-		if (m_curData != NULL)
-			m_curData->m_wiredSecurity = true;
-	}
+		m_curData.m_wiredSecurity = true;
 	else if (m_pRadioButtonNone != NULL && m_pRadioButtonNone->isChecked() == true)
-	{
-		if (m_curData != NULL)
-			m_curData->m_wiredSecurity = false;
-	}
+		m_curData.m_wiredSecurity = false;
 	
 	return m_curData;
-}
-
-ConnectionWizard::wizardPages WizardPageWiredSecurity::getNextPage(void)
-{
-	if (m_pRadioButtonDot1X != NULL && m_pRadioButtonDot1X->isChecked() == true)
-		return ConnectionWizard::pageDot1XProtocol;
-	else if (m_pRadioButtonNone != NULL && m_pRadioButtonNone->isChecked() == true)
-		return ConnectionWizard::pageIPOptions;
-	else
-		return ConnectionWizard::pageNoPage;
 }
 
 WizardPageIPOptions::WizardPageIPOptions(QWidget *parent, QWidget *parentWidget)
@@ -313,47 +282,29 @@ bool WizardPageIPOptions::create(void)
 	return true;
 }
 
-void WizardPageIPOptions::init(ConnectionWizardData *data)
+void WizardPageIPOptions::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
-	if (m_curData != NULL)
+	if (m_curData.m_staticIP == true)
 	{
-		if (m_curData->m_staticIP == true)
-		{
-			if (m_pRadioButtonStatic != NULL)
-				m_pRadioButtonStatic->setChecked(true);
-		}
-		else
-		{
-			if (m_pRadioButtonAuto != NULL)
-				m_pRadioButtonAuto->setChecked(true);
-		}
+		if (m_pRadioButtonStatic != NULL)
+			m_pRadioButtonStatic->setChecked(true);
+	}
+	else
+	{
+		if (m_pRadioButtonAuto != NULL)
+			m_pRadioButtonAuto->setChecked(true);
 	}
 }
 
-ConnectionWizardData *WizardPageIPOptions::wizardData(void)
+const ConnectionWizardData &WizardPageIPOptions::wizardData(void)
 {
 	if (m_pRadioButtonAuto != NULL && m_pRadioButtonAuto->isChecked())
-	{
-		if (m_curData != NULL)
-			m_curData->m_staticIP = false;
-	}
+		m_curData.m_staticIP = false;
 	else if (m_pRadioButtonStatic != NULL && m_pRadioButtonStatic->isChecked())
-	{
-		if (m_curData != NULL)
-			m_curData->m_staticIP = true;
-	}
-	return m_curData;
-}
+		m_curData.m_staticIP = true;
 
-ConnectionWizard::wizardPages WizardPageIPOptions::getNextPage(void)
-{
-	if (m_pRadioButtonAuto != NULL && m_pRadioButtonAuto->isChecked() == true)
-		return ConnectionWizard::pageFinishPage;
-	else if (m_pRadioButtonStatic != NULL && m_pRadioButtonStatic->isChecked() == true)
-		return ConnectionWizard::pageStaticIP;
-	else
-		return ConnectionWizard::pageNoPage;
+	return m_curData;
 }
 
 WizardPageStaticIP::WizardPageStaticIP(QWidget *parent, QWidget *parentWidget)
@@ -418,47 +369,43 @@ bool WizardPageStaticIP::create(void)
 	return true;
 }
 
-void WizardPageStaticIP::init(ConnectionWizardData *data)
+void WizardPageStaticIP::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
-	if (m_curData != NULL)
-	{
-		if (m_pIPAddress != NULL)
-			m_pIPAddress->setText(m_curData->m_IPAddress);
-			
-		if (m_pNetmask != NULL)
-			m_pNetmask->setText(m_curData->m_netmask);
-			
-		if (m_pGateway != NULL)
-			m_pGateway->setText(m_curData->m_gateway);
-			
-		if (m_pPrimaryDNS != NULL)
-			m_pPrimaryDNS->setText(m_curData->m_primaryDNS);
-			
-		if (m_pSecondaryDNS != NULL)
-			m_pSecondaryDNS->setText(m_curData->m_secondaryDNS);
-	}
+
+	if (m_pIPAddress != NULL)
+		m_pIPAddress->setText(m_curData.m_IPAddress);
+		
+	if (m_pNetmask != NULL)
+		m_pNetmask->setText(m_curData.m_netmask);
+		
+	if (m_pGateway != NULL)
+		m_pGateway->setText(m_curData.m_gateway);
+		
+	if (m_pPrimaryDNS != NULL)
+		m_pPrimaryDNS->setText(m_curData.m_primaryDNS);
+		
+	if (m_pSecondaryDNS != NULL)
+		m_pSecondaryDNS->setText(m_curData.m_secondaryDNS);
 }
 
-ConnectionWizardData *WizardPageStaticIP::wizardData(void)
+const ConnectionWizardData &WizardPageStaticIP::wizardData(void)
 {
-	if (m_curData != NULL)
-	{
-		if (m_pIPAddress != NULL)
-			m_curData->m_IPAddress = m_pIPAddress->text();
-			
-		if (m_pNetmask != NULL)
-			m_curData->m_netmask = m_pNetmask->text();
-			
-		if (m_pGateway != NULL)
-			m_curData->m_gateway = m_pGateway->text();
-			
-		if (m_pPrimaryDNS != NULL)
-			m_curData->m_primaryDNS = m_pPrimaryDNS->text();
-			
-		if (m_pSecondaryDNS != NULL)
-			m_curData->m_secondaryDNS = m_pSecondaryDNS->text();	
-	}
+	if (m_pIPAddress != NULL)
+		m_curData.m_IPAddress = m_pIPAddress->text();
+		
+	if (m_pNetmask != NULL)
+		m_curData.m_netmask = m_pNetmask->text();
+		
+	if (m_pGateway != NULL)
+		m_curData.m_gateway = m_pGateway->text();
+		
+	if (m_pPrimaryDNS != NULL)
+		m_curData.m_primaryDNS = m_pPrimaryDNS->text();
+		
+	if (m_pSecondaryDNS != NULL)
+		m_curData.m_secondaryDNS = m_pSecondaryDNS->text();	
+
 	return m_curData;
 }
 
@@ -532,7 +479,8 @@ bool WizardPageFinished::create(void)
 	// dynamically populate text
 	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
 	if (pMsgLabel != NULL)
-		pMsgLabel->setText(tr("Your network connection is now configured.\n\nPlease enter a name for the connection profile and press \"Connect\" to connect to the network now, or \"Finish\" to close the wizard."));	
+		//pMsgLabel->setText(tr("Your network connection is now configured.\n\nPlease enter a name for the connection profile and press \"Connect\" to connect to the network now, or \"Finish\" to close the wizard."));	
+		pMsgLabel->setText(tr("Your network connection is now configured.\n\nPlease enter a name for the connection profile and press \"Finish\" to close the wizard."));	
 
 	QLabel *pConnNameLabel = qFindChild<QLabel*>(m_pRealForm, "labelConnectionName");
 	if (pConnNameLabel != NULL)
@@ -541,20 +489,21 @@ bool WizardPageFinished::create(void)
 	if (m_pConnectButton != NULL)
 		m_pConnectButton->setText(tr("Connect"));
 		
+	if (m_pConnectButton != NULL)
+		m_pConnectButton->hide();
+		
 	return true;
 }
 
-void WizardPageFinished::init(ConnectionWizardData *data)
+void WizardPageFinished::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
-	if (m_curData != NULL)
+	
+	if (m_pConnectionName != NULL)
 	{
-		if (m_pConnectionName != NULL)
-		{
-			m_pConnectionName->setText(m_curData->m_connectionName);
-			m_pConnectionName->selectAll();
-			m_pConnectionName->setFocus();
-		}
+		m_pConnectionName->setText(m_curData.m_connectionName);
+		m_pConnectionName->selectAll();
+		m_pConnectionName->setFocus();
 	}
 }
 
@@ -580,13 +529,10 @@ bool WizardPageFinished::validate(void)
 	
 	return false;
 }
-ConnectionWizardData *WizardPageFinished::wizardData(void)
+const ConnectionWizardData &WizardPageFinished::wizardData(void)
 {
-	if (m_curData != NULL)
-	{
-		if (m_pConnectionName != NULL)
-			m_curData->m_connectionName = m_pConnectionName->text();
-	}
+	if (m_pConnectionName != NULL)
+		m_curData.m_connectionName = m_pConnectionName->text();
 	
 	return m_curData;
 }
@@ -605,9 +551,6 @@ WizardPageWirelessNetwork::~WizardPageWirelessNetwork()
 		Util::myDisconnect(m_pSSIDList, SIGNAL(ssidSelectionChange(const WirelessNetworkInfo &)), this, SLOT(handleSSIDSelection(const WirelessNetworkInfo &)));	
 		delete m_pSSIDList;
 	}
-	
-	if (m_pRealForm != NULL)
-		delete m_pRealForm;
 }
 
 bool WizardPageWirelessNetwork::create(void)
@@ -676,24 +619,34 @@ void WizardPageWirelessNetwork::handleSSIDSelection(const WirelessNetworkInfo &n
 	m_networkInfo = networkData;
 }
 
-void WizardPageWirelessNetwork::init(ConnectionWizardData *data)
+void WizardPageWirelessNetwork::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
 	if (m_pSSIDList != NULL) {
-		m_pSSIDList->refreshList(m_curData->m_adapterDesc);
+		m_pSSIDList->refreshList(m_curData.m_adapterDesc);
 		
 		// ensure something's selected
 		if (m_pTableWidget != NULL)
 			m_pTableWidget->selectRow(0);
 	}
-	if (m_curData != NULL)
+
+	if (m_curData.m_networkName.isEmpty() == true)
 	{
-		if (m_curData->m_networkName.isEmpty() == true)
+		// if nothing selected yet, just choose one
+		if (m_pTableWidget != NULL)
+			m_pTableWidget->selectRow(0);
+		if (m_pRadioButtonVisible != NULL) 
 		{
-			// if nothing selected yet, just choose one
-			if (m_pTableWidget != NULL)
-				m_pTableWidget->selectRow(0);
-			if (m_pRadioButtonVisible != NULL) 
+			m_pRadioButtonVisible->setChecked(true);
+			this->handleVisibleClicked(true);
+		}
+	}
+	else
+	{
+		// look if it's in list. If so, choose it.  Otherwise select "other"
+		if (m_pSSIDList->selectNetwork(m_curData.m_networkName) == true)
+		{
+			if(m_pRadioButtonVisible != NULL)
 			{
 				m_pRadioButtonVisible->setChecked(true);
 				this->handleVisibleClicked(true);
@@ -701,62 +654,50 @@ void WizardPageWirelessNetwork::init(ConnectionWizardData *data)
 		}
 		else
 		{
-			// look if it's in list. If so, choose it.  Otherwise select "other"
-			if (m_pSSIDList->selectNetwork(m_curData->m_networkName) == true)
+			if (m_pRadioButtonOther != NULL)
 			{
-				if(m_pRadioButtonVisible != NULL)
-				{
-					m_pRadioButtonVisible->setChecked(true);
-					this->handleVisibleClicked(true);
-				}
+				m_pRadioButtonOther->setChecked(true);
 			}
-			else
-			{
-				if (m_pRadioButtonOther != NULL)
-				{
-					m_pRadioButtonOther->setChecked(true);
-				}
-			}
-			
 		}
+		
 	}
 }
 
-ConnectionWizardData *WizardPageWirelessNetwork::wizardData(void)
+const ConnectionWizardData &WizardPageWirelessNetwork::wizardData(void)
 {
-	if (m_curData != NULL)
+	// if "other" is checked, no data on this screen worth saving off
+	if (m_pRadioButtonVisible != NULL && m_pRadioButtonVisible->isChecked() == true)
 	{
-		// if "other" is checked, no data on this screen worth saving off
-		if (m_pRadioButtonVisible != NULL && m_pRadioButtonVisible->isChecked() == true)
+		m_curData.m_networkName = m_networkInfo.m_name;
+		m_curData.m_otherNetwork = false;
+		if (!m_networkInfo.m_name.isEmpty())
 		{
-			m_curData->m_networkName = m_networkInfo.m_name;
-			if (!m_networkInfo.m_name.isEmpty())
-			{
-				// set association mode. This is really a bitfield, but for now
-				// the SSIDList sets modes as mutually exclusive
-				switch (m_networkInfo.m_assoc_modes) {
-					case WirelessNetworkInfo::SECURITY_NONE:
-						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_none;			
-						break;
-					case WirelessNetworkInfo::SECURITY_STATIC_WEP:
-						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;		
-						break;
-					case WirelessNetworkInfo::SECURITY_WPA2_PSK:
-						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_PSK;				
-						break;
-					case WirelessNetworkInfo::SECURITY_WPA_PSK:	
-						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;		
-						break;					
-					case WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE:
-						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_ENT;
-						break;
-					case WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE:
-						m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
-						break;
-				}
+			// set association mode. This is really a bitfield, but for now
+			// the SSIDList sets modes as mutually exclusive
+			switch (m_networkInfo.m_assoc_modes) {
+				case WirelessNetworkInfo::SECURITY_NONE:
+					m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_none;			
+					break;
+				case WirelessNetworkInfo::SECURITY_STATIC_WEP:
+					m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;		
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA2_PSK:
+					m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_PSK;				
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA_PSK:	
+					m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;		
+					break;					
+				case WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE:
+					m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_ENT;
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE:
+					m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
+					break;
 			}
 		}
 	}
+	else if (m_pRadioButtonOther != NULL && m_pRadioButtonOther->isChecked() == true)
+		m_curData.m_otherNetwork = true;
 	
 	return m_curData;
 }
@@ -774,23 +715,6 @@ bool WizardPageWirelessNetwork::validate(void)
 	return false;
 }
 
-ConnectionWizard::wizardPages WizardPageWirelessNetwork::getNextPage(void)
-{
-	if (m_pRadioButtonVisible != NULL && m_pRadioButtonVisible->isChecked() == true)
-	{
-		// !!! m_assocModes is really a bitfield. Right now SSIDList makes sure only one bit is set.
-		// need to update logic in future
-		if (m_networkInfo.m_assoc_modes == WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE || m_networkInfo.m_assoc_modes == WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE)
-			return ConnectionWizard::pageDot1XProtocol;
-		else
-			return ConnectionWizard::pageIPOptions;
-	}
-	else if (m_pRadioButtonOther != NULL && m_pRadioButtonOther->isChecked() == true)
-		return ConnectionWizard::pageWirelessInfo;
-	else
-		return ConnectionWizard::pageNoPage;
-}
-
 WizardPageWirelessInfo::WizardPageWirelessInfo(QWidget *parent, QWidget *parentWidget)
 	:WizardPage(parent,parentWidget)
 {
@@ -803,9 +727,6 @@ WizardPageWirelessInfo::~WizardPageWirelessInfo()
 		
 	if (m_pAssocMode != NULL)
 		Util::myDisconnect(m_pAssocMode, SIGNAL(currentIndexChanged(int)), this, SLOT(assocModeChanged(int)));
-		
-	if (m_pRealForm != NULL)
-		delete m_pRealForm;
 }
 
 bool WizardPageWirelessInfo::create(void)
@@ -877,122 +798,118 @@ bool WizardPageWirelessInfo::create(void)
 	return true;
 }
 
-void WizardPageWirelessInfo::init(ConnectionWizardData *data)
+void WizardPageWirelessInfo::init(const ConnectionWizardData &data)
 {
 	m_curData =  data;
-	if (m_curData != NULL)
+
+	if (m_pNetworkName != NULL)
+		m_pNetworkName->setText(m_curData.m_networkName);
+		
+	// update assoc mode first before updating UI based on hidden state
+	if (m_pAssocMode != NULL)
 	{
-		if (m_pNetworkName != NULL)
-			m_pNetworkName->setText(m_curData->m_networkName);
-			
-		// update assoc mode first before updating UI based on hidden state
-		if (m_pAssocMode != NULL)
+		switch (m_curData.m_wirelessAssocMode)
 		{
-			switch (m_curData->m_wirelessAssocMode)
-			{
-				case ConnectionWizardData::assoc_none:
-					m_pAssocMode->setCurrentIndex(0);
-					break;
-				case ConnectionWizardData::assoc_WEP:
-					m_pAssocMode->setCurrentIndex(1);
-					break;
-				case ConnectionWizardData::assoc_WPA_PSK:
-					m_pAssocMode->setCurrentIndex(2);
-					break;
-				case ConnectionWizardData::assoc_WPA_ENT:
-					m_pAssocMode->setCurrentIndex(3);
-					break;
-				case ConnectionWizardData::assoc_WPA2_PSK:
-					m_pAssocMode->setCurrentIndex(4);
-					break;
-				case ConnectionWizardData::assoc_WPA2_ENT:
-					m_pAssocMode->setCurrentIndex(5);
-					break;
-			}
+			case ConnectionWizardData::assoc_none:
+				m_pAssocMode->setCurrentIndex(0);
+				break;
+			case ConnectionWizardData::assoc_WEP:
+				m_pAssocMode->setCurrentIndex(1);
+				break;
+			case ConnectionWizardData::assoc_WPA_PSK:
+				m_pAssocMode->setCurrentIndex(2);
+				break;
+			case ConnectionWizardData::assoc_WPA_ENT:
+				m_pAssocMode->setCurrentIndex(3);
+				break;
+			case ConnectionWizardData::assoc_WPA2_PSK:
+				m_pAssocMode->setCurrentIndex(4);
+				break;
+			case ConnectionWizardData::assoc_WPA2_ENT:
+				m_pAssocMode->setCurrentIndex(5);
+				break;
 		}
-		
-		if (m_pEncryption != NULL)
-		{
-			switch (m_curData->m_wirelessEncryptMeth)
-			{
-				case ConnectionWizardData::encrypt_CCMP:
-					m_pEncryption->setCurrentIndex(1);
-					break;
-				case ConnectionWizardData::encrypt_TKIP:
-					m_pEncryption->setCurrentIndex(0);
-					break;
-				case ConnectionWizardData::encrypt_WEP:
-					m_pEncryption->setCurrentIndex(2);
-					break;
-			}
-		}
-		
-		if (m_pHiddenNetwork != NULL) {
-			m_pHiddenNetwork->setChecked(m_curData->m_hiddenNetwork);
-			this->hiddenStateChanged(m_curData->m_hiddenNetwork ? Qt::Checked : Qt::Unchecked);
-		}	
 	}
+	
+	if (m_pEncryption != NULL)
+	{
+		switch (m_curData.m_wirelessEncryptMeth)
+		{
+			case ConnectionWizardData::encrypt_CCMP:
+				m_pEncryption->setCurrentIndex(1);
+				break;
+			case ConnectionWizardData::encrypt_TKIP:
+				m_pEncryption->setCurrentIndex(0);
+				break;
+			case ConnectionWizardData::encrypt_WEP:
+				m_pEncryption->setCurrentIndex(2);
+				break;
+		}
+	}
+	
+	if (m_pHiddenNetwork != NULL) {
+		m_pHiddenNetwork->setChecked(m_curData.m_hiddenNetwork);
+		this->hiddenStateChanged(m_curData.m_hiddenNetwork ? Qt::Checked : Qt::Unchecked);
+	}	
 }
 
-ConnectionWizardData *WizardPageWirelessInfo::wizardData(void)
+const ConnectionWizardData &WizardPageWirelessInfo::wizardData(void)
 {
-	if (m_curData != NULL)
-	{
-		if (m_pNetworkName != NULL)
-			m_curData->m_networkName = m_pNetworkName->text();
-			
-		if (m_pAssocMode != NULL)
-		{
-			int curIdx = m_pAssocMode->currentIndex();
-			switch (curIdx)
-			{
-				case 0:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_none;
-					break;
-				case 1:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;
-					break;
-				case 2:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;
-					break;
-				case 3:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
-					break;
-				case 4:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_PSK;
-					break;
-				case 5:
-					m_curData->m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_ENT;
-					break;																									
-				default:
-					// error
-					break;
-			}
-		}
-					
-		if (m_pEncryption != NULL)
-		{
-			int curIdx = m_pEncryption->currentIndex();
-			switch (curIdx)
-			{
-				case 0:
-					m_curData->m_wirelessEncryptMeth = ConnectionWizardData::encrypt_TKIP;
-					break;
-				case 1:
-					m_curData->m_wirelessEncryptMeth = ConnectionWizardData::encrypt_CCMP;
-					break;
-				case 2:
-					m_curData->m_wirelessEncryptMeth = ConnectionWizardData::encrypt_WEP;
-					break;
-				default:
-					// error
-					break;
-			}
-		}
+	if (m_pNetworkName != NULL)
+		m_curData.m_networkName = m_pNetworkName->text();
 		
-		if (m_pHiddenNetwork != NULL)
-			m_curData->m_hiddenNetwork = m_pHiddenNetwork->isChecked();	
+	if (m_pAssocMode != NULL)
+	{
+		int curIdx = m_pAssocMode->currentIndex();
+		switch (curIdx)
+		{
+			case 0:
+				m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_none;
+				break;
+			case 1:
+				m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;
+				break;
+			case 2:
+				m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;
+				break;
+			case 3:
+				m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
+				break;
+			case 4:
+				m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_PSK;
+				break;
+			case 5:
+				m_curData.m_wirelessAssocMode = ConnectionWizardData::assoc_WPA2_ENT;
+				break;																									
+			default:
+				// error
+				break;
+		}
 	}
+				
+	if (m_pEncryption != NULL)
+	{
+		int curIdx = m_pEncryption->currentIndex();
+		switch (curIdx)
+		{
+			case 0:
+				m_curData.m_wirelessEncryptMeth = ConnectionWizardData::encrypt_TKIP;
+				break;
+			case 1:
+				m_curData.m_wirelessEncryptMeth = ConnectionWizardData::encrypt_CCMP;
+				break;
+			case 2:
+				m_curData.m_wirelessEncryptMeth = ConnectionWizardData::encrypt_WEP;
+				break;
+			default:
+				// error
+				break;
+		}
+	}
+	
+	if (m_pHiddenNetwork != NULL)
+		m_curData.m_hiddenNetwork = m_pHiddenNetwork->isChecked();	
+
 	return m_curData;
 }
 
@@ -1008,23 +925,6 @@ bool WizardPageWirelessInfo::validate(void)
 	}
 	
 	return true;
-}
-
-ConnectionWizard::wizardPages WizardPageWirelessInfo::getNextPage(void)
-{
-	if (m_pAssocMode != NULL)
-	{
-		// if WPA-Ent or WPA2-Ent, get 802.1X settings
-		if (m_pAssocMode->currentIndex() == 3 || m_pAssocMode->currentIndex() == 5)
-			return ConnectionWizard::pageDot1XProtocol;
-		else
-			return ConnectionWizard::pageIPOptions;
-	}
-	else
-	{
-		// bad stuff.  Need to do something better than this
-		return ConnectionWizard::pageNoPage;
-	}
 }
 
 void WizardPageWirelessInfo::assocModeChanged(int newIndex)
@@ -1107,75 +1007,54 @@ bool WizardPageDot1XProtocol::create(void)
 	return true;
 }
 
-void WizardPageDot1XProtocol::init(ConnectionWizardData *data)
+void WizardPageDot1XProtocol::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
-	if (m_curData != NULL)
+
+	if (m_pProtocol != NULL)
 	{
-		if (m_pProtocol != NULL)
+		switch (m_curData.m_eapProtocol)
 		{
-			switch (m_curData->m_eapProtocol)
-			{
-				case ConnectionWizardData::eap_peap:
-					m_pProtocol->setCurrentIndex(0);
-					break;
-				case ConnectionWizardData::eap_ttls:
-					m_pProtocol->setCurrentIndex(1);
-					break;
-				case ConnectionWizardData::eap_md5:
-					m_pProtocol->setCurrentIndex(2);
-					break;
-				default:
-					m_pProtocol->setCurrentIndex(0);
-					break;
-			}
+			case ConnectionWizardData::eap_peap:
+				m_pProtocol->setCurrentIndex(0);
+				break;
+			case ConnectionWizardData::eap_ttls:
+				m_pProtocol->setCurrentIndex(1);
+				break;
+			case ConnectionWizardData::eap_md5:
+				m_pProtocol->setCurrentIndex(2);
+				break;
+			default:
+				m_pProtocol->setCurrentIndex(0);
+				break;
 		}
 	}
 }
 
-ConnectionWizardData *WizardPageDot1XProtocol::wizardData(void)
-{
-	if (m_curData != NULL)
-	{
-		if (m_pProtocol != NULL)
-		{
-			switch (m_pProtocol->currentIndex())
-			{
-				case 0:
-					// EAP-PEAP
-					m_curData->m_eapProtocol = ConnectionWizardData::eap_peap;
-					break;
-				case 1:
-					// EAP-TTLS
-					m_curData->m_eapProtocol = ConnectionWizardData::eap_ttls;
-					break;
-				case 2:
-					// EAP-MD5
-					m_curData->m_eapProtocol = ConnectionWizardData::eap_md5;
-					break;
-				default:
-					break;
-			}
-		}
-	}
-	return m_curData;
-}
-
-ConnectionWizard::wizardPages WizardPageDot1XProtocol::getNextPage(void)
+const ConnectionWizardData &WizardPageDot1XProtocol::wizardData(void)
 {
 	if (m_pProtocol != NULL)
 	{
-		// if EAP-MD5
-		if (m_pProtocol->currentIndex() == 2)
-			return ConnectionWizard::pageIPOptions;
-		else
-			return ConnectionWizard::pageDot1XInnerProtocol;
+		switch (m_pProtocol->currentIndex())
+		{
+			case 0:
+				// EAP-PEAP
+				m_curData.m_eapProtocol = ConnectionWizardData::eap_peap;
+				break;
+			case 1:
+				// EAP-TTLS
+				m_curData.m_eapProtocol = ConnectionWizardData::eap_ttls;
+				break;
+			case 2:
+				// EAP-MD5
+				m_curData.m_eapProtocol = ConnectionWizardData::eap_md5;
+				break;
+			default:
+				break;
+		}
 	}
-	else
-	{
-		// bad. what to do?
-		return ConnectionWizard::pageNoPage;
-	}
+
+	return m_curData;
 }
 
 WizardPageDot1XInnerProtocol::WizardPageDot1XInnerProtocol(QWidget *parent, QWidget *parentWidget)
@@ -1220,115 +1099,92 @@ bool WizardPageDot1XInnerProtocol::create(void)
 	return true;
 }
 
-void WizardPageDot1XInnerProtocol::init(ConnectionWizardData *data)
+void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
 	
-	if (m_curData != NULL)
-	{
-		if (m_pOuterID != NULL)
-			m_pOuterID->setText(m_curData->m_outerIdentity);
-			
-		if (m_pValidateCert != NULL)
-			m_pValidateCert->setChecked(m_curData->m_validateCert);
+	if (m_pOuterID != NULL)
+		m_pOuterID->setText(m_curData.m_outerIdentity);
 		
-		if (m_pProtocol != NULL)
+	if (m_pValidateCert != NULL)
+		m_pValidateCert->setChecked(m_curData.m_validateCert);
+	
+	if (m_pProtocol != NULL)
+	{
+		m_pProtocol->clear();	
+		if (m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
 		{
-			m_pProtocol->clear();	
-			if (m_curData->m_eapProtocol == ConnectionWizardData::eap_peap)
-			{
-				m_pProtocol->addItem("EAP-MSCHAPv2");
-				m_pProtocol->addItem("EAP-GTC");
-				
-				if (m_curData->m_innerProtocol == ConnectionWizardData::inner_eap_mschapv2)
-					m_pProtocol->setCurrentIndex(0);
-				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_eap_gtc)
-					m_pProtocol->setCurrentIndex(1);
-				else
-					; // error
-			}
-			else if (m_curData->m_eapProtocol == ConnectionWizardData::eap_ttls)
-			{
-				m_pProtocol->addItem("PAP");
-				m_pProtocol->addItem("CHAP");
-				m_pProtocol->addItem("MSCHAP");
-				m_pProtocol->addItem("MSCHAPv2");
-				m_pProtocol->addItem("EAP-MD5");
-				
-				if (m_curData->m_innerProtocol == ConnectionWizardData::inner_pap)
-					m_pProtocol->setCurrentIndex(0);
-				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_chap)
-					m_pProtocol->setCurrentIndex(1);
-				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_mschap)
-					m_pProtocol->setCurrentIndex(2);
-				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_mschapv2)
-					m_pProtocol->setCurrentIndex(3);
-				else if (m_curData->m_innerProtocol == ConnectionWizardData::inner_eap_md5)
-					m_pProtocol->setCurrentIndex(4);															
-				else
-					; // error										
-			}
+			m_pProtocol->addItem("EAP-MSCHAPv2");
+			m_pProtocol->addItem("EAP-GTC");
+			
+			if (m_curData.m_innerProtocol == ConnectionWizardData::inner_eap_mschapv2)
+				m_pProtocol->setCurrentIndex(0);
+			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_eap_gtc)
+				m_pProtocol->setCurrentIndex(1);
+			else
+				; // error
+		}
+		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
+		{
+			m_pProtocol->addItem("PAP");
+			m_pProtocol->addItem("CHAP");
+			m_pProtocol->addItem("MSCHAP");
+			m_pProtocol->addItem("MSCHAPv2");
+			m_pProtocol->addItem("EAP-MD5");
+			
+			if (m_curData.m_innerProtocol == ConnectionWizardData::inner_pap)
+				m_pProtocol->setCurrentIndex(0);
+			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_chap)
+				m_pProtocol->setCurrentIndex(1);
+			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_mschap)
+				m_pProtocol->setCurrentIndex(2);
+			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_mschapv2)
+				m_pProtocol->setCurrentIndex(3);
+			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_eap_md5)
+				m_pProtocol->setCurrentIndex(4);															
+			else
+				; // error										
 		}
 	}
 }
 
-ConnectionWizardData *WizardPageDot1XInnerProtocol::wizardData(void)
+const ConnectionWizardData &WizardPageDot1XInnerProtocol::wizardData(void)
 {
-	if (m_curData != NULL)
+	if (m_pOuterID != NULL)
+		m_curData.m_outerIdentity = m_pOuterID->text();
+		
+	if (m_pValidateCert != NULL)
+		m_curData.m_validateCert = m_pValidateCert->isChecked();
+		
+	if (m_pProtocol != NULL)
 	{
-		if (m_pOuterID != NULL)
-			m_curData->m_outerIdentity = m_pOuterID->text();
-			
-		if (m_pValidateCert != NULL)
-			m_curData->m_validateCert = m_pValidateCert->isChecked();
-			
-		if (m_pProtocol != NULL)
+		if (m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
 		{
-			if (m_curData->m_eapProtocol == ConnectionWizardData::eap_peap)
-			{
-				if (m_pProtocol->currentIndex() == 0)
-					m_curData->m_innerProtocol = ConnectionWizardData::inner_eap_mschapv2;
-				else if (m_pProtocol->currentIndex() == 1)
-					m_curData->m_innerProtocol = ConnectionWizardData::inner_eap_gtc;
-				else
-					; // error
-			}
-			else if (m_curData->m_eapProtocol == ConnectionWizardData::eap_ttls)
-			{
-				if (m_pProtocol->currentIndex() == 0)
-					m_curData->m_innerProtocol = ConnectionWizardData::inner_pap;
-				else if (m_pProtocol->currentIndex() == 1)
-					m_curData->m_innerProtocol = ConnectionWizardData::inner_chap;
-				else if (m_pProtocol->currentIndex() == 2)
-					m_curData->m_innerProtocol = ConnectionWizardData::inner_mschap;
-				else if (m_pProtocol->currentIndex() == 3)
-					m_curData->m_innerProtocol = ConnectionWizardData::inner_mschapv2;
-				else if (m_pProtocol->currentIndex() == 4)
-					m_curData->m_innerProtocol = ConnectionWizardData::inner_eap_md5;																												
-				else
-					; // error										
-			}
-		}			
-	}
+			if (m_pProtocol->currentIndex() == 0)
+				m_curData.m_innerProtocol = ConnectionWizardData::inner_eap_mschapv2;
+			else if (m_pProtocol->currentIndex() == 1)
+				m_curData.m_innerProtocol = ConnectionWizardData::inner_eap_gtc;
+			else
+				; // error
+		}
+		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
+		{
+			if (m_pProtocol->currentIndex() == 0)
+				m_curData.m_innerProtocol = ConnectionWizardData::inner_pap;
+			else if (m_pProtocol->currentIndex() == 1)
+				m_curData.m_innerProtocol = ConnectionWizardData::inner_chap;
+			else if (m_pProtocol->currentIndex() == 2)
+				m_curData.m_innerProtocol = ConnectionWizardData::inner_mschap;
+			else if (m_pProtocol->currentIndex() == 3)
+				m_curData.m_innerProtocol = ConnectionWizardData::inner_mschapv2;
+			else if (m_pProtocol->currentIndex() == 4)
+				m_curData.m_innerProtocol = ConnectionWizardData::inner_eap_md5;																												
+			else
+				; // error										
+		}
+	}			
 	
 	return m_curData;
-}
-
-ConnectionWizard::wizardPages WizardPageDot1XInnerProtocol::getNextPage(void)
-{
-	if (m_pValidateCert != NULL)
-	{
-		// if not set to validate server cert
-		if (m_pValidateCert->checkState() == Qt::Unchecked)
-			return ConnectionWizard::pageIPOptions;
-		else
-			return ConnectionWizard::pageDot1XCert;
-	}
-	else
-	{
-		// bad. what to do?
-		return ConnectionWizard::pageNoPage;
-	}
 }
 
 WizardPageDot1XCert::WizardPageDot1XCert(QWidget *parent, QWidget *parentWidget)
@@ -1341,8 +1197,9 @@ WizardPageDot1XCert::~WizardPageDot1XCert()
 {
 	if (m_pCertArray != NULL)
 		xsupgui_request_free_cert_enum(&m_pCertArray);
+	if (m_pVerifyName != NULL)
+		Util::myDisconnect(m_pVerifyName, SIGNAL(stateChanged(int)), this, SLOT(handleValidateChecked(int)));		
 }
-
 
 bool WizardPageDot1XCert::create(void)
 {
@@ -1367,10 +1224,16 @@ bool WizardPageDot1XCert::create(void)
 	if (m_pVerifyName != NULL)
 		m_pVerifyName->setText(tr("Verify Common Name"));
 		
+	// set up event handling
+	if (m_pVerifyName != NULL)
+		Util::myConnect(m_pVerifyName, SIGNAL(stateChanged(int)), this, SLOT(handleValidateChecked(int)));
+		
 	// other initializations
 	if (m_pNameField != NULL)
 	{
-		// set validator
+		// set validator. Allow "*.subdomain.subdomain.domain" or "subdomain.subdomain.domain", or comma separated list of same
+		// doesn't work for "*.edu"
+		m_pNameField->setValidator(new QRegExpValidator(QRegExp("^(\\*\\.)?(\\w{1,253})(\\.\\w{1,253})+(\\,(\\*\\.)?(\\w{1,253})(\\.\\w{1,253}))*$"),m_pNameField)); 
 	}
 	
 	if (m_pCertTable != NULL)
@@ -1437,84 +1300,134 @@ bool WizardPageDot1XCert::create(void)
 	return true;
 }
 
-void WizardPageDot1XCert::init(ConnectionWizardData *data)
+void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
 	
-	if (m_curData != NULL)
-	{
-		if (m_pVerifyName != NULL)
-			m_pVerifyName->setChecked(m_curData->m_verifyCommonName);
-			
-		if (m_pNameField != NULL)
-			m_pNameField->setText(m_curData->m_commonNames.join(QString(",")));
+	if (m_pVerifyName != NULL) {
+		m_pVerifyName->setChecked(m_curData.m_verifyCommonName);
+		handleValidateChecked(m_curData.m_verifyCommonName ? Qt::Checked : Qt::Unchecked);
+	}
 		
-		// check those that are selected	
-		if (m_pCertTable != NULL)
+	if (m_pNameField != NULL)
+		m_pNameField->setText(m_curData.m_commonNames.join(QString(",")));
+	
+	// check those that are selected	
+	if (m_pCertTable != NULL)
+	{
+		int nRows = m_pCertTable->rowCount();
+		
+		for (int i=0; i<nRows; i++)
 		{
-			int nRows = m_pCertTable->rowCount();
-			
-			for (int i=0; i<nRows; i++)
+			QTableWidgetItem *item = m_pCertTable->item(i,1);
+			if (item != NULL)
 			{
-				QTableWidgetItem *item = m_pCertTable->item(i,1);
-				if (item != NULL)
+				QWidget *widget = m_pCertTable->cellWidget(i,0); 
+				if (widget != NULL)
 				{
-					QWidget *widget = m_pCertTable->cellWidget(i,0); 
-					if (widget != NULL)
+					// TODO: range check index before indexing m_pCertArray
+					if (m_pCertArray != NULL && m_curData.m_serverCerts.contains(m_pCertArray[item->type() - 1000].location))
 					{
-						// TODO: range check index before indexing m_pCertArray
-						if (m_pCertArray != NULL && m_curData->m_serverCerts.contains(m_pCertArray[item->type() - 1000].location))
-							((QCheckBox*)widget)->setChecked(true);
-						else
-							((QCheckBox*)widget)->setChecked(false);
+						((QCheckBox*)widget)->setChecked(true);
+					}
+					else
+					{
+						((QCheckBox*)widget)->setChecked(false);
 					}
 				}
-			}		
-		}
+			}
+		}		
 	}
+}
+
+void WizardPageDot1XCert::handleValidateChecked(int checkState)
+{
+	if (m_pNameField != NULL)
+		m_pNameField->setDisabled(checkState == Qt::Unchecked);
 }
 
 bool WizardPageDot1XCert::validate(void)
 {
+	// check that at least one cert chosen
+	if (m_pCertTable != NULL)
+	{
+		int nRows = m_pCertTable->rowCount();
+		int nSelected = 0;
+		
+		for (int i=0;i<nRows;i++)
+		{
+			QWidget *item = m_pCertTable->cellWidget(i,0);
+			if (((QCheckBox *)item)->isChecked() == true)
+				++nSelected;
+		}
+		
+		if (nSelected == 0)
+		{
+			QMessageBox::warning(m_pRealForm, tr("No Certificates Selected"),tr("Please select at least one server certificate to use for validation."));
+			return false;
+		}
+	}
+	
 	if (m_pNameField != NULL)
 	{
-		if (m_pNameField->hasAcceptableInput() == false)
+		if (m_pVerifyName->isChecked() == true)
 		{
-			QMessageBox::warning(m_pRealForm, tr("Invalid Common Name String"), tr("Please input a valid common name string"));
-			return false;
+			if (m_pNameField->hasAcceptableInput() == false)
+			{
+				QMessageBox::warning(m_pRealForm, tr("Invalid Common Name String"), tr("Please input a valid common name string.  Domain names must be of the form \"subdomain.domain\" or \"*.subdomain.domain\" if using wildcards."));
+				return false;
+			}
+			else
+			{
+				// make sure none are longer than 255 chars
+				QStringList dNames;
+				dNames = m_pNameField->text().split(",");
+				
+				bool valid = true;
+				for (int i=0; i<dNames.size(); i++)
+				{
+					if (dNames.at(i).length() > 255)
+					{
+						valid = false;
+						break;
+					}
+				}
+				if (valid == false)
+				{
+					QMessageBox::warning(m_pRealForm, tr("Invalid Common Name String"), tr("Please ensure each domain name you entered has 255 or fewer characters."));
+					return false;
+				}
+			}
 		}
 	}
 	return true;
 }
 
-ConnectionWizardData *WizardPageDot1XCert::wizardData()
+const ConnectionWizardData &WizardPageDot1XCert::wizardData()
 {
-	if (m_curData != NULL)
+	if (m_pVerifyName != NULL)
+		m_curData.m_verifyCommonName = m_pVerifyName->isChecked();	
+	if (m_pNameField != NULL)
+		m_curData.m_commonNames = m_pNameField->text().split(QString(","));	
+		
+	if (m_pCertTable != NULL)
 	{
-		if (m_pVerifyName != NULL)
-			m_curData->m_verifyCommonName = m_pVerifyName->isChecked();	
-		if (m_pNameField != NULL)
-			m_curData->m_commonNames = m_pNameField->text().split(QString(","));	
-			
-		if (m_pCertTable != NULL)
+		// check for checked rows
+		m_curData.m_serverCerts.clear();
+		int nRows = m_pCertTable->rowCount();
+		
+		for (int i=0; i<nRows; i++)
 		{
-			// check for checked rows
-			m_curData->m_serverCerts.clear();
-			int nRows = m_pCertTable->rowCount();
-			
-			for (int i=0; i<nRows; i++)
+			QWidget *widget = m_pCertTable->cellWidget(i,0);
+			if (widget != NULL && ((QCheckBox*)widget)->isChecked())
 			{
-				QWidget *widget = m_pCertTable->cellWidget(i,0);
-				if (widget != NULL && ((QCheckBox*)widget)->isChecked())
-				{
-					// if user selected item, add cert's location to list. 
-					// (location is guaranteed to be unique)
-					QTableWidgetItem *item = m_pCertTable->item(i,1);
-					
-					// TODO: range check index before indexing m_pCertArray
-					if (item != NULL && m_pCertArray != NULL)
-						m_curData->m_serverCerts.append(m_pCertArray[item->type() - 1000].location);
-				}
+				// if user selected item, add cert's location to list. 
+				// (location is guaranteed to be unique)
+				QTableWidgetItem *item = m_pCertTable->item(i,1);
+				
+				// TODO: range check index before indexing m_pCertArray
+				if (item != NULL && m_pCertArray != NULL)
+					m_curData.m_serverCerts.append(m_pCertArray[item->type() - 1000].location);
 			}
 		}
 	}

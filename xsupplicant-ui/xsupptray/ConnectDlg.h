@@ -70,6 +70,8 @@ private slots:
 	void selectWiredConnection(int);
 	void populateConnectionLists(void);
 	void launchConnectionWizard(void);
+	void cleanupConnectionWizard(void);
+	void finishConnectionWizard(bool);
 		
 private:
 	Emitter *m_pEmitter;

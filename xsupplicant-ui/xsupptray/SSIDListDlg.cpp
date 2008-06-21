@@ -353,8 +353,11 @@ wpaCommon:
 					pNewConn->association.auth_type = AUTH_EAP;					
 					break;
 			}
-			//pNewConn->association = "";
 			pNewConn->device = _strdup(m_curAdapter.toAscii().data());
+			
+			pNewConn->ip.type = CONFIG_IP_USE_DHCP;
+			pNewConn->ip.renew_on_reauth = TRUE; // correct default?
+						
 			retVal = xsupgui_request_set_connection_config(pNewConn);
 			
 			if (retVal == REQUEST_SUCCESS)

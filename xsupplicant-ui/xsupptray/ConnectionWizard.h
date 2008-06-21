@@ -40,7 +40,12 @@
 #include <QStackedWidget>
 #include <QStack>
 
+extern "C" {
+#include "libxsupgui/xsupgui_request.h"
+}
+
 class WizardPage;
+class Emitter;
 
 class ConnectionWizardData
 {
@@ -48,6 +53,18 @@ public:
 	ConnectionWizardData();
 	~ConnectionWizardData();
 	
+public:
+	bool toSupplicantProfiles(config_connection **, config_profiles **, config_trusted_server **);
+	
+private:
+	bool toProfileEAP_GTCInnerProtocol(config_profiles * const pProfile);
+	bool toProfileEAPMSCHAPv2InnerProtocol(config_profiles * const pProfile);
+	bool toProfileEAP_MSCHAPProtocol(config_profiles * const);
+	bool toProfileEAP_MD5Protocol(config_profiles * const);
+	bool toProfileOuterIdentity(config_profiles * const);
+	bool toProfileData(config_profiles **);
+	bool toConnectionData(config_connection **);
+
 public:
 
 	// general settings
@@ -77,6 +94,7 @@ public:
 	
 	encryptMethod m_wirelessEncryptMeth;
 	bool m_hiddenNetwork;
+	bool m_otherNetwork;
 	
 	// wired settings
 	bool m_wiredSecurity;
@@ -113,7 +131,6 @@ public:
 	QStringList m_serverCerts;
 	bool m_verifyCommonName;
 	QStringList m_commonNames;
-	
 };
 
 class ConnectionWizard : public QWidget
@@ -121,11 +138,19 @@ class ConnectionWizard : public QWidget
 	Q_OBJECT
 	
 public:
-	ConnectionWizard(QWidget *parent, QWidget *parentWindow);
+	ConnectionWizard(QWidget *parent, QWidget *parentWindow, Emitter *e);
 	~ConnectionWizard(void);
 	bool create(void);
+	
+	// set up to create a new connection, with defaults
 	void init(void);
+	
+	// edit an existing connection
+	void edit(const ConnectionWizardData &);
+	
 	void show(void);
+	
+	static bool SupplicantProfilesToWizardData(config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer, ConnectionWizardData **);
 	
 	typedef enum {
 		pageNoPage=-1,
@@ -142,14 +167,22 @@ public:
 		pageLastPage,
 	} wizardPages;
 	
+signals:
+	void cancelled(void);
+	void finished(bool);
+	
 private:
 	bool initUI(void);
 	bool loadPages(void);
 	void gotoPage(wizardPages newPageIdx);
+	void finishWizard(void);
+	bool saveConnectionData(void);
+	wizardPages getNextPage(void);
 	
 private slots:
 	void gotoNextPage(void);
 	void gotoPrevPage(void);
+	void cancelWizard(void);
 	
 private:
 	QWidget *m_pParent;
@@ -160,8 +193,10 @@ private:
 	QPushButton *m_pNextButton;
 	QLabel *m_pHeaderLabel;
 	QStackedWidget *m_pStackedWidget;
+	
 	WizardPage *m_wizardPages[pageLastPage];
-	ConnectionWizardData *m_pConnData;
+	ConnectionWizardData m_connData;
+	Emitter *m_pEmitter;
 	
 	QStack<wizardPages> m_wizardHistory;
 	wizardPages m_currentPage;
