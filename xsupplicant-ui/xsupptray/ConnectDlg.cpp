@@ -149,8 +149,8 @@ bool ConnectDlg::initUI(void)
 	m_pWirelessConnectionInfo = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessConnectionInfo");
 
 	// populate text
-	m_pWirelessConnectionStatus->setText(tr("Not Connected"));
-	m_pWiredConnectionStatus->setText(tr("Not Connected"));
+	m_pWirelessConnectionStatus->setText(tr("Idle"));
+	m_pWiredConnectionStatus->setText(tr("Idle"));
 
 	// These don't do anything (yet) so disable them.
 	m_pWiredConnectionInfo->setEnabled(false);
@@ -407,15 +407,18 @@ void ConnectDlg::selectWirelessAdapter(int index)
 			free(connName);
 
 			// Update the current state field.
+			updateWirelessState();
 		}
 		else
 		{
 			m_pWirelessConnectionStack->setCurrentIndex(0);   // Change to the 'disconnected' page.
+			m_pWirelessConnectionStatus->setText(tr("Not Connected"));
 		}
 	}
 	else 
 	{
 		m_pWirelessConnectionStack->setCurrentIndex(0);  // Change to the 'disconnected' page.
+		m_pWirelessConnectionStatus->setText(tr("Not Connected"));
 	}
 	
 	// make sure we free allocated memory
@@ -490,15 +493,18 @@ void ConnectDlg::selectWiredAdapter(int index)
 			free(connName);
 
 			// Update the current state field.
+			updateWiredState();
 		}
 		else
 		{
 			m_pWiredConnectionStack->setCurrentIndex(0);   // Change to the 'disconnected' page.
+			m_pWiredConnectionStatus->setText(tr("Not Connected"));
 		}
 	}
 	else 
 	{
 		m_pWiredConnectionStack->setCurrentIndex(0);  // Change to the 'disconnected' page.
+		m_pWiredConnectionStatus->setText(tr("Not Connected"));
 	}
 	
 	// make sure we free allocated memory
@@ -940,4 +946,137 @@ void ConnectDlg::disconnectWiredConnection(void)
 	m_pWiredConnectionStatus->setText(tr("Not Connected"));
 }
 
+void ConnectDlg::updateWirelessState(void)
+{
+	char *pDeviceName = NULL;
+	int retval = 0;
+	int state = 0;
+
+	// Using the device description - get the device name
+	retval = xsupgui_request_get_devname(m_pWirelessAdapterList->currentText().toAscii().data(), &pDeviceName);
+	if ((retval != REQUEST_SUCCESS) || (pDeviceName == NULL))
+	{
+		// If we can't determine the device name, then tell the caller the connection can't
+		// be made.
+		return;
+	}
+
+	retval = xsupgui_request_get_physical_state(pDeviceName, &state);
+	if (retval == REQUEST_SUCCESS)
+	{
+		switch (state)
+		{
+		case WIRELESS_UNKNOWN_STATE:
+		case WIRELESS_UNASSOCIATED:
+		case WIRELESS_ACTIVE_SCAN:
+		case WIRELESS_PORT_DOWN:
+		case WIRELESS_INT_STOPPED:
+		case WIRELESS_INT_HELD:
+		case WIRELESS_INT_RESTART:
+			m_pWirelessConnectionStatus->setText(tr("Idle"));
+			break;
+
+		case WIRELESS_ASSOCIATING:
+		case WIRELESS_ASSOCIATION_TIMEOUT_S:
+			m_pWirelessConnectionStatus->setText(tr("Connecting..."));
+			break;
+
+		case WIRELESS_NO_ENC_ASSOCIATION:
+			m_pWirelessConnectionStatus->setText(tr("Connected"));
+			break;
+
+		case WIRELESS_ASSOCIATED:
+			retval = xsupgui_request_get_1x_state(pDeviceName, &state);
+			if (retval == REQUEST_SUCCESS)
+			{
+				switch (state)
+				{
+				case LOGOFF:
+				case DISCONNECTED:
+				case S_FORCE_UNAUTH:
+					m_pWirelessConnectionStatus->setText(tr("Idle"));
+					break;
+
+				case CONNECTING:
+				case ACQUIRED:
+				case AUTHENTICATING:
+				case RESTART:
+					m_pWirelessConnectionStatus->setText(tr("Connecting..."));
+					break;
+
+				case HELD:
+					m_pWirelessConnectionStatus->setText(tr("Authentication Failed"));
+					break;
+
+				case AUTHENTICATED:
+				case S_FORCE_AUTH:
+					m_pWirelessConnectionStatus->setText(tr("Connected"));
+					break;
+
+				default:
+					m_pWirelessConnectionStatus->setText(tr("Unknown"));  // This should be impossible!
+					break;
+				}
+			}
+			break;
+
+		default:
+			m_pWirelessConnectionStatus->setText(tr("Unknown"));  // This should be impossible!
+			break;
+		}
+	}
+
+	if (pDeviceName != NULL) free(pDeviceName);
+}
+
+void ConnectDlg::updateWiredState(void)
+{
+	char *pDeviceName = NULL;
+	int retval = 0;
+	int state = 0;
+
+	// Using the device description - get the device name
+	retval = xsupgui_request_get_devname(m_pWiredAdapterList->currentText().toAscii().data(), &pDeviceName);
+	if ((retval != REQUEST_SUCCESS) || (pDeviceName == NULL))
+	{
+		// If we can't determine the device name, then tell the caller the connection can't
+		// be made.
+		return;
+	}
+
+	retval = xsupgui_request_get_1x_state(pDeviceName, &state);
+	if (retval == REQUEST_SUCCESS)
+	{
+		switch (state)
+		{
+		case LOGOFF:
+		case DISCONNECTED:
+		case S_FORCE_UNAUTH:
+			m_pWiredConnectionStatus->setText(tr("Idle"));
+			break;
+
+		case CONNECTING:
+		case ACQUIRED:
+		case AUTHENTICATING:
+		case RESTART:
+			m_pWiredConnectionStatus->setText(tr("Connecting..."));
+			break;
+
+		case HELD:
+			m_pWiredConnectionStatus->setText(tr("Authentication Failed"));
+			break;
+
+		case AUTHENTICATED:
+		case S_FORCE_AUTH:
+			m_pWiredConnectionStatus->setText(tr("Connected"));
+			break;
+
+		default:
+			m_pWiredConnectionStatus->setText(tr("Unknown"));  // This should be impossible!
+			break;
+		}
+	}
+
+	if (pDeviceName != NULL) free(pDeviceName);
+}
 

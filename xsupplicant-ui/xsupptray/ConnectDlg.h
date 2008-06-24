@@ -65,6 +65,8 @@ private:
 	bool connectToConnection(QString interfaceDesc, QString connectionName);
 	void getAndDisplayErrors(void);
 	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
+	void updateWirelessState(void);
+	void updateWiredState(void);
 	
 private slots:
 	void showSSIDList(void);
