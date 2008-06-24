@@ -29,8 +29,8 @@
 #include "src/xsup_debug.h"
 
 multichoice association_choices[] = {
-  { 0, "AUTO" },
-  { 1, "MANUAL" },
+  { 1, "AUTO" },
+  { 0, "MANUAL" },
   { -1, NULL}};
 
 multichoice logging_choices[] = {

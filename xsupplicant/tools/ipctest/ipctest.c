@@ -1872,6 +1872,12 @@ void change_globals()
 
 	val = globs->logpath;
 	globs->logpath = "c:\\newpath\\";
+	printf("Globals->flags = %x\n", globs->flags);
+
+	if ((globs->flags & CONFIG_GLOBALS_ASSOC_AUTO) == CONFIG_GLOBALS_ASSOC_AUTO)
+		globs->flags &= (~CONFIG_GLOBALS_ASSOC_AUTO);
+	else
+		globs->flags |= CONFIG_GLOBALS_ASSOC_AUTO;
 
 	if (xsupgui_request_set_globals_config(globs) != REQUEST_SUCCESS)
 	{
@@ -1888,6 +1894,7 @@ void change_globals()
 	}
 
 	printf("Logpath is now set to '%s'.\n", globs->logpath);
+	printf("Globals->flags = %x\n", globs->flags);
 }
 
 /**
@@ -2368,7 +2375,9 @@ int main(int argc, char *argv[])
 #endif
 
 #if 1
-	dochangeconn("\\DEVICE\\{4DACA2DF-2701-4B9A-81EC-27FA9EADF721}", "New Connection");
+//	dochangeconn("\\DEVICE\\{4DACA2DF-2701-4B9A-81EC-27FA9EADF721}", "New Connection");
+	change_globals();
+	dowrite_conf(NULL);
 	return 0;
 #endif
 
