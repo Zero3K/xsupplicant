@@ -165,11 +165,9 @@ int xsupconfcheck_profile_eap_ttls(struct config_eap_ttls *ttls, config_profiles
 		retval = PROFILE_NEED_UPW;
 	}
 
-	if (ttls->phase2_data == NULL)
+	if ((ttls->phase2_data == NULL) && (prof->temp_password == NULL))
 	{
-//		if (log == TRUE) error_prequeue_add("There is no phase 2 configuration available!");
-//		retval = -1;
-		return retval;
+		return PROFILE_NEED_UPW;
 	}
 
 
@@ -179,7 +177,7 @@ int xsupconfcheck_profile_eap_ttls(struct config_eap_ttls *ttls, config_profiles
 	case TTLS_PHASE2_CHAP:
 	case TTLS_PHASE2_MSCHAP:
 	case TTLS_PHASE2_MSCHAPV2:
-		if ((((struct config_pwd_only *)ttls->phase2_data)->password == NULL) && (prof->temp_password))
+		if (((ttls->phase2_data == NULL) || (((struct config_pwd_only *)ttls->phase2_data)->password == NULL)) && (prof->temp_password == NULL))
 		{
 			if (log == TRUE) error_prequeue_add("There is no password defined for the TTLS phase 2 method.");
 			retval = PROFILE_NEED_UPW;
