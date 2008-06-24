@@ -269,31 +269,34 @@ void ConfigWidgetEditTrustedServers::updateCertData()
 	cert_info *myCertInfo = NULL;
 	QString temp, temp2;
 
-	temp = m_pTrustedServer->store_type;
-	temp2 = m_pTrustedServer->location[0];
-	if (m_pSupplicant->getCertInfo(temp, temp2, &myCertInfo, true) == true)
+	if (m_pTrustedServer->location != NULL)
 	{
-		QFontMetrics pMet = fontMetrics();	
+		temp = m_pTrustedServer->store_type;
+		temp2 = m_pTrustedServer->location[0];
+		if (m_pSupplicant->getCertInfo(temp, temp2, &myCertInfo, true) == true)
+		{
+			QFontMetrics pMet = fontMetrics();	
 
-		m_pCertCNLabel->setText(pMet.elidedText(QString(myCertInfo->CN), Qt::ElideRight, 300));
-		m_pCertCompanyLabel->setText(pMet.elidedText(QString(myCertInfo->C), Qt::ElideRight, 300));
-		m_pCertOULabel->setText(pMet.elidedText(QString(myCertInfo->OU), Qt::ElideRight, 300));
-		m_pCertLocationLabel->setText(pMet.elidedText(QString(myCertInfo->L), Qt::ElideRight, 300));
-		m_pCertStateLabel->setText(pMet.elidedText(QString(myCertInfo->S), Qt::ElideRight, 300));
-		m_pCertDeptLabel->setText(pMet.elidedText(QString(myCertInfo->O), Qt::ElideRight, 300));
+			m_pCertCNLabel->setText(pMet.elidedText(QString(myCertInfo->CN), Qt::ElideRight, 300));
+			m_pCertCompanyLabel->setText(pMet.elidedText(QString(myCertInfo->C), Qt::ElideRight, 300));
+			m_pCertOULabel->setText(pMet.elidedText(QString(myCertInfo->OU), Qt::ElideRight, 300));
+			m_pCertLocationLabel->setText(pMet.elidedText(QString(myCertInfo->L), Qt::ElideRight, 300));
+			m_pCertStateLabel->setText(pMet.elidedText(QString(myCertInfo->S), Qt::ElideRight, 300));
+			m_pCertDeptLabel->setText(pMet.elidedText(QString(myCertInfo->O), Qt::ElideRight, 300));
 
-		m_pSupplicant->freeCertInfo(&myCertInfo);
-	}
-	else
-	{
-		m_pCertCNLabel->setText("");
-		m_pCertCompanyLabel->setText("");
-		m_pCertOULabel->setText("");
-		m_pCertLocationLabel->setText("");
-		m_pCertStateLabel->setText("");
-		m_pCertDeptLabel->setText("");
-		m_pCNEdit->setText("");
-		m_pValidateServer->setChecked(false);
+			m_pSupplicant->freeCertInfo(&myCertInfo);
+		}
+		else
+		{
+			m_pCertCNLabel->setText("");
+			m_pCertCompanyLabel->setText("");
+			m_pCertOULabel->setText("");
+			m_pCertLocationLabel->setText("");
+			m_pCertStateLabel->setText("");
+			m_pCertDeptLabel->setText("");
+			m_pCNEdit->setText("");
+			m_pValidateServer->setChecked(false);
+		}
 	}
 }
 

@@ -68,6 +68,13 @@ bool WirelessScanDlg::initUI(void)
 	if (m_pRealForm == NULL)
 		return false;	
 
+	// set window flags so not minimizeable and context help thingy is turned off
+	Qt::WindowFlags flags;
+	flags = m_pRealForm->windowFlags();
+	flags &= ~Qt::WindowContextHelpButtonHint;
+	flags &= ~Qt::WindowMinimizeButtonHint;
+	m_pRealForm->setWindowFlags(flags);	
+	
 	// cache pointers to objects we'll reference frequently
 	m_pCancelButton = qFindChild<QPushButton*>(m_pRealForm, "buttonCancel");
 	m_pProgressBar = qFindChild<QProgressBar*>(m_pRealForm, "progressBar");

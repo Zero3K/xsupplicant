@@ -469,8 +469,8 @@ void SSIDList::tempAssocModeHack(void)
 		else if ((iter->m_assoc_modes & WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE) != 0)
 			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE;
 		else if ((iter->m_assoc_modes & WirelessNetworkInfo::SECURITY_WPA2_PSK) != 0)
-			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_PSK;			
+			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA2_PSK;
 		else if ((iter->m_assoc_modes & WirelessNetworkInfo::SECURITY_WPA_PSK) != 0)
-			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_PSK;						
+			iter->m_assoc_modes = WirelessNetworkInfo::SECURITY_WPA_PSK;
 	}
 }

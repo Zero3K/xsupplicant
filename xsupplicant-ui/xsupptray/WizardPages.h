@@ -275,6 +275,7 @@ public:
 	virtual const ConnectionWizardData &wizardData(void);
 private slots:
 	void handleValidateChecked(int checkState);
+	void handleCertTableClick(int, int);
 private:
 	QTableWidget *m_pCertTable;
 	QLineEdit *m_pNameField;

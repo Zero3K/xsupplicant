@@ -42,6 +42,7 @@
 class Emitter;
 class WirelessScanDlg;
 class TrayApp;
+class ConnectionWizard;
 
 class SSIDListDlg : public QWidget
 {
@@ -73,6 +74,8 @@ private slots:
 	void handleSSIDListSelectionChange(const WirelessNetworkInfo &);
 	void handleSSIDListDoubleClick(const WirelessNetworkInfo &);
 	void connectToSelectedNetwork(void);
+	void cleanupConnectionWizard(void);
+	void finishConnectionWizard(bool, const QString &);
 
 private:
 
@@ -90,6 +93,7 @@ private:
 	QPushButton *m_pConnectButton;
 	QLabel * m_pHeaderLabel;
 	
+	ConnectionWizard *m_pConnWizard;
 	WirelessScanDlg *m_pRescanDialog;
 	SSIDList *m_pSSIDList;
 	QString m_curAdapter;

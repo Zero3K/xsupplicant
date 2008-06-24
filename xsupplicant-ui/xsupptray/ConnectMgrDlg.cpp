@@ -663,6 +663,7 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 			QTableWidgetItem *nameItem = m_pConnectionsTable->item(selItem->row(), 0);
 			QString connName = nameItem->text();
 			QString message;
+			config_connection *pConfig;
 			
 			// check if is wired and if so is default connection
 			if (XSupWrapper::isDefaultWiredConnection(connName))
@@ -676,12 +677,24 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 				
 			
 			// check if wireless and is in preferred list?
+			bool result = XSupWrapper::getConfigConnection(connName, &pConfig);
+			if (result == true && pConfig != NULL)
+			{
+				if (pConfig->priority != DEFAULT_PRIORITY)
+					message = tr("The connection '%1' is in your preferred connection list.  Are you sure you want to delete it?").arg(connName);
+			}
+			else
+				pConfig = NULL;
+			
 			
 			if (QMessageBox::question(m_pRealForm, tr("Delete Connection"), 
 				message, 
 				QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 			{
 				bool success;
+				config_profiles *pProfile;
+				success = XSupWrapper::getConfigProfile(QString(pConfig->profile), &pProfile);
+				
 				success = XSupWrapper::deleteConnectionConfig(connName);
 				if (success == false)
 				{
@@ -689,13 +702,45 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 				}
 				else
 				{	
+					// delete profile and trusted server
+					if (pProfile != NULL && XSupWrapper::isProfileInUse(QString(pProfile->name)) == false)
+					{
+						// if no other connections are using this profile, delete it
+						config_trusted_server *pServer;
+						XSupWrapper::getTrustedServerForProfile(QString(pProfile->name), &pServer);
+						success = XSupWrapper::deleteProfileConfig(QString(pProfile->name));
+						
+						if (success == false)
+						{
+							QMessageBox::critical(m_pRealForm, tr("Error Deleting Profile"), tr("An error occurred while attempting to delete the profile '%1'").arg(pProfile->name));
+						}
+						else
+						{
+							// delete trusted server
+							if (pServer != NULL && XSupWrapper::isTrustedServerInUse(QString(pServer->name)) == false)
+								success = XSupWrapper::deleteServerConfig(QString(pServer->name));
+							else if (pServer != NULL)
+								QMessageBox::critical(m_pRealForm, tr("Error Deleting Trusted Server"), tr("The trused server '%1' cannot be deleted because it is being used by multiple profiles").arg(pServer->name));
+						}
+						if (pServer != NULL)
+							XSupWrapper::freeConfigServer(&pServer);
+					}
+					else if (pProfile != NULL)
+					{
+						QMessageBox::critical(m_pRealForm, tr("Error Deleting Profile"), tr("The profile '%1' cannot be deleted because it is being used by multiple connection profiles").arg(pProfile->name));
+					}
+				
 					// save off the config since it changed
 					XSupWrapper::writeConfig();
 					
 					// tell everyone we changed the config
 					m_pEmitter->sendConnConfigUpdate();
 				}
-			}		
+				if (pProfile != NULL)
+					XSupWrapper::freeConfigProfile(&pProfile);
+			}
+			if (pConfig != NULL)
+				XSupWrapper::freeConfigConnection(&pConfig);	
 		}	
 	}
 }
@@ -759,7 +804,7 @@ void ConnectMgrDlg::launchConnectionWizard(void)
 			if (m_pConnWizard->create() == true)
 			{
 				Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-				Util::myConnect(m_pConnWizard, SIGNAL(finished(bool)), this, SLOT(finishConnectionWizard(bool)));			
+				Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
 				m_pConnWizard->init();
 				m_pConnWizard->show();
 			}
@@ -774,7 +819,7 @@ void ConnectMgrDlg::launchConnectionWizard(void)
 	}
 }
 
-void ConnectMgrDlg::finishConnectionWizard(bool success)
+void ConnectMgrDlg::finishConnectionWizard(bool success, const QString &)
 {
 	if (success == false)
 		QMessageBox::critical(m_pRealForm,tr("Error saving connection data"), tr("An error occurred while saving the configuration data you provided."));
@@ -786,7 +831,7 @@ void ConnectMgrDlg::cleanupConnectionWizard(void)
 	if (m_pConnWizard != NULL)
 	{
 		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool)), this, SLOT(finishConnectionWizard(bool)));				
+		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));				
 		delete m_pConnWizard;
 		m_pConnWizard = NULL;
 	}

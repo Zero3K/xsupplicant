@@ -1198,7 +1198,10 @@ WizardPageDot1XCert::~WizardPageDot1XCert()
 	if (m_pCertArray != NULL)
 		xsupgui_request_free_cert_enum(&m_pCertArray);
 	if (m_pVerifyName != NULL)
-		Util::myDisconnect(m_pVerifyName, SIGNAL(stateChanged(int)), this, SLOT(handleValidateChecked(int)));		
+		Util::myDisconnect(m_pVerifyName, SIGNAL(stateChanged(int)), this, SLOT(handleValidateChecked(int)));
+	if (m_pCertTable != NULL)
+		Util::myDisconnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
+		
 }
 
 bool WizardPageDot1XCert::create(void)
@@ -1227,6 +1230,9 @@ bool WizardPageDot1XCert::create(void)
 	// set up event handling
 	if (m_pVerifyName != NULL)
 		Util::myConnect(m_pVerifyName, SIGNAL(stateChanged(int)), this, SLOT(handleValidateChecked(int)));
+		
+	if (m_pCertTable != NULL)
+		Util::myConnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
 		
 	// other initializations
 	if (m_pNameField != NULL)
@@ -1340,6 +1346,19 @@ void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 	}
 }
 
+void WizardPageDot1XCert::handleCertTableClick(int row, int col)
+{
+/*
+	// if user clicks on name of server, toggle checkbox
+	if (m_pCertTable != NULL && col == 1)
+	{
+		QWidget *widget = m_pCertTable->cellWidget(row,0);
+		if (widget != NULL)
+			((QCheckBox*)widget)->toggle();
+	}
+*/
+}
+
 void WizardPageDot1XCert::handleValidateChecked(int checkState)
 {
 	if (m_pNameField != NULL)
@@ -1427,7 +1446,10 @@ const ConnectionWizardData &WizardPageDot1XCert::wizardData()
 				
 				// TODO: range check index before indexing m_pCertArray
 				if (item != NULL && m_pCertArray != NULL)
-					m_curData.m_serverCerts.append(m_pCertArray[item->type() - 1000].location);
+				{
+					m_curData.m_serverCerts.append(QString(m_pCertArray[item->type() - 1000].location));
+					QMessageBox::information(NULL,"",QString("Trusted Server: %1").arg(m_pCertArray[item->type()-1000].location));
+				}
 			}
 		}
 	}

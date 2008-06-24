@@ -82,6 +82,609 @@ ConnectionWizardData::~ConnectionWizardData()
 	// nothing special to do. No pointers.
 }
 
+bool ConnectionWizardData::toProfileOuterIdentity(config_profiles * const pProfile)
+{
+	if (pProfile == NULL)
+		return false;
+		
+	if (pProfile->identity != NULL)
+		free(pProfile->identity);
+	if (m_outerIdentity.isEmpty())
+		pProfile->identity = _strdup("anonymous");
+	else
+		pProfile->identity = _strdup(m_outerIdentity.toAscii().data());
+		
+	return true;
+}
+
+// assumes profile is being built from scratch and thus none of this data is populated
+bool ConnectionWizardData::toProfileEAP_MD5Protocol(config_profiles * const pProfile)
+{
+	bool success  = true;
+
+	if (pProfile->method == NULL)
+	{
+		pProfile->method = (config_eap_method *)malloc(sizeof(config_eap_method));
+		if (pProfile->method == NULL)
+			success = false;
+		else
+		{
+			memset(pProfile->method, 0x00, sizeof(config_eap_method));
+			pProfile->method->method_num = EAP_TYPE_MD5;
+			pProfile->method->method_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
+			if (pProfile->method->method_data == NULL)
+				success = false;
+			else
+				memset(pProfile->method->method_data, 0x00, sizeof(config_pwd_only));
+		}
+	}
+	else
+		;// unexpected
+
+	return success;
+}
+
+bool ConnectionWizardData::toProfileEAP_MSCHAPProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
+{
+	bool success = true;
+	if (pProfile == NULL)
+		return false;
+		
+	if (m_eapProtocol == ConnectionWizardData::eap_peap) {
+		this->toProfileOuterIdentity(pProfile);
+	
+		if (pProfile->method == NULL)
+		{
+			pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+			if (pProfile->method == NULL)
+				success = false;
+			else
+			{	
+				memset(pProfile->method, 0x00, sizeof(config_eap_method));
+				pProfile->method->method_num = EAP_TYPE_PEAP;
+
+				pProfile->method->method_data = malloc(sizeof(config_eap_peap));
+				if (pProfile->method->method_data == NULL)
+					success = false;
+				else
+				{
+					config_eap_peap *mypeap;
+					mypeap = (config_eap_peap *)pProfile->method->method_data;					
+					memset(mypeap, 0x00, sizeof(config_eap_peap));
+					
+					mypeap->force_peap_version = 0xff;
+					
+					// server cert
+					if (m_validateCert == true)
+					{
+						if (pServer != NULL)
+						{
+							mypeap->validate_cert = TRUE;
+							mypeap->trusted_server = _strdup(pServer->name);
+						}
+						else
+						{
+							mypeap->validate_cert = FALSE;
+							success = false;
+						}
+					}
+					else
+						mypeap->validate_cert = FALSE;
+					
+					// inner protocol
+					if (m_innerProtocol == ConnectionWizardData::inner_eap_mschapv2)
+					{
+						mypeap->phase2 = (config_eap_method *)malloc(sizeof(config_eap_method));
+						if (mypeap->phase2 == NULL) 
+							success = false;
+						else
+						{
+							config_eap_method *myeap;
+							myeap = (config_eap_method *)mypeap->phase2;
+							memset(myeap, 0x00, sizeof(config_eap_method));
+					
+							myeap->method_num = EAP_TYPE_MSCHAPV2;
+							myeap->method_data = (config_eap_mschapv2 *)malloc(sizeof(config_eap_mschapv2));
+							if (myeap->method_data == NULL) 
+								success = false;
+							else
+							{
+								config_eap_mschapv2 *mscv2;
+								mscv2 = (config_eap_mschapv2 *)myeap->method_data;
+								memset(mscv2, 0x00, sizeof(config_eap_mschapv2));
+
+								// Set some defaults.
+								mscv2->ias_quirk = FALSE;
+								mscv2->nthash = NULL;
+								mscv2->password = NULL;
+							}
+						}
+					}
+					else if (m_innerProtocol == ConnectionWizardData::inner_eap_gtc)
+					{
+						mypeap->phase2 = (config_eap_method *)malloc(sizeof(config_eap_method));
+						if (mypeap->phase2 == NULL) 
+							success = false;
+						else
+						{
+							config_eap_method *myeap = NULL;
+							myeap = (config_eap_method *)mypeap->phase2;
+							memset(myeap, 0x00, sizeof(config_eap_method));
+							myeap->method_num = EAP_TYPE_GTC;
+							myeap->method_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
+							if (myeap->method_data == NULL)
+								success = false;
+							else
+								memset(myeap->method_data, 0x00, sizeof(config_pwd_only));
+						}				
+					}
+					else
+					{
+						// invalid value
+					}
+				}
+			}
+		}
+		else
+		{
+			// unexpected
+		}
+	}
+	else
+		success = false;
+		
+	return success;	
+}
+
+bool ConnectionWizardData::toEAP_TTLSProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
+{
+	bool success = true;
+	if (pProfile == NULL)
+		return false;
+		
+	// make sure this is the right function
+	if (m_eapProtocol != ConnectionWizardData::eap_ttls)
+		return false;
+
+	if (pProfile->method == NULL)
+	{
+		pProfile->method = (config_eap_method *)malloc(sizeof(config_eap_method));
+		if (pProfile->method == NULL)
+			success = false;
+		else
+		{
+			memset(pProfile->method, 0x00, sizeof(config_eap_method));
+	
+			pProfile->method->method_num = EAP_TYPE_TTLS;
+			this->toProfileOuterIdentity(pProfile);
+
+			pProfile->method->method_data = malloc(sizeof(config_eap_ttls));
+			if (pProfile->method->method_data == NULL)
+				success = false;
+			else
+			{
+				config_eap_ttls *myttls = NULL;
+				myttls = (config_eap_ttls *)pProfile->method->method_data;
+			
+				memset(myttls, 0x00, sizeof(config_eap_ttls));
+		
+				if (m_validateCert == true)
+				{
+					if (pServer != NULL)
+					{
+						myttls->validate_cert = TRUE;
+						myttls->trusted_server = _strdup(pServer->name);
+					}
+					else
+					{
+						myttls->validate_cert = FALSE;
+						success = false;
+					}
+				}
+				else
+				{
+					myttls->validate_cert = FALSE;
+				}
+
+				// Determine the inner method in use...
+				if (m_innerProtocol == ConnectionWizardData::inner_pap)
+				{
+					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_PAP;
+					myttls->phase2_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
+					if (myttls->phase2_data == NULL)
+						success = false;
+					else
+						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
+				}
+				else if (m_innerProtocol == ConnectionWizardData::inner_chap)
+				{
+					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_CHAP;
+					myttls->phase2_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
+					if (myttls->phase2_data == NULL)
+						success = false;
+					else
+						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
+				}
+				else if (m_innerProtocol == ConnectionWizardData::inner_mschap)
+				{
+					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_MSCHAP;
+					myttls->phase2_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
+					if (myttls->phase2_data == NULL)
+						success = false;
+					else
+						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
+				}
+				else if (m_innerProtocol == ConnectionWizardData::inner_mschapv2)
+				{
+					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_MSCHAPV2;
+					myttls->phase2_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
+					if (myttls->phase2_data == NULL)
+						success = false;
+					else
+						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
+				}	
+				else if (m_innerProtocol == ConnectionWizardData::inner_eap_md5)
+				{
+					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_EAP;
+					myttls->phase2_data = (config_eap_method *)malloc(sizeof(config_eap_method));
+					if (myttls->phase2_data == NULL)
+						success = false;
+					else
+					{
+						config_eap_method *myeap;
+						myeap = (config_eap_method *)myttls->phase2_data;
+						memset(myeap, 0x00, sizeof(config_eap_method));
+						myeap->method_num = EAP_TYPE_MD5;
+						myeap->method_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
+						if (myeap->method_data == NULL)
+							success = false;
+						else
+							memset(myeap->method_data, 0x00, sizeof(config_pwd_only));
+					}
+				}	
+			}
+		}
+	}	
+
+	return success;
+}
+
+bool ConnectionWizardData::toProfileData(config_profiles **retProfile, config_trusted_server const * const pServer)
+{
+	bool success = true;
+	
+	config_profiles *pProfile = NULL;
+	
+	// can't do anything
+	if (retProfile == NULL)
+		return false;
+		
+	// if dot1X, create profile
+	if ((m_wireless == false && m_wiredSecurity == true)
+		|| (m_wireless == true 
+		&& (m_wirelessAssocMode == ConnectionWizardData::assoc_WPA_ENT
+		|| m_wirelessAssocMode == ConnectionWizardData::assoc_WPA2_ENT)))
+	{
+		// create profile
+		QString profileName = m_connectionName;
+		profileName.append(QWidget::tr("_Profile"));
+		success = XSupWrapper::createNewProfile(profileName,&pProfile);
+		if (success == true && pProfile != NULL)
+		{
+			switch (m_eapProtocol)
+			{
+				case ConnectionWizardData::eap_peap:
+					success = this->toProfileEAP_MSCHAPProtocol(pProfile, pServer);
+					break;
+				case ConnectionWizardData::eap_ttls:
+					success = this->toEAP_TTLSProtocol(pProfile,pServer);
+					break;
+				case ConnectionWizardData::eap_md5:
+					success = this->toProfileEAP_MD5Protocol(pProfile);
+					break;
+				default:
+					pProfile->method = NULL;
+			}
+		}
+		else
+		{
+			// in case this was allocated
+			XSupWrapper::freeConfigProfile(&pProfile);
+			pProfile = NULL;
+			success = false;
+		}
+	}
+	*retProfile = pProfile;
+	
+	return success;
+}
+
+bool ConnectionWizardData::toConnectionData(config_connection **retConnection, config_profiles const * const pProfile)
+{
+	config_connection *pConn;
+	bool success = true;
+	
+	// can't do anything
+	if (retConnection == NULL)
+		return false;
+		
+	pConn = NULL;
+		
+	success = XSupWrapper::createNewConnection(m_connectionName, &pConn);
+	if (success == false)
+	{
+		XSupWrapper::freeConfigConnection(&pConn);
+		pConn = NULL;
+	}
+	
+	*retConnection = pConn;
+	
+	// TODO: it's possible that name gets changed above, if new connection was added before we
+	// save out. That = bad
+	
+	if (pConn != NULL)
+	{
+		pConn->priority = DEFAULT_PRIORITY;
+		pConn->profile = NULL;
+		pConn->device = _strdup(m_adapterDesc.toAscii().data());
+		if (m_wireless == true)
+		{
+			pConn->ssid = _strdup(m_networkName.toAscii().data());
+			switch (m_wirelessAssocMode)
+			{
+				case ConnectionWizardData::assoc_none:
+					pConn->association.association_type = ASSOC_OPEN;
+					pConn->association.auth_type = AUTH_NONE;				
+					break;
+				case ConnectionWizardData::assoc_WEP:
+					pConn->association.association_type = ASSOC_OPEN;
+					pConn->association.auth_type = AUTH_NONE;					
+					break;
+				case ConnectionWizardData::assoc_WPA2_PSK:
+					pConn->association.association_type = ASSOC_WPA2;
+					pConn->association.auth_type = AUTH_PSK;					
+					break;
+				case ConnectionWizardData::assoc_WPA_PSK:
+					pConn->association.association_type = ASSOC_WPA;
+					pConn->association.auth_type = AUTH_PSK;				
+					break;					
+				case ConnectionWizardData::assoc_WPA2_ENT:
+					pConn->association.association_type = ASSOC_WPA2;
+					pConn->association.auth_type = AUTH_EAP;
+					if (pProfile != NULL)
+						pConn->profile = _strdup(pProfile->name);
+					else
+						success = false;  // we should have a profile
+					break;
+				case ConnectionWizardData::assoc_WPA_ENT:
+					pConn->association.association_type = ASSOC_WPA;
+					pConn->association.auth_type = AUTH_EAP;
+					if (pProfile != NULL)
+						pConn->profile = _strdup(pProfile->name);
+					else
+						success = false;  // we should have a profile				
+					break;	
+			}
+			
+			if (m_hiddenNetwork == true)
+			{
+				pConn->flags |= CONFIG_NET_IS_HIDDEN;
+				if (m_wirelessEncryptMeth == ConnectionWizardData::encrypt_CCMP)
+					pConn->association.pairwise_keys |= CRYPT_FLAGS_CCMP;
+				if (m_wirelessEncryptMeth == ConnectionWizardData::encrypt_TKIP)
+					pConn->association.pairwise_keys |= CRYPT_FLAGS_TKIP;					
+				if (m_wirelessEncryptMeth == ConnectionWizardData::encrypt_WEP)
+					pConn->association.pairwise_keys |= CRYPT_FLAGS_WEP104;					
+			}
+		}
+		else
+		{
+			if (m_wiredSecurity = true)
+			{
+				if (pProfile != NULL)
+					pConn->profile = _strdup(pProfile->name);
+				else
+					success = false;  // we should have a profile
+			}
+		}
+		
+		if (m_staticIP == true)
+		{
+			pConn->ip.type = CONFIG_IP_USE_STATIC;
+			pConn->ip.ipaddr = _strdup(m_IPAddress.toAscii().data());
+			pConn->ip.gateway = _strdup(m_gateway.toAscii().data());
+			pConn->ip.netmask = _strdup(m_netmask.toAscii().data());
+			pConn->ip.dns1 = _strdup(m_primaryDNS.toAscii().data());
+			pConn->ip.dns2 = _strdup(m_secondaryDNS.toAscii().data());
+		}
+		else
+		{
+			pConn->ip.type = CONFIG_IP_USE_DHCP;
+			pConn->ip.renew_on_reauth = FALSE; // correct default?
+		}
+	}
+	
+	return success;
+}
+
+bool ConnectionWizardData::toServerData(config_trusted_server **retServer)
+{
+	config_trusted_server *pServer = NULL;
+	bool success = true;
+	
+	if (retServer == NULL)
+		return false;
+	
+	// if 802.1X
+	if ((m_wireless == false && m_wiredSecurity == true)
+		|| (m_wireless == true 
+		&& (m_wirelessAssocMode == ConnectionWizardData::assoc_WPA_ENT
+		|| m_wirelessAssocMode == ConnectionWizardData::assoc_WPA2_ENT)))
+	{
+		// only if eap-peap and eap-ttls and validate server cert is true
+		if ((m_eapProtocol == ConnectionWizardData::eap_peap || m_eapProtocol == ConnectionWizardData::eap_ttls)
+			&& m_validateCert == true)
+		{
+			QString profName = m_connectionName;
+			profName.append(QWidget::tr("_Server"));
+			success = XSupWrapper::createNewTrustedServer(profName,&pServer);
+			if (success && pServer != NULL)
+			{
+				if (m_verifyCommonName == true) 
+				{
+					pServer->common_name = _strdup((m_commonNames.join(",")).toAscii().data());
+					pServer->exact_common_name = FALSE; // not sure when this is ever 'true'?
+				}
+
+				int numCerts = m_serverCerts.size();
+				
+				if (numCerts > 0)
+				{
+#ifdef WINDOWS
+					pServer->store_type = _strdup("WINDOWS");
+#endif
+					pServer->location = (char**)malloc(numCerts * sizeof(char *));
+					if (pServer->location != NULL)
+					{
+						memset(pServer->location, 0x00, numCerts * sizeof(char *));
+						
+						for (int i=0; i<numCerts; i++)
+							pServer->location[i] = _strdup(m_serverCerts.at(i).toAscii().data());
+					}
+					else
+						success = false;
+				}
+					
+				pServer->num_locations = numCerts;	
+			}
+			else
+			{
+				success = false;
+				if (pServer != NULL)
+					XSupWrapper::freeConfigServer(&pServer);
+				pServer = NULL;
+			}
+		}
+	}	
+	*retServer = pServer;
+	return success;
+}
+
+// static func = no access to member variables, no "this"
+bool ConnectionWizardData::toSupplicantProfiles(config_connection **retConnection, config_profiles **retProfile, config_trusted_server **retServer)
+{
+	bool success;
+	config_connection *pConn = NULL;
+	config_profiles *pProfile = NULL;
+	config_trusted_server *pServer = NULL;
+	
+	// create trusted server and pass to profile data
+	success = this->toServerData(&pServer);
+	success = this->toProfileData(&pProfile, pServer) == true && success == true;
+	success = this->toConnectionData(&pConn, pProfile) == true && success == true;
+	
+	if (success == true)
+	{
+		if (retConnection != NULL)
+			*retConnection = pConn;
+		if (retProfile != NULL)
+			*retProfile = pProfile;
+		if (retServer != NULL)
+			*retServer = pServer;
+	}
+	else
+	{
+		// if anything failed ,just throw out everything we've been given
+		
+		if (pConn != NULL)
+		{
+			XSupWrapper::freeConfigConnection(&pConn);
+			if (retConnection != NULL)
+				*retConnection = NULL;			
+		}
+		if (pProfile != NULL)
+		{
+			XSupWrapper::freeConfigProfile(&pProfile);
+			if (retProfile != NULL)
+				*retProfile = NULL;
+		}
+		if (pServer != NULL)
+		{
+			xsupgui_request_free_trusted_server_config(&pServer);
+			if (retServer != NULL)
+				*retServer = NULL;
+		}
+	}	
+		
+	// what do we consider a "success" to pass down?
+	return success;
+}
+
+bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer)
+{
+	if (pConfig == NULL && pProfile == NULL && pServer == NULL)
+		return false;  // no data to convert
+	
+	// first fill out all connection info	
+	m_wireless = pConfig->ssid != NULL && QString(pConfig->ssid).isEmpty() == false;
+	m_adapterDesc = pConfig->device;
+	m_connectionName = pConfig->name;
+	
+	if (m_wireless == true)
+	{
+		if (pConfig->ssid == NULL)
+			;// bad.
+		else
+			m_networkName = pConfig->ssid;
+		
+		switch (pConfig->association.association_type)
+		{
+			case ASSOC_OPEN:
+				// TODO: detect WEP (think it's possible)
+				m_wirelessAssocMode = ConnectionWizardData::assoc_none;
+				break;
+			case ASSOC_WPA:
+				if (pConfig->association.auth_type == AUTH_PSK)
+					m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;
+				else
+					m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
+				break;
+			case ASSOC_WPA2:
+				if (pConfig->association.auth_type == AUTH_PSK)
+					m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_PSK;
+				else
+					m_wirelessAssocMode = ConnectionWizardData::assoc_WPA_ENT;
+				break;			
+		}
+		
+		if ((pConfig->association.pairwise_keys & CRYPT_FLAGS_CCMP) == CRYPT_FLAGS_CCMP)
+			m_wirelessEncryptMeth = ConnectionWizardData::encrypt_CCMP;
+		else if ((pConfig->association.pairwise_keys & CRYPT_FLAGS_CCMP) == CRYPT_FLAGS_TKIP)
+			m_wirelessEncryptMeth = ConnectionWizardData::encrypt_TKIP;
+		else if ((pConfig->association.pairwise_keys & (CRYPT_FLAGS_WEP104 | CRYPT_FLAGS_WEP40)) != 0)					
+			m_wirelessEncryptMeth = ConnectionWizardData::encrypt_WEP;			
+	}
+	else
+	{
+		// should verify profile actually exists, most likely	
+		m_wiredSecurity = (pConfig->profile != NULL);
+	}
+	
+	if (pConfig->ip.type == CONFIG_IP_USE_STATIC)
+	{
+		m_staticIP = true;
+		m_IPAddress = pConfig->ip.ipaddr;
+		m_gateway = pConfig->ip.gateway;
+		m_netmask = pConfig->ip.netmask;
+		m_primaryDNS = pConfig->ip.dns1;
+		m_secondaryDNS = pConfig->ip.dns2;	
+	}
+	else
+		m_staticIP = false;
+	
+	return true;
+}
+
 ConnectionWizard::ConnectionWizard(QWidget *parent, QWidget *parentWindow, Emitter *e)
 	: QWidget(parent),
 	m_pParent(parent),
@@ -92,6 +695,8 @@ ConnectionWizard::ConnectionWizard(QWidget *parent, QWidget *parentWindow, Emitt
 	for (i=0; i<ConnectionWizard::pageLastPage; i++)
 		m_wizardPages[i] = NULL;
 	m_currentPage = pageNoPage;
+	m_dot1Xmode = false;
+	m_editMode = false;
 }
 
 ConnectionWizard::~ConnectionWizard(void)
@@ -177,8 +782,6 @@ bool ConnectionWizard::initUI(void)
 
 void ConnectionWizard::show(void)
 {
-	if (m_pStackedWidget != NULL)
-		m_pStackedWidget->setCurrentIndex(0);
 	if (m_pRealForm != NULL)
 		m_pRealForm->show();
 }
@@ -265,7 +868,11 @@ void ConnectionWizard::gotoPage(ConnectionWizard::wizardPages newPageIdx)
 	{
 		if (m_pHeaderLabel != NULL)
 		{
-			QString headerString = tr("Create New Connection");
+			QString headerString;
+			if (m_editMode == true)
+				headerString = tr("Edit Connection");
+			else
+				headerString = tr("Create New Connection");
 			QString pageHeader = m_wizardPages[newPageIdx]->getHeaderString();
 			if (!pageHeader.isEmpty())
 				headerString.append(" >> ").append(pageHeader);
@@ -297,7 +904,7 @@ void ConnectionWizard::gotoNextPage(void)
 	wizardPages nextPage = pageNoPage;
 	
 	if (m_currentPage == pageNoPage)
-		nextPage = pageNetworkType;
+		nextPage = this->getNextPage();
 	else if (m_wizardPages[m_currentPage] != NULL)
 	{	
 		if (m_wizardPages[m_currentPage]->validate() == true)
@@ -368,518 +975,23 @@ void ConnectionWizard::finishWizard(void)
 	bool success;
 	if (m_pRealForm != NULL)
 		m_pRealForm->hide();
-	success = this->saveConnectionData();
-	emit finished(success);
+		
+	QString connName;
+	
+	success = this->saveConnectionData(&connName);
+	emit finished(success, connName);
 }
 
-// static func = no access to member variables, no "this"
-bool SupplicantProfilesToWizardData(config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer, ConnectionWizardData **pWizData)
-{
-	if (pWizData == NULL)
-		return false;	// nothing we can do
-		
-	*pWizData = NULL;
-	
-	if (pConfig == NULL && pProfile == NULL && pServer == NULL)
-		return false;  // no data to convert
-	return true;
-}
-
-bool ConnectionWizardData::toProfileOuterIdentity(config_profiles * const pProfile)
-{
-	if (pProfile == NULL)
-		return false;
-		
-	if (pProfile->identity != NULL)
-		free(pProfile->identity);
-	if (m_outerIdentity.isEmpty())
-		pProfile->identity = _strdup("anonymous");
-	else
-		pProfile->identity = _strdup(m_outerIdentity.toAscii().data());
-		
-	return true;
-}
-
-bool ConnectionWizardData::toProfileEAPMSCHAPv2InnerProtocol(config_profiles * const pProfile)
-{
-	bool success = true;
-	
-	if (pProfile == NULL)
-		return false;
-	
-	if (m_innerProtocol == ConnectionWizardData::inner_eap_mschapv2)
-	{
-		config_eap_method *myeap = NULL;
-		config_eap_mschapv2 *mscv2 = NULL;
-		config_eap_peap *mypeap = NULL;
-
-		mypeap = (config_eap_peap *)pProfile->method->method_data;
-		if (mypeap != NULL)
-		{
-			if (mypeap->phase2 == NULL)
-			{
-				mypeap->phase2 = (config_eap_method *)malloc(sizeof(struct config_eap_method));
-				if (mypeap->phase2 == NULL) 
-					success = false;
-				else
-					memset(mypeap->phase2, 0x00, sizeof(struct config_eap_method));
-			}
-			
-			myeap = (config_eap_method *)mypeap->phase2;
-			
-			if (myeap != NULL)
-			{
-				if ((myeap->method_num != EAP_TYPE_MSCHAPV2) && (myeap->method_data != NULL))
-				{
-					XSupWrapper::freeConfigEAPMethod((config_eap_method **)&mypeap->phase2);
-				}
-
-				if (myeap->method_data == NULL)
-				{
-					myeap->method_data = (config_eap_mschapv2 *)malloc(sizeof(config_eap_mschapv2));
-					if (myeap->method_data == NULL) 
-						success = false;
-					else
-						memset(myeap->method_data, 0x00, sizeof(struct config_eap_mschapv2));
-
-					mscv2 = (config_eap_mschapv2 *)myeap->method_data;
-					
-					if (mscv2 != NULL)
-					{
-						// Set some defaults.
-						mscv2->ias_quirk = FALSE;
-						mscv2->nthash = NULL;
-						mscv2->password = NULL;
-					}
-				}
-
-				myeap->method_num = EAP_TYPE_MSCHAPV2;
-				mscv2 = (config_eap_mschapv2 *)myeap->method_data;
-				if (mscv2 != NULL && mscv2->password != NULL)
-				{
-					free(mscv2->password);
-					mscv2->password = NULL;
-				}
-			}
-		}
-		else
-			success = false;
-	}
-	else
-		success = false;
-	
-	return success;
-}
-
-bool ConnectionWizardData::toProfileEAP_GTCInnerProtocol(config_profiles * const pProfile)
-{
-	bool success = true;
-	
-	if (pProfile == NULL)
-		return false;
-		
-	if (m_innerProtocol == ConnectionWizardData::inner_eap_gtc)
-	{
-		config_eap_peap *mypeap = NULL;
-
-		mypeap = (config_eap_peap *)pProfile->method->method_data;
-		if (mypeap != NULL)
-		{
-			config_eap_method *myeap = NULL;
-			if (mypeap->phase2 == NULL)
-			{
-				mypeap->phase2 = (config_eap_method *)malloc(sizeof(config_eap_method));
-				if (mypeap->phase2 == NULL) 
-					success = false;
-				else
-					memset(mypeap->phase2, 0x00, sizeof(config_eap_method));
-			}
-
-			myeap = (config_eap_method *)mypeap->phase2;
-			
-			if (myeap != NULL)
-			{
-				if ((myeap->method_num != EAP_TYPE_GTC) && (myeap->method_data != NULL))
-				{
-					XSupWrapper::freeConfigEAPMethod((config_eap_method **)&mypeap->phase2);
-				}
-
-				if (myeap->method_data == NULL)
-				{
-					myeap->method_data = (struct config_pwd_only *)malloc(sizeof(config_pwd_only));
-					if (myeap->method_data == NULL) 
-						success = false;
-					else
-					{
-						// Set everything to defaults.
-						memset(myeap->method_data, 0x00, sizeof(config_pwd_only));
-					}
-				}
-
-				myeap->method_num = EAP_TYPE_GTC;
-
-				config_pwd_only *pwdonly = NULL;
-				pwdonly = (config_pwd_only *)myeap->method_data;
-				if (pwdonly != NULL)
-				{
-					if (pwdonly->password != NULL)
-					{
-						free(pwdonly->password);
-						pwdonly->password = NULL;
-					}				
-				}
-				else
-					success = false;
-			}
-			else
-				success = false;
-		}
-		else
-			success = false;
-	}
-	else
-		success = false;
-	
-	return success;
-}
-
-bool ConnectionWizardData::toProfileEAP_MD5Protocol(config_profiles * const pProfile)
-{
-	bool success  = true;
-
-	if (pProfile->method == NULL)
-	{
-		pProfile->method = (config_eap_method *)malloc(sizeof(config_eap_method));
-		if (pProfile->method == NULL)
-			success = false;
-		else
-			memset(pProfile->method, 0x00, sizeof(config_eap_method));
-
-		if (pProfile->method != NULL)
-		{
-			pProfile->method->method_num = EAP_TYPE_MD5;
-
-			pProfile->method->method_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
-			if (pProfile->method->method_data == NULL)
-				success = false;
-			else
-				memset(pProfile->method->method_data, 0x00, sizeof(config_pwd_only));
-		}
-	}
-
-	if (pProfile->method->method_data != NULL)
-	{
-		config_pwd_only *mydata = NULL;
-		mydata = (config_pwd_only *)pProfile->method->method_data;
-		
-		if (mydata->password != NULL)
-		{
-			free(mydata->password);
-			mydata->password = NULL;
-		}
-	}
-	
-	if (pProfile->identity != NULL)
-	{
-		free(pProfile->identity);
-		pProfile->identity = NULL;
-	}
-
-	return success;
-}
-
-bool ConnectionWizardData::toProfileEAP_MSCHAPProtocol(config_profiles * const pProfile)
-{
-	bool success = true;
-	if (pProfile == NULL)
-		return false;
-		
-	if (m_eapProtocol == ConnectionWizardData::eap_peap) {
-		this->toProfileOuterIdentity(pProfile);
-	
-		if (pProfile->method == NULL)
-		{
-			pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
-			if (pProfile->method == NULL)
-				success = false;
-			else
-			{
-				config_eap_peap *mypeap = NULL;
-				
-				memset(pProfile->method, 0x00, sizeof(config_eap_method));
-				pProfile->method->method_num = EAP_TYPE_PEAP;
-				if (pProfile->method->method_data == NULL)
-				{
-					pProfile->method->method_data = malloc(sizeof(config_eap_peap));
-					if (pProfile->method->method_data == NULL)
-						success = false;
-					else
-					{
-						memset(pProfile->method->method_data, 0x00, sizeof(config_eap_peap));
-
-						mypeap = (config_eap_peap *)pProfile->method->method_data;
-						mypeap->force_peap_version = 0xff;
-					}
-				}
-				else
-				{
-					mypeap = (config_eap_peap *)pProfile->method->method_data;
-				}
-				
-				if (mypeap != NULL)
-				{
-					// ensure no username/password
-					if (mypeap->identity != NULL)
-					{
-						free(mypeap->identity);
-						mypeap->identity = NULL;
-					}
-					
-					// server cert
-					if (m_validateCert == true)
-					{
-						mypeap->validate_cert = TRUE;
-
-						if (mypeap->trusted_server != NULL)
-							free(mypeap->trusted_server);
-
-						//mypeap->trusted_server = _strdup(m_pTrustedServerCombo->currentText().toAscii());
-					}
-					else
-					{
-						mypeap->validate_cert = FALSE;
-
-						if (mypeap->trusted_server != NULL)
-						{
-							free(mypeap->trusted_server);
-							mypeap->trusted_server = NULL;
-						}
-					}
-					
-					// inner protocol
-					if (m_innerProtocol == ConnectionWizardData::inner_eap_mschapv2)
-						success = this->toProfileEAPMSCHAPv2InnerProtocol(pProfile);
-					else if (m_innerProtocol == ConnectionWizardData::inner_eap_gtc)
-						success = this->toProfileEAP_GTCInnerProtocol(pProfile);
-					else
-					{
-						// invalid value
-					}
-				}
-				else
-					success = false;
-			}
-		}
-		else
-		{
-			// unexpected
-		}
-	}
-	else
-		success = false;
-		
-	return success;	
-}
-
-bool ConnectionWizardData::toProfileData(config_profiles **retProfile)
-{
-	bool success;
-	
-	config_profiles *pProfile;
-	
-	// can't do anything
-	if (retProfile == NULL)
-		return false;
-		
-	pProfile = NULL;
-		
-	// if dot1X, create profile
-	if ((m_wireless == false && m_wiredSecurity == true)
-		|| (m_wireless == true 
-		&& (m_wirelessAssocMode == ConnectionWizardData::assoc_WPA_ENT
-		|| m_wirelessAssocMode == ConnectionWizardData::assoc_WPA2_ENT)))
-	{
-		// create profile
-		QString profileName = m_connectionName;
-		profileName.append(QWidget::tr("_Profile"));
-		success = XSupWrapper::createNewProfile(profileName,&pProfile);
-		*retProfile = pProfile;
-		if (success == true && pProfile != NULL)
-		{
-			switch (m_eapProtocol)
-			{
-				case ConnectionWizardData::eap_peap:
-					success = this->toProfileEAP_MSCHAPProtocol(pProfile);					
-					break;
-				case ConnectionWizardData::eap_ttls:
-					break;
-				case ConnectionWizardData::eap_md5:
-					success = this->toProfileEAP_MD5Protocol(pProfile);
-					break;
-				default:
-					pProfile->method = NULL;
-			}
-		}
-		else
-		{
-			// in case this was allocated
-			XSupWrapper::freeConfigProfile(&pProfile);
-			pProfile = NULL;
-			success = false;
-		}
-	}
-	
-	return success;
-}
-
-bool ConnectionWizardData::toConnectionData(config_connection **retConnection)
-{
-	config_connection *pConn;
-	bool success = true;
-	
-	// can't do anything
-	if (retConnection == NULL)
-		return false;
-		
-	pConn = NULL;
-		
-	success = XSupWrapper::createNewConnection(m_connectionName, &pConn) == true;
-	if (success == false)
-	{
-		XSupWrapper::freeConfigConnection(&pConn);
-		pConn = NULL;
-	}
-	
-	*retConnection = pConn;
-	
-	// TODO: it's possible that name gets changed above, if new connection was added before we
-	// save out. That = bad
-	
-	if (pConn != NULL)
-	{
-		pConn->profile = NULL;
-		pConn->device = _strdup(m_adapterDesc.toAscii().data());
-		if (m_wireless == true)
-		{
-			pConn->ssid = _strdup(m_networkName.toAscii().data());
-			switch (m_wirelessAssocMode)
-			{
-				case ConnectionWizardData::assoc_none:
-					pConn->association.association_type = ASSOC_OPEN;
-					pConn->association.auth_type = AUTH_NONE;				
-					break;
-				case ConnectionWizardData::assoc_WEP:
-					pConn->association.association_type = ASSOC_OPEN;
-					pConn->association.auth_type = AUTH_NONE;					
-					break;
-				case ConnectionWizardData::assoc_WPA2_PSK:
-					pConn->association.association_type = ASSOC_WPA2;
-					pConn->association.auth_type = AUTH_PSK;					
-					break;
-				case ConnectionWizardData::assoc_WPA_PSK:
-					pConn->association.association_type = ASSOC_WPA;
-					pConn->association.auth_type = AUTH_PSK;				
-					break;					
-				case ConnectionWizardData::assoc_WPA2_ENT:
-					pConn->association.association_type = ASSOC_WPA2;
-					pConn->association.auth_type = AUTH_EAP;
-					break;
-				case ConnectionWizardData::assoc_WPA_ENT:
-					pConn->association.association_type = ASSOC_WPA;
-					pConn->association.auth_type = AUTH_EAP;				
-					break;	
-			}
-			
-			if (m_hiddenNetwork == true)
-			{
-				pConn->flags |= CONFIG_NET_IS_HIDDEN;
-				if (m_wirelessEncryptMeth == ConnectionWizardData::encrypt_CCMP)
-					pConn->association.pairwise_keys |= CRYPT_FLAGS_CCMP;
-				if (m_wirelessEncryptMeth == ConnectionWizardData::encrypt_TKIP)
-					pConn->association.pairwise_keys |= CRYPT_FLAGS_TKIP;					
-				if (m_wirelessEncryptMeth == ConnectionWizardData::encrypt_WEP)
-					pConn->association.pairwise_keys |= CRYPT_FLAGS_WEP104;					
-			}
-		}
-		
-		if (m_staticIP == true)
-		{
-			pConn->ip.type = CONFIG_IP_USE_STATIC;
-			pConn->ip.ipaddr = _strdup(m_IPAddress.toAscii().data());
-			pConn->ip.gateway = _strdup(m_gateway.toAscii().data());
-			pConn->ip.netmask = _strdup(m_netmask.toAscii().data());
-			pConn->ip.dns1 = _strdup(m_primaryDNS.toAscii().data());
-			pConn->ip.dns2 = _strdup(m_secondaryDNS.toAscii().data());
-		}
-		else
-		{
-			pConn->ip.type = CONFIG_IP_USE_DHCP;
-			pConn->ip.renew_on_reauth = TRUE; // correct default?
-		}
-	}
-	
-	return success;
-}
-
-// static func = no access to member variables, no "this"
-bool ConnectionWizardData::toSupplicantProfiles(config_connection **retConnection, config_profiles **retProfile, config_trusted_server **retServer)
-{
-	bool success;
-	config_connection *pConn = NULL;
-	config_profiles *pProfile = NULL;
-	config_trusted_server *pServer = NULL;
-	
-	success = this->toProfileData(&pProfile);
-	success = this->toConnectionData(&pConn) == true && success == true;
-	
-	if (pProfile != NULL && QString(pProfile->name).isEmpty() == false)
-	{
-		if (pConn->profile != NULL)
-			free(pConn->profile);
-		pConn->profile = _strdup(pProfile->name);
-	}
-	
-	if (success == true)
-	{
-		if (retConnection != NULL)
-			*retConnection = pConn;
-		if (retProfile != NULL)
-			*retProfile = pProfile;
-		if (retServer != NULL)
-			*retServer = pServer;
-	}
-	else
-	{
-		// if anything failed ,just throw out everything we've been given
-		
-		if (pConn != NULL)
-		{
-			XSupWrapper::freeConfigConnection(&pConn);
-			pConn = NULL;
-		}
-		if (pProfile != NULL)
-		{
-			XSupWrapper::freeConfigProfile(&pProfile);
-			pProfile = NULL;
-		}
-		if (pServer != NULL)
-		{
-			xsupgui_request_free_trusted_server_config(&pServer);
-			pServer = NULL;
-		}
-	}	
-		
-	// what do we consider a "success" to pass down?
-	return success;
-}
-
-bool ConnectionWizard::saveConnectionData(void)
+bool ConnectionWizard::saveConnectionData(QString *pConnName)
 {
 	bool success;
 	config_connection *pConfig = NULL;
 	config_profiles *pProfile = NULL;
 	config_trusted_server *pServer = NULL;
 	
+	if (pConnName == NULL)
+		return false;
+		
 	success = m_connData.toSupplicantProfiles(&pConfig, &pProfile, &pServer);
 	
 	// we at least expect a pointer to connection profile
@@ -891,10 +1003,6 @@ bool ConnectionWizard::saveConnectionData(void)
 		{
 			retVal = xsupgui_request_set_trusted_server_config(pServer);
 			success = retVal == REQUEST_SUCCESS;
-			if (retVal == REQUEST_SUCCESS)
-				success = true;
-			else
-				success = false;
 		}
 		
 		if (pProfile != NULL)
@@ -919,7 +1027,10 @@ bool ConnectionWizard::saveConnectionData(void)
 	}
 
 	if (pConfig != NULL)
+	{
+		*pConnName = pConfig->name;
 		XSupWrapper::freeConfigConnection(&pConfig);
+	}
 	if (pProfile != NULL)
 		XSupWrapper::freeConfigProfile(&pProfile);
 	if (pServer != NULL)
@@ -935,7 +1046,10 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 	switch (m_currentPage)
 	{
 		case ConnectionWizard::pageNoPage:
-			nextPage = ConnectionWizard::pageNetworkType;
+			if (m_dot1Xmode == true)
+				nextPage = ConnectionWizard::pageDot1XProtocol;
+			else
+				nextPage = ConnectionWizard::pageNetworkType;
 			break;
 			
 		case ConnectionWizard::pageNetworkType:
@@ -985,7 +1099,12 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 			
 		case pageDot1XProtocol:
 			if (m_connData.m_eapProtocol == ConnectionWizardData::eap_md5)
-				nextPage = ConnectionWizard::pageFinishPage;
+			{
+				if (m_dot1Xmode == true)
+					nextPage = ConnectionWizard::pageFinishPage;
+				else
+					nextPage = ConnectionWizard::pageIPOptions;
+			}
 			else
 				nextPage = ConnectionWizard::pageDot1XInnerProtocol;
 			break;
@@ -994,11 +1113,19 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 			if (m_connData.m_validateCert == true)
 				nextPage = ConnectionWizard::pageDot1XCert;
 			else
-				nextPage = ConnectionWizard::pageFinishPage;
+			{
+				if (m_dot1Xmode == true)
+					nextPage = ConnectionWizard::pageFinishPage;
+				else
+					nextPage = ConnectionWizard::pageIPOptions;
+			}
 			break;
 			
 		case pageDot1XCert:
-			nextPage = ConnectionWizard::pageFinishPage;
+			if (m_dot1Xmode == true)
+				nextPage = ConnectionWizard::pageFinishPage;
+			else		
+				nextPage = ConnectionWizard::pageIPOptions;
 			break;
 			
 		case pageFinishPage:
@@ -1010,4 +1137,15 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 			break;
 	}
 	return nextPage;
+}
+
+void ConnectionWizard::editDot1XInfo(const ConnectionWizardData &wizData)
+{
+	// start with data passed in
+	m_connData = wizData;
+	
+	// load up first page
+	m_currentPage = pageNoPage;
+	m_dot1Xmode = true;
+	this->gotoNextPage();
 }

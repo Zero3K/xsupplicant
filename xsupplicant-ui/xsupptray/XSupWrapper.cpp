@@ -54,20 +54,15 @@ bool XSupWrapper::createNewConnection(const QString &suggName, config_connection
 	QString newName = XSupWrapper::getUniqueConnectionName(suggName);
 	config_connection *pConfig = NULL;	
 	
-	if (createNewConnectionDefaults(&pConfig) == false || pConfig == NULL)
-	{
-		return false;
+	pConfig = (config_connection*)malloc(sizeof(config_connection));
+	if (pConfig != NULL)
+	{	
+		memset(pConfig, 0x00, sizeof(config_connection));
+		pConfig->name = _strdup(newName.toAscii().data());
 	}
-	
-	// give the new connection meaningful settings
-	pConfig->name = _strdup(newName.toAscii().data());
-	pConfig->priority = DEFAULT_PRIORITY;
-	pConfig->association.association_type = ASSOC_WPA2;
-	pConfig->association.auth_type = AUTH_EAP;
 
 	(*newConnection) = pConfig;
-
-	return true;	
+	return (pConfig != NULL);
 }
 
 bool XSupWrapper::getConfigConnection(const QString &connName, config_connection **pConfig)
@@ -94,19 +89,6 @@ void XSupWrapper::freeConfigConnection(config_connection **p)
 {
   if (p != NULL)
 	 xsupgui_request_free_connection_config(p);
-}
-
-bool XSupWrapper::createNewConnectionDefaults(config_connection **pConfig)
-{
-	if (pConfig == NULL)
-		return false;
-
-	int retVal = xsupconfig_defaults_create_connection(pConfig);
-	
-	if (retVal != REQUEST_SUCCESS || pConfig == NULL)
-		return false;
-		
-	return true;
 }
 
 bool XSupWrapper::deleteConnectionConfig(const QString &connName)
@@ -142,6 +124,24 @@ QString XSupWrapper::getUniqueConnectionName(const QString &suggestedName)
 
 		XSupWrapper::freeConfigConnection(&pConfig);
 		pConfig = NULL;
+	}
+
+	return newName;
+}
+
+QString XSupWrapper::getUniqueServerName(const QString &suggestedName)
+{
+	QString newName(suggestedName);
+	config_trusted_server *pServer = NULL;	
+  
+	int i=1;
+	while (getConfigServer(newName, &pServer) == true)
+	{
+		newName = QString ("%1_%2").arg(suggestedName).arg(i);
+		++i;
+
+		XSupWrapper::freeConfigServer(&pServer);
+		pServer = NULL;
 	}
 
 	return newName;
@@ -191,6 +191,7 @@ bool XSupWrapper::getConfigProfile(const QString &profileName, config_profiles *
 	return true;
 }
 
+// create a blank new profile w/ only name filled out
 bool XSupWrapper::createNewProfile(const QString &suggName, config_profiles **newProfile)
 {
 	if (newProfile == NULL)
@@ -201,23 +202,35 @@ bool XSupWrapper::createNewProfile(const QString &suggName, config_profiles **ne
 	QString newName = XSupWrapper::getUniqueProfileName(suggName);
 	config_profiles *pProfile = NULL;	
 	
-	if (createNewProfileDefaults(&pProfile) == false || pProfile == NULL)
-	{
-		return false;
+	pProfile = (config_profiles*)malloc(sizeof(config_profiles));
+	if (pProfile != NULL)
+	{	
+		memset(pProfile, 0x00, sizeof(config_profiles));
+		pProfile->name = _strdup(newName.toAscii().data());
 	}
-	
-	pProfile->name = _strdup(newName.toAscii().data());
 
 	(*newProfile) = pProfile;
-	return true;
+	return (pProfile != NULL);
 }
 
-bool XSupWrapper::createNewProfileDefaults(config_profiles **pProfile)
+// creates a blank new trusted server profile w/ only name filled out
+bool XSupWrapper::createNewTrustedServer(const QString &suggName, config_trusted_server **newServer)
 {
-	int retVal = xsupconfig_defaults_create_profile(pProfile);
-	if (retVal != REQUEST_SUCCESS || pProfile == NULL)
-		return false;
-	return true;
+	if (newServer == NULL)
+		return false; 
+	
+	QString newName = XSupWrapper::getUniqueServerName(suggName);
+	config_trusted_server *pServer = NULL;
+	
+	pServer = (config_trusted_server*)malloc(sizeof(config_trusted_server));
+	if (pServer != NULL)
+	{
+		memset(pServer, 0x00, sizeof(config_trusted_server));
+		pServer->name = _strdup(newName.toAscii().data());
+	}
+	
+	(*newServer) = pServer;
+	return (pServer != NULL);
 }
 
 bool XSupWrapper::isDefaultWiredConnection(const QString &connName)
@@ -264,8 +277,163 @@ bool XSupWrapper::isDefaultWiredConnection(const QString &connName)
 	return isDefault;
 }
 
-void XSupWrapper::freeConfigEAPMethod(config_eap_method **method)
+void XSupWrapper::freeConfigServer(config_trusted_server **pServer)
 {
-	if (method != NULL)
-		delete_config_eap_method(method);
+ if (pServer != NULL)
+	 xsupgui_request_free_trusted_server_config(pServer);
+}
+
+bool XSupWrapper::getConfigServer(const QString &serverName, config_trusted_server **pServer)
+{
+	if (pServer == NULL)
+		return false;
+		
+	*pServer = NULL;
+
+	if (serverName.isEmpty())
+		return false;
+
+	int retVal = xsupgui_request_get_trusted_server_config(serverName.toAscii().data(), pServer);
+	if (retVal != REQUEST_SUCCESS || *pServer == NULL)
+	{
+		*pServer = NULL;
+		return false;
+	}
+	
+	return true;
+}
+
+bool XSupWrapper::isProfileInUse(const QString &profileName)
+{
+	bool inUse = false;
+	if (!profileName.isEmpty())
+	{
+		conn_enum * pConfig;
+		int retVal;
+		retVal = xsupgui_request_enum_connections(&pConfig);
+		if (retVal == REQUEST_SUCCESS && pConfig != NULL)
+		{
+			int i=0;
+			while (pConfig[i].name != NULL)
+			{
+				config_connection *pConn;
+				retVal = xsupgui_request_get_connection_config(pConfig[i].name, &pConn);
+				if (retVal == REQUEST_SUCCESS && pConn != NULL)
+				{
+					if (QString(pConn->profile) == profileName)
+					{
+						inUse = true;
+						XSupWrapper::freeConfigConnection(&pConn);
+						break;
+					}
+					XSupWrapper::freeConfigConnection(&pConn);
+				}
+				++i;
+			}
+			xsupgui_request_free_conn_enum(&pConfig);
+		}
+	}
+	return inUse;
+}
+
+bool XSupWrapper::deleteProfileConfig(const QString &profileName)
+{
+	if (profileName.isEmpty() == false)
+	{
+		int retVal;
+		retVal = xsupgui_request_delete_profile_config(profileName.toAscii().data(), TRUE);
+		if (retVal == REQUEST_SUCCESS)
+			return true;
+	}
+	return false;
+}
+
+bool XSupWrapper::deleteServerConfig(const QString &serverName)
+{
+	if (serverName.isEmpty() == false)
+	{
+		int retVal;
+		retVal = xsupgui_request_delete_trusted_server_config(serverName.toAscii().data(), TRUE);
+		if (retVal == REQUEST_SUCCESS)
+			return true;
+	}
+	return false;
+}
+
+bool XSupWrapper::getTrustedServerForProfile(const QString &profileName, config_trusted_server **pServer)
+{
+	bool success = false;
+	if (pServer == NULL)
+		return success;
+
+	*pServer = NULL;
+	config_profiles *pProfile = NULL;
+	XSupWrapper::getConfigProfile(profileName, &pProfile);
+	if (pProfile != NULL && pProfile->method != NULL)
+	{
+		config_eap_method *pMethod = pProfile->method;
+		if (pMethod->method_num == EAP_TYPE_PEAP)
+		{
+			config_eap_peap *mypeap;
+			mypeap = (config_eap_peap *)pProfile->method->method_data;
+			if (mypeap != NULL)
+			{
+				QString serverName;
+				serverName = mypeap->trusted_server;
+				if (!serverName.isEmpty())
+				{
+					XSupWrapper::getConfigServer(serverName, pServer);
+					if (*pServer != NULL)
+						success = true;
+				}
+			}
+		}
+		else if (pMethod->method_num == EAP_TYPE_TTLS)
+		{
+			config_eap_ttls *myttls;
+			myttls = (config_eap_ttls *)pProfile->method->method_data;
+			if (myttls != NULL)
+			{
+				QString serverName;
+				serverName = myttls->trusted_server;
+				if (!serverName.isEmpty())
+				{
+					XSupWrapper::getConfigServer(serverName, pServer);
+					if (*pServer != NULL)
+						success = true;
+				}
+			}
+		}
+		
+		XSupWrapper::freeConfigProfile(&pProfile);
+	}
+	
+	return success;
+}
+
+bool XSupWrapper::isTrustedServerInUse(const QString &serverName)
+{
+	bool inUse = false;
+	profile_enum *pProfile = NULL;
+	int retVal;
+	
+	retVal = xsupgui_request_enum_profiles(&pProfile);
+	if (retVal == REQUEST_SUCCESS && pProfile != NULL)
+	{
+		int i=0;
+		while (pProfile[i].name != NULL && inUse == false)
+		{
+			config_trusted_server *pServer;
+			XSupWrapper::getTrustedServerForProfile(QString(pProfile[i].name), &pServer);
+			if (pServer != NULL)
+			{
+				if (QString(pServer->name) == serverName)
+					inUse = true;
+					
+				XSupWrapper::freeConfigServer(&pServer);
+			}
+			++i;
+		}
+	}
+	return inUse;
 }

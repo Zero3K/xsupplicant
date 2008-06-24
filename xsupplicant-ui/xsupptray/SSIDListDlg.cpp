@@ -40,11 +40,18 @@
 #include "SSIDList.h"
 #include "Emitter.h"
 #include "XSupWrapper.h"
+#include "ConnectionWizard.h"
 
 extern "C"
 {
 #include "libxsupgui/xsupgui_request.h"
 }
+
+// TODO: there's a race condition between finish of wizard (For connecting to 802.1X networks) and the time we try to connect.
+// If the user could try to connect to another network during this time (lock out UI, maybe? disable the connect button?)
+
+// TODO: after connecting to network (assuming it succeeds), we should close the SSIDList window and go back to the "connect"
+// window to show status.
 
 
 SSIDListDlg::SSIDListDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant)
@@ -55,6 +62,7 @@ SSIDListDlg::SSIDListDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, Tra
 	m_pSupplicant(supplicant)
 {
 	m_pRescanDialog = NULL;
+	m_pConnWizard = NULL;
 }
 
 SSIDListDlg::~SSIDListDlg()
@@ -317,9 +325,9 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 		config_connection *pNewConn;
 		if (XSupWrapper::createNewConnection(connName,&pNewConn) && pNewConn != NULL)
 		{
-			// set this connection as volatile
-			pNewConn->flags |= CONFIG_VOLATILE_CONN;
-			
+			bool runWizard = false;
+						
+			pNewConn->priority = DEFAULT_PRIORITY;
 			pNewConn->ssid = _strdup(netInfo.m_name.toAscii().data());
 			
 			// jking - note this is a temporary hack.  This is really a bitfield, not a
@@ -344,50 +352,131 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 					break;					
 				case WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE:
 					pNewConn->association.association_type = ASSOC_WPA2;
-					goto wpaCommon;
+					runWizard = true;
+					break;
 				case WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE:
 					pNewConn->association.association_type = ASSOC_WPA;
-
-wpaCommon:					
-					// special cases. Need to go through wizard
-					pNewConn->association.auth_type = AUTH_EAP;					
+					runWizard= true;
 					break;
 			}
 			pNewConn->device = _strdup(m_curAdapter.toAscii().data());
-			
 			pNewConn->ip.type = CONFIG_IP_USE_DHCP;
-			pNewConn->ip.renew_on_reauth = TRUE; // correct default?
-						
-			retVal = xsupgui_request_set_connection_config(pNewConn);
+			pNewConn->ip.renew_on_reauth = FALSE; // correct default?
 			
-			if (retVal == REQUEST_SUCCESS)
+			if (runWizard == true)
 			{
-				// save off the config since it changed
-				if (XSupWrapper::writeConfig() == false)
+				// alert user we are launching the wizard
+				QString msg = tr("You must provide some additional information in order to connect to the network '%1'.  The XSupplicant will now launch the Connection Wizard to collect this information. Continue?").arg(netInfo.m_name);
+				if (QMessageBox::information(m_pRealForm, tr(""), msg, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
 				{
-					// error. what to do here?  For now, fail silently as it's non-fatal
-					// perhaps write to log?
+					if (m_pConnWizard == NULL)
+					{
+						m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
+						if (m_pConnWizard != NULL && m_pConnWizard->create() != false)
+						{
+							// register for cancelled and finished events
+							Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+							Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
+							
+							ConnectionWizardData wizData;
+							bool success = wizData.initFromSupplicantProfiles(pNewConn,NULL,NULL);
+							if (success == true) {
+								m_pConnWizard->editDot1XInfo(wizData);
+								m_pConnWizard->show();
+								}
+							else
+								cleanupConnectionWizard();
+						}
+						else
+						{
+							QMessageBox::critical(m_pRealForm,tr("Error Launching Connection Wizard"), tr("A failure occurred when attempting to launch the Connection Wizard"));
+							if (m_pConnWizard != NULL)
+								delete m_pConnWizard;
+						}
+					}
+					else
+					{
+						// already exists.  What to do?
+					}
 				}
-				char *adapterName = NULL;
-				
-				retVal = xsupgui_request_get_devname(this->m_curAdapter.toAscii().data(), &adapterName);
-				if (retVal == REQUEST_SUCCESS && adapterName != NULL)			
-					retVal = xsupgui_request_set_connection(adapterName, pNewConn->name);
-					
-				if (retVal != REQUEST_SUCCESS || adapterName == NULL)
-				{
-					QString message = tr("An error occurred while connecting to the network '%1'.").arg(netInfo.m_name);
-					QMessageBox::critical(m_pRealForm,tr("Error Connecting to Network"),message);				
-				}
-				xsupgui_request_free_str(&adapterName);
 			}
 			else
 			{
-				// !!! jking - error, what to do here?
-			}
+				// set this connection as volatile
+				pNewConn->flags |= CONFIG_VOLATILE_CONN;
 			
+				retVal = xsupgui_request_set_connection_config(pNewConn);
+				
+				if (retVal == REQUEST_SUCCESS)
+				{
+					// save off the config since it changed
+					if (XSupWrapper::writeConfig() == false)
+					{
+						// error. what to do here?  For now, fail silently as it's non-fatal
+						// perhaps write to log?
+					}
+					char *adapterName = NULL;
+					
+					retVal = xsupgui_request_get_devname(this->m_curAdapter.toAscii().data(), &adapterName);
+					if (retVal == REQUEST_SUCCESS && adapterName != NULL)			
+						retVal = xsupgui_request_set_connection(adapterName, pNewConn->name);
+						
+					if (retVal != REQUEST_SUCCESS || adapterName == NULL)
+					{
+						QString message = tr("An error occurred while connecting to the network '%1'.").arg(netInfo.m_name);
+						QMessageBox::critical(m_pRealForm,tr("Error Connecting to Network"),message);				
+					}
+					xsupgui_request_free_str(&adapterName);
+				}
+				else
+				{
+					// !!! jking - error, what to do here?
+				}
+			}
 			XSupWrapper::freeConfigConnection(&pNewConn);
 		}
 		
+	}
+}
+
+void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName)
+{
+	if (success)
+	{
+		char *adapterName = NULL;
+		int retVal;
+		
+		retVal = xsupgui_request_get_devname(this->m_curAdapter.toAscii().data(), &adapterName);
+		if (retVal == REQUEST_SUCCESS && adapterName != NULL)			
+			retVal = xsupgui_request_set_connection(adapterName, connName.toAscii().data());
+			
+		if (retVal != REQUEST_SUCCESS || adapterName == NULL)
+		{
+			config_connection *pConn = NULL;
+			QString message;
+			success = XSupWrapper::getConfigConnection(connName, &pConn);
+			if (success == true && pConn != NULL && pConn->ssid != NULL && QString(pConn->ssid).isEmpty() == false)
+				message = tr("An error occurred while connecting to the wireless network '%1'.").arg(QString(pConn->ssid));
+			else
+				message = tr("An error occurred while connecting to the network.");
+			QMessageBox::critical(m_pRealForm,tr("Error Connecting to Network"),message);
+			
+			if (pConn != NULL)
+				XSupWrapper::freeConfigConnection(&pConn);			
+		}
+		xsupgui_request_free_str(&adapterName);	
+	}
+	this->cleanupConnectionWizard();
+}
+
+void SSIDListDlg::cleanupConnectionWizard(void)
+{
+	if (m_pConnWizard != NULL)
+	{
+		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
+	
+		delete m_pConnWizard;
+		m_pConnWizard = NULL;
 	}
 }

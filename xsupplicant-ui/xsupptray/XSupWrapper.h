@@ -47,17 +47,23 @@ public:
 	static bool createNewConnection(const QString &suggName, config_connection **newConnection);
 	static bool getConfigConnection(const QString &connName, config_connection **pConfig);
 	static void freeConfigConnection(config_connection **p);
-	static bool createNewConnectionDefaults(config_connection **pConfig);
 	static bool deleteConnectionConfig(const QString &connName);
 	static bool writeConfig(void);
 	static QString getUniqueConnectionName(const QString &suggestedName);
 	static QString getUniqueProfileName(const QString &suggestedName);
+	static QString getUniqueServerName(const QString &suggestedName);
 	static bool createNewProfile(const QString &suggName, config_profiles **newProfile);
-	static bool createNewProfileDefaults(config_profiles **pProfile);
 	static bool getConfigProfile(const QString &profileName, config_profiles **pProfile);
 	static void freeConfigProfile(config_profiles **p);
 	static bool isDefaultWiredConnection(const QString &connName);
-	static void freeConfigEAPMethod(config_eap_method **);
+	static bool createNewTrustedServer(const QString &suggName, config_trusted_server **newServer);
+	static bool getConfigServer(const QString &serverName, config_trusted_server **pServer);
+	static void freeConfigServer(config_trusted_server **p);
+	static bool isProfileInUse(const QString &profileName);
+	static bool getTrustedServerForProfile(const QString &profileName, config_trusted_server **pServer);
+	static bool deleteProfileConfig(const QString &profileName);
+	static bool deleteServerConfig(const QString &serverName);
+	static bool isTrustedServerInUse(const QString &serverName);
 };
 
 #endif

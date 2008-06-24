@@ -80,7 +80,7 @@ private slots:
 	void cleanupPriorityDialog(void);
 	void launchConnectionWizard(void);
 	void cleanupConnectionWizard(void);
-	void finishConnectionWizard(bool);
+	void finishConnectionWizard(bool, const QString &);
 	void enableDisableWirelessAutoConnect(int);
 	void enableDisableWiredAutoConnect(int);
 	void setWiredAutoConnection(const QString &connectionName);

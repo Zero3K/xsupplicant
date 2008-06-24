@@ -55,15 +55,16 @@ public:
 	
 public:
 	bool toSupplicantProfiles(config_connection **, config_profiles **, config_trusted_server **);
+	bool initFromSupplicantProfiles(config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer);	
 	
 private:
-	bool toProfileEAP_GTCInnerProtocol(config_profiles * const pProfile);
-	bool toProfileEAPMSCHAPv2InnerProtocol(config_profiles * const pProfile);
-	bool toProfileEAP_MSCHAPProtocol(config_profiles * const);
+	bool toProfileEAP_MSCHAPProtocol(config_profiles * const, config_trusted_server const * const);
 	bool toProfileEAP_MD5Protocol(config_profiles * const);
+	bool toEAP_TTLSProtocol(config_profiles * const, config_trusted_server const * const);
 	bool toProfileOuterIdentity(config_profiles * const);
-	bool toProfileData(config_profiles **);
-	bool toConnectionData(config_connection **);
+	bool toServerData(config_trusted_server **);
+	bool toProfileData(config_profiles **, config_trusted_server const * const);
+	bool toConnectionData(config_connection **, config_profiles const * const);
 
 public:
 
@@ -148,9 +149,10 @@ public:
 	// edit an existing connection
 	void edit(const ConnectionWizardData &);
 	
-	void show(void);
+	// prompt for only 802.1X info, as all other info is provided in Wizard Data passed in
+	void editDot1XInfo(const ConnectionWizardData &);
 	
-	static bool SupplicantProfilesToWizardData(config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer, ConnectionWizardData **);
+	void show(void);
 	
 	typedef enum {
 		pageNoPage=-1,
@@ -169,14 +171,14 @@ public:
 	
 signals:
 	void cancelled(void);
-	void finished(bool);
+	void finished(bool, const QString &); // whether successful, and the name of connection created
 	
 private:
 	bool initUI(void);
 	bool loadPages(void);
 	void gotoPage(wizardPages newPageIdx);
 	void finishWizard(void);
-	bool saveConnectionData(void);
+	bool saveConnectionData(QString *);
 	wizardPages getNextPage(void);
 	
 private slots:
@@ -200,5 +202,7 @@ private:
 	
 	QStack<wizardPages> m_wizardHistory;
 	wizardPages m_currentPage;
+	bool m_dot1Xmode;
+	bool m_editMode; // whether editing an existing connection
 };
 #endif
