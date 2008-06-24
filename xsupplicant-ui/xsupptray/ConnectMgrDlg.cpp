@@ -316,17 +316,6 @@ void ConnectMgrDlg::enableDisableWirelessAutoConnect(int newState)
 		
 		if (pConfig != NULL)
 			xsupgui_request_free_config_globals(&pConfig);
-			
-		retVal = xsupgui_request_get_globals_config(&pConfig);
-		if (retVal == REQUEST_SUCCESS && pConfig != NULL)
-		{
-			if ((pConfig->flags & CONFIG_GLOBALS_ASSOC_AUTO) == CONFIG_GLOBALS_ASSOC_AUTO)
-				;
-			else
-				QMessageBox::information(NULL,"","check");
-		}	
-		if (pConfig != NULL)
-			xsupgui_request_free_config_globals(&pConfig);			
 	}
 }
 
