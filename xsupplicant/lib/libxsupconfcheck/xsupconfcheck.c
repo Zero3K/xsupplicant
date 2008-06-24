@@ -85,6 +85,7 @@ int xsupconfcheck_trusted_server(char *tsname, int log)
 int xsupconfcheck_check_profile(char *profname, int log)
 {
 	struct config_profiles *myprof = NULL;
+	int retval = 0;
 
 	myprof = config_find_profile(profname);
 	if (myprof == NULL)
@@ -93,11 +94,12 @@ int xsupconfcheck_check_profile(char *profname, int log)
 		return -1;
 	}
 
-	if (xsupconfcheck_profile_check(myprof, log) != 0)
+	retval = xsupconfcheck_profile_check(myprof, log);
+	if (retval != 0)
 	{
 		// No need to put a error_prequeue call here since the call above should have already
 		// added the needed information.
-		return -1;
+		return retval;
 	}
 
 	return 0;

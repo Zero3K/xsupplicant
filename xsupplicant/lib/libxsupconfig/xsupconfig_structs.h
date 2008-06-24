@@ -43,10 +43,12 @@
 
 typedef enum {RES_UNSET, RES_YES, RES_NO} sess_res;
 
+// Values used for the 'type' member of the config_ip_data structure.
 #define CONFIG_IP_USE_DHCP      0    ///< Have the supplicant use DHCP
 #define CONFIG_IP_USE_STATIC    1    ///< Have the supplicant use a static IP address
 #define CONFIG_IP_USE_NONE      2    ///< Have the supplicant do nothing with IP addresses.
 
+// Used as part of the config_connection structure to store IP address related information.
 struct config_ip_data
 {
 	uint8_t type;             ///< One of the CONFIG_IP_USE_* defines above.
@@ -60,6 +62,8 @@ struct config_ip_data
 	char *search_domain;      ///< The search domain to use with DNS.
 };
 
+// Used to store data to access TLS information on a smartcard when using EAP-TLS.  Part
+// of the config_eap_tls structure.
 struct smartcard
 {
   char *engine_id;
@@ -69,85 +73,115 @@ struct smartcard
   //char *rootcert_id;
 };
 
+// Used to store the 4 static WEP keys that may be used as part of a 
+// config_connection structure.
 struct config_static_wep
 {
-  uint8_t *key[5];        // Index 0 should NEVER be used!
-  uint8_t tx_key;
+  uint8_t *key[5];        ///< An array to hold the 4 allowed static keys. Index 0 should NEVER be used!
+  uint8_t tx_key;		  ///< The key index that should be used for the transmit key.
 };
 
+// All of the variables that are needed to successfully complete an
+// EAP-TLS authentication.
 struct config_eap_tls 
 {
-  char * user_cert;
-  char *crl_dir;
-  char * user_key;
-  char * user_key_pass;
-  sess_res session_resume;
-  int chunk_size;
-  char * random_file;
-  char *trusted_server;
-  struct smartcard sc;
+  char * user_cert;				///< The path to the user certificate.
+  char *crl_dir;				///< The path to the OpenSSL directory that contains the CRL certificates.
+  char * user_key;				///< The path to the user's private key file.  (Often the same as user_cert.)
+  char * user_key_pass;			///< The password needed to decrypt the user's private key file.
+  sess_res session_resume;		///< A tri-state value that identifies if we should use ression resumption.
+  int chunk_size;				///< A.K.A. the TLS fragment size.  How much of a TLS certificate should be sent at a time.
+  char * random_file;			///< Path to a file that contains random data.  (Not used on Windows.)
+  char *trusted_server;			///< The name of a trusted server block that should be used to verify the server's certificate.
+								//	   the name should be used to resolve the config_trusted_server block that contains
+								//	   the data needed to validate the server certificate.
+  struct smartcard sc;			///< Stores information needed to read a certificate from a smart card.
 
 };
 
+// All of the variables that are needed to successfully complete an
+// EAP-FAST authentication.
 struct config_eap_fast
 {
-  char *pac_location;
-  sess_res provision;
-  int chunk_size;
-  char *innerid;
+  char *pac_location;			///< The path to the file that contains the EAP-FAST PAC for this user.
+  sess_res provision;			///< A tri-state value that determines if we should allow the server to send us in to provisioning mode.
+  int chunk_size;				///< A.K.A. the TLS fragment size.  How big should TLS messages be when sent.
+  char *innerid;				///< The username that will be used inside the tunnel that is created using the EAP-FAST PAC.
 
-  struct config_eap_method *phase2; 
+  struct config_eap_method *phase2; ///< A linked-list of valid inner (phase 2) configuration methods that can be used to authenticate an EAP-FAST connection.
 };
 
+// A generic structure that can be used to store passwords for authentication
+// methods that use only a password.
 struct config_pwd_only
 {
-  char *password;
+  char *password;				///< The clear text password that should be used for authentication.
 };
 
+// Configuration information for how EAP-TNC should be used.
+// NOTE : EAP-TNC is a strange EAP method, and isn't used like other methods.
+// Because of this, be *VERY* aware of what you are doing when modifying this
+// structure!!!
 struct config_eap_tnc
 {
-  uint16_t frag_size;
+  uint16_t frag_size;			///< The fragment size that should be used for passing TNC data inside of a TLS tunnel.
+								// NOTE : This size needs to be small enough that it fits inside the fragment size of the outer tunnel.
+								// If it isn't, then you will end up getting really strange behavior.  Because of this, it is best not
+								// to set this value, and let the supplicant figure it out for you!
 };
 
+// A list of authentication types that can be used inside of EAP-TTLS.  (With the exception
+// of TTLS_PHASE2_UNDEFINED, which is there for detecting misconfigurations.)
 typedef enum {TTLS_PHASE2_UNDEFINED,
-	TTLS_PHASE2_PAP,
-	TTLS_PHASE2_CHAP,
-	TTLS_PHASE2_MSCHAP,
-	TTLS_PHASE2_MSCHAPV2,
-    TTLS_PHASE2_EAP } ttls_phase2_type;
+	TTLS_PHASE2_PAP,					///< Authenticate using TTLS-PAP
+	TTLS_PHASE2_CHAP,					///< Authenticate using TTLS-CHAP
+	TTLS_PHASE2_MSCHAP,					///< Authenticate using TTLS-MSCHAP
+	TTLS_PHASE2_MSCHAPV2,				///< Authenticate using TTLS-MSCHAPv2
+    TTLS_PHASE2_EAP } ttls_phase2_type;	///< Authenticate using EAP inside of TTLS.
 
+/// Configuration information for authenticating using EAP-TTLS.
+//
 // The items in this structure need to match those in config_eap_tls up to 
-// the random_file item, or else things may have problems.
+// the random_file item, because the TLS routines will type cast the data to
+// a config_eap_tls structure for processing.  This makes the code easier to deal with,
+// but has the side effect that the developer needs to be a bit more careful.
 struct config_eap_ttls
 {
-  char * user_cert;
-  char *crl_dir;
-  char * user_key;
-  char * user_key_pass;
-  sess_res session_resume;
-  int  chunk_size;
-  char *random_file;
+  char * user_cert;					///< The path to the user certificate for the outer tunnel.  (Usually not used.)
+  char *crl_dir;					///< The path to the OpenSSL directory that contains CRL certificates.
+  char * user_key;					///< The path to the file that contains the user's private key.  (Usually not used.)
+  char * user_key_pass;				///< The password needed to decrypt the user's private key.  (Usually not used.)
+  sess_res session_resume;			///< A tri-state value that determines if session resumption should be used.
+  int  chunk_size;					///< The size of the TLS fragments that should be sent.
+  char *random_file;				///< The path to a file of random data used to seed OpenSSL.  (Not used with Windows.)
 
   char *cncheck;                   // XXX Remove these!  They are part of trusted server now.
   int  cnexact;
 
-  char *inner_id;
-  char *trusted_server;
-  uint8_t validate_cert;
+  char *inner_id;					///< The username to use inside the TTLS tunnel.
+  char *trusted_server;				///< The name of the <Trusted_Server> block to be used to validate the server certificate.
+  uint8_t validate_cert;			///< A TRUE/FALSE value that indicates if we should validate the server certificate or not.
 
-  ttls_phase2_type phase2_type;      // the type to actually do
-  void *phase2_data;                  // the data for that type
+  ttls_phase2_type phase2_type;      ///< One of the TTLS_PHASE2_* values.  Used to determine the inner method to use for authentication.
+  void *phase2_data;                 ///< A pointer that should be type cast based on the TTLS_PHASE2_* values.  It will point to a configuration
+									 //   structure that contains the information needed to complete the inner (phase 2) authentication.
 };
 
+// Configuration information that is needed to authenticate using EAP-MSCHAPv2.
+//  NOTE: This structure can show up as both an inner method to tunneled methods, or an outer method on it's own.
 struct config_eap_mschapv2
 {
-  char *password;
-  char *nthash;
-  uint8_t ias_quirk;
+  char *password;					///< The cleartext password to be used for EAP-MSCHAPv2.
+  char *nthash;						///< An MS-CHAP hash of the password to be used to authenticate.  If this is provided, the password member above should be NULL.
+  uint8_t ias_quirk;				///< A TRUE/FALSE value to deal with a strange quirk with some IAS configurations.  (This is generally not used.)
 };
 
+/// Configuration information for authenticating using EAP-PEAP.
+//
 // The items in this structure need to match those in config_eap_tls up to 
-// the random_file item, or else things may have problems.
+// the random_file item, because the TLS routines will type cast the data to
+// a config_eap_tls structure for processing.  This makes the code easier to deal with,
+// but has the side effect that the developer needs to be a bit more careful.
 struct config_eap_peap
 {
   char * user_cert;

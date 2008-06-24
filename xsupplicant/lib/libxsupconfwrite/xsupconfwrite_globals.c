@@ -371,11 +371,11 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ASSOC_AUTO)))
+//	if ((write_all == TRUE) || (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ASSOC_AUTO)))
 	{
 		if (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ASSOC_AUTO))
 		{
-			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Association", (xmlChar *)"manual") == NULL)
+			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Association", (xmlChar *)"MANUAL") == NULL)
 			{
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Association> node!\n");
@@ -386,7 +386,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 		else
 		{
-			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Association", (xmlChar *)"auto") == NULL)
+			if (xmlNewChild(globalnode, NULL, (xmlChar *)"Association", (xmlChar *)"AUTO") == NULL)
 			{
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Association> node!\n");
