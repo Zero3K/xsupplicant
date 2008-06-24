@@ -3407,6 +3407,35 @@
 			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}"
 			>
 			<File
+				RelativePath=".\release\moc_AboutDlg.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\debug\moc_AboutDlg.cpp"
 				>
 				<FileConfiguration
@@ -3443,7 +3472,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_AboutDlg.cpp"
+				RelativePath=".\debug\moc_ConfigConnAdapterTab.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -3463,11 +3492,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3501,7 +3537,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_ConfigConnAdapterTab.cpp"
+				RelativePath=".\debug\moc_ConfigConnAdaptTabWireless.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -3549,7 +3585,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_ConfigConnAdaptTabWireless.cpp"
+				RelativePath=".\release\moc_ConfigConnDNSTab.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -3569,18 +3605,11 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3623,35 +3652,6 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)1.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\release\moc_ConfigConnDNSTab.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3721,38 +3721,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_ConfigConnNetTab.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\debug\moc_ConfigConnNetTab.cpp"
 				>
 				<FileConfiguration
@@ -3796,14 +3764,34 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_ConfigDlg.cpp"
+				RelativePath=".\release\moc_ConfigConnNetTab.cpp"
 				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3852,31 +3840,14 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_ConfigInfo.cpp"
+				RelativePath=".\release\moc_ConfigDlg.cpp"
 				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3913,6 +3884,35 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\release\moc_ConfigInfo.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3982,6 +3982,42 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\debug\moc_ConfigStackedWidget.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\release\moc_ConfigStackedWidget.cpp"
 				>
 				<FileConfiguration
@@ -4011,7 +4047,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_ConfigStackedWidget.cpp"
+				RelativePath=".\debug\moc_ConfigWidgetAdvancedTable.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -4076,7 +4112,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_ConfigWidgetAdvancedTable.cpp"
+				RelativePath=".\debug\moc_ConfigWidgetBase.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -4153,42 +4189,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_ConfigWidgetBase.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\release\moc_ConfigWidgetConnectionsTable.cpp"
 				>
 				<FileConfiguration
@@ -4254,35 +4254,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_ConfigWidgetEditAdvancedInternals.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\debug\moc_ConfigWidgetEditAdvancedInternals.cpp"
 				>
 				<FileConfiguration
@@ -4319,7 +4290,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_ConfigWidgetEditAdvancedSettings.cpp"
+				RelativePath=".\release\moc_ConfigWidgetEditAdvancedInternals.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -4390,6 +4361,64 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\release\moc_ConfigWidgetEditAdvancedSettings.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\release\moc_ConfigWidgetEditConnections.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\debug\moc_ConfigWidgetEditConnections.cpp"
 				>
 				<FileConfiguration
@@ -4422,35 +4451,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\release\moc_ConfigWidgetEditConnections.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -4520,42 +4520,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_ConfigWidgetEditProfile.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\release\moc_ConfigWidgetEditProfile.cpp"
 				>
 				<FileConfiguration
@@ -4597,7 +4561,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_ConfigWidgetEditTrustedServers.cpp"
+				RelativePath=".\debug\moc_ConfigWidgetEditProfile.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -4617,11 +4581,18 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -4662,7 +4633,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_ConfigWidgetGlobalsTabel.cpp"
+				RelativePath=".\release\moc_ConfigWidgetEditTrustedServers.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -4723,6 +4694,35 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\release\moc_ConfigWidgetGlobalsTabel.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>
@@ -4804,6 +4804,35 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\release\moc_ConfigWidgetTrustedServersTable.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\debug\moc_ConfigWidgetTrustedServersTable.cpp"
 				>
 				<FileConfiguration
@@ -4836,79 +4865,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\release\moc_ConfigWidgetTrustedServersTable.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\release\moc_ConnectDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 			</File>
@@ -5030,6 +4986,50 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\release\moc_ConnectDlg.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\Debug\moc_ConnectionWizard.cpp"
 				>
 				<FileConfiguration
@@ -5057,6 +5057,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						ObjectFile="$(IntDir)\$(InputName)2.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
 					/>
@@ -5100,6 +5101,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						ObjectFile="$(IntDir)\$(InputName)1.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
 					/>
@@ -5132,6 +5134,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -5172,46 +5175,18 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Release With TNC\moc_ConnectMgrDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 			</File>
@@ -5348,6 +5323,35 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Release With TNC\moc_ConnectMgrDlg.cpp"
+				>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\Debug\moc_CreateTT.cpp"
 				>
 				<FileConfiguration
@@ -5446,35 +5450,6 @@
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Release With TNC\moc_CredentialsPopUp.cpp"
-				>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -5632,6 +5607,71 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Release With TNC\moc_CredentialsPopUp.cpp"
+				>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\debug\moc_Emitter.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\release\moc_Emitter.cpp"
 				>
 				<FileConfiguration
@@ -5672,42 +5712,6 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)2.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\debug\moc_Emitter.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -5789,6 +5793,34 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\debug\moc_FormLoader.cpp"
+				>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\release\moc_FormLoader.cpp"
 				>
 				<FileConfiguration
@@ -5818,8 +5850,16 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_FormLoader.cpp"
+				RelativePath=".\debug\moc_helpbrowser.cpp"
 				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug With TNC|Win32"
 					ExcludedFromBuild="true"
@@ -5886,71 +5926,6 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)2.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\debug\moc_helpbrowser.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\debug with tnc\moc_interfacectrl.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6049,6 +6024,35 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\debug with tnc\moc_interfacectrl.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\release\moc_LoggingConsole.cpp"
 				>
 				<FileConfiguration
@@ -6113,6 +6117,34 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\debug\moc_LoginGetInfo.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\release\moc_LoginGetInfo.cpp"
 				>
 				<FileConfiguration
@@ -6134,10 +6166,18 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_LoginGetInfo.cpp"
+				RelativePath=".\debug\moc_LoginMainDlg.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -6196,78 +6236,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_LoginMainDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\debug\moc_LoginStatus.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\release\moc_LoginStatus.cpp"
 				>
 				<FileConfiguration
@@ -6305,6 +6273,42 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)1.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\debug\moc_LoginStatus.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6358,6 +6362,50 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\release\moc_MessageClass.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)2.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)2.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						ObjectFile="$(IntDir)\$(InputName)2.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)2.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\debug\moc_MessageClass.cpp"
 				>
 				<FileConfiguration
@@ -6394,7 +6442,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_MessageClass.cpp"
+				RelativePath=".\release\moc_MessageDlg.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -6466,7 +6514,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_MessageDlg.cpp"
+				RelativePath=".\debug\moc_MyMessageBox.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -6474,8 +6522,6 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)2.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -6484,28 +6530,22 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)2.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
-						ObjectFile="$(IntDir)\$(InputName)2.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)2.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6550,42 +6590,6 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)2.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\debug\moc_MyMessageBox.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6646,6 +6650,42 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\debug\moc_PasswordDlg.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\release\moc_PasswordDlg.cpp"
 				>
 				<FileConfiguration
@@ -6687,7 +6727,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_PasswordDlg.cpp"
+				RelativePath=".\release\moc_PluginWidget.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -6695,6 +6735,8 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -6703,22 +6745,27 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6767,85 +6814,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_PluginWidget.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\debug\moc_PreferredConnections.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\release\moc_PreferredConnections.cpp"
 				>
 				<FileConfiguration
@@ -6886,6 +6854,42 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)2.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\debug\moc_PreferredConnections.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7051,50 +7055,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\release\moc_SSIDListDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)3.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\release with tnc\moc_SSIDListDlg.cpp"
 				>
 				<FileConfiguration
@@ -7212,7 +7172,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\debug\moc_StackedLoginConfig.cpp"
+				RelativePath=".\release\moc_SSIDListDlg.cpp"
 				>
 				<FileConfiguration
 					Name="Release With TNC|Win32"
@@ -7220,6 +7180,8 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -7228,22 +7190,28 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)3.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7288,6 +7256,42 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)2.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\debug\moc_StackedLoginConfig.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7349,6 +7353,42 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\debug\moc_TrustedRootCertsDlg.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\release\moc_TrustedRootCertsDlg.cpp"
 				>
 				<FileConfiguration
@@ -7389,85 +7429,6 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)2.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\debug\moc_TrustedRootCertsDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Debug With TNC\moc_UIPlugins.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)1.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7587,6 +7548,49 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Debug With TNC\moc_UIPlugins.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)1.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\debug\moc_ViewLogDlg.cpp"
 				>
 				<FileConfiguration
@@ -7667,6 +7671,34 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\debug\moc_window.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\release\moc_window.cpp"
 				>
 				<FileConfiguration
@@ -7706,78 +7738,6 @@
 						Name="VCCLCompilerTool"
 						ObjectFile="$(IntDir)\$(InputName)1.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\debug\moc_window.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\Debug\moc_WirelessScanDlg.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)2.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)2.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="0"
-						ObjectFile="$(IntDir)\$(InputName)2.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						ObjectFile="$(IntDir)\$(InputName)2.obj"
-						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7899,6 +7859,50 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\Debug\moc_WirelessScanDlg.cpp"
+				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)2.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)2.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+						ObjectFile="$(IntDir)\$(InputName)2.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\$(InputName)2.obj"
+						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\Debug\moc_WizardPages.cpp"
 				>
 				<FileConfiguration
@@ -7926,6 +7930,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						ObjectFile="$(IntDir)\$(InputName)2.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)2.xdc"
 					/>
@@ -7970,6 +7975,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						ObjectFile="$(IntDir)\$(InputName)3.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)3.xdc"
 					/>
@@ -8012,6 +8018,7 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 						ObjectFile="$(IntDir)\$(InputName)1.obj"
 						XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
 					/>
@@ -8031,49 +8038,6 @@
 				RelativePath=".\Release With TNC\moc_WizardPages.cpp"
 				>
 				<FileConfiguration
-					Name="Release With TNC|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\release\moc_xsupcalls.cpp"
-				>
-				<FileConfiguration
-					Name="Release With TNC|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
 					Name="Debug With TNC|Win32"
 					ExcludedFromBuild="true"
 					>
@@ -8088,6 +8052,14 @@
 					<Tool
 						Name="VCCLCompilerTool"
 						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
 					/>
 				</FileConfiguration>
 			</File>
@@ -8128,8 +8100,16 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\Release\qrc_xsupptray.cpp"
+				RelativePath=".\release\moc_xsupcalls.cpp"
 				>
+				<FileConfiguration
+					Name="Release With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug With TNC|Win32"
 					ExcludedFromBuild="true"
@@ -8173,6 +8153,27 @@
 					>
 					<Tool
 						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Release\qrc_xsupptray.cpp"
+				>
+				<FileConfiguration
+					Name="Debug With TNC|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
 					/>
 				</FileConfiguration>
 			</File>

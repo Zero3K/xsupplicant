@@ -60,6 +60,9 @@ private:
 	void populateWiredAdapterList(void);
 	void populateWirelessConnectionList(void);
 	void populateWiredConnectionList(void);
+	bool isConnectionActive(QString interfaceDesc, QString connectionName, bool isWireless);
+	bool connectToConnection(QString interfaceDesc, QString connectionName);
+	void getAndDisplayErrors();
 	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
 	
 private slots:
@@ -72,6 +75,8 @@ private slots:
 	void launchConnectionWizard(void);
 	void cleanupConnectionWizard(void);
 	void finishConnectionWizard(bool);
+	void connectWirelessConnection(void);
+	void connectWiredConnection(void);
 		
 private:
 	Emitter *m_pEmitter;

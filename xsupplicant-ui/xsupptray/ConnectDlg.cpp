@@ -82,6 +82,12 @@ ConnectDlg::~ConnectDlg()
 		
 	if (m_pConnWizardButton != NULL)
 		Util::myDisconnect(m_pConnWizardButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
+
+	if (m_pWiredConnectButton != NULL)
+		Util::myDisconnect(m_pWiredConnectButton, SIGNAL(clicked()), this, SLOT(connectWiredConnection()));
+
+	if (m_pWirelessConnectButton != NULL)
+		Util::myDisconnect(m_pWirelessConnectButton, SIGNAL(clicked()), this, SLOT(connectWirelessConnection()));
 				
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
 		
@@ -197,7 +203,13 @@ bool ConnectDlg::initUI(void)
 		
 	if (m_pConnWizardButton != NULL)
 		Util::myConnect(m_pConnWizardButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
-		
+
+	if (m_pWiredConnectButton != NULL)
+		Util::myConnect(m_pWiredConnectButton, SIGNAL(clicked()), this, SLOT(connectWiredConnection()));
+
+	if (m_pWirelessConnectButton != NULL)
+		Util::myConnect(m_pWirelessConnectButton, SIGNAL(clicked()), this, SLOT(connectWirelessConnection()));
+
 	Util::myConnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
 	//Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(handleInterfaceInserted(char *)));
 	//Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));		
@@ -588,3 +600,191 @@ void ConnectDlg::cleanupConnectionWizard(void)
 		m_pConnWizard = NULL;
 	}
 }
+
+/**
+ * \brief Determine if the connection named \ref connectName is already active and
+ *        in a connected or authenticated state.
+ *
+ * @param[in] interfaceDesc   The interface description we are looking at.
+ * @param[in] connectionName   The description of the connection we want to check.
+ * @param[in] isWireless   Is the interface wireless or not?
+ *
+ * \retval true if it is in use
+ * \retval false if it isn't in use
+ **/
+bool ConnectDlg::isConnectionActive(QString interfaceDesc, QString connectionName, bool isWireless)
+{
+	char *pDeviceName = NULL;
+	char *pName = NULL;
+	int retval = 0;
+	int state = 0;
+
+	// Using the device description - get the device name
+	retval = xsupgui_request_get_devname(interfaceDesc.toAscii().data(), &pDeviceName);
+	if ((retval != REQUEST_SUCCESS) || (pDeviceName == NULL))
+	{
+		// If we can't determine the interface name, then tell the caller the connection isn't
+		// active.  (Because we really don't know any better.)
+		return false;
+	}
+
+	// See if a connection is bound to the interface in question.
+	retval = xsupgui_request_get_conn_name_from_int(pDeviceName, &pName);
+	if (retval != REQUEST_SUCCESS)
+	{
+		// We don't know what is bound to the interface, so return false.
+		if (pDeviceName != NULL) free(pDeviceName);
+		return false;
+	}
+
+	// If they match, then check the status of the connection to determine if the connection
+	// is active.
+	if (connectionName.compare(pName) == 0) 
+	{
+		if (isWireless)
+		{
+			retval = xsupgui_request_get_physical_state(pDeviceName, &state);
+			if (retval != REQUEST_SUCCESS)
+			{
+				// We don't know the physical state, so return false.  (After we clean up some memory.)
+				if (pDeviceName != NULL) free(pDeviceName);
+				if (pName != NULL) free(pName);
+				return false;
+			}
+
+			if ((state != WIRELESS_INT_STOPPED) && (state != WIRELESS_INT_HELD))
+			{
+				// The connection appears to be active.
+				if (pDeviceName != NULL) free(pDeviceName);
+				if (pName != NULL) free(pName);
+				return true;
+			}
+		}
+		else
+		{
+			// It is wired, we only care if it is in 802.1X authenticated state or not.
+			retval = xsupgui_request_get_1x_state(pDeviceName, &state);
+			if (retval != REQUEST_SUCCESS)
+			{
+				// We don't know the 802.1X state, so return false.  (After we clean up some memory.)
+				if (pDeviceName != NULL) free(pDeviceName);
+				if (pName != NULL) free(pName);
+				return false;
+			}
+
+			if (state != DISCONNECTED)
+			{
+				// The connection appears to be active.
+				if (pDeviceName != NULL) free(pDeviceName);
+				if (pName != NULL) free(pName);
+				return true;
+			}
+		}
+	}
+
+	if (pDeviceName != NULL) free(pDeviceName);
+	if (pName != NULL) free(pName);
+
+	return false;
+}
+
+void ConnectDlg::getAndDisplayErrors()
+{
+  int i = 0;
+  QString errors;
+  error_messages *msgs = NULL;
+
+  int retval = xsupgui_request_get_error_msgs(&msgs);
+  if (retval == REQUEST_SUCCESS)
+  {
+    if (msgs && msgs[0].errmsgs)
+    {
+      // If we have at least one message, display it here
+      while (msgs[i].errmsgs != NULL)
+      {
+        errors += QString ("- %1\n").arg(msgs[i].errmsgs);
+        i++;
+      }
+
+      QMessageBox::critical(NULL, tr("XSupplicant Error Summary"),
+		  tr("The following errors were returned from XSupplicant while attempting to connect:\n%1")
+        .arg(errors));
+    }
+  }
+  else
+  {
+    QMessageBox::critical(NULL, tr("Get Error Message error"),
+      tr("An error occurred while checking for errors from the XSupplicant."));
+  }
+
+  xsupgui_request_free_error_msgs(&msgs);
+}
+
+/**
+ * \brief Issue a request to the engine to establish a connection.
+ *
+ * @param[in] interfaceDesc   The interface description that we want to use with the
+ *							  connection.
+ * @param[in] connectionName   The connection name that we want the interface to attach to.
+ *
+ * \retval true if the connection attempt should succeed.
+ * \retval false if the connection attempt failed.
+ **/
+bool ConnectDlg::connectToConnection(QString interfaceDesc, QString connectionName)
+{
+	char *pDeviceName = NULL;
+	int retval = 0;
+
+	// Using the device description - get the device name
+	retval = xsupgui_request_get_devname(interfaceDesc.toAscii().data(), &pDeviceName);
+	if ((retval != REQUEST_SUCCESS) || (pDeviceName == NULL))
+	{
+		// If we can't determine the device name, then tell the caller the connection can't
+		// be made.
+		return false;
+	}
+
+	retval = xsupgui_request_set_connection(pDeviceName, connectionName.toAscii().data());
+	if (retval == REQUEST_SUCCESS)
+	{
+		if (pDeviceName != NULL) free(pDeviceName);
+		return true;
+	}
+	else
+	{
+		if (retval == IPC_ERROR_NEW_ERRORS_IN_QUEUE)
+		{
+			getAndDisplayErrors();
+			if (pDeviceName != NULL) free(pDeviceName);
+			return false;
+		}
+	}
+
+	if (pDeviceName != NULL) free(pDeviceName);
+	return false;
+}
+
+void ConnectDlg::connectWirelessConnection(void)
+{
+	// If the connection is already the active one, then don't do anything.
+	if (!isConnectionActive(m_pWirelessAdapterList->currentText(), m_pWirelessConnectionList->currentText(), true))
+	{
+		if (!connectToConnection(m_pWirelessAdapterList->currentText(), m_pWirelessConnectionList->currentText()))
+		{
+			QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection."));
+		}
+	}
+}
+
+void ConnectDlg::connectWiredConnection(void)
+{
+	// If the connection is already the active one, then don't do anything.
+	if (!isConnectionActive(m_pWiredAdapterList->currentText(), m_pWiredConnectionList->currentText(), false))
+	{
+		if (!connectToConnection(m_pWiredAdapterList->currentText(), m_pWiredConnectionList->currentText()))
+		{
+			QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wired connection."));
+		}
+	}
+}
+
