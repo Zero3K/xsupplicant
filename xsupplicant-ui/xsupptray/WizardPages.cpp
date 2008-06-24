@@ -1103,6 +1103,16 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
 	
+	// populate this label dynamically because the text references the outer protocol used
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+	{
+		if (m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
+			pMsgLabel->setText(tr("Enter your PEAP settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
+		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
+			pMsgLabel->setText(tr("Enter your TTLS settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));	
+	}
+			
 	if (m_pOuterID != NULL)
 		m_pOuterID->setText(m_curData.m_outerIdentity);
 		

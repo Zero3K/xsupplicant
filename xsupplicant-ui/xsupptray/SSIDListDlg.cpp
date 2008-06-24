@@ -454,7 +454,9 @@ void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName)
 		{
 			config_connection *pConn = NULL;
 			QString message;
+			
 			success = XSupWrapper::getConfigConnection(connName, &pConn);
+			
 			if (success == true && pConn != NULL && pConn->ssid != NULL && QString(pConn->ssid).isEmpty() == false)
 				message = tr("An error occurred while connecting to the wireless network '%1'.").arg(QString(pConn->ssid));
 			else

@@ -1028,7 +1028,7 @@ bool ConnectionWizard::saveConnectionData(QString *pConnName)
 
 	if (pConfig != NULL)
 	{
-		*pConnName = pConfig->name;
+		*pConnName = QString(pConfig->name);
 		XSupWrapper::freeConfigConnection(&pConfig);
 	}
 	if (pProfile != NULL)
