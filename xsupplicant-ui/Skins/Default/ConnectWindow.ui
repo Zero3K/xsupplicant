@@ -1559,7 +1559,7 @@
                        <number>10</number>
                       </property>
                       <item>
-                       <widget class="QStackedWidget" name="stackedWidget_4" >
+                       <widget class="QStackedWidget" name="stackedWidgetWirelessConnection" >
                         <property name="minimumSize" >
                          <size>
                           <width>16</width>
@@ -1573,9 +1573,9 @@
                          </size>
                         </property>
                         <property name="currentIndex" >
-                         <number>0</number>
+                         <number>1</number>
                         </property>
-                        <widget class="QWidget" name="page_7" >
+                        <widget class="QWidget" name="pageWirelessConnect" >
                          <property name="minimumSize" >
                           <size>
                            <width>0</width>
@@ -1909,7 +1909,7 @@
                           </item>
                          </layout>
                         </widget>
-                        <widget class="QWidget" name="page_8" >
+                        <widget class="QWidget" name="pageWirelessDisconnect" >
                          <layout class="QVBoxLayout" >
                           <property name="spacing" >
                            <number>10</number>
@@ -2180,7 +2180,7 @@
                                  <number>1</number>
                                 </property>
                                 <item>
-                                 <widget class="QLabel" name="label_5" >
+                                 <widget class="QLabel" name="labelWirelessConnectionName" >
                                   <property name="sizePolicy" >
                                    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
                                     <horstretch>0</horstretch>
@@ -3577,7 +3577,7 @@
                        <number>10</number>
                       </property>
                       <item>
-                       <widget class="QStackedWidget" name="stackedWidget_5" >
+                       <widget class="QStackedWidget" name="stackedWidgetWiredConnection" >
                         <property name="minimumSize" >
                          <size>
                           <width>16</width>
@@ -3591,9 +3591,9 @@
                          </size>
                         </property>
                         <property name="currentIndex" >
-                         <number>0</number>
+                         <number>1</number>
                         </property>
-                        <widget class="QWidget" name="page_9" >
+                        <widget class="QWidget" name="pageWiredConnect" >
                          <property name="minimumSize" >
                           <size>
                            <width>0</width>
@@ -3844,7 +3844,7 @@
                           </item>
                          </layout>
                         </widget>
-                        <widget class="QWidget" name="page_10" >
+                        <widget class="QWidget" name="pageWiredDisconnect" >
                          <layout class="QVBoxLayout" >
                           <property name="spacing" >
                            <number>10</number>
@@ -4115,7 +4115,7 @@
                                  <number>1</number>
                                 </property>
                                 <item>
-                                 <widget class="QLabel" name="label_6" >
+                                 <widget class="QLabel" name="labelWiredConnectionName" >
                                   <property name="sizePolicy" >
                                    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
                                     <horstretch>0</horstretch>
