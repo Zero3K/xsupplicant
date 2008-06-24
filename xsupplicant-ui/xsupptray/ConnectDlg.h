@@ -38,6 +38,7 @@
 #include <QLabel>
 #include <QTabWidget>
 #include <QComboBox>
+#include <QStackedWidget>
 
 class TrayApp;
 class Emitter;
@@ -62,7 +63,7 @@ private:
 	void populateWiredConnectionList(void);
 	bool isConnectionActive(QString interfaceDesc, QString connectionName, bool isWireless);
 	bool connectToConnection(QString interfaceDesc, QString connectionName);
-	void getAndDisplayErrors();
+	void getAndDisplayErrors(void);
 	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
 	
 private slots:
@@ -77,6 +78,8 @@ private slots:
 	void finishConnectionWizard(bool);
 	void connectWirelessConnection(void);
 	void connectWiredConnection(void);
+	void disconnectWirelessConnection(void);
+	void disconnectWiredConnection(void);
 		
 private:
 	Emitter *m_pEmitter;
@@ -93,7 +96,18 @@ private:
 	QPushButton *m_pBrowseWirelessNetworksButton;
 	QPushButton *m_pWiredConnectButton;
 	QPushButton *m_pWirelessConnectButton;
+	QPushButton *m_pWiredDisconnectButton;
+	QPushButton *m_pWirelessDisconnectButton;
+	QPushButton *m_pWiredConnectionInfo;
+	QPushButton *m_pWirelessConnectionInfo;
 	QPushButton *m_pConnWizardButton;
+	QLabel		*m_pWirelessConnectionName;
+	QLabel		*m_pWiredConnectionName;
+	QLabel		*m_pWirelessConnectionStatus;
+	QLabel		*m_pWiredConnectionStatus;
+	QStackedWidget *m_pWirelessConnectionStack;
+	QStackedWidget *m_pWiredConnectionStack;
+
 
 	TrayApp *m_pSupplicant;
 	SSIDListDlg *m_pSSIDListDlg;

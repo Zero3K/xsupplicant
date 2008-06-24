@@ -326,25 +326,19 @@ void CredentialsPopUp::slotDisconnectBtn()
 
 void CredentialsPopUp::slotOkayBtn()
 {
-	char *temp = NULL;
-	char *pwd = NULL;
-	char *user = NULL;
 	config_connection *cconf = NULL;
 	char *intName = NULL;
 
 	if (m_doingPsk)
 	{
-		// Set our PSK.
-		temp = _strdup(m_connName.toAscii());
-		pwd = _strdup(m_pPassword->text().toAscii());
-		
-		if (xsupgui_request_set_connection_pw(temp, pwd) != XENONE)
+		// Set our PSK.		
+		if (xsupgui_request_set_connection_pw(m_connName.toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
 		{
 			QMessageBox::critical(this, tr("Error"), tr("Unable to set your preshared key."));
 		}
 		else
 		{
-			if (xsupgui_request_get_connection_config(temp, &cconf) != REQUEST_SUCCESS)
+			if (xsupgui_request_get_connection_config(m_connName.toAscii().data(), &cconf) != REQUEST_SUCCESS)
 			{
 				QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
 			}
@@ -362,7 +356,7 @@ void CredentialsPopUp::slotOkayBtn()
 						cconf->association.psk = NULL;
 					}
 					
-					cconf->association.psk = _strdup(pwd);
+					cconf->association.psk = _strdup(m_pPassword->text().toAscii().data());
 					
 					// save off changes to config
 					xsupgui_request_set_connection_config(cconf);
@@ -380,7 +374,7 @@ void CredentialsPopUp::slotOkayBtn()
 				}
 				else
 				{
-					if (xsupgui_request_set_connection(intName, temp) != REQUEST_SUCCESS)
+					if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
 					{
 						QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
 					}
@@ -390,23 +384,17 @@ void CredentialsPopUp::slotOkayBtn()
 				xsupgui_request_free_connection_config(&cconf);
 			}
 		}
-
-		free(temp);
-		free(pwd);
 	}
 	else
 	{
 		// Set our username/password.
-		temp = _strdup(m_connName.toAscii());
-		pwd = _strdup(m_pPassword->text().toAscii());
-		user = _strdup(m_pUsername->text().toAscii());
-		if (xsupgui_request_set_connection_upw(temp, user, pwd) != XENONE)
+		if (xsupgui_request_set_connection_upw(m_connName.toAscii().data(), m_pUsername->text().toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
 		{
 			QMessageBox::critical(this, tr("Error"), tr("Unable to set your username and password."));
 		}
 		else
 		{
-			if (xsupgui_request_get_connection_config(temp, &cconf) != REQUEST_SUCCESS)
+			if (xsupgui_request_get_connection_config(m_connName.toAscii().data(), &cconf) != REQUEST_SUCCESS)
 			{
 				QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
 			}
@@ -418,7 +406,7 @@ void CredentialsPopUp::slotOkayBtn()
 				}
 				else
 				{
-					if (xsupgui_request_set_connection(intName, temp) != REQUEST_SUCCESS)
+					if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
 					{
 						QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
 					}
@@ -428,10 +416,6 @@ void CredentialsPopUp::slotOkayBtn()
 				xsupgui_request_free_connection_config(&cconf);
 			}
 		}
-
-		free(temp);
-		free(pwd);
-		free(user);
 	}
 
 	emit close();

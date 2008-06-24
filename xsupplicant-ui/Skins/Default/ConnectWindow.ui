@@ -1342,7 +1342,7 @@
                           </widget>
                          </item>
                          <item>
-                          <widget class="QLabel" name="label_24" >
+                          <widget class="QLabel" name="labelWirelessConnectionStatus" >
                            <property name="sizePolicy" >
                             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
                              <horstretch>0</horstretch>
@@ -3360,7 +3360,7 @@
                           </widget>
                          </item>
                          <item>
-                          <widget class="QLabel" name="label_26" >
+                          <widget class="QLabel" name="labelWiredConnectionStatus" >
                            <property name="sizePolicy" >
                             <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
                              <horstretch>0</horstretch>
