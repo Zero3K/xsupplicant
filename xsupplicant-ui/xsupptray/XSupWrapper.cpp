@@ -44,14 +44,18 @@ extern "C"
 
 
 // NOTE: this function may create a connection with a different name than is passed in
-bool XSupWrapper::createNewConnection(const QString &suggName, config_connection **newConnection)
+bool XSupWrapper::createNewConnection(const QString &suggName, config_connection **newConnection, bool forceName /* = false */)
 {
 	if (newConnection == NULL)
 		return false;
 		
 	// First, ensure a connection with this name doesn't already exist
 	// If it does, add a _1 _2 etc., to the name until a unique name is found
-	QString newName = XSupWrapper::getUniqueConnectionName(suggName);
+	QString newName;
+	if (forceName == true)
+		newName = suggName;
+	else
+		newName = XSupWrapper::getUniqueConnectionName(suggName);
 	config_connection *pConfig = NULL;	
 	
 	pConfig = (config_connection*)malloc(sizeof(config_connection));
@@ -192,14 +196,19 @@ bool XSupWrapper::getConfigProfile(const QString &profileName, config_profiles *
 }
 
 // create a blank new profile w/ only name filled out
-bool XSupWrapper::createNewProfile(const QString &suggName, config_profiles **newProfile)
+bool XSupWrapper::createNewProfile(const QString &suggName, config_profiles **newProfile, bool forceName /* = false */)
 {
 	if (newProfile == NULL)
 		return false;
 		
 	// First, ensure a connection with this name doesn't already exist
 	// If it does, add a _1 _2 etc., to the name until a unique name is found
-	QString newName = XSupWrapper::getUniqueProfileName(suggName);
+	QString newName;
+	if (forceName == true)
+		newName = suggName;
+	else
+		newName = XSupWrapper::getUniqueProfileName(suggName);
+		
 	config_profiles *pProfile = NULL;	
 	
 	pProfile = (config_profiles*)malloc(sizeof(config_profiles));
@@ -214,12 +223,16 @@ bool XSupWrapper::createNewProfile(const QString &suggName, config_profiles **ne
 }
 
 // creates a blank new trusted server profile w/ only name filled out
-bool XSupWrapper::createNewTrustedServer(const QString &suggName, config_trusted_server **newServer)
+bool XSupWrapper::createNewTrustedServer(const QString &suggName, config_trusted_server **newServer, bool forceName /* = false */)
 {
 	if (newServer == NULL)
 		return false; 
 	
-	QString newName = XSupWrapper::getUniqueServerName(suggName);
+	QString newName;
+	if (forceName == true)
+		newName = suggName;
+	else
+		newName = XSupWrapper::getUniqueServerName(suggName);
 	config_trusted_server *pServer = NULL;
 	
 	pServer = (config_trusted_server*)malloc(sizeof(config_trusted_server));

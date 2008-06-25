@@ -1021,6 +1021,9 @@ void TrayApp::buildPopupMenu(void)
 	{
 		m_pTrayIconMenu->clear();
 	
+		m_pTrayIconMenu->addAction(m_pLoginAction);
+		m_pTrayIconMenu->addSeparator();
+			
 		QStringList wirelessIntList;
 		wirelessIntList = XSupWrapper::getWirelessInterfaceList();
 		
@@ -1069,9 +1072,6 @@ void TrayApp::buildPopupMenu(void)
 		}
 		
 		// add standard items
-		
-		m_pTrayIconMenu->addAction(m_pLoginAction);
-		m_pTrayIconMenu->addSeparator();
 		m_pTrayIconMenu->addAction(m_pConfigAction);
 		m_pTrayIconMenu->addAction(m_pViewLogAction);
 		//m_pTrayIconMenu->addAction(m_pTroubleticketAction);

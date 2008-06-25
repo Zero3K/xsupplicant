@@ -62,6 +62,7 @@ ConnectionWizardData::ConnectionWizardData()
 	
 	// default to DHCP
 	m_staticIP = false;
+	m_renewOnReauth = false;
 	
 	// !!! need better defaults for these 
 	m_IPAddress = "";
@@ -78,6 +79,9 @@ ConnectionWizardData::ConnectionWizardData()
 	m_serverCerts = QStringList();
 	m_verifyCommonName = false;
 	m_commonNames = QStringList();
+	
+	m_hasProfile = false;
+	m_hasServer = false;
 }
 
 ConnectionWizardData::~ConnectionWizardData()
@@ -371,7 +375,7 @@ bool ConnectionWizardData::toProfileData(config_profiles **retProfile, config_tr
 		// create profile
 		QString profileName = m_connectionName;
 		profileName.append(QWidget::tr("_Profile"));
-		success = XSupWrapper::createNewProfile(profileName,&pProfile);
+		success = XSupWrapper::createNewProfile(profileName,&pProfile,(m_newConnection == false && m_hasProfile == true));
 		if (success == true && pProfile != NULL)
 		{
 			switch (m_eapProtocol)
@@ -413,7 +417,7 @@ bool ConnectionWizardData::toConnectionData(config_connection **retConnection, c
 		
 	pConn = NULL;
 		
-	success = XSupWrapper::createNewConnection(m_connectionName, &pConn);
+	success = XSupWrapper::createNewConnection(m_connectionName, &pConn, m_newConnection == false);
 	if (success == false)
 	{
 		XSupWrapper::freeConfigConnection(&pConn);
@@ -504,7 +508,7 @@ bool ConnectionWizardData::toConnectionData(config_connection **retConnection, c
 		else
 		{
 			pConn->ip.type = CONFIG_IP_USE_DHCP;
-			pConn->ip.renew_on_reauth = FALSE; // correct default?
+			pConn->ip.renew_on_reauth = m_renewOnReauth == true ? TRUE : FALSE; // correct default?
 		}
 	}
 	
@@ -531,7 +535,7 @@ bool ConnectionWizardData::toServerData(config_trusted_server **retServer)
 		{
 			QString profName = m_connectionName;
 			profName.append(QWidget::tr("_Server"));
-			success = XSupWrapper::createNewTrustedServer(profName,&pServer);
+			success = XSupWrapper::createNewTrustedServer(profName,&pServer, (m_newConnection == false && m_hasServer == true));
 			if (success && pServer != NULL)
 			{
 				if (m_verifyCommonName == true) 
@@ -690,8 +694,11 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 	else
 		m_staticIP = false;
 		
+	m_renewOnReauth = (pConfig->ip.renew_on_reauth == TRUE);
+		
 	if (pProfile != NULL)
 	{
+		m_hasProfile = true;
 		if (pProfile->identity != NULL) 
 		{
 			if (QString(pProfile->identity) != QString("anonymous"))
@@ -756,6 +763,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 	
 	if (pServer != NULL)
 	{
+		m_hasServer = true;
 		if (pServer->common_name != NULL && QString(pServer->common_name).isEmpty() == false)
 		{
 			m_commonNames = QString(pServer->common_name).split(",");

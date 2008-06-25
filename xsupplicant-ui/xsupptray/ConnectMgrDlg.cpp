@@ -81,7 +81,7 @@ ConnectMgrDlg::~ConnectMgrDlg()
 		Util::myDisconnect(m_pNetworkPrioritiesButton, SIGNAL(clicked()), this, SLOT(showPriorityDialog()));		
 		
 	if (m_pNewConnButton != NULL)
-		Util::myDisconnect(m_pNewConnButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));	
+		Util::myDisconnect(m_pNewConnButton, SIGNAL(clicked()), this, SLOT(createNewConnection()));	
 		
 	if (m_pWirelessAutoConnect != NULL)
 		Util::myDisconnect(m_pWirelessAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(enableDisableWirelessAutoConnect(int)));
@@ -219,7 +219,7 @@ bool ConnectMgrDlg::initUI(void)
 		Util::myConnect(m_pNetworkPrioritiesButton, SIGNAL(clicked()), this, SLOT(showPriorityDialog()));
 		
 	if (m_pNewConnButton != NULL)
-		Util::myConnect(m_pNewConnButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
+		Util::myConnect(m_pNewConnButton, SIGNAL(clicked()), this, SLOT(createNewConnection()));
 		
 	if (m_pWirelessAutoConnect != NULL)
 		Util::myConnect(m_pWirelessAutoConnect, SIGNAL(stateChanged(int)), this, SLOT(enableDisableWirelessAutoConnect(int)));
@@ -788,7 +788,7 @@ void ConnectMgrDlg::bringToFront(void)
 	}
 }
 
-void ConnectMgrDlg::launchConnectionWizard(void)
+void ConnectMgrDlg::createNewConnection(void)
 {
 	if (m_pConnWizard == NULL)
 	{

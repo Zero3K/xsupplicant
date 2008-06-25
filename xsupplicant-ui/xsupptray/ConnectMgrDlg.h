@@ -78,7 +78,7 @@ private slots:
 	void deleteSelectedConnection(void);
 	void showPriorityDialog(void);
 	void cleanupPriorityDialog(void);
-	void launchConnectionWizard(void);
+	void createNewConnection(void);
 	void editSelectedConnection(void);
 	void cleanupConnectionWizard(void);
 	void finishConnectionWizard(bool, const QString &);

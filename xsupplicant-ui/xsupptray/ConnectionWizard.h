@@ -103,6 +103,7 @@ public:
 	bool m_wiredSecurity;
 	
 	// IP settings
+	bool m_renewOnReauth;
 	bool m_staticIP;
 	QString m_IPAddress;
 	QString m_netmask;
@@ -135,6 +136,10 @@ public:
 	QStringList m_serverCerts;
 	bool m_verifyCommonName;
 	QStringList m_commonNames;
+	
+	// data for bookkeeping
+	bool m_hasProfile;
+	bool m_hasServer;
 };
 
 class ConnectionWizard : public QWidget
