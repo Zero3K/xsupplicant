@@ -367,7 +367,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 			if (runWizard == true)
 			{
 				// alert user we are launching the wizard
-				QString msg = tr("You must provide some additional information in order to connect to the network '%1'.  The XSupplicant will now launch the Connection Wizard to collect this information. Continue?").arg(netInfo.m_name);
+				QString msg = tr("The network '%1' requires some additional information to connect.  The XSupplicant will now launch the Connection Wizard to collect this information. Continue?").arg(netInfo.m_name);
 				if (QMessageBox::information(m_pRealForm, tr(""), msg, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
 				{
 					if (m_pConnWizard == NULL)
