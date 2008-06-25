@@ -2728,7 +2728,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(iface, "Request_Connection_Change", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
 	}
 
-	switch (xsupconfcheck_check_connection(ctx, conn_name, TRUE))
+	switch (xsupconfcheck_check_connection(ctx, conn_name, FALSE))
 	{
 	case CONNECTION_NEED_UPW:
 	case CONNECTION_NEED_PSK:
