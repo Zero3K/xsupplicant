@@ -1248,8 +1248,7 @@ bool WizardPageDot1XCert::create(void)
 	if (m_pNameField != NULL)
 	{
 		// set validator. Allow "*.subdomain.subdomain.domain" or "subdomain.subdomain.domain", or comma separated list of same
-		// doesn't work for "*.edu"
-		m_pNameField->setValidator(new QRegExpValidator(QRegExp("^(\\*\\.)?(\\w{1,253})(\\.\\w{1,253})+(\\,(\\*\\.)?(\\w{1,253})(\\.\\w{1,253}))*$"),m_pNameField)); 
+		m_pNameField->setValidator(new QRegExpValidator(QRegExp("^(((\\*\\.)?((\\w{1,253})(\\.)?)+)(\\,)?)+$"), m_pNameField));
 	}
 	
 	if (m_pCertTable != NULL)
