@@ -987,7 +987,9 @@ int tls_funcs_cn_check(struct tls_vars *mytls_vars)
 {
   char *cnname = NULL;
   char *temp = NULL;
+  char *temp2 = NULL;
   int retval = XENONE;
+  char *submatch = NULL;
 
   TRACE
 
@@ -1022,28 +1024,45 @@ int tls_funcs_cn_check(struct tls_vars *mytls_vars)
 	} else {
 	  debug_printf(DEBUG_TLS_CORE, "Looking for a relative match!\n");
 
-	  temp = mytls_vars->cncheck;
 	  if (cnname != NULL)
 	    {
-			// Determine if the search string is the old style (i.e. doesn't use * for a wildcard,
-			// and assumes that mytls_vars->cncheck must be a substring of the one provided), or
-			// is the new style (where * is used as a wildcard.)
-			if (strstr(temp, "*") == NULL)
+			submatch = strdup(mytls_vars->cncheck);
+			temp2 = submatch-1;  //Back up one, since the first time through the loop we will add one to get us back to where we need to be.
+
+			do
 			{
-		      if (strstr(cnname, temp) == NULL)
+				temp = temp2+1;  // Skip the NULL
+				temp2 = strstr(temp, ",");
+
+				if (temp2 != NULL) temp2 = 0x00;  // Convert the character to a NULL so that temp just points to a single entry.
+
+				// Determine if the search string is the old style (i.e. doesn't use * for a wildcard,
+				// and assumes that mytls_vars->cncheck must be a substring of the one provided), or
+				// is the new style (where * is used as a wildcard.)
+				if (strstr(temp, "*") == NULL)
 				{
-				  debug_printf(DEBUG_NORMAL, "Certificate CN didn't "
-					  "match!   (Server : %s    Us : %s)\n", cnname, temp);
-				  FREE(cnname);
-				  return XEBADCN;
-				} else {
-				  debug_printf(DEBUG_TLS_CORE, "Certificate CN matched!\n");
+			      if (strstr(cnname, temp) != NULL)
+				  {
+					  debug_printf(DEBUG_TLS_CORE, "Certificate CN matched!\n");
+					  
+					  // If we find one that matches, we are done.
+					  FREE(cnname);
+					  return XENONE;
+					}
 				}
-			}
-			else
-			{
-				retval = tls_funcs_wildcard_match(temp, cnname);
-			}
+				else
+				{
+					if (tls_funcs_wildcard_match(temp, cnname) == XENONE)
+					{
+						FREE(cnname);
+						return XENONE;   // We found a match.
+					}
+				}
+			} while (temp2 != NULL);
+
+			// If we get here, then we didn't find a match.
+			FREE(cnname);
+			return XEBADCN;
 	    }
 	}
     }
