@@ -74,6 +74,9 @@ ConnectMgrDlg::~ConnectMgrDlg()
 	if (m_pDeleteConnButton != NULL)
 		Util::myDisconnect(m_pDeleteConnButton, SIGNAL(clicked()), this, SLOT(deleteSelectedConnection()));
 		
+	if (m_pEditConnButton != NULL)
+		Util::myDisconnect(m_pEditConnButton, SIGNAL(clicked()), this, SLOT(editSelectedConnection()));			
+		
 	if (m_pNetworkPrioritiesButton != NULL)
 		Util::myDisconnect(m_pNetworkPrioritiesButton, SIGNAL(clicked()), this, SLOT(showPriorityDialog()));		
 		
@@ -208,6 +211,9 @@ bool ConnectMgrDlg::initUI(void)
 		
 	if (m_pDeleteConnButton != NULL)
 		Util::myConnect(m_pDeleteConnButton, SIGNAL(clicked()), this, SLOT(deleteSelectedConnection()));
+		
+	if (m_pEditConnButton != NULL)
+		Util::myConnect(m_pEditConnButton, SIGNAL(clicked()), this, SLOT(editSelectedConnection()));		
 		
 	if (m_pNetworkPrioritiesButton != NULL)
 		Util::myConnect(m_pNetworkPrioritiesButton, SIGNAL(clicked()), this, SLOT(showPriorityDialog()));
@@ -837,4 +843,69 @@ void ConnectMgrDlg::updateConnectionLists(void)
 	
 	// since the combo box items may have changed, make sure to re-select the right item
 	this->updateWiredAutoConnectState();
+}
+
+void ConnectMgrDlg::editSelectedConnection(void)
+{
+	QList<QTableWidgetItem*> selectedItems;
+	
+	selectedItems = m_pConnectionsTable->selectedItems();
+	
+	if (selectedItems.isEmpty() == false) 
+	{
+		QTableWidgetItem* selItem = selectedItems.at(0);
+		if ((selItem->row() >= 0) && (selItem->row() < m_nConnections))
+		{
+			bool success;
+			config_connection *pConfig;
+			QTableWidgetItem *nameItem = m_pConnectionsTable->item(selItem->row(), 0);
+			QString connName = nameItem->text();
+			
+			success = XSupWrapper::getConfigConnection(connName,&pConfig);
+			if (success == true && pConfig != NULL)
+			{
+				config_profiles *pProfile = NULL;
+				config_trusted_server *pServer = NULL;
+				
+				if (pConfig->profile != NULL)
+					success = XSupWrapper::getConfigProfile(QString(pConfig->profile),&pProfile);
+					
+				if (success == true && pProfile != NULL)
+					success = XSupWrapper::getTrustedServerForProfile(QString(pProfile->name),&pServer);
+					
+				ConnectionWizardData wizData;
+				wizData.initFromSupplicantProfiles(pConfig,pProfile,pServer);
+				
+				if (pConfig != NULL)
+					XSupWrapper::freeConfigConnection(&pConfig);
+				if (pProfile != NULL)
+					XSupWrapper::freeConfigProfile(&pProfile);
+				if (pServer != NULL)
+					XSupWrapper::freeConfigServer(&pServer);
+				
+				if (m_pConnWizard == NULL)
+				{
+					// create the wizard if it doesn't already exist
+					m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
+					if (m_pConnWizard != NULL)
+					{
+						if (m_pConnWizard->create() == true)
+						{
+							Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+							Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
+							m_pConnWizard->edit(wizData);
+							m_pConnWizard->show();
+						}
+						// else show error?
+					}
+					// else show error?
+				}
+				else
+				{
+					m_pConnWizard->edit(wizData);
+					m_pConnWizard->show();
+				}				
+			}
+		}
+	}
 }

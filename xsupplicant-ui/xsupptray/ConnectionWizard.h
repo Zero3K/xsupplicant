@@ -68,6 +68,8 @@ private:
 
 public:
 
+	bool m_newConnection;
+	
 	// general settings
 	bool m_wireless;
 	QString m_adapterDesc;
@@ -205,5 +207,6 @@ private:
 	wizardPages m_currentPage;
 	bool m_dot1Xmode;
 	bool m_editMode; // whether editing an existing connection
+	QString m_originalConnName;
 };
 #endif

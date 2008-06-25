@@ -79,6 +79,7 @@ private slots:
 	void showPriorityDialog(void);
 	void cleanupPriorityDialog(void);
 	void launchConnectionWizard(void);
+	void editSelectedConnection(void);
 	void cleanupConnectionWizard(void);
 	void finishConnectionWizard(bool, const QString &);
 	void enableDisableWirelessAutoConnect(int);

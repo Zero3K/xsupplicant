@@ -1896,7 +1896,8 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 					if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
 					{
 						pNewConn->association.association_type = ASSOC_OPEN;
-						pNewConn->association.auth_type = AUTH_NONE;	
+						pNewConn->association.auth_type = AUTH_NONE;
+						pNewConn->association.txkey = 1;	
 					}
 					if ((abilities & ABILITY_RSN_DOT1X) != 0)
 					{

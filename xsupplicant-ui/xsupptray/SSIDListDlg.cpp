@@ -340,7 +340,8 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 					break;
 				case WirelessNetworkInfo::SECURITY_STATIC_WEP:
 					pNewConn->association.association_type = ASSOC_OPEN;
-					pNewConn->association.auth_type = AUTH_NONE;					
+					pNewConn->association.auth_type = AUTH_NONE;	
+					pNewConn->association.txkey = 1;				
 					break;
 				case WirelessNetworkInfo::SECURITY_WPA2_PSK:
 					pNewConn->association.association_type = ASSOC_WPA2;

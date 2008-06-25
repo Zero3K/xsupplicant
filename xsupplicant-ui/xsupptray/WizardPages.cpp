@@ -511,17 +511,26 @@ bool WizardPageFinished::validate(void)
 {
 	if (m_pConnectionName != NULL)
 	{
-		config_connection *pConfig = NULL;	
-  
-		QString connName = m_pConnectionName->text();
-		if (XSupWrapper::getConfigConnection(connName, &pConfig) == true)
+		if (m_pConnectionName->text().isEmpty())
 		{
-			XSupWrapper::freeConfigConnection(&pConfig);
-			pConfig = NULL;
-			
-			//show dialog
-			QMessageBox::warning(m_pRealForm, tr("Duplicate Connection Name"), tr("A connection already exists with the name you have provided.  Please choose another name."));
+			QMessageBox::warning(m_pRealForm, tr("Invalid Connection Name"), tr("Please input a valid name for the connection."));
 			return false;
+		}
+		
+		if (m_curData.m_newConnection == true)
+		{
+			config_connection *pConfig = NULL;	
+	  
+			QString connName = m_pConnectionName->text();
+			if (XSupWrapper::getConfigConnection(connName, &pConfig) == true)
+			{
+				XSupWrapper::freeConfigConnection(&pConfig);
+				pConfig = NULL;
+				
+				//show dialog
+				QMessageBox::warning(m_pRealForm, tr("Duplicate Connection Name"), tr("A connection already exists with the name you have provided.  Please choose another name."));
+				return false;
+			}
 		}
 		
 		return true;
@@ -1455,10 +1464,7 @@ const ConnectionWizardData &WizardPageDot1XCert::wizardData()
 				
 				// TODO: range check index before indexing m_pCertArray
 				if (item != NULL && m_pCertArray != NULL)
-				{
 					m_curData.m_serverCerts.append(QString(m_pCertArray[item->type() - 1000].location));
-					QMessageBox::information(NULL,"",QString("Trusted Server: %1").arg(m_pCertArray[item->type()-1000].location));
-				}
 			}
 		}
 	}

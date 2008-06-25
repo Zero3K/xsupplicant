@@ -42,6 +42,8 @@
 
 ConnectionWizardData::ConnectionWizardData()
 {
+	m_newConnection = true;
+	
 	// default to wired connection
 	m_wireless = false;
 	
@@ -439,7 +441,8 @@ bool ConnectionWizardData::toConnectionData(config_connection **retConnection, c
 					break;
 				case ConnectionWizardData::assoc_WEP:
 					pConn->association.association_type = ASSOC_OPEN;
-					pConn->association.auth_type = AUTH_NONE;					
+					pConn->association.auth_type = AUTH_NONE;
+					pConn->association.txkey = 1;					
 					break;
 				case ConnectionWizardData::assoc_WPA2_PSK:
 					pConn->association.association_type = ASSOC_WPA2;
@@ -641,8 +644,10 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 		switch (pConfig->association.association_type)
 		{
 			case ASSOC_OPEN:
-				// TODO: detect WEP (think it's possible)
-				m_wirelessAssocMode = ConnectionWizardData::assoc_none;
+				if (pConfig->association.txkey == 1)
+					m_wirelessAssocMode = ConnectionWizardData::assoc_WEP;
+				else
+					m_wirelessAssocMode = ConnectionWizardData::assoc_none;
 				break;
 			case ASSOC_WPA:
 				if (pConfig->association.auth_type == AUTH_PSK)
@@ -663,12 +668,14 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 		else if ((pConfig->association.pairwise_keys & CRYPT_FLAGS_CCMP) == CRYPT_FLAGS_TKIP)
 			m_wirelessEncryptMeth = ConnectionWizardData::encrypt_TKIP;
 		else if ((pConfig->association.pairwise_keys & (CRYPT_FLAGS_WEP104 | CRYPT_FLAGS_WEP40)) != 0)					
-			m_wirelessEncryptMeth = ConnectionWizardData::encrypt_WEP;			
+			m_wirelessEncryptMeth = ConnectionWizardData::encrypt_WEP;
+			
+		m_hiddenNetwork = (pConfig->flags & CONFIG_NET_IS_HIDDEN) == CONFIG_NET_IS_HIDDEN;		
 	}
 	else
 	{
-		// should verify profile actually exists, most likely	
-		m_wiredSecurity = (pConfig->profile != NULL);
+		// should verify profile actually exists? most likely	
+		m_wiredSecurity = (pConfig->profile != NULL && QString(pConfig->profile).isEmpty() == false);
 	}
 	
 	if (pConfig->ip.type == CONFIG_IP_USE_STATIC)
@@ -682,6 +689,87 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 	}
 	else
 		m_staticIP = false;
+		
+	if (pProfile != NULL)
+	{
+		if (pProfile->identity != NULL) 
+		{
+			if (QString(pProfile->identity) != QString("anonymous"))
+				m_outerIdentity = QString(pProfile->identity);
+		}	
+			
+		if (pProfile->method != NULL)
+		{
+			config_eap_method *pEAPMethod = (config_eap_method*)pProfile->method;
+			if (pEAPMethod->method_num == EAP_TYPE_MD5)
+			{
+				m_eapProtocol = ConnectionWizardData::eap_md5;
+			}
+			else if (pEAPMethod->method_num == EAP_TYPE_TTLS)
+			{
+				m_eapProtocol = ConnectionWizardData::eap_ttls;
+				if (pEAPMethod->method_data != NULL)
+				{
+					config_eap_ttls *pTTLSData = (config_eap_ttls *)pEAPMethod->method_data;
+					if (pTTLSData->phase2_type == TTLS_PHASE2_PAP)
+						m_innerTTLSProtocol = ConnectionWizardData::inner_pap;
+					else if (pTTLSData->phase2_type == TTLS_PHASE2_CHAP)
+						m_innerTTLSProtocol = ConnectionWizardData::inner_chap;
+					else if (pTTLSData->phase2_type == TTLS_PHASE2_MSCHAP)
+						m_innerTTLSProtocol = ConnectionWizardData::inner_mschap;
+					else if (pTTLSData->phase2_type == TTLS_PHASE2_MSCHAPV2)
+						m_innerTTLSProtocol = ConnectionWizardData::inner_mschapv2;										
+					else if (pTTLSData->phase2_type == TTLS_PHASE2_EAP)
+						m_innerTTLSProtocol = ConnectionWizardData::inner_eap_md5;
+						
+					if (pTTLSData->validate_cert == TRUE)
+						m_validateCert = true;
+					else
+						m_validateCert = false;			
+				}
+				
+			}
+			else if (pEAPMethod->method_num == EAP_TYPE_PEAP)
+			{
+				m_eapProtocol = ConnectionWizardData::eap_peap;
+				if (pEAPMethod->method_data != NULL)
+				{
+					config_eap_peap *pPEAPData = (config_eap_peap *)pEAPMethod->method_data;
+					if (pPEAPData->phase2 != NULL)
+					{
+						config_eap_method *myeap = NULL;
+						myeap = (config_eap_method *)pPEAPData->phase2;					
+						if (myeap->method_num == EAP_TYPE_MSCHAPV2)
+							m_innerPEAPProtocol = ConnectionWizardData::inner_mschapv2;
+						else if (myeap->method_num == EAP_TYPE_GTC)
+							m_innerPEAPProtocol = ConnectionWizardData::inner_eap_gtc;
+					}
+						
+					if (pPEAPData->validate_cert == TRUE)
+						m_validateCert = true;
+					else
+						m_validateCert = false;			
+				}				
+			}
+		}
+	}
+	
+	if (pServer != NULL)
+	{
+		if (pServer->common_name != NULL && QString(pServer->common_name).isEmpty() == false)
+		{
+			m_commonNames = QString(pServer->common_name).split(",");
+			m_verifyCommonName = true;
+		}
+		else
+			m_verifyCommonName = false;
+			
+		if (pServer->num_locations > 0 && pServer->location != NULL)
+		{
+			for (int i=0;i<pServer->num_locations;i++)
+				m_serverCerts.append(pServer->location[i]);
+		}
+	}
 	
 	return true;
 }
@@ -950,6 +1038,8 @@ void ConnectionWizard::init(void)
 {
 	// start with fresh connection data
 	m_connData = ConnectionWizardData();
+	m_editMode = false;
+	m_dot1Xmode = false;
 	
 	// load up first page
 	m_currentPage = pageNoPage;
@@ -959,6 +1049,10 @@ void ConnectionWizard::init(void)
 void ConnectionWizard::edit(const ConnectionWizardData &connData)
 {
 	m_connData = connData;
+	m_connData.m_newConnection = false;
+	m_editMode = true;
+	m_dot1Xmode = false;
+	m_originalConnName = connData.m_connectionName;
 	
 	m_currentPage = pageNoPage;
 	this->gotoNextPage();
@@ -1015,7 +1109,13 @@ bool ConnectionWizard::saveConnectionData(QString *pConnName)
 				success = false;
 		}
 		
-		retVal = xsupgui_request_set_connection_config(pConfig);
+		// check if was edit and they changed name of connection).  If so, rename connection before saving
+		if (m_editMode == true && QString(pConfig->name) != m_originalConnName)
+			retVal = xsupgui_request_rename_connection(m_originalConnName.toAscii().data(), pConfig->name);
+				
+		if (retVal == REQUEST_SUCCESS)
+			retVal = xsupgui_request_set_connection_config(pConfig);
+			
 		if (retVal == REQUEST_SUCCESS)
 		{
 			// tell everyone we changed the config
@@ -1148,5 +1248,6 @@ void ConnectionWizard::editDot1XInfo(const ConnectionWizardData &wizData)
 	// load up first page
 	m_currentPage = pageNoPage;
 	m_dot1Xmode = true;
+	m_editMode = false;
 	this->gotoNextPage();
 }
