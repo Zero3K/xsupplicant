@@ -1099,7 +1099,14 @@ void ConnectDlg::showTime()
 {
 	QString m_status;
 
-	m_status = tr("Connected  (%1d, %2)").arg(m_days).arg(m_time.toString(Qt::TextDate));
+	if (m_days > 0)
+	{
+		m_status = tr("Connected  (%1d, %2)").arg(m_days).arg(m_time.toString(Qt::TextDate));
+	}
+	else
+	{
+		m_status = tr("Connected  (%2)").arg(m_time.toString(Qt::TextDate));
+	}
 
 	if (m_pAdapterTabControl->currentIndex() == 0)
 	{
