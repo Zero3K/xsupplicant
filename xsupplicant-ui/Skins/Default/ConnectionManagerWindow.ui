@@ -904,13 +904,13 @@
                     <widget class="QPushButton" name="buttonNewConnection" >
                      <property name="minimumSize" >
                       <size>
-                       <width>120</width>
+                       <width>130</width>
                        <height>25</height>
                       </size>
                      </property>
                      <property name="maximumSize" >
                       <size>
-                       <width>120</width>
+                       <width>130</width>
                        <height>25</height>
                       </size>
                      </property>
@@ -948,13 +948,13 @@
                      </property>
                      <property name="minimumSize" >
                       <size>
-                       <width>80</width>
+                       <width>90</width>
                        <height>25</height>
                       </size>
                      </property>
                      <property name="maximumSize" >
                       <size>
-                       <width>80</width>
+                       <width>90</width>
                        <height>25</height>
                       </size>
                      </property>
@@ -979,13 +979,13 @@
                      </property>
                      <property name="minimumSize" >
                       <size>
-                       <width>80</width>
+                       <width>90</width>
                        <height>25</height>
                       </size>
                      </property>
                      <property name="maximumSize" >
                       <size>
-                       <width>80</width>
+                       <width>90</width>
                        <height>25</height>
                       </size>
                      </property>
@@ -2092,13 +2092,13 @@
                     <widget class="QPushButton" name="buttonOptionsAdvancedConfig" >
                      <property name="minimumSize" >
                       <size>
-                       <width>190</width>
+                       <width>200</width>
                        <height>25</height>
                       </size>
                      </property>
                      <property name="maximumSize" >
                       <size>
-                       <width>190</width>
+                       <width>200</width>
                        <height>25</height>
                       </size>
                      </property>
@@ -2200,13 +2200,13 @@
            </property>
            <property name="minimumSize" >
             <size>
-             <width>80</width>
+             <width>90</width>
              <height>25</height>
             </size>
            </property>
            <property name="maximumSize" >
             <size>
-             <width>80</width>
+             <width>90</width>
              <height>25</height>
             </size>
            </property>
@@ -2231,13 +2231,13 @@
            </property>
            <property name="minimumSize" >
             <size>
-             <width>80</width>
+             <width>90</width>
              <height>25</height>
             </size>
            </property>
            <property name="maximumSize" >
             <size>
-             <width>80</width>
+             <width>90</width>
              <height>25</height>
             </size>
            </property>
