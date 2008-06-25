@@ -71,7 +71,8 @@ ConnectionWizardData::ConnectionWizardData()
 	m_eapProtocol = ConnectionWizardData::eap_peap;
 	m_outerIdentity = "";
 	m_validateCert = true;
-	m_innerProtocol = ConnectionWizardData::inner_mschapv2;
+	m_innerPEAPProtocol = ConnectionWizardData::inner_mschapv2;
+	m_innerTTLSProtocol = ConnectionWizardData::inner_pap;
 	m_serverCerts = QStringList();
 	m_verifyCommonName = false;
 	m_commonNames = QStringList();
@@ -124,7 +125,7 @@ bool ConnectionWizardData::toProfileEAP_MD5Protocol(config_profiles * const pPro
 	return success;
 }
 
-bool ConnectionWizardData::toProfileEAP_MSCHAPProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
+bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
 {
 	bool success = true;
 	if (pProfile == NULL)
@@ -172,7 +173,7 @@ bool ConnectionWizardData::toProfileEAP_MSCHAPProtocol(config_profiles * const p
 						mypeap->validate_cert = FALSE;
 					
 					// inner protocol
-					if (m_innerProtocol == ConnectionWizardData::inner_eap_mschapv2)
+					if (m_innerPEAPProtocol == ConnectionWizardData::inner_eap_mschapv2)
 					{
 						mypeap->phase2 = (config_eap_method *)malloc(sizeof(config_eap_method));
 						if (mypeap->phase2 == NULL) 
@@ -200,7 +201,7 @@ bool ConnectionWizardData::toProfileEAP_MSCHAPProtocol(config_profiles * const p
 							}
 						}
 					}
-					else if (m_innerProtocol == ConnectionWizardData::inner_eap_gtc)
+					else if (m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)
 					{
 						mypeap->phase2 = (config_eap_method *)malloc(sizeof(config_eap_method));
 						if (mypeap->phase2 == NULL) 
@@ -287,7 +288,7 @@ bool ConnectionWizardData::toEAP_TTLSProtocol(config_profiles * const pProfile, 
 				}
 
 				// Determine the inner method in use...
-				if (m_innerProtocol == ConnectionWizardData::inner_pap)
+				if (m_innerTTLSProtocol == ConnectionWizardData::inner_pap)
 				{
 					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_PAP;
 					myttls->phase2_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
@@ -296,7 +297,7 @@ bool ConnectionWizardData::toEAP_TTLSProtocol(config_profiles * const pProfile, 
 					else
 						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
 				}
-				else if (m_innerProtocol == ConnectionWizardData::inner_chap)
+				else if (m_innerTTLSProtocol == ConnectionWizardData::inner_chap)
 				{
 					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_CHAP;
 					myttls->phase2_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
@@ -305,7 +306,7 @@ bool ConnectionWizardData::toEAP_TTLSProtocol(config_profiles * const pProfile, 
 					else
 						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
 				}
-				else if (m_innerProtocol == ConnectionWizardData::inner_mschap)
+				else if (m_innerTTLSProtocol == ConnectionWizardData::inner_mschap)
 				{
 					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_MSCHAP;
 					myttls->phase2_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
@@ -314,7 +315,7 @@ bool ConnectionWizardData::toEAP_TTLSProtocol(config_profiles * const pProfile, 
 					else
 						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
 				}
-				else if (m_innerProtocol == ConnectionWizardData::inner_mschapv2)
+				else if (m_innerTTLSProtocol == ConnectionWizardData::inner_mschapv2)
 				{
 					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_MSCHAPV2;
 					myttls->phase2_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
@@ -323,7 +324,7 @@ bool ConnectionWizardData::toEAP_TTLSProtocol(config_profiles * const pProfile, 
 					else
 						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
 				}	
-				else if (m_innerProtocol == ConnectionWizardData::inner_eap_md5)
+				else if (m_innerTTLSProtocol == ConnectionWizardData::inner_eap_md5)
 				{
 					myttls->phase2_type = (ttls_phase2_type)TTLS_PHASE2_EAP;
 					myttls->phase2_data = (config_eap_method *)malloc(sizeof(config_eap_method));
@@ -374,7 +375,7 @@ bool ConnectionWizardData::toProfileData(config_profiles **retProfile, config_tr
 			switch (m_eapProtocol)
 			{
 				case ConnectionWizardData::eap_peap:
-					success = this->toProfileEAP_MSCHAPProtocol(pProfile, pServer);
+					success = this->toProfileEAP_PEAPProtocol(pProfile, pServer);
 					break;
 				case ConnectionWizardData::eap_ttls:
 					success = this->toEAP_TTLSProtocol(pProfile,pServer);

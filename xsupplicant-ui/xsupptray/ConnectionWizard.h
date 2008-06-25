@@ -58,7 +58,7 @@ public:
 	bool initFromSupplicantProfiles(config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer);	
 	
 private:
-	bool toProfileEAP_MSCHAPProtocol(config_profiles * const, config_trusted_server const * const);
+	bool toProfileEAP_PEAPProtocol(config_profiles * const, config_trusted_server const * const);
 	bool toProfileEAP_MD5Protocol(config_profiles * const);
 	bool toEAP_TTLSProtocol(config_profiles * const, config_trusted_server const * const);
 	bool toProfileOuterIdentity(config_profiles * const);
@@ -128,7 +128,8 @@ public:
 	Dot1XProtocol m_eapProtocol;
 	QString m_outerIdentity;
 	bool m_validateCert;
-	Dot1XInnerProtocol m_innerProtocol;
+	Dot1XInnerProtocol m_innerPEAPProtocol;
+	Dot1XInnerProtocol m_innerTTLSProtocol;
 	QStringList m_serverCerts;
 	bool m_verifyCommonName;
 	QStringList m_commonNames;

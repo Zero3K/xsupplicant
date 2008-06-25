@@ -1127,9 +1127,9 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData &data)
 			m_pProtocol->addItem("EAP-MSCHAPv2");
 			m_pProtocol->addItem("EAP-GTC");
 			
-			if (m_curData.m_innerProtocol == ConnectionWizardData::inner_eap_mschapv2)
+			if (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_mschapv2)
 				m_pProtocol->setCurrentIndex(0);
-			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_eap_gtc)
+			else if (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)
 				m_pProtocol->setCurrentIndex(1);
 			else
 				; // error
@@ -1142,15 +1142,15 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData &data)
 			m_pProtocol->addItem("MSCHAPv2");
 			m_pProtocol->addItem("EAP-MD5");
 			
-			if (m_curData.m_innerProtocol == ConnectionWizardData::inner_pap)
+			if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_pap)
 				m_pProtocol->setCurrentIndex(0);
-			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_chap)
+			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_chap)
 				m_pProtocol->setCurrentIndex(1);
-			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_mschap)
+			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_mschap)
 				m_pProtocol->setCurrentIndex(2);
-			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_mschapv2)
+			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_mschapv2)
 				m_pProtocol->setCurrentIndex(3);
-			else if (m_curData.m_innerProtocol == ConnectionWizardData::inner_eap_md5)
+			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_eap_md5)
 				m_pProtocol->setCurrentIndex(4);															
 			else
 				; // error										
@@ -1171,24 +1171,24 @@ const ConnectionWizardData &WizardPageDot1XInnerProtocol::wizardData(void)
 		if (m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
 		{
 			if (m_pProtocol->currentIndex() == 0)
-				m_curData.m_innerProtocol = ConnectionWizardData::inner_eap_mschapv2;
+				m_curData.m_innerPEAPProtocol = ConnectionWizardData::inner_eap_mschapv2;
 			else if (m_pProtocol->currentIndex() == 1)
-				m_curData.m_innerProtocol = ConnectionWizardData::inner_eap_gtc;
+				m_curData.m_innerPEAPProtocol = ConnectionWizardData::inner_eap_gtc;
 			else
 				; // error
 		}
 		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
 		{
 			if (m_pProtocol->currentIndex() == 0)
-				m_curData.m_innerProtocol = ConnectionWizardData::inner_pap;
+				m_curData.m_innerTTLSProtocol = ConnectionWizardData::inner_pap;
 			else if (m_pProtocol->currentIndex() == 1)
-				m_curData.m_innerProtocol = ConnectionWizardData::inner_chap;
+				m_curData.m_innerTTLSProtocol = ConnectionWizardData::inner_chap;
 			else if (m_pProtocol->currentIndex() == 2)
-				m_curData.m_innerProtocol = ConnectionWizardData::inner_mschap;
+				m_curData.m_innerTTLSProtocol = ConnectionWizardData::inner_mschap;
 			else if (m_pProtocol->currentIndex() == 3)
-				m_curData.m_innerProtocol = ConnectionWizardData::inner_mschapv2;
+				m_curData.m_innerTTLSProtocol = ConnectionWizardData::inner_mschapv2;
 			else if (m_pProtocol->currentIndex() == 4)
-				m_curData.m_innerProtocol = ConnectionWizardData::inner_eap_md5;																												
+				m_curData.m_innerTTLSProtocol = ConnectionWizardData::inner_eap_md5;																												
 			else
 				; // error										
 		}

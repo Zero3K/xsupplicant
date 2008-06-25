@@ -70,7 +70,7 @@ public:
   static QString removePacketSchedulerFromName(QString &fullName);
 
 #ifdef WINDOWS
-  static char *Util::myNullStrdup(const char *p);
+  static char *myNullStrdup(const char *p);
 #else
   static char *myNullStrdup(const char *p);
 #endif
