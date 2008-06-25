@@ -39,6 +39,8 @@
 #include <QTabWidget>
 #include <QComboBox>
 #include <QStackedWidget>
+#include <QTimer>
+#include <QTime>
 
 class TrayApp;
 class Emitter;
@@ -67,6 +69,11 @@ private:
 	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
 	void updateWirelessState(void);
 	void updateWiredState(void);
+	void startConnectedTimer(QString adapterName);
+	void showTime(void);
+	void stopAndClearTimer(void);
+	void displayDot1XState(QLabel *m_pLabel, QString m_deviceName, int state);
+	void displayPhysicalState(QLabel *m_pLabel, QString m_deviceName, int state);
 	
 private slots:
 	void showSSIDList(void);
@@ -82,6 +89,9 @@ private slots:
 	void connectWiredConnection(void);
 	void disconnectWirelessConnection(void);
 	void disconnectWiredConnection(void);
+	void timerUpdate(void);
+	void currentTabChanged(int);
+	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
 		
 private:
 	Emitter *m_pEmitter;
@@ -116,8 +126,12 @@ private:
 	ConnectionWizard *m_pConnWizard;
 	QString	m_currentWirelessAdapter;
 	QString m_currentWiredAdapter;
+	QString m_currentAdapterName;
+	QTimer m_timer;
+	QTime  m_time;
 	int m_lastWirelessConnectionIdx;
 	int m_lastWiredConnectionIdx;
+	unsigned int m_days;
 };
      
 #endif
