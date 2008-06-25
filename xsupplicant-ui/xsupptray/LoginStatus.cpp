@@ -192,11 +192,9 @@ void LoginStatus::updateWindow(bool updateAll, bool fromConnect)
 
 void LoginStatus::requestPostureState()
 {
-	char *adaptName = NULL;
 	unsigned int connID = 0;
 
-	adaptName = _strdup(devName.toAscii());
-	if (xsupgui_request_get_tnc_conn_id(adaptName, &connID) == REQUEST_SUCCESS)
+	if (xsupgui_request_get_tnc_conn_id(devName.toAscii().data(), &connID) == REQUEST_SUCCESS)
 	{
 		m_connID = connID;
 
@@ -208,7 +206,6 @@ void LoginStatus::requestPostureState()
 			m_pEmitter->sendTNCReply(0, connID, 25065, 7, false, 0);
 		}
 	}
-	free(adaptName);
 }
 
 void LoginStatus::updateIPAddress()

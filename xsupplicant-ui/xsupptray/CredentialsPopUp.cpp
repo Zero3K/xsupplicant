@@ -95,12 +95,9 @@ CredentialsPopUp::~CredentialsPopUp()
 
 bool CredentialsPopUp::create()
 {
-	QString temp;
-	char *ptemp = NULL;
 	int authtype = 0;
 
-	ptemp = _strdup(m_connName.toAscii());
-	if (xsupgui_request_get_connection_upw(ptemp, &p_user, &p_pass, &authtype) != XENONE)
+	if (xsupgui_request_get_connection_upw(m_connName.toAscii().data(), &p_user, &p_pass, &authtype) != XENONE)
 	{
 		QMessageBox::critical(this, tr("Credentials Error"), tr("Unable to determine the type of network that needs credentials."));
 		return false;

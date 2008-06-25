@@ -623,16 +623,14 @@ bool XSupCalls::getSSID(QString &deviceDesc, QString &device, QString &ssidStrin
 bool XSupCalls::getLiveInterfaceData(QString &intName, QString &description, 
     QString &mac, bool &bWireless, bool bDisplayError)
 {
-  char *d = NULL;
   bool bValue = false;
   char *pDescription  = NULL;
   char *pMac = NULL;
   int wireless = 0;
 
   bWireless = false;
-  d = _strdup(intName.toAscii());
 
-  int retval = xsupgui_request_get_os_specific_int_data(d, &pDescription, &pMac, &wireless);
+  int retval = xsupgui_request_get_os_specific_int_data(intName.toAscii().data(), &pDescription, &pMac, &wireless);
   // If we get an error, it should signify that the interface is already bound
   // thus no action need occur
   if (retval)
@@ -1089,18 +1087,10 @@ bool XSupCalls::enumCertificates(cert_enum **pCertificates, bool bDisplayError)
 */
 bool XSupCalls::getCertInfo(QString &storetype, QString &location, cert_info **certInfo, bool bDisplayError)
 {
-  char *l = NULL;
-  char *s = NULL;
-
   if (location.isEmpty())
-  {
     return false;
-  }
 
-  l = _strdup(location.toAscii());
-  s = _strdup(storetype.toAscii());
-
-  int retval = xsupgui_request_ca_certificate_info(s, l, certInfo);
+  int retval = xsupgui_request_ca_certificate_info(storetype.toAscii().data(), location.toAscii().data(), certInfo);
   if (retval == REQUEST_SUCCESS)
 	{
     return true;
@@ -2056,11 +2046,8 @@ bool XSupCalls::setUserNameAndPassword(const QString &connectionName, const QStr
 void XSupCalls::setPasswordIntoProfile(config_profiles *prof, const QString &password)
 {
   Q_ASSERT(prof);
-  char *p = NULL;
 
-  p = _strdup(password.toAscii());
-
-  int retval = config_change_pwd(prof->method, p);
+  int retval = config_change_pwd(prof->method, password.toAscii().data());
   if (retval != XENONE)
   {
     QMessageBox::critical(NULL, tr("Set password"),
@@ -2077,10 +2064,7 @@ void XSupCalls::setPasswordIntoProfile(config_profiles *prof, const QString &pas
 */
 void XSupCalls::setUserNameIntoProfile(config_profiles *prof, const QString &userName)
 {
-  char *u = NULL;
   Q_ASSERT(prof);
-  
-  u = _strdup(userName.toAscii());
 
   if (prof->method->method_num == EAP_TYPE_MD5)
   {
@@ -2089,7 +2073,7 @@ void XSupCalls::setUserNameIntoProfile(config_profiles *prof, const QString &use
   }
   else
   {
-    int retval = config_set_user(prof->method, u);
+    int retval = config_set_user(prof->method, userName.toAscii().data());
     if (retval != XENONE)
     {
       QMessageBox::critical(NULL, tr("Set user name"),
@@ -2107,11 +2091,8 @@ void XSupCalls::setUserNameIntoProfile(config_profiles *prof, const QString &use
 bool XSupCalls::logoffWired(QString &device, QString &description)
 {
   int retval;
-  char *d = NULL;
 
-  d = _strdup(device.toAscii());
-
-  retval = xsupgui_request_logoff(d);
+  retval = xsupgui_request_logoff(device.toAscii().data());
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("Disconnect Wired"),
@@ -2133,11 +2114,8 @@ bool XSupCalls::logoffWired(QString &device, QString &description)
 bool XSupCalls::disassociateWireless(QString &device, QString &description)
 {
   int retval;
-  char *d = NULL;
 
-  d = _strdup(device.toAscii());
-
-  retval = xsupgui_request_set_disassociate(d, 0);
+  retval = xsupgui_request_set_disassociate(device.toAscii().data(), 0);
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("Disconnect Wireless"),
@@ -2157,11 +2135,8 @@ bool XSupCalls::disassociateWireless(QString &device, QString &description)
 bool XSupCalls::pauseWireless(QString &device, QString &description)
 {
   int retval;
-  char *d = NULL;
 
- d = _strdup(device.toAscii());
-
-  retval = xsupgui_request_stop(d);
+  retval = xsupgui_request_stop(device.toAscii().data());
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("XSupplicant Pause Wireless Error"),
@@ -2741,16 +2716,12 @@ void XSupCalls::sendXStatus(Emitter &e)
 bool XSupCalls::startWirelessScan(QString &deviceDescription)
 {
   QString deviceName;
-  char *d = NULL;
 
   bool bval = getDeviceName(deviceDescription, deviceName, true);
   if (!bval)
-  {
     return false;
-  }
 
-  d = _strdup(deviceName.toAscii());
-  int retval = xsupgui_request_wireless_scan(d, FALSE);
+  int retval = xsupgui_request_wireless_scan(deviceName.toAscii().data(), FALSE);
   if (retval == REQUEST_SUCCESS)
   {
     return true;
@@ -2775,11 +2746,7 @@ bool XSupCalls::startWirelessScan(QString &deviceDescription)
 */
 bool XSupCalls::deleteConnectionConfig(QString &name)
 {
-  char *n = NULL;
-
-  n = _strdup(name.toAscii());
-
-  int retval = xsupgui_request_delete_connection_config(n);
+  int retval = xsupgui_request_delete_connection_config(name.toAscii().data());
   if (retval == REQUEST_SUCCESS)
   {
     writeConfig();
@@ -2811,12 +2778,9 @@ bool XSupCalls::deleteConnectionConfig(QString &name)
 */
 bool XSupCalls::deleteProfileConfig(QString &name)
 {  
-  char *n = NULL;
   int retval = REQUEST_SUCCESS;
 
-  n = _strdup(name.toAscii());
-
-  retval = xsupgui_request_delete_profile_config(n, 0);
+  retval = xsupgui_request_delete_profile_config(name.toAscii().data(), 0);
 
   if (retval == REQUEST_SUCCESS)
   {
@@ -3671,13 +3635,7 @@ bool XSupCalls::connectionDisconnect(QString &connectionName)
 */
 bool XSupCalls::renameConnection(QString &oldName, QString &newName)
 {
-  char *old = NULL;
-  char *n = NULL;
-
-  old = _strdup(oldName.toAscii());
-  n = _strdup(newName.toAscii());
-
-  int retval = xsupgui_request_rename_connection(old, n);
+  int retval = xsupgui_request_rename_connection(oldName.toAscii().data(), newName.toAscii().data());
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("Can't Rename Connection"),
@@ -3696,13 +3654,7 @@ bool XSupCalls::renameConnection(QString &oldName, QString &newName)
 */
 bool XSupCalls::renameProfile(QString &oldName, QString &newName)
 {
-  char *old = NULL;
-  char *n = NULL;
-
-  old = _strdup(oldName.toAscii());
-  n = _strdup(newName.toAscii());
-
-  int retval = xsupgui_request_rename_profile(old, n);
+  int retval = xsupgui_request_rename_profile(oldName.toAscii().data(), newName.toAscii().data());
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("Can't Rename Profile"),
@@ -3720,13 +3672,7 @@ bool XSupCalls::renameProfile(QString &oldName, QString &newName)
 */
 bool XSupCalls::renameTrustedServer(QString &oldName, QString &newName)
 {
-  char *old = NULL;
-  char *n = NULL;
-
-  old = _strdup(oldName.toAscii());
-  n = _strdup(newName.toAscii());
-
-  int retval = xsupgui_request_rename_trusted_server(old, n);
+  int retval = xsupgui_request_rename_trusted_server(oldName.toAscii().data(), newName.toAscii().data());
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("Can't Rename Trusted Server"),

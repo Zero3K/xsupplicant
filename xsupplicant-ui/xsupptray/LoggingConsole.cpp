@@ -311,8 +311,6 @@ void LogWindow::slotFinishPassword()
 {
 	QString password;
 	QString connection;
-	char *c_conn = NULL;
-	char *c_pass = NULL;
 
 	password = m_pPassword->getPassword();
 	connection = m_pPassword->getConnName();
@@ -323,16 +321,11 @@ void LogWindow::slotFinishPassword()
 		return;
 	}
 
-	c_conn = _strdup(connection.toAscii());
-	c_pass = _strdup(password.toAscii());
-
-	if (xsupgui_request_set_connection_pw(c_conn, c_pass) != REQUEST_SUCCESS)
+	if (xsupgui_request_set_connection_pw(connection.toAscii().data(), password.toAscii().data()) != REQUEST_SUCCESS)
 	{
 		QMessageBox::critical(this, tr("Error Setting Token Response"), tr("Unable to send the provided token response."));
 	}
 
-	free(c_conn);
-	free(c_pass);
 	slotClearGTC();
 }
 
