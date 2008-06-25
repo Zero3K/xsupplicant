@@ -34,6 +34,7 @@
 #define _XSUPWRAPPER_H_
 
 #include <QString>
+#include <QStringList>
 
 extern "C" 
 {
@@ -64,6 +65,7 @@ public:
 	static bool deleteProfileConfig(const QString &profileName);
 	static bool deleteServerConfig(const QString &serverName);
 	static bool isTrustedServerInUse(const QString &serverName);
+	static QStringList getWirelessInterfaceList(void);
 };
 
 #endif

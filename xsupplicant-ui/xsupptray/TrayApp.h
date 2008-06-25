@@ -47,6 +47,8 @@
 
 class ConnectDlg;
 class ConnectMgrDlg;
+class ConnectionWizard;
+class WirelessNetworkMenu;
 
 class TrayApp : public QWidget
 {
@@ -79,6 +81,7 @@ public:
     MessageClass m_message;
     bool init(int argCount);
     void start();
+	void connectToNetwork(const QString &networkName, const QString &adapterDesc);    
     
 public:
 	friend class ConnectDlg;
@@ -123,6 +126,11 @@ private slots:
 	void slotConnectionTimeout(QString devName);
 	void showBasicConfig(void);
 	void showAdvancedConfig(void);	
+	void buildPopupMenu(void);
+	void cancelConnectionWizard(void);
+	void finishConnectionWizard(bool, const QString &);
+	void updatePopupMenuAfterScan(const QString &);
+	
 	
 private:
     void createTrayActionsAndConnections();
@@ -143,6 +151,7 @@ private:
 	void disconnectTTSignals();
 	void setTrayMenuBasedOnControl();
 	void closeChildren();
+	void cleanupConnectionWizard(void);
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();
@@ -166,7 +175,9 @@ private:
     LogWindow *m_pLoggingCon;
     AboutWindow *m_pAboutWindow;
     ConnectMgrDlg *m_pConnMgr;
-    ConnectDlg *m_pConnectDlg;    
+    ConnectDlg *m_pConnectDlg;
+    ConnectionWizard *m_pConnWizard;   
+    QVector<WirelessNetworkMenu*> m_networkMenuVec;
 
 	QMultiHash<QString, QString> m_intStateHash;
 

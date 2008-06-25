@@ -39,6 +39,12 @@ extern "C" {
 #include "libxsupgui/xsupgui_request.h"
 }
 
+// so that we can use sort algorithm on container of WirelessNetworkInfo
+bool operator< (const WirelessNetworkInfo &lhs, const WirelessNetworkInfo &rhs)
+{ 
+	return lhs.m_name < rhs.m_name; 
+}
+
 WirelessNetworkInfo::WirelessNetworkInfo()
 {
 	m_name = "";
@@ -95,8 +101,10 @@ void SSIDList::initUI(void)
 		// don't draw header any differently when row is selected
 		m_pTableWidget->horizontalHeader()->setHighlightSections(false);
 		
+		// don't allow user to edit any of the cells
 		m_pTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
 		
+		// don't show header on left side of table
 		m_pTableWidget->verticalHeader()->setVisible(false);
 		
 		m_pTableWidget->clearContents();
@@ -123,7 +131,11 @@ void SSIDList::refreshList(const QString &adapterName)
 	// stash off name of adapter we're presenting networks for
 	m_curWirelessAdapter = adapterName;
 	
-	this->getNetworkInfo(adapterName);
+	m_curNetworks = SSIDList::getNetworkInfo(adapterName);
+	
+	// name says it all.  make assoc mode only one value (best), rather than bitfield.
+	// temporary until we have better UI solution
+	this->tempAssocModeHack();	
 	
 	// clear table before re-populating
 	m_pTableWidget->clearContents();
@@ -283,10 +295,9 @@ void SSIDList::refreshList(const QString &adapterName)
 	m_pTableWidget->sortItems(SSIDList::COL_SIGNAL, Qt::DescendingOrder);
 }
 
-void SSIDList::getNetworkInfo(QString adapterName)
+QList<WirelessNetworkInfo> SSIDList::getNetworkInfo(QString adapterName)
 {
-	// clear our list of networks
-	m_curNetworks.clear();
+	QList<WirelessNetworkInfo> networkList;
 	
 	int_enum *pInterfaceList = NULL;
 	int retVal;	
@@ -308,7 +319,7 @@ void SSIDList::getNetworkInfo(QString adapterName)
 					while (pSSIDList[j].ssidname != NULL)
 					{
 						// if not empty ssid (this represents a non-broadcast SSID)
-						if (pSSIDList[j].ssidname[0] != '\0')
+						if (!QString(pSSIDList[j].ssidname).isEmpty())
 						{
 							WirelessNetworkInfo networkInfo;
 							networkInfo.m_name = pSSIDList[j].ssidname;
@@ -363,11 +374,7 @@ void SSIDList::getNetworkInfo(QString adapterName)
 						}
 						++j;
 					}
-					m_curNetworks = networkHashTable.values();
-					
-					// name says it all.  make assoc mode only one value (best), rather than bitfield.
-					// temporary until we have better UI solution
-					this->tempAssocModeHack();
+					networkList = networkHashTable.values();
 					
 					xsupgui_request_free_ssid_enum(&pSSIDList);
 					pSSIDList = NULL;
@@ -387,6 +394,7 @@ void SSIDList::getNetworkInfo(QString adapterName)
 	{
 		// bad things man
 	}
+	return networkList;
 }
 
 void SSIDList::handleSSIDTableSelectionChange(void)

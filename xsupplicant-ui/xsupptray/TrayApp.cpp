@@ -48,6 +48,11 @@
 #include "buildnum.h"
 #include "ConnectMgrDlg.h"
 #include "ConnectDlg.h"
+#include "ConnectionWizard.h"
+#include "XSupWrapper.h"
+#include "SSIDList.h"
+#include "WirelessNetworkMenu.h"
+#include <algorithm>
 
 //! Constructor
 /*!
@@ -87,6 +92,7 @@ TrayApp::TrayApp(QApplication &app):
   m_pCreds					= NULL;
   m_pConnMgr				= NULL;
   m_pConnectDlg				= NULL;
+  m_pConnWizard				= NULL;
 
   uiCallbacks.launchHelpP = &HelpWindow::showPage;
 }
@@ -155,7 +161,6 @@ void TrayApp::checkOtherSupplicants()
 	PROCESS_INFORMATION pi;
 	QString shortpath = QApplication::applicationDirPath();
 	char *supcheckapp = NULL;
-	char *temp = NULL;
 	wchar_t *wsupcheckapp = NULL;
 	config_globals *globals = NULL;
 
@@ -191,9 +196,7 @@ void TrayApp::checkOtherSupplicants()
 		return;
 	}
 
-	temp = _strdup(shortpath.toAscii());
-	sprintf(supcheckapp, "\"%s\\checksuppsapp.exe\" -q", temp);
-	free(temp);
+	sprintf(supcheckapp, "\"%s\\checksuppsapp.exe\" -q", shortpath.toAscii().data());
 
 	Util::useBackslash(supcheckapp);
 
@@ -565,6 +568,12 @@ void TrayApp::slotInterfaceInserted(char *intName)
 	{
 		populateGlobalTrayData(intName, devDesc);
 		updateGlobalTrayIconState();
+		
+		// if wireless interface was inserted, rebuild menu as we may need to update the "quick connect" menu
+		this->buildPopupMenu();
+
+		if (devDesc != NULL)
+			free(devDesc);
 	}
 }
 
@@ -580,6 +589,9 @@ void TrayApp::slotInterfaceRemoved(char *intDesc)
 	m_myKey = m_intStateHash.key(intDesc);
 	m_intStateHash.remove(m_myKey);
 	updateGlobalTrayIconState();
+	
+	// if wireless interface was removed, rebuild menu as we may need to update the "quick connect" menu
+	this->buildPopupMenu();	
 }
 
 /**
@@ -596,6 +608,7 @@ void TrayApp::connectGlobalTrayIconSignals()
 		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(QString)), this, SLOT(slotConnectionTimeout(QString)));
+		Util::myConnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updatePopupMenuAfterScan(const QString &)));
 	}
 }
 
@@ -613,6 +626,7 @@ void TrayApp::disconnectGlobalTrayIconSignals()
 		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(QString)), this, SLOT(slotConnectionTimeout(QString)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updatePopupMenuAfterScan(const QString &)));
 	}
 }
 
@@ -667,11 +681,9 @@ void TrayApp::populateGlobalTrayData(QString intName, QString intDesc)
 {
 	int state = -1;
 	QString temp;
-	char *ctemp = NULL;
 
 	m_intStateHash.insert(intName, intDesc);
-	ctemp = _strdup(intName.toAscii());
-	if (xsupgui_request_get_1x_state(ctemp, &state) == REQUEST_SUCCESS)
+	if (xsupgui_request_get_1x_state(intName.toAscii().data(), &state) == REQUEST_SUCCESS)
 	{
 		// Add the state to our table.
 		temp.setNum(state);
@@ -684,8 +696,6 @@ void TrayApp::populateGlobalTrayData(QString intName, QString intDesc)
 		temp.setNum(-1);
 		m_intStateHash.insert(intName, temp);
 	}
-
-	free(ctemp);
 }
 
 /**
@@ -783,6 +793,7 @@ bool TrayApp::postConnectActions()
 
   updateIntControlCheck();
   setGlobalTrayIconState();
+  this->buildPopupMenu();
 
   return true;
 }
@@ -998,6 +1009,83 @@ void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
 	setTrayMenuBasedOnControl();
 }
 
+void TrayApp::buildPopupMenu(void)
+{
+	// clear out any wireless network menu data
+	for (int i=0;i<m_networkMenuVec.size();i++)
+		delete m_networkMenuVec.at(i);
+	m_networkMenuVec.clear();
+	
+	if (m_pTrayIconMenu != NULL)
+	{
+		m_pTrayIconMenu->clear();
+	
+		QStringList wirelessIntList;
+		wirelessIntList = XSupWrapper::getWirelessInterfaceList();
+		
+		if (wirelessIntList.empty() == false)
+		{
+			// if we have wireless interfaces, add "quick connect" menu
+			std::sort(wirelessIntList.begin(), wirelessIntList.end());
+			if (wirelessIntList.size() > 1)
+			{
+				QMenu *quickConnectMenu = new QMenu(tr("Quick Connect"));
+				m_pTrayIconMenu->addMenu(quickConnectMenu);
+				m_pTrayIconMenu->addSeparator();
+										
+				for (int i=0;i<wirelessIntList.size();i++)
+				{
+					// remove extra cruft from adapter name
+					QString intName = wirelessIntList.at(i);
+					intName.remove(QString(" - Packet Scheduler Miniport"));
+					
+					WirelessNetworkMenu *pWirelessMenu = new WirelessNetworkMenu(wirelessIntList.at(i),intName, this);
+					if (pWirelessMenu != NULL)
+					{
+						if (pWirelessMenu->menu() != NULL)
+						{
+							pWirelessMenu->populate();
+							quickConnectMenu->addMenu(pWirelessMenu->menu());
+							m_networkMenuVec.push_back(pWirelessMenu);
+						}
+					}					
+				}
+			}
+			else
+			{
+				WirelessNetworkMenu *pWirelessMenu = new WirelessNetworkMenu(wirelessIntList.at(0),tr("Quick Connect"), this);
+				if (pWirelessMenu != NULL)
+				{
+					if (pWirelessMenu->menu() != NULL)
+					{
+						pWirelessMenu->populate();
+						m_pTrayIconMenu->addMenu(pWirelessMenu->menu());
+						m_pTrayIconMenu->addSeparator();
+						m_networkMenuVec.push_back(pWirelessMenu);
+					}
+				}
+			}		
+		}
+		
+		// add standard items
+		
+		m_pTrayIconMenu->addAction(m_pLoginAction);
+		m_pTrayIconMenu->addSeparator();
+		m_pTrayIconMenu->addAction(m_pConfigAction);
+		m_pTrayIconMenu->addAction(m_pViewLogAction);
+		//m_pTrayIconMenu->addAction(m_pTroubleticketAction);
+		m_pTrayIconMenu->addSeparator();
+#ifdef WINDOWS
+		m_pTrayIconMenu->addAction(m_p1XControl);
+		m_pTrayIconMenu->addSeparator();
+#endif
+		m_pTrayIconMenu->addAction(m_pAboutAction);
+		m_pTrayIconMenu->addSeparator();
+		m_pTrayIconMenu->addAction(m_pQuitAction);	
+	}
+}
+
+
 //! 
 /*!
   \return 
@@ -1005,19 +1093,7 @@ void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
 void TrayApp::createTrayIcon()
 {
   m_pTrayIconMenu = new QMenu(this);
-  m_pTrayIconMenu->addAction(m_pLoginAction);
-  m_pTrayIconMenu->addSeparator();
-  m_pTrayIconMenu->addAction(m_pConfigAction);
-  m_pTrayIconMenu->addAction(m_pViewLogAction);
-  //m_pTrayIconMenu->addAction(m_pTroubleticketAction);
-  m_pTrayIconMenu->addSeparator();
-#ifdef WINDOWS
-  m_pTrayIconMenu->addAction(m_p1XControl);
-  m_pTrayIconMenu->addSeparator();
-#endif
-  m_pTrayIconMenu->addAction(m_pAboutAction);
-  m_pTrayIconMenu->addSeparator();
-  m_pTrayIconMenu->addAction(m_pQuitAction);
+  this->buildPopupMenu();
 
   m_pTrayIcon = new QSystemTrayIcon(this);
   m_pTrayIcon->setContextMenu(m_pTrayIconMenu);
@@ -1313,18 +1389,15 @@ void TrayApp::slotCleanupUPW()
 void TrayApp::slotConnectionTimeout(QString devName)
 {
 	char *conname = NULL;
-	char *devname = NULL;
 	QString temp;
 
-	devname = _strdup(devName.toAscii());
-
-	if (xsupgui_request_get_conn_name_from_int(devname, &conname) == REQUEST_SUCCESS)
+	if (xsupgui_request_get_conn_name_from_int(devName.toAscii().data(), &conname) == REQUEST_SUCCESS)
 	{
 		temp = conname;
 		if (QMessageBox::information(this, tr("Connection Lost"), tr("The connection '%1' has been lost.  Would you like the supplicant to attempt to connect to other priority networks?").arg(temp),
 			QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
 		{
-			if (xsupgui_request_set_connection_lock(devname, FALSE) != REQUEST_SUCCESS)
+			if (xsupgui_request_set_connection_lock(devName.toAscii().data(), FALSE) != REQUEST_SUCCESS)
 			{
 				QMessageBox::critical(this, tr("Error"), tr("Unable to configure the interface to automatically select a new connection.  You will have to connect manually."));
 			}
@@ -1336,8 +1409,6 @@ void TrayApp::slotConnectionTimeout(QString devName)
 
 		free(conname);
 	}
-
-	free(devname);
 }
 
 void TrayApp::slotCreateTroubleticket()
@@ -1728,4 +1799,273 @@ void TrayApp::showConnectDlg(void)
 			m_pConnectDlg->show();
 		}
 	}
+}
+
+void TrayApp::connectToNetwork(const QString &networkName, const QString &adapterDesc)
+{	
+	int retVal;
+	bool enableMenu = true;
+	bool found = false;
+	conn_enum *pConn = NULL;
+	
+	// first, look for existing connection profile
+	retVal = xsupgui_request_enum_connections(&pConn);
+	if (retVal == REQUEST_SUCCESS && pConn != NULL)
+	{
+		int i = 0;
+		while (pConn[i].name != NULL)
+		{
+			if (QString(pConn[i].ssid) == networkName && QString(pConn[i].dev_desc) == adapterDesc)
+			{
+				// jking - !!! Right now we're just going with the first match. Ideally we should check
+				// if there's more than one connection for this SSID. If so, prompt the user to tell us
+				// which one to use.  This should be rare, so punt for now
+				char *adapterName= NULL;
+				
+				found = true;
+				retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &adapterName);
+				
+				if (retVal == REQUEST_SUCCESS && adapterName != NULL)
+					retVal = xsupgui_request_set_connection(adapterName, pConn[i].name);
+
+				if (retVal != REQUEST_SUCCESS || adapterName == NULL)
+				{
+					QString message = tr("An error occurred while connecting to the network '%1'.").arg(networkName);
+					QMessageBox::critical(this,tr("Error Connecting to Network"),message);
+				}
+				xsupgui_request_free_str(&adapterName);
+				break;
+			} 
+			i++;
+		}	
+	}
+	xsupgui_request_free_conn_enum(&pConn);
+	
+	// we need to create a connection, profile, etc
+	if (found == false)
+	{
+		// get information about network
+		int_enum *pInterfaceList = NULL;
+		ssid_info_enum *pSSIDList = NULL;
+		ssid_info_enum *selectedNetwork = NULL;
+		retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+		if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+		{
+			int i = 0;
+			while (pInterfaceList[i].desc != NULL)
+			{
+				if (adapterDesc == pInterfaceList[i].desc)
+				{
+					retVal = xsupgui_request_enum_ssids(pInterfaceList[i].name,&pSSIDList);
+					if (retVal == REQUEST_SUCCESS && pSSIDList != NULL)
+					{
+						int j = 0;
+						while (pSSIDList[j].ssidname != NULL)
+						{
+							if (QString(pSSIDList[j].ssidname) == networkName)
+							{
+								selectedNetwork = &(pSSIDList[j]);
+								break;
+							}
+						++j;
+						}					
+					}
+				}
+				++i;
+			}
+			xsupgui_request_free_int_enum(&pInterfaceList);
+		}
+		
+		// if found information on network
+		if (selectedNetwork != NULL)
+		{		
+			QString connName = networkName;
+			connName.append(tr("_Connection"));
+			config_connection *pNewConn;
+			if (XSupWrapper::createNewConnection(connName,&pNewConn) && pNewConn != NULL)
+			{
+				bool runWizard = false;
+							
+				pNewConn->priority = DEFAULT_PRIORITY;
+				pNewConn->ssid = _strdup(networkName.toAscii().data());
+
+				// try to use the "best" security available
+				unsigned int abilities = selectedNetwork->abil;
+				if ((abilities & ABILITY_ENC) != 0)
+				{
+					if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
+					{
+						pNewConn->association.association_type = ASSOC_OPEN;
+						pNewConn->association.auth_type = AUTH_NONE;	
+					}
+					if ((abilities & ABILITY_RSN_DOT1X) != 0)
+					{
+						pNewConn->association.association_type = ASSOC_WPA2;
+						runWizard = true;
+					}
+					if ((abilities & ABILITY_WPA_DOT1X) != 0)
+					{
+						pNewConn->association.association_type = ASSOC_WPA;
+						runWizard= true;
+					}
+					if ((abilities & ABILITY_RSN_PSK) != 0)
+					{
+						pNewConn->association.association_type = ASSOC_WPA2;
+						pNewConn->association.auth_type = AUTH_PSK;	
+					}						
+					if ((abilities & ABILITY_WPA_PSK) != 0)
+					{
+						pNewConn->association.association_type = ASSOC_WPA;
+						pNewConn->association.auth_type = AUTH_PSK;								
+					}	
+				}
+				else
+				{
+					pNewConn->association.association_type = ASSOC_OPEN;
+					pNewConn->association.auth_type = AUTH_NONE;
+				}		
+
+				pNewConn->device = _strdup(adapterDesc.toAscii().data());
+				pNewConn->ip.type = CONFIG_IP_USE_DHCP;
+				pNewConn->ip.renew_on_reauth = FALSE;
+				
+				// Dot 1X network.  Need to run wizard to prompt user for more info
+				if (runWizard == true)
+				{
+					// alert user we are launching the wizard
+					QString msg = tr("You must provide some additional information in order to connect to the network '%1'.  The XSupplicant will now launch the Connection Wizard to collect this information. Continue?").arg(networkName);
+					if (QMessageBox::information(this, tr(""), msg, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+					{
+						if (m_pConnWizard == NULL)
+						{
+							m_pConnWizard = new ConnectionWizard(this, this, m_pEmitter);
+							if (m_pConnWizard != NULL && m_pConnWizard->create() != false)
+							{
+								// register for cancelled and finished events
+								Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cancelConnectionWizard()));
+								Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
+								
+								ConnectionWizardData wizData;
+								bool success = wizData.initFromSupplicantProfiles(pNewConn,NULL,NULL);
+								if (success == true) {
+									m_pConnWizard->editDot1XInfo(wizData);
+									m_pConnWizard->show();
+									enableMenu = false;
+									}
+								else
+									cleanupConnectionWizard();
+							}
+							else
+							{
+								QMessageBox::critical(this,tr("Error Launching Connection Wizard"), tr("A failure occurred when attempting to launch the Connection Wizard"));
+								cleanupConnectionWizard();
+							}
+						}
+						else
+						{
+							// already exists.  What to do?
+						}
+					}
+				}
+				else
+				{
+					// set this connection as volatile
+					pNewConn->flags |= CONFIG_VOLATILE_CONN;
+				
+					retVal = xsupgui_request_set_connection_config(pNewConn);
+					
+					if (retVal == REQUEST_SUCCESS)
+					{
+						// save off the config since it changed
+						if (XSupWrapper::writeConfig() == false)
+						{
+							// error. what to do here?  For now, fail silently as it's non-fatal
+							// perhaps write to log?
+						}
+						char *adapterName = NULL;
+						
+						retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &adapterName);
+						if (retVal == REQUEST_SUCCESS && adapterName != NULL)			
+							retVal = xsupgui_request_set_connection(adapterName, pNewConn->name);
+							
+						if (retVal != REQUEST_SUCCESS || adapterName == NULL)
+						{
+							QString message = tr("An error occurred while connecting to the network '%1'.").arg(networkName);
+							QMessageBox::critical(this,tr("Error Connecting to Network"),message);				
+						}
+						xsupgui_request_free_str(&adapterName);
+					}
+					else
+					{
+						// !!! jking - error, what to do here?
+					}					
+				}
+				XSupWrapper::freeConfigConnection(&pNewConn);
+			}
+		}
+		if (pSSIDList != NULL)
+			xsupgui_request_free_ssid_enum(&pSSIDList);
+	}
+	if (enableMenu == true)
+	{
+		// re-enable popup menu after connecting
+		if (m_pTrayIconMenu != NULL)
+			m_pTrayIconMenu->setEnabled(true);	
+	}
+}
+
+void TrayApp::finishConnectionWizard(bool success, const QString &connName)
+{
+	if (success)
+	{
+		int retVal;
+		
+		config_connection *pConfig;
+		success = XSupWrapper::getConfigConnection(connName, &pConfig);
+		if (success == true && pConfig != NULL)
+		{
+			char *adapterName = NULL;
+			retVal = xsupgui_request_get_devname(pConfig->device, &adapterName);
+			if (retVal == REQUEST_SUCCESS && adapterName != NULL)			
+			{
+				retVal = xsupgui_request_set_connection(adapterName, connName.toAscii().data());
+				if (retVal != REQUEST_SUCCESS)
+					QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'.").arg(QString(pConfig->ssid)));
+			}
+			else
+				QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'.").arg(QString(pConfig->ssid)));
+			XSupWrapper::freeConfigConnection(&pConfig);		
+		}
+	}		
+	this->cleanupConnectionWizard();
+	
+	// re-enable popup menu after connecting
+	if (m_pTrayIconMenu != NULL)
+		m_pTrayIconMenu->setEnabled(true);		
+}
+
+void TrayApp::cancelConnectionWizard(void)
+{
+	this->cleanupConnectionWizard();
+	
+	// re-enable popup menu after connecting
+	if (m_pTrayIconMenu != NULL)
+		m_pTrayIconMenu->setEnabled(true);	
+}
+
+void TrayApp::cleanupConnectionWizard(void)
+{
+	if (m_pConnWizard != NULL)
+	{
+		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cancelConnectionWizard()));
+		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
+	
+		delete m_pConnWizard;
+		m_pConnWizard = NULL;
+	}
+}
+
+void TrayApp::updatePopupMenuAfterScan(const QString &)
+{
+	this->buildPopupMenu();
 }

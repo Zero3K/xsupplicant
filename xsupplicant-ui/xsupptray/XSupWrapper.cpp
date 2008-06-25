@@ -437,3 +437,25 @@ bool XSupWrapper::isTrustedServerInUse(const QString &serverName)
 	}
 	return inUse;
 }
+
+QStringList XSupWrapper::getWirelessInterfaceList(void)
+{
+	QStringList intList;
+	int retVal;
+	
+	int_enum *pInterface;
+	retVal = xsupgui_request_enum_live_ints(&pInterface);
+	
+	if (retVal == REQUEST_SUCCESS && pInterface != NULL)
+	{
+		int i = 0;
+		while (pInterface[i].name != NULL)
+		{
+			if (pInterface[i].is_wireless == TRUE)
+				intList.append(QString(pInterface[i].desc));
+			++i;
+		}
+	}
+	xsupgui_request_free_int_enum(&pInterface);
+	return intList;
+}

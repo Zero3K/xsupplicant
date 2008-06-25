@@ -282,7 +282,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 	// first, look for existing connection profile
 	int retVal;
 	bool found = false;
-	conn_enum * pConn = NULL;
+	conn_enum *pConn = NULL;
 	
 	retVal = xsupgui_request_enum_connections(&pConn);
 	
@@ -361,7 +361,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 			}
 			pNewConn->device = _strdup(m_curAdapter.toAscii().data());
 			pNewConn->ip.type = CONFIG_IP_USE_DHCP;
-			pNewConn->ip.renew_on_reauth = FALSE; // correct default?
+			pNewConn->ip.renew_on_reauth = FALSE;
 			
 			if (runWizard == true)
 			{
@@ -435,7 +435,6 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 			}
 			XSupWrapper::freeConfigConnection(&pNewConn);
 		}
-		
 	}
 }
 

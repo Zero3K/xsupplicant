@@ -43,7 +43,9 @@ class WirelessNetworkInfo
 public:
 	WirelessNetworkInfo();
 	~WirelessNetworkInfo();
-	
+		
+public:
+
 	//values for auth modes bitfield
 	static const unsigned char SECURITY_NONE			= 0x00;
 	static const unsigned char SECURITY_STATIC_WEP		= 0x01;
@@ -57,14 +59,16 @@ public:
 	static const unsigned char WIRELESS_MODE_B = 0x02;
 	static const unsigned char WIRELESS_MODE_G = 0x04;
 	static const unsigned char WIRELESS_MODE_N = 0x08;
-		
-public:
+	
 	QString m_name;
 	int m_signalStrength;
 	unsigned char m_assoc_modes;
 	unsigned char m_modes;
 };
-	
+
+// so that we can use sort algorithm on container of WirelessNetworkInfo
+bool operator< (const WirelessNetworkInfo &lhs, const WirelessNetworkInfo &rhs);
+
 class SSIDList : public QWidget
 {
      Q_OBJECT
@@ -85,13 +89,13 @@ public:
 	void hideColumn(SSIDListCol colIndex);
 	void showColumn(SSIDListCol colIndex);
 	bool selectNetwork(const QString &networkName);
+	static QList<WirelessNetworkInfo> getNetworkInfo(QString adapterName);
 	
 signals:
 	void ssidSelectionChange(const WirelessNetworkInfo &);
 	void ssidDoubleClick(const WirelessNetworkInfo &);
 	
 private:
-	void getNetworkInfo(QString adapterName);
 	void initUI(void);
 	void tempAssocModeHack(void);
 	
