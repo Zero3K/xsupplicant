@@ -99,6 +99,12 @@ ConnectDlg::~ConnectDlg()
 
 	if (m_pAdapterTabControl != NULL)
 		Util::myConnect(m_pAdapterTabControl, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
+		
+	if (m_pWirelessConnectionInfo != NULL)
+		Util::myConnect(m_pWirelessConnectionInfo, SIGNAL(clicked()), this, SLOT(showWirelessConnectionInfo()));
+		
+	if (m_pWiredConnectionInfo != NULL)
+		Util::myConnect(m_pWiredConnectionInfo, SIGNAL(clicked()), this, SLOT(showWiredConnectionInfo()));			
 
 	Util::myDisconnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
 
@@ -111,6 +117,9 @@ ConnectDlg::~ConnectDlg()
 		
 	if (m_pSSIDListDlg != NULL)
 		delete m_pSSIDListDlg;
+		
+	if (m_pConnInfo != NULL)
+		delete m_pConnInfo;
 		
 	this->cleanupConnectionWizard();
 		
@@ -163,10 +172,6 @@ bool ConnectDlg::initUI(void)
 	// populate text
 	m_pWirelessConnectionStatus->setText(tr("Idle"));
 	m_pWiredConnectionStatus->setText(tr("Idle"));
-
-	// These don't do anything (yet) so disable them.
-	m_pWiredConnectionInfo->setEnabled(false);
-	//m_pWirelessConnectionInfo->setEnabled(false);
 	
 	// wireless tab
 	if (m_pCloseButton != NULL)
@@ -255,6 +260,9 @@ bool ConnectDlg::initUI(void)
 		
 	if (m_pWirelessConnectionInfo != NULL)
 		Util::myConnect(m_pWirelessConnectionInfo, SIGNAL(clicked()), this, SLOT(showWirelessConnectionInfo()));
+		
+	if (m_pWiredConnectionInfo != NULL)
+		Util::myConnect(m_pWiredConnectionInfo, SIGNAL(clicked()), this, SLOT(showWiredConnectionInfo()));		
 
 	Util::myConnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
 	Util::myConnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
@@ -1309,6 +1317,26 @@ void ConnectDlg::showWirelessConnectionInfo(void)
 	else
 	{
 		m_pConnInfo->setAdapter(m_currentWirelessAdapter);
+		m_pConnInfo->show();
+	}
+}
+
+void ConnectDlg::showWiredConnectionInfo(void)
+{
+	if (m_pConnInfo == NULL)
+	{
+		m_pConnInfo= new ConnectionInfoDlg(this, m_pRealForm, m_pEmitter);
+		if (m_pConnInfo != NULL && m_pConnInfo->create() != false)
+		{
+			m_pConnInfo->setAdapter(m_currentWiredAdapter);
+			m_pConnInfo->show();
+		}
+		else
+			; // error. tell user?
+	}
+	else
+	{
+		m_pConnInfo->setAdapter(m_currentWiredAdapter);
 		m_pConnInfo->show();
 	}
 }

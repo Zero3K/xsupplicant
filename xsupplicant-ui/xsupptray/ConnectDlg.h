@@ -97,6 +97,7 @@ private slots:
 	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
 	void interfaceInserted(char *intName);
 	void showWirelessConnectionInfo(void);
+	void showWiredConnectionInfo(void);
 	void interfaceRemoved(char *intDesc);
 		
 private:

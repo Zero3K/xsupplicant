@@ -40,6 +40,7 @@ ConnectionInfoDlg::ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emi
 	:QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow), m_pEmitter(e)
 {
 	m_wirelessAdapter = false;
+	m_days = 0;
 }
 
 ConnectionInfoDlg::~ConnectionInfoDlg()
@@ -173,7 +174,10 @@ bool ConnectionInfoDlg::initUI(void)
 
 void ConnectionInfoDlg::disconnect(void)
 {
-	this->disconnectWirelessConnection();
+	if (m_wirelessAdapter == true)
+		this->disconnectWirelessConnection();
+	else
+		this->disconnectWiredConnection();
 }
 
 void ConnectionInfoDlg::renewIP(void)
@@ -243,34 +247,53 @@ void ConnectionInfoDlg::disconnectWirelessConnection(void)
 
 	// Using the device description - get the device name
 	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if ((retval != REQUEST_SUCCESS) || (pDeviceName == NULL))
+	if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
 	{
-		// If we can't determine the device name, then tell the caller the connection can't
-		// be made.
-		return;
+		
+		retval = xsupgui_request_set_disassociate(pDeviceName, 1);
+		if (retval != REQUEST_SUCCESS)
+		{
+			QMessageBox::critical(NULL, tr("Disconnect Wireless"),
+				tr("An error occurred while disassociating device '%1'.\n").arg(m_curAdapter));
+		}
+		else
+		{
+			// Lock the connection in a disconnected state so that we don't change to something else.
+			xsupgui_request_set_connection_lock(pDeviceName, TRUE);
+			xsupgui_request_unbind_connection(pDeviceName);
+			this->stopAndClearTimer();
+		}
 	}
-	
-	retval = xsupgui_request_set_disassociate(pDeviceName, 1);
-	if (retval != REQUEST_SUCCESS)
-	{
-		QMessageBox::critical(NULL, tr("Disconnect Wireless"),
-			tr("An error occurred while disassociating device '%1'.\n").arg(m_curAdapter));
-
-		if (pDeviceName != NULL) free(pDeviceName);
-
-		// We need to remain on the "connected" page, since we can't be sure
-		// of the wireless status.
-		return;
-	}
-
-	// Lock the connection in a disconnected state so that we don't change to something else.
-	xsupgui_request_set_connection_lock(pDeviceName, TRUE);
-
-	xsupgui_request_unbind_connection(pDeviceName);
-
-	this->stopAndClearTimer();
 
 	if (pDeviceName != NULL)
+		free(pDeviceName);
+}
+
+void ConnectionInfoDlg::disconnectWiredConnection(void)
+{
+	char *pDeviceName = NULL;
+	int retval = 0;
+
+	// Using the device description - get the device name
+	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
+	if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
+	{
+
+		retval = xsupgui_request_logoff(pDeviceName);
+		if (retval != REQUEST_SUCCESS)
+		{
+			QMessageBox::critical(NULL, tr("Disconnect Wired"),
+				tr("An error occurred while logging off device '%1'.")
+				.arg(m_curAdapter));
+		}
+		else
+		{
+			xsupgui_request_unbind_connection(pDeviceName);
+			this->stopAndClearTimer();
+		}
+	}
+
+	if (pDeviceName != NULL) 
 		free(pDeviceName);
 }
 
@@ -326,7 +349,9 @@ void ConnectionInfoDlg::updateWirelessState(void)
 	}
 
 	if (m_pDisconnectButton != NULL)
-		m_pDisconnectButton->setEnabled(status != Util::status_idle);		
+		m_pDisconnectButton->setEnabled(status != Util::status_idle);
+	if (m_pRenewIPButton != NULL)
+		m_pRenewIPButton->setEnabled(status != Util::status_idle);			
 				
 	if (pDeviceName != NULL)
 		free(pDeviceName);
@@ -357,7 +382,9 @@ void ConnectionInfoDlg::updateWiredState(void)
 	}
 	
 	if (m_pDisconnectButton != NULL)
-		m_pDisconnectButton->setEnabled(status != Util::status_idle);		
+		m_pDisconnectButton->setEnabled(status != Util::status_idle);
+	if (m_pRenewIPButton != NULL)
+		m_pRenewIPButton->setEnabled(status != Util::status_idle);			
 		
 	if (m_pSSIDLabel != NULL)
 		m_pSSIDLabel->setText("");
@@ -368,6 +395,7 @@ void ConnectionInfoDlg::updateWiredState(void)
 
 void ConnectionInfoDlg::stopAndClearTimer(void)
 {
+	m_days = 0;
 	m_timer.stop();
 	m_time.setHMS(0, 0, 0);
 	this->showTime();
@@ -480,7 +508,9 @@ void ConnectionInfoDlg::stateChange(const QString &intName, int sm, int oldstate
 					m_pIPAddressLabel->setText("");
 			}
 			if (m_pDisconnectButton != NULL)
-				m_pDisconnectButton->setEnabled(status != Util::status_idle);					
+				m_pDisconnectButton->setEnabled(status != Util::status_idle);
+			if (m_pRenewIPButton != NULL)
+				m_pRenewIPButton->setEnabled(status != Util::status_idle);									
 		}
 
 		if (sm == IPC_STATEMACHINE_PHYSICAL)
@@ -508,8 +538,11 @@ void ConnectionInfoDlg::stateChange(const QString &intName, int sm, int oldstate
 				if (m_pIPAddressLabel != NULL)
 					m_pIPAddressLabel->setText("");
 			}
+			
 			if (m_pDisconnectButton != NULL)
-				m_pDisconnectButton->setEnabled(status != Util::status_idle);									
+				m_pDisconnectButton->setEnabled(status != Util::status_idle);
+			if (m_pRenewIPButton != NULL)
+				m_pRenewIPButton->setEnabled(status != Util::status_idle);													
 		}
 	}
 	if (pDeviceName != NULL)
