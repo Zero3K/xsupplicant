@@ -278,6 +278,7 @@ Section "XSupplicant (required)"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionManagerWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionWizardWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionInfoWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SSIDListWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessScanDialog.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XCert.ui"
@@ -478,6 +479,7 @@ Section "Uninstall"
         Delete $INSTDIR\Skins\Default\AboutWindow.ui
         Delete $INSTDIR\Skins\Default\ConfigWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionManagerWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectionInfoWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionWizardWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionWindow.ui
         Delete $INSTDIR\Skins\Default\HelpWindow.ui
