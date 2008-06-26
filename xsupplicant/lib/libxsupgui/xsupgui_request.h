@@ -528,7 +528,7 @@ int xsupgui_request_set_globals_config(config_globals *globals);
 int xsupgui_request_set_managed_network_config(config_managed_networks *mnconfig);
 int xsupgui_request_delete_profile_config(char *prof_name, int force);
 int xsupgui_request_delete_connection_config(char *conn_name);
-int xsupgui_request_delete_interface_config(char *intname);
+int xsupgui_request_delete_interface_config(char *intdesc);
 int xsupgui_request_delete_trusted_server_config(char *servname, int force);
 int xsupgui_request_delete_managed_network_config(char *ouname);
 int xsupgui_request_delete_some_conf(char *deletefrom, char *searchtag, char *searchitem, int force);
