@@ -37,6 +37,7 @@
 #include <QPushButton>
 #include <QWidget>
 #include <QCheckBox>
+#include <QComboBox>
 #include "xsupcalls.h"
 #include "MessageClass.h"
 #include "Util.h"
@@ -60,10 +61,12 @@ signals:
 private slots:
   void slotOkayBtn();
   void slotDisconnectBtn();
+  void slotWEPComboChange(int);
 
 private:
 	bool createUPW();
 	bool createPSK();
+	bool createWEP();
 
   QWidget *m_pRealForm;
   QDialog *m_pDialog;
@@ -76,7 +79,9 @@ private:
   QLabel *m_pDialogMsg;
   QString m_connName;
   QCheckBox *m_pRememberCreds;
+  QComboBox *m_pWEPCombo;
   bool m_doingPsk;
+  bool m_doingWEP;
 
   char *p_user;
   char *p_pass;

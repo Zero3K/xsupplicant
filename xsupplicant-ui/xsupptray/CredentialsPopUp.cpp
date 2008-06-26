@@ -67,6 +67,7 @@ CredentialsPopUp::CredentialsPopUp(QString connName, QWidget *parent, Emitter *e
 	m_pPassword			= NULL;
 	p_user				= NULL;
 	p_pass				= NULL;
+	m_pWEPCombo			= NULL;
 }
 
 
@@ -86,6 +87,9 @@ CredentialsPopUp::~CredentialsPopUp()
 		Util::myDisconnect(m_pButtonBox, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 	}
 
+	if (m_pWEPCombo != NULL)
+		Util::myDisconnect(m_pWEPCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotWEPComboChange(int)));
+		
 	if (m_pRealForm != NULL) 
 	{
 		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
@@ -107,13 +111,130 @@ bool CredentialsPopUp::create()
 	if (authtype == AUTH_PSK)
 	{
 		m_doingPsk = true;
+		m_doingWEP = false;
 		return createPSK();
 	}
-	else
+	else if (authtype == AUTH_EAP)
 	{
 		m_doingPsk = false;
+		m_doingWEP = false;
 		return createUPW();
 	}
+	else if (authtype == AUTH_NONE)
+	{
+		// WEP
+		m_doingPsk = false;
+		m_doingWEP = true;
+		return createWEP();
+	}
+	return false;
+}
+
+bool CredentialsPopUp::createWEP()
+{
+	m_pRealForm = FormLoader::buildform("WEPWindow.ui");
+
+	if (m_pRealForm == NULL) 
+		return false;
+	
+	// cache off pointers to UI objects
+	m_pDialogMsg = qFindChild<QLabel*>(m_pRealForm, "labelDialogMsg");
+	m_pWEPCombo = qFindChild<QComboBox*>(m_pRealForm, "comboBoxKeyType");
+	m_pPassword = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldPassword");
+	if (m_pPassword == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'upwPassword' label."));
+		return false;
+	}	
+
+	m_pRememberCreds = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxRemember");
+	if (m_pRememberCreds == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'rememberCredentials' checkbox."));
+		return false;
+	}	
+
+	m_pButtonBox = qFindChild<QDialogButtonBox*>(m_pRealForm, "buttonBox");
+
+	if (m_pButtonBox == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'buttonBox' DialogButtonBox"));
+		return false;
+	}		
+	
+	// dynamically populate text
+	QLabel *pLabel = qFindChild<QLabel*>(m_pRealForm, "labelKeyType");
+	if (pLabel != NULL)
+		pLabel->setText(tr("Password Type:"));
+		
+	pLabel = qFindChild<QLabel*>(m_pRealForm, "labelPassword");
+	if (pLabel != NULL)
+		pLabel->setText(tr("Password:"));
+		
+	if (m_pRememberCreds != NULL)
+		m_pRememberCreds->setText(tr("Remember Password"));
+		
+	if (m_pWEPCombo != NULL)
+	{
+		m_pWEPCombo->clear();
+		m_pWEPCombo->addItem(tr("40-bit HEX"));
+		m_pWEPCombo->addItem(tr("104-bit HEX"));
+	}
+
+	if (m_pDialogMsg != NULL)
+	{
+		QString networkName="";
+		
+		// if we have the name of the connection, try to retrieve the SSID of the network
+		// so that we can correctly prompt the user
+		if (m_connName.isEmpty() == false)
+		{
+			config_connection *pConnection = NULL;
+			if (m_supplicant.getConfigConnection(m_connName, &pConnection, false) == true)
+			{
+				if (pConnection != NULL && pConnection->ssid != NULL)
+					networkName = pConnection->ssid;
+				if (pConnection != NULL)
+					m_supplicant.freeConfigConnection(&pConnection);
+			}
+		}
+
+		// if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
+		// prompt message
+		QString dlgMsg;
+		if (networkName.isEmpty() == false)
+		{
+			dlgMsg.append(tr("The network \""));
+			dlgMsg.append(networkName);
+			dlgMsg.append(tr("\" requires a WEP password to connect"));
+		}
+		else
+		{
+			dlgMsg.append(tr("The network you are trying to connect to requires a WEP password"));
+		}
+		m_pDialogMsg->setText(dlgMsg);
+	}	
+		
+	// set up event handling	
+		
+	// If the user hits the "X" button in the title bar, close us out gracefully.
+	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+	
+	if (m_pButtonBox != NULL)
+	{
+		Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this, SLOT(slotOkayBtn()));
+		Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));	
+	}
+	
+	if (m_pWEPCombo != NULL) {
+		Util::myConnect(m_pWEPCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotWEPComboChange(int)));
+		m_pWEPCombo->setCurrentIndex(0);
+		this->slotWEPComboChange(0);
+	}
+	
+	setupWindow();
+	
+	return true;	
 }
 
 bool CredentialsPopUp::createUPW()
@@ -326,7 +447,81 @@ void CredentialsPopUp::slotOkayBtn()
 	config_connection *cconf = NULL;
 	char *intName = NULL;
 
-	if (m_doingPsk)
+	if (m_doingWEP == true)
+	{
+		// check if valid key is input
+		if (!m_pPassword->hasAcceptableInput())
+		{
+			int numDigits = 0;
+			if (m_pWEPCombo->currentIndex() == 0)
+				numDigits = 10;
+			else if (m_pWEPCombo->currentIndex() == 1)
+				numDigits = 26;
+				
+			QString message = tr("Please input a WEP password containing %1 hexadecimal (0-9, A-F) digits").arg(numDigits);
+			QMessageBox::warning(m_pRealForm, tr("Invalid WEP Password"),message);
+		}
+		else
+		{
+			// Set our WEP password.		
+			if (xsupgui_request_set_connection_pw(m_connName.toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
+			{
+				QMessageBox::critical(this, tr("Error"), tr("Unable to set your WEP password."));
+			}
+			else
+			{
+				if (xsupgui_request_get_connection_config(m_connName.toAscii().data(), &cconf) != REQUEST_SUCCESS)
+				{
+					QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
+				}
+				else
+				{
+					// if "remember credentials" is checked, make sure this isn't marked as volatile
+					if (m_pRememberCreds->checkState() == Qt::Checked)
+					{
+						cconf->flags &= ~CONFIG_VOLATILE_CONN;
+						
+						// clear out any credentials that presently are stored
+						if (cconf->association.keys != NULL)
+						{
+							cconf->association.keys[1] = _strdup(m_pPassword->text().toAscii().data());
+						
+							// save off changes to config						
+							if (xsupgui_request_set_connection_config(cconf) == REQUEST_SUCCESS)
+							{
+								// tell everyone we changed the config
+								m_pEmitter->sendConnConfigUpdate();
+													
+								// this may fail.  No need to prompt user if it does
+								XSupWrapper::writeConfig();
+							}
+							else
+								QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your WEP key"));
+						}
+						else
+							QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your WEP key"));						
+					}
+						
+					if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
+					{
+						QMessageBox::critical(this, tr("Error"), tr("Couldn't determine the interface the desired connection is bound to!"));
+					}
+					else
+					{
+						if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
+						{
+							QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
+						}
+						free(intName);
+					}
+
+					xsupgui_request_free_connection_config(&cconf);
+				}
+			}		
+		}
+	}
+	
+	else if (m_doingPsk)
 	{
 		// Set our PSK.		
 		if (xsupgui_request_set_connection_pw(m_connName.toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
@@ -356,13 +551,16 @@ void CredentialsPopUp::slotOkayBtn()
 					cconf->association.psk = _strdup(m_pPassword->text().toAscii().data());
 					
 					// save off changes to config
-					xsupgui_request_set_connection_config(cconf);
-					
-					// tell everyone we changed the config
-					m_pEmitter->sendConnConfigUpdate();
-										
-					// this may fail.  No need to prompt user if it does
-					XSupWrapper::writeConfig();	
+					if (xsupgui_request_set_connection_config(cconf) == REQUEST_SUCCESS)
+					{
+						// tell everyone we changed the config
+						m_pEmitter->sendConnConfigUpdate();
+											
+						// this may fail.  No need to prompt user if it does
+						XSupWrapper::writeConfig();	
+					}
+					else
+						QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your preshared key"));					
 				}
 					
 				if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
@@ -461,3 +659,16 @@ void CredentialsPopUp::updateData()
 	}
 }
 
+void CredentialsPopUp::slotWEPComboChange(int newVal)
+{
+	if (newVal == 0)
+	{
+		// WEP 40
+		 m_pPassword->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{10}$"), m_pPassword));
+	}
+	else if (newVal == 1)
+	{
+		// WEP 104
+		m_pPassword->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{26}$"), m_pPassword));
+	}
+}
