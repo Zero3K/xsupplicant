@@ -833,7 +833,7 @@ void ufprintf(FILE *fh, char *instr, int level)
   log_hook_full_debug(instr);
   #endif
 
-  // No decide where else to log to.
+  // Now decide where else to log to.
   if (((isdaemon == 2) || (fh == NULL)) && (syslogging != 1))
     {
       printf("%s", instr);

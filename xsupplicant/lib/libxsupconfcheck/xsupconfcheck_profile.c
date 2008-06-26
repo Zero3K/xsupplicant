@@ -293,7 +293,7 @@ int xsupconfcheck_profile_eap_mschapv2(struct config_eap_mschapv2 *mscv2, config
 
 	if ((mscv2->nthash == NULL) && (mscv2->password == NULL) && (prof->temp_password == NULL))
 	{
-		if (log == TRUE) error_prequeue_add("There is no password set for EAP-MSCHAPv2.");
+		//if (log == TRUE) error_prequeue_add("There is no password set for EAP-MSCHAPv2.");
 		retval = PROFILE_NEED_UPW;
 	}
 

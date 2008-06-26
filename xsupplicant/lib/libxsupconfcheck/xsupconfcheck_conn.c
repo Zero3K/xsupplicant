@@ -147,8 +147,12 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 		// If txkey is set to something other than 0, make sure there is key data in that slot.
 		if (conn->association.txkey != 0)
 		{
-			if (conn->association.keys[conn->association.txkey] == NULL)
+			if ((conn->association.keys[conn->association.txkey] == NULL) ||
+				(strlen(conn->association.keys[conn->association.txkey]) <= 0) ||
+				((strlen(conn->association.keys[conn->association.txkey]) != 5) &&
+				(strlen(conn->association.keys[conn->association.txkey]) != 13)))
 			{
+				/*
 				errmsg = malloc(100);
 				if (errmsg != NULL)
 				{
@@ -156,9 +160,9 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 					if (log == TRUE) error_prequeue_add(errmsg);
 					free(errmsg);
 					errmsg = NULL;
-				}
+				}*/
 
-				retval = -1;
+				retval = CONNECTION_NEED_UPW;
 			}
 		}
 
