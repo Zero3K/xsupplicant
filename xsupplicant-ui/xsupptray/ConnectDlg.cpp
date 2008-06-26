@@ -100,6 +100,9 @@ ConnectDlg::~ConnectDlg()
 
 	Util::myDisconnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
 
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(interfaceInserted(char *)));
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));		
+
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
@@ -252,8 +255,8 @@ bool ConnectDlg::initUI(void)
 	Util::myConnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
 
-	//Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(handleInterfaceInserted(char *)));
-	//Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));		
+	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(interfaceInserted(char *)));
+	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));		
 	
 	// set initial state of UI - mainly setting the active tab
 	if (m_pAdapterTabControl != NULL)
@@ -1224,10 +1227,20 @@ void ConnectDlg::stateChange(const QString &intName, int sm, int oldstate, int n
 		{
 			if (m_pAdapterTabControl->currentIndex() == 0)
 			{
+				if (m_pWirelessConnectionStack->currentIndex() != 1)
+				{
+					showActiveWirelessState(intName);
+				}
+
 				displayDot1XState(m_pWirelessConnectionStatus, m_currentAdapterName, newstate);
 			}
 			else
 			{
+				if (m_pWiredConnectionStack->currentIndex() != 1)
+				{
+					showActiveWiredState(intName);
+				}
+
 				displayDot1XState(m_pWiredConnectionStatus, m_currentAdapterName, newstate);
 			}
 		}
@@ -1236,13 +1249,113 @@ void ConnectDlg::stateChange(const QString &intName, int sm, int oldstate, int n
 		{
 			if (m_pAdapterTabControl->currentIndex() == 0)
 			{
+				if (m_pWirelessConnectionStack->currentIndex() != 1)
+				{
+					showActiveWirelessState(intName);
+				}
+
 				displayPhysicalState(m_pWirelessConnectionStatus, m_currentAdapterName, newstate);
 			}
 			else
 			{
+				if (m_pWiredConnectionStack->currentIndex() != 1)
+				{
+					showActiveWiredState(intName);
+				}
+
 				displayPhysicalState(m_pWiredConnectionStatus, m_currentAdapterName, newstate);
 			}
 		}
 	}
 }
+
+void ConnectDlg::showActiveWiredState(QString intName)
+{
+	char *devDesc = NULL;
+	int index = 0;
+
+	if (xsupgui_request_get_devdesc(intName.toAscii().data(), &devDesc) == REQUEST_SUCCESS)
+	{
+		if (devDesc != NULL)
+		{
+			index = m_pWiredAdapterList->findText(devDesc, Qt::MatchExactly);
+			if (index >= 0)
+			{
+				selectWiredAdapter(index);
+			}
+
+			free(devDesc);
+		}
+	}
+}
+
+void ConnectDlg::showActiveWirelessState(QString intName)
+{
+	char *devDesc = NULL;
+	int index = 0;
+
+	if (xsupgui_request_get_devdesc(intName.toAscii().data(), &devDesc) == REQUEST_SUCCESS)
+	{
+		if (devDesc != NULL)
+		{
+			index = m_pWirelessAdapterList->findText(devDesc, Qt::MatchExactly);
+			if (index >= 0)
+			{
+				selectWirelessAdapter(index);
+			}
+
+			free(devDesc);
+		}
+	}
+}
+
+void ConnectDlg::interfaceInserted(char *intName)
+{
+	char *devDesc = NULL;
+	int_enum *liveInts = NULL;
+	int i = 0;
+
+	if (xsupgui_request_enum_live_ints(&liveInts) == REQUEST_SUCCESS)
+	{
+		while ((liveInts[i].desc != NULL) && (strcmp(liveInts[i].name, intName) != 0))
+		{
+			i++;
+		}
+
+		if (liveInts[i].desc != NULL)
+		{
+			if (liveInts[i].is_wireless == TRUE)
+			{
+				m_pWirelessAdapterList->addItem(liveInts[i].desc);
+			}
+			else
+			{
+				m_pWiredAdapterList->addItem(liveInts[i].desc);
+			}
+		}
+				
+		xsupgui_request_free_int_enum(&liveInts);
+	}
+}
+
+void ConnectDlg::interfaceRemoved(char *intDesc)
+{
+	int index = 0;
+
+	index = m_pWirelessAdapterList->findText(intDesc, Qt::MatchExactly);
+	if (index < 0)
+	{
+		// It wasn't a wireless interface, so look in wired.
+		index = m_pWiredAdapterList->findText(intDesc, Qt::MatchExactly);
+		if (index >= 0)
+		{
+			m_pWiredAdapterList->removeItem(index);
+		}
+	}
+	else
+	{
+		m_pWirelessAdapterList->removeItem(index);
+	}
+}
+
 

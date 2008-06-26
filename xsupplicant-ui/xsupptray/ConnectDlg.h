@@ -74,6 +74,8 @@ private:
 	void stopAndClearTimer(void);
 	void displayDot1XState(QLabel *m_pLabel, QString m_deviceName, int state);
 	void displayPhysicalState(QLabel *m_pLabel, QString m_deviceName, int state);
+	void showActiveWiredState(QString intName);
+	void showActiveWirelessState(QString intName);
 	
 private slots:
 	void showSSIDList(void);
@@ -92,6 +94,8 @@ private slots:
 	void timerUpdate(void);
 	void currentTabChanged(int);
 	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
+	void interfaceInserted(char *intName);
+	void interfaceRemoved(char *intDesc);
 		
 private:
 	Emitter *m_pEmitter;
