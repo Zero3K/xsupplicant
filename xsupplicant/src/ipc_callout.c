@@ -2773,28 +2773,6 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 			free(conn_name);
 			return ipc_callout_create_error(iface, "Request_Connection_Change", IPC_ERROR_SSID_NOT_FOUND, outnode);
 		}
-
-		if ((ctx->conn->association.association_type == AUTH_NONE) && (TEST_FLAG(ssid->abilities, ABIL_ENC)) &&
-			(!TEST_FLAG(ssid->abilities, ABIL_WPA_IE)) && (!TEST_FLAG(ssid->abilities, ABIL_RSN_IE)))
-		{
-			// This SSID is *PROBABLY* using static WEP.  We have no way to be sure that it isn't
-			// a dynamic WEP connection.  But, if the user is using dynamic WEP, they shouldn't. ;)
-			// (They shouldn't use static WEP either...  But I digress.)
-
-			// We need to ask the user for information.  (NOTE: It is safe here not to specifically
-			// notify the UI that we are looking for a static WEP key.  The UI should read the
-			// configuration determine that there is no authentication configured, and assume
-			// that if it got this signal the engine wants a WEP key.  The reason is that there 
-			// shouldn't be any other unauthenticated, open, wireless permutation that would
-			// generate this event for that connection.)
-			ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, conn_name);
-			free(conn_name);
-
-			// We return an ACK in this case because technically we are doing what was asked.  We
-			// notifed the UI that we need more data, so the call was a success.
-			retval2 = ipc_callout_create_ack(NULL, "Request_Connection_Change", outnode);
-			return retval2;		
-		}
 	}
 
 

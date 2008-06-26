@@ -655,13 +655,17 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 	  {
 		  retval = xsupconfcheck_conn_check(ctx, conf, FALSE);
 
-		  if (retval < 0)   
+		  if (retval > 0)   
 		  {
 			  // We need to ask the user for information.
 			  ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, conf->name);
 
 			  // If we return a value when we have less than all the info, we end up associating and not doing
 			  // anything useful.  So wait until we have enough data to complete the auth before returning a value.
+			  best = NULL;
+		  } else if (retval < 0)
+		  {
+			  // We got an error.
 			  best = NULL;
 		  }
 	  }

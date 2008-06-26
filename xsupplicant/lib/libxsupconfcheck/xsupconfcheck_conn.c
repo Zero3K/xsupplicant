@@ -149,8 +149,8 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 		{
 			if ((conn->association.keys[conn->association.txkey] == NULL) ||
 				(strlen(conn->association.keys[conn->association.txkey]) <= 0) ||
-				((strlen(conn->association.keys[conn->association.txkey]) != 5) &&
-				(strlen(conn->association.keys[conn->association.txkey]) != 13)))
+				((strlen(conn->association.keys[conn->association.txkey]) != 10) &&
+				(strlen(conn->association.keys[conn->association.txkey]) != 26)))
 			{
 				/*
 				errmsg = malloc(100);
