@@ -49,6 +49,7 @@
 #include "ConnectMgrDlg.h"
 #include "ConnectDlg.h"
 #include "ConnectionWizard.h"
+#include "ConnectionWizardData.h"
 #include "XSupWrapper.h"
 #include "SSIDList.h"
 #include "WirelessNetworkMenu.h"

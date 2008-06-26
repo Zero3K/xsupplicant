@@ -55,6 +55,15 @@ private:
   ~Util();
 
 public:
+  typedef enum
+  {
+	status_unknown = -1,
+	status_idle = 0,
+	status_connecting,
+	status_connected,
+	status_authFailed,
+  } ConnectionStatus;
+  
   static bool myConnect(const QObject *from, const char *signal, const QObject *to, const char *slot);
   static bool myDisconnect(const QObject *from, const char *signal, const QObject *to, const char *slot);
   static QPushButton *createButton(const QString &text, QObject *thisPtr, const char *slot, const QString &toolTip);
@@ -82,6 +91,9 @@ public:
   static void myFree(void **);
   static void myFree(char **);
   static QLabel *createPixmapLabel(QString &URLPath); // , int height, int width)
+  static Util::ConnectionStatus getConnectionStatusFromPhysicalState(int state);
+  static QString getConnectionTextFromConnectionState(Util::ConnectionStatus state);
+  static Util::ConnectionStatus getConnectionStatusFromDot1XState(int state); 
 };
 
 #endif   // _UTIL_H_

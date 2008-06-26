@@ -39,6 +39,7 @@
 #include "XSupWrapper.h"
 #include "PreferredConnections.h"
 #include "ConnectionWizard.h"
+#include "ConnectionWizardData.h"
 #include <QLabel>
 #include <QList>
 

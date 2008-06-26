@@ -309,6 +309,8 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 					QString message = tr("An error occurred while connecting to the network '%1'.").arg(netInfo.m_name);
 					QMessageBox::critical(m_pRealForm,tr("Error Connecting to Network"),message);
 				}
+				else
+					m_pRealForm->hide();	// close this dialog b/c we are attempting to connect
 				xsupgui_request_free_str(&adapterName);
 				break;
 			} 
@@ -419,14 +421,16 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 					char *adapterName = NULL;
 					
 					retVal = xsupgui_request_get_devname(this->m_curAdapter.toAscii().data(), &adapterName);
-					if (retVal == REQUEST_SUCCESS && adapterName != NULL)			
+					if (retVal == REQUEST_SUCCESS && adapterName != NULL)
 						retVal = xsupgui_request_set_connection(adapterName, pNewConn->name);
 						
 					if (retVal != REQUEST_SUCCESS || adapterName == NULL)
 					{
 						QString message = tr("An error occurred while connecting to the network '%1'.").arg(netInfo.m_name);
-						QMessageBox::critical(m_pRealForm,tr("Error Connecting to Network"),message);				
+						QMessageBox::critical(m_pRealForm,tr("Error Connecting to Network"),message);	
 					}
+					else
+						m_pRealForm->hide();	// close this dialog b/c we are attempting to connect
 					xsupgui_request_free_str(&adapterName);
 				}
 				else
@@ -466,7 +470,10 @@ void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName)
 			if (pConn != NULL)
 				XSupWrapper::freeConfigConnection(&pConn);			
 		}
-		xsupgui_request_free_str(&adapterName);	
+		else
+			xsupgui_request_free_str(&adapterName);
+		
+		m_pRealForm->hide();	// close this dialog b/c we are attempting to connect
 	}
 	this->cleanupConnectionWizard();
 }

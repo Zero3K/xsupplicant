@@ -450,7 +450,8 @@ bool SSIDList::selectNetwork(const QString &networkName)
 			
 		for (int i=0; i<m_pTableWidget->rowCount(); i++)
 		{
-			if (m_pTableWidget->item(i,0)->text() == networkName)
+			QTableWidgetItem *item = m_pTableWidget->item(i,0);
+			if (item != NULL && item->text() == networkName)
 			{
 				m_pTableWidget->selectRow(i);
 				retVal = true;

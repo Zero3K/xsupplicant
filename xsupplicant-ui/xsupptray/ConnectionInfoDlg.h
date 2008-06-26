@@ -30,89 +30,69 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#ifndef _CONNECTIONWIZARD_H_
-#define _CONNECTIONWIZARD_H_
+#ifndef _CONNECTIONINFODLG_H_
+#define _CONNECTIONINFODLG_H_
 
 #include <QWidget>
-#include <QLabel>
 #include <QPushButton>
-#include <QStackedWidget>
-#include <QStack>
-#include "ConnectionWizardData.h"
+#include <QLabel>
+#include <QCheckBox>
+#include <QTimer>
+#include <QTime>
 
-class WizardPage;
 class Emitter;
 
-class ConnectionWizard : public QWidget
+class ConnectionInfoDlg : public QWidget
 {
 	Q_OBJECT
-	
+
 public:
-	ConnectionWizard(QWidget *parent, QWidget *parentWindow, Emitter *e);
-	~ConnectionWizard(void);
+	ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e);
+	~ConnectionInfoDlg();
 	bool create(void);
-	
-	// set up to create a new connection, with defaults
-	void init(void);
-	
-	// edit an existing connection
-	void edit(const ConnectionWizardData &);
-	
-	// prompt for only 802.1X info, as all other info is provided in Wizard Data passed in
-	void editDot1XInfo(const ConnectionWizardData &);
-	
 	void show(void);
-	
-	typedef enum {
-		pageNoPage=-1,
-		pageNetworkType=0,
-		pageWiredSecurity,
-		pageWirelessNetwork,
-		pageWirelessInfo,
-		pageIPOptions,
-		pageStaticIP,
-		pageDot1XProtocol,
-		pageDot1XInnerProtocol,
-		pageDot1XCert,
-		pageFinishPage,
-		pageLastPage,
-	} wizardPages;
-	
-signals:
-	void cancelled(void);
-	void finished(bool, const QString &); // whether successful, and the name of connection created
+	void setAdapter(const QString &adapterDesc);
 	
 private:
 	bool initUI(void);
-	bool loadPages(void);
-	void gotoPage(wizardPages newPageIdx);
-	void finishWizard(void);
-	bool saveConnectionData(QString *);
-	wizardPages getNextPage(void);
-	
+	void disconnectWirelessConnection(void);
+	void showTime(void);
+	void startConnectedTimer(void);
+	void stopAndClearTimer(void);
+	void updateWirelessState(void);
+	void updateWiredState(void);
+	void clearUI(void);
+
 private slots:
-	void gotoNextPage(void);
-	void gotoPrevPage(void);
-	void cancelWizard(void);
+	void disconnect(void);
+	void renewIP(void);
+	void timerUpdate(void);
+	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
+	void updateIPAddress(void);
+	void updateSSID(void);
 	
 private:
 	QWidget *m_pParent;
-	QWidget *m_pParentWindow;
 	QWidget *m_pRealForm;
-	QPushButton *m_pCancelButton;
-	QPushButton *m_pBackButton;
-	QPushButton *m_pNextButton;
-	QLabel *m_pHeaderLabel;
-	QStackedWidget *m_pStackedWidget;
-	
-	WizardPage *m_wizardPages[pageLastPage];
-	ConnectionWizardData m_connData;
 	Emitter *m_pEmitter;
+	QWidget *m_pParentWindow;
 	
-	QStack<wizardPages> m_wizardHistory;
-	wizardPages m_currentPage;
-	bool m_dot1Xmode;
-	bool m_editMode; // whether editing an existing connection
-	QString m_originalConnName;
+	// top-level form objects
+	QPushButton *m_pCloseButton;
+	QPushButton *m_pDisconnectButton;
+	QPushButton *m_pRenewIPButton;
+	QCheckBox *m_pAdvancedConfig;
+	QLabel *m_pAdapterNameLabel;
+	QLabel *m_pIPAddressLabel;
+	QLabel *m_pStatusLabel;
+	QLabel *m_pTimerLabel;
+	QLabel *m_pSSIDLabel;
+	
+	QString m_curAdapter; // description of current adapter
+	bool m_wirelessAdapter;
+	QTimer m_timer;
+	QTime  m_time;
+	unsigned int m_days;
 };
+
 #endif

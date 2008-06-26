@@ -301,3 +301,96 @@ void Util::useBackslash(char *str)
 	}
 }
 
+Util::ConnectionStatus Util::getConnectionStatusFromPhysicalState(int state)
+{
+	Util::ConnectionStatus connStatus;
+	switch (state)
+	{
+		case WIRELESS_UNKNOWN_STATE:
+		case WIRELESS_UNASSOCIATED:
+		case WIRELESS_ACTIVE_SCAN:
+		case WIRELESS_PORT_DOWN:
+		case WIRELESS_INT_STOPPED:
+		case WIRELESS_INT_HELD:
+		case WIRELESS_INT_RESTART:
+			connStatus = Util::status_idle;
+			break;
+
+		case WIRELESS_ASSOCIATING:
+		case WIRELESS_ASSOCIATION_TIMEOUT_S:
+			connStatus = Util::status_connecting;
+			break;
+
+		case WIRELESS_NO_ENC_ASSOCIATION:
+			connStatus = Util::status_connected;
+			break;
+
+		case WIRELESS_ASSOCIATED:
+			connStatus = Util::status_connected;
+			break;
+
+		default:
+			connStatus = Util::status_unknown;
+			break;
+	}
+	return connStatus;
+}
+
+Util::ConnectionStatus Util::getConnectionStatusFromDot1XState(int state)
+{
+	Util::ConnectionStatus connStatus;
+	
+	switch (state)
+	{
+		case LOGOFF:
+		case DISCONNECTED:
+		case S_FORCE_UNAUTH:
+			connStatus = Util::status_idle;
+			break;
+
+		case CONNECTING:
+		case ACQUIRED:
+		case AUTHENTICATING:
+		case RESTART:
+			connStatus = Util::status_connecting;
+			break;
+
+		case HELD:
+			connStatus = Util::status_authFailed;
+			break;
+
+		case AUTHENTICATED:
+		case S_FORCE_AUTH:
+			connStatus = Util::status_connected;
+			break;
+
+		default:
+			connStatus = Util::status_unknown;  // This should be impossible!
+			break;
+	}
+	return connStatus;
+}
+
+QString Util::getConnectionTextFromConnectionState(Util::ConnectionStatus state)
+{
+	QString text = QWidget::tr("Unknown");
+	switch (state)
+	{
+		case Util::status_unknown:
+			text = QWidget::tr("Unknown");
+			break;
+		case Util::status_idle:
+			text = QWidget::tr("Idle");
+			break;
+		case Util::status_connecting:
+			text = QWidget::tr("Connecting...");
+			break;
+		case Util::status_connected:
+			text = QWidget::tr("Connected");
+			break;	
+		case Util::status_authFailed:
+			text = QWidget::tr("Authentication Failed");
+			break;					
+	}
+	return text;
+}

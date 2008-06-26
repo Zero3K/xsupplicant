@@ -46,6 +46,7 @@ class TrayApp;
 class Emitter;
 class SSIDListDlg;
 class ConnectionWizard;
+class ConnectionInfoDlg;
 
 class ConnectDlg : public QWidget
 {
@@ -95,6 +96,7 @@ private slots:
 	void currentTabChanged(int);
 	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
 	void interfaceInserted(char *intName);
+	void showWirelessConnectionInfo(void);
 	void interfaceRemoved(char *intDesc);
 		
 private:
@@ -128,6 +130,7 @@ private:
 	TrayApp *m_pSupplicant;
 	SSIDListDlg *m_pSSIDListDlg;
 	ConnectionWizard *m_pConnWizard;
+	ConnectionInfoDlg *m_pConnInfo;
 	QString	m_currentWirelessAdapter;
 	QString m_currentWiredAdapter;
 	QString m_currentAdapterName;

@@ -41,6 +41,7 @@
 #include "TrayApp.h"
 #include "SSIDListDlg.h"
 #include "ConnectionWizard.h"
+#include "ConnectionInfoDlg.h"
 
 extern "C" {
 #include "libxsupgui/xsupgui_request.h"
@@ -58,6 +59,7 @@ ConnectDlg::ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayA
 {
 	m_pSSIDListDlg = NULL;
 	m_pConnWizard = NULL;
+	m_pConnInfo = NULL;
 }
 
 ConnectDlg::~ConnectDlg()
@@ -164,7 +166,7 @@ bool ConnectDlg::initUI(void)
 
 	// These don't do anything (yet) so disable them.
 	m_pWiredConnectionInfo->setEnabled(false);
-	m_pWirelessConnectionInfo->setEnabled(false);
+	//m_pWirelessConnectionInfo->setEnabled(false);
 	
 	// wireless tab
 	if (m_pCloseButton != NULL)
@@ -250,6 +252,9 @@ bool ConnectDlg::initUI(void)
 
 	if (m_pAdapterTabControl != NULL)
 		Util::myConnect(m_pAdapterTabControl, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
+		
+	if (m_pWirelessConnectionInfo != NULL)
+		Util::myConnect(m_pWirelessConnectionInfo, SIGNAL(clicked()), this, SLOT(showWirelessConnectionInfo()));
 
 	Util::myConnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
 	Util::myConnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
@@ -796,34 +801,34 @@ bool ConnectDlg::isConnectionActive(QString interfaceDesc, QString connectionNam
 
 void ConnectDlg::getAndDisplayErrors()
 {
-  int i = 0;
-  QString errors;
-  error_messages *msgs = NULL;
+	int i = 0;
+	QString errors;
+	error_messages *msgs = NULL;
 
-  int retval = xsupgui_request_get_error_msgs(&msgs);
-  if (retval == REQUEST_SUCCESS)
-  {
-    if (msgs && msgs[0].errmsgs)
-    {
-      // If we have at least one message, display it here
-      while (msgs[i].errmsgs != NULL)
-      {
-        errors += QString ("- %1\n").arg(msgs[i].errmsgs);
-        i++;
-      }
+	int retval = xsupgui_request_get_error_msgs(&msgs);
+	if (retval == REQUEST_SUCCESS)
+	{
+		if (msgs && msgs[0].errmsgs)
+		{
+			// If we have at least one message, display it here
+			while (msgs[i].errmsgs != NULL)
+			{
+				errors += QString ("- %1\n").arg(msgs[i].errmsgs);
+				i++;
+			}
 
-      QMessageBox::critical(NULL, tr("XSupplicant Error Summary"),
-		  tr("The following errors were returned from XSupplicant while attempting to connect:\n%1")
-        .arg(errors));
-    }
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Get Error Message error"),
-      tr("An error occurred while checking for errors from the XSupplicant."));
-  }
+			QMessageBox::critical(NULL, tr("XSupplicant Error Summary"),
+				tr("The following errors were returned from XSupplicant while attempting to connect:\n%1")
+				.arg(errors));
+		}
+	}
+	else
+	{
+		QMessageBox::critical(NULL, tr("Get Error Message error"),
+			tr("An error occurred while checking for errors from the XSupplicant."));
+	}
 
-  xsupgui_request_free_error_msgs(&msgs);
+	xsupgui_request_free_error_msgs(&msgs);
 }
 
 /**
@@ -1286,6 +1291,25 @@ void ConnectDlg::showActiveWiredState(QString intName)
 
 			free(devDesc);
 		}
+	}
+}
+void ConnectDlg::showWirelessConnectionInfo(void)
+{
+	if (m_pConnInfo == NULL)
+	{
+		m_pConnInfo= new ConnectionInfoDlg(this, m_pRealForm, m_pEmitter);
+		if (m_pConnInfo != NULL && m_pConnInfo->create() != false)
+		{
+			m_pConnInfo->setAdapter(m_currentWirelessAdapter);
+			m_pConnInfo->show();
+		}
+		else
+			; // error. tell user?
+	}
+	else
+	{
+		m_pConnInfo->setAdapter(m_currentWirelessAdapter);
+		m_pConnInfo->show();
 	}
 }
 
