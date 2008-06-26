@@ -168,6 +168,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Set_Connection_Lock", ipc_callout_set_conn_lock},
 	{"Get_Interface_From_TNC_Conn_ID", ipc_callout_get_interface_from_tnc_connid},
 	{"Get_Frequency", ipc_callout_get_frequency},
+	{"DHCP_Release_Renew", ipc_callout_dhcp_release_renew},
 	{NULL, NULL}
 };
 
