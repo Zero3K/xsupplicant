@@ -275,6 +275,22 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PSKWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\UPWWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionManagerWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionWizardWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SSIDListWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessScanDialog.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XCert.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XInnerProtocol.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XProtocol.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageFinished.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageIPOptions.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageNetworkType.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageStaticIP.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWiredSecurity.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWirelessInfo.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWirelessNetwork.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WEPWindow.ui"
 
 
         SetOutPath "$INSTDIR\Skins\Default\images"
@@ -284,9 +300,32 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner_right.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner_right_short.png"
 
+	SetOutPath "$INSTDIR\Skins\Default\images\banner"
+
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner\banner_center.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner\banner_left.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner\banner_left_bg.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner\banner_right.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\images\banner\banner_right_bg.png"
+
 
         SetOutPath "$INSTDIR\Skins\Default\icons"
         
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_a.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_ab.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_abg.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_abgn.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_abn.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_ag.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_agn.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_an.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_b.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_bg.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_bgn.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_bn.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_g.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_gn.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\802_11_n.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_down.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_left.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_right.png"
@@ -294,6 +333,7 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\key.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lock.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lockedstate.png"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lockedstate_bw.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_color.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_eng_connected.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_green.png"
@@ -437,15 +477,37 @@ Section "Uninstall"
 
         Delete $INSTDIR\Skins\Default\AboutWindow.ui
         Delete $INSTDIR\Skins\Default\ConfigWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectionManagerWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectionWizardWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectionWindow.ui
         Delete $INSTDIR\Skins\Default\HelpWindow.ui
         Delete $INSTDIR\Skins\Default\LogWindow.ui
         Delete $INSTDIR\Skins\Default\LoginWindow.ui
         Delete $INSTDIR\Skins\Default\SelectTrustedServerWindow.ui
+	Delete $INSTDIR\Skins\Default\SSIDListWindow.ui
         Delete $INSTDIR\Skins\Default\ViewLogWindow.ui
 	Delete $INSTDIR\Skins\Default\WirelessPriorityWindow.ui
+	Delete $INSTDIR\Skins\Default\WirelessScanDialog.ui
+	Delete $INSTDIR\Skins\Default\wizardPageDot1XCert.ui
+	Delete $INSTDIR\Skins\Default\wizardPageDot1XInnerProtocol.ui
+	Delete $INSTDIR\Skins\Default\wizardPageDot1XProtocol.ui
+	Delete $INSTDIR\Skins\Default\wizardPageFinished.ui
+	Delete $INSTDIR\Skins\Default\wizardPageIPOptions.ui
+	Delete $INSTDIR\Skins\Default\wizardPageNetworkType.ui
+	Delete $INSTDIR\Skins\Default\wizardPageStaticIP.ui
+	Delete $INSTDIR\Skins\Default\wizardPageWiredSecurity.ui
+	Delete $INSTDIR\Skins\Default\wizardPageWirelessInfo.ui
+	Delete $INSTDIR\Skins\Default\wizardPageWirelessNetwork.ui
+	Delete $INSTDIR\Skins\Default\WEPWindow.ui
 	Delete $INSTDIR\Skins\Default\PSKWindow.ui
 	Delete $INSTDIR\Skins\Default\UPWWindow.ui
 	Delete $INSTDIR\Skins\Default\GTCWindow.ui
+	
+	Delete $INSTDIR\Skins\Default\images\banner\banner_center.png
+	Delete $INSTDIR\Skins\Default\images\banner\banner_left.png
+	Delete $INSTDIR\Skins\Default\images\banner\banner_left_bg.png
+	Delete $INSTDIR\Skins\Default\images\banner\banner_right.png
+	Delete $INSTDIR\Skins\Default\images\banner\banner_right_bg.png
 
         Delete $INSTDIR\Skins\Default\images\banner_left_short.png
         Delete $INSTDIR\Skins\Default\images\banner_right_short.png
@@ -454,12 +516,28 @@ Section "Uninstall"
 
         SetOutPath "$INSTDIR\Skins\Default\icons"
 
+	Delete $INSTDIR\Skins\Default\icons\802_11_a.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_ab.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_abg.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_abgn.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_abn.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_ag.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_agn.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_an.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_b.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_bg.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_bgn.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_bn.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_g.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_gn.png
+	Delete $INSTDIR\Skins\Default\icons\802_11_n.png
         Delete $INSTDIR\Skins\Default\icons\arrow_down.png
         Delete $INSTDIR\Skins\Default\icons\arrow_left.png
         Delete $INSTDIR\Skins\Default\icons\arrow_right.png
         Delete $INSTDIR\Skins\Default\icons\arrow_up.png
         Delete $INSTDIR\Skins\Default\icons\lock.png
         Delete $INSTDIR\Skins\Default\icons\lockedstate.png
+	Delete $INSTDIR\Skins\Default\icons\lockedstate_bw.png
         Delete $INSTDIR\Skins\Default\icons\key.png
         Delete $INSTDIR\Skins\Default\icons\prod_color.png
         Delete $INSTDIR\Skins\Default\icons\prod_eng_connected.png
