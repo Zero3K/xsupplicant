@@ -644,7 +644,12 @@ void WizardPageWirelessNetwork::init(const ConnectionWizardData &data)
 		// if nothing selected yet, just choose one
 		if (m_pTableWidget != NULL)
 			m_pTableWidget->selectRow(0);
-		if (m_pRadioButtonVisible != NULL) 
+		if (m_curData.m_otherNetwork == true)
+		{
+			if (m_pRadioButtonOther != NULL)
+				m_pRadioButtonOther->setChecked(true);
+		}
+		else if (m_pRadioButtonVisible != NULL) 
 		{
 			m_pRadioButtonVisible->setChecked(true);
 			this->handleVisibleClicked(true);

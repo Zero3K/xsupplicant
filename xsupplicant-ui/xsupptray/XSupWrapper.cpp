@@ -33,6 +33,7 @@
 #include "stdafx.h"
 
 #include "XSupWrapper.h"
+#include <algorithm>
 
 extern "C"
 {
@@ -667,6 +668,7 @@ QVector<QString> XSupWrapper::getWirelessAdapters(void)
 	if (pInterfaceList != NULL)
 		xsupgui_request_free_int_enum(&pInterfaceList);
 	
+	std::sort(adapterVec.begin(), adapterVec.end());
 	return adapterVec;
 }
 
@@ -693,6 +695,7 @@ QVector<QString> XSupWrapper::getWiredAdapters(void)
 	if (pInterfaceList != NULL)
 		xsupgui_request_free_int_enum(&pInterfaceList);
 	
+	std::sort(adapterVec.begin(), adapterVec.end());
 	return adapterVec;
 } 
 	
