@@ -475,33 +475,7 @@ void CredentialsPopUp::slotOkayBtn()
 					QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
 				}
 				else
-				{
-					// if "remember credentials" is checked, make sure this isn't marked as volatile
-					if (m_pRememberCreds->checkState() == Qt::Checked)
-					{
-						cconf->flags &= ~CONFIG_VOLATILE_CONN;
-						
-						// clear out any credentials that presently are stored
-						if (cconf->association.keys != NULL)
-						{
-							cconf->association.keys[1] = _strdup(m_pPassword->text().toAscii().data());
-						
-							// save off changes to config						
-							if (xsupgui_request_set_connection_config(cconf) == REQUEST_SUCCESS)
-							{
-								// tell everyone we changed the config
-								m_pEmitter->sendConnConfigUpdate();
-													
-								// this may fail.  No need to prompt user if it does
-								XSupWrapper::writeConfig();
-							}
-							else
-								QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your WEP key"));
-						}
-						else
-							QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your WEP key"));						
-					}
-						
+				{		
 					if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
 					{
 						QMessageBox::critical(this, tr("Error"), tr("Couldn't determine the interface the desired connection is bound to!"));
@@ -511,6 +485,34 @@ void CredentialsPopUp::slotOkayBtn()
 						if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
 						{
 							QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
+						}
+						else
+						{
+							// if "remember credentials" is checked, make sure this isn't marked as volatile
+							if (m_pRememberCreds->checkState() == Qt::Checked)
+							{
+								cconf->flags &= ~CONFIG_VOLATILE_CONN;
+								
+								// clear out any credentials that presently are stored
+								if (cconf->association.keys != NULL)
+								{
+									cconf->association.keys[1] = _strdup(m_pPassword->text().toAscii().data());
+								
+									// save off changes to config						
+									if (xsupgui_request_set_connection_config(cconf) == REQUEST_SUCCESS)
+									{
+										// tell everyone we changed the config
+										m_pEmitter->sendConnConfigUpdate();
+															
+										// this may fail.  No need to prompt user if it does
+										XSupWrapper::writeConfig();
+									}
+									else
+										QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your WEP key"));
+								}
+								else
+									QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your WEP key"));						
+							}						
 						}
 						free(intName);
 					}
@@ -535,34 +537,7 @@ void CredentialsPopUp::slotOkayBtn()
 				QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
 			}
 			else
-			{
-				// if "remember credentials" is checked, make sure this isn't marked as volatile
-				if (m_pRememberCreds->checkState() == Qt::Checked)
-				{
-					cconf->flags &= ~CONFIG_VOLATILE_CONN;
-					
-					// clear out any credentials that presently are stored
-					if (cconf->association.psk != NULL)
-					{
-						free(cconf->association.psk);
-						cconf->association.psk = NULL;
-					}
-					
-					cconf->association.psk = _strdup(m_pPassword->text().toAscii().data());
-					
-					// save off changes to config
-					if (xsupgui_request_set_connection_config(cconf) == REQUEST_SUCCESS)
-					{
-						// tell everyone we changed the config
-						m_pEmitter->sendConnConfigUpdate();
-											
-						// this may fail.  No need to prompt user if it does
-						XSupWrapper::writeConfig();	
-					}
-					else
-						QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your preshared key"));					
-				}
-					
+			{		
 				if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
 				{
 					QMessageBox::critical(this, tr("Error"), tr("Couldn't determine the interface the desired connection is bound to!"));
@@ -572,6 +547,35 @@ void CredentialsPopUp::slotOkayBtn()
 					if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
 					{
 						QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
+					}
+					else
+					{
+						// if "remember credentials" is checked, make sure this isn't marked as volatile
+						if (m_pRememberCreds->checkState() == Qt::Checked)
+						{
+							cconf->flags &= ~CONFIG_VOLATILE_CONN;
+							
+							// clear out any credentials that presently are stored
+							if (cconf->association.psk != NULL)
+							{
+								free(cconf->association.psk);
+								cconf->association.psk = NULL;
+							}
+							
+							cconf->association.psk = _strdup(m_pPassword->text().toAscii().data());
+							
+							// save off changes to config
+							if (xsupgui_request_set_connection_config(cconf) == REQUEST_SUCCESS)
+							{
+								// tell everyone we changed the config
+								m_pEmitter->sendConnConfigUpdate();
+													
+								// this may fail.  No need to prompt user if it does
+								XSupWrapper::writeConfig();	
+							}
+							else
+								QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your preshared key"));					
+						}					
 					}
 					free(intName);
 				}
@@ -594,7 +598,7 @@ void CredentialsPopUp::slotOkayBtn()
 				QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
 			}
 			else
-			{
+			{									
 				if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
 				{
 					QMessageBox::critical(this, tr("Error"), tr("Couldn't determine the interface the desired connection is bound to!"));
@@ -604,6 +608,26 @@ void CredentialsPopUp::slotOkayBtn()
 					if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
 					{
 						QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
+					}
+					else
+					{
+						// if "remember credentials" is checked, make sure this isn't marked as volatile
+						if (m_pRememberCreds->checkState() == Qt::Checked)
+						{
+							cconf->flags &= ~CONFIG_VOLATILE_CONN;
+							
+							bool success;
+							success = XSupWrapper::setProfileUsername(cconf->profile, m_pUsername->text());
+							success = XSupWrapper::setProfilePassword(cconf->profile, m_pPassword->text()) && success == true;
+							
+							if (success == true)
+							{
+								// this may fail.  No need to prompt user if it does
+								XSupWrapper::writeConfig();	
+							}
+							else
+								QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your credentials"));
+						}					
 					}
 					free(intName);
 				}

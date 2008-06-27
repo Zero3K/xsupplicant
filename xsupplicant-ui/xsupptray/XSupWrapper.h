@@ -66,6 +66,8 @@ public:
 	static bool deleteServerConfig(const QString &serverName);
 	static bool isTrustedServerInUse(const QString &serverName);
 	static QStringList getWirelessInterfaceList(void);
+	static bool setProfileUsername(const QString &profileName, const QString &username);
+	static bool setProfilePassword(const QString &profileName, const QString &password);
 };
 
 #endif

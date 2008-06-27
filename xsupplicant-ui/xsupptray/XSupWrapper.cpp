@@ -472,3 +472,97 @@ QStringList XSupWrapper::getWirelessInterfaceList(void)
 	xsupgui_request_free_int_enum(&pInterface);
 	return intList;
 }
+
+bool XSupWrapper::setProfileUsername(const QString &profileName, const QString &username)
+{
+	bool success;
+	config_profiles *pProfile = NULL;
+	
+	success = XSupWrapper::getConfigProfile(profileName, &pProfile);
+	
+	if (success == true && pProfile != NULL)
+	{
+		if (pProfile->method != NULL)
+		{
+			if (pProfile->method->method_num == EAP_TYPE_MD5)
+			{
+				if (pProfile->identity != NULL)
+					free(pProfile->identity);
+				pProfile->identity = _strdup(username.toAscii().data());
+			}
+			else if (pProfile->method->method_num == EAP_TYPE_PEAP)
+			{
+				if (pProfile->method->method_data != NULL)
+				{
+					config_eap_peap *peap = (config_eap_peap *)pProfile->method->method_data;
+					if (peap->identity != NULL)
+						free (peap->identity);
+					peap->identity = _strdup(username.toAscii().data());
+				}
+				else
+					success = false;	
+			}
+			else if (pProfile->method->method_num == EAP_TYPE_TTLS)
+			{
+				config_eap_ttls *ttls;
+
+				ttls = (struct config_eap_ttls *)pProfile->method->method_data;
+				if (ttls == NULL)
+					success = false;
+				else
+				{
+					switch (ttls->phase2_type)
+					{
+						case TTLS_PHASE2_PAP:
+						case TTLS_PHASE2_CHAP:
+						case TTLS_PHASE2_MSCHAP:
+						case TTLS_PHASE2_MSCHAPV2:
+						case TTLS_PHASE2_EAP:
+							if (ttls->inner_id != NULL)
+								free(ttls->inner_id);
+							ttls->inner_id = _strdup(username.toAscii().data());
+							break;
+						default:
+							success = false;
+							break;
+					}
+				}
+			}
+			else
+				QMessageBox::critical(NULL,"Unhandle EAP type", "Unhandled EAP Type in SetProfileUsername()");
+			
+		}
+		else
+			success = false;
+			
+		if (success == true)
+			success = xsupgui_request_set_profile_config(pProfile) == REQUEST_SUCCESS;
+	}
+	
+	if (pProfile != NULL)
+		XSupWrapper::freeConfigProfile(&pProfile);
+		
+	return success;
+}
+
+bool XSupWrapper::setProfilePassword(const QString &profileName, const QString &password)
+{
+	bool success;
+	config_profiles *pProfile = NULL;
+	
+	success = XSupWrapper::getConfigProfile(profileName, &pProfile);
+	
+	if (success == true && pProfile != NULL)
+	{
+		int retval = config_change_pwd(pProfile->method, password.toAscii().data());
+		success = retval == XENONE;
+
+		if (success == true)
+			success = xsupgui_request_set_profile_config(pProfile) == REQUEST_SUCCESS;				
+	}
+	
+	if (pProfile != NULL)
+		XSupWrapper::freeConfigProfile(&pProfile);
+		
+	return success;
+}
