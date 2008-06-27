@@ -137,7 +137,6 @@ bool ConnectMgrDlg::initUI(void)
 	m_pEditConnButton = qFindChild<QPushButton*>(m_pRealForm, "buttonEditConnection");
 	m_pNewConnButton = qFindChild<QPushButton*>(m_pRealForm,"buttonNewConnection");
 	m_pConnectionsTable = qFindChild<QTableWidget*>(m_pRealForm, "dataTableConnectionProfiles");
-	
 			
 	// populate strings
 	if (m_pAdvancedButton != NULL)
@@ -360,7 +359,6 @@ void ConnectMgrDlg::updateWiredAutoConnectState(void)
 						{
 							m_pWiredAutoConnect->setCheckState(Qt::Unchecked);
 							enableDisableWiredAutoConnect(Qt::Unchecked);
-							
 						}
 					}
 					else
@@ -445,7 +443,6 @@ void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
 				}
 								
 				xsupgui_request_free_interface_config(&pInterface);
-				
 			}	
 		}
 				
@@ -469,7 +466,6 @@ void ConnectMgrDlg::enableDisableWiredAutoConnect(int newState)
 			this->setWiredAutoConnection(QString(""));
 			m_pWiredConnections->setEnabled(false);
 		}
-
 	}
 }
 
@@ -514,12 +510,8 @@ void ConnectMgrDlg::refreshConnectionList(void)
 
 		// count connections
 		m_nConnections = 0;
-		i = 0;
-		while (pConn[i].name != NULL)
-		{
+		while (pConn[m_nConnections].name != NULL)
 			++m_nConnections;
-			++i;
-		}
 			
 		m_pConnections = pConn;
 	}	
@@ -543,8 +535,7 @@ void ConnectMgrDlg::populateWiredConnectionsCombo(void)
 			// create sorted list of wired connections
 			QVector<QString> wiredConnVector;
 			
-			int i;
-			for (i=0; i<m_nConnections; i++)
+			for (int i=0; i<m_nConnections; i++)
 			{
 				if (m_pConnections[i].ssid == NULL || QString(m_pConnections[i].ssid).isEmpty())
 					wiredConnVector.append(QString(m_pConnections[i].name));
@@ -553,11 +544,10 @@ void ConnectMgrDlg::populateWiredConnectionsCombo(void)
 			// we now have vector of connections. Now sort them.
 			std::sort(wiredConnVector.begin(), wiredConnVector.end());
 			
-			for (i=0; i<wiredConnVector.size(); i++)
+			for (int i=0; i<wiredConnVector.size(); i++)
 				m_pWiredConnections->addItem(wiredConnVector.at(i));
 		}
 		Util::myConnect(m_pWiredConnections, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setWiredAutoConnection(const QString &)));			
-
 	}
 }
 
@@ -565,8 +555,6 @@ void ConnectMgrDlg::populateConnectionsList(void)
 {
 	if (m_pConnections != NULL)
 	{
-		int i=0;
-	
 		// clear table before re-populating
 		m_pConnectionsTable->clearContents();
 		
@@ -574,7 +562,7 @@ void ConnectMgrDlg::populateConnectionsList(void)
 		m_pConnectionsTable->setRowCount(std::max<int>(this->m_minConnListRowCount, m_nConnections));
 		m_pConnectionsTable->setSortingEnabled(false);
 		
-		for (i=0; i<m_nConnections; i++)
+		for (int i=0; i<m_nConnections; i++)
 		{
 			// check if connection is volatile
 			bool bVolatile = false;
@@ -637,12 +625,11 @@ void ConnectMgrDlg::handleConnectionListSelectionChange(void)
 	}
 	else
 	{
-			if (m_pDeleteConnButton != NULL)
-				m_pDeleteConnButton->setEnabled(false);
-			if (m_pEditConnButton != NULL)
-				m_pEditConnButton->setEnabled(false);	
+		if (m_pDeleteConnButton != NULL)
+			m_pDeleteConnButton->setEnabled(false);
+		if (m_pEditConnButton != NULL)
+			m_pEditConnButton->setEnabled(false);	
 	}
-	
 }
 
 void ConnectMgrDlg::deleteSelectedConnection(void)
@@ -663,14 +650,9 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 			
 			// check if is wired and if so is default connection
 			if (XSupWrapper::isDefaultWiredConnection(connName))
-			{
 				message = tr("The connection '%1' is set as the default connection for one of your wired adapters.  Are you sure you want to delete it?").arg(connName);
-			}
 			else
-			{
 				message = tr("Are you sure you want to delete the connection '%1'?").arg(connName);
-			}
-				
 			
 			// check if wireless and is in preferred list?
 			bool result = XSupWrapper::getConfigConnection(connName, &pConfig);
@@ -757,7 +739,7 @@ void ConnectMgrDlg::showPriorityDialog()
 	}
 	else
 	{
-		// show it if it's here?
+		m_pPrefDlg->show();
 	}
 }
 
@@ -804,9 +786,15 @@ void ConnectMgrDlg::createNewConnection(void)
 				m_pConnWizard->init();
 				m_pConnWizard->show();
 			}
-			// else show error?
+			else
+			{
+				QMessageBox::critical(m_pRealForm, tr("Error"),tr("An error occurred when attempting to create the Connection Wizard"));
+				delete m_pConnWizard;
+				m_pConnWizard = NULL;
+			}
 		}
-		// else show error?
+		else
+			QMessageBox::critical(m_pRealForm, tr("Error"),tr("An error occurred when attempting to create the Connection Wizard"));
 	}
 	else
 	{
@@ -865,47 +853,76 @@ void ConnectMgrDlg::editSelectedConnection(void)
 			success = XSupWrapper::getConfigConnection(connName,&pConfig);
 			if (success == true && pConfig != NULL)
 			{
-				config_profiles *pProfile = NULL;
-				config_trusted_server *pServer = NULL;
+				bool editable = true;
+				char *pDeviceName = NULL;
+				int retVal;
 				
-				if (pConfig->profile != NULL)
-					success = XSupWrapper::getConfigProfile(QString(pConfig->profile),&pProfile);
-					
-				if (success == true && pProfile != NULL)
-					success = XSupWrapper::getTrustedServerForProfile(QString(pProfile->name),&pServer);
-					
-				ConnectionWizardData wizData;
-				wizData.initFromSupplicantProfiles(pConfig,pProfile,pServer);
-				
-				if (pConfig != NULL)
-					XSupWrapper::freeConfigConnection(&pConfig);
-				if (pProfile != NULL)
-					XSupWrapper::freeConfigProfile(&pProfile);
-				if (pServer != NULL)
-					XSupWrapper::freeConfigServer(&pServer);
-				
-				if (m_pConnWizard == NULL)
+				// first check if connection is in use
+				// if so, don't allow editing				
+				retVal = xsupgui_request_get_devname(pConfig->device, &pDeviceName);
+				if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
 				{
-					// create the wizard if it doesn't already exist
-					m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
-					if (m_pConnWizard != NULL)
+					char *pConnName = NULL;
+					retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &pConnName);
+					if (retVal == REQUEST_SUCCESS && pConnName != NULL)
 					{
-						if (m_pConnWizard->create() == true)
+						if (QString(pConnName) == connName)
 						{
-							Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-							Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
-							m_pConnWizard->edit(wizData);
-							m_pConnWizard->show();
+							QMessageBox::warning(m_pRealForm, tr("Connection In Use"), tr("The connection '%1' cannot be edited because it is currently in use.  Please disconnect from the network before editing the connection.").arg(connName));
+							editable = false;
+						}
+					}
+					if (pConnName != NULL)
+						free(pConnName);
+				}	
+				
+				if (pDeviceName != NULL)
+					free(pDeviceName);			
+				
+				if (editable == true)
+				{
+					config_profiles *pProfile = NULL;
+					config_trusted_server *pServer = NULL;
+					
+					if (pConfig->profile != NULL)
+						success = XSupWrapper::getConfigProfile(QString(pConfig->profile),&pProfile);
+						
+					if (success == true && pProfile != NULL)
+						success = XSupWrapper::getTrustedServerForProfile(QString(pProfile->name),&pServer);
+						
+					ConnectionWizardData wizData;
+					wizData.initFromSupplicantProfiles(pConfig,pProfile,pServer);
+					
+					if (pConfig != NULL)
+						XSupWrapper::freeConfigConnection(&pConfig);
+					if (pProfile != NULL)
+						XSupWrapper::freeConfigProfile(&pProfile);
+					if (pServer != NULL)
+						XSupWrapper::freeConfigServer(&pServer);
+					
+					if (m_pConnWizard == NULL)
+					{
+						// create the wizard if it doesn't already exist
+						m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
+						if (m_pConnWizard != NULL)
+						{
+							if (m_pConnWizard->create() == true)
+							{
+								Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+								Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
+								m_pConnWizard->edit(wizData);
+								m_pConnWizard->show();
+							}
+							// else show error?
 						}
 						// else show error?
 					}
-					// else show error?
-				}
-				else
-				{
-					m_pConnWizard->edit(wizData);
-					m_pConnWizard->show();
-				}				
+					else
+					{
+						m_pConnWizard->edit(wizData);
+						m_pConnWizard->show();
+					}	
+				}			
 			}
 		}
 	}

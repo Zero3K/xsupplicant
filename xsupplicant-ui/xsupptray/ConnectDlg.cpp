@@ -60,6 +60,7 @@ ConnectDlg::ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayA
 	m_pSSIDListDlg = NULL;
 	m_pConnWizard = NULL;
 	m_pConnInfo = NULL;
+	m_days = 0;
 }
 
 ConnectDlg::~ConnectDlg()
@@ -271,6 +272,8 @@ bool ConnectDlg::initUI(void)
 	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(interfaceInserted(char *)));
 	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));		
 	
+	Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
+	
 	// set initial state of UI - mainly setting the active tab
 	if (m_pAdapterTabControl != NULL)
 	{
@@ -296,11 +299,6 @@ bool ConnectDlg::initUI(void)
 	// Initialize the timer that we will use to show the time in connected
 	// state.
 	m_timer.setInterval(1000);   // Fire every second.
-	m_timer.start();				 // Don't run just yet.
-
-	Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
-
-	m_timer.stop();
 
 	return true;
 }
@@ -325,9 +323,7 @@ void ConnectDlg::populateWirelessAdapterList(void)
 		while (pInterfaceList[i].desc != NULL)
 		{
 			if (pInterfaceList[i].is_wireless == TRUE)
-			{
 				m_pWirelessAdapterList->addItem(QString(pInterfaceList[i].desc));
-			}
 			
 			++i;
 		}
@@ -355,9 +351,7 @@ void ConnectDlg::populateWiredAdapterList(void)
 		while (pInterfaceList[i].desc != NULL)
 		{
 			if (pInterfaceList[i].is_wireless == FALSE)
-			{
 				m_pWiredAdapterList->addItem(QString(pInterfaceList[i].desc));
-			}
 			
 			++i;
 		}
@@ -1077,23 +1071,20 @@ void ConnectDlg::timerUpdate(void)
 		m_time = m_time.addSecs(1);
 	}
 
-	showTime();
+	this->showTime();
 }
 
 void ConnectDlg::startConnectedTimer(QString adapterName)
 {
-	long int m_seconds = 0;
+	long int seconds = 0;
 	int retval = 0;
-	int hours = 0;
-	int minutes = 0;
-	int seconds = 0;
-	QString m_status;
 
-
-	retval = xsupgui_request_get_seconds_authenticated(adapterName.toAscii().data(), &m_seconds);
+	retval = xsupgui_request_get_seconds_authenticated(adapterName.toAscii().data(), &seconds);
 	if (retval == REQUEST_SUCCESS)
 	{
-		long int tempTime = m_seconds;
+		long int tempTime = seconds;
+		int hours = 0;
+		int minutes = 0;
     
 		// Get days, hours, minutes and seconds the hard way - for now
 		m_days = (unsigned int)(tempTime / (60*60*24));
@@ -1105,7 +1096,7 @@ void ConnectDlg::startConnectedTimer(QString adapterName)
 
 		m_time.setHMS(hours, minutes, seconds);
 
-		showTime();
+		this->showTime();
 
 		m_timer.start(1000);
 	}
@@ -1113,26 +1104,22 @@ void ConnectDlg::startConnectedTimer(QString adapterName)
 
 void ConnectDlg::showTime()
 {
-	QString m_status;
+	QString timeTxt;
 
 	if (m_days > 0)
-	{
-		m_status = tr("Connected  (%1d, %2)").arg(m_days).arg(m_time.toString(Qt::TextDate));
-	}
+		timeTxt = tr("Connected  (%1d, %2)").arg(m_days).arg(m_time.toString(Qt::TextDate));
 	else
-	{
-		m_status = tr("Connected  (%2)").arg(m_time.toString(Qt::TextDate));
-	}
+		timeTxt = tr("Connected  (%2)").arg(m_time.toString(Qt::TextDate));
 
 	if (m_pAdapterTabControl->currentIndex() == 0)
 	{
 		// We are showing wireless.
-		m_pWirelessConnectionStatus->setText(m_status);
+		m_pWirelessConnectionStatus->setText(timeTxt);
 	}
 	else
 	{
 		// We are showing wired.
-		m_pWiredConnectionStatus->setText(m_status);
+		m_pWiredConnectionStatus->setText(timeTxt);
 	}
 }
 
@@ -1141,12 +1128,12 @@ void ConnectDlg::currentTabChanged(int tabidx)
 	if (tabidx == 0)
 	{
 		// This is a wireless tab.
-		updateWirelessState();
+		this->updateWirelessState();
 	}
 	else
 	{
 		// This is a wired tab.
-		updateWiredState();
+		this->updateWiredState();
 	}
 }
 
@@ -1312,7 +1299,7 @@ void ConnectDlg::showWirelessConnectionInfo(void)
 			m_pConnInfo->show();
 		}
 		else
-			; // error. tell user?
+			QMessageBox::critical(m_pRealForm, tr("Error"), tr("An error occurred when trying to launch the Connection Info dialog"));
 	}
 	else
 	{
@@ -1332,7 +1319,7 @@ void ConnectDlg::showWiredConnectionInfo(void)
 			m_pConnInfo->show();
 		}
 		else
-			; // error. tell user?
+			QMessageBox::critical(m_pRealForm, tr("Error"), tr("An error occurred when trying to launch the Connection Info dialog"));
 	}
 	else
 	{
