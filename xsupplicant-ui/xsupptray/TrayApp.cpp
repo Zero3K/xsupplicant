@@ -929,8 +929,8 @@ void TrayApp::createTrayActionsAndConnections()
   QPixmap p;
 
   m_pLoginAction = new QAction(tr("&Connect..."), this);
-  //Util::myConnect(this->m_pLoginAction, SIGNAL(triggered()), this, SLOT(showConnectDlg()));
-  Util::myConnect(this->m_pLoginAction, SIGNAL(triggered()), this, SLOT(slotLaunchLogin()));
+  Util::myConnect(this->m_pLoginAction, SIGNAL(triggered()), this, SLOT(showConnectDlg()));
+  //Util::myConnect(this->m_pLoginAction, SIGNAL(triggered()), this, SLOT(slotLaunchLogin()));
 
   m_pConfigAction = new QAction(tr("&Configure..."), this);
   Util::myConnect(m_pConfigAction, SIGNAL(triggered()), this, SLOT(slotLaunchConfig()));
