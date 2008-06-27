@@ -55,8 +55,6 @@ public:
 	
 private:
 	bool initUI(void);
-	void disconnectWirelessConnection(void);
-	void disconnectWiredConnection(void);
 	void showTime(void);
 	void startConnectedTimer(void);
 	void stopAndClearTimer(void);

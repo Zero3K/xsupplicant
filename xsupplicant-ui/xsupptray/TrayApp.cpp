@@ -1041,8 +1041,8 @@ void TrayApp::buildPopupMenu(void)
 				for (int i=0;i<wirelessIntList.size();i++)
 				{
 					// remove extra cruft from adapter name
-					QString intName = wirelessIntList.at(i);
-					intName.remove(QString(" - Packet Scheduler Miniport"));
+					QString intName;
+					intName = Util::removePacketSchedulerFromName(wirelessIntList.at(i));
 					
 					WirelessNetworkMenu *pWirelessMenu = new WirelessNetworkMenu(wirelessIntList.at(i),intName, this);
 					if (pWirelessMenu != NULL)

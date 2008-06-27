@@ -35,6 +35,7 @@
 #include "ConnectionInfoDlg.h"
 #include "FormLoader.h"
 #include "Util.h"
+#include "XSupWrapper.h"
 
 ConnectionInfoDlg::ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e)
 	:QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow), m_pEmitter(e)
@@ -174,10 +175,11 @@ bool ConnectionInfoDlg::initUI(void)
 
 void ConnectionInfoDlg::disconnect(void)
 {
-	if (m_wirelessAdapter == true)
-		this->disconnectWirelessConnection();
-	else
-		this->disconnectWiredConnection();
+	if (XSupWrapper::disconnectAdapter(m_curAdapter) == false)
+	{
+		QMessageBox::critical(NULL, tr("Error Disconnecting"),
+			tr("An error occurred while disconnecting device '%1'.\n").arg(m_curAdapter));			
+	}
 }
 
 void ConnectionInfoDlg::renewIP(void)
@@ -213,8 +215,8 @@ void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 				m_wirelessAdapter = true;
 				if (m_pAdapterNameLabel != NULL)
 				{
-					QString adapterText = m_curAdapter;
-					adapterText.remove(QString(" - Packet Scheduler Miniport"));
+					QString adapterText;
+					adapterText = Util::removePacketSchedulerFromName(m_curAdapter);
 					m_pAdapterNameLabel->setText(adapterText);
 				}
 				this->updateWirelessState();
@@ -238,63 +240,6 @@ void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 		if (pInterface != NULL)
 			xsupgui_request_free_interface_config(&pInterface);
 	}
-}
-
-void ConnectionInfoDlg::disconnectWirelessConnection(void)
-{
-	char *pDeviceName = NULL;
-	int retval = 0;
-
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
-	{
-		
-		retval = xsupgui_request_set_disassociate(pDeviceName, 1);
-		if (retval != REQUEST_SUCCESS)
-		{
-			QMessageBox::critical(NULL, tr("Disconnect Wireless"),
-				tr("An error occurred while disassociating device '%1'.\n").arg(m_curAdapter));
-		}
-		else
-		{
-			// Lock the connection in a disconnected state so that we don't change to something else.
-			xsupgui_request_set_connection_lock(pDeviceName, TRUE);
-			xsupgui_request_unbind_connection(pDeviceName);
-			this->stopAndClearTimer();
-		}
-	}
-
-	if (pDeviceName != NULL)
-		free(pDeviceName);
-}
-
-void ConnectionInfoDlg::disconnectWiredConnection(void)
-{
-	char *pDeviceName = NULL;
-	int retval = 0;
-
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
-	{
-
-		retval = xsupgui_request_logoff(pDeviceName);
-		if (retval != REQUEST_SUCCESS)
-		{
-			QMessageBox::critical(NULL, tr("Disconnect Wired"),
-				tr("An error occurred while logging off device '%1'.")
-				.arg(m_curAdapter));
-		}
-		else
-		{
-			xsupgui_request_unbind_connection(pDeviceName);
-			this->stopAndClearTimer();
-		}
-	}
-
-	if (pDeviceName != NULL) 
-		free(pDeviceName);
 }
 
 void ConnectionInfoDlg::updateWirelessState(void)

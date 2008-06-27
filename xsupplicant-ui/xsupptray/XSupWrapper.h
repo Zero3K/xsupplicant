@@ -68,6 +68,8 @@ public:
 	static QStringList getWirelessInterfaceList(void);
 	static bool setProfileUsername(const QString &profileName, const QString &username);
 	static bool setProfilePassword(const QString &profileName, const QString &password);
+	static bool disconnectAdapter(const QString &adapterDesc);
+	static void getAndDisplayErrors(void);
 };
 
 #endif

@@ -500,8 +500,9 @@ void ConnectMgrDlg::showAdvancedConfig(void)
 
 void ConnectMgrDlg::refreshConnectionList(void)
 {	
-	int i,retval = 0;
+	int retval = 0;
 	conn_enum *pConn;
+	
 	retval = xsupgui_request_enum_connections(&pConn);
 	if (retval == REQUEST_SUCCESS && pConn)
 	{
@@ -788,13 +789,13 @@ void ConnectMgrDlg::createNewConnection(void)
 			}
 			else
 			{
-				QMessageBox::critical(m_pRealForm, tr("Error"),tr("An error occurred when attempting to create the Connection Wizard"));
+				QMessageBox::critical(m_pRealForm, tr("Error"),tr("An error occurred when attempting to launch the Connection Wizard"));
 				delete m_pConnWizard;
 				m_pConnWizard = NULL;
 			}
 		}
 		else
-			QMessageBox::critical(m_pRealForm, tr("Error"),tr("An error occurred when attempting to create the Connection Wizard"));
+			QMessageBox::critical(m_pRealForm, tr("Error"),tr("An error occurred when attempting to launch the Connection Wizard"));
 	}
 	else
 	{

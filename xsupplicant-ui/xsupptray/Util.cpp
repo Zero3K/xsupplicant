@@ -256,7 +256,7 @@ QString Util::removePacketSchedulerFromName(char *fullName)
   return partialName;
 }
 
-QString Util::removePacketSchedulerFromName(QString &fullName)
+QString Util::removePacketSchedulerFromName(const QString &fullName)
 {
   // Remove the stuff after the '-' to show to the user
   // Add the full name in the data

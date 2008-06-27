@@ -66,17 +66,12 @@ private:
 	void populateWiredConnectionList(void);
 	bool isConnectionActive(QString interfaceDesc, QString connectionName, bool isWireless);
 	bool connectToConnection(QString interfaceDesc, QString connectionName);
-	void getAndDisplayErrors(void);
 	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
 	void updateWirelessState(void);
 	void updateWiredState(void);
 	void startConnectedTimer(QString adapterName);
 	void showTime(void);
 	void stopAndClearTimer(void);
-	void displayDot1XState(QLabel *m_pLabel, QString m_deviceName, int state);
-	void displayPhysicalState(QLabel *m_pLabel, QString m_deviceName, int state);
-	void showActiveWiredState(QString intName);
-	void showActiveWirelessState(QString intName);
 	
 private slots:
 	void showSSIDList(void);
@@ -134,7 +129,6 @@ private:
 	ConnectionInfoDlg *m_pConnInfo;
 	QString	m_currentWirelessAdapter;
 	QString m_currentWiredAdapter;
-	QString m_currentAdapterName;
 	QTimer m_timer;
 	QTime  m_time;
 	int m_lastWirelessConnectionIdx;

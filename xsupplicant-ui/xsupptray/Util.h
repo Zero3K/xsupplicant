@@ -76,7 +76,7 @@ public:
   static QListWidget *createListWidget(const QString &whatsThis);
   static QRadioButton *createRadioButton(const QString &text, QObject *thisPtr, const char *slot, const QString &toolTip);
   static QString removePacketSchedulerFromName(char *fullName);
-  static QString removePacketSchedulerFromName(QString &fullName);
+  static QString removePacketSchedulerFromName(const QString &fullName);
 
 #ifdef WINDOWS
   static char *myNullStrdup(const char *p);

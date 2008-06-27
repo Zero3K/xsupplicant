@@ -566,3 +566,80 @@ bool XSupWrapper::setProfilePassword(const QString &profileName, const QString &
 		
 	return success;
 }
+
+bool XSupWrapper::disconnectAdapter(const QString &adapterDesc)
+{
+	bool success = false;
+	char *pDeviceName = NULL;
+	int retVal = 0;
+
+	// Using the device description - get the device name
+	retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &pDeviceName);
+	if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+	{
+		config_interfaces *pInterface;
+		retVal =xsupgui_request_get_interface_config(adapterDesc.toAscii().data(),&pInterface);
+		if (retVal == REQUEST_SUCCESS && pInterface != NULL)
+		{
+			if ((pInterface->flags & CONFIG_INTERFACE_IS_WIRELESS) == CONFIG_INTERFACE_IS_WIRELESS)
+			{
+				if (xsupgui_request_set_disassociate(pDeviceName, 1) == REQUEST_SUCCESS)
+				{
+					// Lock the connection in a disconnected state so that we don't change to something else.
+					xsupgui_request_set_connection_lock(pDeviceName, TRUE);
+					xsupgui_request_unbind_connection(pDeviceName);		
+					success = true;	
+				}
+			}
+			else // if wired
+			{
+				if (xsupgui_request_logoff(pDeviceName) == REQUEST_SUCCESS)
+				{
+					xsupgui_request_unbind_connection(pDeviceName);
+					success = true;
+				}
+			}
+		}
+		if (pInterface != NULL)
+			xsupgui_request_free_interface_config(&pInterface);
+	}
+	
+	if (pDeviceName != NULL) 
+		free(pDeviceName);
+
+	
+	return success;
+}
+
+void XSupWrapper::getAndDisplayErrors(void)
+{
+	error_messages *msgs = NULL;
+
+	int retval = xsupgui_request_get_error_msgs(&msgs);
+	if (retval == REQUEST_SUCCESS)
+	{
+		if (msgs && msgs[0].errmsgs)
+		{
+			int i = 0;
+			QString errors;
+			
+			// If we have at least one message, display it here
+			while (msgs[i].errmsgs != NULL)
+			{
+				errors += QString ("- %1\n").arg(msgs[i].errmsgs);
+				i++;
+			}
+
+			QMessageBox::critical(NULL, QWidget::tr("XSupplicant Error Summary"),
+				QWidget::tr("The following errors were returned from XSupplicant while attempting to connect:\n%1")
+				.arg(errors));
+		}
+	}
+	else
+	{
+		QMessageBox::critical(NULL, QWidget::tr("Get Error Message error"),
+			QWidget::tr("An error occurred while checking for errors from the XSupplicant."));
+	}
+
+	xsupgui_request_free_error_msgs(&msgs);
+}
