@@ -646,77 +646,112 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 		{
 			QTableWidgetItem *nameItem = m_pConnectionsTable->item(selItem->row(), 0);
 			QString connName = nameItem->text();
-			QString message;
 			config_connection *pConfig;
+			bool canDelete = true;
 			
-			// check if is wired and if so is default connection
-			if (XSupWrapper::isDefaultWiredConnection(connName))
-				message = tr("The connection '%1' is set as the default connection for one of your wired adapters.  Are you sure you want to delete it?").arg(connName);
-			else
-				message = tr("Are you sure you want to delete the connection '%1'?").arg(connName);
-			
-			// check if wireless and is in preferred list?
-			bool result = XSupWrapper::getConfigConnection(connName, &pConfig);
-			if (result == true && pConfig != NULL)
+			// first check if connection is in use
+			// if so, don't allow deleting	
+			bool success;
+			success = XSupWrapper::getConfigConnection(connName,&pConfig);
+			if (success == true && pConfig != NULL)
 			{
-				if (pConfig->priority != DEFAULT_PRIORITY)
-					message = tr("The connection '%1' is in your preferred connection list.  Are you sure you want to delete it?").arg(connName);
-			}
-			else
-				pConfig = NULL;
-			
-			
-			if (QMessageBox::question(m_pRealForm, tr("Delete Connection"), 
-				message, 
-				QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
-			{
-				bool success;
-				config_profiles *pProfile;
-				success = XSupWrapper::getConfigProfile(QString(pConfig->profile), &pProfile);
-				
-				success = XSupWrapper::deleteConnectionConfig(connName);
-				if (success == false)
+				char *pDeviceName = NULL;
+				int retVal;
+					
+				retVal = xsupgui_request_get_devname(pConfig->device, &pDeviceName);
+				if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
 				{
-					QMessageBox::critical(m_pRealForm,tr("Error Deleting Connection"), tr("An error occurred when attempting to delete the connection '%1'.  If the connection is in use, please disconnect and try again.").arg(connName));
+					char *pConnName = NULL;
+					retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &pConnName);
+					if (retVal == REQUEST_SUCCESS && pConnName != NULL)
+					{
+						if (QString(pConnName) == connName)
+						{
+							QMessageBox::warning(m_pRealForm, tr("Connection In Use"), tr("The connection '%1' cannot be deleted because it is currently in use.  Please disconnect from the network before deleting the connection.").arg(connName));
+							canDelete = false;
+						}
+					}
+					if (pConnName != NULL)
+						free(pConnName);
+				}	
+				
+				if (pDeviceName != NULL)
+					free(pDeviceName);
+			}
+			
+			if (canDelete == true)
+			{
+				QString message;
+			
+				// check if is wired and if so is default connection
+				if (XSupWrapper::isDefaultWiredConnection(connName))
+					message = tr("The connection '%1' is set as the default connection for one of your wired adapters.  Are you sure you want to delete it?").arg(connName);
+				else
+					message = tr("Are you sure you want to delete the connection '%1'?").arg(connName);
+				
+				// check if wireless and is in preferred list?
+				bool result = XSupWrapper::getConfigConnection(connName, &pConfig);
+				if (result == true && pConfig != NULL)
+				{
+					if (pConfig->priority != DEFAULT_PRIORITY)
+						message = tr("The connection '%1' is in your preferred connection list.  Are you sure you want to delete it?").arg(connName);
 				}
 				else
-				{	
-					// delete profile and trusted server
-					if (pProfile != NULL && XSupWrapper::isProfileInUse(QString(pProfile->name)) == false)
-					{
-						// if no other connections are using this profile, delete it
-						config_trusted_server *pServer;
-						XSupWrapper::getTrustedServerForProfile(QString(pProfile->name), &pServer);
-						success = XSupWrapper::deleteProfileConfig(QString(pProfile->name));
-						
-						if (success == false)
-						{
-							QMessageBox::critical(m_pRealForm, tr("Error Deleting Profile"), tr("An error occurred while attempting to delete the profile '%1'").arg(pProfile->name));
-						}
-						else
-						{
-							// delete trusted server
-							if (pServer != NULL && XSupWrapper::isTrustedServerInUse(QString(pServer->name)) == false)
-								success = XSupWrapper::deleteServerConfig(QString(pServer->name));
-							else if (pServer != NULL)
-								QMessageBox::critical(m_pRealForm, tr("Error Deleting Trusted Server"), tr("The trused server '%1' cannot be deleted because it is being used by multiple profiles").arg(pServer->name));
-						}
-						if (pServer != NULL)
-							XSupWrapper::freeConfigServer(&pServer);
-					}
-					else if (pProfile != NULL)
-					{
-						QMessageBox::critical(m_pRealForm, tr("Error Deleting Profile"), tr("The profile '%1' cannot be deleted because it is being used by multiple connection profiles").arg(pProfile->name));
-					}
+					pConfig = NULL;
 				
-					// save off the config since it changed
-					XSupWrapper::writeConfig();
+				
+				if (QMessageBox::question(m_pRealForm, tr("Delete Connection"), 
+					message, 
+					QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+				{
+					bool success;
+					config_profiles *pProfile;
+					success = XSupWrapper::getConfigProfile(QString(pConfig->profile), &pProfile);
 					
-					// tell everyone we changed the config
-					m_pEmitter->sendConnConfigUpdate();
+					success = XSupWrapper::deleteConnectionConfig(connName);
+					if (success == false)
+					{
+						QMessageBox::critical(m_pRealForm,tr("Error Deleting Connection"), tr("An error occurred when attempting to delete the connection '%1'.  If the connection is in use, please disconnect and try again.").arg(connName));
+					}
+					else
+					{	
+						// delete profile and trusted server
+						if (pProfile != NULL && XSupWrapper::isProfileInUse(QString(pProfile->name)) == false)
+						{
+							// if no other connections are using this profile, delete it
+							config_trusted_server *pServer;
+							XSupWrapper::getTrustedServerForProfile(QString(pProfile->name), &pServer);
+							success = XSupWrapper::deleteProfileConfig(QString(pProfile->name));
+							
+							if (success == false)
+							{
+								QMessageBox::critical(m_pRealForm, tr("Error Deleting Profile"), tr("An error occurred while attempting to delete the profile '%1'").arg(pProfile->name));
+							}
+							else
+							{
+								// delete trusted server
+								if (pServer != NULL && XSupWrapper::isTrustedServerInUse(QString(pServer->name)) == false)
+									success = XSupWrapper::deleteServerConfig(QString(pServer->name));
+								else if (pServer != NULL)
+									QMessageBox::critical(m_pRealForm, tr("Error Deleting Trusted Server"), tr("The trused server '%1' cannot be deleted because it is being used by multiple profiles").arg(pServer->name));
+							}
+							if (pServer != NULL)
+								XSupWrapper::freeConfigServer(&pServer);
+						}
+						else if (pProfile != NULL)
+						{
+							QMessageBox::critical(m_pRealForm, tr("Error Deleting Profile"), tr("The profile '%1' cannot be deleted because it is being used by multiple connection profiles").arg(pProfile->name));
+						}
+					
+						// save off the config since it changed
+						XSupWrapper::writeConfig();
+						
+						// tell everyone we changed the config
+						m_pEmitter->sendConnConfigUpdate();
+					}
+					if (pProfile != NULL)
+						XSupWrapper::freeConfigProfile(&pProfile);
 				}
-				if (pProfile != NULL)
-					XSupWrapper::freeConfigProfile(&pProfile);
 			}
 			if (pConfig != NULL)
 				XSupWrapper::freeConfigConnection(&pConfig);	
