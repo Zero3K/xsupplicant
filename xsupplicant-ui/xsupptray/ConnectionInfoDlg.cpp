@@ -88,7 +88,7 @@ bool ConnectionInfoDlg::initUI(void)
 	// set window flags so minimizeable and context help thingy is turned off
 	flags = m_pRealForm->windowFlags();
 	flags &= ~Qt::WindowContextHelpButtonHint;
-	flags |= Qt::WindowMinimizeButtonHint;
+	flags &= ~Qt::WindowMinimizeButtonHint;
 	m_pRealForm->setWindowFlags(flags);	
 		
 	// cache off pointers to UI objects

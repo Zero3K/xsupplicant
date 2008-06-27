@@ -28,7 +28,7 @@
    </size>
   </property>
   <property name="windowTitle" >
-   <string/>
+   <string>Credentials Required</string>
   </property>
   <property name="windowIcon" >
    <iconset>icons/prod_color.png</iconset>

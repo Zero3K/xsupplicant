@@ -911,9 +911,9 @@ void ConnectDlg::updateWiredState(void)
 			char *connName;
 			retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &connName);
 			if (retVal == REQUEST_SUCCESS && connName != NULL)
-				m_pWirelessConnectionName->setText(connName);	
+				m_pWiredConnectionName->setText(connName);	
 			else
-				m_pWirelessConnectionName->setText(QString(""));
+				m_pWiredConnectionName->setText(QString(""));
 				
 			if (connName != NULL)
 				free(connName);				

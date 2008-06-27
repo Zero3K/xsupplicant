@@ -34,7 +34,7 @@
    </font>
   </property>
   <property name="windowTitle" >
-   <string/>
+   <string>Password Required</string>
   </property>
   <property name="windowIcon" >
    <iconset>icons/prod_color.png</iconset>
