@@ -643,3 +643,56 @@ void XSupWrapper::getAndDisplayErrors(void)
 
 	xsupgui_request_free_error_msgs(&msgs);
 }
+
+// returns descriptions of wireless adapters in system
+QVector<QString> XSupWrapper::getWirelessAdapters(void)
+{
+	QVector<QString> adapterVec;
+	int_enum *pInterfaceList = NULL;
+	int retVal;	
+			
+	retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+	{
+		int i = 0;
+		while (pInterfaceList[i].desc != NULL)
+		{
+			if (pInterfaceList[i].is_wireless == TRUE)
+				adapterVec.push_back(QString(pInterfaceList[i].desc));
+			
+			++i;
+		}
+	}	
+	
+	if (pInterfaceList != NULL)
+		xsupgui_request_free_int_enum(&pInterfaceList);
+	
+	return adapterVec;
+}
+
+// returns descriptions of wired adapters in system
+QVector<QString> XSupWrapper::getWiredAdapters(void)
+{	
+	QVector<QString> adapterVec;
+	int_enum *pInterfaceList = NULL;
+	int retVal;	
+			
+	retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+	{
+		int i = 0;
+		while (pInterfaceList[i].desc != NULL)
+		{
+			if (pInterfaceList[i].is_wireless == FALSE)
+				adapterVec.push_back(QString(pInterfaceList[i].desc));
+			
+			++i;
+		}
+	}	
+	
+	if (pInterfaceList != NULL)
+		xsupgui_request_free_int_enum(&pInterfaceList);
+	
+	return adapterVec;
+} 
+	

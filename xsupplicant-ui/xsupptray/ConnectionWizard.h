@@ -66,6 +66,7 @@ public:
 	typedef enum {
 		pageNoPage=-1,
 		pageNetworkType=0,
+		pageAdapter,
 		pageWiredSecurity,
 		pageWirelessNetwork,
 		pageWirelessInfo,

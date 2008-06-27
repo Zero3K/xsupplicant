@@ -282,4 +282,24 @@ private:
 	QCheckBox *m_pVerifyName;
 	cert_enum *m_pCertArray; // hate to use this datatype here
 };
+
+class WizardPageAdapter : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageAdapter(QWidget *parent, QWidget *parentWidget);
+	~WizardPageAdapter();
+	virtual bool create(void);
+	virtual void init(const ConnectionWizardData &data);
+	virtual QString getHeaderString(void) { return tr("Network Adapter"); };
+	virtual bool validate(void) { return true; };
+	virtual const ConnectionWizardData &wizardData(void);
+private slots:
+	void handleAdapterChange(int);	
+private:
+	QComboBox *m_pAdapterCombo;
+	QLabel *m_pMsgLabel;
+	QVector<QString> m_adapterVector;
+};
 #endif

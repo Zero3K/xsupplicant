@@ -35,6 +35,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QVector>
 
 extern "C" 
 {
@@ -70,6 +71,8 @@ public:
 	static bool setProfilePassword(const QString &profileName, const QString &password);
 	static bool disconnectAdapter(const QString &adapterDesc);
 	static void getAndDisplayErrors(void);
+	static QVector<QString> getWirelessAdapters(void); // returns descriptions of wireless adapters in system
+	static QVector<QString> getWiredAdapters(void); // returns descriptions of wired adapters in system
 };
 
 #endif

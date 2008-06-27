@@ -172,6 +172,9 @@ bool ConnectionWizard::loadPages(void)
 				case ConnectionWizard::pageNetworkType:
 					newPage = new WizardPageNetworkType(this, m_pStackedWidget);
 					break;
+				case ConnectionWizard::pageAdapter:
+					newPage = new WizardPageAdapter(this, m_pStackedWidget);
+					break;
 				case ConnectionWizard::pageWiredSecurity:
 					newPage = new WizardPageWiredSecurity(this, m_pStackedWidget);
 					break;
@@ -421,12 +424,28 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 			break;
 			
 		case ConnectionWizard::pageNetworkType:
-			// jking - TODO: need to go to adapter selection page if more than one adapter!!!
+			if (m_connData.m_wireless == true)
+			{
+				if (XSupWrapper::getWirelessAdapters().size() > 1)
+					nextPage = ConnectionWizard::pageAdapter;
+				else
+					nextPage = ConnectionWizard::pageWirelessNetwork;
+			}
+			else
+			{
+				if (XSupWrapper::getWiredAdapters().size() > 1)
+					nextPage = ConnectionWizard::pageAdapter;
+				else
+					nextPage =  ConnectionWizard::pageWiredSecurity;
+			}
+			break;
+			
+		case ConnectionWizard::pageAdapter:
 			if (m_connData.m_wireless == true)
 				nextPage = ConnectionWizard::pageWirelessNetwork;
 			else
 				nextPage =  ConnectionWizard::pageWiredSecurity;
-			break;
+			break;			
 			
 		case pageWiredSecurity:
 			if (m_connData.m_wiredSecurity == true)
