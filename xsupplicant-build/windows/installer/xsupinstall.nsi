@@ -281,6 +281,7 @@ Section "XSupplicant (required)"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionInfoWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SSIDListWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessScanDialog.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageAdapter.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XCert.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XInnerProtocol.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XProtocol.ui"
@@ -490,6 +491,7 @@ Section "Uninstall"
         Delete $INSTDIR\Skins\Default\ViewLogWindow.ui
 	Delete $INSTDIR\Skins\Default\WirelessPriorityWindow.ui
 	Delete $INSTDIR\Skins\Default\WirelessScanDialog.ui
+	Delete $INSTDIR\Skins\Default\wizardPageAdapter.ui
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XCert.ui
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XInnerProtocol.ui
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XProtocol.ui

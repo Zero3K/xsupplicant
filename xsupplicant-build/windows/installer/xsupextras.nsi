@@ -171,6 +171,8 @@ Function un.ThirdPartyPostInstall
 FunctionEnd ;un.ThirdPartyPostInstall
 
 Function InstallSupplicantChecker
+	SetOutPath "$INSTDIR"
+
         File "${THIRDPARTY}\checksuppsapp.exe"
 
         DetailPrint "Checking for other supplicants..."
