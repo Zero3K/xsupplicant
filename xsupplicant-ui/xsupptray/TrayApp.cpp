@@ -881,17 +881,14 @@ void TrayApp::start()
       break;
 
     case START_LOGIN:
-      // display the log window - needs to be queued up - don't call immediately
-      bValue = QMetaObject::invokeMethod(this, "slotLaunchLogin", Qt::QueuedConnection);
+      bValue = QMetaObject::invokeMethod(this, "showConnectDlg", Qt::QueuedConnection);
       break;
 
     case START_CONFIG:
-      // display the log window - needs to be queued up - don't call immediately
       bValue = QMetaObject::invokeMethod(this, "slotLaunchConfig", Qt::QueuedConnection);
       break;
 
     case START_ABOUT:
-      // display the log window - needs to be queued up - don't call immediately
       bValue = QMetaObject::invokeMethod(this, "slotAbout", Qt::QueuedConnection);
       break;
 
