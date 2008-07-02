@@ -119,7 +119,7 @@ bool ConnectionInfoDlg::initUI(void)
 	QLabel *pLabel;
 	pLabel = qFindChild<QLabel*>(m_pRealForm, "headerConnectionStatus");
 	if (pLabel != NULL)
-		pLabel->setText(tr("Connection Status"));
+		pLabel->setText(tr("Connection Details"));
 		
 	pLabel = qFindChild<QLabel*>(m_pRealForm, "labelAdapter");
 	if (pLabel != NULL)
@@ -206,6 +206,16 @@ void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 		this->clearUI();
 	else
 	{
+		char *pDeviceName = NULL;
+		int retval;
+		
+		retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
+		if (retval == REQUEST_SUCCESS && pDeviceName != NULL)	
+			m_curAdapterName = pDeviceName;
+			
+		if (pDeviceName != NULL)
+			free(pDeviceName);
+			
 		config_interfaces *pInterface;
 		retVal =xsupgui_request_get_interface_config(m_curAdapter.toAscii().data(),&pInterface);
 		if (retVal == REQUEST_SUCCESS && pInterface != NULL)
@@ -226,7 +236,9 @@ void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 				m_wirelessAdapter = false;
 				if (m_pAdapterNameLabel != NULL)
 				{
-					m_pAdapterNameLabel->setText(m_curAdapter);
+					QString adapterText;
+					adapterText = Util::removePacketSchedulerFromName(m_curAdapter);
+					m_pAdapterNameLabel->setText(adapterText);
 				}
 				this->updateWiredState();		
 			}
@@ -244,16 +256,13 @@ void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 
 void ConnectionInfoDlg::updateWirelessState(void)
 {
-	char *pDeviceName = NULL;
 	int retval = 0;
 	int state = 0;
 	Util::ConnectionStatus status = Util::status_idle;
 
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
+	if (m_curAdapterName.isEmpty() == false)
 	{
-		retval = xsupgui_request_get_physical_state(pDeviceName, &state);
+		retval = xsupgui_request_get_physical_state(m_curAdapterName.toAscii().data(), &state);
 		if (retval == REQUEST_SUCCESS)
 		{
 			if (state != WIRELESS_ASSOCIATED)
@@ -273,7 +282,7 @@ void ConnectionInfoDlg::updateWirelessState(void)
 			}
 			else
 			{
-				retval = xsupgui_request_get_1x_state(pDeviceName, &state);
+				retval = xsupgui_request_get_1x_state(m_curAdapterName.toAscii().data(), &state);
 				if (retval == REQUEST_SUCCESS)
 				{
 					status = Util::getConnectionStatusFromDot1XState(state);
@@ -297,23 +306,17 @@ void ConnectionInfoDlg::updateWirelessState(void)
 		m_pDisconnectButton->setEnabled(status != Util::status_idle);
 	if (m_pRenewIPButton != NULL)
 		m_pRenewIPButton->setEnabled(status != Util::status_idle);			
-				
-	if (pDeviceName != NULL)
-		free(pDeviceName);
 }
 
 void ConnectionInfoDlg::updateWiredState(void)
 {
-	char *pDeviceName = NULL;
 	int retval = 0;
 	int state = 0;
 	Util::ConnectionStatus status = Util::status_idle;
 
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
+	if (m_curAdapterName.isEmpty() == false)
 	{
-		retval = xsupgui_request_get_1x_state(pDeviceName, &state);
+		retval = xsupgui_request_get_1x_state(m_curAdapterName.toAscii().data(), &state);
 		if (retval == REQUEST_SUCCESS)
 		{
 			status = Util::getConnectionStatusFromDot1XState(state);
@@ -332,10 +335,7 @@ void ConnectionInfoDlg::updateWiredState(void)
 		m_pRenewIPButton->setEnabled(status != Util::status_idle);			
 		
 	if (m_pSSIDLabel != NULL)
-		m_pSSIDLabel->setText("");
-		
-	if (pDeviceName != NULL)
-		free(pDeviceName);		
+		m_pSSIDLabel->setText("");	
 }
 
 void ConnectionInfoDlg::stopAndClearTimer(void)
@@ -346,22 +346,12 @@ void ConnectionInfoDlg::stopAndClearTimer(void)
 	this->showTime();
 }
 
-void ConnectionInfoDlg::startConnectedTimer(void)
+void ConnectionInfoDlg::updateElapsedTime(void)
 {
 	int retval = 0;
 	long int seconds = 0;
-	char *pDeviceName = NULL;
-
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if ((retval != REQUEST_SUCCESS) || (pDeviceName == NULL))
-	{
-		// If we can't determine the device name, then tell the caller the connection can't
-		// be made.
-		return;
-	}
 	
-	retval = xsupgui_request_get_seconds_authenticated(pDeviceName, &seconds);
+	retval = xsupgui_request_get_seconds_authenticated(m_curAdapterName.toAscii().data(), &seconds);
 	if (retval == REQUEST_SUCCESS)
 	{
 		int hours = 0;
@@ -377,14 +367,14 @@ void ConnectionInfoDlg::startConnectedTimer(void)
 		seconds = tempTime % 60;
 
 		m_time.setHMS(hours, minutes, seconds);
-
-		this->showTime();
-
-		m_timer.start(1000);
 	}
-	
-	if (pDeviceName != NULL)
-		free(pDeviceName);
+}
+
+void ConnectionInfoDlg::startConnectedTimer(void)
+{
+	this->updateElapsedTime();
+	this->showTime();
+	m_timer.start(500);
 }
 
 void ConnectionInfoDlg::showTime(void)
@@ -402,31 +392,13 @@ void ConnectionInfoDlg::showTime(void)
 
 void ConnectionInfoDlg::timerUpdate(void)
 {
-	if ((m_time.hour() == 23) && (m_time.minute() == 59) && (m_time.second() == 59))
-	{
-		// We are about to roll a day.
-		m_days++;
-		m_time.setHMS(0, 0, 0);
-	}
-	else
-	{
-		m_time = m_time.addSecs(1);
-	}
-
+	this->updateElapsedTime();
 	this->showTime();
 }
-void ConnectionInfoDlg::stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid)
-{
-	char *pDeviceName = NULL;
-	int retval = 0;
-
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if ((retval != REQUEST_SUCCESS) || (pDeviceName == NULL))
-		return;
-	
+void ConnectionInfoDlg::stateChange(const QString &intName, int sm, int, int newstate, unsigned int)
+{	
 	// We only care if it is the adapter that is currently displayed.
-	if (intName == QString(pDeviceName))
+	if (intName == m_curAdapterName)
 	{
 		if (sm == IPC_STATEMACHINE_8021X)
 		{
@@ -490,8 +462,6 @@ void ConnectionInfoDlg::stateChange(const QString &intName, int sm, int oldstate
 				m_pRenewIPButton->setEnabled(status != Util::status_idle);													
 		}
 	}
-	if (pDeviceName != NULL)
-		free(pDeviceName);
 }
 void ConnectionInfoDlg::clearUI(void)
 {
@@ -509,18 +479,12 @@ void ConnectionInfoDlg::clearUI(void)
 void ConnectionInfoDlg::updateIPAddress(void)
 {
 	int retVal;
-	char *pDeviceName = NULL;
 	QString ipText = "0.0.0.0";
 	
-	if (m_curAdapter.isEmpty())
-		return;
-		
-	// Using the device description - get the device name
-	retVal = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+	if (m_curAdapterName.isEmpty() == false)
 	{
 		ipinfo_type *pInfo;
-		retVal = xsupgui_request_get_ip_info(pDeviceName, &pInfo);
+		retVal = xsupgui_request_get_ip_info(m_curAdapterName.toAscii().data(), &pInfo);
 		if (retVal == REQUEST_SUCCESS && pInfo != NULL)
 			ipText = pInfo->ipaddr;
 		if (pInfo != NULL)
@@ -529,22 +493,16 @@ void ConnectionInfoDlg::updateIPAddress(void)
 
 	if (m_pIPAddressLabel != NULL)
 		m_pIPAddressLabel->setText(ipText);
-	if (pDeviceName != NULL)
-		free(pDeviceName);
 }
 void ConnectionInfoDlg::updateSSID(void)
 {
 	int retVal;
 	QString ssidText = "";
 	
-	char *pDeviceName = NULL;
-
-	// Using the device description - get the device name
-	retVal = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+	if (m_curAdapterName.isEmpty() == false)
 	{
 		char *ssid = NULL;
-		retVal = xsupgui_request_get_ssid(pDeviceName, &ssid);
+		retVal = xsupgui_request_get_ssid(m_curAdapterName.toAscii().data(), &ssid);
 		if (retVal == REQUEST_SUCCESS && ssid != NULL)
 			ssidText = ssid;
 		if (ssid != NULL)
@@ -553,8 +511,4 @@ void ConnectionInfoDlg::updateSSID(void)
 
 	if (m_pSSIDLabel != NULL)
 		m_pSSIDLabel->setText(ssidText);
-		
-	if (pDeviceName != NULL)
-		free(pDeviceName);
-
 }

@@ -25,7 +25,7 @@
    </size>
   </property>
   <property name="windowTitle" >
-   <string>Connection Information - XSupplicant</string>
+   <string>Connection Details - XSupplicant</string>
   </property>
   <property name="windowIcon" >
    <iconset>icons/prod_color.png</iconset>
@@ -358,7 +358,7 @@
                   </font>
                  </property>
                  <property name="text" >
-                  <string>Connection Status</string>
+                  <string>Connection Details</string>
                  </property>
                  <property name="alignment" >
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -1537,6 +1537,9 @@
            <property name="text" >
             <string>Renew IP</string>
            </property>
+           <property name="autoDefault" >
+            <bool>false</bool>
+           </property>
           </widget>
          </item>
          <item>
@@ -1580,6 +1583,9 @@
            </property>
            <property name="text" >
             <string>Disconnect</string>
+           </property>
+           <property name="autoDefault" >
+            <bool>false</bool>
            </property>
           </widget>
          </item>

@@ -886,6 +886,9 @@
                  <property name="text" >
                   <string>Refresh List</string>
                  </property>
+                 <property name="autoDefault" >
+                  <bool>false</bool>
+                 </property>
                 </widget>
                </item>
                <item>
@@ -929,6 +932,9 @@
                  </property>
                  <property name="text" >
                   <string>Connect</string>
+                 </property>
+                 <property name="autoDefault" >
+                  <bool>false</bool>
                  </property>
                 </widget>
                </item>
@@ -1021,6 +1027,9 @@
            </property>
            <property name="text" >
             <string>Help</string>
+           </property>
+           <property name="autoDefault" >
+            <bool>false</bool>
            </property>
           </widget>
          </item>

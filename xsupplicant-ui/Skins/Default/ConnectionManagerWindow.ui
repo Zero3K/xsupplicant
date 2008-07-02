@@ -437,7 +437,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex" >
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="pageConnections" >
          <attribute name="title" >
@@ -923,6 +923,9 @@
                      <property name="text" >
                       <string>New Connection</string>
                      </property>
+                     <property name="autoDefault" >
+                      <bool>false</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -967,6 +970,9 @@
                      <property name="text" >
                       <string>Edit</string>
                      </property>
+                     <property name="autoDefault" >
+                      <bool>false</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -997,6 +1003,9 @@
                      </property>
                      <property name="text" >
                       <string>Delete</string>
+                     </property>
+                     <property name="autoDefault" >
+                      <bool>false</bool>
                      </property>
                     </widget>
                    </item>
@@ -1806,6 +1815,9 @@
                      <property name="text" >
                       <string>Set Network Priorities</string>
                      </property>
+                     <property name="autoDefault" >
+                      <bool>false</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -2110,6 +2122,9 @@
                      <property name="text" >
                       <string>Show Advanced Configuration</string>
                      </property>
+                     <property name="autoDefault" >
+                      <bool>false</bool>
+                     </property>
                     </widget>
                    </item>
                    <item>
@@ -2218,6 +2233,9 @@
            </property>
            <property name="text" >
             <string>Help</string>
+           </property>
+           <property name="autoDefault" >
+            <bool>false</bool>
            </property>
           </widget>
          </item>

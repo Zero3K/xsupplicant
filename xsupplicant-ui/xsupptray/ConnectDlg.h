@@ -64,14 +64,19 @@ private:
 	void populateWiredAdapterList(void);
 	void populateWirelessConnectionList(void);
 	void populateWiredConnectionList(void);
-	bool isConnectionActive(QString interfaceDesc, QString connectionName, bool isWireless);
-	bool connectToConnection(QString interfaceDesc, QString connectionName);
+	bool isConnectionActive(const QString &interfaceName, const QString &connectionName, bool isWireless);
+	bool connectToConnection(const QString &interfaceName, const QString &connectionName);
 	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
 	void updateWirelessState(void);
 	void updateWiredState(void);
-	void startConnectedTimer(QString adapterName);
+	void startConnectedTimer(const QString &adapterName);
 	void showTime(void);
 	void stopAndClearTimer(void);
+	void disconnectWirelessConnection(void);
+	void disconnectWiredConnection(void);
+	void connectWirelessConnection(void);
+	void connectWiredConnection(void);
+	void updateElapsedTime(void);		
 	
 private slots:
 	void showSSIDList(void);
@@ -83,10 +88,8 @@ private slots:
 	void launchConnectionWizard(void);
 	void cleanupConnectionWizard(void);
 	void finishConnectionWizard(bool);
-	void connectWirelessConnection(void);
-	void connectWiredConnection(void);
-	void disconnectWirelessConnection(void);
-	void disconnectWiredConnection(void);
+	void connectDisconnectWirelessConnection(void);
+	void connectDisconnectWiredConnection(void);
 	void timerUpdate(void);
 	void currentTabChanged(int);
 	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
@@ -94,6 +97,7 @@ private slots:
 	void showWirelessConnectionInfo(void);
 	void showWiredConnectionInfo(void);
 	void interfaceRemoved(char *intDesc);
+	void updateWirelessSignalStrength(const QString &);
 		
 private:
 	Emitter *m_pEmitter;
@@ -107,33 +111,41 @@ private:
 	QComboBox	*m_pWirelessConnectionList;
 	QComboBox	*m_pWiredConnectionList;
 	QPushButton *m_pCloseButton;
-	QPushButton *m_pBrowseWirelessNetworksButton;
+	QPushButton *m_pWirelessBrowseButton;
 	QPushButton *m_pWiredConnectButton;
 	QPushButton *m_pWirelessConnectButton;
-	QPushButton *m_pWiredDisconnectButton;
-	QPushButton *m_pWirelessDisconnectButton;
 	QPushButton *m_pWiredConnectionInfo;
 	QPushButton *m_pWirelessConnectionInfo;
 	QPushButton *m_pConnWizardButton;
-	QLabel		*m_pWirelessConnectionName;
-	QLabel		*m_pWiredConnectionName;
 	QLabel		*m_pWirelessConnectionStatus;
 	QLabel		*m_pWiredConnectionStatus;
-	QStackedWidget *m_pWirelessConnectionStack;
-	QStackedWidget *m_pWiredConnectionStack;
-
+	QLabel		*m_pWirelessNetworkName;
+	QLabel		*m_pWiredNetworkName;
+	QLabel		*m_pWirelessSignalStrength;
+	QLabel		*m_pWiredSignalStrength;
+	QLabel		*m_pWirelessSignalIcon;
+	QLabel		*m_pWiredSignalIcon;
 
 	TrayApp *m_pSupplicant;
 	SSIDListDlg *m_pSSIDListDlg;
 	ConnectionWizard *m_pConnWizard;
 	ConnectionInfoDlg *m_pConnInfo;
-	QString	m_currentWirelessAdapter;
-	QString m_currentWiredAdapter;
+	QString	m_currentWirelessAdapterDesc;
+	QString m_currentWirelessAdapterName;
+	QString m_currentWiredAdapterDesc;
+	QString m_currentWiredAdapterName;
+	QString m_timerAdapterName;
+	QString m_wirelessNetwork; // cached so we can update signal strength
+	
 	QTimer m_timer;
 	QTime  m_time;
 	int m_lastWirelessConnectionIdx;
 	int m_lastWiredConnectionIdx;
 	unsigned int m_days;
+	
+	QPixmap signalIcons[5];
+	QVector<QString> m_wirelessAdapters;
+	QVector<QString> m_wiredAdapters;
 };
      
 #endif

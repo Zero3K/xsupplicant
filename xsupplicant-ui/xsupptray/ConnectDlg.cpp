@@ -69,8 +69,8 @@ ConnectDlg::~ConnectDlg()
 	if (m_pCloseButton != NULL)
 		Util::myDisconnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm, SLOT(hide()));
 	
-	if (m_pBrowseWirelessNetworksButton != NULL)
-		Util::myDisconnect(m_pBrowseWirelessNetworksButton, SIGNAL(clicked()), this, SLOT(showSSIDList()));
+	if (m_pWirelessBrowseButton != NULL)
+		Util::myDisconnect(m_pWirelessBrowseButton, SIGNAL(clicked()), this, SLOT(showSSIDList()));
 		
 	if (m_pWirelessAdapterList != NULL)
 		Util::myConnect(m_pWirelessAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWirelessAdapter(int)));
@@ -88,16 +88,10 @@ ConnectDlg::~ConnectDlg()
 		Util::myDisconnect(m_pConnWizardButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
 
 	if (m_pWiredConnectButton != NULL)
-		Util::myDisconnect(m_pWiredConnectButton, SIGNAL(clicked()), this, SLOT(connectWiredConnection()));
+		Util::myDisconnect(m_pWiredConnectButton, SIGNAL(clicked()), this, SLOT(connectDisconnectWiredConnection()));
 
 	if (m_pWirelessConnectButton != NULL)
-		Util::myDisconnect(m_pWirelessConnectButton, SIGNAL(clicked()), this, SLOT(connectWirelessConnection()));
-
-	if (m_pWiredDisconnectButton != NULL)
-		Util::myDisconnect(m_pWiredDisconnectButton, SIGNAL(clicked()), this, SLOT(disconnectWiredConnection()));
-
-	if (m_pWirelessDisconnectButton != NULL)
-		Util::myDisconnect(m_pWirelessDisconnectButton, SIGNAL(clicked()), this, SLOT(disconnectWirelessConnection()));
+		Util::myDisconnect(m_pWirelessConnectButton, SIGNAL(clicked()), this, SLOT(connectDisconnectWirelessConnection()));
 
 	if (m_pAdapterTabControl != NULL)
 		Util::myConnect(m_pAdapterTabControl, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
@@ -116,6 +110,8 @@ ConnectDlg::~ConnectDlg()
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(populateConnectionLists()));		
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
+		
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updateWirelessSignalStrength(const QString &)));	
 		
 	if (m_pSSIDListDlg != NULL)
 		delete m_pSSIDListDlg;
@@ -151,8 +147,8 @@ bool ConnectDlg::initUI(void)
 		
 	// cache pointers to objects on our UI 
 	m_pCloseButton = qFindChild<QPushButton*>(m_pRealForm, "buttonClose");
-	m_pBrowseWirelessNetworksButton = qFindChild<QPushButton*>(m_pRealForm, "buttonBrowseWireless");
-	m_pAdapterTabControl = qFindChild<QTabWidget*>(m_pRealForm, "adapterTypeTabControl");
+	m_pWirelessBrowseButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessBrowse");
+	m_pAdapterTabControl = qFindChild<QTabWidget*>(m_pRealForm, "tabControlAdapterType");
 	m_pWirelessAdapterList = qFindChild<QComboBox*>(m_pRealForm, "comboBoxWirelessAdapter");
 	m_pWirelessConnectionList = qFindChild<QComboBox*>(m_pRealForm, "comboBoxWirelessConnection");
 	m_pWiredAdapterList = qFindChild<QComboBox*>(m_pRealForm, "comboBoxWiredAdapter");
@@ -160,20 +156,18 @@ bool ConnectDlg::initUI(void)
 	m_pWirelessConnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessConnect");
 	m_pWiredConnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWiredConnect");
 	m_pConnWizardButton = qFindChild<QPushButton*>(m_pRealForm, "buttonNewConnection");
-	m_pWirelessDisconnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessDisconnect");
-	m_pWiredDisconnectButton = qFindChild<QPushButton*>(m_pRealForm, "buttonWiredDisconnect");
-	m_pWirelessConnectionName = qFindChild<QLabel*>(m_pRealForm, "labelWirelessConnectionName");
-	m_pWiredConnectionName = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnectionName");
-	m_pWirelessConnectionStatus = qFindChild<QLabel*>(m_pRealForm, "labelWirelessConnectionStatus");
-	m_pWiredConnectionStatus = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnectionStatus");
-	m_pWirelessConnectionStack = qFindChild<QStackedWidget*>(m_pRealForm, "stackedWidgetWirelessConnection");
-	m_pWiredConnectionStack = qFindChild<QStackedWidget*>(m_pRealForm, "stackedWidgetWiredConnection");
-	m_pWiredConnectionInfo = qFindChild<QPushButton*>(m_pRealForm, "buttonWiredConnectionInfo");
-	m_pWirelessConnectionInfo = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessConnectionInfo");
+	m_pWirelessConnectionStatus = qFindChild<QLabel*>(m_pRealForm, "dataFieldWirelessStatus");
+	m_pWiredConnectionStatus = qFindChild<QLabel*>(m_pRealForm, "dataFieldWiredStatus");
+	m_pWiredConnectionInfo = qFindChild<QPushButton*>(m_pRealForm, "buttonWiredDetails");
+	m_pWirelessConnectionInfo = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessDetails");
+	m_pWirelessNetworkName = qFindChild<QLabel*>(m_pRealForm, "dataFieldWirelessNetwork");;
+	m_pWiredNetworkName = qFindChild<QLabel*>(m_pRealForm, "dataFieldWiredNetwork");;
+	m_pWirelessSignalStrength = qFindChild<QLabel*>(m_pRealForm, "dataFieldWirelessSignal");;
+	m_pWiredSignalStrength = qFindChild<QLabel*>(m_pRealForm, "dataFieldWiredSignal");;	
+	m_pWirelessSignalIcon = qFindChild<QLabel*>(m_pRealForm, "dataFieldWirelessSignalIcon");
+	m_pWiredSignalIcon = qFindChild<QLabel*>(m_pRealForm, "dataFieldWiredSignalIcon");
 
 	// populate text
-	m_pWirelessConnectionStatus->setText(tr("Idle"));
-	m_pWiredConnectionStatus->setText(tr("Idle"));
 	
 	// wireless tab
 	if (m_pCloseButton != NULL)
@@ -182,41 +176,49 @@ bool ConnectDlg::initUI(void)
 	if (m_pConnWizardButton != NULL)
 		m_pConnWizardButton->setText(tr("New Connection"));
 	
-	if (m_pBrowseWirelessNetworksButton != NULL)
-		m_pBrowseWirelessNetworksButton->setText(tr("Browse Networks"));
+	if (m_pWirelessBrowseButton != NULL)
+		m_pWirelessBrowseButton->setText(tr("Browse"));
 	
 	QLabel *pAdapterLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessAdapter");
 	if (pAdapterLabel != NULL)
 		pAdapterLabel->setText(tr("Adapter:"));
 		
+	QLabel *pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessConnection");
+	if (pConnectionLabel != NULL)
+		pConnectionLabel->setText(tr("Connection:"));
+				
 	QLabel *pStatusLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessStatus");
 	if (pStatusLabel != NULL)
 		pStatusLabel->setText(tr("Status:"));
 		
-	QLabel *pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessConnectConnection");
-	if (pConnectionLabel != NULL)
-		pConnectionLabel->setText(tr("Connection:"));
+	QLabel *pNetworkLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessNetwork");
+	if (pNetworkLabel != NULL)
+		pNetworkLabel->setText(tr("Network:"));
 		
-	pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnectedConnection");
-	if (pConnectionLabel != NULL)
-		pConnectionLabel->setText(tr("Connection:"));
-			
+	QLabel *pSignalLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessSignal");
+	if (pSignalLabel != NULL)
+		pSignalLabel->setText(tr("Signal:"));				
+		
 	pAdapterLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredAdapter");
 	if (pAdapterLabel != NULL)
 		pAdapterLabel->setText(tr("Adapter:"));
+				
+	pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnection");
+	if (pConnectionLabel != NULL)
+		pConnectionLabel->setText(tr("Connection:"));
 		
 	pStatusLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredStatus");
 	if (pStatusLabel != NULL)
 		pStatusLabel->setText(tr("Status:"));
 		
-	pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnectConnection");
-	if (pConnectionLabel != NULL)
-		pConnectionLabel->setText(tr("Connection:"));
+	pNetworkLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredNetwork");
+	if (pNetworkLabel != NULL)
+		pNetworkLabel->setText(tr("Network:"));
 		
-	pConnectionLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredConnectedConnection");
-	if (pConnectionLabel != NULL)
-		pConnectionLabel->setText(tr("Connection:"));
-					
+	pSignalLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredSignal");
+	if (pSignalLabel != NULL)
+		pSignalLabel->setText(tr("Signal:"));			
+		
 	if (m_pAdapterTabControl != NULL)
 	{
 		m_pAdapterTabControl->setTabText(0,tr("Wireless"));
@@ -227,8 +229,8 @@ bool ConnectDlg::initUI(void)
 	if (m_pCloseButton != NULL)
 		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm, SLOT(hide()));
 
-	if (m_pBrowseWirelessNetworksButton != NULL)
-		Util::myConnect(m_pBrowseWirelessNetworksButton, SIGNAL(clicked()), this, SLOT(showSSIDList()));
+	if (m_pWirelessBrowseButton != NULL)
+		Util::myConnect(m_pWirelessBrowseButton, SIGNAL(clicked()), this, SLOT(showSSIDList()));
 		
 	if (m_pWirelessAdapterList != NULL)
 		Util::myConnect(m_pWirelessAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWirelessAdapter(int)));
@@ -246,16 +248,10 @@ bool ConnectDlg::initUI(void)
 		Util::myConnect(m_pConnWizardButton, SIGNAL(clicked()), this, SLOT(launchConnectionWizard()));
 
 	if (m_pWiredConnectButton != NULL)
-		Util::myConnect(m_pWiredConnectButton, SIGNAL(clicked()), this, SLOT(connectWiredConnection()));
+		Util::myConnect(m_pWiredConnectButton, SIGNAL(clicked()), this, SLOT(connectDisconnectWiredConnection()));
 
 	if (m_pWirelessConnectButton != NULL)
-		Util::myConnect(m_pWirelessConnectButton, SIGNAL(clicked()), this, SLOT(connectWirelessConnection()));
-
-	if (m_pWiredDisconnectButton != NULL)
-		Util::myConnect(m_pWiredDisconnectButton, SIGNAL(clicked()), this, SLOT(disconnectWiredConnection()));
-
-	if (m_pWirelessDisconnectButton != NULL)
-		Util::myConnect(m_pWirelessDisconnectButton, SIGNAL(clicked()), this, SLOT(disconnectWirelessConnection()));
+		Util::myConnect(m_pWirelessConnectButton, SIGNAL(clicked()), this, SLOT(connectDisconnectWirelessConnection()));	
 
 	if (m_pAdapterTabControl != NULL)
 		Util::myConnect(m_pAdapterTabControl, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
@@ -271,7 +267,8 @@ bool ConnectDlg::initUI(void)
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
 
 	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(interfaceInserted(char *)));
-	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));		
+	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));
+	Util::myConnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updateWirelessSignalStrength(const QString &)));
 	
 	Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
 	
@@ -297,7 +294,45 @@ bool ConnectDlg::initUI(void)
 
 	// Initialize the timer that we will use to show the time in connected
 	// state.
-	m_timer.setInterval(1000);   // Fire every second.
+	m_timer.setInterval(500);   // Fire every second.
+	
+	// load icons for signal strength
+	QPixmap *p;
+	
+	p = FormLoader::loadicon("signal_0.png");
+	if (p != NULL)
+	{
+		signalIcons[0] = *p;
+		delete p;
+	}
+	
+	p = FormLoader::loadicon("signal_1.png");
+	if (p != NULL)
+	{
+		signalIcons[1] = *p;
+		delete p;
+	}
+
+	p = FormLoader::loadicon("signal_2.png");
+	if (p != NULL)
+	{
+		signalIcons[2] = *p;
+		delete p;
+	}
+	
+	p = FormLoader::loadicon("signal_3.png");
+	if (p != NULL)
+	{
+		signalIcons[3] = *p;
+		delete p;
+	}
+	
+	p = FormLoader::loadicon("signal_4.png");
+	if (p != NULL)
+	{
+		signalIcons[4] = *p;
+		delete p;		
+	}	
 
 	return true;
 }
@@ -325,9 +360,6 @@ void ConnectDlg::show(void)
 
 void ConnectDlg::populateWirelessAdapterList(void)
 {
-	int_enum *pInterfaceList = NULL;
-	int retVal;	
-	
 	if (m_pWirelessAdapterList != NULL)
 	{
 		// QT generates events while populating a combobox, so stop listening during this time
@@ -336,10 +368,12 @@ void ConnectDlg::populateWirelessAdapterList(void)
 		m_pWirelessAdapterList->clear();
 		m_pWirelessAdapterList->setToolTip("");
 		
-		QVector<QString> adapters;
-		adapters = XSupWrapper::getWirelessAdapters();
-		for (int i=0; i<adapters.size();i++)
-			m_pWirelessAdapterList->addItem(adapters.at(i));
+		m_wirelessAdapters.clear();
+		m_wirelessAdapters = XSupWrapper::getWirelessAdapters();
+		for (int i=0; i<m_wirelessAdapters.size();i++)
+			m_pWirelessAdapterList->addItem(Util::removePacketSchedulerFromName(m_wirelessAdapters.at(i)));
+			
+		m_pWirelessAdapterList->setEnabled(m_wirelessAdapters.size() > 1);
 			
 		Util::myConnect(m_pWirelessAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWirelessAdapter(int)));
 	}
@@ -348,20 +382,19 @@ void ConnectDlg::populateWirelessAdapterList(void)
 void ConnectDlg::populateWiredAdapterList(void)
 {	
 	if (m_pWiredAdapterList != NULL)
-	{
-		int_enum *pInterfaceList = NULL;
-		int retVal;	
-	
+	{	
 		// QT generates events while populating a combobox, so stop listening during this time
 		Util::myDisconnect(m_pWiredAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWiredAdapter(int)));
 		
 		m_pWiredAdapterList->clear();
 		m_pWiredAdapterList->setToolTip("");
 		
-		QVector<QString> adapters;
-		adapters = XSupWrapper::getWiredAdapters();
-		for (int i=0; i<adapters.size();i++)
-			m_pWiredAdapterList->addItem(adapters.at(i));	
+		m_wiredAdapters.clear();
+		m_wiredAdapters = XSupWrapper::getWiredAdapters();
+		for (int i=0; i<m_wiredAdapters.size();i++)
+			m_pWiredAdapterList->addItem(Util::removePacketSchedulerFromName(m_wiredAdapters.at(i)));
+			
+		m_pWiredAdapterList->setEnabled(m_wiredAdapters.size() > 1);
 		
 		Util::myConnect(m_pWiredAdapterList, SIGNAL(currentIndexChanged(int)), this, SLOT(selectWiredAdapter(int)));
 	}
@@ -381,7 +414,7 @@ void ConnectDlg::populateWirelessConnectionList(void)
 		m_pWirelessConnectionList->clear();
 		
 		QVector<QString> *connVector;
-		connVector = this->getConnectionListForAdapter(m_currentWirelessAdapter);
+		connVector = this->getConnectionListForAdapter(m_currentWirelessAdapterDesc);
 		if (connVector != NULL)
 		{
 			std::sort(connVector->begin(), connVector->end());
@@ -408,12 +441,25 @@ void ConnectDlg::populateWirelessConnectionList(void)
 void ConnectDlg::selectWirelessAdapter(int index)
 {
 	if (m_pWirelessAdapterList != NULL) {
-		m_currentWirelessAdapter = m_pWirelessAdapterList->itemText(index);
-		m_pWirelessAdapterList->setToolTip(m_currentWirelessAdapter);
+		if (index >=0 && index < m_wirelessAdapters.size())
+			m_currentWirelessAdapterDesc = m_wirelessAdapters.at(index);
+		else
+			m_currentWirelessAdapterDesc = "";
+		m_pWirelessAdapterList->setToolTip(m_currentWirelessAdapterDesc);
+		
+		char *pDeviceName = NULL;
+		int retval;
+		
+		retval = xsupgui_request_get_devname(m_currentWirelessAdapterDesc.toAscii().data(), &pDeviceName);
+		if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
+			m_currentWirelessAdapterName = pDeviceName;
+			
+		if (pDeviceName != NULL)
+			free(pDeviceName);
 		
 		// if selected adapter is invalid, disable browse button
-		if (m_pBrowseWirelessNetworksButton != NULL)
-			m_pBrowseWirelessNetworksButton->setEnabled(!m_currentWirelessAdapter.isEmpty());
+		if (m_pWirelessBrowseButton != NULL)
+			m_pWirelessBrowseButton->setEnabled(!m_currentWirelessAdapterDesc.isEmpty());
 	}
 	
 	this->populateWirelessConnectionList();
@@ -435,7 +481,7 @@ void ConnectDlg::populateWiredConnectionList(void)
 		m_pWiredConnectionList->clear();
 		
 		QVector<QString> *connVector;
-		connVector = this->getConnectionListForAdapter(m_currentWiredAdapter);
+		connVector = this->getConnectionListForAdapter(m_currentWiredAdapterDesc);
 		if (connVector != NULL)
 		{
 			std::sort(connVector->begin(), connVector->end());
@@ -462,8 +508,22 @@ void ConnectDlg::populateWiredConnectionList(void)
 void ConnectDlg::selectWiredAdapter(int index)
 {
 	if (m_pWiredAdapterList != NULL) {
-		m_currentWiredAdapter = m_pWiredAdapterList->itemText(index);
-		m_pWiredAdapterList->setToolTip(m_currentWiredAdapter);
+		if (index >=0 && index < m_wiredAdapters.size())
+			m_currentWiredAdapterDesc = m_wiredAdapters.at(index);
+		else
+			m_currentWiredAdapterDesc = "";
+			
+		m_pWiredAdapterList->setToolTip(m_currentWiredAdapterDesc);
+		
+		char *pDeviceName = NULL;
+		int retval;
+		
+		retval = xsupgui_request_get_devname(m_currentWiredAdapterDesc.toAscii().data(), &pDeviceName);
+		if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
+			m_currentWiredAdapterName = pDeviceName;
+			
+		if (pDeviceName != NULL)
+			free(pDeviceName);		
 	}
 	
 	this->populateWiredConnectionList();
@@ -493,13 +553,13 @@ void ConnectDlg::showSSIDList()
 		}
 		else
 		{
-			m_pSSIDListDlg->refreshList(m_currentWirelessAdapter);
+			m_pSSIDListDlg->refreshList(m_currentWirelessAdapterDesc);
 			m_pSSIDListDlg->show();
 		}
 	}
 	else
 	{
-		m_pSSIDListDlg->refreshList(m_currentWirelessAdapter);
+		m_pSSIDListDlg->refreshList(m_currentWirelessAdapterDesc);
 		m_pSSIDListDlg->show();
 	}
 
@@ -628,7 +688,7 @@ void ConnectDlg::launchConnectionWizard(void)
 	}
 }
 
-void ConnectDlg::finishConnectionWizard(bool success)
+void ConnectDlg::finishConnectionWizard(bool)
 {
 	this->cleanupConnectionWizard();
 }
@@ -656,20 +716,17 @@ void ConnectDlg::cleanupConnectionWizard(void)
  * \retval true if it is in use
  * \retval false if it isn't in use
  **/
-bool ConnectDlg::isConnectionActive(QString interfaceDesc, QString connectionName, bool isWireless)
+bool ConnectDlg::isConnectionActive(const QString &interfaceName, const QString &connectionName, bool isWireless)
 {
-	char *pDeviceName = NULL;
 	int retval = 0;
 	bool isActive = false;
 
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(interfaceDesc.toAscii().data(), &pDeviceName);
-	if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
+	if (interfaceName.isEmpty() == false)
 	{
 		char *pName = NULL;
 		
 		// See if a connection is bound to the interface in question.
-		retval = xsupgui_request_get_conn_name_from_int(pDeviceName, &pName);
+		retval = xsupgui_request_get_conn_name_from_int(interfaceName.toAscii().data(), &pName);
 		if (retval = REQUEST_SUCCESS && pName != NULL)
 		{
 			// If they match, then check the status of the connection to determine if the connection
@@ -680,7 +737,7 @@ bool ConnectDlg::isConnectionActive(QString interfaceDesc, QString connectionNam
 				
 				if (isWireless == true)
 				{
-					if (xsupgui_request_get_physical_state(pDeviceName, &state) == REQUEST_SUCCESS)
+					if (xsupgui_request_get_physical_state(interfaceName.toAscii().data(), &state) == REQUEST_SUCCESS)
 					{
 						if ((state != WIRELESS_INT_STOPPED) && (state != WIRELESS_INT_HELD))
 							isActive = true;
@@ -689,7 +746,7 @@ bool ConnectDlg::isConnectionActive(QString interfaceDesc, QString connectionNam
 				else
 				{
 					// It is wired, we only care if it is in 802.1X authenticated state or not.
-					if (xsupgui_request_get_1x_state(pDeviceName, &state) == REQUEST_SUCCESS)
+					if (xsupgui_request_get_1x_state(interfaceName.toAscii().data(), &state) == REQUEST_SUCCESS)
 						isActive = (state != DISCONNECTED);
 				}
 			}
@@ -698,9 +755,6 @@ bool ConnectDlg::isConnectionActive(QString interfaceDesc, QString connectionNam
 		if (pName != NULL)
 			free(pName);			
 	}
-
-	if (pDeviceName != NULL) 
-		free(pDeviceName);
 
 	return false;
 }
@@ -715,25 +769,19 @@ bool ConnectDlg::isConnectionActive(QString interfaceDesc, QString connectionNam
  * \retval true if the connection attempt should succeed.
  * \retval false if the connection attempt failed.
  **/
-bool ConnectDlg::connectToConnection(QString interfaceDesc, QString connectionName)
+bool ConnectDlg::connectToConnection(const QString &interfaceName, const QString &connectionName)
 {
-	char *pDeviceName = NULL;
 	int retval = 0;
 	bool success = false;
 
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(interfaceDesc.toAscii().data(), &pDeviceName);
-	if (retval == REQUEST_SUCCESS && pDeviceName != NULL)
+	if (interfaceName.isEmpty() == false)
 	{
-		retval = xsupgui_request_set_connection(pDeviceName, connectionName.toAscii().data());
+		retval = xsupgui_request_set_connection(interfaceName.toAscii().data(), connectionName.toAscii().data());
 		if (retval == REQUEST_SUCCESS)
 			success = true;
 		else if (retval == IPC_ERROR_NEW_ERRORS_IN_QUEUE)
 			XSupWrapper::getAndDisplayErrors();
 	}
-
-	if (pDeviceName != NULL)
-		free(pDeviceName);
 		
 	return success;
 }
@@ -741,16 +789,11 @@ bool ConnectDlg::connectToConnection(QString interfaceDesc, QString connectionNa
 void ConnectDlg::connectWirelessConnection(void)
 {
 	// If the connection is already the active one, then ignore it.
-	if (!isConnectionActive(m_pWirelessAdapterList->currentText(), m_pWirelessConnectionList->currentText(), true))
+	if (!this->isConnectionActive(m_currentWirelessAdapterName, m_pWirelessConnectionList->currentText(), true))
 	{
-		if (!connectToConnection(m_pWirelessAdapterList->currentText(), m_pWirelessConnectionList->currentText()))
+		if (!connectToConnection(m_currentWirelessAdapterName, m_pWirelessConnectionList->currentText()))
 		{
 			QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection."));
-		}
-		else
-		{
-			m_pWirelessConnectionName->setText(m_pWirelessConnectionList->currentText());
-			m_pWirelessConnectionStack->setCurrentIndex(1);  // Set the disabled page.
 		}
 	}
 }
@@ -758,16 +801,11 @@ void ConnectDlg::connectWirelessConnection(void)
 void ConnectDlg::connectWiredConnection(void)
 {
 	// If the connection is already the active one, then ignore it.
-	if (!isConnectionActive(m_pWiredAdapterList->currentText(), m_pWiredConnectionList->currentText(), false))
+	if (!this->isConnectionActive(m_currentWiredAdapterName, m_pWiredConnectionList->currentText(), false))
 	{
-		if (!connectToConnection(m_pWiredAdapterList->currentText(), m_pWiredConnectionList->currentText()))
+		if (!connectToConnection(m_currentWiredAdapterName, m_pWiredConnectionList->currentText()))
 		{
 			QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wired connection."));
-		}
-		else
-		{
-			m_pWiredConnectionName->setText(m_pWiredConnectionList->currentText());
-			m_pWiredConnectionStack->setCurrentIndex(1);   // Set the disabled page.
 		}
 	}
 }
@@ -776,7 +814,7 @@ void ConnectDlg::disconnectWirelessConnection(void)
 {
 	bool success;
 	
-	success = XSupWrapper::disconnectAdapter(m_currentWirelessAdapter);
+	success = XSupWrapper::disconnectAdapter(m_currentWirelessAdapterDesc);
 	if (success == true)
 	{
 		stopAndClearTimer();	
@@ -784,15 +822,14 @@ void ConnectDlg::disconnectWirelessConnection(void)
 	else
 	{
 		QMessageBox::critical(NULL, tr("Disconnect Wireless"),
-			tr("An error occurred while disconnecting device '%1'.\n").arg(m_currentWirelessAdapter));	
+			tr("An error occurred while disconnecting device '%1'.\n").arg(m_currentWirelessAdapterDesc));	
 	}
 }
 
 void ConnectDlg::disconnectWiredConnection(void)
 {
 	bool success;
-	
-	success = XSupWrapper::disconnectAdapter(m_currentWiredAdapter);
+	success = XSupWrapper::disconnectAdapter(m_currentWiredAdapterDesc);
 	if (success == true)
 	{
 		stopAndClearTimer();	
@@ -800,65 +837,108 @@ void ConnectDlg::disconnectWiredConnection(void)
 	else
 	{
 		QMessageBox::critical(NULL, tr("Disconnect Wired"),
-			tr("An error occurred while disconnecting device '%1'.\n").arg(m_currentWiredAdapter));		
+			tr("An error occurred while disconnecting device '%1'.\n").arg(m_currentWiredAdapterDesc));		
 	}	
 }
 
 void ConnectDlg::updateWirelessState(void)
 {
-	char *pDeviceName = NULL;
 	int retVal = 0;
-
-	// Using the device description - get the device name
-	retVal = xsupgui_request_get_devname(m_currentWirelessAdapter.toAscii().data(), &pDeviceName);
-	if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+		
+	if (m_currentWirelessAdapterName.isEmpty() == false)
 	{
 		int state = 0;
 		Util::ConnectionStatus status = Util::status_idle;
 		
-		if (xsupgui_request_get_physical_state(pDeviceName, &state) == REQUEST_SUCCESS)
+		if (xsupgui_request_get_physical_state(m_currentWirelessAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS)
 		{
 			if (state != WIRELESS_ASSOCIATED)
 			{
 				status = Util::getConnectionStatusFromPhysicalState(state);
 				if (m_pWirelessConnectionStatus != NULL)
 					m_pWirelessConnectionStatus->setText(Util::getConnectionTextFromConnectionState(status));
-				if (status == Util::status_connected)
-					this->startConnectedTimer(QString(pDeviceName));
-				else
-					this->stopAndClearTimer();				
+
+				// don't mess with timer if this page isn't visible
+				if (m_pAdapterTabControl != NULL && m_pAdapterTabControl->currentIndex() == 0)
+				{				
+					if (status == Util::status_connected)
+						this->startConnectedTimer(m_currentWirelessAdapterName);
+					else
+						this->stopAndClearTimer();
+				}			
 			}
 			else
 			{
-				if (xsupgui_request_get_1x_state(pDeviceName, &state) == REQUEST_SUCCESS)
+				if (xsupgui_request_get_1x_state(m_currentWirelessAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS)
 				{
 					status = Util::getConnectionStatusFromDot1XState(state);
 					if (m_pWirelessConnectionStatus != NULL)
 						m_pWirelessConnectionStatus->setText(Util::getConnectionTextFromConnectionState(status));
-					if (status == Util::status_connected)
-						this->startConnectedTimer(QString(pDeviceName));
-					else
-						this->stopAndClearTimer();	
+						
+					// don't mess with timer if this page isn't visible
+					if (m_pAdapterTabControl != NULL && m_pAdapterTabControl->currentIndex() == 0)
+					{				
+						if (status == Util::status_connected)
+							this->startConnectedTimer(m_currentWirelessAdapterName);
+						else
+							this->stopAndClearTimer();
+					}	
 				}
 			}
 		}
 		if (status == Util::status_idle)
 		{
-			if (m_pWirelessConnectionStack != NULL)
-				m_pWirelessConnectionStack->setCurrentIndex(0);  // Change to the 'connect' page.
+			if (m_pWirelessConnectionList != NULL)
+				m_pWirelessConnectionList->setEnabled(true);
+			if (m_pWirelessConnectButton != NULL)
+				m_pWirelessConnectButton->setText(tr("Connect"));
+			if (m_pWirelessConnectionInfo != NULL)
+				m_pWirelessConnectionInfo->setEnabled(false);
+			if (m_pWirelessNetworkName != NULL)
+				m_pWirelessNetworkName->setText(QString(""));
+			if (m_pWirelessSignalStrength != NULL)
+				m_pWirelessSignalStrength->setText(QString(""));
+			if (m_pWirelessSignalIcon != NULL)
+				m_pWirelessSignalIcon->clear();
+			m_wirelessNetwork = "";					
+				
 		}
 		else
 		{
-			if (m_pWirelessConnectionStack != NULL)
-				m_pWirelessConnectionStack->setCurrentIndex(1);  // Change to the 'connected' page.
+			if (m_pWirelessConnectionList != NULL)
+				m_pWirelessConnectionList->setEnabled(false);
+			if (m_pWirelessConnectButton != NULL)
+				m_pWirelessConnectButton->setText(tr("Disconnect"));	
+			if (m_pWirelessConnectionInfo != NULL)
+				m_pWirelessConnectionInfo->setEnabled(true);							
 			
 			// get name of connection that's bound
 			char *connName;
-			retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &connName);
+			retVal = xsupgui_request_get_conn_name_from_int(m_currentWirelessAdapterName.toAscii().data(), &connName);
 			if (retVal == REQUEST_SUCCESS && connName != NULL)
-				m_pWirelessConnectionName->setText(connName);	
-			else
-				m_pWirelessConnectionName->setText(QString(""));
+			{
+				if (m_pWirelessConnectionList != NULL)
+				{
+					int index = m_pWirelessConnectionList->findText(QString(connName));
+					if (index != -1)
+						m_pWirelessConnectionList->setCurrentIndex(index);
+					else
+						m_pWirelessConnectionList->setCurrentIndex(0);						
+				}		
+				config_connection *pConn;
+				bool success;
+				
+				success = XSupWrapper::getConfigConnection(QString(connName), &pConn);
+				if (success == true && pConn != NULL)
+				{
+					m_wirelessNetwork = pConn->ssid;
+					if (m_pWirelessNetworkName != NULL)
+						m_pWirelessNetworkName->setText(m_wirelessNetwork);
+					this->updateWirelessSignalStrength(m_currentWirelessAdapterName);
+				}
+				if (pConn != NULL)
+					XSupWrapper::freeConfigConnection(&pConn);
+			}
 				
 			if (connName != NULL)
 				free(connName);				
@@ -866,54 +946,79 @@ void ConnectDlg::updateWirelessState(void)
 	}
 	else
 	{
-		if (m_pWirelessConnectionStack != NULL)
-			m_pWirelessConnectionStack->setCurrentIndex(0);  // Change to the 'connect' page.
+		if (m_pWirelessConnectionList != NULL)
+			m_pWirelessConnectionList->setEnabled(true);
+		if (m_pWirelessConnectButton != NULL)
+			m_pWirelessConnectButton->setText(tr("Connect"));
+		if (m_pWirelessConnectionInfo != NULL)
+			m_pWirelessConnectionInfo->setEnabled(false);
+		if (m_pWirelessNetworkName != NULL)
+			m_pWirelessNetworkName->setText(QString(""));
+		if (m_pWirelessSignalStrength != NULL)
+			m_pWirelessSignalStrength->setText(QString(""));
+		if (m_pWirelessSignalIcon != NULL)
+			m_pWirelessSignalIcon->clear();
+		if (m_pWirelessConnectionStatus != NULL)
+			m_pWirelessConnectionStatus->setText("");		
+		m_wirelessNetwork = "";								
 	}
-		
-	if (pDeviceName != NULL) 
-		free(pDeviceName);
 }
 
 void ConnectDlg::updateWiredState(void)
 {
-	char *pDeviceName = NULL;
 	int retVal = 0;
 	
-	// Using the device description - get the device name
-	retVal = xsupgui_request_get_devname(m_currentWiredAdapter.toAscii().data(), &pDeviceName);
-	if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+	if (m_currentWiredAdapterName.isEmpty() == false)
 	{
 		int state = 0;
 		Util::ConnectionStatus status = Util::status_idle;
 
-		if (xsupgui_request_get_1x_state(pDeviceName, &state) == REQUEST_SUCCESS)
+		if (xsupgui_request_get_1x_state(m_currentWiredAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS)
 		{
 			status = Util::getConnectionStatusFromDot1XState(state);
 			if (m_pWiredConnectionStatus != NULL)
 				m_pWiredConnectionStatus->setText(Util::getConnectionTextFromConnectionState(status));
-			if (status == Util::status_connected)
-				this->startConnectedTimer(QString(pDeviceName));
-			else
-				this->stopAndClearTimer();	
+				
+				// don't mess with timer if this page isn't visible
+				if (m_pAdapterTabControl != NULL && m_pAdapterTabControl->currentIndex() == 1)
+				{				
+					if (status == Util::status_connected)
+						this->startConnectedTimer(m_currentWiredAdapterName.toAscii().data());
+					else
+						this->stopAndClearTimer();
+				}	
 		}
 		
 		if (status == Util::status_idle)
 		{
-			if (m_pWiredConnectionStack != NULL)
-				m_pWiredConnectionStack->setCurrentIndex(0);  // Change to the 'connect' page.
+			if (m_pWiredConnectButton != NULL)
+				m_pWiredConnectButton->setText(tr("Connect"));
+			if (m_pWiredConnectionInfo != NULL)
+				m_pWiredConnectionInfo->setEnabled(false);
+			if (m_pWiredNetworkName != NULL)
+				m_pWiredNetworkName->setText(QString(""));					
 		}
 		else
 		{
-			if (m_pWiredConnectionStack != NULL)
-			m_pWiredConnectionStack->setCurrentIndex(1);  // Change to the 'connected' page.
+			if (m_pWiredConnectionList != NULL)
+			m_pWiredConnectionList->setEnabled(false);
 			
 			// get name of connection that's bound
 			char *connName;
-			retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &connName);
+			retVal = xsupgui_request_get_conn_name_from_int(m_currentWiredAdapterName.toAscii().data(), &connName);
 			if (retVal == REQUEST_SUCCESS && connName != NULL)
-				m_pWiredConnectionName->setText(connName);	
-			else
-				m_pWiredConnectionName->setText(QString(""));
+			{
+				if (m_pWiredConnectionList != NULL)
+				{
+					int index = m_pWiredConnectionList->findText(QString(connName));
+					if (index != -1)
+						m_pWiredConnectionList->setCurrentIndex(index);
+					else
+						m_pWiredConnectionList->setCurrentIndex(0);
+				}			
+			}
+			if (m_pWiredNetworkName != NULL)
+				m_pWiredNetworkName->setText(QString("N/A"));			
 				
 			if (connName != NULL)
 				free(connName);				
@@ -921,36 +1026,37 @@ void ConnectDlg::updateWiredState(void)
 	}
 	else
 	{
-		if (m_pWiredConnectionStack != NULL)
-			m_pWiredConnectionStack->setCurrentIndex(0);  // Change to the 'connect' page.		
+		if (m_pWiredConnectionList != NULL)
+			m_pWiredConnectionList->setEnabled(true);
+		if (m_pWiredConnectButton != NULL)
+			m_pWiredConnectButton->setText(tr("Connect"));
+		if (m_pWiredConnectionInfo != NULL)
+			m_pWiredConnectionInfo->setEnabled(false);
+		if (m_pWiredNetworkName != NULL)
+			m_pWiredNetworkName->setText(QString(""));
+		if (m_pWirelessSignalIcon != NULL)
+			m_pWirelessSignalIcon->clear();
+		if (m_pWiredConnectionStatus != NULL)
+			m_pWiredConnectionStatus->setText("");					
 	}
+	
+	if (m_pWiredSignalStrength != NULL)
+		m_pWiredSignalStrength->setText(QString(""));
 
-	if (pDeviceName != NULL) 
-		free(pDeviceName);
 }
 
 void ConnectDlg::timerUpdate(void)
 {
-	if ((m_time.hour() == 23) && (m_time.minute() == 59) && (m_time.second() == 59))
-	{
-		// We are about to roll a day.
-		m_days++;
-		m_time.setHMS(0, 0, 0);
-	}
-	else
-	{
-		m_time = m_time.addSecs(1);
-	}
-
+	this->updateElapsedTime();
 	this->showTime();
 }
 
-void ConnectDlg::startConnectedTimer(QString adapterName)
+void ConnectDlg::updateElapsedTime()
 {
 	long int seconds = 0;
 	int retval = 0;
-
-	retval = xsupgui_request_get_seconds_authenticated(adapterName.toAscii().data(), &seconds);
+	
+	retval = xsupgui_request_get_seconds_authenticated(m_timerAdapterName.toAscii().data(), &seconds);
 	if (retval == REQUEST_SUCCESS)
 	{
 		long int tempTime = seconds;
@@ -966,11 +1072,16 @@ void ConnectDlg::startConnectedTimer(QString adapterName)
 		seconds = tempTime % 60;
 
 		m_time.setHMS(hours, minutes, seconds);
-
-		this->showTime();
-
-		m_timer.start(1000);
 	}
+}
+
+void ConnectDlg::startConnectedTimer(const QString &adapterName)
+{
+	m_timerAdapterName = adapterName;
+	updateElapsedTime();
+	
+	this->showTime();
+	m_timer.start(500);
 }
 
 void ConnectDlg::showTime()
@@ -1010,47 +1121,39 @@ void ConnectDlg::currentTabChanged(int tabidx)
 
 void ConnectDlg::stopAndClearTimer(void)
 {
+	m_timerAdapterName = "";
 	m_timer.stop();
 	m_time.setHMS(0, 0, 0);
 }
 
-void ConnectDlg::stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid)
+void ConnectDlg::stateChange(const QString &intName, int, int, int, unsigned int)
 {
 	// We only care if it is the adapter that is currently displayed.
 	if (m_pAdapterTabControl != NULL)
 	{
-		QString currentAdapterDesc;
+		QString currentAdapterName;
 		bool wireless;
 		
 		if (m_pAdapterTabControl->currentIndex() == 0)
 		{
-			currentAdapterDesc = m_currentWirelessAdapter;
+			currentAdapterName = m_currentWirelessAdapterName;
 			wireless = true;
 		}
 		else
 		{
-			currentAdapterDesc = m_currentWiredAdapter;
+			currentAdapterName = m_currentWiredAdapterName;
 			wireless = false;
 		}
 			
-		// Using the device description - get the device name
-		int retVal;
-		char *pDeviceName;
-		
-		retVal = xsupgui_request_get_devname(currentAdapterDesc.toAscii().data(), &pDeviceName);
-		if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+
+		currentAdapterName = m_currentWirelessAdapterName;
+		if (intName == currentAdapterName)
 		{
-			if (intName == QString(pDeviceName))
-			{
-				if (wireless == true)
-					this->updateWirelessState();
-				else
-					this->updateWiredState();
-			}
+			if (wireless == true)
+				this->updateWirelessState();
+			else
+				this->updateWiredState();
 		}
-		
-		if (pDeviceName != NULL)
-			free(pDeviceName);
 	}
 }
 
@@ -1061,7 +1164,7 @@ void ConnectDlg::showWirelessConnectionInfo(void)
 		m_pConnInfo= new ConnectionInfoDlg(this, m_pRealForm, m_pEmitter);
 		if (m_pConnInfo != NULL && m_pConnInfo->create() != false)
 		{
-			m_pConnInfo->setAdapter(m_currentWirelessAdapter);
+			m_pConnInfo->setAdapter(m_currentWirelessAdapterDesc);
 			m_pConnInfo->show();
 		}
 		else
@@ -1069,7 +1172,7 @@ void ConnectDlg::showWirelessConnectionInfo(void)
 	}
 	else
 	{
-		m_pConnInfo->setAdapter(m_currentWirelessAdapter);
+		m_pConnInfo->setAdapter(m_currentWirelessAdapterDesc);
 		m_pConnInfo->show();
 	}
 }
@@ -1081,7 +1184,7 @@ void ConnectDlg::showWiredConnectionInfo(void)
 		m_pConnInfo= new ConnectionInfoDlg(this, m_pRealForm, m_pEmitter);
 		if (m_pConnInfo != NULL && m_pConnInfo->create() != false)
 		{
-			m_pConnInfo->setAdapter(m_currentWiredAdapter);
+			m_pConnInfo->setAdapter(m_currentWiredAdapterDesc);
 			m_pConnInfo->show();
 		}
 		else
@@ -1089,7 +1192,7 @@ void ConnectDlg::showWiredConnectionInfo(void)
 	}
 	else
 	{
-		m_pConnInfo->setAdapter(m_currentWiredAdapter);
+		m_pConnInfo->setAdapter(m_currentWiredAdapterDesc);
 		m_pConnInfo->show();
 	}
 }
@@ -1121,7 +1224,7 @@ void ConnectDlg::interfaceRemoved(char *intDesc)
 {
 	int index = 0;
 
-	index = m_pWirelessAdapterList->findText(intDesc, Qt::MatchExactly);
+	index = m_pWirelessAdapterList->findText(Util::removePacketSchedulerFromName(QString(intDesc)), Qt::MatchExactly);
 	if (index < 0)
 	{
 		// It wasn't a wireless interface, so look in wired.
@@ -1135,4 +1238,75 @@ void ConnectDlg::interfaceRemoved(char *intDesc)
 	}
 }
 
+void ConnectDlg::connectDisconnectWiredConnection(void)
+{
+	if (m_pWiredConnectButton != NULL)
+	{
+		if (m_pWiredConnectButton->text() == tr("Connect"))
+			this->connectWiredConnection();
+		else
+			this->disconnectWiredConnection();
+	}
+}
 
+void ConnectDlg::connectDisconnectWirelessConnection(void)
+{
+	if (m_pWirelessConnectButton != NULL)
+	{
+		if (m_pWirelessConnectButton->text() == tr("Connect"))
+			this->connectWirelessConnection();
+		else
+			this->disconnectWirelessConnection();
+	}
+}
+
+void ConnectDlg::updateWirelessSignalStrength(const QString &intName)
+{
+	if (m_wirelessNetwork.isEmpty() == false && intName == m_currentWirelessAdapterName)
+	{
+		int retVal = 0;	
+		ssid_info_enum *pSSID;
+		
+		retVal = xsupgui_request_enum_ssids(intName.toAscii().data(),&pSSID);
+		if (retVal == REQUEST_SUCCESS && pSSID != NULL)
+		{
+			int i = 0;
+			int signal = 0;
+			while (pSSID[i].ssidname != NULL)
+			{
+				if (m_wirelessNetwork == pSSID[i].ssidname)
+				{
+					signal = pSSID[i].percentage;
+					break;
+				}
+				++i;
+			}
+			if (m_pWirelessSignalStrength != NULL)
+				m_pWirelessSignalStrength->setText(QString("(%1%)").arg(signal));
+				
+			if (m_pWirelessSignalIcon != NULL)
+			{
+				if (signal <= 11)
+					m_pWirelessSignalIcon->setPixmap(signalIcons[0]);
+				else if (signal <= 37)
+					m_pWirelessSignalIcon->setPixmap(signalIcons[1]);
+				else if (signal <= 62)
+					m_pWirelessSignalIcon->setPixmap(signalIcons[2]);
+				else if (signal <= 88)
+					m_pWirelessSignalIcon->setPixmap(signalIcons[3]);
+				else
+					m_pWirelessSignalIcon->setPixmap(signalIcons[4]);
+			}			
+		}
+		else
+		{
+			// clear out icon and label
+			if (m_pWirelessSignalStrength != NULL)
+				m_pWirelessSignalStrength->setText(QString("(0%)"));
+			if (m_pWirelessSignalIcon != NULL)
+				m_pWirelessSignalIcon->setPixmap(signalIcons[0]);
+		}
+		if (pSSID != NULL)
+			xsupgui_request_free_ssid_enum(&pSSID);
+	}
+}

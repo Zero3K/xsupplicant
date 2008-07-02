@@ -571,8 +571,8 @@ bool XSupWrapper::setProfilePassword(const QString &profileName, const QString &
 bool XSupWrapper::disconnectAdapter(const QString &adapterDesc)
 {
 	bool success = false;
-	char *pDeviceName = NULL;
 	int retVal = 0;
+	char *pDeviceName = NULL;
 
 	// Using the device description - get the device name
 	retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &pDeviceName);

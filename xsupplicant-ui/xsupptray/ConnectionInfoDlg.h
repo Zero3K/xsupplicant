@@ -61,6 +61,7 @@ private:
 	void updateWirelessState(void);
 	void updateWiredState(void);
 	void clearUI(void);
+	void updateElapsedTime(void);
 
 private slots:
 	void disconnect(void);
@@ -88,6 +89,7 @@ private:
 	QLabel *m_pSSIDLabel;
 	
 	QString m_curAdapter; // description of current adapter
+	QString m_curAdapterName;
 	bool m_wirelessAdapter;
 	QTimer m_timer;
 	QTime  m_time;

@@ -210,7 +210,6 @@ void SSIDList::refreshList(const QString &adapterName)
 			
 			if (signalItem != NULL)
 			{
-				// !!! need to tweak these
 				if (strength <= 11)
 					signalItem->setIcon(iconSignal_0);
 				else if (strength <= 37)
