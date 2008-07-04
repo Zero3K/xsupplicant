@@ -15,6 +15,18 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize" >
+   <size>
+    <width>538</width>
+    <height>346</height>
+   </size>
+  </property>
+  <property name="maximumSize" >
+   <size>
+    <width>538</width>
+    <height>346</height>
+   </size>
+  </property>
   <property name="font" >
    <font>
     <family>Arial</family>
