@@ -121,10 +121,7 @@ private:
 	QLabel		*m_pWiredConnectionStatus;
 	QLabel		*m_pWirelessNetworkName;
 	QLabel		*m_pWiredNetworkName;
-	QLabel		*m_pWirelessSignalStrength;
-	QLabel		*m_pWiredSignalStrength;
 	QLabel		*m_pWirelessSignalIcon;
-	QLabel		*m_pWiredSignalIcon;
 
 	TrayApp *m_pSupplicant;
 	SSIDListDlg *m_pSSIDListDlg;

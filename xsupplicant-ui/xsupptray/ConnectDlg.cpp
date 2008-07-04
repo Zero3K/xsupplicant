@@ -162,10 +162,7 @@ bool ConnectDlg::initUI(void)
 	m_pWirelessConnectionInfo = qFindChild<QPushButton*>(m_pRealForm, "buttonWirelessDetails");
 	m_pWirelessNetworkName = qFindChild<QLabel*>(m_pRealForm, "dataFieldWirelessNetwork");;
 	m_pWiredNetworkName = qFindChild<QLabel*>(m_pRealForm, "dataFieldWiredNetwork");;
-	m_pWirelessSignalStrength = qFindChild<QLabel*>(m_pRealForm, "dataFieldWirelessSignal");;
-	m_pWiredSignalStrength = qFindChild<QLabel*>(m_pRealForm, "dataFieldWiredSignal");;	
 	m_pWirelessSignalIcon = qFindChild<QLabel*>(m_pRealForm, "dataFieldWirelessSignalIcon");
-	m_pWiredSignalIcon = qFindChild<QLabel*>(m_pRealForm, "dataFieldWiredSignalIcon");
 
 	// populate text
 	
@@ -193,11 +190,7 @@ bool ConnectDlg::initUI(void)
 		
 	QLabel *pNetworkLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessNetwork");
 	if (pNetworkLabel != NULL)
-		pNetworkLabel->setText(tr("Network:"));
-		
-	QLabel *pSignalLabel = qFindChild<QLabel*>(m_pRealForm, "labelWirelessSignal");
-	if (pSignalLabel != NULL)
-		pSignalLabel->setText(tr("Signal:"));				
+		pNetworkLabel->setText(tr("Network:"));			
 		
 	pAdapterLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredAdapter");
 	if (pAdapterLabel != NULL)
@@ -213,11 +206,7 @@ bool ConnectDlg::initUI(void)
 		
 	pNetworkLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredNetwork");
 	if (pNetworkLabel != NULL)
-		pNetworkLabel->setText(tr("Network:"));
-		
-	pSignalLabel = qFindChild<QLabel*>(m_pRealForm, "labelWiredSignal");
-	if (pSignalLabel != NULL)
-		pSignalLabel->setText(tr("Signal:"));			
+		pNetworkLabel->setText(tr("Network:"));		
 		
 	if (m_pAdapterTabControl != NULL)
 	{
@@ -896,8 +885,8 @@ void ConnectDlg::updateWirelessState(void)
 				m_pWirelessConnectionInfo->setEnabled(false);
 			if (m_pWirelessNetworkName != NULL)
 				m_pWirelessNetworkName->setText(QString(""));
-			if (m_pWirelessSignalStrength != NULL)
-				m_pWirelessSignalStrength->setText(QString(""));
+//			if (m_pWirelessSignalStrength != NULL)
+//				m_pWirelessSignalStrength->setText(QString(""));
 			if (m_pWirelessSignalIcon != NULL)
 				m_pWirelessSignalIcon->clear();
 			m_wirelessNetwork = "";					
@@ -954,8 +943,8 @@ void ConnectDlg::updateWirelessState(void)
 			m_pWirelessConnectionInfo->setEnabled(false);
 		if (m_pWirelessNetworkName != NULL)
 			m_pWirelessNetworkName->setText(QString(""));
-		if (m_pWirelessSignalStrength != NULL)
-			m_pWirelessSignalStrength->setText(QString(""));
+//		if (m_pWirelessSignalStrength != NULL)
+//			m_pWirelessSignalStrength->setText(QString(""));
 		if (m_pWirelessSignalIcon != NULL)
 			m_pWirelessSignalIcon->clear();
 		if (m_pWirelessConnectionStatus != NULL)
@@ -1039,10 +1028,6 @@ void ConnectDlg::updateWiredState(void)
 		if (m_pWiredConnectionStatus != NULL)
 			m_pWiredConnectionStatus->setText("");					
 	}
-	
-	if (m_pWiredSignalStrength != NULL)
-		m_pWiredSignalStrength->setText(QString(""));
-
 }
 
 void ConnectDlg::timerUpdate(void)
@@ -1281,8 +1266,6 @@ void ConnectDlg::updateWirelessSignalStrength(const QString &intName)
 				}
 				++i;
 			}
-			if (m_pWirelessSignalStrength != NULL)
-				m_pWirelessSignalStrength->setText(QString("(%1%)").arg(signal));
 				
 			if (m_pWirelessSignalIcon != NULL)
 			{
@@ -1296,15 +1279,18 @@ void ConnectDlg::updateWirelessSignalStrength(const QString &intName)
 					m_pWirelessSignalIcon->setPixmap(signalIcons[3]);
 				else
 					m_pWirelessSignalIcon->setPixmap(signalIcons[4]);
+					
+				m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: %1%").arg(signal));	
 			}			
 		}
 		else
 		{
 			// clear out icon and label
-			if (m_pWirelessSignalStrength != NULL)
-				m_pWirelessSignalStrength->setText(QString("(0%)"));
 			if (m_pWirelessSignalIcon != NULL)
+			{
 				m_pWirelessSignalIcon->setPixmap(signalIcons[0]);
+				m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: 0%"));
+			}	
 		}
 		if (pSSID != NULL)
 			xsupgui_request_free_ssid_enum(&pSSID);

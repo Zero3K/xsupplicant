@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>538</width>
-    <height>377</height>
+    <height>346</height>
    </rect>
   </property>
   <property name="sizePolicy" >
@@ -14,18 +14,6 @@
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
-  </property>
-  <property name="minimumSize" >
-   <size>
-    <width>538</width>
-    <height>377</height>
-   </size>
-  </property>
-  <property name="maximumSize" >
-   <size>
-    <width>538</width>
-    <height>377</height>
-   </size>
   </property>
   <property name="font" >
    <font>
@@ -385,6 +373,12 @@
           </property>
           <item>
            <widget class="QFrame" name="frameWirelessCosmeticWhite" >
+            <property name="sizePolicy" >
+             <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="palette" >
              <palette>
               <active>
@@ -1411,6 +1405,53 @@
                     </widget>
                    </item>
                    <item>
+                    <widget class="QLabel" name="dataFieldWirelessSignalIcon" >
+                     <property name="minimumSize" >
+                      <size>
+                       <width>16</width>
+                       <height>16</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize" >
+                      <size>
+                       <width>16</width>
+                       <height>16</height>
+                      </size>
+                     </property>
+                     <property name="text" >
+                      <string/>
+                     </property>
+                     <property name="pixmap" >
+                      <pixmap>icons/signal_3.png</pixmap>
+                     </property>
+                     <property name="scaledContents" >
+                      <bool>true</bool>
+                     </property>
+                     <property name="alignment" >
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                     </property>
+                     <property name="indent" >
+                      <number>0</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer>
+                     <property name="orientation" >
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeType" >
+                      <enum>QSizePolicy::Fixed</enum>
+                     </property>
+                     <property name="sizeHint" >
+                      <size>
+                       <width>6</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
                     <widget class="QLabel" name="dataFieldWirelessNetwork" >
                      <property name="sizePolicy" >
                       <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
@@ -1518,223 +1559,6 @@
                       <bool>false</bool>
                      </property>
                     </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QFrame" name="frame_35" >
-                  <property name="frameShape" >
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow" >
-                   <enum>QFrame::Plain</enum>
-                  </property>
-                  <layout class="QHBoxLayout" >
-                   <property name="spacing" >
-                    <number>0</number>
-                   </property>
-                   <property name="leftMargin" >
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin" >
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin" >
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin" >
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="labelWirelessSignal" >
-                     <property name="sizePolicy" >
-                      <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize" >
-                      <size>
-                       <width>100</width>
-                       <height>25</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize" >
-                      <size>
-                       <width>100</width>
-                       <height>25</height>
-                      </size>
-                     </property>
-                     <property name="palette" >
-                      <palette>
-                       <active>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>144</red>
-                           <green>141</green>
-                           <blue>124</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </active>
-                       <inactive>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>144</red>
-                           <green>141</green>
-                           <blue>124</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </inactive>
-                       <disabled>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>127</red>
-                           <green>127</green>
-                           <blue>127</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </disabled>
-                      </palette>
-                     </property>
-                     <property name="font" >
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text" >
-                      <string>Signal:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="dataFieldWirelessSignalIcon" >
-                     <property name="maximumSize" >
-                      <size>
-                       <width>16</width>
-                       <height>16</height>
-                      </size>
-                     </property>
-                     <property name="text" >
-                      <string/>
-                     </property>
-                     <property name="pixmap" >
-                      <pixmap>icons/signal_4.png</pixmap>
-                     </property>
-                     <property name="scaledContents" >
-                      <bool>true</bool>
-                     </property>
-                     <property name="alignment" >
-                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                     </property>
-                     <property name="indent" >
-                      <number>0</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer>
-                     <property name="orientation" >
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeType" >
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" >
-                      <size>
-                       <width>6</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="dataFieldWirelessSignal" >
-                     <property name="sizePolicy" >
-                      <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize" >
-                      <size>
-                       <width>0</width>
-                       <height>25</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize" >
-                      <size>
-                       <width>16777215</width>
-                       <height>25</height>
-                      </size>
-                     </property>
-                     <property name="palette" >
-                      <palette>
-                       <active>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>0</red>
-                           <green>0</green>
-                           <blue>0</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </active>
-                       <inactive>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>0</red>
-                           <green>0</green>
-                           <blue>0</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </inactive>
-                       <disabled>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>127</red>
-                           <green>127</green>
-                           <blue>127</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </disabled>
-                      </palette>
-                     </property>
-                     <property name="text" >
-                      <string>(78%)</string>
-                     </property>
-                     <property name="indent" >
-                      <number>0</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer>
-                     <property name="orientation" >
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeType" >
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" >
-                      <size>
-                       <width>100</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
                    </item>
                   </layout>
                  </widget>
@@ -2884,223 +2708,6 @@
                   </layout>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QFrame" name="frame_40" >
-                  <property name="frameShape" >
-                   <enum>QFrame::NoFrame</enum>
-                  </property>
-                  <property name="frameShadow" >
-                   <enum>QFrame::Plain</enum>
-                  </property>
-                  <layout class="QHBoxLayout" >
-                   <property name="spacing" >
-                    <number>0</number>
-                   </property>
-                   <property name="leftMargin" >
-                    <number>0</number>
-                   </property>
-                   <property name="topMargin" >
-                    <number>0</number>
-                   </property>
-                   <property name="rightMargin" >
-                    <number>0</number>
-                   </property>
-                   <property name="bottomMargin" >
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="labelWiredSignal" >
-                     <property name="sizePolicy" >
-                      <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize" >
-                      <size>
-                       <width>100</width>
-                       <height>25</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize" >
-                      <size>
-                       <width>100</width>
-                       <height>25</height>
-                      </size>
-                     </property>
-                     <property name="palette" >
-                      <palette>
-                       <active>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>144</red>
-                           <green>141</green>
-                           <blue>124</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </active>
-                       <inactive>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>144</red>
-                           <green>141</green>
-                           <blue>124</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </inactive>
-                       <disabled>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>127</red>
-                           <green>127</green>
-                           <blue>127</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </disabled>
-                      </palette>
-                     </property>
-                     <property name="font" >
-                      <font>
-                       <weight>75</weight>
-                       <bold>true</bold>
-                      </font>
-                     </property>
-                     <property name="text" >
-                      <string>Signal:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="dataFieldWiredSignalIcon" >
-                     <property name="maximumSize" >
-                      <size>
-                       <width>16</width>
-                       <height>16</height>
-                      </size>
-                     </property>
-                     <property name="text" >
-                      <string/>
-                     </property>
-                     <property name="pixmap" >
-                      <pixmap/>
-                     </property>
-                     <property name="scaledContents" >
-                      <bool>true</bool>
-                     </property>
-                     <property name="alignment" >
-                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                     </property>
-                     <property name="indent" >
-                      <number>0</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer>
-                     <property name="orientation" >
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeType" >
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" >
-                      <size>
-                       <width>6</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="dataFieldWiredSignal" >
-                     <property name="sizePolicy" >
-                      <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize" >
-                      <size>
-                       <width>0</width>
-                       <height>25</height>
-                      </size>
-                     </property>
-                     <property name="maximumSize" >
-                      <size>
-                       <width>16777215</width>
-                       <height>25</height>
-                      </size>
-                     </property>
-                     <property name="palette" >
-                      <palette>
-                       <active>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>0</red>
-                           <green>0</green>
-                           <blue>0</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </active>
-                       <inactive>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>0</red>
-                           <green>0</green>
-                           <blue>0</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </inactive>
-                       <disabled>
-                        <colorrole role="WindowText" >
-                         <brush brushstyle="SolidPattern" >
-                          <color alpha="255" >
-                           <red>127</red>
-                           <green>127</green>
-                           <blue>127</blue>
-                          </color>
-                         </brush>
-                        </colorrole>
-                       </disabled>
-                      </palette>
-                     </property>
-                     <property name="text" >
-                      <string/>
-                     </property>
-                     <property name="indent" >
-                      <number>0</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <spacer>
-                     <property name="orientation" >
-                      <enum>Qt::Horizontal</enum>
-                     </property>
-                     <property name="sizeType" >
-                      <enum>QSizePolicy::Fixed</enum>
-                     </property>
-                     <property name="sizeHint" >
-                      <size>
-                       <width>100</width>
-                       <height>20</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
                </layout>
               </widget>
              </item>
@@ -3139,7 +2746,7 @@
         </property>
         <layout class="QHBoxLayout" >
          <property name="spacing" >
-          <number>8</number>
+          <number>6</number>
          </property>
          <property name="leftMargin" >
           <number>0</number>
