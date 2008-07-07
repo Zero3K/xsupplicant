@@ -97,9 +97,7 @@ ConnectMgrDlg::~ConnectMgrDlg()
 
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(updateConnectionLists()));
 
-	if (m_pPrefDlg != NULL)
-		delete m_pPrefDlg;
-		
+	this->cleanupPriorityDialog();
 	this->cleanupConnectionWizard();
 		
 	if (m_pRealForm != NULL)
@@ -445,14 +443,13 @@ void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
 					// no biggie if this fails
 					XSupWrapper::writeConfig();
 				}
-								
+			}
+			if (pInterface != NULL)
 				xsupgui_request_free_interface_config(&pInterface);
-			}	
 		}
-				
-		xsupgui_request_free_int_config_enum(&pInterfaceList);
-		pInterfaceList = NULL;
 	}
+	if (pInterfaceList != NULL)
+		xsupgui_request_free_int_config_enum(&pInterfaceList);
 	//return success;
 }
 
@@ -577,8 +574,10 @@ void ConnectMgrDlg::populateConnectionsList(void)
 			{
 				if ((pConfig->flags & CONFIG_VOLATILE_CONN) != 0)
 					bVolatile = true;
-				xsupgui_request_free_connection_config(&pConfig);	
-			}		
+			}
+			
+			if (pConfig != NULL)
+				xsupgui_request_free_connection_config(&pConfig);
 			
 			// don't include volatile connectiions in list
 			if (bVolatile == false)
@@ -771,7 +770,10 @@ void ConnectMgrDlg::showPriorityDialog()
 		if (m_pPrefDlg != NULL)
 		{
 			if (m_pPrefDlg->attach() == false)
+			{
+				this->cleanupPriorityDialog();
 				return;
+			}
 		}
 
 		Util::myConnect(m_pPrefDlg, SIGNAL(close()), this, SLOT(cleanupPriorityDialog()));

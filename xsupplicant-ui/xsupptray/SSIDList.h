@@ -109,5 +109,7 @@ private:
 	int m_minRowCount;
 	QString m_curWirelessAdapter;
 	QList<WirelessNetworkInfo> m_curNetworks;
+	QIcon m_signalIcons[5];
+	QMap<QString,QPixmap> m_pixmapMap;
 };
 #endif

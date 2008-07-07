@@ -50,10 +50,6 @@ extern "C"
 // TODO: there's a race condition between finish of wizard (For connecting to 802.1X networks) and the time we try to connect.
 // If the user could try to connect to another network during this time (lock out UI, maybe? disable the connect button?)
 
-// TODO: after connecting to network (assuming it succeeds), we should close the SSIDList window and go back to the "connect"
-// window to show status.
-
-
 SSIDListDlg::SSIDListDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant)
 	: QWidget(parent), 
 	m_pParent(parent),
@@ -63,6 +59,7 @@ SSIDListDlg::SSIDListDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, Tra
 {
 	m_pRescanDialog = NULL;
 	m_pConnWizard = NULL;
+	m_pSSIDList = NULL;
 }
 
 SSIDListDlg::~SSIDListDlg()
@@ -85,7 +82,10 @@ SSIDListDlg::~SSIDListDlg()
 		Util::myDisconnect(m_pSSIDList, SIGNAL(ssidDoubleClick(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListDoubleClick(const WirelessNetworkInfo &)));
 		delete m_pSSIDList;
 	}
-		
+	
+	if (m_pRescanDialog != NULL)
+		delete m_pRescanDialog;
+	
 	if (m_pRealForm != NULL) 
 		delete m_pRealForm;	
 }
@@ -142,7 +142,7 @@ bool SSIDListDlg::initUI()
 		
 	if (m_pConnectButton != NULL)
 		Util::myConnect(m_pConnectButton, SIGNAL(clicked()), this, SLOT(connectToSelectedNetwork()));
-
+	
 	// assume existing rows in table is min we want displayed
 	m_pSSIDList = new SSIDList(m_pRealForm, m_pSSIDTable, m_pSSIDTable->rowCount());
 	if (m_pSSIDList == NULL)
@@ -150,10 +150,10 @@ bool SSIDListDlg::initUI()
 		// something bad happened
 		return false;
 	}
-	
+
 	// register for events
 	Util::myConnect(m_pSSIDList, SIGNAL(ssidSelectionChange(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListSelectionChange(const WirelessNetworkInfo &)));
-	Util::myConnect(m_pSSIDList, SIGNAL(ssidDoubleClick(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListDoubleClick(const WirelessNetworkInfo &)));
+	Util::myConnect(m_pSSIDList, SIGNAL(ssidDoubleClick(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListDoubleClick(const WirelessNetworkInfo &)));	
 	
 	handleSSIDListSelectionChange(WirelessNetworkInfo());
 	
@@ -221,8 +221,10 @@ void SSIDListDlg::rescanNetworks(void)
 				}
 			}
 		}
-		xsupgui_request_free_str(&adapterName);
 	}
+	
+	if (adapterName != NULL)
+		free(adapterName);
 }
 
 void SSIDListDlg::refreshList(const QString &adapterName)
@@ -248,7 +250,9 @@ void SSIDListDlg::wirelessScanComplete(const QString &deviceName)
 		if (m_pSSIDList != NULL)
 			m_pSSIDList->refreshList(m_curAdapter);
 	}
-	xsupgui_request_free_str(&adapterName);
+	
+	if (adapterName != NULL)
+		free(adapterName);
 }
 
 void SSIDListDlg::cancelScan(void)
@@ -311,13 +315,17 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 				}
 				else
 					m_pRealForm->hide();	// close this dialog b/c we are attempting to connect
-				xsupgui_request_free_str(&adapterName);
+					
+				if (adapterName != NULL)
+					free(adapterName);
 				break;
 			} 
 			i++;
 		}
 	}
-	xsupgui_request_free_conn_enum(&pConn);
+	
+	if (pConn != NULL)
+		xsupgui_request_free_conn_enum(&pConn);
 	
 	// we need to create a connection, profile, etc
 	if (found == false)
@@ -394,7 +402,10 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 						{
 							QMessageBox::critical(m_pRealForm,tr("Error Launching Connection Wizard"), tr("A failure occurred when attempting to launch the Connection Wizard"));
 							if (m_pConnWizard != NULL)
+							{
 								delete m_pConnWizard;
+								m_pConnWizard = NULL;
+							}
 						}
 					}
 					else
@@ -407,10 +418,8 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 			{
 				// set this connection as volatile
 				pNewConn->flags |= CONFIG_VOLATILE_CONN;
-			
-				retVal = xsupgui_request_set_connection_config(pNewConn);
 				
-				if (retVal == REQUEST_SUCCESS)
+				if (xsupgui_request_set_connection_config(pNewConn) == REQUEST_SUCCESS)
 				{
 					// save off the config since it changed
 					if (XSupWrapper::writeConfig() == false)
@@ -431,7 +440,9 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 					}
 					else
 						m_pRealForm->hide();	// close this dialog b/c we are attempting to connect
-					xsupgui_request_free_str(&adapterName);
+					
+					if (adapterName != NULL)
+						free(adapterName);
 				}
 				else
 				{
@@ -445,7 +456,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 
 void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName)
 {
-	if (success)
+	if (success == true)
 	{
 		char *adapterName = NULL;
 		int retVal;
@@ -470,8 +481,9 @@ void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName)
 			if (pConn != NULL)
 				XSupWrapper::freeConfigConnection(&pConn);			
 		}
-		else
-			xsupgui_request_free_str(&adapterName);
+		
+		if (adapterName != NULL)
+			free(adapterName);
 		
 		m_pRealForm->hide();	// close this dialog b/c we are attempting to connect
 	}

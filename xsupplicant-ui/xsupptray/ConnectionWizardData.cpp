@@ -482,7 +482,7 @@ bool ConnectionWizardData::toConnectionData(config_connection **retConnection, c
 		}
 		else
 		{
-			if (m_wiredSecurity = true)
+			if (m_wiredSecurity == true)
 			{
 				if (pProfile != NULL)
 					pConn->profile = _strdup(pProfile->name);

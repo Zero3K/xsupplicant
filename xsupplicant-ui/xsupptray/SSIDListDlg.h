@@ -80,18 +80,17 @@ private slots:
 private:
 
 	Emitter *m_pEmitter;
-	
-	// GUI variables
 	QWidget *m_pRealForm;
 	QWidget *m_pParent;
 	QWidget *m_pParentWindow;
-	QTableWidget *m_pSSIDTable;
   
+	// cached pointers to UI objects
 	QPushButton *m_pCloseButton;
 	QPushButton *m_pHelpButton; 
 	QPushButton *m_pRefreshButton;
 	QPushButton *m_pConnectButton;
 	QLabel * m_pHeaderLabel;
+	QTableWidget *m_pSSIDTable;
 	
 	ConnectionWizard *m_pConnWizard;
 	WirelessScanDlg *m_pRescanDialog;

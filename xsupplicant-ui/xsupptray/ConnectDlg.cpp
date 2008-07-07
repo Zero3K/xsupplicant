@@ -280,10 +280,6 @@ bool ConnectDlg::initUI(void)
 	// jking - not sure this button should exist on this screen. hiding for now			
 	if (m_pConnWizardButton != NULL)
 		m_pConnWizardButton->hide();				
-
-	// Initialize the timer that we will use to show the time in connected
-	// state.
-	m_timer.setInterval(500);   // Fire every second.
 	
 	// load icons for signal strength
 	QPixmap *p;
@@ -291,35 +287,35 @@ bool ConnectDlg::initUI(void)
 	p = FormLoader::loadicon("signal_0.png");
 	if (p != NULL)
 	{
-		signalIcons[0] = *p;
+		m_signalIcons[0] = *p;
 		delete p;
 	}
 	
 	p = FormLoader::loadicon("signal_1.png");
 	if (p != NULL)
 	{
-		signalIcons[1] = *p;
+		m_signalIcons[1] = *p;
 		delete p;
 	}
 
 	p = FormLoader::loadicon("signal_2.png");
 	if (p != NULL)
 	{
-		signalIcons[2] = *p;
+		m_signalIcons[2] = *p;
 		delete p;
 	}
 	
 	p = FormLoader::loadicon("signal_3.png");
 	if (p != NULL)
 	{
-		signalIcons[3] = *p;
+		m_signalIcons[3] = *p;
 		delete p;
 	}
 	
 	p = FormLoader::loadicon("signal_4.png");
 	if (p != NULL)
 	{
-		signalIcons[4] = *p;
+		m_signalIcons[4] = *p;
 		delete p;		
 	}	
 
@@ -1144,15 +1140,15 @@ void ConnectDlg::updateWirelessSignalStrength(const QString &intName)
 			if (m_pWirelessSignalIcon != NULL)
 			{
 				if (signal <= 11)
-					m_pWirelessSignalIcon->setPixmap(signalIcons[0]);
+					m_pWirelessSignalIcon->setPixmap(m_signalIcons[0]);
 				else if (signal <= 37)
-					m_pWirelessSignalIcon->setPixmap(signalIcons[1]);
+					m_pWirelessSignalIcon->setPixmap(m_signalIcons[1]);
 				else if (signal <= 62)
-					m_pWirelessSignalIcon->setPixmap(signalIcons[2]);
+					m_pWirelessSignalIcon->setPixmap(m_signalIcons[2]);
 				else if (signal <= 88)
-					m_pWirelessSignalIcon->setPixmap(signalIcons[3]);
+					m_pWirelessSignalIcon->setPixmap(m_signalIcons[3]);
 				else
-					m_pWirelessSignalIcon->setPixmap(signalIcons[4]);
+					m_pWirelessSignalIcon->setPixmap(m_signalIcons[4]);
 					
 				m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: %1%").arg(signal));	
 			}			
@@ -1162,7 +1158,7 @@ void ConnectDlg::updateWirelessSignalStrength(const QString &intName)
 			// clear out icon and label
 			if (m_pWirelessSignalIcon != NULL)
 			{
-				m_pWirelessSignalIcon->setPixmap(signalIcons[0]);
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[0]);
 				m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: 0%"));
 			}	
 		}

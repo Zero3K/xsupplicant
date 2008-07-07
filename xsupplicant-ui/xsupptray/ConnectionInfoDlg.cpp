@@ -75,7 +75,8 @@ void ConnectionInfoDlg::show(void)
 {
 	if (m_pRealForm != NULL)
 		m_pRealForm->show();
-}	
+}
+
 bool ConnectionInfoDlg::initUI(void)
 {
 	// load form
@@ -161,14 +162,7 @@ bool ConnectionInfoDlg::initUI(void)
 	
 	// other initializations
 	if (m_pAdvancedConfig != NULL)
-		m_pAdvancedConfig->hide(); // not available ATM	
-		
-	// Initialize the timer that we will use to show the time in connected
-	// state.
-	m_timer.setInterval(1000);   // Fire every second.
-	m_timer.start();				 // Don't run just yet.
-
-	m_timer.stop();		
+		m_pAdvancedConfig->hide(); // not available ATM		
 	
 	return true;
 }
@@ -184,22 +178,11 @@ void ConnectionInfoDlg::disconnect(void)
 
 void ConnectionInfoDlg::renewIP(void)
 {	
-	char *pDeviceName = NULL;
-	int retval = 0;
-
-	// Using the device description - get the device name
-	retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-	if (retval == REQUEST_SUCCESS && pDeviceName == NULL)
-		xsupgui_request_dhcp_release_renew(pDeviceName);
-		
-	if (pDeviceName != NULL)
-		free(pDeviceName);
+	xsupgui_request_dhcp_release_renew(m_curAdapterName.toAscii().data());
 }
 
 void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 {
-	int retVal;
-	
 	m_curAdapter = adapterDesc;
 	
 	if (m_curAdapter.isEmpty())
@@ -207,11 +190,13 @@ void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 	else
 	{
 		char *pDeviceName = NULL;
-		int retval;
+		int retVal;
 		
-		retval = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
-		if (retval == REQUEST_SUCCESS && pDeviceName != NULL)	
+		retVal = xsupgui_request_get_devname(m_curAdapter.toAscii().data(), &pDeviceName);
+		if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)	
 			m_curAdapterName = pDeviceName;
+		else
+			m_curAdapterName = "";
 			
 		if (pDeviceName != NULL)
 			free(pDeviceName);
@@ -256,12 +241,13 @@ void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 
 void ConnectionInfoDlg::updateWirelessState(void)
 {
-	int retval = 0;
-	int state = 0;
 	Util::ConnectionStatus status = Util::status_idle;
 
 	if (m_curAdapterName.isEmpty() == false)
 	{
+		int retval = 0;
+		int state = 0;
+		
 		retval = xsupgui_request_get_physical_state(m_curAdapterName.toAscii().data(), &state);
 		if (retval == REQUEST_SUCCESS)
 		{
@@ -310,12 +296,13 @@ void ConnectionInfoDlg::updateWirelessState(void)
 
 void ConnectionInfoDlg::updateWiredState(void)
 {
-	int retval = 0;
-	int state = 0;
 	Util::ConnectionStatus status = Util::status_idle;
 
 	if (m_curAdapterName.isEmpty() == false)
 	{
+		int retval = 0;
+		int state = 0;
+		
 		retval = xsupgui_request_get_1x_state(m_curAdapterName.toAscii().data(), &state);
 		if (retval == REQUEST_SUCCESS)
 		{
@@ -348,11 +335,9 @@ void ConnectionInfoDlg::stopAndClearTimer(void)
 
 void ConnectionInfoDlg::updateElapsedTime(void)
 {
-	int retval = 0;
 	long int seconds = 0;
 	
-	retval = xsupgui_request_get_seconds_authenticated(m_curAdapterName.toAscii().data(), &seconds);
-	if (retval == REQUEST_SUCCESS)
+	if (xsupgui_request_get_seconds_authenticated(m_curAdapterName.toAscii().data(), &seconds) == REQUEST_SUCCESS)
 	{
 		int hours = 0;
 		int minutes = 0;
@@ -395,6 +380,7 @@ void ConnectionInfoDlg::timerUpdate(void)
 	this->updateElapsedTime();
 	this->showTime();
 }
+
 void ConnectionInfoDlg::stateChange(const QString &intName, int sm, int, int newstate, unsigned int)
 {	
 	// We only care if it is the adapter that is currently displayed.
@@ -494,6 +480,7 @@ void ConnectionInfoDlg::updateIPAddress(void)
 	if (m_pIPAddressLabel != NULL)
 		m_pIPAddressLabel->setText(ipText);
 }
+
 void ConnectionInfoDlg::updateSSID(void)
 {
 	int retVal;

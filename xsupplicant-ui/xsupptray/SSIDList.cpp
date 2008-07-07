@@ -110,7 +110,45 @@ void SSIDList::initUI(void)
 		m_pTableWidget->clearContents();
 		
 		Util::myConnect(m_pTableWidget, SIGNAL(itemSelectionChanged()), this, SLOT(handleSSIDTableSelectionChange()));
-		Util::myConnect(m_pTableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(handleSSIDTableDoubleClick(int, int)));	
+		Util::myConnect(m_pTableWidget, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(handleSSIDTableDoubleClick(int, int)));
+		
+		// load icons for signal strength
+		QPixmap *p;
+		
+		p = FormLoader::loadicon("signal_0.png");
+		if (p != NULL)
+		{
+			m_signalIcons[0].addPixmap(*p);
+			delete p;
+		}
+		
+		p = FormLoader::loadicon("signal_1.png");
+		if (p != NULL)
+		{
+			m_signalIcons[1].addPixmap(*p);
+			delete p;
+		}
+
+		p = FormLoader::loadicon("signal_2.png");
+		if (p != NULL)
+		{
+			m_signalIcons[2].addPixmap(*p);
+			delete p;
+		}
+		
+		p = FormLoader::loadicon("signal_3.png");
+		if (p != NULL)
+		{
+			m_signalIcons[3].addPixmap(*p);
+			delete p;
+		}
+		
+		p = FormLoader::loadicon("signal_4.png");
+		if (p != NULL)
+		{
+			m_signalIcons[4].addPixmap(*p);
+			delete p;		
+		}			
 	}
 }
 
@@ -146,50 +184,7 @@ void SSIDList::refreshList(const QString &adapterName)
 	m_pTableWidget->setSortingEnabled(false);
 	
 	if (!m_curNetworks.empty())
-	{
-		QIcon iconSignal_0;
-		QIcon iconSignal_1;
-		QIcon iconSignal_2;
-		QIcon iconSignal_3;
-		QIcon iconSignal_4;
-		
-		QPixmap *p;
-		
-		p = FormLoader::loadicon("signal_0.png");
-		if (p != NULL)
-		{
-			iconSignal_0.addPixmap(*p);
-			delete p;
-		}
-		
-		p = FormLoader::loadicon("signal_1.png");
-		if (p != NULL)
-		{
-			iconSignal_1.addPixmap(*p);
-			delete p;
-		}
-
-		p = FormLoader::loadicon("signal_2.png");
-		if (p != NULL)
-		{
-			iconSignal_2.addPixmap(*p);
-			delete p;
-		}
-		
-		p = FormLoader::loadicon("signal_3.png");
-		if (p != NULL)
-		{
-			iconSignal_3.addPixmap(*p);
-			delete p;
-		}
-		
-		p = FormLoader::loadicon("signal_4.png");
-		if (p != NULL)
-		{
-			iconSignal_4.addPixmap(*p);
-			delete p;		
-		}
-								
+	{					
 		for (int i=0; i<m_curNetworks.size(); i++)
 		{
 			QTableWidgetItem *nameItem=NULL;
@@ -211,15 +206,15 @@ void SSIDList::refreshList(const QString &adapterName)
 			if (signalItem != NULL)
 			{
 				if (strength <= 11)
-					signalItem->setIcon(iconSignal_0);
+					signalItem->setIcon(m_signalIcons[0]);
 				else if (strength <= 37)
-					signalItem->setIcon(iconSignal_1);
+					signalItem->setIcon(m_signalIcons[1]);
 				else if (strength <= 62)
-					signalItem->setIcon(iconSignal_2);
+					signalItem->setIcon(m_signalIcons[2]);
 				else if (strength <= 88)
-					signalItem->setIcon(iconSignal_3);
+					signalItem->setIcon(m_signalIcons[3]);
 				else
-					signalItem->setIcon(iconSignal_4);
+					signalItem->setIcon(m_signalIcons[4]);
 				
 				m_pTableWidget->setItem(i,SSIDList::COL_SIGNAL,signalItem);
 			}
@@ -271,21 +266,33 @@ void SSIDList::refreshList(const QString &adapterName)
 					labelFileName.append("n");	
 				labelFileName.append(".png");
 
-				QPixmap *p;
-				p = FormLoader::loadicon(labelFileName);
+				QMap<QString, QPixmap>::const_iterator iter;
+				
+				// look for pixmap in cache first before loading from disk
+				iter = m_pixmapMap.constFind(labelFileName);
+				if (iter == m_pixmapMap.constEnd())
+				{
+					QPixmap *p;
+					p = FormLoader::loadicon(labelFileName);
+					if (p != NULL)
+					{
+						m_pixmapMap.insert(labelFileName, *p);
+						iter = m_pixmapMap.constFind(labelFileName);
+						delete p;
+					}
+				}
 
-				if (p != NULL)
+				// if image was successfully loaded or found in cache, use it in table
+				if (iter != m_pixmapMap.constEnd())
 				{
 					QLabel *tmpLabel;
 					tmpLabel = new QLabel();
 					if (tmpLabel != NULL)
 					{
-						tmpLabel->setPixmap(*p);
+						tmpLabel->setPixmap(*iter);
 						tmpLabel->setAlignment(Qt::AlignCenter);
 						m_pTableWidget->setCellWidget(i, SSIDList::COL_802_11, tmpLabel);
 					}
-					delete p;
-					p = NULL;
 				}																	
 			}
 		}
@@ -318,7 +325,7 @@ QList<WirelessNetworkInfo> SSIDList::getNetworkInfo(QString adapterName)
 					while (pSSIDList[j].ssidname != NULL)
 					{
 						// if not empty ssid (this represents a non-broadcast SSID)
-						if (!QString(pSSIDList[j].ssidname).isEmpty())
+						if (QString(pSSIDList[j].ssidname).isEmpty() == false)
 						{
 							WirelessNetworkInfo networkInfo;
 							networkInfo.m_name = pSSIDList[j].ssidname;
@@ -374,25 +381,27 @@ QList<WirelessNetworkInfo> SSIDList::getNetworkInfo(QString adapterName)
 						++j;
 					}
 					networkList = networkHashTable.values();
-					
-					xsupgui_request_free_ssid_enum(&pSSIDList);
-					pSSIDList = NULL;
 				}
 				else
 				{
 					// problem or no SSIDs for this adapter
 				}
+				
+				if (pSSIDList != NULL)
+					xsupgui_request_free_ssid_enum(&pSSIDList);
 			}
 			
 			++i;
 		}
-		xsupgui_request_free_int_enum(&pInterfaceList);
-		pInterfaceList = NULL;
 	}
 	else
 	{
 		// bad things man
 	}
+	
+	if (pInterfaceList != NULL)
+		xsupgui_request_free_int_enum(&pInterfaceList);
+		
 	return networkList;
 }
 
@@ -406,8 +415,7 @@ void SSIDList::handleSSIDTableSelectionChange(void)
 		
 		if (selectedItems.isEmpty() == false)
 		{
-			int i;
-			for (i=0; i<selectedItems.size(); i++)
+			for (int i=0; i<selectedItems.size(); i++)
 			{
 				if (selectedItems.at(i)->column() == SSIDList::COL_NAME)
 				{
@@ -431,9 +439,7 @@ void SSIDList::handleSSIDTableDoubleClick(int row, int)
 		
 		// check if they clicked in a row w/ a network listed
 		if (item != NULL)
-		{
 			emit ssidDoubleClick(m_curNetworks.at(item->type() - 1000));
-		}
 	}
 }
 

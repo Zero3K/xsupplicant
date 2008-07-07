@@ -61,92 +61,6 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
   m_pHelpButton = NULL;
   m_pCancelButton = NULL;
   m_pRealForm = NULL;
-
-  /*
-    m_pAvailableList = new QListWidget();
-    m_pPreferredList = new QListWidget();
-
-    updateLists();
-
-    m_pAvailableList->setSelectionMode(QAbstractItemView::ContiguousSelection);
-    m_pPreferredList->setSelectionMode(QAbstractItemView::ContiguousSelection);
-
-    m_pAvailableList->setWindowTitle("Available");
-    QVBoxLayout *pALayout = new QVBoxLayout();
-    pALayout->addWidget(m_pAvailableList);
-    QGroupBox *pABox = new QGroupBox(tr("Available Connections"));
-    pABox->setLayout(pALayout);
-
-    QVBoxLayout *pPLayout = new QVBoxLayout();
-    pPLayout->addWidget(m_pPreferredList);
-    QGroupBox *pPBox = new QGroupBox(tr("Preferred Connections"));
-    pPBox->setLayout(pPLayout);
-
-    QDialogButtonBox *buttonBox = new QDialogButtonBox();
-    
-    m_pSaveButton = Util::createButton(tr("Save"), this, SLOT(slotSave()), tr("Save your changes and close this dialog"));
-    m_pSaveButton->setDefault(true);
-    m_pDoneButton = Util::createButton(tr("Cancel"), this, SLOT(slotDone()), tr("Exit this screen without saving"));
-    m_pDoneButton->setAutoDefault(false);
-    m_pHelpButton = Util::createButton(tr("Help"), this, SLOT(slotHelp()), tr("Open the help dialog"));
-    m_pHelpButton->setAutoDefault(false);
-
-    buttonBox->addButton(m_pSaveButton, QDialogButtonBox::ActionRole);
-    buttonBox->addButton(m_pDoneButton, QDialogButtonBox::ActionRole);
-    buttonBox->addButton(m_pHelpButton, QDialogButtonBox::ActionRole);
-    
-    m_pRightButton = new QPushButton();
-    m_pRightButton->setIcon(QIcon (QPixmap(":/images/blackr.png")));
-    m_pRightButton->setAutoDefault(false);
-
-    m_pLeftButton = new QPushButton();
-    m_pLeftButton->setIcon(QIcon(QPixmap(":/images/blackl.png")));
-    m_pLeftButton->setAutoDefault(false);
-
-    m_pDownButton = new QPushButton();
-    m_pDownButton->setIcon(QIcon(QPixmap(":/images/blackd.png")));
-    m_pDownButton->setAutoDefault(false);
-
-    m_pUpButton = new QPushButton();
-    m_pUpButton->setIcon(QIcon(QPixmap(":/images/blacku.png")));
-    m_pUpButton->setAutoDefault(false);
-
-    QVBoxLayout *leftRightButtonLayout = new QVBoxLayout();
-    leftRightButtonLayout->addStretch(1);
-    leftRightButtonLayout->addWidget(m_pRightButton);
-    leftRightButtonLayout->addWidget(m_pLeftButton);
-    leftRightButtonLayout->addStretch(1);
-
-    QVBoxLayout *centerButtonLayout  = new QVBoxLayout();
-    centerButtonLayout->addLayout(leftRightButtonLayout);
-
-    QVBoxLayout *upDownButtonLayout = new QVBoxLayout();
-    upDownButtonLayout->addStretch(1);
-    upDownButtonLayout->addWidget(m_pUpButton);
-    upDownButtonLayout->addWidget(m_pDownButton);
-    upDownButtonLayout->addStretch(1);
-
-    m_pUpButton->setEnabled(false);
-    m_pDownButton->setEnabled(false);
-    m_pRightButton->setEnabled(false);
-    m_pLeftButton->setEnabled(false);
-
-    QHBoxLayout *mainLayout = new QHBoxLayout;
-    mainLayout->addWidget(pABox);
-    mainLayout->addLayout(centerButtonLayout);
-    mainLayout->addWidget(pPBox);
-    mainLayout->addLayout(upDownButtonLayout);
-
-    QVBoxLayout *withButtons = new QVBoxLayout();
-    withButtons->addLayout(mainLayout);
-    withButtons->addWidget(buttonBox);
-
-    setWindowTitle(tr("Set and order preferred wireless connections"));
-    setLayout(withButtons);
-    hookupSignalsAndSlots();
-    m_pAvailableList->setCurrentRow(0);
-    m_pPreferredList->setCurrentRow(0);
-	*/
  }
 
 //! Destructor
@@ -558,7 +472,7 @@ void PreferredConnections::updateLists()
 
   while (m_pConns[i].name != NULL)
   {
-	  if (m_pConns[i].ssid != NULL)
+	  if (m_pConns[i].ssid != NULL && QString(m_pConns[i].ssid).isEmpty() == false)
 	  {
 		QListWidgetItem *pItem = new QListWidgetItem(m_pConns[i].name, NULL, m_pConns[i].priority); // the priority is the type - I think this will work
 		int priority = m_pConns[i].priority;

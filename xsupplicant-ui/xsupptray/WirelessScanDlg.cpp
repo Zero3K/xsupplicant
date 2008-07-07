@@ -54,6 +54,7 @@ WirelessScanDlg::~WirelessScanDlg()
 		
 	if (m_pRealForm != NULL)
 		delete m_pRealForm;
+		
 	if (m_pProgressTimer != NULL)
 	{
 		Util::myDisconnect(m_pProgressTimer, SIGNAL(timeout()), this, SLOT(updateProgress()));

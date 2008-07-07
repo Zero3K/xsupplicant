@@ -142,7 +142,7 @@ private:
 	QTime  m_time;
 	unsigned int m_days;
 	
-	QPixmap signalIcons[5];
+	QPixmap m_signalIcons[5];
 	QVector<QString> m_wirelessAdapters;
 	QVector<QString> m_wiredAdapters;
 };

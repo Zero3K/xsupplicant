@@ -99,10 +99,7 @@ void XSupWrapper::freeConfigConnection(config_connection **p)
 bool XSupWrapper::deleteConnectionConfig(const QString &connName)
 {
 	int retVal = xsupgui_request_delete_connection_config(connName.toAscii().data());
-	if (retVal == REQUEST_SUCCESS)
-		return true;
-	else
-		return false;
+	return (retVal == REQUEST_SUCCESS);
 }
 
 bool XSupWrapper::writeConfig()
@@ -110,21 +107,40 @@ bool XSupWrapper::writeConfig()
 	int retval = 0;
 	retval = xsupgui_request_write_config(NULL);
 
-	if (retval == REQUEST_SUCCESS)
-		return true;
-	else
-		return false;
+	return (retval == REQUEST_SUCCESS);
+
 }
 
 QString XSupWrapper::getUniqueConnectionName(const QString &suggestedName)
 {
-	QString newName(suggestedName);
-	config_connection *pConfig = NULL;	
+	QString newNamePrefix;
+	QString newName;
+	config_connection *pConfig = NULL;
+	int i;
+	
+	// check if name is already of form "name_<number>"
+	QRegExp rx("_(\\d+)$");
+	if (suggestedName.contains(rx) == true)
+	{
+		bool success;
+		rx.indexIn(suggestedName);
+		QString numStr = rx.cap(1);
+		i = numStr.toInt(&success) + 1;
+		if (success == false)
+			i = 1;
+		newNamePrefix = suggestedName;
+		newNamePrefix.remove((newNamePrefix.length() - rx.cap(0).length()), rx.cap(0).length());
+	}
+	else
+	{
+		newNamePrefix = suggestedName;
+		i = 1;
+	}
+	newName = suggestedName;
   
-	int i=1;
 	while (getConfigConnection(newName, &pConfig) == true)
 	{
-		newName = QString ("%1_%2").arg(suggestedName).arg(i);
+		newName = QString("%1_%2").arg(newNamePrefix).arg(i);
 		++i;
 
 		XSupWrapper::freeConfigConnection(&pConfig);
@@ -136,13 +152,35 @@ QString XSupWrapper::getUniqueConnectionName(const QString &suggestedName)
 
 QString XSupWrapper::getUniqueServerName(const QString &suggestedName)
 {
-	QString newName(suggestedName);
+	QString newName;
+	QString newNamePrefix;
 	config_trusted_server *pServer = NULL;	
+	int i;
   
-	int i=1;
+	// check if name is already of form "name_<number>"
+	QRegExp rx("_(\\d+)$");
+	if (suggestedName.contains(rx) == true)
+	{
+		bool success;
+		rx.indexIn(suggestedName);
+		QString numStr = rx.cap(1);
+		i = numStr.toInt(&success) + 1;
+		if (success == false)
+			i = 1;
+		newNamePrefix = suggestedName;
+		newNamePrefix.remove((newNamePrefix.length() - rx.cap(0).length()), rx.cap(0).length());
+	}
+	else
+	{
+		newNamePrefix = suggestedName;
+		i = 1;
+	}
+	
+	newName = suggestedName;
+	
 	while (getConfigServer(newName, &pServer) == true)
 	{
-		newName = QString ("%1_%2").arg(suggestedName).arg(i);
+		newName = QString ("%1_%2").arg(newNamePrefix).arg(i);
 		++i;
 
 		XSupWrapper::freeConfigServer(&pServer);
@@ -154,13 +192,35 @@ QString XSupWrapper::getUniqueServerName(const QString &suggestedName)
 
 QString XSupWrapper::getUniqueProfileName(const QString &suggestedName)
 {
-	QString newName(suggestedName);
-	config_profiles *pProfile = NULL;	
+	QString newName;
+	QString newNamePrefix;
+	config_profiles *pProfile = NULL;
+	int i;	
   
-	int i=1;
+	// check if name is already of form "name_<number>"
+	QRegExp rx("_(\\d+)$");
+	if (suggestedName.contains(rx) == true)
+	{
+		bool success;
+		rx.indexIn(suggestedName);
+		QString numStr = rx.cap(1);
+		i = numStr.toInt(&success) + 1;
+		if (success == false)
+			i = 1;
+		newNamePrefix = suggestedName;
+		newNamePrefix.remove((newNamePrefix.length() - rx.cap(0).length()), rx.cap(0).length());
+	}
+	else
+	{
+		newNamePrefix = suggestedName;
+		i = 1;
+	}
+	
+	newName = suggestedName;
+	
 	while (getConfigProfile(newName, &pProfile) == true)
 	{
-		newName = QString ("%1_%2").arg(suggestedName).arg(i);
+		newName = QString ("%1_%2").arg(newNamePrefix).arg(i);
 		++i;
 
 		freeConfigProfile(&pProfile);
@@ -249,44 +309,47 @@ bool XSupWrapper::createNewTrustedServer(const QString &suggName, config_trusted
 
 bool XSupWrapper::isDefaultWiredConnection(const QString &connName)
 {
-	bool success;
 	bool isDefault = false;
-	if (connName.isEmpty())
-		return false;
-		
-	// first, check if wired
-	config_connection *pConn;
-	success = XSupWrapper::getConfigConnection(connName,&pConn);
-	if (success == true)
+	if (connName.isEmpty() == false)
 	{
-		// check if wired
-		if (pConn->ssid == NULL || QString(pConn->ssid).isEmpty())
+		bool success;
+				
+		// first, check if wired
+		config_connection *pConn;
+		success = XSupWrapper::getConfigConnection(connName,&pConn);
+		if (success == true)
 		{
-			int_config_enum *pInterfaceList = NULL;
-			int retVal;
-			
-			retVal = xsupgui_request_enum_ints_config(&pInterfaceList);
-			if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+			// check if wired
+			if (pConn->ssid == NULL || QString(pConn->ssid).isEmpty())
 			{
-				int i = 0;
-				while (pInterfaceList[i].desc != NULL)
+				int_config_enum *pInterfaceList = NULL;
+				int retVal;
+				
+				retVal = xsupgui_request_enum_ints_config(&pInterfaceList);
+				if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
 				{
-					if (pInterfaceList[i].is_wireless == FALSE)
+					int i = 0;
+					while (pInterfaceList[i].desc != NULL)
 					{
-						if (pInterfaceList[i].default_connection != NULL)
+						if (pInterfaceList[i].is_wireless == FALSE)
 						{
-							if (QString(pInterfaceList[i].default_connection) == connName)
+							if (pInterfaceList[i].default_connection != NULL)
 							{
-								isDefault = true;
-								break;
-							}	
+								if (QString(pInterfaceList[i].default_connection) == connName)
+								{
+									isDefault = true;
+									break;
+								}	
+							}
 						}
+						++i;	
 					}
-					++i;	
-				}
-				xsupgui_request_free_int_config_enum(&pInterfaceList);
-			}			
+					xsupgui_request_free_int_config_enum(&pInterfaceList);
+				}			
+			}
 		}
+		if (pConn != NULL)
+			XSupWrapper::freeConfigConnection(&pConn);
 	}
 	return isDefault;
 }
@@ -320,7 +383,7 @@ bool XSupWrapper::getConfigServer(const QString &serverName, config_trusted_serv
 bool XSupWrapper::isProfileInUse(const QString &profileName)
 {
 	bool inUse = false;
-	if (!profileName.isEmpty())
+	if (profileName.isEmpty() == false)
 	{
 		conn_enum * pConfig;
 		int retVal;
@@ -344,8 +407,10 @@ bool XSupWrapper::isProfileInUse(const QString &profileName)
 				}
 				++i;
 			}
-			xsupgui_request_free_conn_enum(&pConfig);
 		}
+		
+		if (pConfig != NULL)
+			xsupgui_request_free_conn_enum(&pConfig);
 	}
 	return inUse;
 }
@@ -418,9 +483,10 @@ bool XSupWrapper::getTrustedServerForProfile(const QString &profileName, config_
 				}
 			}
 		}
-		
-		XSupWrapper::freeConfigProfile(&pProfile);
 	}
+	
+	if (pProfile != NULL)
+		XSupWrapper::freeConfigProfile(&pProfile);
 	
 	return success;
 }
@@ -449,6 +515,10 @@ bool XSupWrapper::isTrustedServerInUse(const QString &serverName)
 			++i;
 		}
 	}
+	
+	if (pProfile != NULL)
+		xsupgui_request_free_profile_enum(&pProfile);
+		
 	return inUse;
 }
 
@@ -470,7 +540,10 @@ QStringList XSupWrapper::getWirelessInterfaceList(void)
 			++i;
 		}
 	}
-	xsupgui_request_free_int_enum(&pInterface);
+	
+	if (pInterface != NULL)
+		xsupgui_request_free_int_enum(&pInterface);
+		
 	return intList;
 }
 
@@ -642,7 +715,8 @@ void XSupWrapper::getAndDisplayErrors(void)
 			QWidget::tr("An error occurred while checking for errors from the XSupplicant."));
 	}
 
-	xsupgui_request_free_error_msgs(&msgs);
+	if (msgs != NULL)
+		xsupgui_request_free_error_msgs(&msgs);
 }
 
 // returns descriptions of wireless adapters in system
