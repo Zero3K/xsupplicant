@@ -96,7 +96,7 @@ void SSIDList::initUI(void)
 		
 		// 802.11
 		m_pTableWidget->horizontalHeaderItem(SSIDList::COL_802_11)->setText(tr("802.11"));
-		m_pTableWidget->horizontalHeader()->resizeSection(SSIDList::COL_802_11,90);
+		m_pTableWidget->horizontalHeader()->resizeSection(SSIDList::COL_802_11,80);
 		
 		// don't draw header any differently when row is selected
 		m_pTableWidget->horizontalHeader()->setHighlightSections(false);

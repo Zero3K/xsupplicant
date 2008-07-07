@@ -1494,7 +1494,7 @@
         </property>
         <layout class="QHBoxLayout" >
          <property name="spacing" >
-          <number>10</number>
+          <number>6</number>
          </property>
          <property name="leftMargin" >
           <number>0</number>

@@ -73,6 +73,9 @@ public:
 	static void getAndDisplayErrors(void);
 	static QVector<QString> getWirelessAdapters(void); // returns descriptions of wireless adapters in system
 	static QVector<QString> getWiredAdapters(void); // returns descriptions of wired adapters in system
+	static QVector<QString> getConnectionListForAdapter(const QString &adapterDesc);
+	static bool isConnectionActive(const QString &interfaceName, const QString &connectionName, bool isWireless);
+	static bool connectToConnection(const QString &interfaceName, const QString &connectionName);
 };
 
 #endif

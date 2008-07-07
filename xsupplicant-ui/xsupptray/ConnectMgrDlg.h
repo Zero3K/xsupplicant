@@ -71,6 +71,7 @@ private:
 	void populateWiredConnectionsCombo(void);
 	void updateWirelessAutoConnectState(void);
 	void updateWiredAutoConnectState(void);
+	void editConnection(const QString &);
 	
 private slots:
 	void showAdvancedConfig(void);
@@ -86,6 +87,7 @@ private slots:
 	void enableDisableWiredAutoConnect(int);
 	void setWiredAutoConnection(const QString &connectionName);
 	void updateConnectionLists(void);
+	void handleDoubleClick(int, int);
 	
 private:
 	QWidget *m_pParent;

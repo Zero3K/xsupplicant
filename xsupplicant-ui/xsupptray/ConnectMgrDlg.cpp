@@ -69,8 +69,10 @@ ConnectMgrDlg::~ConnectMgrDlg()
 	if (m_pCloseButton != NULL)
 		Util::myDisconnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm, SLOT(hide()));
 		
-	if (m_pConnectionsTable != NULL)
+	if (m_pConnectionsTable != NULL) {
 		Util::myDisconnect(m_pConnectionsTable, SIGNAL(itemSelectionChanged()), this, SLOT(handleConnectionListSelectionChange()));
+		Util::myDisconnect(m_pConnectionsTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(handleDoubleClick(int, int)));
+	}
 		
 	if (m_pDeleteConnButton != NULL)
 		Util::myDisconnect(m_pDeleteConnButton, SIGNAL(clicked()), this, SLOT(deleteSelectedConnection()));
@@ -206,8 +208,10 @@ bool ConnectMgrDlg::initUI(void)
 	if (m_pCloseButton != NULL)
 		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm, SLOT(hide()));
 		
-	if (m_pConnectionsTable != NULL)
+	if (m_pConnectionsTable != NULL) {
 		Util::myConnect(m_pConnectionsTable, SIGNAL(itemSelectionChanged()), this, SLOT(handleConnectionListSelectionChange()));
+		Util::myConnect(m_pConnectionsTable, SIGNAL(cellDoubleClicked(int, int)), this, SLOT(handleDoubleClick(int, int)));
+	}	
 		
 	if (m_pDeleteConnButton != NULL)
 		Util::myConnect(m_pDeleteConnButton, SIGNAL(clicked()), this, SLOT(deleteSelectedConnection()));
@@ -807,6 +811,21 @@ void ConnectMgrDlg::bringToFront(void)
 	}
 }
 
+void ConnectMgrDlg::handleDoubleClick(int row, int)
+{
+	if (m_pConnectionsTable != NULL)
+	{
+		QTableWidgetItem* item = m_pConnectionsTable->item(row, 0);
+		if (item != NULL)
+		{
+			QString connName;
+			
+			connName = item->text();
+			this->editConnection(connName);
+		}
+	}
+}
+
 void ConnectMgrDlg::createNewConnection(void)
 {
 	if (m_pConnWizard == NULL)
@@ -870,95 +889,104 @@ void ConnectMgrDlg::updateConnectionLists(void)
 	this->updateWiredAutoConnectState();
 }
 
-void ConnectMgrDlg::editSelectedConnection(void)
-{
-	QList<QTableWidgetItem*> selectedItems;
+void ConnectMgrDlg::editConnection(const QString &connName)
+{	
+	bool success;
+	config_connection *pConfig;
 	
-	selectedItems = m_pConnectionsTable->selectedItems();
-	
-	if (selectedItems.isEmpty() == false) 
+	success = XSupWrapper::getConfigConnection(connName,&pConfig);
+	if (success == true && pConfig != NULL)
 	{
-		QTableWidgetItem* selItem = selectedItems.at(0);
-		if ((selItem->row() >= 0) && (selItem->row() < m_nConnections))
+		bool editable = true;
+		char *pDeviceName = NULL;
+		int retVal;
+		
+		// first check if connection is in use
+		// if so, don't allow editing				
+		retVal = xsupgui_request_get_devname(pConfig->device, &pDeviceName);
+		if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
 		{
-			bool success;
-			config_connection *pConfig;
-			QTableWidgetItem *nameItem = m_pConnectionsTable->item(selItem->row(), 0);
-			QString connName = nameItem->text();
-			
-			success = XSupWrapper::getConfigConnection(connName,&pConfig);
-			if (success == true && pConfig != NULL)
+			char *pConnName = NULL;
+			retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &pConnName);
+			if (retVal == REQUEST_SUCCESS && pConnName != NULL)
 			{
-				bool editable = true;
-				char *pDeviceName = NULL;
-				int retVal;
-				
-				// first check if connection is in use
-				// if so, don't allow editing				
-				retVal = xsupgui_request_get_devname(pConfig->device, &pDeviceName);
-				if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+				if (QString(pConnName) == connName)
 				{
-					char *pConnName = NULL;
-					retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &pConnName);
-					if (retVal == REQUEST_SUCCESS && pConnName != NULL)
-					{
-						if (QString(pConnName) == connName)
-						{
-							QMessageBox::warning(m_pRealForm, tr("Connection In Use"), tr("The connection '%1' cannot be edited because it is currently in use.  Please disconnect from the network before editing the connection.").arg(connName));
-							editable = false;
-						}
-					}
-					if (pConnName != NULL)
-						free(pConnName);
-				}	
+					QMessageBox::warning(m_pRealForm, tr("Connection In Use"), tr("The connection '%1' cannot be edited because it is currently in use.  Please disconnect from the network before editing the connection.").arg(connName));
+					editable = false;
+				}
+			}
+			if (pConnName != NULL)
+				free(pConnName);
+		}	
+		
+		if (pDeviceName != NULL)
+			free(pDeviceName);			
+		
+		if (editable == true)
+		{
+			config_profiles *pProfile = NULL;
+			config_trusted_server *pServer = NULL;
+			
+			if (pConfig->profile != NULL)
+				success = XSupWrapper::getConfigProfile(QString(pConfig->profile),&pProfile);
 				
-				if (pDeviceName != NULL)
-					free(pDeviceName);			
+			if (success == true && pProfile != NULL)
+				success = XSupWrapper::getTrustedServerForProfile(QString(pProfile->name),&pServer);
 				
-				if (editable == true)
+			ConnectionWizardData wizData;
+			wizData.initFromSupplicantProfiles(pConfig,pProfile,pServer);
+			
+			if (pConfig != NULL)
+				XSupWrapper::freeConfigConnection(&pConfig);
+			if (pProfile != NULL)
+				XSupWrapper::freeConfigProfile(&pProfile);
+			if (pServer != NULL)
+				XSupWrapper::freeConfigServer(&pServer);
+			
+			if (m_pConnWizard == NULL)
+			{
+				// create the wizard if it doesn't already exist
+				m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
+				if (m_pConnWizard != NULL)
 				{
-					config_profiles *pProfile = NULL;
-					config_trusted_server *pServer = NULL;
-					
-					if (pConfig->profile != NULL)
-						success = XSupWrapper::getConfigProfile(QString(pConfig->profile),&pProfile);
-						
-					if (success == true && pProfile != NULL)
-						success = XSupWrapper::getTrustedServerForProfile(QString(pProfile->name),&pServer);
-						
-					ConnectionWizardData wizData;
-					wizData.initFromSupplicantProfiles(pConfig,pProfile,pServer);
-					
-					if (pConfig != NULL)
-						XSupWrapper::freeConfigConnection(&pConfig);
-					if (pProfile != NULL)
-						XSupWrapper::freeConfigProfile(&pProfile);
-					if (pServer != NULL)
-						XSupWrapper::freeConfigServer(&pServer);
-					
-					if (m_pConnWizard == NULL)
+					if (m_pConnWizard->create() == true)
 					{
-						// create the wizard if it doesn't already exist
-						m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
-						if (m_pConnWizard != NULL)
-						{
-							if (m_pConnWizard->create() == true)
-							{
-								Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-								Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
-								m_pConnWizard->edit(wizData);
-								m_pConnWizard->show();
-							}
-							// else show error?
-						}
-						// else show error?
-					}
-					else
-					{
+						Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
+						Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
 						m_pConnWizard->edit(wizData);
 						m_pConnWizard->show();
-					}	
-				}			
+					}
+					// else show error?
+				}
+				// else show error?
+			}
+			else
+			{
+				m_pConnWizard->edit(wizData);
+				m_pConnWizard->show();
+			}	
+		}			
+	}
+}
+
+void ConnectMgrDlg::editSelectedConnection(void)
+{
+	if (m_pConnectionsTable != NULL)
+	{
+		QList<QTableWidgetItem*> selectedItems;
+		
+		selectedItems = m_pConnectionsTable->selectedItems();
+		
+		if (selectedItems.isEmpty() == false) 
+		{
+			QTableWidgetItem* selItem = selectedItems.at(0);
+			if ((selItem->row() >= 0) && (selItem->row() < m_nConnections))
+			{
+				QTableWidgetItem *nameItem = m_pConnectionsTable->item(selItem->row(), 0);
+				QString connName = nameItem->text();
+				
+				this->editConnection(connName);
 			}
 		}
 	}

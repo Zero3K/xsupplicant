@@ -64,9 +64,6 @@ private:
 	void populateWiredAdapterList(void);
 	void populateWirelessConnectionList(void);
 	void populateWiredConnectionList(void);
-	bool isConnectionActive(const QString &interfaceName, const QString &connectionName, bool isWireless);
-	bool connectToConnection(const QString &interfaceName, const QString &connectionName);
-	QVector<QString> *getConnectionListForAdapter(const QString &adapterDesc);
 	void updateWirelessState(void);
 	void updateWiredState(void);
 	void startConnectedTimer(const QString &adapterName);
@@ -105,6 +102,7 @@ private:
 	QWidget *m_pParent;
 	QWidget *m_pParentWindow;
 	
+	// pointers to UI elements
 	QTabWidget	*m_pAdapterTabControl;
 	QComboBox	*m_pWirelessAdapterList;
 	QComboBox	*m_pWiredAdapterList;
@@ -124,20 +122,24 @@ private:
 	QLabel		*m_pWirelessSignalIcon;
 
 	TrayApp *m_pSupplicant;
+	
+	// pointers to dialog objects
 	SSIDListDlg *m_pSSIDListDlg;
 	ConnectionWizard *m_pConnWizard;
 	ConnectionInfoDlg *m_pConnInfo;
+	
+	// cached state information
 	QString	m_currentWirelessAdapterDesc;
 	QString m_currentWirelessAdapterName;
 	QString m_currentWiredAdapterDesc;
 	QString m_currentWiredAdapterName;
-	QString m_timerAdapterName;
-	QString m_wirelessNetwork; // cached so we can update signal strength
+	QString m_timerAdapterName;			// name of current adapter we are displaying status of
+	QString m_wirelessNetwork;			// cached so we can update signal strength
+	int m_lastWirelessConnectionIdx;	// last valid selected wireless connection
+	int m_lastWiredConnectionIdx;		// last valid selected wired connection
 	
 	QTimer m_timer;
 	QTime  m_time;
-	int m_lastWirelessConnectionIdx;
-	int m_lastWiredConnectionIdx;
 	unsigned int m_days;
 	
 	QPixmap signalIcons[5];

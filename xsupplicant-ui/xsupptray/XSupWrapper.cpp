@@ -698,4 +698,127 @@ QVector<QString> XSupWrapper::getWiredAdapters(void)
 	std::sort(adapterVec.begin(), adapterVec.end());
 	return adapterVec;
 } 
-	
+
+QVector<QString> XSupWrapper::getConnectionListForAdapter(const QString &adapterDesc)
+{
+	QVector<QString> retVector;
+	if (adapterDesc.isEmpty() == false)
+	{
+		conn_enum *pConn;
+		int retVal;
+		
+		retVal = xsupgui_request_enum_connections(&pConn);
+		if (retVal == REQUEST_SUCCESS && pConn != NULL)
+		{
+			int i = 0;
+			while (pConn[i].name != NULL)
+			{
+				if (pConn[i].dev_desc == adapterDesc)
+				{
+					bool success;
+					config_connection *pConfig;
+					success = XSupWrapper::getConfigConnection(QString(pConn[i].name), &pConfig);
+					if (success == true && pConfig != NULL)
+					{
+						if ((pConfig->flags & CONFIG_VOLATILE_CONN) == 0)
+							retVector.append(QString(pConn[i].name));
+						
+					}
+					else
+						retVector.append(QString(pConn[i].name));
+						
+					if (pConfig != NULL)
+						XSupWrapper::freeConfigConnection(&pConfig);
+				}
+				++i;
+			}
+		}
+		
+		if (pConn != NULL)
+			xsupgui_request_free_conn_enum(&pConn);
+		
+		std::sort(retVector.begin(), retVector.end());
+	}
+	return retVector;
+}
+
+/**
+ * \brief Determine if the connection named \ref connectName is already active and
+ *        in a connected or authenticated state.
+ *
+ * @param[in] interfaceDesc   The interface description we are looking at.
+ * @param[in] connectionName   The description of the connection we want to check.
+ * @param[in] isWireless   Is the interface wireless or not?
+ *
+ * \retval true if it is in use
+ * \retval false if it isn't in use
+ **/
+bool XSupWrapper::isConnectionActive(const QString &interfaceName, const QString &connectionName, bool isWireless)
+{
+	int retval = 0;
+	bool isActive = false;
+
+	if (interfaceName.isEmpty() == false)
+	{
+		char *pName = NULL;
+		
+		// See if a connection is bound to the interface in question.
+		retval = xsupgui_request_get_conn_name_from_int(interfaceName.toAscii().data(), &pName);
+		if (retval = REQUEST_SUCCESS && pName != NULL)
+		{
+			// If they match, then check the status of the connection to determine if the connection
+			// is active.
+			if (connectionName.compare(pName) == 0) 
+			{
+				int state = 0;
+				
+				if (isWireless == true)
+				{
+					if (xsupgui_request_get_physical_state(interfaceName.toAscii().data(), &state) == REQUEST_SUCCESS)
+					{
+						if ((state != WIRELESS_INT_STOPPED) && (state != WIRELESS_INT_HELD))
+							isActive = true;
+					}
+				}
+				else
+				{
+					// It is wired, we only care if it is in 802.1X authenticated state or not.
+					if (xsupgui_request_get_1x_state(interfaceName.toAscii().data(), &state) == REQUEST_SUCCESS)
+						isActive = (state != DISCONNECTED);
+				}
+			}
+		}
+		
+		if (pName != NULL)
+			free(pName);			
+	}
+
+	return isActive;
+}
+
+/**
+ * \brief Issue a request to the engine to establish a connection.
+ *
+ * @param[in] interfaceDesc   The interface description that we want to use with the
+ *							  connection.
+ * @param[in] connectionName   The connection name that we want the interface to attach to.
+ *
+ * \retval true if the connection attempt should succeed.
+ * \retval false if the connection attempt failed.
+ **/
+bool XSupWrapper::connectToConnection(const QString &interfaceName, const QString &connectionName)
+{
+	bool success = false;
+
+	if (interfaceName.isEmpty() == false)
+	{
+		int retval = 0;
+		retval = xsupgui_request_set_connection(interfaceName.toAscii().data(), connectionName.toAscii().data());
+		if (retval == REQUEST_SUCCESS)
+			success = true;
+		else if (retval == IPC_ERROR_NEW_ERRORS_IN_QUEUE)
+			XSupWrapper::getAndDisplayErrors();
+	}
+		
+	return success;
+}
