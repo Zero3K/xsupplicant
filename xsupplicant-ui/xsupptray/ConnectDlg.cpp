@@ -935,8 +935,6 @@ void ConnectDlg::updateWiredState(void)
 			m_pWiredConnectionInfo->setEnabled(false);
 		if (m_pWiredNetworkName != NULL)
 			m_pWiredNetworkName->setText(QString(""));
-		if (m_pWirelessSignalIcon != NULL)
-			m_pWirelessSignalIcon->clear();
 		if (m_pWiredConnectionStatus != NULL)
 			m_pWiredConnectionStatus->setText("");					
 	}

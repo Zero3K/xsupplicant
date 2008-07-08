@@ -1257,7 +1257,7 @@ bool WizardPageDot1XCert::create(void)
 
 	QLabel *pLabel = qFindChild<QLabel*>(m_pRealForm, "labelNameInstructions");
 	if (pLabel != NULL)
-		pLabel->setText(tr("Use \"*\" for prefix wildcarding.  For example: \"*.utah.edu\""));		
+		pLabel->setText(tr("Use \"*\" for prefix wildcarding and commas to separate multiple entries"));		
 		
 	if (m_pVerifyName != NULL)
 		m_pVerifyName->setText(tr("Verify Common Name"));

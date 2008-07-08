@@ -685,14 +685,19 @@ void CredentialsPopUp::updateData()
 
 void CredentialsPopUp::slotWEPComboChange(int newVal)
 {
+	QLabel *pLabel = qFindChild<QLabel*>(m_pRealForm, "labelPasswordSize");
 	if (newVal == 0)
 	{
 		// WEP 40
 		 m_pPassword->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{10}$"), m_pPassword));
+		 if (pLabel != NULL)
+			pLabel->setText(tr("(10 digits)"));
 	}
 	else if (newVal == 1)
 	{
 		// WEP 104
 		m_pPassword->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{26}$"), m_pPassword));
+		 if (pLabel != NULL)
+			pLabel->setText(tr("(26 digits)"));		
 	}
 }
