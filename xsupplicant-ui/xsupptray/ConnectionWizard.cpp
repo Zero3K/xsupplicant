@@ -47,8 +47,7 @@ ConnectionWizard::ConnectionWizard(QWidget *parent, QWidget *parentWindow, Emitt
 	m_pParentWindow(parentWindow),
 	m_pEmitter(e)
 {
-	int i;
-	for (i=0; i<ConnectionWizard::pageLastPage; i++)
+	for (int i=0; i<ConnectionWizard::pageLastPage; i++)
 		m_wizardPages[i] = NULL;
 	m_currentPage = pageNoPage;
 	m_dot1Xmode = false;
@@ -131,9 +130,7 @@ bool ConnectionWizard::initUI(void)
 	if (m_pRealForm != NULL)
 		Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SLOT(cancelWizard()));
 		
-	this->loadPages();
-		
-	return true;
+	return this->loadPages();
 }
 
 void ConnectionWizard::show(void)
@@ -144,12 +141,13 @@ void ConnectionWizard::show(void)
 
 bool ConnectionWizard::loadPages(void)
 {
+	bool success = true;
+	
 	if (m_pStackedWidget != NULL)
 	{
-		int i;
-		
 		// clear out any existing widgets in stack
-		for (i=0; i<m_pStackedWidget->count(); i++)
+		int cnt = m_pStackedWidget->count();
+		for (int i=0; i<cnt; i++)
 		{
 			QWidget *tmpWidget;
 			m_pStackedWidget->setCurrentIndex(0);
@@ -159,15 +157,15 @@ bool ConnectionWizard::loadPages(void)
 		}
 		
 		// make sure we don't have any page objects sticking around
-		for (i=0; i<ConnectionWizard::pageLastPage; i++)
+		for (int i=0; i<ConnectionWizard::pageLastPage; i++)
 		{
 			if (m_wizardPages[i] != NULL)
 				delete m_wizardPages[i];
 		}
 		
-		for (i=0; i<ConnectionWizard::pageLastPage; i++)
+		for (int i=0; i<ConnectionWizard::pageLastPage; i++)
 		{
-			WizardPage *newPage;
+			WizardPage *newPage = NULL;
 			switch (i) {
 				case ConnectionWizard::pageNetworkType:
 					newPage = new WizardPageNetworkType(this, m_pStackedWidget);
@@ -208,7 +206,9 @@ bool ConnectionWizard::loadPages(void)
 			if (newPage == NULL || newPage->create() == false || newPage->getWidget() == NULL)
 			{
 				// error creating page
-				QMessageBox::critical(NULL,"Error Loading WizardPage", QString("There was an error loading wizard page: %1").arg(i));	
+				QMessageBox::critical(NULL,"Error Loading WizardPage", QString("There was an error loading wizard page: %1").arg(i));
+				success = false;
+				break;	
 			}
 			else
 			{
@@ -218,7 +218,7 @@ bool ConnectionWizard::loadPages(void)
 		}
 	}
 	m_currentPage = ConnectionWizard::pageNoPage;
-	return true;
+	return success;
 }
 
 void ConnectionWizard::gotoPage(ConnectionWizard::wizardPages newPageIdx)
@@ -372,8 +372,7 @@ bool ConnectionWizard::saveConnectionData(QString *pConnName)
 		
 		if (pProfile != NULL)
 		{
-			retVal = xsupgui_request_set_profile_config(pProfile);
-			if (retVal == REQUEST_SUCCESS)
+			if (xsupgui_request_set_profile_config(pProfile) == REQUEST_SUCCESS)
 				m_pEmitter->sendProfConfigUpdate();
 			else
 				success = false;
@@ -390,11 +389,10 @@ bool ConnectionWizard::saveConnectionData(QString *pConnName)
 		{
 			// tell everyone we changed the config
 			m_pEmitter->sendConnConfigUpdate();
+			XSupWrapper::writeConfig();
 		}
 		else
 			success = false;
-		
-		XSupWrapper::writeConfig();
 	}
 
 	if (pConfig != NULL)

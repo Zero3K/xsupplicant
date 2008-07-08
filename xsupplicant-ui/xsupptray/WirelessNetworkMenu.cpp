@@ -44,12 +44,23 @@ WirelessNetworkMenu::WirelessNetworkMenu(const QString &adapterDesc, const QStri
 	m_pMenu = new QMenu(menuTitle);
 	if (m_pMenu != NULL)
 		Util::myConnect(m_pMenu, SIGNAL(triggered(QAction *)), this, SLOT(handleMenuSelection(QAction *)));
+		
+	QPixmap *p;
+	
+	p = FormLoader::loadicon("lockedstate_bw.png");
+	if (p != NULL)
+	{
+		m_lockIcon.addPixmap(*p);
+		delete p;
+	}				
 }
 
 WirelessNetworkMenu::~WirelessNetworkMenu()
 {
-	if (m_pMenu != NULL)
+	if (m_pMenu != NULL) {
 		Util::myDisconnect(m_pMenu, SIGNAL(triggered(QAction *)), this, SLOT(handleMenuSelection(QAction *)));
+		delete m_pMenu;
+	}
 }
 
 QMenu *WirelessNetworkMenu::menu(void)
@@ -74,15 +85,7 @@ void WirelessNetworkMenu::populate(void)
 		}
 		else
 		{
-			QPixmap *p;
-			QIcon icon;
-			
-			p = FormLoader::loadicon("lockedstate_bw.png");
-			if (p != NULL)
-			{
-				icon.addPixmap(*p);
-				delete p;
-			}		
+
 			std::sort(networkList.begin(), networkList.end());
 			for (int i=0; i<networkList.size(); i++)
 			{
@@ -90,7 +93,7 @@ void WirelessNetworkMenu::populate(void)
 					m_pMenu->addAction(networkList.at(i).m_name);
 				else
 				{
-					m_pMenu->addAction(icon,networkList.at(i).m_name);
+					m_pMenu->addAction(m_lockIcon,networkList.at(i).m_name);
 				}
 			}
 		}

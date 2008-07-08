@@ -47,6 +47,7 @@ ConnectionWizardData::ConnectionWizardData()
 	// get distinct name
 	m_connectionName = XSupWrapper::getUniqueConnectionName(QWidget::tr("New Connection"));
 	
+	// wireless settings
 	m_networkName = "";
 	m_hiddenNetwork = false;
 	m_wirelessAssocMode = ConnectionWizardData::assoc_none;
@@ -121,7 +122,7 @@ bool ConnectionWizardData::toProfileEAP_MD5Protocol(config_profiles * const pPro
 		}
 	}
 	else
-		;// unexpected
+		success = false;// unexpected
 
 	return success;
 }
@@ -166,6 +167,7 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 						}
 						else
 						{
+							// we should have had a trusted server passed in
 							mypeap->validate_cert = FALSE;
 							success = false;
 						}
@@ -223,6 +225,7 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 					else
 					{
 						// invalid value
+						success = false;
 					}
 				}
 			}
@@ -230,6 +233,7 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 		else
 		{
 			// unexpected
+			success = false;
 		}
 	}
 	else
@@ -279,6 +283,7 @@ bool ConnectionWizardData::toEAP_TTLSProtocol(config_profiles * const pProfile, 
 					}
 					else
 					{
+						// expected to have trusted server passed in
 						myttls->validate_cert = FALSE;
 						success = false;
 					}
@@ -573,7 +578,6 @@ bool ConnectionWizardData::toServerData(config_trusted_server **retServer)
 	return success;
 }
 
-// static func = no access to member variables, no "this"
 bool ConnectionWizardData::toSupplicantProfiles(config_connection **retConnection, config_profiles **retProfile, config_trusted_server **retServer)
 {
 	bool success;

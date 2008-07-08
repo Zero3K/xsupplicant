@@ -93,8 +93,6 @@ bool WizardPageNetworkType::create(void)
 				
 			++i;
 		}		
-		xsupgui_request_free_int_enum(&pInterfaceList);
-		pInterfaceList = NULL;
 		
 		// if no adapters, don't want to disable both so do nothing
 		if (m_numWiredAdapters != 0 || m_numWirelessAdapters != 0)
@@ -106,6 +104,11 @@ bool WizardPageNetworkType::create(void)
 				m_pRadioButtonWired->setDisabled(m_numWiredAdapters == 0);
 		}
 				
+	}
+	if (pInterfaceList != NULL)
+	{
+		xsupgui_request_free_int_enum(&pInterfaceList);
+		pInterfaceList = NULL;
 	}
 		
 	return true;
@@ -182,14 +185,17 @@ const ConnectionWizardData &WizardPageNetworkType::wizardData(void)
 				break;				
 			}
 			++i;
-		}
-		xsupgui_request_free_int_enum(&pInterfaceList);
-		pInterfaceList = NULL;				
+		}			
 	}
 	else
 	{
 		// error. How do we alert user?
-	}		
+	}
+	if (pInterfaceList != NULL)
+	{
+		xsupgui_request_free_int_enum(&pInterfaceList);
+		pInterfaceList = NULL;
+	}	
 
 	return m_curData;
 }
@@ -356,15 +362,15 @@ bool WizardPageStaticIP::create(void)
 		
 	// other initializations
 	if (m_pIPAddress != NULL)
-		m_pIPAddress->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pIPAddress));
+		m_pIPAddress->setValidator(new QRegExpValidator(QRegExp("^(?:(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pIPAddress));
 	if (m_pNetmask != NULL)
-		m_pNetmask->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pNetmask));
+		m_pNetmask->setValidator(new QRegExpValidator(QRegExp("^(?:(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pNetmask));
 	if (m_pGateway != NULL)
-		m_pGateway->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pGateway));
+		m_pGateway->setValidator(new QRegExpValidator(QRegExp("^(?:(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pGateway));
 	if (m_pPrimaryDNS != NULL)
-		m_pPrimaryDNS->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pPrimaryDNS));
+		m_pPrimaryDNS->setValidator(new QRegExpValidator(QRegExp("^(?:(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pPrimaryDNS));
 	if (m_pSecondaryDNS != NULL)
-		m_pSecondaryDNS->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pSecondaryDNS));
+		m_pSecondaryDNS->setValidator(new QRegExpValidator(QRegExp("^(?:(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}(?:[3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pSecondaryDNS));
 		
 	return true;
 }
@@ -525,7 +531,6 @@ bool WizardPageFinished::validate(void)
 			if (XSupWrapper::getConfigConnection(connName, &pConfig) == true)
 			{
 				XSupWrapper::freeConfigConnection(&pConfig);
-				pConfig = NULL;
 				
 				//show dialog
 				QMessageBox::warning(m_pRealForm, tr("Duplicate Connection Name"), tr("A connection already exists with the name you have provided.  Please choose another name."));
@@ -669,9 +674,7 @@ void WizardPageWirelessNetwork::init(const ConnectionWizardData &data)
 		else
 		{
 			if (m_pRadioButtonOther != NULL)
-			{
 				m_pRadioButtonOther->setChecked(true);
-			}
 		}
 		
 	}
@@ -1034,10 +1037,7 @@ void WizardPageDot1XProtocol::init(const ConnectionWizardData &data)
 		// EAP-MD5 not allowed for wireless connections
 		if (m_curData.m_wireless == false)
 			m_pProtocol->addItem(tr("EAP-MD5"));
-	}
-	
-	if (m_pProtocol != NULL)
-	{
+
 		switch (m_curData.m_eapProtocol)
 		{
 			case ConnectionWizardData::eap_peap:
@@ -1245,7 +1245,7 @@ bool WizardPageDot1XCert::create(void)
 	if (m_pRealForm == NULL)
 		return false;
 	
-	// cache off pointers to objects	
+	// cache off pointers to UI objects	
 	m_pCertTable = qFindChild<QTableWidget*>(m_pRealForm, "tableCertList");
 	m_pNameField = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldCommonName");
 	m_pVerifyName = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxVerifyName");
@@ -1273,7 +1273,7 @@ bool WizardPageDot1XCert::create(void)
 	if (m_pNameField != NULL)
 	{
 		// set validator. Allow "*.subdomain.subdomain.domain" or "subdomain.subdomain.domain", or comma separated list of same
-		m_pNameField->setValidator(new QRegExpValidator(QRegExp("^(((\\*\\.)?((\\w{1,253})(\\.)?)+)(\\,)?)+$"), m_pNameField));
+		m_pNameField->setValidator(new QRegExpValidator(QRegExp("^(?:(?:(?:\\*)|(?:\\w{1,253}))(?:\\.\\w{1,253})+)(?:\\,(?:(?:(?:\\*)|(?:\\w{1,253}))(?:\\.\\w{1,253})+))*$"), m_pNameField));
 	}
 	
 	if (m_pCertTable != NULL)
@@ -1356,7 +1356,11 @@ void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 	if (m_pCertTable != NULL)
 	{
 		int nRows = m_pCertTable->rowCount();
+		int numCerts = 0;
 		
+		while (m_pCertArray[numCerts].friendlyname != NULL)
+			++numCerts;
+			
 		for (int i=0; i<nRows; i++)
 		{
 			QTableWidgetItem *item = m_pCertTable->item(i,1);
@@ -1365,8 +1369,9 @@ void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 				QWidget *widget = m_pCertTable->cellWidget(i,0); 
 				if (widget != NULL)
 				{
-					// TODO: range check index before indexing m_pCertArray
-					if (m_pCertArray != NULL && m_curData.m_serverCerts.contains(m_pCertArray[item->type() - 1000].location))
+					int index = item->type() - 1000;
+					
+					if (m_pCertArray != NULL && index > 0 && index < numCerts && m_curData.m_serverCerts.contains(m_pCertArray[index].location))
 					{
 						((QCheckBox*)widget)->setChecked(true);
 					}
@@ -1410,8 +1415,11 @@ bool WizardPageDot1XCert::validate(void)
 		for (int i=0;i<nRows;i++)
 		{
 			QWidget *item = m_pCertTable->cellWidget(i,0);
-			if (((QCheckBox *)item)->isChecked() == true)
-				++nSelected;
+			if (item != NULL)
+			{
+				if (((QCheckBox *)item)->isChecked() == true)
+					++nSelected;
+			}
 		}
 		
 		if (nSelected == 0)
@@ -1423,7 +1431,7 @@ bool WizardPageDot1XCert::validate(void)
 	
 	if (m_pNameField != NULL)
 	{
-		if (m_pVerifyName->isChecked() == true)
+		if (m_pVerifyName != NULL && m_pVerifyName->isChecked() == true)
 		{
 			if (m_pNameField->hasAcceptableInput() == false)
 			{

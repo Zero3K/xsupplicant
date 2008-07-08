@@ -57,6 +57,7 @@ private:
 	QMenu *m_pMenu;
 	QString m_adapterDesc;
 	TrayApp *m_pTrayApp;
+	QIcon m_lockIcon;
 };
 
 #endif
