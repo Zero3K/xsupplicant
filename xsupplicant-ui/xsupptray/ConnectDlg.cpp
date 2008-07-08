@@ -886,6 +886,8 @@ void ConnectDlg::updateWiredState(void)
 		
 		if (status == Util::status_idle)
 		{
+			if (m_pWiredConnectionList != NULL)
+				m_pWiredConnectionList->setEnabled(true);		
 			if (m_pWiredConnectButton != NULL)
 				m_pWiredConnectButton->setText(tr("Connect"));
 			if (m_pWiredConnectionInfo != NULL)
@@ -896,7 +898,13 @@ void ConnectDlg::updateWiredState(void)
 		else
 		{
 			if (m_pWiredConnectionList != NULL)
-			m_pWiredConnectionList->setEnabled(false);
+				m_pWiredConnectionList->setEnabled(false);
+			if (m_pWiredConnectButton != NULL)
+				m_pWiredConnectButton->setText(tr("Disconnect"));	
+			if (m_pWiredConnectionInfo != NULL)
+				m_pWiredConnectionInfo->setEnabled(true);
+			if (m_pWiredNetworkName != NULL)
+				m_pWiredNetworkName->setText(QString("N/A"));									
 			
 			// get name of connection that's bound
 			char *connName;
@@ -911,9 +919,7 @@ void ConnectDlg::updateWiredState(void)
 					else
 						m_pWiredConnectionList->setCurrentIndex(0);
 				}			
-			}
-			if (m_pWiredNetworkName != NULL)
-				m_pWiredNetworkName->setText(QString("N/A"));			
+			}		
 				
 			if (connName != NULL)
 				free(connName);				
@@ -1029,8 +1035,6 @@ void ConnectDlg::stateChange(const QString &intName, int, int, int, unsigned int
 			wireless = false;
 		}
 			
-
-		currentAdapterName = m_currentWirelessAdapterName;
 		if (intName == currentAdapterName)
 		{
 			if (wireless == true)
