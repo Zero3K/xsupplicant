@@ -411,10 +411,13 @@ finish_service_install:
         ; Create a description for the supplicant.
         WriteRegStr  HKLM SYSTEM\CurrentControlSet\Services\XSupplicant "Description" "802.1X Authentication Service"
 
+	; Set the service to restart up to 2 times if it terminates abnormally
+	WriteRegBin  HKLM SYSTEM\CurrentControlSet\Services\XSupplicant "FailureActions" 80510100000000000000000003000000490044000100000060ea00000100000060ea00000000000000000000
+
 	; Create some start menu programs
 	SetShellVarContext All
 	CreateDirectory "$SMPROGRAMS\${TARGET}"
-        CreateShortCut "$SMPROGRAMS\${TARGET}\XSupplicant Tray Application.lnk" $INSTDIR\XSupplicantUI.exe "-l"
+        CreateShortCut "$SMPROGRAMS\${TARGET}\XSupplicant.lnk" $INSTDIR\XSupplicantUI.exe "-l"
 	CreateShortCut "$SMPROGRAMS\${TARGET}\Check for other supplicants.lnk" $INSTDIR\checksuppsapp.exe
 
 	; If we need to reboot, then don't start stuff it would be bad.
