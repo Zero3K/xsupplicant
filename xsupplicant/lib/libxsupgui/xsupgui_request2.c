@@ -5,8 +5,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupgui_request2.c,v 1.5 2008/01/23 23:45:08 galimorerpg Exp $
- * $Date: 2008/01/23 23:45:08 $
  **/
 
 #include <string.h>

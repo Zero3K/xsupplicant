@@ -169,6 +169,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_Interface_From_TNC_Conn_ID", ipc_callout_get_interface_from_tnc_connid},
 	{"Get_Frequency", ipc_callout_get_frequency},
 	{"DHCP_Release_Renew", ipc_callout_dhcp_release_renew},
+	{"Disconnect_Connection", ipc_callout_disconnect_connection},
 	{NULL, NULL}
 };
 
@@ -7272,3 +7273,82 @@ int ipc_callout_get_frequency(xmlNodePtr innode, xmlNodePtr *outnode)
 		"Freq", ctx->intName, outnode);
 }
 
+/**
+ *  \brief Request that a connection be disconnected.
+ *
+ * \param[in] innode   The XML node tree that contains the request to disconnect.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_disconnect_connection(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	context *ctx = NULL;
+
+	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
+		return IPC_FAILURE;
+
+	ctx = ipc_callout_get_context_from_int(innode);
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_VERBOSE, "Unable to locate context for IPC request.\n");
+		return ipc_callout_create_error(NULL, "Disconnect_Connection", IPC_ERROR_INVALID_CONTEXT, outnode);
+	}
+
+	if (ctx->intType == ETH_802_11_INT)
+	{
+		if (cardif_disassociate(ctx, 1) != 0)			// 1 = UNSPECIFIED_REASON
+		{
+			debug_printf(DEBUG_VERBOSE, "Unable to disassocated wireless interface '%s'.\n", ctx->desc);
+			return ipc_callout_create_error(NULL, "Disconnect_Connection", IPC_ERROR_REQUEST_FAILED, outnode);
+		}
+
+		// Make sure this flag is cleared so that we don't get any absurd screaming with PSK when the users hits
+		// connect/disconnect over and over again. ;)
+		UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
+
+		// Let ourselves know that a UI requested this disconnect.
+		SET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DISCONNECT_REQ);
+
+		// Force a state machine reinit.
+		eap_sm_force_init(ctx->eap_state);
+	}
+	else
+	{
+		if (statemachine_change_state(ctx, LOGOFF) == 0)
+		{
+			eap_sm_deinit(&ctx->eap_state);
+			eap_sm_init(&ctx->eap_state);
+
+			txLogoff(ctx);
+
+#ifdef WINDOWS
+			cardif_windows_release_ip(ctx);
+#else
+#warning Fill this in for your OS!
+#endif
+		}
+	}
+
+#ifdef HAVE_TNC
+	// If we are using a TNC enabled build, signal the IMC to clean up.
+	if(imc_disconnect_callback != NULL)
+		imc_disconnect_callback(ctx->tnc_connID);
+#endif			
+
+	ipc_events_ui(ctx, IPC_EVENT_UI_CONNECTION_DISCONNECT, ctx->intName);
+
+	// Clear out any memory cached passwords of PSKs.
+	if (ctx->conn->association.temp_psk != NULL) FREE(ctx->conn->association.temp_psk);
+	if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);
+	if (ctx->prof->temp_username != NULL) FREE(ctx->prof->temp_username);
+
+	ctx->conn = NULL;
+	FREE(ctx->conn_name);
+	ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
+	SET_FLAG(ctx->flags, FORCED_CONN);
+
+	return ipc_callout_create_ack(ctx->intName, "Disconnect_Connection", outnode);
+}

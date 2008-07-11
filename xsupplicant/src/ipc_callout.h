@@ -70,6 +70,7 @@
 #define IPC_ERROR_FILE_EXISTS         346   // A request was made to overwrite a file that already exists.
 #define IPC_ERROR_NOT_SUPPORTED		  347   // The request is not supported.
 #define IPC_ERROR_SSID_NOT_FOUND      348   // The requested SSID is not found in the scan cache.
+#define IPC_ERROR_REQUEST_FAILED	  349   // The operation requested failed.
 
 /**
  *  Result values.
@@ -192,5 +193,6 @@ int ipc_callout_set_conn_lock(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_dhcp_release_renew(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_frequency(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_disconnect_connection(xmlNodePtr, xmlNodePtr *);
 
 #endif  // _IPC_CALLOUT_H_

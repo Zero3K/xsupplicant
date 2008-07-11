@@ -5,8 +5,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: ipctest.c,v 1.7 2008/01/26 03:19:43 chessing Exp $
- * $Date: 2008/01/26 03:19:43 $
  **/
 
 #ifndef WINDOWS
@@ -2307,6 +2305,17 @@ void doget_freq(char *intname)
 	}
 }
 
+void do_disconnect_connection(char *intname)
+{
+	if (xsupgui_request_disconnect_connection(intname) == REQUEST_SUCCESS)
+	{
+		printf("Disconnected successfully!\n");
+	}
+	else
+	{
+		printf("FAILED to disconnect!\n");
+	}
+}
 
 /**
  *  \brief  Display a header that indicates the test that is about to be run.
@@ -2376,8 +2385,10 @@ int main(int argc, char *argv[])
 
 #if 1
 //	dochangeconn("\\DEVICE\\{4DACA2DF-2701-4B9A-81EC-27FA9EADF721}", "New Connection");
-	change_globals();
-	dowrite_conf(NULL);
+//	change_globals();
+//	dowrite_conf(NULL);
+
+	do_disconnect_connection("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
 	return 0;
 #endif
 

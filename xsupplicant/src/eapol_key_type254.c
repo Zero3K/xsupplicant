@@ -772,6 +772,7 @@ void eapol_key_type254_do_type3(context *ctx)
   	UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_PSK_DONE);
 #endif
 
+	ipc_events_ui(ctx, IPC_EVENT_PSK_SUCCESS, ctx->intName);
 }
 
 void eapol_key_type254_determine_key(context *ctx)

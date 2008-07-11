@@ -1572,8 +1572,6 @@ int cardif_windows_wireless_disassociate(context *ctx, int reason)
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
 
-	// Probably need to fix this to something else.
-
 	// This will clear any keys in the key cache.
 	cardif_windows_set_infra_mode(ctx);
 

@@ -1262,6 +1262,8 @@ void eapol_key_type2_do_type3(context *intdata)
 	// valid.  This is *NOT* an indication that the key is wrong!
   	UNSET_FLAG(((wireless_ctx *)intdata->intTypeData)->flags, WIRELESS_SM_PSK_DONE);
 #endif
+
+	ipc_events_ui(intdata, IPC_EVENT_PSK_SUCCESS, intdata->intName);
 }
 
 /**

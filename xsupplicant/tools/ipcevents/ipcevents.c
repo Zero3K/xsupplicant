@@ -149,7 +149,64 @@ int ipcevents_get_ui_string(int uievt, char **desc)
 		(*desc) = strdup("Signal strength was updated.\n");
 		break;
 
+	case IPC_EVENT_BAD_PSK:
+		(*desc) = strdup("An invalid PSK was used.\n");
+		break;
+
+	case IPC_EVENT_UI_AUTH_TIMEOUT:
+		(*desc) = strdup("Authentication timed out.\n");
+		break;
+
+	case IPC_EVENT_UI_GOING_TO_SLEEP:
+		(*desc) = strdup("The machine is going to sleep.\n");
+		break;
+
+	case IPC_EVENT_UI_SLEEP_CANCELLED:
+		(*desc) = strdup("The machine's sleep attempt was cancelled.\n");
+		break;
+
+	case IPC_EVENT_UI_WAKING_UP:
+		(*desc) = strdup("The machine is waking up.\n");
+		break;
+
+	case IPC_EVENT_UI_LINK_UP:
+		(*desc) = strdup("Link up.\n");
+		break;
+
+	case IPC_EVENT_UI_LINK_DOWN:
+		(*desc) = strdup("Link down.\n");
+		break;
+
+	case IPC_EVENT_UI_INT_CTRL_CHANGED:
+		(*desc) = strdup("Interface control changed.\n");
+		break;
+
+	case IPC_EVENT_UI_TROUBLETICKET_DONE:
+		(*desc) = strdup("Trouble ticket creation complete!\n");
+		break;
+
+	case IPC_EVENT_UI_TROUBLETICKET_ERROR:
+		(*desc) = strdup("Error creating trouble ticket!\n");
+		break;
+
+	case IPC_EVENT_UI_NEED_UPW:
+		(*desc) = strdup("Username/password needed.\n");
+		break;
+
+	case IPC_EVENT_UI_POST_CONNECT_TIMEOUT:
+		(*desc) = strdup("Connection has been lost.  Ask the user if they want to connect to something else.\n");
+		break;
+
+	case IPC_EVENT_UI_CONNECTION_DISCONNECT:
+		(*desc) = strdup("A connection was disconnected by UI request.\n");
+		break;
+
+	case IPC_EVENT_PSK_SUCCESS:
+		(*desc) = strdup("A PSK auth was successful.\n");
+		break;
+
 	default:
+		printf("Unknown UI event : %d\n", uievt);
 		(*desc) = strdup("An unknown UI event occurred.\n");
 		break;
 	}
