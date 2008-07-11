@@ -500,13 +500,14 @@ char eapol_key_type2_do_pmkid_kde(context *ctx,
 		  (ctx->conn->association.temp_psk == NULL))
 	  {
 		  debug_printf(DEBUG_NORMAL, "Interface '%s' had a cache miss.  You will have to do a full authentication.\n", ctx->desc);
-		  // Kick out an EAPoL start.
-		  txStart(ctx);
 
 		  debug_printf(DEBUG_INT, "PMKID : ");
 		  debug_hex_printf(DEBUG_INT, key, 16);
 
 		  pmksa_dump_cache(ctx);
+
+		  // Kick out an EAPoL start.
+		  txStart(ctx);
 
 		  return XECACHEMISS;
 	  }

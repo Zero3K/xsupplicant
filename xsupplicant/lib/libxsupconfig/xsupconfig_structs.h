@@ -4,8 +4,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupconfig_structs.h,v 1.7 2008/01/26 01:19:59 chessing Exp $
- * $Date: 2008/01/26 01:19:59 $
  **/
 
 #ifndef __XSUPCONFIG_STRUCTS_H__

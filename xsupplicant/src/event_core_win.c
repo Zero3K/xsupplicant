@@ -285,6 +285,10 @@ void event_core_init()
 		  ipc_events_error(NULL, IPC_EVENT_ERROR_WMI_ATTACH_FAILED, NULL);
 	  }
   }
+  else
+  {
+	  cardif_windows_ip_update();
+  }
 
   if (win_ip_manip_init_iphlpapi() != XENONE)
   {
@@ -1199,7 +1203,15 @@ void event_core_cancel_sleep()
 		// Loop through each event slot, cancel the IO, flag the context.
 		if (events[i].ctx != NULL)
 		{
-			cardif_restart_io(events[i].ctx);
+			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
+			{
+				cardif_restart_io(events[i].ctx);
+			}
+			else
+			{
+				cardif_windows_restart_int_events(events[i].ctx);
+			}
+
 			events[i].flags &= (~EVENT_IGNORE_INT);
 		}
 	}
@@ -1226,34 +1238,42 @@ void event_core_waking_up()
 		// Loop through each event slot, cancel the IO, flag the context.
 		if (events[i].ctx != NULL)
 		{
-			cardif_restart_io(events[i].ctx);
-			cardif_windows_restart_int_events(events[i].ctx);
-			events[i].flags &= (~EVENT_IGNORE_INT);
-
-			// Depending on the order that things are restarted, and the events that 
-			// happened before we went to sleep, the UI may believe that some interfaces
-			// were removed, and never inserted again.  So, we generated inserted events
-			// for each interface we know about so that the UI is in sync with us.
 			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
 			{
+				cardif_restart_io(events[i].ctx);
+
+				// Depending on the order that things are restarted, and the events that 
+				// happened before we went to sleep, the UI may believe that some interfaces
+				// were removed, and never inserted again.  So, we generated inserted events
+				// for each interface we know about so that the UI is in sync with us.
 				ipc_events_ui(NULL, IPC_EVENT_INTERFACE_INSERTED, events[i].ctx->intName);
-			}
 
-			// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
-			events[i].ctx->auths = 0;
+				// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
+				events[i].ctx->auths = 0;
 
-			if (events[i].ctx->intType == ETH_802_11_INT)
-			{
-				wctx = events[i].ctx->intTypeData;
-				memset(wctx->cur_bssid, 0x00, 6);
+				// Cause our state machines to reset to a known state.
+				events[i].ctx->statemachine->initialize = TRUE;
+				events[i].ctx->eap_state->eapRestart = TRUE;
 
-				if (events[i].ctx->conn != NULL)
+				if (events[i].ctx->intType == ETH_802_11_INT)
 				{
-					wireless_sm_change_state(ASSOCIATING, events[i].ctx);
-				}
+					wctx = events[i].ctx->intTypeData;
+					memset(wctx->cur_bssid, 0x00, 6);
 
-				UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
+					if (events[i].ctx->conn != NULL)
+					{
+						wireless_sm_change_state(ASSOCIATING, events[i].ctx);
+					}
+
+					UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
+				}
 			}
+			else
+			{
+				cardif_windows_restart_int_events(events[i].ctx);
+			}
+
+			events[i].flags &= (~EVENT_IGNORE_INT);
 		}
 	}
 
@@ -1340,39 +1360,42 @@ void event_core_win_do_user_logoff()
 			// Loop through each event slot, cancel the IO, flag the context.
 			if (events[i].ctx != NULL)
 			{
-				ctx = events[i].ctx;
+				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
+				{
+					ctx = events[i].ctx;
 
-				if (ctx->intType == ETH_802_11_INT)
-				{
-					// Do a wireless disconnect.
-					wireless_sm_change_state(INT_STOPPED, ctx);
-				}
-				else
-				{
-					// Do a wired disconnect.
-					if (statemachine_change_state(ctx, LOGOFF) == 0)
+					if (ctx->intType == ETH_802_11_INT)
 					{
-						ctx->conn = NULL;
-						FREE(ctx->conn_name);
-						eap_sm_deinit(&ctx->eap_state);
-						eap_sm_init(&ctx->eap_state);
-						ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
-
-						txLogoff(ctx);
+						// Do a wireless disconnect.
+						wireless_sm_change_state(INT_STOPPED, ctx);
 					}
-				}
+					else
+					{
+						// Do a wired disconnect.
+						if (statemachine_change_state(ctx, LOGOFF) == 0)
+						{
+							ctx->conn = NULL;
+							FREE(ctx->conn_name);
+							eap_sm_deinit(&ctx->eap_state);
+							eap_sm_init(&ctx->eap_state);
+							ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
 
-				// Unbind any connections.
-				ctx->conn = NULL;
-				FREE(ctx->conn_name);
-				ctx->prof = NULL;
-				UNSET_FLAG(ctx->flags, FORCED_CONN);
+							txLogoff(ctx);
+						}
+					}
+
+					// Unbind any connections.
+					ctx->conn = NULL;
+					FREE(ctx->conn_name);
+					ctx->prof = NULL;
+					UNSET_FLAG(ctx->flags, FORCED_CONN);
 
 #ifdef HAVE_TNC
-				// If we are using a TNC enabled build, signal the IMC to clean up.
-				if(imc_disconnect_callback != NULL)
-					imc_disconnect_callback(ctx->tnc_connID);
+					// If we are using a TNC enabled build, signal the IMC to clean up.
+					if(imc_disconnect_callback != NULL)
+						imc_disconnect_callback(ctx->tnc_connID);
 #endif
+				}
 			}
 		}
 	}
@@ -1457,17 +1480,20 @@ void event_core_drop_active_conns()
 		// Loop through each event slot, and disconnect it.
 		if ((events[i].ctx != NULL) && (events[i].ctx->conn != NULL))
 		{
-			if (statemachine_change_state(events[i].ctx, LOGOFF) == 0)
+			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
 			{
-				events[i].ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
+				if (statemachine_change_state(events[i].ctx, LOGOFF) == 0)
+				{
+					events[i].ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
 
-				txLogoff(events[i].ctx);
-			}
+					txLogoff(events[i].ctx);
+				}
 
-			if (events[i].ctx->intType == ETH_802_11_INT)
-			{
-				// Send a disassociate.
-				cardif_disassociate(events[i].ctx, 0);
+				if (events[i].ctx->intType == ETH_802_11_INT)
+				{
+					// Send a disassociate.
+					cardif_disassociate(events[i].ctx, 0);
+				}
 			}
 		}
 	}
@@ -1549,6 +1575,15 @@ void event_core_change_os_ctrl_state(void *param)
 				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) windows_int_ctrl_take_ctrl(events[i].ctx);
 				cardif_restart_io(events[i].ctx);
 				events[i].flags &= (~EVENT_IGNORE_INT);
+
+				if (TEST_FLAG(events[i].flags, EVENT_PRIMARY))
+				{
+					// Clear out the connection data so we don't get confused
+					// when we come back.
+					UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
+					events[i].ctx->conn = NULL;
+					FREE(events[i].ctx->conn_name);
+				}
 			}
 		}
 		else

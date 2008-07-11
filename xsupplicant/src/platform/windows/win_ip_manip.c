@@ -432,6 +432,9 @@ void win_ip_manip_release_ip_thread(void *ctxptr)
 	}
 #endif
 
+	// Notify the UI that we changed IP addresses.
+	ipc_events_ui(ctx, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
+
 	_endthread();
 }
 
@@ -460,6 +463,8 @@ void win_ip_manip_renew_ip_thread(void *ctxptr)
 	context *ctx = NULL;
 	wchar_t *ippath = NULL;
 	IP_ADAPTER_INDEX_MAP addrMap;
+	int tries = 0;
+	int retry = TRUE;
 
 	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE))
 	{
@@ -488,16 +493,33 @@ void win_ip_manip_renew_ip_thread(void *ctxptr)
 	addrMap.Index = idx;
 	wcscpy((wchar_t *)&addrMap.Name, ippath); 
 
-    if ((dwRetVal = IpRenewAddress(&addrMap)) != NO_ERROR) 
+	while (retry == TRUE)
 	{
-		debug_printf(DEBUG_NORMAL, "IP renew failed on interface '%s'.  (Error : %d)\n", ctx->desc, dwRetVal);
-    }
+	    if ((dwRetVal = IpRenewAddress(&addrMap)) != NO_ERROR) 
+		{
+			tries++;
+
+			if (tries >= 5)
+			{
+				debug_printf(DEBUG_NORMAL, "IP renew failed on interface '%s'.  (Error : %d)\n", ctx->desc, dwRetVal);
+				retry = FALSE;
+			}
+			else
+			{
+				debug_printf(DEBUG_NORMAL, "IP renew failed on interface '%s'.  (Error : %d)  Trying again...\n", ctx->desc, dwRetVal);
+			}
+		}
+		else
+		{
+			retry = FALSE;
 #if 0
-	else
-	{
-		debug_printf(DEBUG_NORMAL, "IP renew success.\n");
-	}
+			debug_printf(DEBUG_NORMAL, "IP renew success.\n");
 #endif
+		}
+	}
+
+	// Notify the UI that we changed IP addresses.
+	ipc_events_ui(ctx, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
 
 	_endthread();
 }
@@ -601,11 +623,11 @@ void win_ip_manip_release_renew_ip_thread(void *ctxptr)
     }
 	else
 	{
-		// Notify the UI that we changed IP addresses.
-		ipc_events_ui(ctx, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
-
 		debug_printf(DEBUG_NORMAL, "Interface '%s' had it's IP address set.\n", ctx->desc);
 	}
+
+	// Notify the UI that we changed IP addresses.
+	ipc_events_ui(ctx, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
 
 	if ((ctx->conn != NULL) && ((ctx->conn->ip.dns1 != NULL) || (ctx->conn->ip.dns2 != NULL) ||
 		(ctx->conn->ip.dns3 != NULL)))

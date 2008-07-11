@@ -7,12 +7,6 @@
  *
  * \authors chris@open1x.org
  *
- * \par CVS Status Information:
- * \code
- * $Id: cardif_windows_wireless.c,v 1.2 2008/01/30 21:43:43 galimorerpg Exp $
- * $Date: 2008/01/30 21:43:43 $
- * \endcode
- *
  */
 
 #include <string.h>
@@ -168,7 +162,11 @@ void cardif_windows_wireless_scan_timeout(context *ctx)
 
 	  if (lastError != ERROR_NOT_READY)
 	  {
-		ipc_events_error(ctx, IPC_EVENT_ERROR_GETTING_SCAN_DATA, ctx->desc);
+		  // If we are associated, then a passive scan failed.  So ignore it.
+		  if (wctx->state != ASSOCIATED)
+		  {
+			ipc_events_error(ctx, IPC_EVENT_ERROR_GETTING_SCAN_DATA, ctx->desc);
+		  }
   		lpMsgBuf = GetLastErrorStr(GetLastError());
 		debug_printf(DEBUG_NORMAL, "Attempt to get scan data results on interface '%s' failed!  Reason was : %s\n", 
 			ctx->desc, lpMsgBuf);
@@ -2510,7 +2508,8 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 				}
 				else
 				{
-					cardif_windows_release_renew(ctx);
+					//cardif_windows_release_renew(ctx);
+					cardif_windows_renew_ip(ctx);
 				}
 			}
 			else

@@ -171,6 +171,9 @@ void cardif_windows_int_event_connect(context *ctx)
 					// We hopped to a new SSID.  Reset our counters.
 					ctx->auths = 0;
 				}
+
+				// Set our new destination.
+				memcpy(ctx->dest_mac, bssid, 6);
 			}
 	
 			memset(&wctx->replay_counter, 0x00, 8);
@@ -261,8 +264,6 @@ void cardif_windows_int_event_disconnect(context *ctx)
 			return;
 		}
 
-/*		UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now disassociated.
-		UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION); */
 		memset(ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
 		wireless_sm_change_state(UNASSOCIATED, ctx);
 
@@ -287,10 +288,14 @@ void cardif_windows_int_event_disconnect(context *ctx)
 	else
 	{
 		debug_printf(DEBUG_NORMAL, "Interface '%s' no longer has link.\n", ctx->desc);
-		ctx->statemachine->initialize = TRUE;
 		memcpy(&ctx->dest_mac[0], &dot1x_default_dest[0], 6);
+		ctx->statemachine->to_authenticated = 0;
 	}
-	
+
+	// We dropped our connection, so we want to reset our state machines.
+	ctx->statemachine->initialize = TRUE;
+	ctx->eap_state->eapRestart = TRUE;
+
 	ctx->eap_state->portEnabled = FALSE;
 	ctx->statemachine->portEnabled = FALSE;
 }

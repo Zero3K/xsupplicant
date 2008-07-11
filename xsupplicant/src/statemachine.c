@@ -1451,7 +1451,7 @@ int txStart(context *ctx)
     }
 
 	// We should *ALWAYS* send a start to the multicast address.  (If it is wired.)
-  if (ctx->intType == ETH_802_11_INT)
+  if (ctx->intType == ETH_802_3_INT)
   {
 	memcpy(ctx->dest_mac, dot1x_default_dest, 6);
   }

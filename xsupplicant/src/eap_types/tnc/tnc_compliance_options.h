@@ -38,6 +38,7 @@ enum BatchTypes {
 	BATCH_RECONNECT_REQUEST,         // A hint for the UI indicating that an IMC would like to reconnect the user.
     BATCH_TNC_STATE_CHANGE,          // A hint for the UI indicating that a state change has occurred.
     BATCH_REMEDIATION_EVENT,         // A hint for the UI about a TNC remediation change.
+	BATCH_TNC_CONNECTION_PURGE_EVENT, // A hint for the UI about a TNC connection that needs to be purged.
 };
 
 #endif // __TNC_COMPLIANCE_OPTIONS_H__

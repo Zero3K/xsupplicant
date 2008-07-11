@@ -139,15 +139,17 @@ int eaptnc_do_start(eap_type_data *eapdata)
 
   // Remember the TNC connection ID, so that we can operate on the right context if the IMC
   // asks us to do something.
-  if (ctx->tnc_connID == -1) ctx->tnc_connID = connectionID;
+  if (ctx->tnc_connID == -1) {
+	  ctx->tnc_connID = connectionID;
+
+	  connectionID++;
+  }
 
   if (libtnc_tncc_BeginSession(ctx->tnc_connID) != TNC_RESULT_SUCCESS)
     {
       debug_printf(DEBUG_NORMAL, "(EAP-TNC) Failed to start TNC session!\n");
       return XETNCLIBFAILURE;
     }
-
-  connectionID++;
 
   debug_printf(DEBUG_NORMAL, "(EAP-TNC) Started IMC Handshake.\n");
   return XENONE;

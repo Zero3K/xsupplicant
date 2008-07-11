@@ -96,6 +96,7 @@ xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *cons,
 				return NULL;
 			}
 		}
+
 		cur = cur->next;
 	}
 

@@ -5,8 +5,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupconfig_parse_globals.c,v 1.5 2008/01/26 01:19:59 chessing Exp $
- * $Date: 2008/01/26 01:19:59 $
  **/
 
 #include <stdio.h>
