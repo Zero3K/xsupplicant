@@ -287,12 +287,22 @@ void Emitter::sendTNCUIComplianceFailureBatchEvent(int imc, int connID, int oui,
 
 //! sendTNCUIComplianceReportBatchEvent
 /*!
-  \brief emit's a message from the TNC that DOES require a response
+  \brief Notify UI plugins of a TNC compliance report for a given IMC/ConnectionID.
   \return Nothing
 */
 void Emitter::sendTNCUIComplianceReportBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
 {
   emit signalTNCUIComplianceReportBatchMessage(imc, connID, oui, request, pTNCMessages);
+}
+
+//! sendTNCUIPurgeConnectionBatchEvent
+/*!
+  \brief Notify UI plugins of a TNC connection that needs to be purged.
+  \return Nothing
+*/
+void Emitter::sendTNCUIPurgeConnectionBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+{
+  emit signalTNCUIPurgeConnectionBatchMessage(imc, connID, oui, request, pTNCMessages);
 }
 
 void Emitter::sendTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer)

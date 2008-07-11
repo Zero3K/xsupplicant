@@ -2580,7 +2580,12 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
                 {
 				    e.sendUIMessage(tr("Notifying listeners of a remediation event."));
                     e.sendTNCUIRemediationEventBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-                }
+                }break;
+			case BATCH_TNC_CONNECTION_PURGE_EVENT:
+				{
+					e.sendUIMessage(tr("Notifying listeners of a TNC connection purge event."));
+					e.sendTNCUIPurgeConnectionBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+				}break;
             default: // do nothing
               break;
           }

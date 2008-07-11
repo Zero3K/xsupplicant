@@ -73,6 +73,7 @@ signals:
   void signalTNCUIRemediationStatusItemFailureMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCUIRemediationWillEndBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCUIRemediationEventBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
+  void signalTNCUIPurgeConnectionBatchMessage(int imc, int connID, int oui, int request, tnc_msg_batch *pMessageBatch);
   void signalTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer);
   void signalTNCUILoginWindowStatusUpdateEvent(unsigned int imc, unsigned int connID, unsigned int oui, unsigned int newState);
   void signalTNCUIConnectionStatusRequest(unsigned int connID);
@@ -131,6 +132,7 @@ public:
   void sendTNCUIRemediationStatusItemFailureEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUIRemediationWillEndBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUIRemediationEventBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
+  void sendTNCUIPurgeConnectionBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer);
   void sendTNCUIComplianceReportBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);
   void sendTNCUIComplianceFailureBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages);

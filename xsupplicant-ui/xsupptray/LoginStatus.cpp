@@ -35,6 +35,7 @@
 #include "LoginStatus.h"
 #include "FormLoader.h"
 #include "Util.h"
+#include "eap_types/tnc/tnc_compliance_options.h"
 
 
 LoginStatus::LoginStatus(bool fromConnect, QString inDevName, poss_conn_enum *pConnEnum, QWidget *proxy, QWidget *parent, Emitter *e):QWidget(parent),
@@ -203,7 +204,7 @@ void LoginStatus::requestPostureState()
 		// a proprietary IMC. ;)
 		if (m_pEmitter != NULL)
 		{
-			m_pEmitter->sendTNCReply(0, connID, 25065, 7, false, 0);
+			m_pEmitter->sendTNCReply(0, connID, 25065, BATCH_TNC_STATE_CHANGE, false, 0);
 		}
 	}
 }

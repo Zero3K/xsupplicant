@@ -451,83 +451,91 @@ void TrayApp::updateGlobalTrayIconState()
 	tooltip += VERSION;
 	tooltip += ".";
 	tooltip += BUILDNUM;
-	tooltip += "\nInterfaces :\n";
 
-	while (i != m_intStateHash.constEnd()) {
-		temp = i.value();
+	if (!m_p1XControl->isChecked())
+	{
+		highest = 0;   // Just show that we are connected.
+		tooltip += tr("\nWindows is controlling your interfaces.");
+	}
+	else
+	{
+		tooltip += tr("\nInterfaces :\n");
 
-		itemp = temp.toInt(&valid);
+		while (i != m_intStateHash.constEnd()) {
+			temp = i.value();
 
-		if (valid)
-		{
-			// At this point, itemp should have a numeric value that indicates
-			// what 802.1X state it is in.  Based on this, we assign a new value
-			// to the variable "highest" if the state needs us to show a higher
-			// level icon.  The order of icon display is:
+			itemp = temp.toInt(&valid);
 
-			// "Purple" (4) - Indicates that a user is in a quarentined state. 
-			//                Some network access may be available, but it is
-			//                likely restricted.  (This isn't implemented at this time!)
-
-			// "Green" (3) - Indicates that a user should be able to access the network
-			//				 and is only displayed when in AUTHENTICATED state or S_FORCE_AUTH state.
-			
-			// "Yellow" (2) - Indicates that an authentication is in progress. During
-			//				  this time, a user may have network access.
-
-			// "Red" (1) - Indicates that an authentication failed.  No network access
-			//			   should be available.
-
-			// "Blue" (0) - Indicates that the supplicant isn't doing anything with
-			//				any interfaces.
-			switch (itemp)
+			if (valid)
 			{
-			case RESTART:
-			case CONNECTING:
-			case ACQUIRED:
-			case AUTHENTICATING:
-				if (highest < 2) highest = 2;
-				authing++;
-				break;
+				// At this point, itemp should have a numeric value that indicates
+				// what 802.1X state it is in.  Based on this, we assign a new value
+				// to the variable "highest" if the state needs us to show a higher
+				// level icon.  The order of icon display is:
 
-			case HELD:
-				if (highest < 1) highest = 1;
-				failed++;
-				break;
+				// "Purple" (4) - Indicates that a user is in a quarentined state. 
+				//                Some network access may be available, but it is
+				//                likely restricted.  (This isn't implemented at this time!)
 
-			case AUTHENTICATED:
-				if (highest < 3) highest = 3;
-				authed++;
-				break;
+				// "Green" (3) - Indicates that a user should be able to access the network
+				//				 and is only displayed when in AUTHENTICATED state or S_FORCE_AUTH state.
+			
+				// "Yellow" (2) - Indicates that an authentication is in progress. During
+				//				  this time, a user may have network access.
 
-			case S_FORCE_AUTH:
-				if (highest < 3) highest = 3;
-				connected++;
-				break;
+				// "Red" (1) - Indicates that an authentication failed.  No network access
+				//			   should be available.
 
-			case LOGOFF:
-			case DISCONNECTED:
-			default:
-				if (highest < 0) highest = 0;
-				inactive++;
-				break;
+				// "Blue" (0) - Indicates that the supplicant isn't doing anything with
+				//				any interfaces.
+				switch (itemp)
+				{
+				case RESTART:
+				case CONNECTING:
+				case ACQUIRED:
+				case AUTHENTICATING:
+					if (highest < 2) highest = 2;
+					authing++;
+					break;
+
+				case HELD:
+					if (highest < 1) highest = 1;
+					failed++;
+					break;
+
+				case AUTHENTICATED:
+					if (highest < 3) highest = 3;
+					authed++;
+					break;
+
+				case S_FORCE_AUTH:
+					if (highest < 3) highest = 3;
+					connected++;
+					break;
+
+				case LOGOFF:
+				case DISCONNECTED:
+				default:
+					if (highest < 0) highest = 0;
+					inactive++;
+					break;
+				}
 			}
+
+			++i;
 		}
 
-		++i;
+		temp.setNum(authed);
+		tooltip += tr(" - Authenticated : ")+temp+"\n";
+		temp.setNum(connected);
+		tooltip += tr(" - Connected : ")+temp+"\n";
+		temp.setNum(authing);
+		tooltip += tr(" - Authenticating : ")+temp+"\n";
+		temp.setNum(failed);
+		tooltip += tr(" - Failed : ")+temp+"\n";
+		temp.setNum(inactive);
+		tooltip += tr(" - Idle : ")+temp;
 	}
-
-	/*
-	temp.setNum(authed);
-	tooltip += " - Authenticated : "+temp+"\n"; */
-	temp.setNum(connected+authed);
-	tooltip += " - Connected : "+temp+"\n";
-	temp.setNum(authing);
-	tooltip += " - Connecting : "+temp+"\n";
-	temp.setNum(failed);
-	tooltip += " - Failed : "+temp+"\n";
-	temp.setNum(inactive);
-	tooltip += " - Idle : "+temp;
 
 	switch (highest)
 	{
@@ -1006,6 +1014,7 @@ void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceControl(bool)), this, SLOT(slotControlInterfacesDone(bool)));
 
 	setTrayMenuBasedOnControl();
+	updateGlobalTrayIconState();
 }
 
 void TrayApp::buildPopupMenu(void)
