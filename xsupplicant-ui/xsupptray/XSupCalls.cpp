@@ -2450,6 +2450,16 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				e.sendPostConnectTimeout(temp);
 				break;
 
+			case IPC_EVENT_UI_CONNECTION_DISCONNECT:
+				temp = value;
+				e.sendConnectionDisconnected(temp);
+				break;
+
+			case IPC_EVENT_PSK_SUCCESS:
+				temp = value;
+				e.sendPSKSuccess(temp);
+				break;
+
             default:
             if (getUIEventString(uievent, desc))
             {

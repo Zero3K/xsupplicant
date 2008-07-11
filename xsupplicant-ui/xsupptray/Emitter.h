@@ -103,6 +103,8 @@ signals:
   void signalTroubleTicketError();
   void signalRequestUPW(QString);
   void signalPostConnectTimeout(QString);
+  void signalConnectionDisconnected(QString);
+  void signalPSKSuccess(QString);
 
 public:
   Emitter();
@@ -156,6 +158,8 @@ public:
   void sendTroubleTicketError();
   void sendRequestUPW(QString);
   void sendPostConnectTimeout(QString);
+  void sendConnectionDisconnected(QString);
+  void sendPSKSuccess(QString);
 };
 
 #endif  // _EMITTER_H_

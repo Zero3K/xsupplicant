@@ -476,3 +476,13 @@ void Emitter::sendPostConnectTimeout(QString devName)
 	emit signalPostConnectTimeout(devName);
 }
 
+void Emitter::sendConnectionDisconnected(QString devName)
+{
+	emit signalConnectionDisconnected(devName);
+}
+
+void Emitter::sendPSKSuccess(QString devName)
+{
+	emit signalPSKSuccess(devName);
+}
+
