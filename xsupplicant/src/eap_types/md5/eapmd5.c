@@ -286,6 +286,7 @@ void eapmd5_process(eap_type_data *eapdata)
   eapdata->methodState = DONE;
   eapdata->decision = COND_SUCC;
   eapdata->ignore = FALSE;
+  eapdata->credsSent = TRUE;
 
   FREE(challenge);
   FREE(password);

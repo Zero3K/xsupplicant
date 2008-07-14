@@ -7,8 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: pap.c,v 1.5 2008/01/26 03:19:43 chessing Exp $
- * $Date: 2008/01/26 03:19:43 $
  **/
 #include <string.h>
 #include <stdlib.h>
@@ -213,6 +211,7 @@ void pap_buildResp(eap_type_data *eapdata, uint8_t *out, uint16_t *outsize)
   eapdata->ignore = FALSE;
   eapdata->methodState = MAY_CONT;
   eapdata->decision = COND_SUCC;
+  eapdata->credsSent = TRUE;
 }
 
 /************************************************************************

@@ -9,9 +9,8 @@
  *
  * \todo Add IPC error message signaling.
  * \todo Add support for temporary username/password pairs.
+ * \todo Add support for password reprompting.
  *
- * $Id: eapfast.c,v 1.2 2007/09/24 02:12:28 galimorerpg Exp $
- * $Date: 2007/09/24 02:12:28 $
  **/
 
 #ifdef EAP_FAST

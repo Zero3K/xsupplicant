@@ -9,6 +9,7 @@
  *
  * \todo Put IPC error events in this file!
  * \todo Add UI provided username/password here.
+ * \todo Add support for PIN reprompting.
  *
  **/
 

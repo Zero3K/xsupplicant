@@ -6,9 +6,6 @@
  * \file eap_sm.c
  *
  * \author chris@open1x.org
- *
- * $Id: eap_sm.c,v 1.6 2008/01/26 01:19:59 chessing Exp $
- * $Date: 2008/01/26 01:19:59 $
  **/
 
 #include <stdlib.h>
@@ -196,6 +193,7 @@ void eap_sm_sync_ll_to_e(eap_sm *sm)
   sm->active->altAccept = sm->altAccept;
   sm->active->altReject = sm->altReject;
   sm->active->ident = sm->ident;
+  sm->active->credsSent = sm->credsSent;
 }
 
 /**
@@ -219,6 +217,7 @@ void eap_sm_sync_e_to_ll(eap_sm *sm)
   sm->eapKeyAvailable = sm->active->eapKeyAvailable;
   sm->altAccept = sm->active->altAccept;
   sm->altReject = sm->active->altReject;
+  sm->credsSent = sm->active->credsSent;
   // eapReqData shouldn't have been modified.  So we don't care.
   // No need to resync ident here.  We don't care.
 }
@@ -429,6 +428,7 @@ void eap_sm_change_to_initialize(eap_sm *sm)
   sm->methodState = NONE;
   sm->allowNotifications = TRUE;
   sm->decision = EAP_FAIL;
+  sm->credsSent = FALSE;			// We have not sent our creds yet.
   sm->idleWhile = config_get_idleWhile();
   sm->lastId = 0xff;                         // Initialize this to something other than 0, since some 
 											 // authenticators like to start the conversation with 0.
@@ -1597,6 +1597,8 @@ void eap_sm_change_to_identity(eap_sm *sm)
 
   sm->eap_sm_state = EAP_IDENTITY;
 
+  sm->credsSent = FALSE;			// We have not sent our creds yet.
+
   ctx = event_core_get_active_ctx();
   if (ctx == NULL)
   {
@@ -1820,7 +1822,7 @@ void eap_sm_change_to_success(eap_sm *sm)
  **/
 void eap_sm_change_to_failure(eap_sm *sm)
 {
-  context *ctx;
+  context *ctx = NULL;
 
   xsup_assert((sm != NULL), "sm != NULL", TRUE);
 
@@ -1849,6 +1851,21 @@ void eap_sm_change_to_failure(eap_sm *sm)
 #endif
 
   sm->eap_sm_state = EAP_FAILURE;
+
+  if (sm->credsSent == TRUE)
+  {
+	  // We got a failure after the EAP method indicated it sent it's credentials.
+	  // So free the temp credentials (if there are any)
+	  if (ctx->prof != NULL)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Authentication failed on '%s' after credentials were sent.  Flushing in memory credentials and requesting new ones.\n", ctx->desc);
+		  FREE(ctx->prof->temp_username);
+		  FREE(ctx->prof->temp_password);
+
+		  // Ask the UI to give us new credentials.
+		  ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, ctx->conn_name);
+	  }
+  }
 }
 
 /**

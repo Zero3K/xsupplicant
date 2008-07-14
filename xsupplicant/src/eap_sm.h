@@ -51,6 +51,7 @@ typedef struct eap_type_data {
   uint8_t eapKeyAvailable;
   uint8_t altAccept;
   uint8_t altReject;
+  uint8_t credsSent;
   char *ident;
 } eap_type_data;
 
@@ -111,6 +112,13 @@ typedef struct eap_sm_vars {
                              // in certain phases.
   uint8_t lastMethod;
   uint8_t eapKeyLen;
+
+  // credsSent should be set to TRUE once an EAP method has sent the actual
+  // user's credentials.  (In two phase EAP methods, this would mean that
+  // it would be set to TRUE by the inner method.)  When credsSent is set 
+  // TRUE, an EAP-Failure will result in the memory cached credentials being
+  // flushed, and the user being prompted for a password again.
+  uint8_t credsSent;
 
 } eap_sm;
 

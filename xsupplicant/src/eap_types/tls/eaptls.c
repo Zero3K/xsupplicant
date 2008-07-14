@@ -300,6 +300,7 @@ void eaptls_process(eap_type_data *eapdata)
   if (mytls_vars->handshake_done == TRUE)
     {
       eapdata->decision = MAY_CONT;
+	  eapdata->credsSent = TRUE;
     }
   else
     {

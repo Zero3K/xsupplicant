@@ -387,6 +387,11 @@ void eaptnc_process(eap_type_data *eapdata)
       return;
     }
 
+  // If we get here, then we can assume the credentials used were valid.
+  // So, we want to sent credsSent to FALSE so that if the user is failed
+  // because of bad posture, they aren't prompted for their password again.
+  eapdata->credsSent = FALSE;
+
   eaphdr = (struct eap_header *)eapdata->eapReqData;
 
   eapsize = ntohs(eaphdr->eap_length) - sizeof(struct eap_header);

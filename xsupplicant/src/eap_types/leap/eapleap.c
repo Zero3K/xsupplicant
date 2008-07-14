@@ -432,6 +432,7 @@ void eapleap_response_pkt(eap_type_data *eapdata)
   eapdata->ignore = FALSE;
   eapdata->decision = UNCOND_SUCC;
   eapdata->altAccept = TRUE;
+  eapdata->credsSent = TRUE;
 }
 
 /**

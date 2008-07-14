@@ -185,6 +185,8 @@ uint8_t *eapotp_buildResp(eap_type_data *eapdata)
 
   FREE(ctx->prof->temp_password);
 
+  eapdata->credsSent = TRUE;
+
   return retdata;
 }
 

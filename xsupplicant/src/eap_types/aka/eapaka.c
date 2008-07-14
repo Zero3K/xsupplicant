@@ -9,6 +9,7 @@
  *
  * \todo Add IPC error message signaling.
  * \todo Add support for temporary username/password pairs.
+ * \todo Add support for PIN reprompting.
  *
  **/
 

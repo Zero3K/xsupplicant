@@ -423,6 +423,9 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
   debug_printf(DEBUG_AUTHTYPES, "myvars->NtResponse = ");
   debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) myvars->NtResponse, 24);
 
+  // Our credentials have been used, so signal it.
+  eapdata->credsSent = TRUE;
+
   // Everything is good, so continue.
   return MAY_CONT;
 }

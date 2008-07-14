@@ -1140,8 +1140,8 @@ int cardif_windows_wireless_get_wpa_ie(context *ctx,
 	if (cardif_windows_wireless_get_ies(ctx, ie_buf, &ie_size) != XENONE)
 		return -1;
 	
-	debug_printf(DEBUG_INT, "IEs returned (Length : %d) :\n", (*ielen));
-	debug_hex_printf(DEBUG_INT, ie_buf, *ielen);
+	debug_printf(DEBUG_INT, "IEs returned (Length : %d) :\n", ie_size);
+	debug_hex_printf(DEBUG_INT, ie_buf, ie_size);
 
 	if (cardif_windows_wireless_find_wpa_ie(ctx, ie_buf, ie_size, iedata, &len) != XENONE)
 		return -1;
@@ -1153,6 +1153,9 @@ int cardif_windows_wireless_get_wpa_ie(context *ctx,
 
 /**
  * Set encryption to open on the wireless card.
+ *
+ * @param[in] ctx   The context to the interface that we want to set open
+ *					association on.
  **/
 int cardif_windows_wireless_enc_open(context *ctx)
 {

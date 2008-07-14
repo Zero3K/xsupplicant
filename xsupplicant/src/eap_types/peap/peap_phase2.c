@@ -555,6 +555,7 @@ void peap_phase2_process(eap_type_data *eapdata, uint8_t *indata,
 	  eapdata->ignore = p2d->sm->ignore;
        	  eapdata->altAccept = p2d->sm->eapSuccess;
 	  eapdata->altReject = p2d->sm->eapFail;
+	  eapdata->credsSent = p2d->sm->credsSent;
 	}	  
       break;
 
@@ -577,6 +578,7 @@ void peap_phase2_process(eap_type_data *eapdata, uint8_t *indata,
           eapdata->ignore = p2d->sm->ignore;
 	  //          eapdata->altAccept = p2d->sm->eapSuccess;
           eapdata->altReject = p2d->sm->eapFail;
+		  eapdata->credsSent = p2d->sm->credsSent;
         }
       break;
 
