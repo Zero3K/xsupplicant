@@ -233,7 +233,7 @@ void TrustedRootCertsDlg::slotImport()
 	  result.replace(QString("/"), QString("\\"));
 #endif
 
-	  path = strdup(result.toAscii());
+	  path = _strdup(result.toAscii());
 	  err = xsupgui_request_add_root_ca_certificate(path);
 
 	  if (err != REQUEST_SUCCESS)

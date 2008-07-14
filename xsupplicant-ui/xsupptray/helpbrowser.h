@@ -37,44 +37,24 @@
 #include <QTextBrowser>
 #include <QPushButton>
 
-
+// This help window is a singleton class/object.  It is not intended to be instantiated and instead simply
+// use the static functions provided 
 class HelpWindow: public QWidget
 {
   Q_OBJECT
 
 public:
-	void show();
-
-protected: 
-  HelpWindow(QWidget *parent = 0);
-#ifdef WINDOWS
-  virtual HelpWindow::~HelpWindow();
-#else
-  virtual ~HelpWindow();
-#endif
-  bool create();
-
-public:
-  void setSource(const QString &path, const QString &file, const QString &page);
-
-#ifdef WINDOWS
-  static void HelpWindow::showPage(const QString &file, const QString &page);
-#else
-  static void showPage(const QString &file, const QString &page);
-#endif
-
-private:
-  static HelpWindow *s_pBrowser;
-
-private slots:
+	static void show();
+	static void setSource(const QString &path, const QString &file, const QString &page);
+	static void showPage(const QString &file, const QString &page);
   
 private:
-	QWidget *m_pRealForm;
-
-  QTextBrowser *m_pTextBrowser;
-  QPushButton *m_pHomeButton;
-  QPushButton *m_pBackButton;
-  QPushButton *m_pCloseButton;
+	static bool create();
+	
+private:
+	static QWidget *m_pRealForm;
+	static QTextBrowser *m_pTextBrowser;
+	static QPushButton *m_pCloseButton;
 };
 
 #endif // _HELPWINDOW_H_

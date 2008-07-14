@@ -1,24 +1,27 @@
 <ui version="4.0" >
- <class>uiWindowHelp</class>
- <widget class="QDialog" name="uiWindowHelp" >
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog" >
+  <property name="windowModality" >
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry" >
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>760</width>
-    <height>410</height>
+    <width>688</width>
+    <height>400</height>
    </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize" >
    <size>
-    <width>760</width>
-    <height>410</height>
-   </size>
-  </property>
-  <property name="maximumSize" >
-   <size>
-    <width>2048</width>
-    <height>2048</height>
+    <width>538</width>
+    <height>300</height>
    </size>
   </property>
   <property name="windowTitle" >
@@ -26,6 +29,9 @@
   </property>
   <property name="windowIcon" >
    <iconset>icons/prod_color.png</iconset>
+  </property>
+  <property name="sizeGripEnabled" >
+   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" >
    <property name="spacing" >
@@ -44,120 +50,204 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" >
-     <property name="spacing" >
-      <number>0</number>
+    <widget class="QFrame" name="HeaderFrame" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+       <horstretch>1</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <property name="leftMargin" >
-      <number>0</number>
+     <property name="minimumSize" >
+      <size>
+       <width>538</width>
+       <height>71</height>
+      </size>
      </property>
-     <property name="topMargin" >
-      <number>0</number>
+     <property name="maximumSize" >
+      <size>
+       <width>16777215</width>
+       <height>71</height>
+      </size>
      </property>
-     <property name="rightMargin" >
-      <number>0</number>
+     <property name="frameShape" >
+      <enum>QFrame::NoFrame</enum>
      </property>
-     <property name="bottomMargin" >
-      <number>0</number>
+     <property name="frameShadow" >
+      <enum>QFrame::Plain</enum>
      </property>
-     <item>
-      <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" >
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QLabel" name="uiBannerGraphicLeft" >
-       <property name="minimumSize" >
-        <size>
-         <width>310</width>
-         <height>70</height>
-        </size>
-       </property>
-       <property name="maximumSize" >
-        <size>
-         <width>310</width>
-         <height>70</height>
-        </size>
-       </property>
-       <property name="lineWidth" >
-        <number>0</number>
-       </property>
-       <property name="text" >
-        <string/>
-       </property>
-       <property name="pixmap" >
-        <pixmap>images/banner_left.png</pixmap>
-       </property>
-       <property name="alignment" >
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="uiBannerGraphicRight" >
-       <property name="minimumSize" >
-        <size>
-         <width>450</width>
-         <height>70</height>
-        </size>
-       </property>
-       <property name="maximumSize" >
-        <size>
-         <width>450</width>
-         <height>70</height>
-        </size>
-       </property>
-       <property name="lineWidth" >
-        <number>0</number>
-       </property>
-       <property name="midLineWidth" >
-        <number>0</number>
-       </property>
-       <property name="text" >
-        <string/>
-       </property>
-       <property name="pixmap" >
-        <pixmap>images/banner_right.png</pixmap>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" >
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
+     <layout class="QHBoxLayout" >
+      <property name="spacing" >
+       <number>0</number>
+      </property>
+      <property name="leftMargin" >
+       <number>0</number>
+      </property>
+      <property name="topMargin" >
+       <number>0</number>
+      </property>
+      <property name="rightMargin" >
+       <number>0</number>
+      </property>
+      <property name="bottomMargin" >
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="headerLeft" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>242</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>242</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string/>
+        </property>
+        <property name="pixmap" >
+         <pixmap>images/banner/banner_left.png</pixmap>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="headerLeftTile" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
+          <horstretch>3</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>1</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>16777215</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string/>
+        </property>
+        <property name="pixmap" >
+         <pixmap>images/banner/banner_left_bg.png</pixmap>
+        </property>
+        <property name="scaledContents" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="headerCenter" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>76</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>76</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string/>
+        </property>
+        <property name="pixmap" >
+         <pixmap>images/banner/banner_center.png</pixmap>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="headerRightTile" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+          <horstretch>2</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>1</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>16777215</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string/>
+        </property>
+        <property name="pixmap" >
+         <pixmap>images/banner/banner_right_bg.png</pixmap>
+        </property>
+        <property name="scaledContents" >
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="headerRight" >
+        <property name="sizePolicy" >
+         <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>218</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="maximumSize" >
+         <size>
+          <width>218</width>
+          <height>71</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string/>
+        </property>
+        <property name="pixmap" >
+         <pixmap>images/banner/banner_right.png</pixmap>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
-    <widget class="QFrame" name="backgroundMain" >
+    <widget class="QFrame" name="MainFrame" >
      <property name="sizePolicy" >
       <sizepolicy vsizetype="Expanding" hsizetype="Expanding" >
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="minimumSize" >
-      <size>
-       <width>500</width>
-       <height>275</height>
-      </size>
-     </property>
      <property name="palette" >
       <palette>
        <active>
@@ -229,162 +319,20 @@
       <enum>QFrame::NoFrame</enum>
      </property>
      <property name="frameShadow" >
-      <enum>QFrame::Plain</enum>
-     </property>
-     <property name="lineWidth" >
-      <number>0</number>
-     </property>
-     <layout class="QGridLayout" >
-      <property name="leftMargin" >
-       <number>9</number>
-      </property>
-      <property name="topMargin" >
-       <number>9</number>
-      </property>
-      <property name="rightMargin" >
-       <number>9</number>
-      </property>
-      <property name="bottomMargin" >
-       <number>9</number>
-      </property>
-      <property name="horizontalSpacing" >
-       <number>6</number>
-      </property>
-      <property name="verticalSpacing" >
-       <number>6</number>
-      </property>
-      <item row="0" column="0" >
-       <widget class="QTextBrowser" name="dataFieldHelpWindow" />
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QFrame" name="backgroundBottom" >
-     <property name="minimumSize" >
-      <size>
-       <width>500</width>
-       <height>20</height>
-      </size>
-     </property>
-     <property name="palette" >
-      <palette>
-       <active>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>206</red>
-           <green>207</green>
-           <blue>210</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </active>
-       <inactive>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>255</red>
-           <green>255</green>
-           <blue>255</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>206</red>
-           <green>207</green>
-           <blue>210</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </inactive>
-       <disabled>
-        <colorrole role="Base" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>206</red>
-           <green>207</green>
-           <blue>210</blue>
-          </color>
-         </brush>
-        </colorrole>
-        <colorrole role="Window" >
-         <brush brushstyle="SolidPattern" >
-          <color alpha="255" >
-           <red>206</red>
-           <green>207</green>
-           <blue>210</blue>
-          </color>
-         </brush>
-        </colorrole>
-       </disabled>
-      </palette>
-     </property>
-     <property name="autoFillBackground" >
-      <bool>true</bool>
-     </property>
-     <property name="frameShape" >
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="frameShadow" >
-      <enum>QFrame::Plain</enum>
+      <enum>QFrame::Raised</enum>
      </property>
      <layout class="QVBoxLayout" >
-      <property name="spacing" >
-       <number>0</number>
-      </property>
-      <property name="leftMargin" >
-       <number>10</number>
-      </property>
-      <property name="topMargin" >
-       <number>10</number>
-      </property>
-      <property name="rightMargin" >
-       <number>10</number>
-      </property>
-      <property name="bottomMargin" >
-       <number>10</number>
-      </property>
       <item>
-       <widget class="QFrame" name="hLineDark" >
-        <property name="sizePolicy" >
-         <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize" >
-         <size>
-          <width>480</width>
-          <height>2</height>
-         </size>
-        </property>
-        <property name="maximumSize" >
-         <size>
-          <width>16777215</width>
-          <height>2</height>
-         </size>
-        </property>
+       <widget class="QTextBrowser" name="dataFieldHelpWindow" >
         <property name="palette" >
          <palette>
           <active>
            <colorrole role="WindowText" >
             <brush brushstyle="SolidPattern" >
              <color alpha="255" >
-              <red>162</red>
-              <green>162</green>
-              <blue>165</blue>
+              <red>127</red>
+              <green>157</green>
+              <blue>185</blue>
              </color>
             </brush>
            </colorrole>
@@ -393,9 +341,9 @@
            <colorrole role="WindowText" >
             <brush brushstyle="SolidPattern" >
              <color alpha="255" >
-              <red>162</red>
-              <green>162</green>
-              <blue>165</blue>
+              <red>127</red>
+              <green>157</green>
+              <blue>185</blue>
              </color>
             </brush>
            </colorrole>
@@ -404,9 +352,9 @@
            <colorrole role="WindowText" >
             <brush brushstyle="SolidPattern" >
              <color alpha="255" >
-              <red>119</red>
-              <green>119</green>
-              <blue>119</blue>
+              <red>118</red>
+              <green>116</green>
+              <blue>108</blue>
              </color>
             </brush>
            </colorrole>
@@ -422,7 +370,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QFrame" name="hLineLight" >
+       <widget class="QFrame" name="buttonFrame" >
         <property name="sizePolicy" >
          <sizepolicy vsizetype="Fixed" hsizetype="Preferred" >
           <horstretch>0</horstretch>
@@ -431,200 +379,84 @@
         </property>
         <property name="minimumSize" >
          <size>
-          <width>480</width>
-          <height>2</height>
+          <width>16</width>
+          <height>30</height>
          </size>
         </property>
         <property name="maximumSize" >
          <size>
           <width>16777215</width>
-          <height>2</height>
+          <height>30</height>
          </size>
         </property>
-        <property name="palette" >
-         <palette>
-          <active>
-           <colorrole role="WindowText" >
-            <brush brushstyle="SolidPattern" >
-             <color alpha="255" >
-              <red>218</red>
-              <green>219</green>
-              <blue>221</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </active>
-          <inactive>
-           <colorrole role="WindowText" >
-            <brush brushstyle="SolidPattern" >
-             <color alpha="255" >
-              <red>218</red>
-              <green>219</green>
-              <blue>221</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </inactive>
-          <disabled>
-           <colorrole role="WindowText" >
-            <brush brushstyle="SolidPattern" >
-             <color alpha="255" >
-              <red>119</red>
-              <green>119</green>
-              <blue>119</blue>
-             </color>
-            </brush>
-           </colorrole>
-          </disabled>
-         </palette>
-        </property>
         <property name="frameShape" >
-         <enum>QFrame::Box</enum>
+         <enum>QFrame::NoFrame</enum>
         </property>
         <property name="frameShadow" >
-         <enum>QFrame::Plain</enum>
+         <enum>QFrame::Raised</enum>
         </property>
+        <layout class="QHBoxLayout" >
+         <property name="leftMargin" >
+          <number>0</number>
+         </property>
+         <property name="topMargin" >
+          <number>0</number>
+         </property>
+         <property name="rightMargin" >
+          <number>0</number>
+         </property>
+         <property name="bottomMargin" >
+          <number>0</number>
+         </property>
+         <item>
+          <spacer>
+           <property name="orientation" >
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" >
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="buttonClose" >
+           <property name="sizePolicy" >
+            <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize" >
+            <size>
+             <width>90</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="maximumSize" >
+            <size>
+             <width>90</width>
+             <height>25</height>
+            </size>
+           </property>
+           <property name="font" >
+            <font>
+             <family>Arial</family>
+             <pointsize>9</pointsize>
+            </font>
+           </property>
+           <property name="text" >
+            <string>Close</string>
+           </property>
+           <property name="default" >
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" >
-        <property name="spacing" >
-         <number>10</number>
-        </property>
-        <property name="leftMargin" >
-         <number>10</number>
-        </property>
-        <property name="topMargin" >
-         <number>10</number>
-        </property>
-        <property name="rightMargin" >
-         <number>10</number>
-        </property>
-        <property name="bottomMargin" >
-         <number>10</number>
-        </property>
-        <item>
-         <widget class="QPushButton" name="buttonHome" >
-          <property name="sizePolicy" >
-           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize" >
-           <size>
-            <width>75</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="maximumSize" >
-           <size>
-            <width>75</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="font" >
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="text" >
-           <string>Home</string>
-          </property>
-          <property name="shortcut" >
-           <string>Ctrl+H</string>
-          </property>
-          <property name="autoDefault" >
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="buttonBack" >
-          <property name="sizePolicy" >
-           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize" >
-           <size>
-            <width>75</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="maximumSize" >
-           <size>
-            <width>75</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="font" >
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="text" >
-           <string>Back</string>
-          </property>
-          <property name="shortcut" >
-           <string>Ctrl+B</string>
-          </property>
-          <property name="autoDefault" >
-           <bool>false</bool>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer>
-          <property name="orientation" >
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" >
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="buttonClose" >
-          <property name="sizePolicy" >
-           <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize" >
-           <size>
-            <width>75</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="maximumSize" >
-           <size>
-            <width>75</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="font" >
-           <font>
-            <pointsize>8</pointsize>
-           </font>
-          </property>
-          <property name="text" >
-           <string>Close</string>
-          </property>
-          <property name="shortcut" >
-           <string>Ctrl+X</string>
-          </property>
-          <property name="default" >
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
       </item>
      </layout>
     </widget>
