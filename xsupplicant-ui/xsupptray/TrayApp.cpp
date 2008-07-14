@@ -78,8 +78,6 @@ TrayApp::TrayApp(QApplication &app):
   m_pConfigAction			= NULL;
   m_pLoginAction			= NULL;
   m_pAboutAction			= NULL;
-  m_pViewLogAction			= NULL;
-  m_pTroubleticketAction	= NULL;
   m_pLoginDlg				= NULL;
   m_pAboutWindow			= NULL;
   m_pLoggingCon				= NULL;
@@ -419,8 +417,6 @@ void TrayApp::setEnabledMenuItems(bool bEnable)
 {
   m_pLoginAction->setEnabled(bEnable);
   m_pConfigAction->setEnabled(bEnable);
-  m_pViewLogAction->setEnabled(bEnable);
-  m_pTroubleticketAction->setEnabled(bEnable);
   m_p1XControl->setEnabled(bEnable);
 
   if (bEnable == false) closeChildren();
@@ -941,9 +937,6 @@ void TrayApp::createTrayActionsAndConnections()
 
   m_pConfigAction = new QAction(tr("&Configure..."), this);
   Util::myConnect(m_pConfigAction, SIGNAL(triggered()), this, SLOT(slotLaunchConfig()));
-  
-  m_pViewLogAction = new QAction(tr("&View Log..."), this);
-  Util::myConnect(m_pViewLogAction, SIGNAL(triggered()), this, SLOT(slotViewLog()));
 
 #ifdef WINDOWS
   m_p1XControl = new QAction(tr("Manage interfaces with XSupplicant"), this);
@@ -956,9 +949,6 @@ void TrayApp::createTrayActionsAndConnections()
 
   m_pQuitAction = new QAction(tr("&Quit"), this);
   Util::myConnect(m_pQuitAction, SIGNAL(triggered()), this, SLOT(slotExit()));
-
-  m_pTroubleticketAction = new QAction(tr("&Create Troubleticket..."), this);
-  Util::myConnect(m_pTroubleticketAction, SIGNAL(triggered()), this, SLOT(slotCreateTroubleticket()));
 
   Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(slotConnectToSupplicant()));
 
@@ -1029,10 +1019,10 @@ void TrayApp::buildPopupMenu(void)
 	if (m_pTrayIconMenu != NULL)
 	{
 		m_pTrayIconMenu->clear();
-	
+
 		m_pTrayIconMenu->addAction(m_pLoginAction);
 		m_pTrayIconMenu->addSeparator();
-			
+		
 		QStringList wirelessIntList;
 		wirelessIntList = XSupWrapper::getWirelessInterfaceList();
 		
@@ -1082,16 +1072,13 @@ void TrayApp::buildPopupMenu(void)
 		
 		// add standard items
 		m_pTrayIconMenu->addAction(m_pConfigAction);
-		m_pTrayIconMenu->addAction(m_pViewLogAction);
-		m_pTrayIconMenu->addAction(m_pTroubleticketAction);
-		m_pTrayIconMenu->addSeparator();
-#ifdef WINDOWS
-		m_pTrayIconMenu->addAction(m_p1XControl);
-		m_pTrayIconMenu->addSeparator();
-#endif
 		m_pTrayIconMenu->addAction(m_pAboutAction);
 		m_pTrayIconMenu->addSeparator();
-		m_pTrayIconMenu->addAction(m_pQuitAction);	
+		m_pTrayIconMenu->addAction(m_pQuitAction);
+#ifdef WINDOWS
+		m_pTrayIconMenu->addSeparator();
+		m_pTrayIconMenu->addAction(m_p1XControl);
+#endif		
 	}
 }
 

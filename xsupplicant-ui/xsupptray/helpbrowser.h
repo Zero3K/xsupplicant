@@ -44,12 +44,12 @@ class HelpWindow: public QWidget
   Q_OBJECT
 
 public:
-	static void show();
 	static void setSource(const QString &path, const QString &file, const QString &page);
 	static void showPage(const QString &file, const QString &page);
   
 private:
 	static bool create();
+	static void show();
 	
 private:
 	static QWidget *m_pRealForm;

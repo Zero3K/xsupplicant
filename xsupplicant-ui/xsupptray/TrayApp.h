@@ -162,8 +162,6 @@ private:
     QAction *m_pConfigAction;
     QAction *m_pLoginAction;
     QAction *m_pAboutAction;
-    QAction *m_pViewLogAction;
-    QAction *m_pTroubleticketAction;
 	QAction *m_p1XControl;
     QApplication &m_app;
 	Emitter *m_pEmitter;

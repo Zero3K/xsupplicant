@@ -73,7 +73,8 @@ private:
 	void disconnectWiredConnection(void);
 	void connectWirelessConnection(void);
 	void connectWiredConnection(void);
-	void updateElapsedTime(void);		
+	void updateElapsedTime(void);
+	bool buildMenuBar(void);	
 	
 private slots:
 	void showSSIDList(void);
@@ -95,6 +96,13 @@ private slots:
 	void showWiredConnectionInfo(void);
 	void interfaceRemoved(char *intDesc);
 	void updateWirelessSignalStrength(const QString &);
+	void menuClose(void);
+	void menuQuit(void);
+	void menuConfigure(void);
+	void menuCreateTicket(void);
+	void menuViewLog(void);
+	void menuHelp(void);
+	void menuAbout(void);
 		
 private:
 	Emitter *m_pEmitter;

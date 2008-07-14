@@ -43,6 +43,7 @@
 #include "ConnectionWizard.h"
 #include "ConnectionInfoDlg.h"
 #include "XSupWrapper.h"
+#include "helpbrowser.h"
 
 extern "C" {
 #include "libxsupgui/xsupgui_request.h"
@@ -121,6 +122,8 @@ ConnectDlg::~ConnectDlg()
 		delete m_pConnInfo;
 		
 	this->cleanupConnectionWizard();
+	
+	// !!! should clean up menu bar slots/signals here to be thorough
 		
 	if (m_pRealForm != NULL) 
 		delete m_pRealForm;	
@@ -319,8 +322,113 @@ bool ConnectDlg::initUI(void)
 	{
 		m_signalIcons[4] = *p;
 		delete p;		
-	}	
+	}
+	
+	return this->buildMenuBar();
+}
 
+bool ConnectDlg::buildMenuBar(void)
+{
+	// set up menu bar
+	QMenuBar *pMenuBar = qFindChild<QMenuBar*>(m_pRealForm, "menubar");
+	if (pMenuBar != NULL)
+	{
+		// assume that the 
+		pMenuBar->clear();
+		
+		// build File menu
+		QMenu *pFileMenu = new QMenu(tr("&File"));
+		if (pFileMenu != NULL)
+		{
+			QAction *pAction = new QAction(NULL);
+			if (pAction != NULL)
+			{
+				pAction->setText(tr("&Close"));
+				pAction->setFont(pMenuBar->font());
+				pAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_W));
+				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuClose()));
+				pFileMenu->addAction(pAction);
+			}
+			
+			pFileMenu->addSeparator();
+			
+			pAction = new QAction(NULL);
+			if (pAction != NULL)
+			{
+				pAction->setText(tr("&Quit"));
+				pAction->setFont(pMenuBar->font());
+				pAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuQuit()));
+				pFileMenu->addAction(pAction);
+			}			
+			pMenuBar->addMenu(pFileMenu);
+		}
+		
+		// build tools menu
+		QMenu *pToolsMenu = new QMenu(tr("&Tools"));
+		if (pToolsMenu != NULL)
+		{
+			QAction *pAction = new QAction(NULL);
+			if (pAction != NULL)
+			{
+				pAction->setText(tr("View Log"));
+				pAction->setFont(pMenuBar->font());
+				pAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
+				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuViewLog()));
+				pToolsMenu->addAction(pAction);
+			}
+			
+			pAction = new QAction(NULL);
+			if (pAction != NULL)
+			{
+				pAction->setText(tr("Create Troubleticket"));
+				pAction->setFont(pMenuBar->font());
+				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuCreateTicket()));
+				pToolsMenu->addAction(pAction);
+			}
+			
+			pToolsMenu->addSeparator();
+			
+			pAction = new QAction(NULL);
+			if (pAction != NULL)
+			{
+				pAction->setText(tr("&Configure..."));
+				pAction->setFont(pMenuBar->font());
+				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuConfigure()));
+				pToolsMenu->addAction(pAction);
+			}
+			
+			pMenuBar->addMenu(pToolsMenu);
+		}
+		
+		// build Help menu
+		QMenu *pHelpMenu = new QMenu(tr("&Help"));
+		if (pHelpMenu != NULL)
+		{
+			QAction *pAction = new QAction(NULL);
+			if (pAction != NULL)
+			{
+				pAction->setText(tr("Help Contents"));
+				pAction->setFont(pMenuBar->font());
+				pAction->setShortcut(QKeySequence(Qt::Key_F1));
+				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuHelp()));
+				pHelpMenu->addAction(pAction);
+			}
+			
+			pHelpMenu->addSeparator();
+			
+			pAction = new QAction(NULL);
+			if (pAction != NULL)
+			{
+				pAction->setText(tr("About XSupplicant"));
+				pAction->setFont(pMenuBar->font());
+				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuAbout()));
+				pHelpMenu->addAction(pAction);
+			}			
+			pMenuBar->addMenu(pHelpMenu);
+		}		
+	}
+	
 	return true;
 }
 
@@ -1231,4 +1339,40 @@ void ConnectDlg::updateWirelessSignalStrength(const QString &intName)
 		if (pSSID != NULL)
 			xsupgui_request_free_ssid_enum(&pSSID);
 	}
+}
+void ConnectDlg::menuConfigure(void)
+{
+	m_pSupplicant->slotLaunchConfig();
+}
+
+void ConnectDlg::menuViewLog(void)
+{
+	m_pSupplicant->slotViewLog();
+}
+
+void ConnectDlg::menuAbout(void)
+{
+	m_pSupplicant->slotAbout();
+}
+
+void ConnectDlg::menuQuit(void)
+{
+	// !!! TODO: warn about any open connections?!
+	m_pSupplicant->slotExit();
+}
+
+void ConnectDlg::menuClose(void)
+{
+	if (m_pRealForm != NULL)
+		m_pRealForm->hide();
+}
+
+void ConnectDlg::menuCreateTicket(void)
+{
+	m_pSupplicant->slotCreateTroubleticket();
+}
+
+void ConnectDlg::menuHelp(void)
+{
+	HelpWindow::showPage("xsupphelp.html", "xsuploginmain");
 }
