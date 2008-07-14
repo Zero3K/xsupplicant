@@ -169,7 +169,7 @@ bool ConnectionInfoDlg::initUI(void)
 
 void ConnectionInfoDlg::disconnect(void)
 {
-	if (XSupWrapper::disconnectAdapter(m_curAdapter) == false)
+	if (xsupgui_request_disconnect_connection(m_curAdapterName.toAscii().data()) == REQUEST_SUCCESS)
 	{
 		QMessageBox::critical(NULL, tr("Error Disconnecting"),
 			tr("An error occurred while disconnecting device '%1'.\n").arg(m_curAdapter));			

@@ -38,11 +38,16 @@
 #include "Util.h"
 #include "XSupWrapper.h"
 #include "Emitter.h"
+#include "CredentialsManager.h"
 
 extern "C"
 {
 #include "libxsupgui/xsupgui_request.h"
 }
+
+
+// initialize static member variable
+CredentialsManager *CredentialsPopUp::m_pCredManager = NULL;
 
 //! Constructor
 /*!
@@ -68,6 +73,8 @@ CredentialsPopUp::CredentialsPopUp(QString connName, QWidget *parent, Emitter *e
 	p_user				= NULL;
 	p_pass				= NULL;
 	m_pWEPCombo			= NULL;
+	if (m_pCredManager == NULL)
+		m_pCredManager = new CredentialsManager(e);
 }
 
 
@@ -491,27 +498,10 @@ void CredentialsPopUp::slotOkayBtn()
 							// if "remember credentials" is checked, make sure this isn't marked as volatile
 							if (m_pRememberCreds->checkState() == Qt::Checked)
 							{
-								cconf->flags &= ~CONFIG_VOLATILE_CONN;
-								
-								// clear out any credentials that presently are stored
-								if (cconf->association.keys != NULL)
-								{
-									cconf->association.keys[1] = _strdup(m_pPassword->text().toAscii().data());
-								
-									// save off changes to config						
-									if (xsupgui_request_set_connection_config(cconf) == REQUEST_SUCCESS)
-									{
-										// tell everyone we changed the config
-										m_pEmitter->sendConnConfigUpdate();
-															
-										// this may fail.  No need to prompt user if it does
-										XSupWrapper::writeConfig();
-									}
-									else
-										QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your WEP key"));
-								}
-								else
-									QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your WEP key"));						
+								// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
+								// if we connect successfully
+								if (m_pCredManager != NULL)
+									m_pCredManager->storeCredentials(m_connName, QString(), m_pPassword->text());							
 							}						
 						}
 						free(intName);
@@ -550,31 +540,12 @@ void CredentialsPopUp::slotOkayBtn()
 					}
 					else
 					{
-						// if "remember credentials" is checked, make sure this isn't marked as volatile
 						if (m_pRememberCreds->checkState() == Qt::Checked)
 						{
-							cconf->flags &= ~CONFIG_VOLATILE_CONN;
-							
-							// clear out any credentials that presently are stored
-							if (cconf->association.psk != NULL)
-							{
-								free(cconf->association.psk);
-								cconf->association.psk = NULL;
-							}
-							
-							cconf->association.psk = _strdup(m_pPassword->text().toAscii().data());
-							
-							// save off changes to config
-							if (xsupgui_request_set_connection_config(cconf) == REQUEST_SUCCESS)
-							{
-								// tell everyone we changed the config
-								m_pEmitter->sendConnConfigUpdate();
-													
-								// this may fail.  No need to prompt user if it does
-								XSupWrapper::writeConfig();	
-							}
-							else
-								QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your preshared key"));					
+							// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
+							// if we connect successfully
+							if (m_pCredManager != NULL)
+								m_pCredManager->storeCredentials(m_connName, QString(), m_pPassword->text());
 						}					
 					}
 					free(intName);
@@ -614,19 +585,10 @@ void CredentialsPopUp::slotOkayBtn()
 						// if "remember credentials" is checked, make sure this isn't marked as volatile
 						if (m_pRememberCreds->checkState() == Qt::Checked)
 						{
-							cconf->flags &= ~CONFIG_VOLATILE_CONN;
-							
-							bool success;
-							success = XSupWrapper::setProfileUsername(cconf->profile, m_pUsername->text());
-							success = XSupWrapper::setProfilePassword(cconf->profile, m_pPassword->text()) && success == true;
-							
-							if (success == true)
-							{
-								// this may fail.  No need to prompt user if it does
-								XSupWrapper::writeConfig();	
-							}
-							else
-								QMessageBox::critical(m_pRealForm, tr("error"),tr("Unable to save your credentials"));
+							// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
+							// if we connect successfully
+							if (m_pCredManager != NULL)
+								m_pCredManager->storeCredentials(m_connName, m_pUsername->text(), m_pPassword->text());						
 						}					
 					}
 					free(intName);

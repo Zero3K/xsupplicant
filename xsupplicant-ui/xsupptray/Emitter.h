@@ -103,8 +103,8 @@ signals:
   void signalTroubleTicketError();
   void signalRequestUPW(QString);
   void signalPostConnectTimeout(QString);
-  void signalConnectionDisconnected(QString);
-  void signalPSKSuccess(QString);
+  void signalConnectionDisconnected(const QString &);
+  void signalPSKSuccess(const QString &);
 
 public:
   Emitter();

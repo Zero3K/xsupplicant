@@ -119,6 +119,7 @@ bool ConnectMgrDlg::initUI(void)
 	// set window flags so minimizeable and context help thingy is turned off
 	flags = m_pRealForm->windowFlags();
 	flags &= ~Qt::WindowContextHelpButtonHint;
+	flags &= ~Qt::WindowMaximizeButtonHint;
 	flags |= Qt::WindowMinimizeButtonHint;
 	m_pRealForm->setWindowFlags(flags);	
 			
@@ -555,7 +556,7 @@ void ConnectMgrDlg::populateWiredConnectionsCombo(void)
 
 void ConnectMgrDlg::populateConnectionsList(void)
 {
-	if (m_pConnections != NULL)
+	if (m_pConnections != NULL && m_pConnectionsTable != NULL)
 	{
 		// clear table before re-populating
 		m_pConnectionsTable->clearContents();

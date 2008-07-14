@@ -137,6 +137,7 @@ private:
 	QString m_wirelessNetwork;			// cached so we can update signal strength
 	int m_lastWirelessConnectionIdx;	// last valid selected wireless connection
 	int m_lastWiredConnectionIdx;		// last valid selected wired connection
+	bool m_volatileWirelessConn;
 	
 	QTimer m_timer;
 	QTime  m_time;

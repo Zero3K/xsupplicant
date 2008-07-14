@@ -115,6 +115,7 @@ TrayApp::~TrayApp()
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalRequestUPW(QString)), this, SLOT(slotRequestUPW(QString)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadPSK(const QString &)), this, SLOT(handleBadPSK(const QString &intName)));
 
 		delete m_pEmitter;
 		m_pEmitter = NULL;
@@ -619,6 +620,7 @@ void TrayApp::connectGlobalTrayIconSignals()
 		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(QString)), this, SLOT(slotConnectionTimeout(QString)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updatePopupMenuAfterScan(const QString &)));
+		Util::myConnect(m_pEmitter, SIGNAL(signalBadPSK(const QString &)), this, SLOT(handleBadPSK(const QString &)));
 	}
 }
 
@@ -2077,4 +2079,26 @@ void TrayApp::cleanupConnectionWizard(void)
 void TrayApp::updatePopupMenuAfterScan(const QString &)
 {
 	this->buildPopupMenu();
+}
+
+// if we fail on PSK authentication, alert user and disconnect the adapter so we don't
+// pound the AP
+void TrayApp::handleBadPSK(const QString &intName)
+{
+	QString errMsg;
+	char *pSSID = NULL;
+	int retval;
+	
+	retval = xsupgui_request_get_ssid(intName.toAscii().data(), &pSSID);
+	if (retval == REQUEST_SUCCESS && pSSID != NULL)
+		errMsg = tr("The password you entered for the PSK network '%1' is invalid.  Please correct this and try again.").arg(pSSID);
+	else
+		errMsg = tr("The password you entered for the PSK network is invalid.  Please correct this and try again.");
+		
+	if (pSSID != NULL)
+		free(pSSID);
+	
+	xsupgui_request_disconnect_connection(intName.toAscii().data());
+				
+	QMessageBox::critical(this, tr("Invalid PSK"), errMsg);
 }

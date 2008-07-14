@@ -62,6 +62,7 @@ ConnectDlg::ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayA
 	m_pConnWizard = NULL;
 	m_pConnInfo = NULL;
 	m_days = 0;
+	m_volatileWirelessConn = false;
 }
 
 ConnectDlg::~ConnectDlg()
@@ -142,6 +143,7 @@ bool ConnectDlg::initUI(void)
 	// set window flags so minimizeable and context help thingy is turned off
 	flags = m_pRealForm->windowFlags();
 	flags &= ~Qt::WindowContextHelpButtonHint;
+	flags &= ~Qt::WindowMaximizeButtonHint;
 	flags |= Qt::WindowMinimizeButtonHint;
 	m_pRealForm->setWindowFlags(flags);	
 		
@@ -374,7 +376,7 @@ void ConnectDlg::populateWirelessAdapterList(void)
 		m_pWirelessAdapterList->setCurrentIndex(idx);
 		this->selectWirelessAdapter(idx);		
 			
-		m_pWirelessAdapterList->setEnabled(m_wirelessAdapters.size() > 1);
+		//m_pWirelessAdapterList->setEnabled(m_wirelessAdapters.size() > 1);
 		
 		// check if we have any adapters. If not, disable tab
 		if (m_pAdapterTabControl != NULL) {
@@ -415,7 +417,7 @@ void ConnectDlg::populateWiredAdapterList(void)
 		m_pWiredAdapterList->setCurrentIndex(idx);
 		this->selectWiredAdapter(idx);
 					
-		m_pWiredAdapterList->setEnabled(m_wiredAdapters.size() > 1);
+		//m_pWiredAdapterList->setEnabled(m_wiredAdapters.size() > 1);
 		
 		// check if we have any adapters. If not, disable tab
 		if (m_pAdapterTabControl != NULL) {
@@ -459,6 +461,16 @@ void ConnectDlg::populateWirelessConnectionList(void)
 		int idx = m_pWirelessConnectionList->findText(oldSelection);
 		if (idx == -1)
 			idx = 0;
+			
+		if (m_volatileWirelessConn == true)
+		{		
+			// Add blank item to list so that we don't inadvertently select a different (yet valid) connection
+			//
+			// this is purposefully 3 spaces to get around other code elsewhere checking for empty connection names								
+			m_pWirelessConnectionList->addItem(QString("   "));
+			idx = m_pWirelessConnectionList->count()-1;
+		}					
+		
 		
 		m_lastWirelessConnectionIdx = idx;
 		m_pWirelessConnectionList->setCurrentIndex(idx);
@@ -705,10 +717,7 @@ void ConnectDlg::connectWiredConnection(void)
 
 void ConnectDlg::disconnectWirelessConnection(void)
 {
-	bool success;
-	
-	success = XSupWrapper::disconnectAdapter(m_currentWirelessAdapterDesc);
-	if (success == true)
+	if (xsupgui_request_disconnect_connection(m_currentWirelessAdapterName.toAscii().data()) == REQUEST_SUCCESS)
 	{
 		stopAndClearTimer();	
 	}
@@ -721,9 +730,7 @@ void ConnectDlg::disconnectWirelessConnection(void)
 
 void ConnectDlg::disconnectWiredConnection(void)
 {
-	bool success;
-	success = XSupWrapper::disconnectAdapter(m_currentWiredAdapterDesc);
-	if (success == true)
+	if (xsupgui_request_disconnect_connection(m_currentWiredAdapterName.toAscii().data()) == REQUEST_SUCCESS)
 	{
 		stopAndClearTimer();	
 	}
@@ -784,7 +791,10 @@ void ConnectDlg::updateWirelessState(void)
 			if (m_pWirelessConnectionList != NULL)
 				m_pWirelessConnectionList->setEnabled(true);
 			if (m_pWirelessConnectButton != NULL)
+			{
 				m_pWirelessConnectButton->setText(tr("Connect"));
+				m_pWirelessConnectButton->setEnabled(m_pWirelessConnectionList != NULL && m_pWirelessConnectionList->currentText().isEmpty() == false);
+			}
 			if (m_pWirelessConnectionInfo != NULL)
 				m_pWirelessConnectionInfo->setEnabled(false);
 			if (m_pWirelessNetworkName != NULL)
@@ -794,6 +804,26 @@ void ConnectDlg::updateWirelessState(void)
 				m_pWirelessSignalIcon->clear();
 				m_pWirelessSignalIcon->setToolTip("");
 			}
+			
+			m_volatileWirelessConn = false;
+			
+			// look for temporary item stuck in connection list for volatile wireless connection.  If we're idle, make sure
+			// to clean this up
+			if (m_pWirelessConnectionList != NULL)
+			{
+				bool selected;
+				selected = m_pWirelessConnectionList->currentIndex() == m_pWirelessConnectionList->count() - 1;
+				if (m_pWirelessConnectionList->itemText(m_pWirelessConnectionList->count() - 1).compare("   ") == 0)
+				{
+					// because QT will select a different item (and generate an event) when we remove an item,
+					// select an alternate item first
+					if (selected == true)
+						m_pWirelessConnectionList->setCurrentIndex(0);				
+					m_pWirelessConnectionList->removeItem(m_pWirelessConnectionList->count() - 1);
+
+				}
+					
+			}
 			m_wirelessNetwork = "";					
 				
 		}
@@ -802,7 +832,10 @@ void ConnectDlg::updateWirelessState(void)
 			if (m_pWirelessConnectionList != NULL)
 				m_pWirelessConnectionList->setEnabled(false);
 			if (m_pWirelessConnectButton != NULL)
-				m_pWirelessConnectButton->setText(tr("Disconnect"));	
+			{
+				m_pWirelessConnectButton->setText(tr("Disconnect"));
+				m_pWirelessConnectButton->setEnabled(true);
+			}
 			if (m_pWirelessConnectionInfo != NULL)
 				m_pWirelessConnectionInfo->setEnabled(true);							
 			
@@ -814,10 +847,41 @@ void ConnectDlg::updateWirelessState(void)
 				if (m_pWirelessConnectionList != NULL)
 				{
 					int index = m_pWirelessConnectionList->findText(QString(connName));
-					if (index != -1)
+					if (index != -1) {
 						m_pWirelessConnectionList->setCurrentIndex(index);
+						m_volatileWirelessConn = false;
+					}
 					else
-						m_pWirelessConnectionList->setCurrentIndex(0);						
+					{
+						// check if volatile connection
+						config_connection *pConn = NULL;
+						bool success;
+						
+						success = XSupWrapper::getConfigConnection(QString(connName), &pConn);
+						if (success == true && pConn != NULL)
+						{
+							if ((pConn->flags & CONFIG_VOLATILE_CONN) == CONFIG_VOLATILE_CONN)
+							{
+								if (m_volatileWirelessConn == false)
+								{
+									m_volatileWirelessConn = true;
+									
+									// assume this is a volatile connection and add blank item to list so that we don't inadvertently
+									// select a different (yet valid) connection
+									//
+									// this is purposefully 3 spaces to get around other code elsewhere checking for empty connection names								
+									m_pWirelessConnectionList->addItem(QString("   "));
+									m_pWirelessConnectionList->setCurrentIndex(m_pWirelessConnectionList->count()-1);
+								}							
+							}
+							else
+							{
+								m_volatileWirelessConn = false;
+							}
+						}
+						if (pConn != NULL)
+							XSupWrapper::freeConfigConnection(&pConn);
+					}					
 				}		
 				config_connection *pConn;
 				bool success;

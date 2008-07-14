@@ -30,67 +30,46 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
-#ifndef _CREDENTIALSPOPUP_H_
-#define _CREDENTIALSPOPUP_H_
+#ifndef _CREDENTIALSMANAGER_H_
+#define _CREDENTIALSMANAGER_H_
 
-#include <QLabel>
-#include <QPushButton>
 #include <QWidget>
-#include <QCheckBox>
-#include <QComboBox>
-#include "xsupcalls.h"
-#include "MessageClass.h"
-#include "Util.h"
+#include <QVector>
+#include <QString>
 
 class Emitter;
-class CredentialsManager;
 
-class CredentialsPopUp : public QWidget
+class CredentialsManager : public QWidget
 {
 	Q_OBJECT
 
 public:
-	CredentialsPopUp(QString connName, QWidget *parent, Emitter *e);
-	~CredentialsPopUp();
-	bool create();
-	void updateData();
-	void show();
 
-signals:
-	void close();
+	CredentialsManager(Emitter *e);
+	~CredentialsManager();
+	void storeCredentials(const QString &connectionName, const QString &userName, const QString &password);
 
 private slots:
-	void slotOkayBtn();
-	void slotDisconnectBtn();
-	void slotWEPComboChange(int);
-
-private:
-	bool createUPW();
-	bool createPSK();
-	bool createWEP();
-	void setupWindow();
+	void handleStateChange(const QString &intName, int sm, int, int newstate, unsigned int);
+	void pskSuccess(const QString &);
+	void connectionDisconnected(const QString &);
 	
 private:
 
-	QWidget *m_pRealForm;
-	QDialog *m_pDialog;
-
-	XSupCalls m_supplicant;
+	class CredData
+	{
+	public:
+		CredData() {};
+		CredData(const QString &connectionName, const QString &userName, const QString &password)
+			: m_connectionName(connectionName), m_userName(userName), m_password(password) {};
+	public:
+		QString m_connectionName;
+		QString m_userName;
+		QString m_password;
+	};
+	
+	QVector<CredentialsManager::CredData> m_credVector;
 	Emitter *m_pEmitter;
-	QDialogButtonBox *m_pButtonBox;
-	QLineEdit *m_pUsername;
-	QLineEdit *m_pPassword;
-	QLabel *m_pDialogMsg;
-	QString m_connName;
-	QCheckBox *m_pRememberCreds;
-	QComboBox *m_pWEPCombo;
-	bool m_doingPsk;
-	bool m_doingWEP;
-
-	char *p_user;
-	char *p_pass;
-	
-	static CredentialsManager *m_pCredManager;
 };
 
-#endif  // _CREDENTIALSPOPUP_H_
+#endif

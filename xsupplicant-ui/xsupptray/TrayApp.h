@@ -130,6 +130,7 @@ private slots:
 	void cancelConnectionWizard(void);
 	void finishConnectionWizard(bool, const QString &);
 	void updatePopupMenuAfterScan(const QString &);
+	void handleBadPSK(const QString &);
 	
 	
 private:
