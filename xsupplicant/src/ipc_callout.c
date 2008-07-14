@@ -7341,9 +7341,14 @@ int ipc_callout_disconnect_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	ipc_events_ui(ctx, IPC_EVENT_UI_CONNECTION_DISCONNECT, ctx->intName);
 
 	// Clear out any memory cached passwords of PSKs.
-	if (ctx->conn->association.temp_psk != NULL) FREE(ctx->conn->association.temp_psk);
-	if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);
-	if (ctx->prof->temp_username != NULL) FREE(ctx->prof->temp_username);
+	if (ctx->conn != NULL)
+		if (ctx->conn->association.temp_psk != NULL) FREE(ctx->conn->association.temp_psk);
+		
+	if (ctx->prof != NULL)
+	{
+		if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);
+		if (ctx->prof->temp_username != NULL) FREE(ctx->prof->temp_username);
+	}
 
 	ctx->conn = NULL;
 	FREE(ctx->conn_name);
