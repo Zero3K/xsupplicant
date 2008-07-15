@@ -85,6 +85,7 @@
 #define IPC_EVENT_UI_POST_CONNECT_TIMEOUT					   16  ///< The supplicant has been disconnect for some period of time.  So prompt the user to see if they want to try to connect to something else.
 #define IPC_EVENT_UI_CONNECTION_DISCONNECT					   17  ///< The supplicant has disconnected the connection for interface %s.
 #define IPC_EVENT_PSK_SUCCESS								   18  ///< The PSK connection completed successfully.
+#define IPC_EVENT_8021X_FAILED								   19  ///< The 802.1X connection failed due to invalid credentials.
 
 // State machines that we may get state machine events for. 
 #define IPC_STATEMACHINE_PHYSICAL                              1   ///< Identify the physical state machine

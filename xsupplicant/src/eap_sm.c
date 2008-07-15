@@ -1863,7 +1863,7 @@ void eap_sm_change_to_failure(eap_sm *sm)
 		  FREE(ctx->prof->temp_password);
 
 		  // Ask the UI to give us new credentials.
-		  ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, ctx->conn_name);
+		  ipc_events_ui(ctx, IPC_EVENT_8021X_FAILED, ctx->conn_name);
 	  }
   }
 }
