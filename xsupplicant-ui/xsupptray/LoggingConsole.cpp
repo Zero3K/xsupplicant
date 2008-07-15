@@ -386,5 +386,5 @@ void LogWindow::slotXSupplicantShutDown()
 void LogWindow::slotClear()
 {
   if (m_pLogEdit != NULL) m_pLogEdit->clear();
-  addMessage(tr("Log entries cleared by user"));
+  addMessage(tr("--- Log entries cleared by user ---"));
 }
