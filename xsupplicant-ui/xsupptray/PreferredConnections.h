@@ -35,65 +35,57 @@
 
 #include "xsupcalls.h"
 
-/*
 class QLabel;
 class QPushButton;
 class QFileInfo;
 class QListWidget;
-*/
 
 class PreferredConnections:public QWidget
 {
-  Q_OBJECT
+	Q_OBJECT
 public:
-  PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow);
-  ~PreferredConnections();
-  bool attach();
-  void show();
+	PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow);
+	~PreferredConnections();
+	bool attach();
+	void show();
 
 signals:
-  void close();
+	void close();
 
-private:
-  QString m_connection;
-  conn_enum *m_pConns;
-  XSupCalls &m_supplicant;
-  bool m_bModified; //! set to true something has changed that needs to be written out
-
-  //! GUI variables
-  QWidget *m_pRealForm;
-  QWidget *m_pParentWindow;
-  QListWidget *m_pAvailableList;
-  QListWidget *m_pPreferredList;
-  QPushButton *m_pLeftButton;
-  QPushButton *m_pRightButton;
-  QPushButton *m_pUpButton;
-  QPushButton *m_pDownButton;
-  QPushButton *m_pSaveButton;
-  QPushButton *m_pHelpButton;
-  QPushButton *m_pCancelButton;
-
-  private slots:
+private slots:
     void slotMoveLeft();
     void slotMoveRight();
     void slotMoveUp();
     void slotMoveDown();
-    void slotApply();
-    void slotSave();
-    void slotDone();
+    void slotClose();
     void slotEnableButtons();
 	void slotPreferredSelected(QListWidgetItem *);
 	void slotAvailableSelected(QListWidgetItem *);
-
-  public slots:
     void slotHelp();
     
 private:
-  MessageClass m_message;
-  void hookupSignalsAndSlots();
-  void updateLists();
-  void setupWindow();
-  void moveItems(QListWidget *from, QListWidget *to);
+	void hookupSignalsAndSlots();
+	void updateLists();
+	void setupWindow();
+	void moveItems(QListWidget *from, QListWidget *to);
+	
+private:
+	QString m_connection;
+	conn_enum *m_pConns;
+	XSupCalls &m_supplicant;
+	MessageClass m_message;
+
+	//! GUI variables
+	QWidget *m_pRealForm;
+	QWidget *m_pParentWindow;
+	QListWidget *m_pAvailableList;
+	QListWidget *m_pPreferredList;
+	QPushButton *m_pLeftButton;
+	QPushButton *m_pRightButton;
+	QPushButton *m_pUpButton;
+	QPushButton *m_pDownButton;
+	QPushButton *m_pCloseButton;
+	QPushButton *m_pHelpButton;
 };
 
 #endif  // _PREFERREDCONNECTIONS_H_
