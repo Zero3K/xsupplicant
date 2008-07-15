@@ -1166,29 +1166,40 @@ void TrayApp::setTrayIconState(int curState)
 */
 void TrayApp::slotIconActivated(QSystemTrayIcon::ActivationReason reason)
 {
-  switch (reason) 
-  {
-    case QSystemTrayIcon::DoubleClick:
-      if (m_bSupplicantConnected)
-      {
-		  if (m_p1XControl->isChecked())
-		  {
-			this->showConnectDlg();
-			//slotLaunchLogin();
-		  }
-		  else
-		  {
-			  QMessageBox::information(this, tr("Interface Management"), tr("XSupplicant is not currently managing your interfaces.  If you wish to have XSupplicant manage your interfaces, please right-click the icon, and select \"Manage Interfaces with XSupplicant\"."));
-		  }
-      }
-      else
-      {
-        slotAbout();
-      }
-      break;
-    default:
-      break;
-  }
+	switch (reason) 
+	{
+		case QSystemTrayIcon::DoubleClick:
+			if (m_bSupplicantConnected)
+			{
+				if (m_p1XControl->isChecked())
+					this->showConnectDlg();
+	
+				else
+					QMessageBox::information(this, tr("Interface Management"), tr("XSupplicant is not currently managing your interfaces.  If you wish to have XSupplicant manage your interfaces, please right-click the icon, and select \"Manage Interfaces with XSupplicant\"."));
+			}
+			else
+			{
+				slotAbout();
+			}
+			break;
+
+		case QSystemTrayIcon::Trigger:
+		{
+			// bring all windows to front when user clicks on the tray icon
+			QWidgetList widgets;
+			widgets = m_app.topLevelWidgets();
+			for (int i =0; i<widgets.count(); i++)
+			{
+				if (widgets.at(i)->isWindow() == true && widgets.at(i)->isVisible() == true)
+				{
+					widgets.at(i)->raise();
+					widgets.at(i)->activateWindow();				
+				}
+			}
+		}
+		default:
+			break;
+	}
 }
 
 
