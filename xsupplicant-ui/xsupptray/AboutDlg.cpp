@@ -134,10 +134,9 @@ bool AboutWindow::create()
 
 void AboutWindow::show()
 {
-	// This will cause the window to come to the front if it is already built.
-	if (m_pRealForm->isVisible() == true) m_pRealForm->hide();
-
 	m_pRealForm->show();
+	m_pRealForm->raise();
+	m_pRealForm->activateWindow();
 }
 
 void AboutWindow::setupWindow()
@@ -145,9 +144,9 @@ void AboutWindow::setupWindow()
 	Qt::WindowFlags flags;
 
 	flags = m_pRealForm->windowFlags();
-	flags &= (~Qt::WindowContextHelpButtonHint);
-	flags |= Qt::WindowMinimizeButtonHint;
-  m_pRealForm->setWindowFlags(flags);
+	flags &= ~Qt::WindowContextHelpButtonHint;
+	flags &= ~Qt::WindowMinimizeButtonHint;
+	m_pRealForm->setWindowFlags(flags);
 }
 
 void AboutWindow::updateData()
