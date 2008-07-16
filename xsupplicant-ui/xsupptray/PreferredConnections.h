@@ -44,7 +44,7 @@ class PreferredConnections:public QWidget
 {
 	Q_OBJECT
 public:
-	PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow);
+	PreferredConnections(XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow);
 	~PreferredConnections();
 	bool attach();
 	void show();

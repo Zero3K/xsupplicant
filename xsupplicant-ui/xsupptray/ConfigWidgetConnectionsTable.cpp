@@ -299,7 +299,7 @@ void ConfigWidgetConnectionsTable::slotPriorityClicked()
 	{
 		// jking -- not passing the right parameter for the Preferred Connections dialog parent window
 		// but that's okay.  It'll only affect window modality
-		m_pPreferred = new PreferredConnections(m_pConnectionsEnum, (*m_pSupplicant), this, this);
+		m_pPreferred = new PreferredConnections((*m_pSupplicant), this, this);
 		if (m_pPreferred != NULL)
 		{
 			if (m_pPreferred->attach() == false)

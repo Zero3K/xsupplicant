@@ -40,6 +40,7 @@
 #include "Util.h"
 #include "FormLoader.h"
 #include "helpbrowser.h"
+#include "XSupWrapper.h"
 
 //! Constructor
 /*!
@@ -48,8 +49,8 @@
   \param[in] parent is the parent widget
   \return Nothing
 */
-PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow)
-     : QWidget(parent), m_pConns(pConn), m_supplicant(supplicant), m_message(this), m_pParentWindow(parentWindow)
+PreferredConnections::PreferredConnections(XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow)
+     : QWidget(parent), m_supplicant(supplicant), m_message(this), m_pParentWindow(parentWindow)
  {
   m_pAvailableList = NULL;
   m_pPreferredList = NULL;
@@ -60,6 +61,7 @@ PreferredConnections::PreferredConnections(conn_enum *pConn, XSupCalls &supplica
   m_pCloseButton = NULL;
   m_pHelpButton = NULL;
   m_pRealForm = NULL;
+  m_pConns = NULL;
  }
 
 //! Destructor
@@ -299,19 +301,13 @@ void PreferredConnections::slotMoveUp()
 
   // Get the top selected row
   if (items.size() == 0)
-  {
-    // nothing to do
-    QMessageBox::warning(this, tr("Can't move items"), tr("Make sure you select an item to move first."));
     return;
-  }
+
   int row = m_pPreferredList->row(items[0]);
   // Make sure there is somewhere to move them
   // If the top row is already the top row, there is nothing to do
   if (row == 0)
-  {
-    QMessageBox::warning(this, tr("Can't move items"), tr("The items are already at the top."));
     return;
-  }
 
   // now move them up - need to find the row just before the row selected and move above this row.
   // Move the items - make sure they move
@@ -319,7 +315,7 @@ void PreferredConnections::slotMoveUp()
   for (int i = 0; i < items.size(); i++) 
   {
     insertRow--;
-    p = new QListWidgetItem(items[i]->text(), NULL, items[i]->type());
+    p = new QListWidgetItem(items[i]->text());
     m_pPreferredList->insertItem(insertRow, p);
   }
 
@@ -349,11 +345,8 @@ void PreferredConnections::slotMoveDown()
   // First, see if they've selected anything
   int count = items.size();
   if (count == 0)
-  {
-    // nothing to do
-    QMessageBox::warning(this, tr("Can't move items"), tr("Make sure you select an item to move first."));
     return;
-  }
+
 
   // Get the last row selected
   int row = m_pPreferredList->row(items[count-1]);
@@ -362,17 +355,15 @@ void PreferredConnections::slotMoveDown()
   // If the top row is already the top row, there is nothing to do
   // Row is zero-based, so must add one
   if (row+1 == m_pPreferredList->count())
-  {
-    QMessageBox::warning(this, tr("Can't move items"), tr("The items are already at the bottom."));
     return;
-  }
+
   // now move them up - need to find the row just before the row selected and move above this row.
   // Move the items - make sure they move
   insertRow = row + 1;
   for (int i = 0; i < items.size(); i++) 
   {
     insertRow++;
-    p = new QListWidgetItem(items[i]->text(), NULL, items[i]->type());
+    p = new QListWidgetItem(items[i]->text());
     m_pPreferredList->insertItem(insertRow, p);
   }
 
@@ -448,8 +439,15 @@ void PreferredConnections::updateLists()
 	if (m_pPreferredList != NULL)
 		m_pPreferredList->clear();
 
+	if (m_pConns != NULL) {
+		xsupgui_request_free_conn_enum(&m_pConns);
+		m_pConns = NULL;
+	}
+		
+	int retval = xsupgui_request_enum_connections(&m_pConns);
+	
 	// if no connections then nothing to populate lists with
-	if (m_pConns == NULL)
+	if (retval != REQUEST_SUCCESS || m_pConns == NULL)
 		return;
 
 	int i = 0;
@@ -457,22 +455,42 @@ void PreferredConnections::updateLists()
 	{
 		if (m_pConns[i].ssid != NULL && QString(m_pConns[i].ssid).isEmpty() == false)
 		{
-			int priority = m_pConns[i].priority;
-			QListWidgetItem *pItem = new QListWidgetItem(m_pConns[i].name, NULL, priority); // the priority is the type - I think this will work
+			bool success;
+			config_connection *pConn;
+			bool volatileConn = false;
 			
-			if (pItem != NULL)
+			success = XSupWrapper::getConfigConnection(QString(m_pConns[i].name), &pConn);
+			
+			if (success == true && pConn != NULL && (pConn->flags & CONFIG_VOLATILE_CONN) == CONFIG_VOLATILE_CONN)
+				volatileConn = true;
+				
+			if (pConn != NULL)
 			{
-				if (priority >= XSupCalls::CONNECTION_DEFAULT_PRIORITY)
+				XSupWrapper::freeConfigConnection(&pConn);
+				pConn = NULL;
+			}
+			
+			// don't show volatile connections in this list	
+			if (volatileConn == false)
+			{
+			
+				int priority = m_pConns[i].priority;
+				QListWidgetItem *pItem = new QListWidgetItem(m_pConns[i].name);
+				
+				if (pItem != NULL)
 				{
-					// Available list goes here
-					if (m_pAvailableList != NULL)
-						m_pAvailableList->addItem(pItem);
-				}
-				else
-				{
-					// List is already prioritized
-					if (m_pPreferredList != NULL)
-						m_pPreferredList->addItem(pItem);
+					if (priority >= XSupCalls::CONNECTION_DEFAULT_PRIORITY)
+					{
+						// Available list goes here
+						if (m_pAvailableList != NULL)
+							m_pAvailableList->addItem(pItem);
+					}
+					else
+					{
+						// List is already prioritized
+						if (m_pPreferredList != NULL)
+							m_pPreferredList->addItem(pItem);
+					}
 				}
 			}
 		}

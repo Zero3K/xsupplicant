@@ -52,12 +52,12 @@ extern "C" {
 static const QString editConnString = QWidget::tr("Edit Connections...");
 static const QString seperatorString = "-----";
 
-ConnectDlg::ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant)
+ConnectDlg::ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp)
 	: QWidget(parent), 
 	m_pParent(parent),
 	m_pParentWindow(parentWindow),
 	m_pEmitter(e),
-	m_pSupplicant(supplicant)
+	m_pTrayApp(trayApp)
 {
 	m_pSSIDListDlg = NULL;
 	m_pConnWizard = NULL;
@@ -583,6 +583,10 @@ void ConnectDlg::populateWirelessConnectionList(void)
 		m_lastWirelessConnectionIdx = idx;
 		m_pWirelessConnectionList->setCurrentIndex(idx);
 		this->selectWirelessConnection(idx);
+		
+		// it's possible that the reason we're updating this list is because a connection changed from volatile
+		// to non-volatile.  As such, update the wireless state to reflect the correct connection
+		this->updateWirelessState();		
 	}
 }
 
@@ -677,7 +681,7 @@ void ConnectDlg::showSSIDList()
 	if (m_pSSIDListDlg == NULL)
 	{
 		// jking - for now assume this was launched via the connect dialog
-		m_pSSIDListDlg = new SSIDListDlg(this, m_pRealForm, m_pEmitter, m_pSupplicant);
+		m_pSSIDListDlg = new SSIDListDlg(this, m_pRealForm, m_pEmitter, m_pTrayApp);
 		if (m_pSSIDListDlg == NULL || m_pSSIDListDlg->create() == false)
 		{
 			QMessageBox::critical(m_pRealForm, tr("Form Creation Error"), tr("The SSID List Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
@@ -709,7 +713,7 @@ void ConnectDlg::selectWirelessConnection(int connIdx)
 		if (m_pWirelessConnectionList->itemText(connIdx) == editConnString)
 		{
 			// this is the "edit connections..." item.  Launch config
-			m_pSupplicant->slotLaunchConfig();
+			m_pTrayApp->slotLaunchConfig();
 			m_pWirelessConnectionList->setCurrentIndex(m_lastWirelessConnectionIdx);
 		}
 		else if (m_pWirelessConnectionList->itemText(connIdx) == seperatorString)
@@ -735,7 +739,7 @@ void ConnectDlg::selectWiredConnection(int connIdx)
 		if (m_pWiredConnectionList->itemText(connIdx) == editConnString)
 		{
 			// this is the "edit connections..." item.  Launch config
-			m_pSupplicant->slotLaunchConfig();
+			m_pTrayApp->slotLaunchConfig();
 			m_pWiredConnectionList->setCurrentIndex(m_lastWiredConnectionIdx);
 		}
 		else if (m_pWiredConnectionList->itemText(connIdx) == seperatorString)
@@ -957,7 +961,15 @@ void ConnectDlg::updateWirelessState(void)
 					int index = m_pWirelessConnectionList->findText(QString(connName));
 					if (index != -1) {
 						m_pWirelessConnectionList->setCurrentIndex(index);
+						if (m_volatileWirelessConn == true)
+						{
+							// it's possible that the connection was volatile before, but has changed to non-volatile (by the user
+							// choosing to remember the password).  Detect that transition here and remove the volatile item.
+							if (m_pWirelessConnectionList->itemText(m_pWirelessConnectionList->count() - 1).compare("   ") == 0)			
+								m_pWirelessConnectionList->removeItem(m_pWirelessConnectionList->count() - 1);
+						}							
 						m_volatileWirelessConn = false;
+											
 					}
 					else
 					{
@@ -1342,23 +1354,27 @@ void ConnectDlg::updateWirelessSignalStrength(const QString &intName)
 }
 void ConnectDlg::menuConfigure(void)
 {
-	m_pSupplicant->slotLaunchConfig();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotLaunchConfig();
 }
 
 void ConnectDlg::menuViewLog(void)
 {
-	m_pSupplicant->slotViewLog();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotViewLog();
 }
 
 void ConnectDlg::menuAbout(void)
 {
-	m_pSupplicant->slotAbout();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotAbout();
 }
 
 void ConnectDlg::menuQuit(void)
 {
 	// !!! TODO: warn about any open connections?!
-	m_pSupplicant->slotExit();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotExit();
 }
 
 void ConnectDlg::menuClose(void)
@@ -1369,7 +1385,8 @@ void ConnectDlg::menuClose(void)
 
 void ConnectDlg::menuCreateTicket(void)
 {
-	m_pSupplicant->slotCreateTroubleticket();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotCreateTroubleticket();
 }
 
 void ConnectDlg::menuHelp(void)

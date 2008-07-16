@@ -94,7 +94,7 @@ void EventListenerThread::disconnectXSupEventListener()
 */
 bool EventListenerThread::waitForEvents(Emitter &e)
 { 
-  emit e.sendStartLogMessage(tr("--- Start of log entries ---")); 
+  emit e.sendStartLogMessage(tr("--- Start of log entries ---\n")); 
   return m_supplicant->waitForEvents(e);
 }
 

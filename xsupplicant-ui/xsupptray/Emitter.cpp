@@ -75,9 +75,14 @@ void Emitter::sendLogMessage(const QString &str)
 	emit signalLogMessage(str);
 }
 
-void Emitter::sendBadPSK(QString &intName)
+void Emitter::sendBadPSK(const QString &intName)
 {
 	emit signalBadPSK(intName);
+}
+
+void Emitter::sendBadCreds(const QString &connName)
+{
+	emit signalBadCreds(connName);
 }
 
 //! sendIPAddressSet
@@ -436,7 +441,7 @@ void Emitter::sendPluginObjectDestroyed(UIPlugins *plugin)
 	}
 }
 
-void Emitter::sendAuthTimeout(QString &intName)
+void Emitter::sendAuthTimeout(const QString &intName)
 {
 	emit signalAuthTimeout(intName);
 }
@@ -466,22 +471,22 @@ void Emitter::sendTroubleTicketError()
 	emit signalTroubleTicketError();
 }
 
-void Emitter::sendRequestUPW(QString connName)
+void Emitter::sendRequestUPW(const QString &connName)
 {
 	emit signalRequestUPW(connName);
 }
 
-void Emitter::sendPostConnectTimeout(QString devName)
+void Emitter::sendPostConnectTimeout(const QString &devName)
 {
 	emit signalPostConnectTimeout(devName);
 }
 
-void Emitter::sendConnectionDisconnected(QString devName)
+void Emitter::sendConnectionDisconnected(const QString &devName)
 {
 	emit signalConnectionDisconnected(devName);
 }
 
-void Emitter::sendPSKSuccess(QString devName)
+void Emitter::sendPSKSuccess(const QString &devName)
 {
 	emit signalPSKSuccess(devName);
 }

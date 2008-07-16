@@ -53,7 +53,7 @@ class ConnectDlg : public QWidget
 	Q_OBJECT
 	
 public: 
-	ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant);
+	ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp);
 	~ConnectDlg();
 	void show(void);
 	bool create(void);
@@ -129,7 +129,7 @@ private:
 	QLabel		*m_pWiredNetworkName;
 	QLabel		*m_pWirelessSignalIcon;
 
-	TrayApp *m_pSupplicant;
+	TrayApp *m_pTrayApp;
 	
 	// pointers to dialog objects
 	SSIDListDlg *m_pSSIDListDlg;

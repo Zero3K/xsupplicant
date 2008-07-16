@@ -2459,6 +2459,11 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				temp = value;
 				e.sendPSKSuccess(temp);
 				break;
+			
+			case IPC_EVENT_8021X_FAILED:
+				temp = value;
+				e.sendBadCreds(temp);
+				break;
 
             default:
             if (getUIEventString(uievent, desc))

@@ -49,11 +49,11 @@
 // TODO:  disable wired options if no wired interface present
 // TODO:  disable wireless options if no wireless interfaces present
 
-ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant)
+ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp)
 	: QWidget(parent),
 	m_pParent(parent),
 	m_pEmitter(e),
-	m_pSupplicant(supplicant),
+	m_pTrayApp(trayApp),
 	m_pParentWindow(parentWindow)
 {
 	m_pConnections = NULL;
@@ -590,7 +590,7 @@ void ConnectMgrDlg::hide(void)
 
 void ConnectMgrDlg::showAdvancedConfig(void)
 {
-	m_pSupplicant->showAdvancedConfig();
+	m_pTrayApp->showAdvancedConfig();
 	this->hide();
 }
 
@@ -861,7 +861,7 @@ void ConnectMgrDlg::showPriorityDialog()
 {
 	if (m_pPrefDlg == NULL)
 	{
-		m_pPrefDlg = new PreferredConnections(m_pConnections, XSupCalls(m_pSupplicant), this, m_pRealForm);
+		m_pPrefDlg = new PreferredConnections(XSupCalls(m_pTrayApp), this, m_pRealForm);
 		if (m_pPrefDlg != NULL)
 		{
 			if (m_pPrefDlg->attach() == false)
@@ -1091,18 +1091,21 @@ void ConnectMgrDlg::editSelectedConnection(void)
 
 void ConnectMgrDlg::menuViewLog(void)
 {
-	m_pSupplicant->slotViewLog();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotViewLog();
 }
 
 void ConnectMgrDlg::menuAbout(void)
 {
-	m_pSupplicant->slotAbout();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotAbout();
 }
 
 void ConnectMgrDlg::menuQuit(void)
 {
 	// !!! TODO: warn about any open connections?!
-	m_pSupplicant->slotExit();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotExit();
 }
 
 void ConnectMgrDlg::menuClose(void)
@@ -1113,7 +1116,8 @@ void ConnectMgrDlg::menuClose(void)
 
 void ConnectMgrDlg::menuCreateTicket(void)
 {
-	m_pSupplicant->slotCreateTroubleticket();
+	if (m_pTrayApp != NULL)
+		m_pTrayApp->slotCreateTroubleticket();
 }
 
 void ConnectMgrDlg::menuHelp(void)

@@ -518,7 +518,7 @@ void CredentialsPopUp::slotOkayBtn()
 		// Set our PSK.		
 		if (xsupgui_request_set_connection_pw(m_connName.toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
 		{
-			QMessageBox::critical(this, tr("Error"), tr("Unable to set your preshared key."));
+			QMessageBox::critical(this, tr("Error"), tr("Unable to set your PSK password."));
 		}
 		else
 		{

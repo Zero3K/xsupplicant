@@ -40,27 +40,41 @@
 #include "ConfigInfo.h"
 #include "UIPlugins.h"
 
+class TrayApp;
+
 class ConfigDlg : public QWidget
- {
+{
      Q_OBJECT
 
- public:
-  ConfigDlg(XSupCalls &sup, Emitter *e, QWidget *parent);
-  ~ConfigDlg();
+public:
+	ConfigDlg(XSupCalls &sup, Emitter *e, QWidget *parent, TrayApp *trayApp);
+	~ConfigDlg();
 
-  bool create();
-  void show();
+	bool create();
+	void show();
  	bool isVisible(void);
 	void bringToFront(void); 
 
 signals:
-  void close();
-  void navItemSelected(int, const QString &);
+	void close();
+	void navItemSelected(int, const QString &);
 
- private:
-	 void enumData();
+private:
+	void enumData(void);
+	bool buildMenuBar(void);
+	 
+private slots:
+	void menuClose(void);
+	void menuQuit(void);
+	void menuCreateTicket(void);
+	void menuViewLog(void);
+	void menuHelp(void);
+	void menuAbout(void);	
+
+private:
 
 	 Emitter *m_pEmitter;
+	 TrayApp *m_pTrayApp;
 
 	 XSupCalls &m_supplicant;
 

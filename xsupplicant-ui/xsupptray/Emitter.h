@@ -101,10 +101,11 @@ signals:
   void signalInterfaceControl(bool);
   void signalTroubleTicketDone();
   void signalTroubleTicketError();
-  void signalRequestUPW(QString);
-  void signalPostConnectTimeout(QString);
+  void signalRequestUPW(const QString &);
+  void signalPostConnectTimeout(const QString &);
   void signalConnectionDisconnected(const QString &);
   void signalPSKSuccess(const QString &);
+  void signalBadCreds(const QString &);
 
 public:
   Emitter();
@@ -149,17 +150,18 @@ public:
   void sendPluginUnloading(UIPlugins *plugin);
   void sendPluginObjectInstantiated(UIPlugins *plugin);
   void sendPluginObjectDestroyed(UIPlugins *plugin);
-  void sendBadPSK(QString &intName);
-  void sendAuthTimeout(QString &intName);
+  void sendBadPSK(const QString &intName);
+  void sendAuthTimeout(const QString &intName);
   void sendClearLoginPopups();
   void sendWokeUp();
   void sendInterfaceControl(bool);
   void sendTroubleTicketDone();
   void sendTroubleTicketError();
-  void sendRequestUPW(QString);
-  void sendPostConnectTimeout(QString);
-  void sendConnectionDisconnected(QString);
-  void sendPSKSuccess(QString);
+  void sendRequestUPW(const QString &);
+  void sendPostConnectTimeout(const QString &);
+  void sendConnectionDisconnected(const QString &);
+  void sendPSKSuccess(const QString &);
+  void sendBadCreds(const QString &);
 };
 
 #endif  // _EMITTER_H_

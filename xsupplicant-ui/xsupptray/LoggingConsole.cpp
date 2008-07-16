@@ -102,7 +102,10 @@ bool LogWindow::create()
 {
 	m_pRealForm = FormLoader::buildform("LogWindow.ui");
 
-    if (m_pRealForm == NULL) return false;
+    if (m_pRealForm == NULL)
+		return false;
+	
+	m_pRealForm->setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);	
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
 	m_pLogEdit = qFindChild<QTextEdit*>(m_pRealForm, "dataFieldLogWindow");
@@ -132,9 +135,7 @@ bool LogWindow::create()
 	{
 		QObject::connect(m_pCopyToClipboard, SIGNAL(clicked()), this, SLOT(slotCopyToClipboard()));
 	}
-
-    m_pRealForm->setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);
-
+   
 	return true;
 }
 
@@ -171,8 +172,13 @@ void LogWindow::showLog()
 {
 	if (m_pRealForm != NULL)
 	{
+		if (m_pLogEdit != NULL)
+		{
+			// move cursor to last line
+			m_pLogEdit->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
+			m_pLogEdit->moveCursor(QTextCursor::StartOfLine, QTextCursor::MoveAnchor);
+		}
 		m_pRealForm->show();
-		if (m_pLogEdit != NULL) m_pLogEdit->moveCursor(QTextCursor::End);
 		m_pRealForm->activateWindow();
 		m_pRealForm->setFocus();
 	}
@@ -385,6 +391,7 @@ void LogWindow::slotXSupplicantShutDown()
 */
 void LogWindow::slotClear()
 {
-  if (m_pLogEdit != NULL) m_pLogEdit->clear();
-  addMessage(tr("--- Log entries cleared by user ---"));
+  if (m_pLogEdit != NULL)
+	m_pLogEdit->clear();
+  addMessage(tr("--- Log entries cleared by user ---\n"));
 }

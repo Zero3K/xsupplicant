@@ -56,7 +56,7 @@ class ConnectMgrDlg : public QWidget
 	Q_OBJECT
 
 public:
-	ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant);
+	ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp);
 	~ConnectMgrDlg();
 	bool create(void);
 	void show(void);
@@ -99,7 +99,7 @@ private slots:
 private:
 	QWidget *m_pParent;
 	QWidget *m_pRealForm;
-	TrayApp *m_pSupplicant;
+	TrayApp *m_pTrayApp;
 	Emitter *m_pEmitter;
 	QWidget *m_pParentWindow;
 	

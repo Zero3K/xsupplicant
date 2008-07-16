@@ -86,6 +86,7 @@ public:
 public:
 	friend class ConnectDlg;
 	friend class ConnectMgrDlg;
+	friend class ConfigDlg;
 
 signals:
 	// Signals that can be rebroadcast from the root that other objects can subscribe to.
@@ -121,9 +122,9 @@ private slots:
 	void slotControlInterfacesDone(bool);
 	void slotCreateTroubleticketDone();
 	void slotCreateTroubleticketError();
-	void slotRequestUPW(QString connName);
+	void slotRequestUPW(const QString &connName);
 	void slotCleanupUPW();
-	void slotConnectionTimeout(QString devName);
+	void slotConnectionTimeout(const QString &devName);
 	void showBasicConfig(void);
 	void showAdvancedConfig(void);	
 	void buildPopupMenu(void);
@@ -131,6 +132,7 @@ private slots:
 	void finishConnectionWizard(bool, const QString &);
 	void updatePopupMenuAfterScan(const QString &);
 	void handleBadPSK(const QString &);
+	void handleBadCreds(const QString &);
 	
 	
 private:

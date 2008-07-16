@@ -112,8 +112,9 @@ TrayApp::~TrayApp()
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalSupWarningEvent(const QString &)), this, SLOT(slotSupWarning(const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));
-		Util::myDisconnect(m_pEmitter, SIGNAL(signalRequestUPW(QString)), this, SLOT(slotRequestUPW(QString)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalRequestUPW(const QString &)), this, SLOT(slotRequestUPW(const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadPSK(const QString &)), this, SLOT(handleBadPSK(const QString &intName)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadPCreds(const QString &)), this, SLOT(handleBadCreds(const QString &intName)));
 
 		delete m_pEmitter;
 		m_pEmitter = NULL;
@@ -614,9 +615,10 @@ void TrayApp::connectGlobalTrayIconSignals()
 
 		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
-		Util::myConnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(QString)), this, SLOT(slotConnectionTimeout(QString)));
+		Util::myConnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(const QString &)), this, SLOT(slotConnectionTimeout(const QString &)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updatePopupMenuAfterScan(const QString &)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalBadPSK(const QString &)), this, SLOT(handleBadPSK(const QString &)));
+		Util::myConnect(m_pEmitter, SIGNAL(signalBadCreds(const QString &)), this, SLOT(handleBadCreds(const QString &)));
 	}
 }
 
@@ -633,7 +635,7 @@ void TrayApp::disconnectGlobalTrayIconSignals()
 
 		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceInserted(char *)), this, SLOT(slotInterfaceInserted(char *)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
-		Util::myDisconnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(QString)), this, SLOT(slotConnectionTimeout(QString)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(const QString &)), this, SLOT(slotConnectionTimeout(const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updatePopupMenuAfterScan(const QString &)));
 	}
 }
@@ -797,7 +799,7 @@ bool TrayApp::postConnectActions()
   Util::myConnect(m_pEmitter, SIGNAL(signalSupWarningEvent(const QString &)), this, SLOT(slotSupWarning(const QString &)));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));  
-  Util::myConnect(m_pEmitter, SIGNAL(signalRequestUPW(QString)), this, SLOT(slotRequestUPW(QString)));
+  Util::myConnect(m_pEmitter, SIGNAL(signalRequestUPW(const QString &)), this, SLOT(slotRequestUPW(const QString &)));
 
   updateIntControlCheck();
   setGlobalTrayIconState();
@@ -1216,7 +1218,6 @@ void TrayApp::slotLaunchConfig()
 		m_pConnMgr->bringToFront();
 	else
 		this->showBasicConfig();
-	// this->showAdvancedConfig();
 }
 
 void TrayApp::slotCleanupConfig()
@@ -1361,7 +1362,7 @@ void TrayApp::slotExit()
   this->m_app.exit(0);
 }
 
-void TrayApp::slotRequestUPW(QString connName)
+void TrayApp::slotRequestUPW(const QString &connName)
 {
 	// Only do something if it isn't already showing.
 	if (m_pCreds == NULL)
@@ -1394,7 +1395,7 @@ void TrayApp::slotCleanupUPW()
 	m_pCreds = NULL;
 }
 
-void TrayApp::slotConnectionTimeout(QString devName)
+void TrayApp::slotConnectionTimeout(const QString &devName)
 {
 	char *conname = NULL;
 	QString temp;
@@ -1753,7 +1754,7 @@ void TrayApp::showAdvancedConfig(void)
 	{
 		if (m_pConfDlg == NULL)
 		{
-			m_pConfDlg = new ConfigDlg(m_supplicant, m_pEmitter, this);
+			m_pConfDlg = new ConfigDlg(m_supplicant, m_pEmitter, this, this);
 			if (m_pConfDlg == NULL || m_pConfDlg->create() == false)
 			{
 				QMessageBox::critical(this, tr("Form Creation Error"), tr("The Configuration Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
@@ -2095,8 +2096,47 @@ void TrayApp::handleBadPSK(const QString &intName)
 		
 	if (pSSID != NULL)
 		free(pSSID);
+		
+	// get connection name before disconnecting
+	char *pConnName;
+	retval = xsupgui_request_get_conn_name_from_int(intName.toAscii().data(), &pConnName);
 	
+	// disconnect so we don't repeatedly try to connect
 	xsupgui_request_disconnect_connection(intName.toAscii().data());
-				
+	
+	// let user know there was an error
 	QMessageBox::critical(this, tr("Invalid PSK"), errMsg);
+	
+	// re-prompt if we have the information necessary
+	if (retval == REQUEST_SUCCESS && pConnName != NULL)
+		this->slotRequestUPW(QString(pConnName));
+		
+	if (pConnName != NULL)
+		free(pConnName);
+}
+
+// if we fail on 802.1X authentication, alert user and reprompt for creds
+void TrayApp::handleBadCreds(const QString &connName)
+{
+	QString errMsg;
+	bool success;
+	config_connection *pConn = NULL;
+/*	
+	// commented out for now to avoid barraging the user with dialogs
+
+	success = XSupWrapper::getConfigConnection(connName, &pConn);
+	
+	if (success == true && pConn != NULL)
+		errMsg = tr("The credentials you entered for the 802.1X network '%1' are invalid.  Please correct this and try again.").arg(QString(pConn->ssid));
+	else
+		errMsg = tr("The credentials you entered for the 802.1X network are invalid.  Please correct this and try again.");
+	
+	if (pConn != NULL)
+		XSupWrapper::freeConfigConnection(&pConn);
+			
+	// let user know there was an error
+	QMessageBox::critical(this, tr("Invalid Credentials"), errMsg);
+*/	
+	// re-prompt for credentials
+	this->slotRequestUPW(connName);
 }
