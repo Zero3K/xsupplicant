@@ -29,79 +29,45 @@
  *   and distribute your source code for those products under the GPL, please contact
  *   Identity Engines for an OEM Commercial License.
  **/
+ 
+#ifndef _CONNECTIONSELECTDLG_H_
+#define _CONNECTIONSELECTDLG_H_
 
-#ifndef _SSIDLISTDLG_H_
-#define _SSIDLISTDLG_H_
-
-#include <QPushButton>
 #include <QWidget>
-#include <QTableWidget>
-#include <QLabel>
-#include "SSIDList.h"
+#include <QComboBox>
+#include <QDialogButtonBox>
+#include <QStringList>
 
-class Emitter;
-class WirelessScanDlg;
-class TrayApp;
-class ConnectionWizard;
-class ConnectionSelectDlg;
-
-class SSIDListDlg : public QWidget
+class ConnectionSelectDlg : public QWidget
 {
 	Q_OBJECT
-
-public:
-	SSIDListDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant);
-	~SSIDListDlg();
-	bool create(void);
-	void show(void);
-	void refreshList(const QString &adapterName);
 	
-private:
-	typedef struct networkInfo {
-		QString name;
-		int signal;
-		int security;
-	};
+public:
+	ConnectionSelectDlg(QWidget *parent, QWidget *parentWindow, const QStringList &connections);
+	~ConnectionSelectDlg();
+	void show(void);
+	bool create(void);
+	
+signals:
+	void close(void);
 	
 private:
 	bool initUI(void);
-	void connectToNetwork(const WirelessNetworkInfo &);
-	void promptConnectionSelection(const QStringList &connList);	
 	
 private slots:
-	void slotShowHelp(void);
-	void rescanNetworks(void);
-	void wirelessScanComplete(const QString&);
-	void cancelScan(void);
-	void handleSSIDListSelectionChange(const WirelessNetworkInfo &);
-	void handleSSIDListDoubleClick(const WirelessNetworkInfo &);
-	void connectToSelectedNetwork(void);
-	void cleanupConnectionWizard(void);
-	void finishConnectionWizard(bool, const QString &);
-	void cleanupConnSelDialog(void);
+	void okay(void);
+	void cancel(void);
 
 private:
-
-	Emitter *m_pEmitter;
-	QWidget *m_pRealForm;
 	QWidget *m_pParent;
 	QWidget *m_pParentWindow;
-  
-	// cached pointers to UI objects
-	QPushButton *m_pCloseButton;
-	QPushButton *m_pHelpButton; 
-	QPushButton *m_pRefreshButton;
-	QPushButton *m_pConnectButton;
-	QLabel * m_pHeaderLabel;
-	QTableWidget *m_pSSIDTable;
+	QWidget *m_pRealForm;
 	
-	ConnectionWizard *m_pConnWizard;
-	WirelessScanDlg *m_pRescanDialog;
-	SSIDList *m_pSSIDList;
-	QString m_curAdapter;
-	WirelessNetworkInfo m_selectedNetwork;
-	TrayApp *m_pSupplicant;
-	ConnectionSelectDlg *m_pConnSelDlg;
-};
+	// pointers to UI elements
+	QComboBox *m_pConnectionCombo;
+	QDialogButtonBox *m_pButtonBox;
+	
+	QStringList m_connectionList;
+}; 
 
 #endif

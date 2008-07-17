@@ -41,6 +41,7 @@
 #include "Emitter.h"
 #include "XSupWrapper.h"
 #include "ConnectionWizard.h"
+#include "ConnectionSelectDlg.h"
 
 extern "C"
 {
@@ -60,6 +61,7 @@ SSIDListDlg::SSIDListDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, Tra
 	m_pRescanDialog = NULL;
 	m_pConnWizard = NULL;
 	m_pSSIDList = NULL;
+	m_pConnSelDlg = NULL;
 }
 
 SSIDListDlg::~SSIDListDlg()
@@ -82,6 +84,8 @@ SSIDListDlg::~SSIDListDlg()
 		Util::myDisconnect(m_pSSIDList, SIGNAL(ssidDoubleClick(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListDoubleClick(const WirelessNetworkInfo &)));
 		delete m_pSSIDList;
 	}
+	
+	this->cleanupConnSelDialog();
 	
 	if (m_pRescanDialog != NULL)
 		delete m_pRescanDialog;
@@ -293,35 +297,43 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 	if (retVal == REQUEST_SUCCESS && pConn != NULL)
 	{
 		int i = 0;
+		QStringList connList;
 		while (pConn[i].name != NULL)
 		{
 			if (QString(pConn[i].ssid) == netInfo.m_name && QString(pConn[i].dev_desc) == m_curAdapter)
 			{
-				// jking - !!! Right now we're just going with the first match. Ideally we should check
-				// if there's more than one connection for this SSID. If so, prompt the user to tell us
-				// which one to use.  This should be rare, so punt for now
-				char *adapterName= NULL;
-				
 				found = true;
-				retVal = xsupgui_request_get_devname(this->m_curAdapter.toAscii().data(), &adapterName);
-				
-				if (retVal == REQUEST_SUCCESS && adapterName != NULL)
-					retVal = xsupgui_request_set_connection(adapterName, pConn[i].name);
-
-				if (retVal != REQUEST_SUCCESS || adapterName == NULL)
-				{
-					QString message = tr("An error occurred while connecting to the network '%1'.").arg(netInfo.m_name);
-					QMessageBox::critical(m_pRealForm,tr("Error Connecting to Network"),message);
-				}
-				else
-					m_pRealForm->hide();	// close this dialog b/c we are attempting to connect
-					
-				if (adapterName != NULL)
-					free(adapterName);
-				break;
+				connList.append(pConn[i].name);
 			} 
 			i++;
 		}
+		
+		if (connList.count() == 1)
+		{
+			// if only one connection for this network and adapter, connect to it
+			char *adapterName= NULL;
+			
+			retVal = xsupgui_request_get_devname(this->m_curAdapter.toAscii().data(), &adapterName);
+			
+			if (retVal == REQUEST_SUCCESS && adapterName != NULL)
+				retVal = xsupgui_request_set_connection(adapterName, pConn[i].name);
+
+			if (retVal != REQUEST_SUCCESS || adapterName == NULL)
+			{
+				QString message = tr("An error occurred while connecting to the network '%1'.").arg(netInfo.m_name);
+				QMessageBox::critical(m_pRealForm,tr("Error Connecting to Network"),message);
+			}
+			else
+				m_pRealForm->hide();	// close this dialog b/c we are attempting to connect
+				
+			if (adapterName != NULL)
+				free(adapterName);
+		}
+		else if (connList.count() > 1)
+		{
+			// must prompt user to tell us which connection to use
+			this->promptConnectionSelection(connList);
+		}	
 	}
 	
 	if (pConn != NULL)
@@ -500,4 +512,38 @@ void SSIDListDlg::cleanupConnectionWizard(void)
 		delete m_pConnWizard;
 		m_pConnWizard = NULL;
 	}
+}
+
+void SSIDListDlg::promptConnectionSelection(const QStringList &connList)
+{
+	// if this exists something went wrong, so just throw it out and start over
+	if (m_pConnSelDlg != NULL)
+		delete m_pConnSelDlg;
+		
+	m_pConnSelDlg = new ConnectionSelectDlg(this, m_pRealForm, connList);
+	if (m_pConnSelDlg != NULL)
+	{
+		if (m_pConnSelDlg->create() == true)
+		{
+			m_pConnSelDlg->show();
+			Util::myConnect(m_pConnSelDlg, SIGNAL(close(void)), this, SLOT(cleanupConnSelDialog(void)));
+		}
+		else
+		{
+			delete m_pConnSelDlg;
+			m_pConnSelDlg = NULL;
+		}
+	}
+}
+
+void SSIDListDlg::cleanupConnSelDialog(void)
+{
+	if (m_pConnSelDlg != NULL)
+	{
+		Util::myDisconnect(m_pConnSelDlg, SIGNAL(close(void)), this, SLOT(cleanupConnSelDialog(void)));
+		delete m_pConnSelDlg;
+		m_pConnSelDlg = NULL;
+	}
+	
+	m_pRealForm->hide();
 }

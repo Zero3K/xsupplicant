@@ -53,6 +53,7 @@
 #include "XSupWrapper.h"
 #include "SSIDList.h"
 #include "WirelessNetworkMenu.h"
+#include "ConnectionSelectDlg.h"
 #include <algorithm>
 
 //! Constructor
@@ -92,6 +93,7 @@ TrayApp::TrayApp(QApplication &app):
   m_pConnMgr				= NULL;
   m_pConnectDlg				= NULL;
   m_pConnWizard				= NULL;
+  m_pConnSelDlg				= NULL;
 
   uiCallbacks.launchHelpP = &HelpWindow::showPage;
 }
@@ -150,9 +152,11 @@ TrayApp::~TrayApp()
 		m_pConnectDlg = NULL;
 	}
 
-  delete m_pEventListenerThread;
-  delete m_pLoggingCon;
-  delete m_pTrayIcon;
+	this->cleanupConnSelDialog();
+	
+	delete m_pEventListenerThread;
+	delete m_pLoggingCon;
+	delete m_pTrayIcon;
 }
 
 #ifdef WINDOWS
@@ -1425,7 +1429,8 @@ void TrayApp::slotCreateTroubleticket()
     int err = 0;
     QString filePath = QDir::toNativeSeparators((QDir::homePath().append(tr("/Desktop/XSupplicant Trouble Ticket.zip"))));
 
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save Trouble ticket"), filePath, tr("Archives (*.zip)"));
+	// pass in active window as parent so file dialog is centered on window used to trigger this
+    QString fileName = QFileDialog::getSaveFileName(m_app.activeWindow(), tr("Save Trouble ticket"), filePath, tr("Archives (*.zip)"));
 
 	if (fileName == "") return;
 
@@ -1822,32 +1827,43 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 	if (retVal == REQUEST_SUCCESS && pConn != NULL)
 	{
 		int i = 0;
+		QStringList connList;
 		while (pConn[i].name != NULL)
 		{
 			if (QString(pConn[i].ssid) == networkName && QString(pConn[i].dev_desc) == adapterDesc)
 			{
-				// jking - !!! Right now we're just going with the first match. Ideally we should check
-				// if there's more than one connection for this SSID. If so, prompt the user to tell us
-				// which one to use.  This should be rare, so punt for now
-				char *adapterName= NULL;
-				
 				found = true;
-				retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &adapterName);
-				
-				if (retVal == REQUEST_SUCCESS && adapterName != NULL)
-					retVal = xsupgui_request_set_connection(adapterName, pConn[i].name);
-
-				if (retVal != REQUEST_SUCCESS || adapterName == NULL)
-				{
-					QString message = tr("An error occurred while connecting to the network '%1'.").arg(networkName);
-					QMessageBox::critical(this,tr("Error Connecting to Network"),message);
-				}
-				xsupgui_request_free_str(&adapterName);
-				break;
+				connList.append(pConn[i].name);
 			} 
 			i++;
+		}
+		
+		if (connList.count() == 1)
+		{
+			// if only one connection for this network and adapter, connect to it
+			char *adapterName= NULL;
+			
+			retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &adapterName);
+			
+			if (retVal == REQUEST_SUCCESS && adapterName != NULL)
+				retVal = xsupgui_request_set_connection(adapterName, pConn[i].name);
+
+			if (retVal != REQUEST_SUCCESS || adapterName == NULL)
+			{
+				QString message = tr("An error occurred while connecting to the network '%1'.").arg(networkName);
+				QMessageBox::critical(NULL,tr("Error Connecting to Network"),message);
+			}
+				
+			if (adapterName != NULL)
+				free(adapterName);
+		}
+		else if (connList.count() > 1)
+		{
+			// must prompt user to tell us which connection to use
+			this->promptConnectionSelection(connList);
 		}	
 	}
+	
 	xsupgui_request_free_conn_enum(&pConn);
 	
 	// we need to create a connection, profile, etc
@@ -2139,4 +2155,36 @@ void TrayApp::handleBadCreds(const QString &connName)
 */	
 	// re-prompt for credentials
 	this->slotRequestUPW(connName);
+}
+
+void TrayApp::promptConnectionSelection(const QStringList &connList)
+{
+	// if this exists something went wrong, so just throw it out and start over
+	if (m_pConnSelDlg != NULL)
+		delete m_pConnSelDlg;
+		
+	m_pConnSelDlg = new ConnectionSelectDlg(this, NULL, connList);
+	if (m_pConnSelDlg != NULL)
+	{
+		if (m_pConnSelDlg->create() == true)
+		{
+			m_pConnSelDlg->show();
+			Util::myConnect(m_pConnSelDlg, SIGNAL(close(void)), this, SLOT(cleanupConnSelDialog(void)));
+		}
+		else
+		{
+			delete m_pConnSelDlg;
+			m_pConnSelDlg = NULL;
+		}
+	}
+}
+
+void TrayApp::cleanupConnSelDialog(void)
+{
+	if (m_pConnSelDlg != NULL)
+	{
+		Util::myDisconnect(m_pConnSelDlg, SIGNAL(close(void)), this, SLOT(cleanupConnSelDialog(void)));
+		delete m_pConnSelDlg;
+		m_pConnSelDlg = NULL;
+	}
 }

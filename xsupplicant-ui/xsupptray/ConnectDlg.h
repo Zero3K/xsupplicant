@@ -96,6 +96,7 @@ private slots:
 	void showWiredConnectionInfo(void);
 	void interfaceRemoved(char *intDesc);
 	void updateWirelessSignalStrength(const QString &);
+	void pskSuccess(const QString &);
 	void menuClose(void);
 	void menuQuit(void);
 	void menuConfigure(void);
@@ -146,6 +147,7 @@ private:
 	int m_lastWirelessConnectionIdx;	// last valid selected wireless connection
 	int m_lastWiredConnectionIdx;		// last valid selected wired connection
 	bool m_volatileWirelessConn;
+	QString m_pskConnHack;				// so that we can show a "connecting..." state for PSK networks
 	
 	QTimer m_timer;
 	QTime  m_time;

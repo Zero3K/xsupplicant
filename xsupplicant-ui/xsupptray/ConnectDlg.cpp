@@ -114,6 +114,7 @@ ConnectDlg::~ConnectDlg()
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
 		
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updateWirelessSignalStrength(const QString &)));	
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalPSKSuccess(const QString &)), this, SLOT(pskSuccess(const QString &)));
 		
 	if (m_pSSIDListDlg != NULL)
 		delete m_pSSIDListDlg;
@@ -263,6 +264,7 @@ bool ConnectDlg::initUI(void)
 	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(interfaceInserted(char *)));
 	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));
 	Util::myConnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updateWirelessSignalStrength(const QString &)));
+	Util::myConnect(m_pEmitter, SIGNAL(signalPSKSuccess(const QString &)), this, SLOT(pskSuccess(const QString &)));
 	
 	Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
 	
@@ -862,42 +864,53 @@ void ConnectDlg::updateWirelessState(void)
 		int state = 0;
 		Util::ConnectionStatus status = Util::status_idle;
 		
+		// get name of connection that's bound
+		char *connName = NULL;
+		config_connection *pConn = NULL;
+		
+		retVal = xsupgui_request_get_conn_name_from_int(m_currentWirelessAdapterName.toAscii().data(), &connName);
+		if (retVal == REQUEST_SUCCESS && connName != NULL)
+		{
+			// get connection info so we can look at it when deciding 
+			bool success = XSupWrapper::getConfigConnection(QString(connName), &pConn);
+			if (success == false && pConn != NULL)
+			{
+				XSupWrapper::freeConfigConnection(&pConn);
+				pConn = NULL;
+			}
+		}
+		else
+		{
+			if (connName != NULL)
+				free(connName);
+		}
+		
 		if (xsupgui_request_get_physical_state(m_currentWirelessAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS)
 		{
-			if (state != WIRELESS_ASSOCIATED)
+			if (state != WIRELESS_ASSOCIATED || (pConn != NULL && pConn->association.association_type != AUTH_EAP))
 			{
 				status = Util::getConnectionStatusFromPhysicalState(state);
-				if (m_pWirelessConnectionStatus != NULL)
-					m_pWirelessConnectionStatus->setText(Util::getConnectionTextFromConnectionState(status));
-
-				// don't mess with timer if this page isn't visible
-				if (m_pAdapterTabControl != NULL && m_pAdapterTabControl->currentIndex() == 0)
-				{				
-					if (status == Util::status_connected)
-						this->startConnectedTimer(m_currentWirelessAdapterName);
-					else
-						this->stopAndClearTimer();
-				}			
 			}
 			else
 			{
+				// only check with dot1X state machine if it's a dot1X connection
 				if (xsupgui_request_get_1x_state(m_currentWirelessAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS)
-				{
-					status = Util::getConnectionStatusFromDot1XState(state);
-					if (m_pWirelessConnectionStatus != NULL)
-						m_pWirelessConnectionStatus->setText(Util::getConnectionTextFromConnectionState(status));
-						
-					// don't mess with timer if this page isn't visible
-					if (m_pAdapterTabControl != NULL && m_pAdapterTabControl->currentIndex() == 0)
-					{				
-						if (status == Util::status_connected)
-							this->startConnectedTimer(m_currentWirelessAdapterName);
-						else
-							this->stopAndClearTimer();
-					}	
-				}
+					status = Util::getConnectionStatusFromDot1XState(state);	
 			}
 		}
+		
+		if (m_pWirelessConnectionStatus != NULL)
+			m_pWirelessConnectionStatus->setText(Util::getConnectionTextFromConnectionState(status));
+
+		// don't mess with timer if this page isn't visible
+		if (m_pAdapterTabControl != NULL && m_pAdapterTabControl->currentIndex() == 0)
+		{				
+			if (status == Util::status_connected)
+				this->startConnectedTimer(m_currentWirelessAdapterName);
+			else
+				this->stopAndClearTimer();
+		}
+							
 		if (status == Util::status_idle)
 		{
 			if (m_pWirelessConnectionList != NULL)
@@ -918,6 +931,7 @@ void ConnectDlg::updateWirelessState(void)
 			}
 			
 			m_volatileWirelessConn = false;
+			m_pskConnHack = "";
 			
 			// look for temporary item stuck in connection list for volatile wireless connection.  If we're idle, make sure
 			// to clean this up
@@ -932,12 +946,9 @@ void ConnectDlg::updateWirelessState(void)
 					if (selected == true)
 						m_pWirelessConnectionList->setCurrentIndex(0);				
 					m_pWirelessConnectionList->removeItem(m_pWirelessConnectionList->count() - 1);
-
 				}
-					
 			}
 			m_wirelessNetwork = "";					
-				
 		}
 		else
 		{
@@ -951,10 +962,7 @@ void ConnectDlg::updateWirelessState(void)
 			if (m_pWirelessConnectionInfo != NULL)
 				m_pWirelessConnectionInfo->setEnabled(true);							
 			
-			// get name of connection that's bound
-			char *connName;
-			retVal = xsupgui_request_get_conn_name_from_int(m_currentWirelessAdapterName.toAscii().data(), &connName);
-			if (retVal == REQUEST_SUCCESS && connName != NULL)
+			if (connName != NULL)
 			{
 				if (m_pWirelessConnectionList != NULL)
 				{
@@ -973,12 +981,7 @@ void ConnectDlg::updateWirelessState(void)
 					}
 					else
 					{
-						// check if volatile connection
-						config_connection *pConn = NULL;
-						bool success;
-						
-						success = XSupWrapper::getConfigConnection(QString(connName), &pConn);
-						if (success == true && pConn != NULL)
+						if (pConn != NULL)
 						{
 							if ((pConn->flags & CONFIG_VOLATILE_CONN) == CONFIG_VOLATILE_CONN)
 							{
@@ -999,27 +1002,28 @@ void ConnectDlg::updateWirelessState(void)
 								m_volatileWirelessConn = false;
 							}
 						}
-						if (pConn != NULL)
-							XSupWrapper::freeConfigConnection(&pConn);
 					}					
 				}		
-				config_connection *pConn;
-				bool success;
-				
-				success = XSupWrapper::getConfigConnection(QString(connName), &pConn);
-				if (success == true && pConn != NULL)
+
+				if (pConn != NULL)
 				{
 					m_wirelessNetwork = pConn->ssid;
 					if (m_pWirelessNetworkName != NULL)
 						m_pWirelessNetworkName->setText(m_wirelessNetwork);
 					this->updateWirelessSignalStrength(m_currentWirelessAdapterName);
 				}
-				if (pConn != NULL)
-					XSupWrapper::freeConfigConnection(&pConn);
 			}
-				
-			if (connName != NULL)
-				free(connName);				
+						
+		}
+		if (pConn != NULL)
+		{
+			XSupWrapper::freeConfigConnection(&pConn);
+			pConn = NULL;
+		}
+		if (connName != NULL)
+		{
+			free(connName);
+			connName = NULL;
 		}
 	}
 	else
@@ -1039,7 +1043,8 @@ void ConnectDlg::updateWirelessState(void)
 		}
 		if (m_pWirelessConnectionStatus != NULL)
 			m_pWirelessConnectionStatus->setText("");		
-		m_wirelessNetwork = "";								
+		m_wirelessNetwork = "";	
+		m_pskConnHack = "";							
 	}
 }
 
@@ -1392,4 +1397,7 @@ void ConnectDlg::menuCreateTicket(void)
 void ConnectDlg::menuHelp(void)
 {
 	HelpWindow::showPage("xsupphelp.html", "xsuploginmain");
+}
+void ConnectDlg::pskSuccess(const QString &intName)
+{
 }

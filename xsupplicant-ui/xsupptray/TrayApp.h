@@ -49,6 +49,7 @@ class ConnectDlg;
 class ConnectMgrDlg;
 class ConnectionWizard;
 class WirelessNetworkMenu;
+class ConnectionSelectDlg;
 
 class TrayApp : public QWidget
 {
@@ -133,7 +134,7 @@ private slots:
 	void updatePopupMenuAfterScan(const QString &);
 	void handleBadPSK(const QString &);
 	void handleBadCreds(const QString &);
-	
+	void cleanupConnSelDialog(void);
 	
 private:
     void createTrayActionsAndConnections();
@@ -155,6 +156,7 @@ private:
 	void setTrayMenuBasedOnControl();
 	void closeChildren();
 	void cleanupConnectionWizard(void);
+	void promptConnectionSelection(const QStringList &connList);	
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();
@@ -177,7 +179,9 @@ private:
     AboutWindow *m_pAboutWindow;
     ConnectMgrDlg *m_pConnMgr;
     ConnectDlg *m_pConnectDlg;
-    ConnectionWizard *m_pConnWizard;   
+    ConnectionWizard *m_pConnWizard;
+    ConnectionSelectDlg *m_pConnSelDlg;
+    
     QVector<WirelessNetworkMenu*> m_networkMenuVec;
 
 	QMultiHash<QString, QString> m_intStateHash;

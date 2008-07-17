@@ -70,6 +70,11 @@ PreferredConnections::PreferredConnections(XSupCalls &supplicant, QWidget *paren
 */
  PreferredConnections::~PreferredConnections()
 {
+	if (m_pConns != NULL) {
+		xsupgui_request_free_conn_enum(&m_pConns);
+		m_pConns = NULL;
+	}
+	
 	if (m_pAvailableList != NULL)
 	{
 		Util::myDisconnect(m_pAvailableList, SIGNAL(itemSelectionChanged()), this, 
