@@ -36,9 +36,9 @@
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
-#include <QCheckBox>
 #include <QTimer>
 #include <QTime>
+#include <QPixmap>
 
 class Emitter;
 
@@ -69,7 +69,7 @@ private slots:
 	void timerUpdate(void);
 	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
 	void updateIPAddress(void);
-	void updateSSID(void);
+	void updateWirelessSignalStrength(void);
 	
 private:
 	QWidget *m_pParent;
@@ -81,19 +81,25 @@ private:
 	QPushButton *m_pCloseButton;
 	QPushButton *m_pDisconnectButton;
 	QPushButton *m_pRenewIPButton;
-	QCheckBox *m_pAdvancedConfig;
 	QLabel *m_pAdapterNameLabel;
 	QLabel *m_pIPAddressLabel;
 	QLabel *m_pStatusLabel;
 	QLabel *m_pTimerLabel;
 	QLabel *m_pSSIDLabel;
+	QLabel *m_pSignalLabel;
+	QLabel *m_pSignalIcon;
+	QLabel *m_pSecurityLabel;
+	QLabel *m_pEncryptionLabel;
 	
 	QString m_curAdapter; // description of current adapter
 	QString m_curAdapterName;
 	bool m_wirelessAdapter;
 	QTimer m_timer;
+	QTimer m_strengthTimer;
 	QTime  m_time;
 	unsigned int m_days;
+	
+	QPixmap m_signalIcons[5];
 };
 
 #endif

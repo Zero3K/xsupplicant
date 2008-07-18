@@ -95,7 +95,7 @@ private slots:
 	void showWirelessConnectionInfo(void);
 	void showWiredConnectionInfo(void);
 	void interfaceRemoved(char *intDesc);
-	void updateWirelessSignalStrength(const QString &);
+	void updateWirelessSignalStrength();
 	void pskSuccess(const QString &);
 	void menuClose(void);
 	void menuQuit(void);
@@ -143,13 +143,13 @@ private:
 	QString m_currentWiredAdapterDesc;
 	QString m_currentWiredAdapterName;
 	QString m_timerAdapterName;			// name of current adapter we are displaying status of
-	QString m_wirelessNetwork;			// cached so we can update signal strength
 	int m_lastWirelessConnectionIdx;	// last valid selected wireless connection
 	int m_lastWiredConnectionIdx;		// last valid selected wired connection
 	bool m_volatileWirelessConn;
 	QString m_pskConnHack;				// so that we can show a "connecting..." state for PSK networks
 	
 	QTimer m_timer;
+	QTimer m_signalTimer;
 	QTime  m_time;
 	unsigned int m_days;
 	

@@ -105,6 +105,7 @@ ConnectDlg::~ConnectDlg()
 		Util::myConnect(m_pWiredConnectionInfo, SIGNAL(clicked()), this, SLOT(showWiredConnectionInfo()));			
 
 	Util::myDisconnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
+	Util::myDisconnect(&m_signalTimer, SIGNAL(timeout()), this, SLOT(updateWirelessSignalStrength()));
 
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(interfaceInserted(char *)));
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));		
@@ -113,7 +114,6 @@ ConnectDlg::~ConnectDlg()
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
 		
-	Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updateWirelessSignalStrength(const QString &)));	
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalPSKSuccess(const QString &)), this, SLOT(pskSuccess(const QString &)));
 		
 	if (m_pSSIDListDlg != NULL)
@@ -263,10 +263,11 @@ bool ConnectDlg::initUI(void)
 
 	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(interfaceInserted(char *)));
 	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));
-	Util::myConnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updateWirelessSignalStrength(const QString &)));
 	Util::myConnect(m_pEmitter, SIGNAL(signalPSKSuccess(const QString &)), this, SLOT(pskSuccess(const QString &)));
 	
 	Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
+	Util::myConnect(&m_signalTimer, SIGNAL(timeout()), this, SLOT(updateWirelessSignalStrength()));
+	
 	
 	// set initial state of UI - mainly setting the active tab
 	if (m_pAdapterTabControl != NULL)
@@ -913,6 +914,7 @@ void ConnectDlg::updateWirelessState(void)
 							
 		if (status == Util::status_idle)
 		{
+			m_signalTimer.stop();
 			if (m_pWirelessConnectionList != NULL)
 				m_pWirelessConnectionList->setEnabled(true);
 			if (m_pWirelessConnectButton != NULL)
@@ -947,11 +949,11 @@ void ConnectDlg::updateWirelessState(void)
 						m_pWirelessConnectionList->setCurrentIndex(0);				
 					m_pWirelessConnectionList->removeItem(m_pWirelessConnectionList->count() - 1);
 				}
-			}
-			m_wirelessNetwork = "";					
+			}			
 		}
 		else
 		{
+			m_signalTimer.start(300);
 			if (m_pWirelessConnectionList != NULL)
 				m_pWirelessConnectionList->setEnabled(false);
 			if (m_pWirelessConnectButton != NULL)
@@ -1007,10 +1009,9 @@ void ConnectDlg::updateWirelessState(void)
 
 				if (pConn != NULL)
 				{
-					m_wirelessNetwork = pConn->ssid;
 					if (m_pWirelessNetworkName != NULL)
-						m_pWirelessNetworkName->setText(m_wirelessNetwork);
-					this->updateWirelessSignalStrength(m_currentWirelessAdapterName);
+						m_pWirelessNetworkName->setText(QString(pConn->ssid));
+					this->updateWirelessSignalStrength();
 				}
 			}
 						
@@ -1028,6 +1029,8 @@ void ConnectDlg::updateWirelessState(void)
 	}
 	else
 	{
+		m_signalTimer.stop();
+		
 		if (m_pWirelessConnectionList != NULL)
 			m_pWirelessConnectionList->setEnabled(true);
 		if (m_pWirelessConnectButton != NULL)
@@ -1043,7 +1046,6 @@ void ConnectDlg::updateWirelessState(void)
 		}
 		if (m_pWirelessConnectionStatus != NULL)
 			m_pWirelessConnectionStatus->setText("");		
-		m_wirelessNetwork = "";	
 		m_pskConnHack = "";							
 	}
 }
@@ -1306,57 +1308,41 @@ void ConnectDlg::connectDisconnectWirelessConnection(void)
 	}
 }
 
-void ConnectDlg::updateWirelessSignalStrength(const QString &intName)
+void ConnectDlg::updateWirelessSignalStrength(void)
 {
-	if (m_wirelessNetwork.isEmpty() == false && intName == m_currentWirelessAdapterName)
+	int retval;
+	int signal = 0;
+	
+	retval = xsupgui_request_get_signal_strength_percent(m_currentWirelessAdapterName.toAscii().data(), &signal);
+	if (retval == REQUEST_SUCCESS)
 	{
-		int retVal = 0;	
-		ssid_info_enum *pSSID;
-		
-		retVal = xsupgui_request_enum_ssids(intName.toAscii().data(),&pSSID);
-		if (retVal == REQUEST_SUCCESS && pSSID != NULL)
+		if (m_pWirelessSignalIcon != NULL)
 		{
-			int i = 0;
-			int signal = 0;
-			while (pSSID[i].ssidname != NULL)
-			{
-				if (m_wirelessNetwork == pSSID[i].ssidname)
-				{
-					signal = pSSID[i].percentage;
-					break;
-				}
-				++i;
-			}
-				
-			if (m_pWirelessSignalIcon != NULL)
-			{
-				if (signal <= 11)
-					m_pWirelessSignalIcon->setPixmap(m_signalIcons[0]);
-				else if (signal <= 37)
-					m_pWirelessSignalIcon->setPixmap(m_signalIcons[1]);
-				else if (signal <= 62)
-					m_pWirelessSignalIcon->setPixmap(m_signalIcons[2]);
-				else if (signal <= 88)
-					m_pWirelessSignalIcon->setPixmap(m_signalIcons[3]);
-				else
-					m_pWirelessSignalIcon->setPixmap(m_signalIcons[4]);
-					
-				m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: %1%").arg(signal));	
-			}			
-		}
-		else
-		{
-			// clear out icon and label
-			if (m_pWirelessSignalIcon != NULL)
-			{
+			if (signal <= 11)
 				m_pWirelessSignalIcon->setPixmap(m_signalIcons[0]);
-				m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: 0%"));
-			}	
-		}
-		if (pSSID != NULL)
-			xsupgui_request_free_ssid_enum(&pSSID);
+			else if (signal <= 37)
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[1]);
+			else if (signal <= 62)
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[2]);
+			else if (signal <= 88)
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[3]);
+			else
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[4]);
+				
+			m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: %1%").arg(signal));	
+		}			
+	}
+	else
+	{
+		// clear out icon and label
+		if (m_pWirelessSignalIcon != NULL)
+		{
+			m_pWirelessSignalIcon->setPixmap(m_signalIcons[0]);
+			m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: 0%"));
+		}	
 	}
 }
+
 void ConnectDlg::menuConfigure(void)
 {
 	if (m_pTrayApp != NULL)
