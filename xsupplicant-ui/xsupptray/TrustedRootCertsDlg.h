@@ -41,7 +41,7 @@ class TrustedRootCertsDlg : public QWidget
   Q_OBJECT 
 
 public:
-  TrustedRootCertsDlg(XSupCalls &sup, QWidget *parent);
+  TrustedRootCertsDlg(XSupCalls &sup, QWidget *parent, QWidget *parentWindow);
   virtual ~TrustedRootCertsDlg(void);
   void getCurrentCertificate(QString &certStoreType, QString &certLocation);
 
@@ -59,6 +59,7 @@ private:
 
   QWidget *m_pRealWidget;
   QWidget *m_pParent;
+  QWidget *m_pParentWindow;
 
   QPushButton *m_pOkButton;
   QPushButton *m_pCancelButton;

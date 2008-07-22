@@ -935,6 +935,7 @@ void ConfigProfileTabs::populateOnePhase()
 		m_pDontPrompt->setChecked(false);
 		m_pUsername->setEnabled(false);
 		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
 	}
 	else if ((m_pProfile->identity != NULL) && (password == NULL))
 	{
@@ -943,6 +944,7 @@ void ConfigProfileTabs::populateOnePhase()
 		m_pDontPrompt->setChecked(false);
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
 	}
 	else
 	{
@@ -951,6 +953,7 @@ void ConfigProfileTabs::populateOnePhase()
 		m_pDontPrompt->setChecked(true);
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(true);
+		m_pShowBtn->setEnabled(true);
 	}
 }
 
@@ -977,6 +980,7 @@ void ConfigProfileTabs::populatePEAPData()
 		m_pDontPrompt->setChecked(false);
 		m_pUsername->setEnabled(false);
 		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
 		slotDifferentServerSelected(0);   // Set the trusted server stuff to invalid.
 		return;
 	}
@@ -1062,6 +1066,7 @@ void ConfigProfileTabs::populatePEAPData()
 		m_pDontPrompt->setChecked(false);
 		m_pUsername->setEnabled(false);
 		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
 	}
 	else if ((peapdata->identity != NULL) && (password == NULL))
 	{
@@ -1070,6 +1075,7 @@ void ConfigProfileTabs::populatePEAPData()
 		m_pDontPrompt->setChecked(false);
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
 	}
 	else
 	{
@@ -1078,6 +1084,7 @@ void ConfigProfileTabs::populatePEAPData()
 		m_pDontPrompt->setChecked(true);
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(true);
+		m_pShowBtn->setEnabled(true);
 	}
 }
 
@@ -1194,6 +1201,7 @@ void ConfigProfileTabs::populateTTLSData()
 		m_pDontPrompt->setChecked(false);
 		m_pUsername->setEnabled(false);
 		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
 	}
 	else if ((ttlsdata->inner_id != NULL) && (password == NULL))
 	{
@@ -1202,6 +1210,7 @@ void ConfigProfileTabs::populateTTLSData()
 		m_pDontPrompt->setChecked(false);
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
 	}
 	else
 	{
@@ -1210,6 +1219,7 @@ void ConfigProfileTabs::populateTTLSData()
 		m_pDontPrompt->setChecked(true);
 		m_pUsername->setEnabled(true);
 		m_pPassword->setEnabled(true);
+		m_pShowBtn->setEnabled(true);
 	}
 }
 
@@ -1564,7 +1574,7 @@ void ConfigProfileTabs::slotInnerMethodChanged(int newItem)
 		// Make sure the options are enabled.
 		m_pDontPrompt->setEnabled(true);
 		m_pPassword->setEnabled(false);
-		m_pShowBtn->setEnabled(true);
+		m_pShowBtn->setEnabled(false);
 		m_pPromptForUPW->setChecked(true);
 	}
 }

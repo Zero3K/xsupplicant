@@ -37,8 +37,8 @@
 #include "Util.h"
 #include "helpbrowser.h"
 
-TrustedRootCertsDlg::TrustedRootCertsDlg(XSupCalls &sup, QWidget *parent):
-  m_pParent(parent), m_supplicant(sup), m_pCertificates(NULL)
+TrustedRootCertsDlg::TrustedRootCertsDlg(XSupCalls &sup, QWidget *parent, QWidget *parentWindow):
+  m_pParent(parent), m_supplicant(sup), m_pCertificates(NULL), m_pParentWindow(parentWindow)
 {
   memset(&m_certInfo, 0x00, sizeof(m_certInfo));
   m_pRealWidget = NULL;
@@ -69,7 +69,7 @@ bool TrustedRootCertsDlg::attach()
 {
 	Qt::WindowFlags flags;
 
-	m_pRealWidget = FormLoader::buildform("SelectTrustedServerWindow.ui");
+	m_pRealWidget = FormLoader::buildform("SelectTrustedServerWindow.ui", m_pParentWindow);
 	if (m_pRealWidget == NULL) 
 	{
 		QMessageBox::critical(this, tr("Form Load Error"), tr("Unable to load the 'SelectTrustedServerWindow.ui' form."));
@@ -77,8 +77,8 @@ bool TrustedRootCertsDlg::attach()
 	}
 
 	flags = m_pRealWidget->windowFlags();
-	flags &= (~Qt::WindowContextHelpButtonHint);
-	flags |= Qt::WindowMinimizeButtonHint;
+	flags &= ~Qt::WindowContextHelpButtonHint;
+	flags &= ~Qt::WindowMinimizeButtonHint;
 	m_pRealWidget->setWindowFlags(flags);
 
 	m_pCertificateTable = qFindChild<QTableWidget*>(m_pRealWidget, "dataTableCerts");

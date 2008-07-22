@@ -1,6 +1,9 @@
 <ui version="4.0" >
  <class>uiWindowTrustedRootCerts</class>
  <widget class="QDialog" name="uiWindowTrustedRootCerts" >
+  <property name="windowModality" >
+   <enum>Qt::WindowModal</enum>
+  </property>
   <property name="geometry" >
    <rect>
     <x>0</x>
@@ -27,10 +30,13 @@
    </font>
   </property>
   <property name="windowTitle" >
-   <string>Select a Trusted Root Server Certificate - XSupplicant</string>
+   <string>Select a Trusted Root Certificate - XSupplicant</string>
   </property>
   <property name="windowIcon" >
    <iconset>icons/prod_color.png</iconset>
+  </property>
+  <property name="modal" >
+   <bool>true</bool>
   </property>
   <layout class="QGridLayout" >
    <property name="leftMargin" >

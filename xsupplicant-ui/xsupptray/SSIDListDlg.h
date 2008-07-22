@@ -37,6 +37,7 @@
 #include <QWidget>
 #include <QTableWidget>
 #include <QLabel>
+#include <QTimer>
 #include "SSIDList.h"
 
 class Emitter;
@@ -79,6 +80,7 @@ private slots:
 	void cleanupConnectionWizard(void);
 	void finishConnectionWizard(bool, const QString &);
 	void cleanupConnSelDialog(void);
+	void refreshScanTimeout(void);
 
 private:
 
@@ -102,6 +104,9 @@ private:
 	WirelessNetworkInfo m_selectedNetwork;
 	TrayApp *m_pSupplicant;
 	ConnectionSelectDlg *m_pConnSelDlg;
+	
+	QTimer m_refreshTimer;
+	static const int refreshTimeout = 30; // number of seconds before timing out when rescanning for networks
 };
 
 #endif

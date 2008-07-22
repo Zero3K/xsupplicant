@@ -85,6 +85,8 @@ SSIDListDlg::~SSIDListDlg()
 		delete m_pSSIDList;
 	}
 	
+	Util::myDisconnect(&m_refreshTimer, SIGNAL(timeout()), this, SLOT(refreshScanTimeout()));
+	
 	this->cleanupConnSelDialog();
 	
 	if (m_pRescanDialog != NULL)
@@ -158,6 +160,7 @@ bool SSIDListDlg::initUI()
 	// register for events
 	Util::myConnect(m_pSSIDList, SIGNAL(ssidSelectionChange(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListSelectionChange(const WirelessNetworkInfo &)));
 	Util::myConnect(m_pSSIDList, SIGNAL(ssidDoubleClick(const WirelessNetworkInfo &)), this, SLOT(handleSSIDListDoubleClick(const WirelessNetworkInfo &)));	
+	Util::myConnect(&m_refreshTimer, SIGNAL(timeout()), this, SLOT(refreshScanTimeout()));
 	
 	handleSSIDListSelectionChange(WirelessNetworkInfo());
 	
@@ -209,6 +212,7 @@ void SSIDListDlg::rescanNetworks(void)
 			retVal = xsupgui_request_wireless_scan(adapterName,FALSE);
 			if (retVal == REQUEST_SUCCESS)
 			{
+				m_refreshTimer.start(SSIDListDlg::refreshTimeout * 1000); // timeout is set in seconds
 				if (m_pRescanDialog == NULL)
 				{
 					m_pRescanDialog = new WirelessScanDlg(this, m_pRealForm);
@@ -243,6 +247,8 @@ void SSIDListDlg::wirelessScanComplete(const QString &deviceName)
 	char* adapterName = NULL;
 	int retVal;
 	
+	m_refreshTimer.stop();
+	
 	// if the device the scan is complete for is what we're waiting on, kill dialog and update list
 	retVal = xsupgui_request_get_devdesc(deviceName.toAscii().data(), &adapterName);
 	if (retVal == REQUEST_SUCCESS && adapterName == m_curAdapter)
@@ -261,6 +267,7 @@ void SSIDListDlg::wirelessScanComplete(const QString &deviceName)
 
 void SSIDListDlg::cancelScan(void)
 {
+	m_refreshTimer.stop();
 	if (m_pRescanDialog != NULL)
 		m_pRescanDialog->hide();
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(wirelessScanComplete(const QString &)));
@@ -546,4 +553,14 @@ void SSIDListDlg::cleanupConnSelDialog(void)
 	}
 	
 	m_pRealForm->hide();
+}
+
+void SSIDListDlg::refreshScanTimeout(void)
+{
+	m_refreshTimer.stop();
+	if (m_pRescanDialog != NULL)
+		m_pRescanDialog->hide();
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(wirelessScanComplete(const QString &)));	
+		
+	QMessageBox::critical(m_pRealForm,tr("Network Scan Timeout"), tr("The scan for wireless networks timed out. Please try again."));
 }

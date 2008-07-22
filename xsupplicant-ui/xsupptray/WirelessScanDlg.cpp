@@ -53,6 +53,9 @@ WirelessScanDlg::~WirelessScanDlg()
 		Util::myDisconnect(m_pCancelButton, SIGNAL(clicked()), this, SIGNAL(scanCancelled()));	
 		
 	if (m_pRealForm != NULL)
+		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(scanCancelled()));		
+		
+	if (m_pRealForm != NULL)
 		delete m_pRealForm;
 		
 	if (m_pProgressTimer != NULL)
@@ -83,17 +86,20 @@ bool WirelessScanDlg::initUI(void)
 	// populate text labels
 	QLabel *pMessageLabel = qFindChild<QLabel*>(m_pRealForm, "labelScanMsg");
 	if (pMessageLabel != NULL)
-		pMessageLabel->setText(tr("Scanning For Wireless Networks -- Please Wait"));
+		pMessageLabel->setText(tr("Scanning For Wireless Networks -- Please Wait..."));
 		
 	if (m_pCancelButton != NULL)
 		m_pCancelButton->setText(tr("Cancel"));
 		
 	// set up event handling
 	if (m_pCancelButton != NULL)
-		Util::myConnect(m_pCancelButton, SIGNAL(clicked()), this, SIGNAL(scanCancelled()));	
+		Util::myConnect(m_pCancelButton, SIGNAL(clicked()), this, SIGNAL(scanCancelled()));
 		
 	if (m_pProgressTimer != NULL)
 		Util::myConnect(m_pProgressTimer, SIGNAL(timeout()), this, SLOT(updateProgress()));
+		
+	if (m_pRealForm != NULL)
+		Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(scanCancelled()));
 		
 	// misc
 	if (m_pProgressBar != NULL)

@@ -395,7 +395,7 @@ void ConfigWidgetEditTrustedServers::slotBrowse()
 		m_pServerPicker = NULL;
 	}
 
-	m_pServerPicker = new TrustedRootCertsDlg((*m_pSupplicant), this);
+	m_pServerPicker = new TrustedRootCertsDlg((*m_pSupplicant), this, m_pRealWidget->window());
 	if ((m_pServerPicker != NULL) && (m_pServerPicker->attach() != false))
 	{
 		Util::myConnect(m_pServerPicker, SIGNAL(signalAccept()), this, SLOT(slotServerSelected()));
