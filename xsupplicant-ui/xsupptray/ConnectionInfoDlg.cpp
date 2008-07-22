@@ -465,7 +465,9 @@ void ConnectionInfoDlg::updateWirelessState(void)
 				if (m_pSecurityLabel != NULL)
 					m_pSecurityLabel->setText(tr("<Unknown>"));
 				if (m_pSSIDLabel != NULL)
-					m_pSSIDLabel->setText("<Unknown>");	
+					m_pSSIDLabel->setText("<Unknown>");
+				if (m_pEncryptionLabel != NULL)
+					m_pEncryptionLabel->setText(tr("<Unknown>"));
 			}
 			
 			m_strengthTimer.start(3000);

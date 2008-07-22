@@ -38,7 +38,6 @@
 #include "LoggingConsole.h"
 #include "TrayApp.h"
 #include "AboutDlg.h"
-#include "LoginMainDlg.h"
 #include "MyMessageBox.h"
 #include "helpbrowser.h"
 #include "EventListenerThread.h"
@@ -77,9 +76,8 @@ TrayApp::TrayApp(QApplication &app):
   m_pEventListenerThread	= NULL;
   m_pQuitAction				= NULL;
   m_pConfigAction			= NULL;
-  m_pLoginAction			= NULL;
+  m_pConnectAction			= NULL;
   m_pAboutAction			= NULL;
-  m_pLoginDlg				= NULL;
   m_pAboutWindow			= NULL;
   m_pLoggingCon				= NULL;
   m_pConfDlg				= NULL;
@@ -94,6 +92,7 @@ TrayApp::TrayApp(QApplication &app):
   m_pConnectDlg				= NULL;
   m_pConnWizard				= NULL;
   m_pConnSelDlg				= NULL;
+  m_pQuickConnectMenu		= NULL;
 
   uiCallbacks.launchHelpP = &HelpWindow::showPage;
 }
@@ -133,12 +132,6 @@ TrayApp::~TrayApp()
 		delete m_pConfDlg;
 		m_pConfDlg = NULL;
 	}
-
-	if (m_pLoginDlg != NULL)
-	{
-		delete m_pLoginDlg;
-		m_pLoginDlg = NULL;
-	}
 	
 	if (m_pConnMgr != NULL)
 	{
@@ -151,6 +144,14 @@ TrayApp::~TrayApp()
 		delete m_pConnectDlg;
 		m_pConnectDlg = NULL;
 	}
+	
+	if (m_pQuickConnectMenu != NULL)
+	{
+		delete m_pQuickConnectMenu;
+		m_pQuickConnectMenu = NULL;
+	}
+		
+	
 
 	this->cleanupConnSelDialog();
 	
@@ -278,7 +279,6 @@ void TrayApp::slotRestart()
   }
 
   // delete in reverse order of creation
-  delete m_pLoginDlg;
   delete m_pConfDlg;
   delete m_pEventListenerThread;
   delete m_pLoggingCon;
@@ -286,7 +286,6 @@ void TrayApp::slotRestart()
   delete m_pConnMgr;
   delete m_pConnectDlg;
 
-  m_pLoginDlg = NULL;
   m_pConfDlg = NULL;
   m_pEventListenerThread = NULL;
   m_pLoggingCon = NULL;
@@ -379,12 +378,6 @@ void TrayApp::slotConnectToSupplicant()
 
 void TrayApp::closeChildren()
 {
-	if (m_pLoginDlg)
-	{
-		delete m_pLoginDlg;
-		m_pLoginDlg = NULL;
-	}
-
 	if (m_pConfDlg)
 	{
 		delete m_pConfDlg;
@@ -420,11 +413,14 @@ void TrayApp::closeChildren()
 
 void TrayApp::setEnabledMenuItems(bool bEnable)
 {
-  m_pLoginAction->setEnabled(bEnable);
-  m_pConfigAction->setEnabled(bEnable);
-  m_p1XControl->setEnabled(bEnable);
+	m_pConnectAction->setEnabled(bEnable);
+	m_pConfigAction->setEnabled(bEnable);
+	m_p1XControl->setEnabled(bEnable);
+	if (m_pQuickConnectMenu != NULL)
+		m_pQuickConnectMenu->setEnabled(bEnable);
 
-  if (bEnable == false) closeChildren();
+	if (bEnable == false)
+		closeChildren();
 }
 
 void TrayApp::slotHideLog()
@@ -937,9 +933,8 @@ void TrayApp::createTrayActionsAndConnections()
 {
   QPixmap p;
 
-  m_pLoginAction = new QAction(tr("&Connect..."), this);
-  Util::myConnect(this->m_pLoginAction, SIGNAL(triggered()), this, SLOT(showConnectDlg()));
-  //Util::myConnect(this->m_pLoginAction, SIGNAL(triggered()), this, SLOT(slotLaunchLogin()));
+  m_pConnectAction = new QAction(tr("&Connect..."), this);
+  Util::myConnect(this->m_pConnectAction, SIGNAL(triggered()), this, SLOT(showConnectDlg()));
 
   m_pConfigAction = new QAction(tr("&Configure..."), this);
   Util::myConnect(m_pConfigAction, SIGNAL(triggered()), this, SLOT(slotLaunchConfig()));
@@ -1025,8 +1020,9 @@ void TrayApp::buildPopupMenu(void)
 	if (m_pTrayIconMenu != NULL)
 	{
 		m_pTrayIconMenu->clear();
+		m_pQuickConnectMenu = NULL;
 
-		m_pTrayIconMenu->addAction(m_pLoginAction);
+		m_pTrayIconMenu->addAction(m_pConnectAction);
 		m_pTrayIconMenu->addSeparator();
 		
 		QStringList wirelessIntList;
@@ -1040,6 +1036,7 @@ void TrayApp::buildPopupMenu(void)
 			{
 				QMenu *quickConnectMenu = new QMenu(tr("Quick Connect"));
 				m_pTrayIconMenu->addMenu(quickConnectMenu);
+				m_pQuickConnectMenu = quickConnectMenu;
 				m_pTrayIconMenu->addSeparator();
 										
 				for (int i=0;i<wirelessIntList.size();i++)
@@ -1072,6 +1069,7 @@ void TrayApp::buildPopupMenu(void)
 						m_pTrayIconMenu->addSeparator();
 						m_networkMenuVec.push_back(pWirelessMenu);
 					}
+					m_pQuickConnectMenu = pWirelessMenu->menu();
 				}
 			}		
 		}
@@ -1226,65 +1224,12 @@ void TrayApp::slotLaunchConfig()
 
 void TrayApp::slotCleanupConfig()
 {
-	if (m_pConfDlg == NULL) return;  // This shouldn't be possible!
-
-	Util::myDisconnect(m_pConfDlg, SIGNAL(close(void)), this, SLOT(slotCleanupConfig(void)));
-
-	//delete m_pConfDlg;
-
-	m_pConfDlg->deleteLater();
-
-	m_pConfDlg = NULL;
-}
-
-void TrayApp::slotCleanupLogin()
-{
-	if (m_pLoginDlg == NULL) return;  // This shouldn't be possible!
-
-	Util::myDisconnect(m_pLoginDlg, SIGNAL(close(void)), this, SLOT(slotCleanupLogin(void)));
-
-	delete m_pLoginDlg;
-
-	m_pLoginDlg = NULL;
-}
-
-//! 
-/*!
-  \return 
-*/
-void TrayApp::slotLaunchLogin()
-{
-  if (!m_bSupplicantConnected)
-  {
-    QMessageBox::critical(this, tr("XSupplicant not connected yet."),
-      tr("You can't run the Login module until the XSupplicant is connected"));
-  }
-  else
-  {
-	  // If we aren't controlling the interface, don't allow the window to be displayed.
-	  if (!m_p1XControl->isChecked()) return;
-
-	  if (m_pLoginDlg == NULL)
-	  {
-		  m_pLoginDlg = new LoginMainDlg(m_supplicant, m_pEmitter, this);
-		  if (m_pLoginDlg->create() == false)
-		  {
-			  QMessageBox::critical(this, tr("Form Creation Error"), tr("The Login Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
-			  delete m_pLoginDlg;
-			  m_pLoginDlg = NULL;
-		  }
-		  else
-		  {
-			  m_pLoginDlg->show();
-
-			  Util::myConnect(m_pLoginDlg, SIGNAL(close(void)), this, SLOT(slotCleanupLogin(void)));
-		  }
-	  }
-	  else
-	  {
-		  m_pLoginDlg->show();
-	  }
-  }
+	if (m_pConfDlg != NULL)
+	{
+		Util::myDisconnect(m_pConfDlg, SIGNAL(close(void)), this, SLOT(slotCleanupConfig(void)));
+		m_pConfDlg->deleteLater();
+		m_pConfDlg = NULL;
+	}
 }
 
 //! 
@@ -1295,7 +1240,7 @@ void TrayApp::slotViewLog()
 {
   if (!m_bSupplicantConnected)
   {
-    QMessageBox::warning(this, tr("XSupplicant not connected yet."),
+    QMessageBox::warning(this, tr("XSupplicant not connected"),
       tr("You can't view the log file until the XSupplicant is connected"));
   }
   else
@@ -1339,13 +1284,12 @@ void TrayApp::slotAbout()
  **/
 void TrayApp::slotCleanupAbout()
 {
-	if (m_pAboutWindow == NULL) return;  // This shouldn't be possible!
-
-	Util::myDisconnect(m_pAboutWindow, SIGNAL(close(void)), this, SLOT(slotCleanupAbout(void)));
-
-	delete m_pAboutWindow;
-
-	m_pAboutWindow = NULL;
+	if (m_pAboutWindow != NULL)
+	{
+		Util::myDisconnect(m_pAboutWindow, SIGNAL(close(void)), this, SLOT(slotCleanupAbout(void)));
+		delete m_pAboutWindow;
+		m_pAboutWindow = NULL;
+	}
 }
 
 //! 
@@ -1358,7 +1302,6 @@ void TrayApp::slotExit()
   // Stop the supplicant
   // m_supplicant.goQuiet();
   // then exit
-  delete m_pLoginDlg;
   delete m_pTrayIcon;
   m_pTrayIcon = NULL;
   close();
@@ -2121,7 +2064,7 @@ void TrayApp::handleBadPSK(const QString &intName)
 	xsupgui_request_disconnect_connection(intName.toAscii().data());
 	
 	// let user know there was an error
-	QMessageBox::critical(this, tr("Invalid PSK"), errMsg);
+	//QMessageBox::critical(this, tr("Invalid PSK"), errMsg);
 	
 	// re-prompt if we have the information necessary
 	if (retval == REQUEST_SUCCESS && pConnName != NULL)

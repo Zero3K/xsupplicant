@@ -663,3 +663,4 @@ void CredentialsPopUp::slotWEPComboChange(int newVal)
 			pLabel->setText(tr("(26 digits)"));		
 	}
 }
+

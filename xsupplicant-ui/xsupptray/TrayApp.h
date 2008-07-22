@@ -37,13 +37,14 @@
 #include <QWidget>
 #include "xsupcalls.h"
 #include "MessageClass.h"
-#include "LoginMainDlg.h"
 #include "ConfigDlg.h"
 #include "AboutDlg.h"
 #include "interfacectrl.h"
 #include "CreateTT.h"
 #include "UICallbacks.h"
 #include "CredentialsPopUp.h"
+#include "EventListenerThread.h"
+#include "LoggingConsole.h"
 
 class ConnectDlg;
 class ConnectMgrDlg;
@@ -106,7 +107,6 @@ public slots:
 
 private slots:
     void slotIconActivated(QSystemTrayIcon::ActivationReason reason);
-    void slotLaunchLogin();
     void slotViewLog();
     void slotAbout();
     void slotExit();
@@ -114,7 +114,6 @@ private slots:
     void slotConnectToSupplicant();
 	void slotCleanupAbout();
 	void slotHideLog();
-	void slotCleanupLogin();
 	void slotLaunchHelp(const QString &, const QString &);
 	void slotCleanupConfig();
 	void slotInterfaceInserted(char *);
@@ -164,7 +163,7 @@ private:
 
     QAction *m_pQuitAction;
     QAction *m_pConfigAction;
-    QAction *m_pLoginAction;
+    QAction *m_pConnectAction;
     QAction *m_pAboutAction;
 	QAction *m_p1XControl;
     QApplication &m_app;
@@ -173,7 +172,6 @@ private:
     bool m_bConnectFailed;
     
     // dialog window classes
-    LoginMainDlg *m_pLoginDlg;
 	ConfigDlg *m_pConfDlg;
     LogWindow *m_pLoggingCon;
     AboutWindow *m_pAboutWindow;
@@ -188,6 +186,7 @@ private:
 
     QSystemTrayIcon *m_pTrayIcon;
     QMenu *m_pTrayIconMenu;
+    QMenu *m_pQuickConnectMenu;
     XSupCalls m_supplicant;
     EventListenerThread *m_pEventListenerThread; 
     bool m_bSupplicantConnected;

@@ -1011,9 +1011,20 @@ void ConnectDlg::updateWirelessState(void)
 				{
 					if (m_pWirelessNetworkName != NULL)
 						m_pWirelessNetworkName->setText(QString(pConn->ssid));
-					this->updateWirelessSignalStrength();
+				}
+				else
+				{
+					if (m_pWirelessNetworkName != NULL)
+						m_pWirelessNetworkName->setText(tr("<Unknown>"));				
 				}
 			}
+			else
+			{
+				if (m_pWirelessNetworkName != NULL)
+					m_pWirelessNetworkName->setText(tr("<Unknown>"));				
+			}
+			
+			this->updateWirelessSignalStrength();		
 						
 		}
 		if (pConn != NULL)
