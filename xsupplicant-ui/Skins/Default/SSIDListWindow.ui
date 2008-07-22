@@ -9,19 +9,19 @@
     <x>0</x>
     <y>0</y>
     <width>538</width>
-    <height>490</height>
+    <height>485</height>
    </rect>
   </property>
   <property name="minimumSize" >
    <size>
     <width>538</width>
-    <height>490</height>
+    <height>485</height>
    </size>
   </property>
   <property name="maximumSize" >
    <size>
     <width>538</width>
-    <height>490</height>
+    <height>485</height>
    </size>
   </property>
   <property name="windowTitle" >
@@ -976,13 +976,13 @@
         <property name="minimumSize" >
          <size>
           <width>16</width>
-          <height>30</height>
+          <height>25</height>
          </size>
         </property>
         <property name="maximumSize" >
          <size>
           <width>16777215</width>
-          <height>30</height>
+          <height>25</height>
          </size>
         </property>
         <property name="frameShape" >
