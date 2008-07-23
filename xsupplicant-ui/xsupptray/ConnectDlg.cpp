@@ -461,6 +461,15 @@ void ConnectDlg::show(void)
 	
 	if (m_pRealForm != NULL)
 		m_pRealForm->show();
+		
+	// alert user if no adapters found
+	if ((m_pWiredAdapterList == NULL || m_pWiredAdapterList->count() == 0) 
+		&& (m_pWirelessAdapterList == NULL || m_pWirelessAdapterList->count() == 0))
+	{
+		QMessageBox::critical(m_pRealForm, 
+			tr("No Network Adapters Found!"), 
+			tr("XSupplicant was unable to locate any network adapters in the system.  You will not be able to connect to any networks."));
+	}
 }
 
 void ConnectDlg::populateWirelessAdapterList(void)
@@ -1295,6 +1304,25 @@ void ConnectDlg::interfaceRemoved(char *)
 {
 	this->populateWirelessAdapterList();
 	this->populateWiredAdapterList();
+	
+	// make sure we don't show a tab that's not enabled
+	if (m_pAdapterTabControl != NULL)
+	{
+		// if wireless page enabled, or if both pages disabled, show wireless tab
+		if (m_pAdapterTabControl->isTabEnabled(0) == true || m_pAdapterTabControl->isTabEnabled(1) == false)
+			m_pAdapterTabControl->setCurrentIndex(0);
+		else
+			m_pAdapterTabControl->setCurrentIndex(1);
+	}
+		
+	// alert user if no adapters found
+	if ((m_pWiredAdapterList == NULL || m_pWiredAdapterList->count() == 0) 
+		&& (m_pWirelessAdapterList == NULL || m_pWirelessAdapterList->count() == 0))
+	{
+		QMessageBox::critical(m_pRealForm, 
+			tr("No Network Adapters Found!"), 
+			tr("XSupplicant was unable to locate any network adapters in the system.  You will not be able to connect to any networks."));
+	}	
 }
 
 void ConnectDlg::connectDisconnectWiredConnection(void)
