@@ -57,6 +57,8 @@ ConfigConnAdapterTab::~ConfigConnAdapterTab()
 		Util::myDisconnect(m_pAdapterSelection, SIGNAL(currentIndexChanged(int)), this, SLOT(adapterChanged(int)));
 
 		Util::myDisconnect(m_pWiredProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(slotProfileChanged(int)));
+
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalNewInterfaceInserted()), this, SLOT(adapterInserted()));
 	}
 
 	if (m_pWirelessTab != NULL)
@@ -223,6 +225,8 @@ bool ConfigConnAdapterTab::attach()
 	Util::myConnect(m_pAdapterSelection, SIGNAL(currentIndexChanged(int)), this, SLOT(adapterChanged(int)));
 
 	Util::myConnect(m_pWiredProfile, SIGNAL(currentIndexChanged(int)), this, SLOT(slotProfileChanged(int)));
+
+	Util::myConnect(m_pEmitter, SIGNAL(signalNewInterfaceInserted()), this, SLOT(adapterInserted()));
 
 	m_bConnected = true;
 
@@ -405,3 +409,9 @@ bool ConfigConnAdapterTab::save()
 
 	return false;  // Shouldn't EVER get here!
 }
+
+void ConfigConnAdapterTab::adapterInserted()
+{
+	updateWindow();
+}
+

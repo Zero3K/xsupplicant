@@ -347,7 +347,6 @@ void Emitter::sendSignalStrength(int s)
 
 //! sendInterfaceInsertedMessage()
 /*!
-  \brief emit's a signal that the signal strength has changed
   \return Nothing
 */
 void Emitter::sendInterfaceInsertedEvent(char *intface)
@@ -489,5 +488,10 @@ void Emitter::sendConnectionDisconnected(const QString &devName)
 void Emitter::sendPSKSuccess(const QString &devName)
 {
 	emit signalPSKSuccess(devName);
+}
+
+void Emitter::sendNewInterfaceInserted()
+{
+	emit signalNewInterfaceInserted();
 }
 

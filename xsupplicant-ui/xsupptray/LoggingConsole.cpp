@@ -366,7 +366,8 @@ void LogWindow::slotInterfaceInsertedMessage(char *)
 {
   // add the interface to the config file
   // do this by calling the update adapters api
-  m_supplicant.updateAdapters(false);
+  if (m_supplicant.updateAdapters(false))
+	  m_pEmitter->sendNewInterfaceInserted();
 }
 
 /*! slotShutDownMessage()

@@ -105,6 +105,7 @@ signals:
   void signalPostConnectTimeout(const QString &);
   void signalConnectionDisconnected(const QString &);
   void signalPSKSuccess(const QString &);
+  void signalNewInterfaceInserted();
   void signalBadCreds(const QString &);
 
 public:
@@ -162,6 +163,7 @@ public:
   void sendConnectionDisconnected(const QString &);
   void sendPSKSuccess(const QString &);
   void sendBadCreds(const QString &);
+  void sendNewInterfaceInserted();
 };
 
 #endif  // _EMITTER_H_

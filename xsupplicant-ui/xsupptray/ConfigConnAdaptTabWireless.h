@@ -61,6 +61,7 @@ private slots:
 	 void slotScanTimeout();
 	 void slotProfileChanged(int);
 	 void slotChangeBitDepth(int);
+	 void adapterInserted();
 
  private:
 

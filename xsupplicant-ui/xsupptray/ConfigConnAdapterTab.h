@@ -56,6 +56,7 @@ signals:
 public slots:
 	 void slotDataChanged();		 
 	 void adapterChanged(int);
+	 void adapterInserted();
 
 private slots:
 	void slotProfileChanged(int);

@@ -635,7 +635,7 @@ void CredentialsPopUp::updateData()
 		}
 	}
 
-	if (p_pass != NULL)  // Which is always should!
+	if (p_pass != NULL)  // Which it always should!
 	{
 		if (m_pPassword != NULL)
 		{

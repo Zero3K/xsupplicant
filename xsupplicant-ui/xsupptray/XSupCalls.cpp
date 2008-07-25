@@ -2647,7 +2647,7 @@ bool XSupCalls::TNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t r
     if (bDisplayError)
     {
       QMessageBox::critical(NULL, tr("Remediation Response Error"), 
-        tr("Got an error telling the XSupplicant to fix the remediation issues issues."));
+        tr("Got an error attempting to remediate this connection."));
     }
     return false;
   }
@@ -3532,7 +3532,7 @@ bool XSupCalls::updateAdapters(bool bDisplayError)
     i = 11;
   }while(i < 10);
 
-  return false;
+  return bAdded;
 }
 
 //! isLiveAdapters

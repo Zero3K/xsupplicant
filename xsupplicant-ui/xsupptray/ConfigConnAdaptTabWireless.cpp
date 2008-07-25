@@ -65,6 +65,7 @@ ConfigConnAdaptTabWireless::~ConfigConnAdaptTabWireless()
 		 }
 
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(slotScanComplete(const QString &)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalNewInterfaceInserted()), this, SLOT(adapterInserted()));
 
 		Util::myDisconnect(m_pHiddenSSID, SIGNAL(toggled(bool)), this, SLOT(slotHiddenToggled(bool)));
 		Util::myDisconnect(m_pHiddenSSID, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
@@ -218,6 +219,7 @@ bool ConfigConnAdaptTabWireless::attach()
 
 	 Util::myConnect(m_pHiddenSSID, SIGNAL(toggled(bool)), this, SLOT(slotHiddenToggled(bool)));
 	 Util::myConnect(m_pHiddenSSID, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
+	 Util::myConnect(m_pEmitter, SIGNAL(signalNewInterfaceInserted()), this, SLOT(adapterInserted()));
 
 	 Util::myConnect(m_pBroadcastCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pHiddenName, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
@@ -1105,4 +1107,9 @@ void ConfigConnAdaptTabWireless::slotChangeBitDepth(int selected)
 			m_pHexKeyLabel->setText(tr("Enter 10 characters 0-9 or A-F"));
 		}
 	}
+}
+
+void ConfigConnAdaptTabWireless::adapterInserted()
+{
+	updateWindow();
 }
