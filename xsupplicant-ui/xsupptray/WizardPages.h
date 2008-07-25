@@ -276,11 +276,13 @@ public:
 private slots:
 	void handleValidateChecked(int checkState);
 	void handleCertTableClick(int, int);
+	void updateCertTipStrip(int,int);
 private:
 	QTableWidget *m_pCertTable;
 	QLineEdit *m_pNameField;
 	QCheckBox *m_pVerifyName;
 	cert_enum *m_pCertArray; // hate to use this datatype here
+	int m_numCerts;
 };
 
 class WizardPageAdapter : public WizardPage

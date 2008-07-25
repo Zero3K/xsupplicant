@@ -1240,8 +1240,10 @@ WizardPageDot1XCert::~WizardPageDot1XCert()
 		xsupgui_request_free_cert_enum(&m_pCertArray);
 	if (m_pVerifyName != NULL)
 		Util::myDisconnect(m_pVerifyName, SIGNAL(stateChanged(int)), this, SLOT(handleValidateChecked(int)));
-	if (m_pCertTable != NULL)
+	if (m_pCertTable != NULL) {
 		Util::myDisconnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
+		Util::myDisconnect(m_pCertTable, SIGNAL(cellEntered(int,int)), this, SLOT(updateCertTipStrip(int,int)));
+	}
 		
 }
 
@@ -1259,21 +1261,23 @@ bool WizardPageDot1XCert::create(void)
 	// dynamically populate text
 	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
 	if (pMsgLabel != NULL)
-		pMsgLabel->setText(tr("Choose a Trusted Root Certificate to validate against:"));	
+		pMsgLabel->setText(tr("Choose a Trusted CA Certificate to validate against:"));	
 
 	QLabel *pLabel = qFindChild<QLabel*>(m_pRealForm, "labelNameInstructions");
 	if (pLabel != NULL)
 		pLabel->setText(tr("Use \"*\" for prefix wildcarding and commas to separate multiple entries"));		
 		
 	if (m_pVerifyName != NULL)
-		m_pVerifyName->setText(tr("Verify Common Name"));
+		m_pVerifyName->setText(tr("Verify Server Common Name"));
 		
 	// set up event handling
 	if (m_pVerifyName != NULL)
 		Util::myConnect(m_pVerifyName, SIGNAL(stateChanged(int)), this, SLOT(handleValidateChecked(int)));
 		
-	if (m_pCertTable != NULL)
+	if (m_pCertTable != NULL) {
 		Util::myConnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
+		Util::myConnect(m_pCertTable, SIGNAL(cellEntered(int,int)), this, SLOT(updateCertTipStrip(int,int)));
+	}
 		
 	// other initializations
 	if (m_pNameField != NULL)
@@ -1295,12 +1299,15 @@ bool WizardPageDot1XCert::create(void)
 		m_pCertTable->horizontalHeader()->resizeSection(0,16);	
 		
 		// signal
-		m_pCertTable->horizontalHeaderItem(1)->setText(tr("Name"));
+		m_pCertTable->horizontalHeaderItem(1)->setText(tr("Trusted Certification Authority"));
 		m_pCertTable->horizontalHeader()->setResizeMode(1,QHeaderView::Stretch);
 		
 		// don't draw header any differently when row is selected
 		m_pCertTable->horizontalHeader()->setHighlightSections(false);
 		m_pCertTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		
+		// make sure we get all moue events
+		m_pCertTable->setMouseTracking(true);
 		
 		m_pCertTable->verticalHeader()->hide();
 		m_pCertTable->setRowCount(0);
@@ -1321,7 +1328,7 @@ bool WizardPageDot1XCert::create(void)
 				m_pCertTable->setRowHeight(i,20);
 				
 				// use item type as index into original array
-				QTableWidgetItem *item = new QTableWidgetItem(QString(m_pCertArray[i].friendlyname), i+1000);
+				QTableWidgetItem *item = new QTableWidgetItem(QString(m_pCertArray[i].certname), i+1000);
 				m_pCertTable->setItem(i,1,item);
 				
 				QCheckBox *pCheckBox = new QCheckBox();
@@ -1362,10 +1369,10 @@ void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 	if (m_pCertTable != NULL)
 	{
 		int nRows = m_pCertTable->rowCount();
-		int numCerts = 0;
+		m_numCerts = 0;
 		
-		while (m_pCertArray[numCerts].certname != NULL)
-			++numCerts;
+		while (m_pCertArray[m_numCerts].certname != NULL)
+			++m_numCerts;
 			
 		for (int i=0; i<nRows; i++)
 		{
@@ -1377,7 +1384,7 @@ void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 				{
 					int index = item->type() - 1000;
 					
-					if (m_pCertArray != NULL && index > 0 && index < numCerts && m_curData.m_serverCerts.contains(m_pCertArray[index].location))
+					if (m_pCertArray != NULL && index > 0 && index < m_numCerts && m_curData.m_serverCerts.contains(m_pCertArray[index].location))
 					{
 						((QCheckBox*)widget)->setChecked(true);
 					}
@@ -1387,7 +1394,7 @@ void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 					}
 				}
 			}
-		}		
+		}	
 	}
 }
 
@@ -1410,6 +1417,34 @@ void WizardPageDot1XCert::handleValidateChecked(int checkState)
 		m_pNameField->setDisabled(checkState == Qt::Unchecked);
 }
 
+void WizardPageDot1XCert::updateCertTipStrip(int row, int col)
+{
+	if (m_pCertTable != NULL)
+	{
+		if (col == 1)
+		{
+			QTableWidgetItem *item = m_pCertTable->item(row,1);
+			if (item != NULL)
+			{
+				int index = item->type() - 1000;
+				
+				if (m_pCertArray != NULL && index > 0 && index < m_numCerts)
+				{
+					QString dateStr;
+					QString tipText;
+					
+					QDate d(m_pCertArray[index].year, m_pCertArray[index].month, m_pCertArray[index].day);
+					dateStr = d.toString("MM/dd/yyyy"); // tr need to change this for appropriate locales
+					tipText = tr("<p style='white-space:pre'><font size='-1'><b>Issued To:</b> %1<br><b>Issued By:</b> %2<br><b>Friendly Name:</b> %3<br><b>Expires:</b> %4</font></p>").arg(m_pCertArray[index].certname).arg(m_pCertArray[index].issuer).arg(m_pCertArray[index].friendlyname).arg(dateStr);
+					m_pCertTable->setToolTip(tipText);
+				}
+			}
+		}
+		else
+			m_pCertTable->setToolTip(QString(""));
+	}
+}
+
 bool WizardPageDot1XCert::validate(void)
 {
 	// check that at least one cert chosen
@@ -1430,7 +1465,7 @@ bool WizardPageDot1XCert::validate(void)
 		
 		if (nSelected == 0)
 		{
-			QMessageBox::warning(m_pRealForm, tr("No Certificates Selected"),tr("Please select at least one server certificate to use for validation."));
+			QMessageBox::warning(m_pRealForm, tr("No Certificates Selected"),tr("Please select at least one certificate to use for validation."));
 			return false;
 		}
 	}
