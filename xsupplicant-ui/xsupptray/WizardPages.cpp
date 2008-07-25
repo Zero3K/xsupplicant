@@ -545,8 +545,14 @@ bool WizardPageFinished::validate(void)
 }
 const ConnectionWizardData &WizardPageFinished::wizardData(void)
 {
-	if (m_pConnectionName != NULL)
+	if (m_pConnectionName != NULL) {
 		m_curData.m_connectionName = m_pConnectionName->text();
+		m_curData.m_profileName = m_curData.m_connectionName;
+		m_curData.m_profileName.append(QWidget::tr("_Profile"));
+		
+		m_curData.m_serverName = m_curData.m_connectionName;
+		m_curData.m_serverName.append(QWidget::tr("_Server"));		
+	}
 	
 	return m_curData;
 }
@@ -1253,7 +1259,7 @@ bool WizardPageDot1XCert::create(void)
 	// dynamically populate text
 	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
 	if (pMsgLabel != NULL)
-		pMsgLabel->setText(tr("Choose a server certificate to validate against:"));	
+		pMsgLabel->setText(tr("Choose a Trusted Root Certificate to validate against:"));	
 
 	QLabel *pLabel = qFindChild<QLabel*>(m_pRealForm, "labelNameInstructions");
 	if (pLabel != NULL)
@@ -1358,7 +1364,7 @@ void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 		int nRows = m_pCertTable->rowCount();
 		int numCerts = 0;
 		
-		while (m_pCertArray[numCerts].friendlyname != NULL)
+		while (m_pCertArray[numCerts].certname != NULL)
 			++numCerts;
 			
 		for (int i=0; i<nRows; i++)

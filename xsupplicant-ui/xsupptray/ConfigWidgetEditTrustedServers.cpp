@@ -434,10 +434,24 @@ void ConfigWidgetEditTrustedServers::slotServerSelected()
 		
 		if (location != "")
 		{
-			if (m_pTrustedServer->location[0] != NULL)
+			if (m_pTrustedServer->location == NULL)
 			{
-				free(m_pTrustedServer->location[0]);
-				m_pTrustedServer->location[0] = NULL;
+				m_pTrustedServer->location = (char**)malloc(1 * sizeof(char *));
+				if (m_pTrustedServer->location != NULL)
+					memset(m_pTrustedServer->location, 0x00, 1 * sizeof(char *));
+				else
+				{
+					QMessageBox::critical(m_pRealWidget->window(), tr("Error"), tr("Failed to allocate memory to store trusted server data."));
+					return; // just exit
+				}	
+			}
+			else
+			{
+				if (m_pTrustedServer->location[0] != NULL)
+				{
+					free(m_pTrustedServer->location[0]);
+					m_pTrustedServer->location[0] = NULL;
+				}
 			}
 
 			m_pTrustedServer->location[0] = _strdup(location.toAscii());

@@ -346,7 +346,7 @@
             </font>
            </property>
            <property name="text" >
-            <string>Choose a server certificate to validate against:</string>
+            <string>Choose a Trusted Root Certificate (CA) to validate against:</string>
            </property>
            <property name="wordWrap" >
             <bool>true</bool>

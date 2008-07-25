@@ -44,17 +44,23 @@ class HelpWindow: public QWidget
   Q_OBJECT
 
 public:
-	static void setSource(const QString &path, const QString &file, const QString &page);
 	static void showPage(const QString &file, const QString &page);
+	static HelpWindow *Instance(void);
   
-private:
-	static bool create();
-	static void show();
+protected:
+	HelpWindow(void);
+	HelpWindow(const HelpWindow &);
 	
 private:
-	static QWidget *m_pRealForm;
-	static QTextBrowser *m_pTextBrowser;
-	static QPushButton *m_pCloseButton;
+	void setSource(const QString &path, const QString &file, const QString &page);
+	bool create();
+	void show();
+	
+private:
+	static HelpWindow *m_pInstance;
+	QWidget *m_pRealForm;
+	QTextBrowser *m_pTextBrowser;
+	QPushButton *m_pCloseButton;
 };
 
 #endif // _HELPWINDOW_H_

@@ -47,6 +47,12 @@ ConnectionWizardData::ConnectionWizardData()
 	// get distinct name
 	m_connectionName = XSupWrapper::getUniqueConnectionName(QWidget::tr("New Connection"));
 	
+	m_profileName = m_connectionName;
+	m_profileName.append(QWidget::tr("_Profile"));
+	
+	m_serverName = m_connectionName;
+	m_serverName.append(QWidget::tr("_Server"));	
+	
 	// wireless settings
 	m_networkName = "";
 	m_hiddenNetwork = false;
@@ -78,6 +84,7 @@ ConnectionWizardData::ConnectionWizardData()
 	
 	m_hasProfile = false;
 	m_hasServer = false;
+	m_nameChanged = false;
 }
 
 ConnectionWizardData::~ConnectionWizardData()
@@ -373,9 +380,7 @@ bool ConnectionWizardData::toProfileData(config_profiles **retProfile, config_tr
 		|| m_wirelessAssocMode == ConnectionWizardData::assoc_WPA2_ENT)))
 	{
 		// create profile
-		QString profileName = m_connectionName;
-		profileName.append(QWidget::tr("_Profile"));
-		success = XSupWrapper::createNewProfile(profileName,&pProfile,(m_newConnection == false && m_hasProfile == true));
+		success = XSupWrapper::createNewProfile(m_profileName,&pProfile,(m_newConnection == false && m_hasProfile == true));
 		if (success == true && pProfile != NULL)
 		{
 			switch (m_eapProtocol)
@@ -533,9 +538,7 @@ bool ConnectionWizardData::toServerData(config_trusted_server **retServer)
 		if ((m_eapProtocol == ConnectionWizardData::eap_peap || m_eapProtocol == ConnectionWizardData::eap_ttls)
 			&& m_validateCert == true)
 		{
-			QString profName = m_connectionName;
-			profName.append(QWidget::tr("_Server"));
-			success = XSupWrapper::createNewTrustedServer(profName,&pServer, (m_newConnection == false && m_hasServer == true));
+			success = XSupWrapper::createNewTrustedServer(m_serverName,&pServer, (m_newConnection == false && m_hasServer == true));
 			if (success && pServer != NULL)
 			{
 				if (m_verifyCommonName == true) 
@@ -697,6 +700,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 		
 	if (pProfile != NULL)
 	{
+		m_profileName = pProfile->name;
 		m_hasProfile = true;
 		if (pProfile->identity != NULL) 
 		{
@@ -763,6 +767,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 	if (pServer != NULL)
 	{
 		m_hasServer = true;
+		m_serverName = pServer->name;
 		if (pServer->common_name != NULL && QString(pServer->common_name).isEmpty() == false)
 		{
 			m_commonNames = QString(pServer->common_name).split(",");

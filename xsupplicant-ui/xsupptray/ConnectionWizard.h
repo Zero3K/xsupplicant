@@ -115,5 +115,7 @@ private:
 	bool m_dot1Xmode;
 	bool m_editMode; // whether editing an existing connection
 	QString m_originalConnName;
+	QString m_originalProfileName;
+	QString m_originalServerName;
 };
 #endif

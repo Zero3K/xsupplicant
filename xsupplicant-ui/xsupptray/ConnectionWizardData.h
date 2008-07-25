@@ -67,6 +67,8 @@ public:
 	bool m_wireless;
 	QString m_adapterDesc;
 	QString m_connectionName;
+	QString m_serverName;
+	QString m_profileName;	
 	
 	// wireless settings
 	QString m_networkName;
@@ -133,6 +135,8 @@ public:
 	// data for bookkeeping
 	bool m_hasProfile;
 	bool m_hasServer;
+
+	bool m_nameChanged; // so we know how to properly turn into profiles
 };
 
 #endif

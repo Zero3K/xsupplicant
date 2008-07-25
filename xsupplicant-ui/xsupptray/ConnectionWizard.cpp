@@ -323,6 +323,8 @@ void ConnectionWizard::edit(const ConnectionWizardData &connData)
 	m_editMode = true;
 	m_dot1Xmode = false;
 	m_originalConnName = connData.m_connectionName;
+	m_originalProfileName = connData.m_profileName;
+	m_originalServerName = connData.m_serverName;
 	
 	m_currentPage = pageNoPage;
 	this->gotoNextPage();
