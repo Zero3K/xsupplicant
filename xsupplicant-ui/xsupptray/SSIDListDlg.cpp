@@ -253,13 +253,19 @@ void SSIDListDlg::wirelessScanComplete(const QString &deviceName)
 	retVal = xsupgui_request_get_devdesc(deviceName.toAscii().data(), &adapterName);
 	if (retVal == REQUEST_SUCCESS && adapterName == m_curAdapter)
 	{
-		// unregister for notification
-		Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(wirelessScanComplete(const QString &)));
 		if (m_pRescanDialog != NULL)
 			m_pRescanDialog->hide();
 		if (m_pSSIDList != NULL)
 			m_pSSIDList->refreshList(m_curAdapter);
 	}
+	
+	if (adapterName == m_curAdapter)
+	{
+		// unregister for notifications
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(wirelessScanComplete(const QString &)));
+		Util::myDisconnect(m_pRescanDialog,SIGNAL(scanCancelled()), this, SLOT(cancelScan()));
+	}	
+	
 	
 	if (adapterName != NULL)
 		free(adapterName);
@@ -271,6 +277,7 @@ void SSIDListDlg::cancelScan(void)
 	if (m_pRescanDialog != NULL)
 		m_pRescanDialog->hide();
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(wirelessScanComplete(const QString &)));
+	Util::myDisconnect(m_pRescanDialog,SIGNAL(scanCancelled()), this, SLOT(cancelScan()));
 }
 
 void SSIDListDlg::handleSSIDListSelectionChange(const WirelessNetworkInfo &network)
