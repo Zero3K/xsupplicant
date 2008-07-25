@@ -170,6 +170,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_Frequency", ipc_callout_get_frequency},
 	{"DHCP_Release_Renew", ipc_callout_dhcp_release_renew},
 	{"Disconnect_Connection", ipc_callout_disconnect_connection},
+	{"Get_Are_Doing_PSK", ipc_callout_get_doing_psk},
 	{NULL, NULL}
 };
 
@@ -7356,4 +7357,45 @@ int ipc_callout_disconnect_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	SET_FLAG(ctx->flags, FORCED_CONN);
 
 	return ipc_callout_create_ack(ctx->intName, "Disconnect_Connection", outnode);
+}
+
+/**
+ * \brief Determine if an interface is in the middle of doing WPA(2)-PSK.
+ *
+ * \param[in] innode   The XML node tree that contains the request to get the
+ *                     WPA(2)-PSK state for an interface name.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_get_doing_psk(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	context *ctx = NULL;
+	wireless_ctx *wctx = NULL;
+	int doing_psk = 0;
+
+	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
+		return IPC_FAILURE;
+
+	ctx = ipc_callout_get_context_from_int(innode);
+	if (ctx == NULL)
+		return ipc_callout_create_error(NULL, "Get_Are_Doing_PSK", IPC_ERROR_INVALID_CONTEXT, outnode);
+
+	if (ctx->intType != ETH_802_11_INT)
+		return ipc_callout_create_error(ctx->intName, "Get_Are_Doing_PSK", IPC_ERROR_INVALID_CONTEXT, outnode);
+
+	wctx = (wireless_ctx *)ctx->intTypeData;
+	if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
+	{
+		doing_psk = TRUE;
+	}
+	else
+	{
+		doing_psk = FALSE;
+	}
+
+	return ipc_callout_some_state_response("Get_Are_Doing_PSK", "Are_Doing_PSK", doing_psk, 
+		"Doing_PSK", ctx->intName, outnode);
 }

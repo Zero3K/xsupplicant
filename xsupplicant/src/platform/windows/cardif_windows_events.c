@@ -1279,6 +1279,10 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 	if (event_core_locate_by_desc(interfaceName) != NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Got an interface inserted event for an interface that is already inserted!  (Interface : %s)\n", interfaceName);
+		if (event_core_unlock() != 0)
+		{
+			debug_printf(DEBUG_NORMAL, "Failed to release event core lock at %s():%d\n", __FUNCTION__, __LINE__);
+		}
 		_endthread();
 		return;
 	}

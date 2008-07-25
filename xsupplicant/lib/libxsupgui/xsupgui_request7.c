@@ -1670,3 +1670,18 @@ request_done:
 	return done;
 }
 
+/**
+ *  \brief Ask if the interface is doing PSK.
+ *
+ *  @param[in] device   The OS specific name of the device to get the EAP state machine
+ *                      state from.
+ *  @param[out] state   TRUE if PSK is in progress.  FALSE otherwise.
+ *
+ *  \retval REQUEST_SUCCESS on success 
+ *  \retval REQUEST_TIMEOUT on timeout
+ *  \retval >299 on other error  (usually indicates the interface isn't wireless.)
+ **/
+int xsupgui_request_get_are_doing_psk(char *device, int *state)
+{
+	return xsupgui_request_get_some_value(device, "Get_Are_Doing_PSK", "Are_Doing_PSK", "Doing_PSK", state);
+}

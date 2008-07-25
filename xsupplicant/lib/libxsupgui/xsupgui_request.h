@@ -506,6 +506,7 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int *tnc_conn_id, char **i
 int xsupgui_request_dhcp_release_renew(char *intname);
 int xsupgui_request_get_freq(char *device, unsigned int *freq);
 int xsupgui_request_disconnect_connection(char *device);
+int xsupgui_request_get_are_doing_psk(char *device, int *state);
 
 /** 
  * Calls that operate on the configuration file structures.  (Things that will become

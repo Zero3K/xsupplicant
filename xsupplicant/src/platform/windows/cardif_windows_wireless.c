@@ -2491,6 +2491,9 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			}
 
 			debug_printf(DEBUG_NORMAL, "Requesting DHCP information for '%s'.\n", ctx->desc);
+			cardif_windows_renew_ip(ctx);
+
+			/*
 			if (ctx->auths == 1) //&& (ctx->intType == ETH_802_11_INT))
 			{
 				// If we are in force auth state, only do this if we don't have a 'valid' IP address.
@@ -2517,6 +2520,7 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			{
 				cardif_windows_renew_ip(ctx);
 			}
+			*/
 			break;
 
 		case CONFIG_IP_USE_STATIC:

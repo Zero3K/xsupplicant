@@ -145,11 +145,14 @@ void add_to_buffer(char *msg)
   
   if(tail != NULL) 
     {
-      // Go ahead and add the log message
-      tail->msg    = strdup(msg);
-      tail->size   = strlen(msg);
-      buffer_size += tail->size;
-      log_lines ++;
+		if(tail->msg != NULL) 
+		{
+			// Go ahead and add the log message
+			tail->msg    = strdup(msg);
+			tail->size   = strlen(msg);
+			buffer_size += tail->size;
+			log_lines ++;
+		}
     }
 
   // Trim off any excess log messages
@@ -228,6 +231,9 @@ int DLLMAGIC plugin_hook_trouble_ticket_dump_file(char *file)
 	{
 		// Bail out when we hit the end of the list
 		if(trouble_ticket_commands[index] == NULL)
+			break;
+
+		if(file == NULL)
 			break;
 
 		command_size = (strlen(trouble_ticket_commands[index]) * 2) + 2;

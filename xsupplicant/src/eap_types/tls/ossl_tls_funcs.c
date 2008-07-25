@@ -702,13 +702,51 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 			err = ERR_get_error();
 			if (err != 0)
 			{
-				error_str = Malloc(1024);
-				if (error_str != NULL)
+				debug_printf(DEBUG_INT, "OpenSSL error : %d  (%d, %d, %d)\n", err, ERR_GET_LIB(err), ERR_GET_FUNC(err),
+					ERR_GET_REASON(err));
+
+				// Any of these reason codes usually indicate we got out of sync.
+				if ((ERR_GET_REASON(err) == SSL_R_UNEXPECTED_MESSAGE) || (ERR_GET_REASON(err) == SSL_R_UNEXPECTED_RECORD) ||
+					(ERR_GET_REASON(err) == SSL_R_WRONG_VERSION_NUMBER))
 				{
-					sprintf(error_str, "Authentication handshake failed.  Reason : %s", ERR_reason_error_string(err));
-					debug_printf(DEBUG_NORMAL, "%s\n", error_str);
-					ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
-					FREE(error_str);
+					// If we get an unexpected message, then we probably reset our state machine when the other end did a 
+					// retransmit.  So send a start to get things back in order.
+					ctx = event_core_get_active_ctx();
+
+					if (ctx == NULL)					// Shouldn't be possible!
+					{
+						// But if it happens, we should scream anyway.
+						error_str = Malloc(1024);
+						if (error_str != NULL)
+						{
+							sprintf(error_str, "Authentication handshake failed.  Reason : %s", ERR_reason_error_string(err));
+							debug_printf(DEBUG_NORMAL, "%s\n", error_str);
+							ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
+							FREE(error_str);
+						}
+					}
+					else
+					{
+						debug_printf(DEBUG_NORMAL, "Got an unexpected message on interface '%s'.  Trying to restart authentication.\n", ctx->desc);
+						txStart(ctx);
+					}
+				}
+				else
+				{
+					ctx = event_core_get_active_ctx();
+
+					if (ctx != NULL)					// Shouldn't be possible!
+					{
+						// But if it happens, we should scream anyway.
+						error_str = Malloc(1024);
+						if (error_str != NULL)
+						{
+							sprintf(error_str, "Authentication handshake failed.  Reason : %s", ERR_reason_error_string(err));
+							debug_printf(DEBUG_NORMAL, "%s\n", error_str);
+							ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
+							FREE(error_str);
+						}
+					}
 				}
 
 				tls_funcs_deinit(mytls_vars);

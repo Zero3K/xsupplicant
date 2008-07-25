@@ -355,6 +355,7 @@ void event_core_deinit()
 int event_core_lock()
 {
 	DWORD dwWaitResult;
+	DWORD lastError = 0;
 
 	// Wait for our mutex to be available!
 	dwWaitResult = WaitForSingleObject(evtCoreMutex, INFINITE);
@@ -369,7 +370,19 @@ int event_core_lock()
 		break;
 
 	default:
-		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error acquiring event core lock!  (Error %d)\n", GetLastError());
+		lastError = GetLastError();
+		if (lastError != 0)
+		{
+			debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error acquiring event core lock!  (Error %d -- wait result %d)\n", GetLastError(), dwWaitResult);
+		}
+		else
+		{
+			// We can get in to a situation where a thread may have terminated without releasing
+			// a lock.  In these cases, Windows may tell us there was an error, but 
+			// GetLastError() indicates that the log was obtained correctly.
+			debug_printf(DEBUG_NORMAL, "Windows indicated an error obtaining the event core lock.  But, the lock was obtained successfully.  This is usually a bug in the code.  Please report it!\n");
+			return 0;
+		}
 		break;
 	}
 
@@ -1267,6 +1280,24 @@ void event_core_waking_up()
 
 					UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
 				}
+				else
+				{
+					// Some interfaces send a link down when the machine is going to
+					// sleep.  So, we need to probe to make sure we show proper state
+					// when we wake up.
+					if (cardif_get_link_state(events[i].ctx) == TRUE)
+					{
+						events[i].ctx->statemachine->portEnabled = TRUE;
+						events[i].ctx->eap_state->portEnabled = TRUE;
+						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_UP, events[i].ctx->desc);
+					}
+					else
+					{
+						events[i].ctx->statemachine->portEnabled = FALSE;
+						events[i].ctx->eap_state->portEnabled = FALSE;
+						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_DOWN, events[i].ctx->desc);
+					}
+				}
 			}
 			else
 			{
@@ -1565,6 +1596,15 @@ void event_core_change_os_ctrl_state(void *param)
 
 	event_core_lock();
 
+	if (param != NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "XSupplicant is taking control of your interfaces...\n");
+	}
+	else
+	{
+		debug_printf(DEBUG_NORMAL, "XSupplicant is giving control of your interfaces to Windows...\n");
+	}
+
 	for (i= 0; i< num_event_slots; i++)
 	{
 		if (param != NULL)
@@ -1572,8 +1612,16 @@ void event_core_change_os_ctrl_state(void *param)
 			// XSupplicant should control this interface.
 			if (events[i].ctx != NULL)
 			{
-				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) windows_int_ctrl_take_ctrl(events[i].ctx);
-				cardif_restart_io(events[i].ctx);
+				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) 
+				{
+					windows_int_ctrl_take_ctrl(events[i].ctx);
+					cardif_restart_io(events[i].ctx);
+				}
+				else
+				{
+					cardif_windows_restart_int_events(events[i].ctx);
+				}
+
 				events[i].flags &= (~EVENT_IGNORE_INT);
 
 				if (TEST_FLAG(events[i].flags, EVENT_PRIMARY))
@@ -1582,7 +1630,21 @@ void event_core_change_os_ctrl_state(void *param)
 					// when we come back.
 					UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
 					events[i].ctx->conn = NULL;
+					events[i].ctx->prof = NULL;
 					FREE(events[i].ctx->conn_name);
+
+					if (statemachine_change_state(events[i].ctx, LOGOFF) == 0)
+					{
+						events[i].ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
+
+						txLogoff(events[i].ctx);
+					}
+
+					if (events[i].ctx->intType == ETH_802_11_INT)
+					{
+						config_ssid_clear(events[i].ctx->intTypeData);
+						wireless_sm_change_state(UNASSOCIATED, events[i].ctx);						
+					}
 				}
 			}
 		}
@@ -1600,7 +1662,8 @@ void event_core_change_os_ctrl_state(void *param)
 
 	event_core_unlock();
 
-	if (param != NULL) event_core_drop_active_conns();
+	//if (param != NULL) event_core_drop_active_conns();
+
 	ipc_events_ui(NULL, IPC_EVENT_UI_INT_CTRL_CHANGED, NULL);
 }
 

@@ -194,5 +194,6 @@ int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_dhcp_release_renew(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_frequency(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_disconnect_connection(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_get_doing_psk(xmlNodePtr, xmlNodePtr *);
 
 #endif  // _IPC_CALLOUT_H_
