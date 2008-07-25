@@ -1077,12 +1077,12 @@ void TrayApp::buildPopupMenu(void)
 		// add standard items
 		m_pTrayIconMenu->addAction(m_pConfigAction);
 		m_pTrayIconMenu->addAction(m_pAboutAction);
-		m_pTrayIconMenu->addSeparator();
-		m_pTrayIconMenu->addAction(m_pQuitAction);
 #ifdef WINDOWS
 		m_pTrayIconMenu->addSeparator();
 		m_pTrayIconMenu->addAction(m_p1XControl);
-#endif		
+#endif			
+		m_pTrayIconMenu->addSeparator();		
+		m_pTrayIconMenu->addAction(m_pQuitAction);	
 	}
 }
 

@@ -1434,7 +1434,7 @@ void WizardPageDot1XCert::updateCertTipStrip(int row, int col)
 					QString tipText;
 					
 					QDate d(m_pCertArray[index].year, m_pCertArray[index].month, m_pCertArray[index].day);
-					dateStr = d.toString("MM/dd/yyyy"); // tr need to change this for appropriate locales
+					dateStr = d.toString("MM/dd/yyyy"); // need to change this for appropriate locales
 					tipText = tr("<p style='white-space:pre'><font size='-1'><b>Issued To:</b> %1<br><b>Issued By:</b> %2<br><b>Friendly Name:</b> %3<br><b>Expires:</b> %4</font></p>").arg(m_pCertArray[index].certname).arg(m_pCertArray[index].issuer).arg(m_pCertArray[index].friendlyname).arg(dateStr);
 					m_pCertTable->setToolTip(tipText);
 				}
