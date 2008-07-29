@@ -249,6 +249,15 @@ void cardif_windows_int_event_disconnect(context *ctx)
 	debug_printf(DEBUG_INT, "!!!!!!!!!!!!!!!!!!!! Disconnect Event !!!!!!!!!!!!!!!!!!!!!\n");
 	debug_printf(DEBUG_INT, "    Device : %s\n", ctx->desc);
 
+	if ((ctx->intType == ETH_802_11_INT) && (cardif_GetBSSID(ctx, &bssid_dest) == XENONE))
+	{
+		if (memcmp(ctx->dest_mac, &bssid_dest, 6) == 0)
+		{
+			debug_printf(DEBUG_INT, "Interface '%s' sent us a disconnect event, but an IOCTL check claims we are still connected!  Discarding!\n");
+			return;
+		}
+	}
+
 	// Send event.
 	ipc_events_ui(NULL, IPC_EVENT_UI_LINK_DOWN, ctx->desc);
 
