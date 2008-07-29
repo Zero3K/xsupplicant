@@ -330,7 +330,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 			retVal = xsupgui_request_get_devname(this->m_curAdapter.toAscii().data(), &adapterName);
 			
 			if (retVal == REQUEST_SUCCESS && adapterName != NULL)
-				retVal = xsupgui_request_set_connection(adapterName, pConn[i].name);
+				retVal = xsupgui_request_set_connection(adapterName, connList.at(0).toAscii().data());
 
 			if (retVal != REQUEST_SUCCESS || adapterName == NULL)
 			{
