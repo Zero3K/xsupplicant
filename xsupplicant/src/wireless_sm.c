@@ -1177,6 +1177,11 @@ void wireless_sm_check_globals(context *ctx)
 		}
     }
 
+  // TODO : The 802.1X state machine should handle the "port down" case, so
+  // having a PORT_DOWN state here is probably just extra cruft.  (It is extra
+  // cruft on Windows for sure, because it doesn't seem to have the concept of
+  // an administratively down state. ;)   Consider removing the PORT_DOWN state
+  // in order to keep things simple.
   if ((TEST_FLAG(wctx->flags, WIRELESS_SM_PORT_ACTIVE)) && (!cardif_get_if_state(ctx)))
     {
       // Our interface is down.

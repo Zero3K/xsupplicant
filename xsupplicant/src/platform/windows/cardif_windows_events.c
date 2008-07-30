@@ -245,7 +245,7 @@ void cardif_windows_int_event_disconnect(context *ctx)
 	config_globals *globals = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
-
+ 
 	debug_printf(DEBUG_INT, "!!!!!!!!!!!!!!!!!!!! Disconnect Event !!!!!!!!!!!!!!!!!!!!!\n");
 	debug_printf(DEBUG_INT, "    Device : %s\n", ctx->desc);
 

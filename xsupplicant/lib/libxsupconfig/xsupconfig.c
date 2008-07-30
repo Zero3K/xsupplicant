@@ -2077,7 +2077,7 @@ void delete_config_trusted_servers(struct config_trusted_servers **tmp_servers)
 {
   struct config_trusted_server *next = NULL, *cur = NULL;
 
-  if (((*tmp_servers) == NULL) || (tmp_servers == NULL))
+  if ((tmp_servers == NULL) || ((*tmp_servers) == NULL))
     return;
 
   cur = (*tmp_servers)->servers;

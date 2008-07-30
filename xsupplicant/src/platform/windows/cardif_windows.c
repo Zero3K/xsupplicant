@@ -1476,6 +1476,9 @@ int cardif_GetBSSID(context *ctx, char *bssid_dest)
  **/
 int cardif_get_if_state(context *ctx)
 {
+	return TRUE;   // In Windows, the interface is always up, or it is removed.
+
+#if 0
   int retVal = 0;
   DWORD result = 0, *state = NULL;
   struct win_sock_data *sockData = NULL;
@@ -1515,6 +1518,7 @@ int cardif_get_if_state(context *ctx)
     } 
 	
   return FALSE;
+#endif
 }
 
 /**
