@@ -129,8 +129,6 @@ void cardif_windows_int_event_connect(context *ctx)
 	debug_printf(DEBUG_INT, "!!!!!!!!!!!!!!!!!!!! Connect Event !!!!!!!!!!!!!!!!!!!!!\n");
 	debug_printf(DEBUG_INT, "    Device : %s\n", ctx->desc);
 
-	Sleep(1000);
-
 	// Send event.
 	ipc_events_ui(NULL, IPC_EVENT_UI_LINK_UP, ctx->desc);
 
