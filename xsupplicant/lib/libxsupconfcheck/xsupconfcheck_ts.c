@@ -7,8 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupconfcheck_ts.c,v 1.6 2008/01/30 21:07:01 galimorerpg Exp $
- * $Date: 2008/01/30 21:07:01 $
  **/
 #include <stdio.h>
 #include <string.h>

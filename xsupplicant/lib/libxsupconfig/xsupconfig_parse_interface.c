@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_interface.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_interface.c,v 1.6 2008/01/26 01:19:59 chessing Exp $
- * $Date: 2008/01/26 01:19:59 $
  **/
 
 #include <stdio.h>

@@ -8,9 +8,6 @@
  * \note  There is no reason to generate error events on anything in this file.  If 
  *        a call in this file fails it is an indication that  we won't be able to 
  *        send it out anyway. ;)
- *
- * $Id: ipc_events.c,v 1.8 2008/01/30 20:24:39 galimorerpg Exp $
- * $Date: 2008/01/30 20:24:39 $
  **/
 #include <libxml/parser.h>
 
@@ -105,6 +102,7 @@ void ipc_events_deinit()
 	if (ipcLock != INVALID_HANDLE_VALUE)
 	{
 		CloseHandle(ipcLock);
+		ipcLock = INVALID_HANDLE_VALUE;
 	}
 }
 
@@ -117,7 +115,7 @@ int ipc_events_lock()
 {
 	DWORD dwWaitResult;
 
-	if (ipcLock == INVALID_HANDLE_VALUE) return -1;  // We aren't inited yet.
+	if (ipcLock == INVALID_HANDLE_VALUE) return -1;  // We aren't inited yet (or have already deinited).
 
 	// Wait for our mutex to be available!
 	dwWaitResult = WaitForSingleObject(ipcLock, INFINITE);
@@ -191,6 +189,9 @@ int ipc_events_log_msg(char *logmsg)
 	// DO NOT xsup_assert here!  It will cause an infinite loop that will lead to a stack overflow!
 	if (logmsg == NULL) return IPC_FAILURE;
 
+	// If we don't have a valid IPC handle, don't bother trying to send this data.
+	if (ipcLock == INVALID_HANDLE_VALUE) return IPC_SUCCESS;
+
 	ctx = event_core_get_active_ctx();
 	if (ctx == NULL) return IPC_FAILURE;
 
@@ -211,7 +212,7 @@ int ipc_events_log_msg(char *logmsg)
 		goto done;
 	}
 
-	if (ctx != NULL)
+	if ((ctx != NULL) && (ctx->intName != NULL))
 	{
 		if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)ctx->intName) == NULL) 
 		{

@@ -3,9 +3,6 @@
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \author chris@open1x.org
- *
- * $Id: tnc_compliance_options.h,v 1.4 2008/01/23 23:45:10 galimorerpg Exp $
- * $Date: 2008/01/23 23:45:10 $
  **/
 
 #ifndef __TNC_COMPLIANCE_OPTIONS_H__

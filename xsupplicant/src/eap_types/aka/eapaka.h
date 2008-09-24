@@ -82,7 +82,7 @@ struct aka_eaptypedata {
 };  
 
 // Get the IMSI as the username.
-int eapaka_get_username();
+int eapaka_get_username(context *);
 
 void eapaka_check(eap_type_data *);
 void eapaka_process(eap_type_data *);

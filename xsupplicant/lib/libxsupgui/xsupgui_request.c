@@ -304,7 +304,7 @@ int xsupgui_request_get_some_value(char *device, char *state_request, char *stat
 	int done = REQUEST_SUCCESS, err;
 	char *temp = NULL;
 
-	if ((device == NULL) || (state_request == NULL) || (state_response == NULL) || 
+	if ((state_request == NULL) || (state_response == NULL) || 
 		(response_key == NULL))
 		return IPC_ERROR_INVALID_PARAMETERS;
 

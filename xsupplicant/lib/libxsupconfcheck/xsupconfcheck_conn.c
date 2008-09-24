@@ -7,8 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupconfcheck_conn.c,v 1.5 2008/01/30 21:07:01 galimorerpg Exp $
- * $Date: 2008/01/30 21:07:01 $
  **/
 
 #include <stdio.h>
@@ -152,16 +150,6 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 				((strlen(conn->association.keys[conn->association.txkey]) != 10) &&
 				(strlen(conn->association.keys[conn->association.txkey]) != 26)))
 			{
-				/*
-				errmsg = malloc(100);
-				if (errmsg != NULL)
-				{
-					sprintf(errmsg, "A static transmit key is set for index %d, but there is no key defined in that index.", conn->association.txkey);
-					if (log == TRUE) error_prequeue_add(errmsg);
-					free(errmsg);
-					errmsg = NULL;
-				}*/
-
 				retval = CONNECTION_NEED_UPW;
 			}
 		}

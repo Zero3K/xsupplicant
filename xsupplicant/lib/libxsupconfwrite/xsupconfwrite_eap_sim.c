@@ -7,9 +7,6 @@
  * \file xsupconfwrite_eap_sim.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_eap_sim.c,v 1.5 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>
@@ -114,6 +111,17 @@ xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata,
 				xmlFreeNode(simnode);
 				return NULL;
 			}
+		}
+	}
+
+	if ((write_all == TRUE) || (simdata->reader != NULL))
+	{
+		if (xsupconfwrite_common_newSibling(simnode, "Reader", simdata->reader) == NULL)
+		{
+#ifdef WRITE_EAP_SIM_DEBUG
+			printf("Couldn't create <Reader> node for SIM!\n");
+#endif
+			return NULL;
 		}
 	}
 

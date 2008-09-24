@@ -39,6 +39,7 @@
 #include "context.h"
 #include "ipc_events.h"
 #include "xsup_debug.h"
+#include "buildnum.h"
 
 #ifdef DEBUG_LOG_PLUGINS
 #include "plugins.h"
@@ -205,8 +206,8 @@ char *xsup_debug_system_time()
 	  return NULL;
   }
 
-  sprintf(tdstring, "%d-%.2d-%.2d  %d:%.2d:%.2d.%.3d", systime.wYear, systime.wMonth, systime.wDay, 
-	  systime.wHour, systime.wMinute, systime.wSecond, systime.wMilliseconds);
+  _snprintf(tdstring, 127, "%d-%.2d-%.2d  %d:%.2d:%.2d.%.3d", systime.wYear, systime.wMonth, systime.wDay, 
+		systime.wHour, systime.wMinute, systime.wSecond, systime.wMilliseconds);
 
   return tdstring;
 #else
@@ -340,6 +341,7 @@ static int rotate_log_files()
 		if (unlink(full_filename) != 0)
 		{
 			fprintf(stderr, "Couldn't delete file '%s'!  Can't roll log files!\n", full_filename);
+			FREE(full_filename);
 			return -1;
 		}
 	}
@@ -403,6 +405,7 @@ static int rotate_log_files()
 			if (new_filename == NULL)
 			{
 				fprintf(stderr, "Failed to allocate space to store the name of the log file we want to roll to.\n");
+				FREE(full_filename);
 				return -1;
 			}
 
@@ -426,6 +429,8 @@ static int rotate_log_files()
 			{
 				fprintf(stderr, "Failed to roll log file from '%s' to '%s'.   Is there another file already at '%s'?\n",
 					full_filename, new_filename, new_filename);
+				FREE(full_filename);
+				FREE(new_filename);
 				return -1;
 			}
 			else
@@ -647,6 +652,8 @@ int logfile_setup()
 			return XEGENERROR;
 		}
 
+		fprintf(logfile, "XSupplicant %s.%s\n\n", VERSION, BUILDNUM);
+
 	#ifdef WINDOWS
 		crashdump_add_file(tempstr, 0);
 	#else
@@ -685,8 +692,10 @@ void logfile_cleanup()
     {
       fclose(logfile);
 	  logfile = NULL;
-	  FREE(active_logpath);
     }
+
+  FREE(active_logpath);
+  FREE(active_logfile);
 
   if (syslogging == 1)
     {
@@ -815,6 +824,17 @@ void debug_alpha_set_flags(char *new_flags)
     }
 }
 
+/**
+ * \brief Clear the debug level, since the 'set level' call uses an OR.
+ **/
+void xsup_debug_clear_level()
+{
+	debug_level = 0;
+}
+
+/**
+ * \brief OR the passed in log level with the current level.
+ **/
 void xsup_debug_set_level(uint32_t level)
 {
 	debug_level |= level;
@@ -1298,10 +1318,17 @@ void debug_printf(uint32_t level, char *fmt, ...)
 		printf("Unknown debug level %d.\n", level);
 	}
 
-      vsnprintf((char *)&temp, TEMP_LOG_BUF_SIZE-1, fmt, ap);
+      vsnprintf((char *)&temp, TEMP_LOG_BUF_SIZE-2, fmt, ap);
 
 	  tdstring = xsup_debug_system_time();
-	  sprintf((char *)&fullstr, "%s - %s", tdstring, temp);
+	  if (tdstring != NULL)
+	  {
+		_snprintf((char *)&fullstr, TEMP_LOG_BUF_SIZE-2, "%s - %s", tdstring, temp);
+	  }
+	  else
+	  {
+		  _snprintf((char *)&fullstr, TEMP_LOG_BUF_SIZE-2, " - %s", temp);
+	  }
 	  FREE(tdstring);
 
 	  // Send temp to the UI without the subsystem tag.

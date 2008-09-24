@@ -571,10 +571,10 @@ int statemachine_change_to_held(context *ctx)
   ctx->statemachine->to_authenticated = 0;
   ctx->statemachine->last_reauth = 0;
 
-  ctx->auths = 0;
-
   // We failed, so tell the kernel that we have gone dormant.
   cardif_operstate(ctx, XIF_OPER_DORMANT);
+
+  ctx->auths = 0;
 
   return XENONE;
 }
@@ -1065,11 +1065,6 @@ void statemachine_do_authenticated(context *ctx)
 		{
 			printf("How did I get here!?\n");
 		}
-	
-#ifdef HAVE_TNC
-		if(imc_disconnect_callback != NULL)
-			imc_disconnect_callback(ctx->tnc_connID);
-#endif
 
 	  statemachine_change_state(ctx, RESTART);
       return;
@@ -1077,10 +1072,6 @@ void statemachine_do_authenticated(context *ctx)
   
   if (!ctx->statemachine->portValid)
     {
-#ifdef HAVE_TNC
-		if(imc_disconnect_callback != NULL)
-			imc_disconnect_callback(ctx->tnc_connID);
-#endif
       statemachine_change_state(ctx, DISCONNECTED);
       return;
     }

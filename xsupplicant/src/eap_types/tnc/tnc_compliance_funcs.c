@@ -7,8 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: tnc_compliance_funcs.c,v 1.6 2008/01/30 20:24:40 galimorerpg Exp $
- * $Date: 2008/01/30 20:24:40 $
  **/
 
 #ifdef HAVE_TNC
@@ -133,19 +131,19 @@ void TNC_28383_TNCC_debug_log(TNC_IMCID imcID, TNC_UInt32 severity, char *loglin
 	switch(severity)
 	{
 	case TNC_LOG_SEVERITY_ERR:
+	case TNC_LOG_SEVERITY_WARNING:
+	case TNC_LOG_SEVERITY_NOTICE: 
 		{
 			debug_printf(DEBUG_NORMAL | DEBUG_TNC_IMC | DEBUG_VERBOSE, "%s", logline);
 		}break;
-	case TNC_LOG_SEVERITY_WARNING:
-	case TNC_LOG_SEVERITY_NOTICE:
 	case TNC_LOG_SEVERITY_INFO:
         {
             // Only send INFO level information into the debug plugins.
-            debug_printf(DEBUG_NULL, "%s", logline);
+            debug_printf(DEBUG_TNC_IMC | DEBUG_VERBOSE, "%s", logline);
         }break;
 	case TNC_LOG_SEVERITY_DEBUG:
 	default:
-		debug_printf(DEBUG_TNC_IMC | DEBUG_VERBOSE, "%s", logline);
+		debug_printf(DEBUG_TNC_IMC, "%s", logline);
 	};
 
 	FREE(temp);
@@ -411,7 +409,11 @@ XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Renew_DHCP(TNC_IMCID imcID, TNC_Connectio
 		// Which is probably what is desired since
 		// the user is likely to be placed on a new VLAN
 		// in the cases where a TNC IMC requests a DHCP renew
-		ctx->auths = 0;
+		if (ctx->conn->ip.type != CONFIG_IP_USE_STATIC)
+		{
+			ctx->auths = 0;
+			ctx->flags |= DHCP_RELEASE_RENEW;
+		}
 	}
 	else
 	{

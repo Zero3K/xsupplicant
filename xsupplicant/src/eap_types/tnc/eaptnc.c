@@ -33,10 +33,17 @@
 #include "../../xsup_err.h"
 #include "../../frame_structs.h"
 #include "libxsupconfig/xsupconfig.h"   
+#include "../../context.h"
 #include "../../eap_sm.h"
 #include "../../xsup_common.h"
 #include "eaptnc.h"
 #include "../eap_type_common.h"
+
+#ifndef WINDOWS
+#include "../../event_core.h"
+#else
+#include "../../event_core_win.h"
+#endif
 
 #ifdef USE_EFENCE
 #include <efence.h>

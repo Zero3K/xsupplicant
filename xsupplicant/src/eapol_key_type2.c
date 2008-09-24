@@ -491,7 +491,7 @@ char eapol_key_type2_do_pmkid_kde(context *ctx,
   if (pmksa_populate_keydata(ctx, key) == 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Interface '%s' used a cached PMK to connect.\n", ctx->desc);
-	  statemachine_change_state(ctx, AUTHENTICATED);
+	  if (ctx->statemachine->curState != AUTHENTICATED) statemachine_change_state(ctx, AUTHENTICATED);
   }
   else
   {
@@ -870,13 +870,24 @@ void eapol_key_type2_do_gtk(context *intdata)
     {
       // If we are using PSK, and we made it here, then we are in 
       // FORCED AUTHENTICATED state.
-	  debug_printf(DEBUG_NORMAL, "Setting to S_FORCE_AUTH state!\n");
 	  statemachine_change_state(intdata, S_FORCE_AUTH);
       cardif_drop_unencrypted(intdata, FALSE);
     } else {
       // Drop unencrypted frames.
       cardif_drop_unencrypted(intdata, TRUE);
     }
+
+	// We need to let the event core know that we are done doing the PSK handshake.  This allows it to
+	// go through the event loop one more time to verify that the AP didn't drop us.  If it did drop us,
+	// it is a pretty sure indication that our PSK is invalid.  If it didn't, then we should be good.
+	// Note that sometimes APs will drop us a few seconds after the association, even if the PSK is
+	// valid.  This is *NOT* an indication that the key is wrong!
+    if (TEST_FLAG(((wireless_ctx *)intdata->intTypeData)->flags, WIRELESS_SM_DOING_PSK))
+	{
+		UNSET_FLAG(((wireless_ctx *)intdata->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
+		timer_cancel(intdata, PSK_DEATH_TIMER);
+		ipc_events_ui(intdata, IPC_EVENT_PSK_SUCCESS, intdata->intName);
+	}
 
   FREE(keydata);
 }
@@ -1018,6 +1029,21 @@ void eapol_key_type2_do_type1(context *intdata)
 }
 
 /**
+ * \brief Notify the UI that our PSK attempt timed out.
+ **/
+int8_t eapol_key_type2_psk_timeout(context *ctx)
+{
+	debug_printf(DEBUG_INT, "Clearing bad PSK flag.\n");
+	UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
+
+	timer_cancel(ctx, PSK_DEATH_TIMER);
+
+	ipc_events_ui(ctx, IPC_EVENT_PSK_TIMEOUT, ctx->intName);
+
+	return 0;
+}
+
+/**
  * Handle the third packet in the 4 way handshake.  We should be able to
  * generate the pairwise key at this point.
  **/
@@ -1061,7 +1087,7 @@ void eapol_key_type2_do_type3(context *intdata)
       debug_printf(DEBUG_NORMAL, "Buffer for sending a frame is NULL!\n");
     }
      
-  memset(intdata->sendframe, 0x00, 1520);
+  memset(intdata->sendframe, 0x00, FRAMESIZE);
 
   inkeydata = (struct wpa2_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL+4];
   outkeydata = (struct wpa2_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL+4];
@@ -1192,6 +1218,7 @@ void eapol_key_type2_do_type3(context *intdata)
 		  if (intdata->statemachine->PTK == NULL) debug_printf(DEBUG_NORMAL, "Unwrap failed because there is no PTK set!\n");
 		  ipc_events_error(intdata, IPC_EVENT_ERROR_FAILED_AES_UNWRAP, intdata->desc);
 	      FREE(keydata);
+		  FREE(aesval);
 		  cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT);  
 	      return;
 	    } else {
@@ -1254,16 +1281,17 @@ void eapol_key_type2_do_type3(context *intdata)
     }
   debug_printf(DEBUG_NORMAL, "Interface '%s' set new pairwise IEEE 802.11i/WPA2 key.\n", intdata->desc);
 
-#ifdef WINDOWS
 	// We need to let the event core know that we are done doing the PSK handshake.  This allows it to
 	// go through the event loop one more time to verify that the AP didn't drop us.  If it did drop us,
 	// it is a pretty sure indication that our PSK is invalid.  If it didn't, then we should be good.
 	// Note that sometimes APs will drop us a few seconds after the association, even if the PSK is
 	// valid.  This is *NOT* an indication that the key is wrong!
-  	UNSET_FLAG(((wireless_ctx *)intdata->intTypeData)->flags, WIRELESS_SM_PSK_DONE);
-#endif
-
-	ipc_events_ui(intdata, IPC_EVENT_PSK_SUCCESS, intdata->intName);
+    if (TEST_FLAG(((wireless_ctx *)intdata->intTypeData)->flags, WIRELESS_SM_DOING_PSK))
+	{
+		UNSET_FLAG(((wireless_ctx *)intdata->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
+		timer_cancel(intdata, PSK_DEATH_TIMER);
+		ipc_events_ui(intdata, IPC_EVENT_PSK_SUCCESS, intdata->intName);
+	}
 }
 
 /**
@@ -1375,6 +1403,16 @@ void eapol_key_type2_process(context *intdata)
 
 	  SET_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK);
 
+	  if (timer_check_existing(intdata, PSK_DEATH_TIMER) != TRUE)
+	  {
+		// Give us some time to complete PSK, or timeout
+		timer_add_timer(intdata, PSK_DEATH_TIMER, PSK_FAILURE_TIMEOUT, NULL, eapol_key_type2_psk_timeout);
+	  }
+	  else
+	  {
+		timer_reset_timer_count(intdata, PSK_DEATH_TIMER, PSK_FAILURE_TIMEOUT);
+	  }
+
 	  if (pskptr != NULL)
 	    {
 	      if (wctx->cur_essid == NULL)
@@ -1450,6 +1488,10 @@ void eapol_key_type2_process(context *intdata)
 	  debug_printf(DEBUG_NORMAL, "There is no PMK available!  WPA2 cannot"
 		       " continue!\n");
 	  ipc_events_error(intdata, IPC_EVENT_ERROR_PMK_UNAVAILABLE, intdata->desc);
+
+	  // Drop our connection.
+	  context_disconnect(intdata);
+
 	  return;
 	  }
 	}

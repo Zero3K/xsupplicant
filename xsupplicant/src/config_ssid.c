@@ -50,6 +50,8 @@ struct found_ssids *config_ssid_find_by_wctx(wireless_ctx *wctx)
 
   if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return NULL;
 
+  if (wctx->cur_essid == NULL) return NULL;  // If we don't have an SSID, then we won't find the SSID. :)
+
   // Start at the top of the list.
   cur = wctx->ssid_cache;
 
@@ -613,11 +615,11 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
   while (cur != NULL)
     {
 		retval = 0;
-      cur_pri = config_get_network_priority(cur->ssid_name);
-      debug_printf(DEBUG_PHYSICAL_STATE, "Checking %s with Priority %d\n",
+		cur_pri = config_get_network_priority(cur->ssid_name, ctx->desc);
+		debug_printf(DEBUG_PHYSICAL_STATE, "Checking %s with Priority %d\n",
 		   cur->ssid_name, cur_pri);
 
-	  conf = config_find_connection_from_ssid(cur->ssid_name);
+	  conf = config_find_connection_from_ssid_and_desc(cur->ssid_name, ctx->desc);
 
 	  if (conf != NULL)
 	  {
@@ -649,7 +651,7 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
       debug_printf(DEBUG_PHYSICAL_STATE, "    Signal : %d   Noise : %d   Quality : "
 		   "%d\n", best->signal, best->noise, best->quality);
 
-	  conf = config_find_connection_from_ssid(best->ssid_name);
+	  conf = config_find_connection_from_ssid_and_desc(best->ssid_name, ctx->desc);
 
 	  if (conf != NULL)
 	  {

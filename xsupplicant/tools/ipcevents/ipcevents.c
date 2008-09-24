@@ -205,6 +205,10 @@ int ipcevents_get_ui_string(int uievt, char **desc)
 		(*desc) = strdup("A PSK auth was successful.\n");
 		break;
 
+	case IPC_EVENT_CONNECTION_UNBOUND:
+		(*desc) = strdup("A connection was unbound.\n");
+		break;
+
 	default:
 		printf("Unknown UI event : %d\n", uievt);
 		(*desc) = strdup("An unknown UI event occurred.\n");

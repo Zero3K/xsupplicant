@@ -146,8 +146,11 @@ uint8_t load_plugins()
 uint8_t unload_plugins()
 {
   struct config_plugins *plugin = conf_plugins;
-  void (*cleanup)() = NULL;
+  struct config_plugins *next = NULL;
+  void (*cleanup)();
   uint8_t plugins_unloaded = 0;
+
+  cleanup = NULL;
 
   while(plugin != NULL)
     {
@@ -176,8 +179,11 @@ uint8_t unload_plugins()
 
       FREE(plugin->name);
       FREE(plugin->path);
+	  next = plugin->next;
+	  FREE(plugin);
 
-      plugin = plugin->next;
+      plugin = next;
+	  conf_plugins = plugin;
     }
 
   // Temporary for excalibur_ga

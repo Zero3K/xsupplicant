@@ -459,6 +459,18 @@ void eapol_key_type254_do_gtk(context *ctx)
   cardif_drop_unencrypted(ctx, 1);
 
   FREE(keydata);
+
+	// We need to let the event core know that we are done doing the PSK handshake.  This allows it to
+	// go through the event loop one more time to verify that the AP didn't drop us.  If it did drop us,
+	// it is a pretty sure indication that our PSK is invalid.  If it didn't, then we should be good.
+	// Note that sometimes APs will drop us a few seconds after the association, even if the PSK is
+	// valid.  This is *NOT* an indication that the key is wrong!
+    if (TEST_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK))
+	{
+		UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
+		timer_cancel(ctx, PSK_DEATH_TIMER);
+		ipc_events_ui(ctx, IPC_EVENT_PSK_SUCCESS, ctx->intName);
+	}
 }
 
 /***************************************************************
@@ -762,17 +774,6 @@ void eapol_key_type254_do_type3(context *ctx)
     }
 
   debug_printf(DEBUG_NORMAL, "Interface '%s' set new pairwise WPA key.\n", ctx->desc);
-
-#ifdef WINDOWS
-	// We need to let the event core know that we are done doing the PSK handshake.  This allows it to
-	// go through the event loop one more time to verify that the AP didn't drop us.  If it did drop us,
-	// it is a pretty sure indication that our PSK is invalid.  If it didn't, then we should be good.
-	// Note that sometimes APs will drop us a few seconds after the association, even if the PSK is
-	// valid.  This is *NOT* an indication that the key is wrong!
-  	UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_PSK_DONE);
-#endif
-
-	ipc_events_ui(ctx, IPC_EVENT_PSK_SUCCESS, ctx->intName);
 }
 
 void eapol_key_type254_determine_key(context *ctx)
@@ -834,6 +835,22 @@ void eapol_key_type254_determine_key(context *ctx)
 }
 
 /**
+ * \brief If we are doing PSK, and this is called, then the handshake stalled.
+ **/
+int8_t eapol_key_type254_psk_timeout(context *ctx)
+{
+	debug_printf(DEBUG_INT, "Clearing bad PSK flag.\n");
+	UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
+
+	timer_cancel(ctx, PSK_DEATH_TIMER);
+	debug_printf(DEBUG_NORMAL, "Timeout attempting to establish PSK connection on %s.\n", ctx->desc);
+
+	ipc_events_ui(ctx, IPC_EVENT_PSK_TIMEOUT, ctx->intName);
+
+	return 0;
+}
+
+/**
  *
  * Process a WPA frame that we get from the authenticator.
  *
@@ -876,6 +893,16 @@ void eapol_key_type254_process(context *ctx)
 
 		SET_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK);
 
+		if (timer_check_existing(ctx, PSK_DEATH_TIMER) != TRUE)
+		{
+			// Give us some time to complete PSK, or timeout
+			timer_add_timer(ctx, PSK_DEATH_TIMER, PSK_FAILURE_TIMEOUT, NULL, eapol_key_type254_psk_timeout);
+		}
+		else
+		{
+			timer_reset_timer_count(ctx, PSK_DEATH_TIMER, PSK_FAILURE_TIMEOUT);
+		}
+
 		if (pskptr != NULL)
 	    {
 	      if (wctx->cur_essid == NULL)
@@ -917,15 +944,16 @@ void eapol_key_type254_process(context *ctx)
 		  
 		  memcpy(ctx->statemachine->PMK, (char *)&tpmk, 32);
 		}
-	    } else {
+		} else if (ctx->conn->association.psk_hex != NULL) 
+		{
 	      // We have a hex key, we need to convert it from ASCII to real
 	      // hex.
 			if (ctx->conn->association.psk_hex == NULL || strlen(ctx->conn->association.psk_hex) != 64)
-		{
-		  debug_printf(DEBUG_NORMAL, "Invalid HEX key defined for "
+			{
+			  debug_printf(DEBUG_NORMAL, "Invalid HEX key defined for "
 			       "WPA-PSK!\n");
-		  return;
-		}
+			  return;
+			}
 			process_hex(ctx->conn->association.psk_hex, 
 				strlen(ctx->conn->association.psk_hex), (char *)&tpmk);
 
@@ -933,13 +961,13 @@ void eapol_key_type254_process(context *ctx)
 
 	      ctx->statemachine->PMK = (uint8_t *)Malloc(32);
 	      if (ctx->statemachine->PMK == NULL)
-		{
-		  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for "
+			{
+			  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for "
 			       "ctx->statemachine->PMK in %s:%d!\n",
 			       __FUNCTION__, __LINE__);
-		  ipc_events_malloc_failed(ctx);
-		  return;
-		}
+			  ipc_events_malloc_failed(ctx);
+			  return;
+			}
 	    }
 
   if (ctx->statemachine->PMK == NULL)
@@ -947,6 +975,10 @@ void eapol_key_type254_process(context *ctx)
 	  debug_printf(DEBUG_NORMAL, "There is no PMK available!  WPA cannot"
 		       " continue!\n");
 	  ipc_events_error(ctx, IPC_EVENT_ERROR_PMK_UNAVAILABLE, ctx->desc);
+
+	  // Drop our connection.
+	  context_disconnect(ctx);
+
 	  return;
 	}
     } 

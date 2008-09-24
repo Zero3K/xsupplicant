@@ -6,8 +6,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupconfig_parse_connection.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>

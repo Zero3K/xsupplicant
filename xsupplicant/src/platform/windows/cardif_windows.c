@@ -6,9 +6,6 @@
  * \file cardif_windows.c
  *
  * \author chris@open1x.org
- *
- * $Id: cardif_windows.c,v 1.1 2008/01/30 20:46:43 galimorerpg Exp $
- * $Date: 2008/01/30 20:46:43 $
  **/
 
 #include <fcntl.h>
@@ -947,7 +944,7 @@ int cardif_init(context *ctx, char driver)
 	  debug_printf(DEBUG_INT, "Interface is wireless.\n");
 	  ctx->intType = ETH_802_11_INT;
 
-	  if (!TEST_FLAG(ctx->flags, INT_IGNORE))
+	  if  ((!TEST_FLAG(ctx->flags, INT_IGNORE)) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
 	  {
 		// Disable WZC (if it is running.)
 		  // First, try the wlan API as suggested by MS.
@@ -993,7 +990,7 @@ int cardif_init(context *ctx, char driver)
     }
 	else
 	{
-	  if (!TEST_FLAG(ctx->flags, INT_IGNORE))
+	  if ((!TEST_FLAG(ctx->flags, INT_IGNORE)) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
 	  {
 		// Disable the Windows 802.1X stack on a wired interface.
 		if (windows_eapol_ctrl_disable(ctx->desc, ctx->intName) != 0)
@@ -1082,6 +1079,8 @@ int cardif_init(context *ctx, char driver)
 
   FREE(mac);
   FREE(intdesc);
+
+  SET_FLAG(ctx->flags, DHCP_RELEASE_RENEW);
 
   event_core_register(sockData->devHandle, ctx, &cardif_handle_frame, EVENT_PRIMARY, LOW_PRIORITY, "frame handler");
 
@@ -1195,15 +1194,27 @@ int cardif_deinit(context *ctx)
   uint16_t int16 = 0;
   struct win_sock_data *sockData = NULL;
   uint8_t all0s[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  int i = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
 
-  FREE(ctx->sendframe);
+  cardif_cancel_io(ctx);
   
   sockData = ctx->sockData;
 
   debug_printf(DEBUG_DEINIT | DEBUG_INT, "Cleaning up interface %s...\n", ctx->intName);
+
+  // Instruct any DHCP threads to terminate themselves, and wait for it to be done.
+  debug_printf(DEBUG_NORMAL, "Waiting for DHCP threads to terminate...\n");
+  sockData->needTerminate = TRUE;
+  while (sockData->dhcpOutstanding > 0) 
+  {
+	  i++;
+	  Sleep(1000);
+
+	  if (i > 60) break;   // If 60 seconds have passed, bail out anyway.  (This shouldn't happen.)
+  }
 
   if (ctx->intType == ETH_802_11_INT)
   {
@@ -1226,6 +1237,7 @@ int cardif_deinit(context *ctx)
   {
 	  debug_printf(DEBUG_NORMAL, "Unable to close event handle.  Error was : %d\n", GetLastError());
   }
+  sockData->hEvent = INVALID_HANDLE_VALUE;
 
   FREE(sockData->frame);
 
@@ -1233,12 +1245,11 @@ int cardif_deinit(context *ctx)
   {
 	  debug_printf(DEBUG_NORMAL, "Unable to close device handle.  Error was : %d\n", GetLastError());
   }
+  sockData->devHandle = INVALID_HANDLE_VALUE;
 
-  // Free the memory used for the Caption.
+  // Free the memory used in sockData
   FREE(sockData->caption);
-
-  // Now clean up the memory.
-  FREE(ctx->sockData);
+  //FREE(sockData->eventdata);
 
   return XENONE;
 }
@@ -3232,6 +3243,7 @@ int cardif_windows_set_static_ip(context *ctx, char *addr, char *netmask, char *
 {
 	struct win_sock_data *sockData = NULL;
 	int retval = 0;
+	int result = 0;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
 
@@ -3251,22 +3263,24 @@ int cardif_windows_set_static_ip(context *ctx, char *addr, char *netmask, char *
 		if ((ctx->conn != NULL) && ((ctx->conn->ip.dns1 != NULL) || (ctx->conn->ip.dns2 != NULL) ||
 			(ctx->conn->ip.dns3 != NULL)))
 		{
-			retval = win_ip_manip_set_dns_servers(ctx, ctx->conn->ip.dns1, ctx->conn->ip.dns2,
+			result = win_ip_manip_set_dns_servers(ctx, ctx->conn->ip.dns1, ctx->conn->ip.dns2,
 												ctx->conn->ip.dns3);
-			if (retval == FALSE)
+			if (result == FALSE)
 			{
 				// Display an error message, but continue on.
 				debug_printf(DEBUG_NORMAL, "Failed to set DNS servers on interface '%s'!\n", ctx->desc);
+				retval = -1;
 			}
 		}
 
 		if ((ctx->conn != NULL) && (ctx->conn->ip.search_domain != NULL))
 		{
-			retval = win_ip_manip_set_dns_domain(ctx, ctx->conn->ip.search_domain);
-			if (retval == FALSE)
+			result = win_ip_manip_set_dns_domain(ctx, ctx->conn->ip.search_domain);
+			if (result == FALSE)
 			{
 				// Display an error message, but continue on.
 				debug_printf(DEBUG_NORMAL, "Failed to set DNS domain on interface '%s'!\n", ctx->desc);
+				retval = -1;
 			}
 		}
 		break;
@@ -3460,6 +3474,7 @@ char *cardif_get_netmask(context *ctx)
  **/
 char *cardif_windows_get_ip(context *ctx)
 {
+    LPVOID MsgBuf = NULL;
     PIP_ADAPTER_ADDRESSES AdapterAddresses = NULL;
     ULONG OutBufferLength = 0;
     ULONG RetVal = 0, i;    
@@ -3525,9 +3540,7 @@ char *cardif_windows_get_ip(context *ctx)
 		  }
 	  }
     }
-    else { 
-      LPVOID MsgBuf;
-      
+    else {       
       if (FormatMessage( 
         FORMAT_MESSAGE_ALLOCATE_BUFFER | 
         FORMAT_MESSAGE_FROM_SYSTEM | 
@@ -3541,11 +3554,11 @@ char *cardif_windows_get_ip(context *ctx)
         debug_printf(DEBUG_NORMAL, "Call to GetAdaptersAddresses() failed.  Error: %s", MsgBuf);
       }
       LocalFree(MsgBuf);
+
+	  return NULL;
     }  
 
-    if (AdapterAddresses != NULL) {
-        FREE(AdapterAddresses);
-    }
+    FREE(AdapterAddresses);
 
 	return retaddr;
 }

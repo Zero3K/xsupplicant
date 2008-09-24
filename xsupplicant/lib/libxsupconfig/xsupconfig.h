@@ -68,6 +68,9 @@
 // The length of time to stay in HELD state.
 #define HELD_STATE_TIMEOUT            60    // in seconds.
 
+// The length of time before we assume a PSK connection will fail.
+#define PSK_FAILURE_TIMEOUT			  10    // in seconds.
+
 // The maximum number of starts to send before we assume that we are on a device that doesn't
 // understand 802.1X, and switch to authenticated state.
 #define MAX_STARTS                    3
@@ -128,8 +131,8 @@ int add_change_config_interface(struct xsup_interfaces *confif);
 int add_change_config_managed_network(struct config_managed_networks *confmn);
 struct xsup_interfaces *config_get_config_ints();
 struct xsup_interfaces *config_find_int(char *);
-uint8_t config_get_network_priority(char *);
-struct config_connection *config_find_connection_from_ssid(char *);
+uint8_t config_get_network_priority(char *, char *);
+struct config_connection *config_find_connection_from_ssid_and_desc(char *, char *);
 uint8_t config_get_friendly_warnings();
 uint8_t config_get_idleWhile();
 struct config_connection *config_find_connection(char *);

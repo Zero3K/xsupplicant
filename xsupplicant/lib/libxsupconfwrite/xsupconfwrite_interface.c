@@ -8,9 +8,6 @@
  * \file xsupconfwrite_interface.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_interface.c,v 1.6 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 #include <stdio.h>
 #include <sys/types.h>

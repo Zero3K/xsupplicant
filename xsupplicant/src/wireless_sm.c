@@ -1430,7 +1430,7 @@ void wireless_sm_do_active_scan(context *ctx)
   if ((!TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) && (!TEST_FLAG(wctx->flags, WIRELESS_CHECKED)))
     {
         // We aren't scanning, so see if we have a valid SSID we can attach
-        // to.  (Assuming we are not in a force connection state.
+        // to.  (Assuming we are not in a force connection state.)
 		if (!TEST_FLAG(ctx->flags, FORCED_CONN))
 		{
 			newssid = config_ssid_get_desired_ssid(ctx);
@@ -1438,6 +1438,12 @@ void wireless_sm_do_active_scan(context *ctx)
 			{
 				debug_printf(DEBUG_PHYSICAL_STATE, "Switching to Associating mode to"
 						" connect to %s.\n", newssid);
+
+				if (ctx->conn != NULL)
+				{
+					// We are currently bound.  (And will now unbind.)
+					ipc_events_ui(NULL, IPC_EVENT_CONNECTION_UNBOUND, ctx->conn->name);
+				}
 
 				// Clear out the SSID we are currently connected to.
 				FREE(wctx->cur_essid);
@@ -1453,6 +1459,8 @@ void wireless_sm_do_active_scan(context *ctx)
 						// We need to search again, by MAC address this time.
 						config_ssid_get_by_mac(ctx, ctx->conn->dest_mac);
 					}
+
+					ipc_events_ui(ctx, IPC_EVENT_AUTO_SELECTED_CONNECTION, ctx->conn->name);
 				}
 				else
 				{
@@ -1460,6 +1468,14 @@ void wireless_sm_do_active_scan(context *ctx)
 				}
 
 				wireless_sm_change_state(ASSOCIATING, ctx);
+			}
+			else
+			{
+			  // If we didn't find anything, sleep for a few seconds before we try
+			  // again. 
+				SET_FLAG(wctx->flags, WIRELESS_CHECKED);
+				wireless_sm_set_rescan_timer(ctx);
+			}
 		}
 		else
 		{
@@ -1502,13 +1518,6 @@ void wireless_sm_do_active_scan(context *ctx)
 				}
 			}
 		}
-		return;
-	} else {
-	  // If we didn't find anything, sleep for a few seconds before we try
-	  // again. 
-		SET_FLAG(wctx->flags, WIRELESS_CHECKED);
-		wireless_sm_set_rescan_timer(ctx);
-	}
     } 
 }
 

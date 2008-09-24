@@ -591,6 +591,8 @@ LONG WINAPI crash_handler_callback(PEXCEPTION_POINTERS pExceptionInfo)
 	HANDLE hFile;
 	MINIDUMP_EXCEPTION_INFORMATION eInfo;
 
+	if (pExceptionInfo == NULL) return EXCEPTION_CONTINUE_SEARCH;
+
 	// Note: BUILDNUM is a quoted string.
 	hFile = CreateFileA( dumploc, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hFile != INVALID_HANDLE_VALUE)
@@ -621,6 +623,8 @@ LONG WINAPI crash_handler_callback(PEXCEPTION_POINTERS pExceptionInfo)
  **/
 void crash_handler_install(char *dumpname)
 {
+	if (dumploc != NULL) free(dumploc);
+
 	dumploc = strdup(dumpname);
 	previousFilter = SetUnhandledExceptionFilter(crash_handler_callback);
 }

@@ -2,7 +2,7 @@
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * \file cardif_windows_events.c
+ * \file win_ip_manip.c
  *
  * \author chris@open1x.org
  *
@@ -24,16 +24,19 @@
 #include "../../eap_sm.h"
 #include "../../error_prequeue.h"
 #include "cardif_windows_events.h"
+#include "../../ipaddr_common.h"
 
 typedef int (CALLBACK* DNSFLUSHPROC)();
 typedef int (CALLBACK* DHCPNOTIFYPROC)(LPWSTR, LPWSTR, BOOL, DWORD, DWORD, DWORD, int);
+
+#define MAX_OUTSTANDING_DHCP_THREADS	2
 
 struct tmpAddrStruct {
 	char *guid;
 	char *addr;
 	char *netmask;
 	char *gateway;
-	char *ctx;
+	context *ctx;
 };
 
 ///< A couple of APIs we need aren't normally exported.  So we need to handle that.
@@ -56,7 +59,7 @@ int win_ip_manip_init_iphlpapi()
 
 void win_ip_manip_deinit_iphlpapi()
 {
-	if (hIPHlpApiMod != NULL) CloseHandle(hIPHlpApiMod);
+	//if (hIPHlpApiMod != NULL) CloseHandle(hIPHlpApiMod);
 }
 
 /**
@@ -93,6 +96,8 @@ int RegSetDNS(LPCTSTR lpszAdapterName, LPCTSTR pDNS)
 				KEY_WRITE,
 				&hKey) != ERROR_SUCCESS)
 		return FALSE;
+
+	FREE(strKeyName);
 	
 	strncpy(mszDNS, pDNS, 98);
 
@@ -144,6 +149,8 @@ int RegSetDomain(LPCTSTR lpszAdapterName, LPCTSTR pDomain)
 				KEY_WRITE,
 				&hKey) != ERROR_SUCCESS)
 		return FALSE;
+
+	FREE(strKeyName);
 	
 	strncpy(mszDomain, pDomain, 98);
 
@@ -246,11 +253,14 @@ int win_ip_manip_delete_dns_servers(context *ctx)
 	if (strKeyName == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to allocate memory in %s()!\n", __FUNCTION__);
+		FREE(guid);
 		return FALSE;
 	}
 
 	strcpy(strKeyName, strKeyPath);
 	Strcat(strKeyName, bufsize, guid);
+
+	FREE(guid);
 
 	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 				strKeyName,
@@ -258,6 +268,8 @@ int win_ip_manip_delete_dns_servers(context *ctx)
 				KEY_WRITE,
 				&hKey) != ERROR_SUCCESS)
 		return FALSE;
+
+	FREE(strKeyName);
 
 	result = RegDeleteValue(hKey, "NameServer");
 	if ((result != NO_ERROR) && (result != 2))
@@ -294,6 +306,24 @@ int win_ip_manip_set_dns_servers(context *ctx, char *dns1, char *dns2, char *dns
 	int bufsize = 0;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return FALSE;
+
+	if ((dns1 != NULL) && (ipaddr_common_ip_is_valid(dns1) != TRUE))
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to set DNS address 1 for interface %s, because it is invalid.\n", ctx->desc);
+		return FALSE;
+	}
+
+	if ((dns2 != NULL) && (ipaddr_common_ip_is_valid(dns2) != TRUE))
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to set DNS address 2 for interface %s, because it is invalid.\n", ctx->desc);
+		return FALSE;
+	}
+
+	if ((dns3 != NULL) && (ipaddr_common_ip_is_valid(dns3) != TRUE))
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to set DNS address 3 for interface %s, because it is invalid.\n", ctx->desc);
+		return FALSE;
+	}
 
 	guid = cardif_windows_event_get_guid(ctx);
 
@@ -414,12 +444,14 @@ void win_ip_manip_release_ip_thread(void *ctxptr)
 	if ((dwRetVal = GetAdapterIndex(ippath, &idx)) != NO_ERROR)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to determine interface index for interface '%ws'.  (Error : %d)\n", ippath, dwRetVal);
+		FREE(ippath);
 		_endthread();
 		return;
 	}
 
 	addrMap.Index = idx;
 	wcscpy((wchar_t *)&addrMap.Name, ippath); 
+	FREE(ippath);
 
     if ((dwRetVal = IpReleaseAddress(&addrMap)) != NO_ERROR) 
 	{
@@ -450,6 +482,138 @@ void win_ip_manip_release_ip(context *ctx)
 	_beginthread(win_ip_manip_release_ip_thread, 0, ctx);
 }
 
+DWORD win_ip_manip_lock_mutex(PHANDLE mutexHandle, int mutexNum)
+{
+	DWORD dwWaitResult;
+	DWORD lastError = 0;
+
+	if (((*mutexHandle) == 0) || ((*mutexHandle) == INVALID_HANDLE_VALUE))
+	{
+		// This is the first time we have attempted to use the mutex, so init it.
+		(*mutexHandle) = CreateMutex(NULL, FALSE, NULL);
+		if (((*mutexHandle) == 0) || ((*mutexHandle) == INVALID_HANDLE_VALUE))
+		{
+			debug_printf(DEBUG_NORMAL, "Unable to create a new mutex for mutex number %d!\n", mutexNum);
+			return -1;    // We failed to create the mutex.
+		}
+	}
+
+	// Wait for our mutex to be available!
+	dwWaitResult = WaitForSingleObject((*mutexHandle), INFINITE);
+
+	switch (dwWaitResult)
+	{
+	case WAIT_OBJECT_0:
+#ifdef LOCK_DEBUG
+		debug_printf(DEBUG_IPC, "Acquired mutex lock number %d.  (Thread ID : %d)\n", mutexNum, GetCurrentThreadId());
+#endif
+		return 0;
+		break;
+
+	default:
+		lastError = GetLastError();
+		if (lastError != 0)
+		{
+			debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error acquiring mutex lock number %d!  (Error %d -- wait result %d)\n", mutexNum, GetLastError(), dwWaitResult);
+		}
+		else
+		{
+			// We can get in to a situation where a thread may have terminated without releasing
+			// a lock.  In these cases, Windows may tell us there was an error, but 
+			// GetLastError() indicates that the log was obtained correctly.
+			debug_printf(DEBUG_NORMAL, "Windows indicated an error obtaining mutex lock number %d.  But, the lock was obtained successfully.  This is usually a bug in the code.  Please report it!\n", mutexNum);
+			return 0;
+		}
+		break;
+	}
+
+	return -1;
+}
+
+DWORD win_ip_manip_unlock_mutex(PHANDLE mutexHandle, int mutexNum)
+{
+	if (!ReleaseMutex((*mutexHandle)))
+	{
+		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error releasing mutex lock number %d!  (Error %d) (Thread id : %d)\n", mutexNum, GetLastError(), GetCurrentThreadId());
+		return -1;
+	}
+
+#ifdef LOCK_DEBUG
+	debug_printf(DEBUG_IPC, "Released mutex lock number %d.  (Thread ID : %d)\n", mutexNum, GetCurrentThreadId());
+#endif
+
+	return 0;
+}
+
+/**
+ * \brief See if this thread is allowed to run.
+ *
+ * @param[in] sockData   The socket data structure from the interface context
+ *
+ * \retval TRUE if we are allowed to run.
+ * \retval FALSE if we should terminate the thread.
+ **/
+int win_ip_manip_check_dhcp_thread_allowed(struct win_sock_data *sockData)
+{
+	// Lock a mutex so we can safely deal with our socket counter.
+	if (win_ip_manip_lock_mutex(&sockData->mutexDhcpOutstanding, 1) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to obtain the DHCP thread counter mutex!\n");
+		return FALSE;
+	}
+
+	debug_printf(DEBUG_INT, "dhcpOutstanding = %d\n", sockData->dhcpOutstanding);
+	if (sockData->dhcpOutstanding >= MAX_OUTSTANDING_DHCP_THREADS)
+	{
+		// Too many DHCP threads outstanding.
+		debug_printf(DEBUG_INT, "Already two DHCP threads on this interface, terminating.\n");
+		if (win_ip_manip_unlock_mutex(&sockData->mutexDhcpOutstanding, 1) != 0)
+		{
+			debug_printf(DEBUG_NORMAL, "Unable to unlock the DHCP mutex!  DHCP will be broken on this interface.\n");
+		}
+		return FALSE;
+	}
+
+	// Add one to our counter.
+	sockData->dhcpOutstanding++;
+
+	if (win_ip_manip_unlock_mutex(&sockData->mutexDhcpOutstanding, 1) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to release the DHCP counter mutex!\n");
+		sockData->dhcpOutstanding--;
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+ * \brief Clear the counter for this thread, because the thread is terminating.
+ *
+ * @param[in] sockData   The sockData structure from the interface context.
+ *
+ * \retval TRUE if the thread counter was decremented.
+ * \retval FALSE if the thread counter decrement failed.
+ **/
+int win_ip_manip_clear_thread_counter(struct win_sock_data *sockData)
+{
+	if (win_ip_manip_lock_mutex(&sockData->mutexDhcpOutstanding, 1) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to obtain the DHCP thread counter mutex!\n");
+		return FALSE;
+	}
+
+	sockData->dhcpOutstanding--;
+
+	if (win_ip_manip_unlock_mutex(&sockData->mutexDhcpOutstanding, 1) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to release the DHCP counter mutex!\n");
+		return FALSE;
+	}	
+
+	return TRUE;
+}
+
 /**
  * \brief This function is used as a thread to renew an IP address.
  *
@@ -465,6 +629,7 @@ void win_ip_manip_renew_ip_thread(void *ctxptr)
 	IP_ADAPTER_INDEX_MAP addrMap;
 	int tries = 0;
 	int retry = TRUE;
+	struct win_sock_data *sockData = NULL;
 
 	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE))
 	{
@@ -473,6 +638,13 @@ void win_ip_manip_renew_ip_thread(void *ctxptr)
 	}
 
 	ctx = (context *)ctxptr;
+
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Invalid interface context passed in to DHCP renew thread.  DHCP service will be unavailable.\n");
+		_endthread();
+		return;
+	}
 
 	ippath = cardif_windows_events_get_ip_guid_str(ctx);
 
@@ -486,6 +658,7 @@ void win_ip_manip_renew_ip_thread(void *ctxptr)
 	if ((dwRetVal = GetAdapterIndex(ippath, &idx)) != NO_ERROR)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to determine interface index for interface '%ws'.  (Error : %d)\n", ippath, dwRetVal);
+		FREE(ippath);
 		_endthread();
 		return;
 	}
@@ -493,9 +666,50 @@ void win_ip_manip_renew_ip_thread(void *ctxptr)
 	addrMap.Index = idx;
 	wcscpy((wchar_t *)&addrMap.Name, ippath); 
 
+	FREE(ippath);
+
+	sockData = ctx->sockData;
+
+	if (sockData == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Invalid socket data for interface '%s'.\n", ctx->desc);
+		_endthread();
+		return;
+	}
+
+	if (win_ip_manip_check_dhcp_thread_allowed(sockData) == FALSE)
+	{
+		debug_printf(DEBUG_INT, "Too many DHCP threads waiting to run.  Terminating this instance.\n");
+		_endthread();
+		return;
+	}
+
+	if (win_ip_manip_lock_mutex(&sockData->mutexDhcpRunning, 2) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to obtain DHCP lock.  DHCP will fail.\n");
+		_endthread();
+		return;
+	}
+
+	if (sockData->needTerminate == TRUE)
+	{
+		win_ip_manip_unlock_mutex(&sockData->mutexDhcpRunning, 2);
+		win_ip_manip_clear_thread_counter(sockData);
+		_endthread();
+		return;
+	}
+
 	while (retry == TRUE)
 	{
-	    if ((dwRetVal = IpRenewAddress(&addrMap)) != NO_ERROR) 
+		if (sockData->needTerminate == TRUE)
+		{
+			win_ip_manip_unlock_mutex(&sockData->mutexDhcpRunning, 2);
+			win_ip_manip_clear_thread_counter(sockData);
+			_endthread();
+			return;
+		}
+
+		if ((dwRetVal = IpRenewAddress(&addrMap)) != NO_ERROR) 
 		{
 			tries++;
 
@@ -506,7 +720,26 @@ void win_ip_manip_renew_ip_thread(void *ctxptr)
 			}
 			else
 			{
-				debug_printf(DEBUG_NORMAL, "IP renew failed on interface '%s'.  (Error : %d)  Trying again...\n", ctx->desc, dwRetVal);
+				if (dwRetVal == ERROR_SEM_TIMEOUT)
+				{
+					if (win_ip_manip_do_release_renew_ip(ctx) != TRUE)
+					{
+						debug_printf(DEBUG_NORMAL, "Unable to aquire an address via DHCP for interface '%s'.\n", ctx->desc);
+					}
+
+					retry = FALSE;  // Jump out of the loop.
+				}
+				else
+				{
+					debug_printf(DEBUG_NORMAL, "IP renew failed on interface '%s'.  (Error : %d)  Trying again...\n", ctx->desc, dwRetVal);
+					Sleep(1000);   // Wait 1 second, and try again  (this is running in a thread, so blocking it is okay.)
+
+					if (sockData->needTerminate == TRUE)
+					{
+						win_ip_manip_unlock_mutex(&sockData->mutexDhcpRunning, 2);
+						_endthread();
+					}
+				}
 			}
 		}
 		else
@@ -518,8 +751,18 @@ void win_ip_manip_renew_ip_thread(void *ctxptr)
 		}
 	}
 
-	// Notify the UI that we changed IP addresses.
-	ipc_events_ui(ctx, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
+	if (win_ip_manip_clear_thread_counter(sockData) != TRUE)
+	{
+		// Ouch!  Bad stuff could happen if we end up with more than one thread in this state.
+		debug_printf(DEBUG_NORMAL, "Unable to clear thread counter for interface '%s'.\n", ctx->desc);
+
+		// Fall through and try to unlock the main mutex.
+	}
+
+	if (win_ip_manip_unlock_mutex(&sockData->mutexDhcpRunning, 2) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Couldn't release DHCP lock!\n");
+	}
 
 	_endthread();
 }
@@ -539,26 +782,32 @@ void win_ip_manip_renew_ip(context *ctx)
 /**
  * \brief Do an IP address release/renew.
  *
- * @param[in] ctxptr   A pointer to the context that we want to do the release/renew on.
+ * @param[in] ctx   A pointer to the context that we want to do the release/renew on.
+ *
+ * \warning This function *WILL* block.  So, it should be run in a thread outside the main thread.
+ *
+ * \retval TRUE if the release/renew was successful.
+ * \retval FALSE if the release/renew failed.
  **/
-void win_ip_manip_release_renew_ip_thread(void *ctxptr)
+int win_ip_manip_do_release_renew_ip(context *ctx)
 {
 	ULONG idx = 0;
 	DWORD dwRetVal = 0xfffffff;
 	DWORD attempts = 0;
 	int success = FALSE;
-	context *ctx = NULL;
 	wchar_t *ippath = NULL;
 	IP_ADAPTER_INDEX_MAP addrMap;
 	int retval = 0;
+	struct win_sock_data *sockData = NULL;
 
-	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 	{
-		_endthread();
-		return;
+		return FALSE;
 	}
 
-	ctx = (context *)ctxptr;
+	sockData = ctx->sockData;
+
+	if (sockData == NULL) return FALSE;
 
 	retval = win_ip_manip_delete_dns_servers(ctx);
 	if (retval == FALSE)
@@ -579,23 +828,25 @@ void win_ip_manip_release_renew_ip_thread(void *ctxptr)
 	if (ippath == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to determine the interface GUID for interface '%s'!\n", ctx->desc);
-		_endthread();
-		return;
+		return FALSE;
 	}
 
 	if ((dwRetVal = GetAdapterIndex(ippath, &idx)) != NO_ERROR)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to determine interface index for interface '%ws'.  (Error : %d)\n", ippath, dwRetVal);
-		_endthread();
-		return;
+		FREE(ippath);
+		return FALSE;
 	}
 
 	addrMap.Index = idx;
 	wcscpy((wchar_t *)&addrMap.Name, ippath); 
+	FREE(ippath);
 	success = FALSE;
 
 	while ((attempts < 10) && (success == FALSE))
 	{
+		if (sockData->needTerminate == TRUE) return FALSE;
+
 		if ((dwRetVal = IpReleaseAddress(&addrMap)) == NO_ERROR) 
 		{
 			success = TRUE;
@@ -603,7 +854,8 @@ void win_ip_manip_release_renew_ip_thread(void *ctxptr)
 		else
 		{
 			debug_printf(DEBUG_INT, "IP release failed on interface '%s'.  (Error : %d)\n", ctx->desc, dwRetVal);
-			Sleep (3000);
+			Sleep (1000);
+			if (sockData->needTerminate == TRUE) return FALSE;
 		}
 
 		attempts++;
@@ -623,11 +875,10 @@ void win_ip_manip_release_renew_ip_thread(void *ctxptr)
     }
 	else
 	{
+#if 0
 		debug_printf(DEBUG_NORMAL, "Interface '%s' had it's IP address set.\n", ctx->desc);
+#endif
 	}
-
-	// Notify the UI that we changed IP addresses.
-	ipc_events_ui(ctx, IPC_EVENT_UI_IP_ADDRESS_SET, NULL);
 
 	if ((ctx->conn != NULL) && ((ctx->conn->ip.dns1 != NULL) || (ctx->conn->ip.dns2 != NULL) ||
 		(ctx->conn->ip.dns3 != NULL)))
@@ -651,6 +902,110 @@ void win_ip_manip_release_renew_ip_thread(void *ctxptr)
 		}
 	}
 
+	return TRUE;
+}
+
+/**
+ * \brief The worked thread that will do the release/renew.
+ *
+ * @param[in] ctxptr   A pointer to the context that we want to do a release renew on.
+ **/
+void win_ip_manip_release_renew_ip_thread(void *ctxptr)
+{
+	ULONG idx = 0;
+	DWORD dwRetVal = 0;
+	context *ctx = NULL;
+	wchar_t *ippath = NULL;
+	IP_ADAPTER_INDEX_MAP addrMap;
+	int tries = 0;
+	int retry = TRUE;
+	struct win_sock_data *sockData = NULL;
+
+	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE))
+	{
+		_endthread();
+		return;
+	}
+
+	ctx = (context *)ctxptr;
+
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Invalid interface context passed in to DHCP renew thread.  DHCP service will be unavailable.\n");
+		_endthread();
+		return;
+	}
+
+	ippath = cardif_windows_events_get_ip_guid_str(ctx);
+
+	if (ippath == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to determine the interface GUID for interface '%s'!\n", ctx->desc);
+		_endthread();
+		return;
+	}
+
+	if ((dwRetVal = GetAdapterIndex(ippath, &idx)) != NO_ERROR)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to determine interface index for interface '%ws'.  (Error : %d)\n", ippath, dwRetVal);
+		FREE(ippath);
+		_endthread();
+		return;
+	}
+
+	addrMap.Index = idx;
+	wcscpy((wchar_t *)&addrMap.Name, ippath); 
+
+	FREE(ippath);
+
+	sockData = ctx->sockData;
+
+	if (sockData == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Invalid socket data for interface '%s'.\n", ctx->desc);
+		_endthread();
+		return;
+	}
+
+	if (win_ip_manip_check_dhcp_thread_allowed(sockData) == FALSE)
+	{
+		debug_printf(DEBUG_INT, "Too many DHCP threads waiting to run.  Terminating this instance.\n");
+		_endthread();
+		return;
+	}
+
+	if (win_ip_manip_lock_mutex(&sockData->mutexDhcpRunning, 2) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to obtain DHCP lock.  DHCP will fail.\n");
+		win_ip_manip_clear_thread_counter(sockData);
+		_endthread();
+		return;
+	}
+
+	if (sockData->needTerminate == TRUE)
+	{
+		win_ip_manip_unlock_mutex(&sockData->mutexDhcpRunning, 2);
+		win_ip_manip_clear_thread_counter(sockData);
+		_endthread();
+		return;
+	}
+
+	win_ip_manip_do_release_renew_ip(ctx);
+
+	if (win_ip_manip_clear_thread_counter(sockData) != TRUE)
+	{
+		// Ouch!  Bad stuff could happen if we end up with more than one thread in this state.
+		debug_printf(DEBUG_NORMAL, "Unable to clear thread counter for interface '%s'.\n", ctx->desc);
+
+		// Fall through and try to unlock the main mutex.
+	}
+
+	if (win_ip_manip_unlock_mutex(&sockData->mutexDhcpRunning, 2) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Couldn't release DHCP lock!\n");
+	}
+
+	UNSET_FLAG(ctx->flags, DHCP_RELEASE_RENEW);
 	_endthread();
 }
 
@@ -740,14 +1095,26 @@ void win_ip_manip_set_gw(context *ctx, char *gw)
 	row.dwForwardProto = MIB_IPPROTO_NETMGMT;
 	row.dwForwardAge = 0;
 	row.dwForwardNextHopAS = 0;
-	row.dwForwardMetric1 = 1;
+
+	if (ctx->intType == ETH_802_11_INT)
+	{
+		row.dwForwardMetric1 = 25;
+	}
+	else
+	{
+		row.dwForwardMetric1 = 10;
+	}
+
 	row.dwForwardMetric2 = -1;
 	row.dwForwardMetric3 = -1;
 	row.dwForwardMetric4 = -1;
 	row.dwForwardMetric5 = -1;
 
 	retval = CreateIpForwardEntry(&row);
-	if (retval != NO_ERROR) debug_printf(DEBUG_NORMAL, "Error setting default route for interface '%s'. (Error : %d).\n", ctx->desc, retval);
+	if (retval != NO_ERROR) 
+	{
+		debug_printf(DEBUG_NORMAL, "Error setting default route for interface '%s'. (Error : %d).\n", ctx->desc, retval);
+	}
 }
 
 /**
@@ -760,11 +1127,49 @@ void win_ip_manip_set_static_ip_thread(void *dataPtr)
 {
 	struct tmpAddrStruct *addrData = NULL;
 	int error = 0;
-	DWORD lastErr;
 
-	if (!xsup_assert((dataPtr != NULL), "dataPtr != NULL", FALSE)) return;
+	if (!xsup_assert((dataPtr != NULL), "dataPtr != NULL", FALSE)) 
+	{
+		_endthread();
+		return;
+	}
 
 	addrData = (struct tmpAddrStruct *)dataPtr;
+
+	if (ipaddr_common_ip_is_valid(addrData->addr) == FALSE)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to set IP address for interface %s, because it isn't a valid address.\n", addrData->ctx->desc);
+		_endthread();
+		return;
+	}
+
+	if (ipaddr_common_ip_is_valid(addrData->gateway) == FALSE)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to set the gateway address for interface %s, because it isn't a valid address.\n", addrData->ctx->desc);
+		_endthread();
+		return;
+	}
+
+	if (ipaddr_common_is_netmask_valid(addrData->netmask) == FALSE)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to use the netmask configured for interface %s, because it isn't a valid netmask.\n", addrData->ctx->desc);
+		_endthread();
+		return;
+	}
+
+	if (ipaddr_common_is_gw_in_subnet(addrData->addr, addrData->netmask, addrData->gateway) == FALSE)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to user the gateway configured for interface %s.  It is not in the same subnet as the network addrss!\n", addrData->ctx->desc);
+		_endthread();
+		return;
+	}
+
+	if (ipaddr_common_is_broadcast(addrData->addr, addrData->netmask) == TRUE)
+	{
+		debug_printf(DEBUG_NORMAL, "IP address configured on '%s' is a broadcast address, and not allowed.\n", addrData->ctx->desc);
+		_endthread();
+		return;
+	}
 
 	// As of XP SP 3, this will always return an error.  But, it still does the right thing. :-/
 	SetAdapterIpAddress(addrData->guid, 0, inet_addr(addrData->addr), inet_addr(addrData->netmask), 0);
@@ -774,7 +1179,6 @@ void win_ip_manip_set_static_ip_thread(void *dataPtr)
 	// Set the gateway using IP Helper calls, since SetAdapterIpAddress is broken in XP SP3.
 	win_ip_manip_set_gw(addrData->ctx, addrData->gateway);
 
-	// !!!! DO NOT FREE CTX HERE!  It will do *REALLY* bad things.
 	FREE(addrData->addr);
 	FREE(addrData->guid);
 	FREE(addrData->netmask);
@@ -819,7 +1223,7 @@ int win_ip_manip_set_static_ip(context *ctx, char *addr, char *netmask, char *ga
 	addrData->addr = _strdup(addr);
 	addrData->netmask = _strdup(netmask);
 	addrData->gateway = _strdup(gateway);
-	addrData->ctx = ctx;						// DO NOT FREE THIS IN THE THREAD!!!
+	addrData->ctx = ctx;
 
 	_beginthread(win_ip_manip_set_static_ip_thread, 0, addrData);
 
@@ -842,6 +1246,8 @@ int cardif_windows_events_enable_dhcp(context *ctx)
 	if (guid == NULL) return -1;
 
 	if (SetAdapterIpAddress(guid, 1, inet_addr("1.1.1.1"), inet_addr("255.255.255.0"), inet_addr("1.1.1.1")) != NO_ERROR) return -1;
+
+	FREE(guid);
 
 	return 0;
 }

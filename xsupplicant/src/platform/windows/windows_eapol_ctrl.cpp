@@ -4,9 +4,6 @@
  *  \file windows_eapol_ctrl.c
  *
  *  \author chris@open1x.org
- *
- * $Id: windows_eapol_ctrl.cpp,v 1.1 2008/01/30 21:44:37 galimorerpg Exp $
- * $Date: 2008/01/30 21:44:37 $
  **/
 
 #include <windows.h>

@@ -5,9 +5,6 @@
  * \file xsupconfig_devices.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_devices.c,v 1.4 2008/01/23 23:45:08 galimorerpg Exp $
- * $Date: 2008/01/23 23:45:08 $
  **/
 
 #include <stdio.h>
@@ -68,8 +65,10 @@ void xsupconfig_devices_clear_interfaces(struct xsup_interfaces *ints)
 
 		FREE(cur->description);
 		FREE(cur->driver_type);
-                FREE(cur->default_connection);
+        FREE(cur->default_connection);
 		cur->next = NULL;
+
+		FREE(cur);
 
 		cur = next;
 	}
@@ -94,8 +93,11 @@ void xsupconfig_devices_deinit(struct xsup_devices **xsup_devs)
 	// Clear out any interfaces that we may have allocated.
 	xsupconfig_devices_clear_interfaces((*xsup_devs)->interf);
 	(*xsup_devs)->interf = NULL;
-	free((*xsup_devs));
-	(*xsup_devs) = NULL;
+	if ((*xsup_devs) != NULL) 
+	{
+		free((*xsup_devs));
+		(*xsup_devs) = NULL;
+	}
 }
 
 /**

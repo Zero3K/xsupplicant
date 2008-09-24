@@ -4,9 +4,6 @@
  * \file xsupgui_request4.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupgui_request4.c,v 1.4 2007/10/20 06:14:53 galimorerpg Exp $
- * $Date: 2007/10/20 06:14:53 $
  **/
 
 #include <string.h>
@@ -394,6 +391,12 @@ int xsupgui_request_free_ip_info(ipinfo_type **data)
         free(ipi->ipaddr);
         ipi->ipaddr = NULL;
     }
+
+	if ((*data) != NULL)
+	{
+		free((*data));
+		(*data) = NULL;
+	}
 
 	return REQUEST_SUCCESS;
 }

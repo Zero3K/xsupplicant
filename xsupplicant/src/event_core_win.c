@@ -6,9 +6,6 @@
  * \file event_core_win.c
  *
  * \author chris@open1x.org
- *
- * $Id: event_core_win.c,v 1.7 2008/01/30 21:07:01 galimorerpg Exp $
- * $Date: 2008/01/30 21:07:01 $
  **/
 
 #ifndef WINDOWS
@@ -111,6 +108,17 @@ void event_core_terminate()
 	ipc_events_error(NULL, IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN, NULL);
 }
 
+/**
+ * \brief Allow other functions to know that we have been asked to terminate.
+ *
+ * \retval TRUE if we are terminating
+ * \retval FALSE if we are not terminating
+ **/
+int event_core_is_terminating()
+{
+	return terminate;
+}
+
 int event_core_set_ovr(HANDLE devHandle, uint8_t eventType, LPOVERLAPPED lovr)
 {
 	int i;
@@ -124,6 +132,8 @@ int event_core_set_ovr(HANDLE devHandle, uint8_t eventType, LPOVERLAPPED lovr)
 		evtType = (events[i].flags & 0xf0);
 		if ((devHandle == events[i].devHandle) && (evtType == eventType))
 		{
+			if (events[i].ovr != NULL) FREE(events[i].ovr);
+
 			events[i].ovr = lovr;
 			events[i].hEvent = lovr->hEvent;
 			return TRUE;
@@ -327,6 +337,10 @@ void event_core_deinit()
   if (cardif_windows_get_os_ver() >= 2)
   {
 	cardif_windows_wmi_deinit();
+  }
+  else
+  {
+	  cardif_windows_ip_update_cleanup();
   }
 
   win_ip_manip_deinit_iphlpapi();
@@ -619,7 +633,11 @@ void event_core_deregister(HANDLE devHandle, uint8_t flags)
 	  debug_printf(DEBUG_EVENT_CORE, "Deregistering event handler '%s' in "
 		       "slot %d.\n", events[i].name, i);
 
-	  if ((events[i].ctx != NULL) && ((events[i].flags & 0xf0) != EVENT_SECONDARY)) context_destroy(events[i].ctx);
+	  if ((events[i].ctx != NULL) && ((events[i].flags & 0xf0) != EVENT_SECONDARY)) 
+	  {
+		  context_destroy(events[i].ctx);
+		  free(events[i].ctx);
+	  }
 	  events[i].ctx = NULL;
 
 	  FREE(events[i].name);
@@ -639,11 +657,15 @@ void event_core_deregister(HANDLE devHandle, uint8_t flags)
  **/
 void event_core_recv_frame(context *ctx, ULONG size)
 {
+	config_globals *globals = NULL;
+
 	if (ctx->intType == ETH_802_11_INT)
 	{
 		if (ctx->intTypeData != NULL)
 		{
-			if (((wireless_ctx *)(ctx->intTypeData))->state != ASSOCIATED)
+			globals = config_get_globals();
+
+			if ((((wireless_ctx *)(ctx->intTypeData))->state != ASSOCIATED) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
 			{
 				cardif_windows_wmi_check_events();
 				wireless_sm_do_state(ctx);
@@ -692,14 +714,27 @@ void event_core()
   time_t curtime = 0;
   uint64_t uptime = 0;
   long int err = 0;
+  config_globals *globals = NULL;
 
   if (terminate == 1)
   {
 	  debug_printf(DEBUG_NORMAL, "Got a request to terminate.\n");
 	  global_deinit();
+	  return;
   }
 
+  globals = config_get_globals();
+
   event_core_check_state();
+
+  // XXX This belongs in the frame processing code path, we should be checking if we are going to sleep,
+  // and discarding things.  Need to clean up the frame processing code path, and put this there.
+  if (event_core_get_sleep_state() == TRUE)
+  {
+	  // We are going to sleep.  Don't process anything.
+	  Sleep(1);
+	  return;
+  }
 
   handles = Malloc(sizeof(HANDLE) * num_event_slots);
   if (handles == NULL)
@@ -747,6 +782,7 @@ void event_core()
   if (numhandles <= 0)
   {
 	  debug_printf(DEBUG_NORMAL, "No handles available to watch.  Cannot continue!\n");
+	  FREE(handles);
 	  global_deinit();
   }
 
@@ -901,8 +937,8 @@ void event_core()
 
   for (i=0; i<num_event_slots; i++)
   {
-	if (events[i].ctx != NULL)
-	{
+	  if ((events[i].ctx != NULL) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
+	  {
 		active_ctx = events[i].ctx;
 		if (events[i].ctx->intType != ETH_802_11_INT) 
 		{
@@ -926,12 +962,6 @@ void event_core()
 			if (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
 			{
 				wireless_sm_do_state(events[i].ctx);
-
-				if (TEST_FLAG(events[i].ctx->flags, WIRELESS_SM_PSK_DONE))
-				{
-					UNSET_FLAG(events[i].ctx->flags, WIRELESS_SM_PSK_DONE);
-					UNSET_FLAG(events[i].ctx->flags, WIRELESS_SM_DOING_PSK);
-				}
 			}
 		}
 	}
@@ -1255,6 +1285,13 @@ void event_core_waking_up()
 			{
 				cardif_restart_io(events[i].ctx);
 
+#ifdef HAVE_TNC
+				if(imc_disconnect_callback != NULL)
+					imc_disconnect_callback(events[i].ctx->tnc_connID);
+
+				events[i].ctx->tnc_connID = -1;
+#endif
+
 				// Depending on the order that things are restarted, and the events that 
 				// happened before we went to sleep, the UI may believe that some interfaces
 				// were removed, and never inserted again.  So, we generated inserted events
@@ -1264,9 +1301,19 @@ void event_core_waking_up()
 				// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
 				events[i].ctx->auths = 0;
 
-				// Cause our state machines to reset to a known state.
-				events[i].ctx->statemachine->initialize = TRUE;
-				events[i].ctx->eap_state->eapRestart = TRUE;
+				// Force a DHCP release/renew on the next auth.  (Assuming we are doing DHCP. ;)
+				SET_FLAG(events[i].ctx->flags, DHCP_RELEASE_RENEW);
+
+				// Clear our timers.
+				if (events[i].ctx->statemachine != NULL)
+				{
+					events[i].ctx->statemachine->to_authenticated = 0;
+					// Cause our state machines to reset to a known state.
+					events[i].ctx->statemachine->initialize = TRUE;
+				}
+
+				if (events[i].ctx->eap_state != NULL)
+					events[i].ctx->eap_state->eapRestart = TRUE;
 
 				if (events[i].ctx->intType == ETH_802_11_INT)
 				{
@@ -1278,6 +1325,15 @@ void event_core_waking_up()
 						wireless_sm_change_state(ASSOCIATING, events[i].ctx);
 					}
 
+					if (cardif_get_link_state(events[i].ctx) == TRUE)
+					{
+						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_UP, events[i].ctx->desc);
+					}
+					else
+					{
+						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_DOWN, events[i].ctx->desc);
+					}
+
 					UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
 				}
 				else
@@ -1287,14 +1343,22 @@ void event_core_waking_up()
 					// when we wake up.
 					if (cardif_get_link_state(events[i].ctx) == TRUE)
 					{
-						events[i].ctx->statemachine->portEnabled = TRUE;
-						events[i].ctx->eap_state->portEnabled = TRUE;
+						if (events[i].ctx->statemachine != NULL)
+							events[i].ctx->statemachine->portEnabled = TRUE;
+
+						if (events[i].ctx->eap_state != NULL)
+							events[i].ctx->eap_state->portEnabled = TRUE;
+
 						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_UP, events[i].ctx->desc);
 					}
 					else
 					{
-						events[i].ctx->statemachine->portEnabled = FALSE;
-						events[i].ctx->eap_state->portEnabled = FALSE;
+						if (events[i].ctx->statemachine != NULL)
+							events[i].ctx->statemachine->portEnabled = FALSE;
+
+						if (events[i].ctx->eap_state != NULL)
+							events[i].ctx->eap_state->portEnabled = FALSE;
+
 						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_DOWN, events[i].ctx->desc);
 					}
 				}
@@ -1425,6 +1489,8 @@ void event_core_win_do_user_logoff()
 					// If we are using a TNC enabled build, signal the IMC to clean up.
 					if(imc_disconnect_callback != NULL)
 						imc_disconnect_callback(ctx->tnc_connID);
+
+					ctx->tnc_connID = -1;
 #endif
 				}
 			}
@@ -1627,8 +1693,10 @@ void event_core_change_os_ctrl_state(void *param)
 				if (TEST_FLAG(events[i].flags, EVENT_PRIMARY))
 				{
 					// Clear out the connection data so we don't get confused
-					// when we come back.
+					// when we come back.  And set the release/renew flag so
+					// we do a full release/renew when we come back.
 					UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
+					SET_FLAG(events[i].ctx->flags, DHCP_RELEASE_RENEW);
 					events[i].ctx->conn = NULL;
 					events[i].ctx->prof = NULL;
 					FREE(events[i].ctx->conn_name);
@@ -1665,6 +1733,8 @@ void event_core_change_os_ctrl_state(void *param)
 	//if (param != NULL) event_core_drop_active_conns();
 
 	ipc_events_ui(NULL, IPC_EVENT_UI_INT_CTRL_CHANGED, NULL);
+
+	_endthread();
 }
 
 /**

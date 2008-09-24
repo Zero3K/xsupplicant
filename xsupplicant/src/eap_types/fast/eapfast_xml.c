@@ -8,9 +8,6 @@
  * \author chris@open1x.org
  *
  * \todo Add IPC error message signaling.
- *
- * $Id: eapfast_xml.c,v 1.2 2007/09/24 02:12:28 galimorerpg Exp $
- * $Date: 2007/09/24 02:12:28 $
  **/
 
 #ifdef EAP_FAST
@@ -199,7 +196,7 @@ int eapfast_xml_add_pac(xmlDocPtr doc, struct pac_values *pacs)
   FREE(temp);
 
   memset(num, 0x00, 3);
-  sprintf(num, "%d", pacs->pacinfo.pac_type);
+  snprintf(num, 3, "%d", pacs->pacinfo.pac_type);
   eapfast_xml_add_content(cur_node, "PAC_Type", num);
 
   return 0;

@@ -80,20 +80,25 @@ private slots:
  private:
 	 enum {
 		 PROTOCOL_SETTINGS_TAB,
-		 USER_CREDENTIALS_TAB
+		 USER_CREDENTIALS_TAB,
+		 SIM_AKA_TAB
 	 };
 
 	 void populateTrustedServerList();
+	 void populateSIMReaders();
 	 bool saveEAPData();
 	 bool saveEAPMD5Data();
 	 bool saveEAPTTLSData();
 	 bool saveEAPPEAPData();
+	 bool saveEAPSIMData();
 	 bool checkPwdSettings();
 	 int eaptypeFromString(QString);
 	 void setIdentity();
 	 void updateWindow();
 	 void populateOnePhase();
 	 void populateTwoPhase();
+	 void populateSimAka();
+	 void populateEAPSIM();
 	 void populatePEAPData();
 	 void populateTTLSData();
 	 void freeTTLSInner(struct config_eap_ttls *ttlsdata);
@@ -114,6 +119,7 @@ private slots:
 	 QRadioButton *m_pAnonIdent;
 	 QLineEdit *m_pPhase1Ident;
 	 QComboBox *m_pInnerMethod;
+	 QComboBox *m_pSIMReaders;
 	 QRadioButton *m_pPromptForUPW;
 	 QRadioButton *m_pPromptForPWD;
 	 QRadioButton *m_pDontPrompt;

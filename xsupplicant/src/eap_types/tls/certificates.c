@@ -6,9 +6,6 @@
  * \file certificates.c
  *
  * \author chris@open1x.org
- *
- * $Id: certificates.c,v 1.6 2008/01/26 01:20:00 chessing Exp $
- * $Date: 2008/01/26 01:20:00 $
  **/
 
 #include <stdio.h>
@@ -50,6 +47,8 @@ struct config_trusted_server *certificates_find_trusted_server(struct config_tru
 	struct config_trusted_server *cur = NULL;
 
 	if (trusted_servername == NULL) return NULL;
+
+	if (svrs == NULL) return NULL;
 
 	cur = svrs->servers;
 

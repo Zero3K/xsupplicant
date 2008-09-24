@@ -1390,7 +1390,7 @@ request_lock:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on other error
  **/
-int xsupgui_request_intname_from_tnc_conn_id(unsigned int *tnc_conn_id, char **intname)
+int xsupgui_request_intname_from_tnc_conn_id(unsigned int tnc_conn_id, char **intname)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -1401,6 +1401,8 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int *tnc_conn_id, char **i
 	char tempint[10];
 
 	if (intname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	
+	*intname = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
 	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
@@ -1448,7 +1450,7 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int *tnc_conn_id, char **i
 		goto done;
 	}
 
-	n = xsupgui_request_find_node(n->children, "Get_Interface_From_TNC_Conn_ID");
+	n = xsupgui_request_find_node(n->children, "Interface_From_TNC_Conn_ID");
 	if (n == NULL)
 	{
 		retval = IPC_ERROR_BAD_RESPONSE;
@@ -1685,3 +1687,276 @@ int xsupgui_request_get_are_doing_psk(char *device, int *state)
 {
 	return xsupgui_request_get_some_value(device, "Get_Are_Doing_PSK", "Are_Doing_PSK", "Doing_PSK", state);
 }
+
+/**
+ * \brief Get the 'in use' state for a connection/profile/trusted server.
+ *
+ * @param[in] root_cmd   The text for the root command name that will be sent to the engine.
+ * @param[in] child_cmd   The text for the child tag that will identify the connection/profile/trusted server.
+ * @param[in] value   The name of the connection/profile/trusted server we want to query.
+ * @param[in] resp_root   The expected root response name from the engine.
+ * @param[in] resp_child   The child name that contains the answer from the command
+ * @param[out] state   The 'in use' state of the requested connection/profile/trusted server.
+ *
+ *  \retval REQUEST_SUCCESS on success 
+ *  \retval REQUEST_TIMEOUT on timeout
+ *  \retval >299 on other error  
+ **/
+int xsupgui_request_get_in_use_state(char *root_cmd, char *child_cmd, char *value, 
+									 char *resp_root, char *resp_child, int *state)
+{
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int retval = REQUEST_SUCCESS;
+	int err = 0;
+	char tempint[10];
+
+	if ((root_cmd == NULL) || (child_cmd == NULL) || (value == NULL) || (state == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
+
+	(*state) = FALSE;
+
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL)
+	{
+		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto done;
+	}
+
+	t = xmlNewChild(n, NULL, root_cmd, NULL);
+	if (t == NULL)
+	{
+		retval = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto done;
+	}
+
+	if (xmlNewChild(t, NULL, child_cmd, value) == NULL)
+	{
+		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
+		goto done;
+	}
+
+	err = xsupgui_request_send(doc, &retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		retval = err;
+		goto done;
+	}
+
+	err = xsupgui_request_check_exceptions(retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		retval = err;
+		goto done;
+	}
+
+	n = xmlDocGetRootElement(retdoc);
+	if (n == NULL)
+	{
+		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto done;
+	}
+
+	n = xsupgui_request_find_node(n->children, resp_root);
+	if (n == NULL)
+	{
+		retval = IPC_ERROR_BAD_RESPONSE;
+		goto done;
+	}
+
+	n = n->children;
+ 
+	t = xsupgui_request_find_node(n, resp_child);
+	if (t == NULL)
+	{
+		retval = IPC_ERROR_BAD_RESPONSE_DATA;
+		goto done;
+	}
+
+	(*state) = atoi(xmlNodeGetContent(t));
+
+done:
+	xmlFreeDoc(doc);
+	xmlFreeDoc(retdoc);
+
+	return retval;
+}
+
+/**
+ * \brief Ask the engine if the named connection is currently active on 
+ *		any interfaces.
+ *
+ * @param[in] profname   The name of the connection that we want to check on.
+ * @param[out] inuse	 TRUE if it is in use, FALSE if it isn't.
+ *
+ *  \retval REQUEST_SUCCESS on success 
+ *  \retval REQUEST_TIMEOUT on timeout
+ *  \retval >299 on other error  
+ **/
+int xsupgui_request_get_is_connection_in_use(char *conname, int *inuse)
+{
+	return xsupgui_request_get_in_use_state("Get_Is_Connection_In_Use", "Connection_Name", conname,
+		"Is_Connection_In_Use", "Use_State", inuse);
+}
+
+/**
+ * \brief Ask the engine if the named profile is currently active on 
+ *		any interfaces.
+ *
+ * @param[in] profname   The name of the profile that we want to check on.
+ * @param[out] inuse	 TRUE if it is in use, FALSE if it isn't.
+ *
+ *  \retval REQUEST_SUCCESS on success 
+ *  \retval REQUEST_TIMEOUT on timeout
+ *  \retval >299 on other error  
+ **/
+int xsupgui_request_get_is_profile_in_use(char *profname, int *inuse)
+{
+	return xsupgui_request_get_in_use_state("Get_Is_Profile_In_Use", "Profile_Name", profname,
+		"Is_Profile_In_Use", "Use_State", inuse);
+}
+
+/**
+ * \brief Ask the engine if the named trusted server is currently active on 
+ *		any interfaces.
+ *
+ * @param[in] tsname   The name of the profile that we want to check on.
+ * @param[out] inuse	 TRUE if it is in use, FALSE if it isn't.
+ *
+ *  \retval REQUEST_SUCCESS on success 
+ *  \retval REQUEST_TIMEOUT on timeout
+ *  \retval >299 on other error  
+ **/
+int xsupgui_request_get_is_trusted_server_in_use(char *tsname, int *inuse)
+{
+	return xsupgui_request_get_in_use_state("Get_Is_Trusted_Server_In_Use", "Trusted_Server_Name", tsname,
+		"Is_Trusted_Server_In_Use", "Use_State", inuse);
+}
+
+/**
+ *  \brief Ask if the console user is an administrator/root user.
+ *
+ *  @param[out] admin   TRUE if console user is an admin.  FALSE otherwise.
+ *
+ *  \retval REQUEST_SUCCESS on success 
+ *  \retval REQUEST_TIMEOUT on timeout
+ *  \retval >299 on other error  (usually indicates the interface isn't wireless.)
+ **/
+int xsupgui_request_get_are_administrator(int *admin)
+{
+	return xsupgui_request_get_some_value(NULL, "Get_Are_Administrator", "Are_Administrator", "Administrator", admin);
+}
+
+/**
+ * \brief Request a list of available smart card readers.
+ *
+ * @param[out] readers  A NULL terminated array of smart card readers.
+ *
+ *  \note This call will return IPC_ERROR_NOT_SUPPORTED if SIM card support isn't
+ *		  enabled in the engine!
+ *
+ *  \retval REQUEST_SUCCESS on success 
+ *  \retval REQUEST_TIMEOUT on timeout
+ *  \retval >299 on other error  
+ **/
+int xsupgui_request_enum_smartcard_readers(char ***readers)
+{
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	char *value = NULL;
+	char **readerlist = NULL;
+	int done = 0, err = 0;
+	int count = 0;
+
+	if (readers == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) 
+	{
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto request_done;
+	}
+
+	t = xmlNewChild(n, NULL, (xmlChar *)"Enum_Smartcard_Readers", NULL);
+	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto request_done;
+	}
+
+	err = xsupgui_request_send(doc, &retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		done = err;
+		goto request_done;
+	}
+
+	// Otherwise, parse it and see if we got what we wanted.
+	err = xsupgui_request_check_exceptions(retdoc);
+	if (err != 0) 
+	{
+		done = err;
+		goto request_done;
+	}
+
+	n = xmlDocGetRootElement(retdoc);
+	if (n == NULL)
+	{
+		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
+		goto request_done;
+	}
+
+	n = xsupgui_request_find_node(n->children, "Smartcard_Readers");
+	if (n == NULL)
+	{
+		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
+		goto request_done;
+	}
+
+	// If we get here, then we know that the document passed the
+	// validation tests imposed.  So, we need to see if we got the result 
+	// we wanted.
+	t = n->children;
+	
+	while (t != NULL)
+	{
+		t = xsupgui_request_find_node(t, "Reader");
+
+		if (t != NULL)
+		{
+			count ++;
+
+			readerlist = realloc(readerlist, count * (sizeof(char *)));
+			if (readerlist == NULL) 
+			{
+				done = IPC_ERROR_REQUEST_FAILED;
+				goto request_done;
+			}
+
+			value = xmlNodeGetContent(t);
+
+			readerlist[(count-1)] = _strdup(value);
+			t = t->next;
+		}
+	}
+
+	count ++;
+	readerlist = realloc(readerlist, count * (sizeof(char *)));
+	readerlist[(count-1)] = NULL;   // Our terminator.
+
+	(*readers) = readerlist;
+
+request_done:
+	if (doc != NULL) xmlFreeDoc(doc);
+	if (retdoc != NULL) xmlFreeDoc(retdoc);
+
+	return done;
+}
+

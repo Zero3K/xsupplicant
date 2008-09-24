@@ -24,7 +24,7 @@ int aka_do_at_rand(struct aka_eaptypedata *, uint8_t *, int *);
 int aka_do_at_autn(struct aka_eaptypedata *, uint8_t *, int *);
 int aka_do_at_mac(struct generic_eap_data *, struct aka_eaptypedata *, 
 		  uint8_t *, int, int *, char *);
-int aka_do_sync_fail(struct aka_eaptypedata *, uint8_t *, int *);
+uint8_t *aka_do_sync_fail(struct aka_eaptypedata *, uint8_t);
 int aka_skip_not_implemented(uint8_t *, int *);
 
 #endif

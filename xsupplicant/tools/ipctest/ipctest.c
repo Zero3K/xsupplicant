@@ -2317,6 +2317,49 @@ void do_disconnect_connection(char *intname)
 	}
 }
 
+void do_get_user_is_admin()
+{
+	int admin = 0;
+	int retval = 0;
+
+	retval = xsupgui_request_get_are_administrator(&admin);
+	if (retval == REQUEST_SUCCESS)
+	{
+		if (admin == TRUE)
+		{
+			printf("User *IS* an administrator\n");
+		}
+		else
+		{
+			printf("User *IS NOT* an administrator\n");
+		}
+	}
+	else
+	{
+		printf("Get admin state request failed or timed out. (Error : %d)\n", retval);
+	}
+}
+
+void enum_sc_readers()
+{
+	int retval = 0;
+	char **list = NULL;
+	int count = 0;
+
+	retval = xsupgui_request_enum_smartcard_readers(&list);
+	if (retval != REQUEST_SUCCESS)
+	{
+		printf("Failed to enumerate smart cards!  (Error : %d)\n", retval);
+		return;
+	}
+
+	while (list[count] != NULL)
+	{
+		printf("Reader : %s\n", list[count]);
+		count++;
+	}
+}
+
 /**
  *  \brief  Display a header that indicates the test that is about to be run.
  *
@@ -2384,6 +2427,12 @@ int main(int argc, char *argv[])
 #endif
 
 #if 1
+	do_get_user_is_admin();
+	enum_sc_readers();
+	return 0;
+#endif
+
+#if 0
 //	dochangeconn("\\DEVICE\\{4DACA2DF-2701-4B9A-81EC-27FA9EADF721}", "New Connection");
 //	change_globals();
 //	dowrite_conf(NULL);

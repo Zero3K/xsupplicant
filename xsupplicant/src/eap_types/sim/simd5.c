@@ -21,18 +21,21 @@
 
 #ifdef EAP_SIM_ENABLE
 
+#ifndef WINDOWS
 #include <inttypes.h>
-#include <string.h>
 #include <netinet/in.h>
+#endif
+
+#include <string.h>
 #include <openssl/hmac.h>
 
 #include "winscard.h"
 #include "xsupconfig.h"
-#include "profile.h"
-#include "eap_sm.h"
+#include "../../context.h"
+#include "../../eap_sm.h"
 #include "eapsim.h"
-#include "xsup_debug.h"
-#include "xsup_err.h"
+#include "../../xsup_debug.h"
+#include "../../xsup_err.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>

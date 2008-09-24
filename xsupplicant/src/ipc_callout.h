@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.   (See LICENSE file for more info.)
  *
@@ -6,7 +6,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _IPC_CALLOUT_H_
 #define _IPC_CALLOUT_H_
@@ -69,8 +69,9 @@
 #define IPC_ERROR_GEN_TROUBLE_TICKET  345   // An unrecoverable error occurred while generating trouble tickets.
 #define IPC_ERROR_FILE_EXISTS         346   // A request was made to overwrite a file that already exists.
 #define IPC_ERROR_NOT_SUPPORTED		  347   // The request is not supported.
-#define IPC_ERROR_SSID_NOT_FOUND      348   // The requested SSID is not found in the scan cache.
-#define IPC_ERROR_REQUEST_FAILED	  349   // The operation requested failed.
+#define IPC_ERROR_NOT_ALLOWED		  348   // The requested operation is not allowed while the supplicant is in its current state.
+#define IPC_ERROR_SSID_NOT_FOUND      349   // The requested SSID is not found in the scan cache.
+#define IPC_ERROR_REQUEST_FAILED	  350   // The operation requested failed.
 
 /**
  *  Result values.
@@ -190,10 +191,15 @@ int ipc_callout_get_interface_capabilities(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_add_cert_to_store(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_tnc_conn_id(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_set_conn_lock(xmlNodePtr, xmlNodePtr *);
-int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr, xmlNodePtr *);
-int ipc_callout_dhcp_release_renew(xmlNodePtr, xmlNodePtr *);
-int ipc_callout_get_frequency(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_disconnect_connection(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_doing_psk(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_get_is_connection_in_use(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_get_is_profile_in_use(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_get_is_trusted_server_in_use(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_get_frequency(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_dhcp_release_renew(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_get_are_administrator(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_enum_smartcard_readers(xmlNodePtr, xmlNodePtr *);
 
 #endif  // _IPC_CALLOUT_H_

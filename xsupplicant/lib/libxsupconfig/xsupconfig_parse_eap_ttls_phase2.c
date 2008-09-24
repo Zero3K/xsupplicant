@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_ttls_phase2.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_ttls_phase2.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -72,6 +69,7 @@ void *xsupconfig_parse_eap_ttls_phase2(void **attr, xmlNodePtr node)
 {
   struct config_eap_ttls *cur = NULL;
   ttls_phase2_methods *meths = NULL;
+  struct phase2_data *temp = NULL;
 
 #if PARSE_DEBUG
   printf("Parse EAP-TTLS phase 2..\n");
@@ -95,7 +93,9 @@ void *xsupconfig_parse_eap_ttls_phase2(void **attr, xmlNodePtr node)
 	if (meths->type_num != TTLS_PHASE2_EAP)
 	{
 		meths->init_method((void **)&cur, node->children);
-		xsupconfig_parse(node->children, meths->parsedata, &cur->phase2_data);
+		temp = cur->phase2_data;
+		xsupconfig_parse(node->children, meths->parsedata, &temp);
+		if (temp == NULL) FREE(cur->phase2_data);
 	}
 	else
 	{

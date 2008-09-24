@@ -61,6 +61,15 @@ int win_impersonate_desktop_user()
 }
 
 /**
+ * \brief Return the handle we are using to impersonate.
+ *
+ **/
+HANDLE win_impersonate_get_impersonation_handle()
+{
+	return active_token;
+}
+
+/**
  * \brief Reset our impersonation back to what we were originally.
  **/
 void win_impersonate_back_to_self()

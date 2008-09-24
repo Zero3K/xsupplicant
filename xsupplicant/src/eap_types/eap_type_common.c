@@ -6,9 +6,6 @@
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \author chris@open1x.org
- *
- * $Id: eap_type_common.c,v 1.4 2007/10/21 21:30:50 galimorerpg Exp $
- * $Date: 2007/10/21 21:30:50 $
  **/
 
 #ifndef WINDOWS

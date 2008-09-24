@@ -31,6 +31,7 @@
 #include "../../context.h"
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
+#include "../cardif.h"
 #include "cardif_windows.h"
 #include "../../event_core_win.h"
 #include "../../ipc_events_index.h"
@@ -576,6 +577,8 @@ int cardif_windows_wmi_event_check_remove()
 		// If we are using a TNC enabled build, signal the IMC to clean up.
 		if(imc_disconnect_callback != NULL)
 			imc_disconnect_callback(ctx->tnc_connID);
+
+		ctx->tnc_connID = -1;
 #endif
 
 		ctx->flags |= INT_GONE;
@@ -723,6 +726,8 @@ int cardif_windows_wmi_event_check_disconnect()
 			memcpy(&ctx->dest_mac[0], &dot1x_default_dest[0], 6);
 		}
 	}
+
+	cardif_windows_wireless_set_operstate(ctx, XIF_OPER_LOWERLAYERDOWN);
 
 	return 0;
 }

@@ -6,12 +6,6 @@
  * \file context.h
  *
  * \author chris@open1x.org
- *
- * \par CVS Status Information:
- * \code
- * $Id: context.h,v 1.5 2008/01/23 23:45:08 galimorerpg Exp $
- * $Date: 2008/01/23 23:45:08 $
- * \endcode
  */
 
 #ifndef _CONTEXT_H_
@@ -171,8 +165,6 @@ typedef struct dot1x_state
   **/
 // The WIRELESS_SM_ flags belong in the second 8 bits.
 #define WIRELESS_SM_INIT               BIT(7)
-#define WIRELESS_SM_PSK_DONE		   BIT(8)	// We have finished doing the PSK thing.  Go through the event loop one more time to make sure we stay connected.
-//#define WIRELESS_SM_STALE_ASSOCIATION  BIT(9)   // Did we just associate?
 #define WIRELESS_SM_PORT_ACTIVE        BIT(10)  // Is the port alive, and ready to go?
 #define WIRELESS_SM_SSID_CHANGE        BIT(11)  // Did we just change SSIDs?
 #define WIRELESS_SM_DOING_PSK		   BIT(12)  // We are doing WPA(2)-PSK.  This can be used on OSes that
@@ -257,13 +249,14 @@ typedef enum {
  *  Flags that are specific to wireless should be used in the wireless
  *  subcontext!
  **/
-#define WAS_DOWN      BIT(0)   
-#define ALLMULTI      BIT(1)   /**< Enable allmulti on this interface. */
-#define TERM_ON_FAIL  BIT(2)   /**< Terminate when we reach a failure. */
-#define FORCED_CONN   BIT(3)   /**< The connection has been set by an outside source.  (Probably the UI.) */
-#define INT_GONE      BIT(4)   /**< The interface has been removed from the machine already.  (So don't do any of the interface deinit stuff, just clear the context.) */
-#define INT_IGNORE    BIT(5)   /**< The interface is not currently being used, or managed. */
-#define INT_REPROCESS BIT(6)   /**< We are reprocessing a frame on this interface, so skip ahead to the highest layer. */
+#define WAS_DOWN			BIT(0)   
+#define ALLMULTI			BIT(1)   /**< Enable allmulti on this interface. */
+#define TERM_ON_FAIL		BIT(2)   /**< Terminate when we reach a failure. */
+#define FORCED_CONN			BIT(3)   /**< The connection has been set by an outside source.  (Probably the UI.) */
+#define INT_GONE			BIT(4)   /**< The interface has been removed from the machine already.  (So don't do any of the interface deinit stuff, just clear the context.) */
+#define INT_IGNORE			BIT(5)   /**< The interface is not currently being used, or managed. */
+#define INT_REPROCESS		BIT(6)   /**< We are reprocessing a frame on this interface, so skip ahead to the highest layer. */
+#define DHCP_RELEASE_RENEW	BIT(7)   /**< The next DHCP event should be a release/renew, and not just a renew.
 
 /**
  * Structure to store context information, mostly related to a specific
@@ -353,4 +346,6 @@ int context_init_interface(context **, char *, char *, char *, FDEPTH);
 context *context_allocate(context **ctx);
 int context_create_wireless_ctx(wireless_ctx **, uint8_t);
 int context_destroy_wireless_ctx(wireless_ctx **dest_wctx);
+void context_disconnect(context *ctx);
+
 #endif

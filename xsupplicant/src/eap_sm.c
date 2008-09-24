@@ -1453,25 +1453,26 @@ void eap_sm_prepopulate_id(eap_sm *sm)
 #ifdef EAP_SIM_ENABLE
   // If we have SIM enabled, there is no username, and the primary EAP method
   // is SIM, then ask the SIM card for it's IMSI to use as the username.
-  if ((network_data->identity == NULL) &&
-      (network_data->methods->method_num == EAP_TYPE_SIM))
+  if ((sm->ident == NULL) &&
+	  (sm->curMethods->method_num == EAP_TYPE_SIM))
     {
-      network_data->identity = (char *)Malloc(50);
-      if (network_data->identity == NULL)
+      sm->ident = (char *)Malloc(50);
+      if (sm->ident == NULL)
         {
           debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for identity!"
 		       "\n");
           return;
         }
-      eapsim_get_username();
+      eapsim_get_username(ctx);
+	  if (ctx->prof->temp_username != NULL) sm->ident = strdup(ctx->prof->temp_username);
     }
 
   // Same is true for AKA.
-  if ((network_data->identity == NULL) &&
-      (network_data->methods->method_num == EAP_TYPE_AKA))
+  if ((sm->ident == NULL) &&
+      (sm->curMethods->method_num == EAP_TYPE_AKA))
     {
-      network_data->identity = (char *)Malloc(50);
-      if (network_data->identity == NULL)
+      sm->ident = (char *)Malloc(50);
+      if (sm->ident == NULL)
         {
           debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for identity!"
 		       "\n");

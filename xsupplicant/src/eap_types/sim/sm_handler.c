@@ -66,16 +66,24 @@
 
 #ifdef EAP_SIM_ENABLE
 
+#ifndef MAX_ATR_SIZE
+#define MAX_ATR_SIZE    32   // This isn't defined on Windows for some reason.
+#endif
+
 #include <stdio.h>
 #include <winscard.h>
 #include <string.h>
 #include <ctype.h>
-#include <strings.h>
-#include <stdlib.h>
-#include <unistd.h>
 
-#include "xsup_debug.h"
-#include "xsup_err.h"
+#ifndef WINDOWS
+#include <strings.h>
+#include <unistd.h>
+#endif
+
+#include <stdlib.h>
+
+#include "../../xsup_debug.h"
+#include "../../xsup_err.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -384,7 +392,13 @@ long sm_handler_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *card_hdl,
 	{
 	  // XXX This should be changed when we attach a GUI to Xsupplicant.
 	  debug_printf(DEBUG_NORMAL, "Please insert a smart card!\n");
+
+	  // XXX The sleep commands below need to be removed!
+#ifndef WINDOWS
 	  sleep(2);
+#else
+	  Sleep(2);
+#endif
 	} else {
 	  debug_printf(DEBUG_NORMAL, "Error attempting to connect to the "
 		       "smart card!  ");
@@ -465,7 +479,12 @@ int sm_handler_wait_card_ready(SCARDHANDLE *card_hdl, int waittime)
 	  return -1;
 	}
       
+	  // XXX Need to remove this in order to make life happy!
+#ifndef WINDOWS
       sleep(1);
+#else
+	  Sleep(1);
+#endif
     }
 }
 
@@ -694,6 +713,10 @@ cardio(SCARDHANDLE *card_hdl, char *cmd, long reader_protocol, char mode2g,
 
   strtohex(cmd, bcmd, &cmdlen);
   *olen = MAXBUFF;		/* hm... */
+
+  scir.dwProtocol = reader_protocol;
+  scir.cbPciLength = sizeof(scir);
+
   memset(outbuff, 0, MAXBUFF);
 
   if ((ret = SCardTransmit(*card_hdl, reader_protocol == SCARD_PROTOCOL_T1 ? SCARD_PCI_T1 : SCARD_PCI_T0,
@@ -855,15 +878,15 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
       return NULL;
     }
 
-  if (!(buf2[13] & 0x80))
+  if (!(buf[13] & 0x80))
     {
       if (pin == NULL) return NULL;
 
-      strcpy((char *)&buf2, "A020000108");
+      xsup_common_strcpy((char *)&buf2, 512, "A020000108");
       for (i=0;i < strlen(pin); i++)
 	{
 	  memset((char *)&buf3, 0x00, 8);
-	  sprintf(buf3, "%02X", pin[i]);
+	  _snprintf(buf3, 8, "%02X", pin[i]);
 	  if (Strcat(buf2, sizeof(buf2), buf3) != 0)
 	    {
 	      fprintf(stderr, "Refusing to overflow string!\n");
@@ -940,12 +963,12 @@ int sm_handler_do_2g_auth(SCARDHANDLE *card_hdl, char reader_mode,
       return -1;
     }
 
-  strcpy(buff2, RUN_GSM);
+  xsup_common_strcpy(buff2, MAXBUFF, RUN_GSM);
   memset(&buff3, 0x00, MAXBUFF);
 
   for (i = 0; i < 16; i++)
     {
-      sprintf(buff3,"%02X",challenge[i]);
+      _snprintf(buff3, 8, "%02X", challenge[i]);
       if (Strcat(buff2, sizeof(buff2), buff3) != 0)
 	{
 	  fprintf(stderr, "Refusing to overflow string!\n");
@@ -1039,7 +1062,7 @@ char *sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
   // Loop over EFdir
   do {
     
-    sprintf(buf, "00B2%2.2X04%2.2X",i,l);
+    _snprintf(buf, MAXBUFF, "00B2%2.2X04%2.2X",i,l);
     if (cardio(card_hdl, buf, reader_mode, MODE3G, (LPBYTE)&buf2, &len, DO_DEBUG) != 0)
       {
 	debug_printf(DEBUG_NORMAL, "Error attempting to read a record from "
@@ -1056,7 +1079,7 @@ char *sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
 	p = (unsigned char *)&t->rid;
 	for (q=0; q< 12; q++)
 	  {
-	    sprintf(temp, "%02X", *p++);
+	    _snprintf(temp, MAXBUFF, "%02X", *p++);
 	    if (Strcat(aid, sizeof(aid), temp) != 0)
 	      {
 		fprintf(stderr, "Refusing to overflow string!\n");
@@ -1069,7 +1092,7 @@ char *sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
   } while ((buf2[len-2] == 0x90) && (buf2[len-1] == 0));
 
   // Select the USIM aid.
-  strcpy(cmd, "00A404040C");
+  xsup_common_strcpy(cmd, MAXBUFF, "00A404040C");
   if (Strcat(cmd, sizeof(cmd), aid) != 0)
     {
       fprintf(stderr, "Refusing to overflow string!\n");
@@ -1106,11 +1129,11 @@ char *sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
 	}
 
       // Otherwise, enter the PIN.
-      strcpy(buf2, CHV_ATTEMPT);
+      xsup_common_strcpy(buf2, MAXBUFF, CHV_ATTEMPT);
       for (i=0;i < strlen(pin); i++)
 	{
 	  memset((char *)&buf3, 0x00, 8);
-	  sprintf(buf3, "%02X", pin[i]);
+	  _snprintf(buf3, MAXBUFF, "%02X", pin[i]);
 	  if (Strcat(buf2, sizeof(buf2), buf3) != 0)
 	    {
 	      fprintf(stderr, "Refusing to overflow string!\n");
@@ -1169,10 +1192,10 @@ int
 addhex(u8 *buffer, unsigned int buflen, const u8 *bytes, int len)
 {
   u8 temp[5];
-  int i;
+  int i = 0;
 
   for (i = 0; i < len; i++) {
-      sprintf(temp,"%02X", *bytes++);
+      _snprintf(temp, 5, "%02X", *bytes++);
       if (Strcat(buffer, buflen, temp) != 0)
 	{
 	  fprintf(stderr, "Refusing to overflow string!\n");
@@ -1193,7 +1216,7 @@ int sm_handler_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
   unsigned char cmd[MAXBUFF], buf[MAXBUFF], sw1, sw2, *s;
   DWORD len;
 
-  if (Strcpy(cmd, sizeof(cmd), "008800812210") != 0)
+  if (Strncpy(cmd, sizeof(cmd), "008800812210", 12) != 0)
     {
       fprintf(stderr, "Refusing to overflow string!\n");
       return -1;

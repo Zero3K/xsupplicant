@@ -386,10 +386,11 @@ int config_set_pwd_on_profile(char *prof_name, char *password)
  * \brief Locate a connection based on the SSID that is mapped to it.
  *
  * @param[in] ssidname   The SSID name that we are looking for.
+ * @param[in] intDesc   The description of the interface that goes with the SSID.
  *
  * \retval ptr to the connection (if found), NULL if the connection isn't found.
  **/
-struct config_connection *config_find_connection_from_ssid(char *ssidname)
+struct config_connection *config_find_connection_from_ssid_and_desc(char *ssidname, char *intDesc)
 {
     struct config_connection *cur = NULL;
 
@@ -402,7 +403,8 @@ struct config_connection *config_find_connection_from_ssid(char *ssidname)
     {
 		if (cur->ssid != NULL)
 		{
-			if (strcmp(cur->ssid, ssidname) == 0) break;
+			if ((strcmp(cur->ssid, ssidname) == 0) &&
+				(strcmp(cur->device, intDesc) == 0)) break;
 		}
 
       cur = cur->next;
@@ -420,7 +422,7 @@ struct config_connection *config_find_connection_from_ssid(char *ssidname)
  * \retval 0..255 The priority of the connection. (1 = Highest, 254 = Lowest, 255 = No priority)
  *
  **/
-uint8_t config_get_network_priority(char *matchname)
+uint8_t config_get_network_priority(char *matchname, char *intDesc)
 {
   struct config_connection *cur = NULL;
 
@@ -430,7 +432,7 @@ uint8_t config_get_network_priority(char *matchname)
       return 0xff;
 
   // Start at the top of the list.
-  cur = config_find_connection_from_ssid(matchname);
+  cur = config_find_connection_from_ssid_and_desc(matchname, intDesc);
 
   if (!cur) return 0xff;
 
@@ -1293,6 +1295,7 @@ void delete_config_ttls_phase2 (struct config_eap_ttls *ttls)
 {
   if (ttls == NULL)
     return;
+
   switch (ttls->phase2_type) {
   case TTLS_PHASE2_PAP:
     delete_config_pwd_only((struct config_pwd_only **)&ttls->phase2_data);
@@ -1790,6 +1793,8 @@ void delete_config_eap_method(struct config_eap_method **method)
 	   " type in %s.\nNotify developers. Type: 0x%x\n", 
 	   __FUNCTION__, (*method)->method_num);
   }
+
+  FREE((*method));
 }
 
 /**
@@ -2175,6 +2180,7 @@ void delete_config_association(struct config_connection *conn)
 	FREE(conn->association.keys[2]);
 	FREE(conn->association.keys[3]);
 	FREE(conn->association.keys[4]);
+	FREE(conn->association.temp_psk);
 }
 
 /**

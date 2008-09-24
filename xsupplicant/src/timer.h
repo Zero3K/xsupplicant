@@ -12,7 +12,7 @@
 #define _TIMER_H_
 
 // Different types of timers that we will use.
-#define NUM_TIMER_IDS   12
+#define NUM_TIMER_IDS   13
 
 // BE SURE THAT IF YOU ADD A TIMER HERE, THAT YOU ADD IT'S DEF. IN timer.c!
 #define COUNTERMEASURE_TIMER   1
@@ -24,8 +24,9 @@
 #define SCANCHECK_TIMER        7
 #define INT_HELD_TIMER         8
 #define SIG_STRENGTH           9
-#define PMKSA_CACHE_MGMT_TIMER 10
-#define CONN_DEATH_TIMER	   11    // A timer to track how long a connection has been dead.
+#define PSK_DEATH_TIMER        10
+#define PMKSA_CACHE_MGMT_TIMER 11
+#define CONN_DEATH_TIMER	   12    // A timer to track how long a connection has been dead.
 
 struct timer_data
 {

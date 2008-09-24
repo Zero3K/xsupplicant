@@ -21,6 +21,11 @@ struct win_sock_data {
   uint8_t *eventdata;  // Buffer for the event data from the protocol driver.
   DWORD evtSize;	   // The size of event data that was received.
   uint8_t osver;       // The OS version this interface is running on.
+
+  uint8_t dhcpOutstanding;  // # of DHCP threads waiting to run.
+  HANDLE mutexDhcpRunning;
+  HANDLE mutexDhcpOutstanding;
+  uint8_t needTerminate;
 };
 
 LPVOID GetLastErrorStr(DWORD);

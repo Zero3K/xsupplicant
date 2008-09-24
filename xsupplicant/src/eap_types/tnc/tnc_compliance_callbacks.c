@@ -7,8 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: tnc_compliance_callbacks.c,v 1.5 2008/01/30 20:24:40 galimorerpg Exp $
- * $Date: 2008/01/30 20:24:40 $
  **/
 
 #ifdef HAVE_TNC
@@ -203,6 +201,8 @@ void tnc_compliance_callbacks_cleanup()
 		FREE(cur);
 		cur = next;
 	}
+
+	callback_start = NULL;
 }
 
 /**

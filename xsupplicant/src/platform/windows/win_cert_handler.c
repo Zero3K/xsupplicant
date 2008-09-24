@@ -6,9 +6,6 @@
  * \file win_cert_handler.c
  *
  * \author chris@open1x.org
- *
- * $Id: win_cert_handler.c,v 1.1 2008/01/30 20:46:43 galimorerpg Exp $
- * $Date: 2008/01/30 20:46:43 $
  **/
 
 #include <windows.h>

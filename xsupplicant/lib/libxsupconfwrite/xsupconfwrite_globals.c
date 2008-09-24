@@ -7,9 +7,6 @@
  * \file xsupconfwrite_globals.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_globals.c,v 1.6 2008/01/30 20:24:39 galimorerpg Exp $
- * $Date: 2008/01/30 20:24:39 $
  **/
 
 #include <stdio.h>

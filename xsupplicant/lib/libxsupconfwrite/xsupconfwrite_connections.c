@@ -8,8 +8,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupconfwrite_connections.c,v 1.4 2007/10/22 03:39:04 galimorerpg Exp $
- * $Date: 2007/10/22 03:39:04 $
  **/
 
 #include <stdio.h>

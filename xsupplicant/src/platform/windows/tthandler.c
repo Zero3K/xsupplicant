@@ -36,7 +36,11 @@ void tthandler_troubleticket_thread(void *data)
 	int failed_plugins = 0;
 	ttdata_type *tempdata = NULL;
 
-	if (!xsup_assert((data != NULL), "data != NULL", FALSE)) return;
+	if (!xsup_assert((data != NULL), "data != NULL", FALSE)) 
+	{
+		_endthread();
+		return;
+	}
 
 	tempdata = (ttdata_type *)data;
 
@@ -58,6 +62,8 @@ void tthandler_troubleticket_thread(void *data)
 	FREE(tempdata->tempdir);
 	FREE(tempdata->ttpath);
 	FREE(tempdata);
+
+	_endthread();
 }
 
 /**

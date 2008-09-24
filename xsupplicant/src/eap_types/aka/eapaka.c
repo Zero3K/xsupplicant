@@ -23,29 +23,34 @@
 
 #ifdef EAP_SIM_ENABLE     // Only build this if it has been enabled.
 
+#ifndef WINDOWS
 #include <inttypes.h>
+#include <unistd.h>
+#else
+#include "../../stdintwin.h"
+#endif
+
 #include <stdio.h>
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdlib.h>
 
 #include "winscard.h"
-#include "profile.h"
 #include "xsupconfig.h"
-#include "xsup_common.h"
-#include "eap_sm.h"
+#include "../../context.h"
+#include "../../xsup_common.h"
+#include "../../eap_sm.h"
 #include "eapaka.h"
 #include "../sim/eapsim.h"
 #include "../sim/sm_handler.h"
 #include "../sim/fips.h"
-#include "xsup_debug.h"
-#include "xsup_err.h"
+#include "../../xsup_debug.h"
+#include "../../xsup_err.h"
 #include "aka.h"
-#include "ipc_callout.h"
-#include "xsup_ipc.h"
-#include "frame_structs.h"
+#include "../../ipc_callout.h"
+#include "../../xsup_ipc.h"
+#include "../../frame_structs.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -57,52 +62,73 @@
  *  during the authentication.
  *
  *************************************************************************/
-int eapaka_get_username()
+int eapaka_get_username(context *ctx)
 {
-  char *imsi;  
+  char *imsi = NULL;  
   char realm[25], card_mode=0;
-  char *readers, *username;
-  struct config_eap_aka *userdata;
-  struct config_network *network_data;
-  SCARDCONTEXT ctx;
+  char *readers = NULL, *username = NULL;    // 'username' is a reference pointer.  IT SHOULD NEVER BE FREED!
+  char *password = NULL;                     // This is only a reference pointer.  IT SHOULD NEVER BE FREED!
+  struct config_eap_aka *userdata = NULL;
+  SCARDCONTEXT sctx;
   SCARDHANDLE hdl;
 
-  network_data = config_get_network_config();
-
-  if (!xsup_assert((network_data != NULL), "network_data != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEBADCONFIG;
 
-  userdata = (struct config_eap_aka *)network_data->methods->method_data;
+  if (!xsup_assert((ctx->prof != NULL), "ctx->prof != NULL", FALSE)) return XEBADCONFIG;
+
+  if (!xsup_assert((ctx->prof->method != NULL), "ctx->prof->method != NULL", FALSE)) return XEBADCONFIG;
+
+  if (!xsup_assert((ctx->prof->method->method_data != NULL), "ctx->prof->method->method_data != NULL", FALSE)) return XEBADCONFIG;
+
+  userdata = (struct config_eap_aka *)ctx->prof->method->method_data;
 
   // Initalize our smartcard context, and get ready to authenticate.
-  if (sm_handler_init_ctx(&ctx) != 0)
+  if (sm_handler_init_ctx(&sctx) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't initialize smart card context!\n");
       return XESIMGENERR;
     }
 
-  readers = sm_handler_get_readers(&ctx);
+  readers = sm_handler_get_readers(&sctx);
   if (readers == NULL) 
     {
-      debug_printf(DEBUG_NORMAL, "Couldn't list available readers!\n");
+      debug_printf(DEBUG_NORMAL, "Couldn't list available smart card readers!\n");
       return XESIMGENERR;
     }
 
   // Connect to the smart card.
-  if (sm_handler_card_connect(&ctx, &hdl, readers) != 0)
+  if (sm_handler_card_connect(&sctx, &hdl, readers) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
       return XESIMGENERR;
     }
 
   // Wait for up to 10 seconds for the smartcard to become ready.
+  // XXX This needs to be fixed!  It blocks, and it shouldn't!
   if (sm_handler_wait_card_ready(&hdl, 10) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 10 seconds!\n");
       return XESIMGENERR;
     }
 
-  imsi = sm_handler_3g_imsi(&hdl, card_mode, userdata->password);
+  // Get our password.  It may be in temp_password, or in the configuration.
+  if (ctx->prof->temp_password != NULL)
+  {
+	  password = ctx->prof->temp_password;
+  }
+  else
+  {
+	  password = userdata->password;
+
+	  if (password == NULL)
+	  {
+		  debug_printf(DEBUG_NORMAL, "No temporary, or stored password was found for EAP-AKA on interface '%s'!\n", ctx->desc);
+		  return XEGENERROR;
+	  }
+  }
+
+  imsi = sm_handler_3g_imsi(&hdl, card_mode, password);
   if (imsi == NULL)
     {
       debug_printf(DEBUG_NORMAL, "Error starting smart card, and getting IMSI!\n");
@@ -111,18 +137,17 @@ int eapaka_get_username()
 
   debug_printf(DEBUG_AUTHTYPES, "SIM IMSI (AKA) : %s\n",imsi);
 
-  FREE(network_data->identity);
+  FREE(ctx->prof->temp_username);
   
-  network_data->identity = (char *)Malloc(50);  // 50 should be plenty!
-  if (network_data->identity == NULL) 
+  ctx->prof->temp_username = (char *)Malloc(50);  // 50 should be plenty!
+  if (ctx->prof->temp_username == NULL) 
     {
-      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for identity!\n");
+      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for SIM identity!\n");
       return XEMALLOC;
     }
 
-  username = network_data->identity;
-  userdata->username = username;
-  memset(username, 0x00, 50);
+  // 'username' is a referential pointer!  It should never be freed!
+  username = ctx->prof->temp_username;
 
   username[0] = '1';  // An IMSI should always start with a 1.
   if (Strncpy(&username[1], 50, imsi, 18) != 0)
@@ -135,20 +160,20 @@ int eapaka_get_username()
   if (userdata->auto_realm == TRUE)
     {
       memset(&realm, 0x00, 25);
-      sprintf((char *)&realm, "@mnc%c%c%c.mcc%c%c%c.owlan.org",
+	  _snprintf((char *)&realm, 25, "@mnc%c%c%c.mcc%c%c%c.owlan.org",
 	      username[4], username[5], username[6], username[1], username[2],
 	      username[3]);
 
       debug_printf(DEBUG_AUTHTYPES, "Realm Portion : %s\n",realm);
       if (Strcat(username, 50, realm) != 0)
-	{
-	  fprintf(stderr, "Refusing to overwrite the string!\n");
-	  return XEMALLOC;
-	}
+		{
+			fprintf(stderr, "Refusing to overflow the string!\n");
+			return XEMALLOC;
+		}
     }
 
   // Close the smartcard, so that we know what state we are in.
-  sm_handler_close_sc(&hdl, &ctx);
+  sm_handler_close_sc(&hdl, &sctx);
 
   FREE(imsi);
   FREE(readers);
@@ -165,9 +190,9 @@ int eapaka_get_username()
  *************************************************************************/
 int eapaka_setup(eap_type_data *eapdata)
 {
-  struct aka_eaptypedata *mydata;
-  struct config_eap_aka *userdata;
-  char *imsi;
+  struct aka_eaptypedata *mydata = NULL;
+  struct config_eap_aka *userdata = NULL;
+  char *imsi = NULL;
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-AKA) Initalized\n");
 
@@ -296,8 +321,8 @@ void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload,
 {
   uint16_t packet_offset = 0;
   int retval = XENONE;
-  struct aka_eaptypedata *aka;
-  struct config_eap_aka *akaconf;
+  struct aka_eaptypedata *aka = NULL;
+  struct config_eap_aka *akaconf = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -361,9 +386,10 @@ void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload,
  ************************************************************************/
 void eapaka_process(eap_type_data *eapdata)
 {
-  uint8_t *eappayload = NULL, chal_type;
-  struct config_eap_aka *akaconf;
-  struct aka_eaptypedata *akadata;
+  uint8_t *eappayload = NULL, chal_type = 0;
+  struct config_eap_aka *akaconf = NULL;
+  struct aka_eaptypedata *akadata = NULL;
+  uint16_t size = 0;
   
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -379,6 +405,10 @@ void eapaka_process(eap_type_data *eapdata)
   akadata = eapdata->eap_data;
 
   eappayload = &eapdata->eapReqData[sizeof(struct eap_header)];
+  size = eap_type_common_get_eap_length(eapdata->eapReqData);
+
+  // Subtract the header.
+  size -= sizeof(struct eap_header);
 
   switch (eappayload[0])
     {
@@ -421,7 +451,7 @@ void eapaka_process(eap_type_data *eapdata)
 
     case AKA_CHALLENGE:
       debug_printf(DEBUG_AUTHTYPES, "Got AKA_CHALLENGE!\n");
-      eapaka_do_challenge(eapdata, (uint8_t *)&eappayload[1]);
+      eapaka_do_challenge(eapdata, (uint8_t *)&eappayload[1], (size-2));  // -2 since we already consumed [0], and [1].
       chal_type = AKA_CHALLENGE;
       break;
 
@@ -451,10 +481,10 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
   struct aka_eaptypedata *akadata = NULL;
   struct typelength *typelen = NULL;
   struct typelengthres *typelenres = NULL;
-  uint8_t reqId, mac_calc[16];
-  struct eap_header *eaphdr;
+  uint8_t reqId = 0, mac_calc[16];
+  struct eap_header *eaphdr = NULL;
   uint8_t *payload = NULL, *framecpy = NULL, *data = NULL;
-  uint16_t offset, i = 0, retsize;
+  uint16_t offset = 0, i = 0, retsize = 0;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return NULL;
@@ -475,10 +505,10 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
       if (akadata->sync_fail == TRUE)
 	{
 	  // Handle a sync failure response.
-	  return aka_do_sync_fail(akadata, eap_type_common_get_eap_reqId(eapdata->eapReqData));
+	  return aka_do_sync_fail(akadata, eap_type_common_get_eap_reqid(eapdata->eapReqData));
 	}
 
-      reqId = eap_type_common_get_eap_reqId(eapdata->eapReqData);
+      reqId = eap_type_common_get_eap_reqid(eapdata->eapReqData);
 
       data = Malloc(1024);  // Should be enough to hold our response.
       if (data ==  NULL)
@@ -488,7 +518,7 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
 	  return NULL;
 	}
 
-      eaphdr = data;
+      eaphdr = (struct eap_header *)data;
 
       eaphdr->eap_code = EAP_RESPONSE_PKT;
       eaphdr->eap_identifier = reqId;

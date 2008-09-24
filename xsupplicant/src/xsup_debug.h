@@ -67,6 +67,7 @@ void debug_hex_dump(uint32_t, uint8_t *, int);
 void debug_alpha_set_flags(char *);
 int xsup_assert_long(int, char *, int, char *, int, const char *);
 int debug_getlevel();
+void xsup_debug_clear_level();
 void xsup_debug_set_level(uint32_t);
 void xsup_debug_check_log_roll();
 

@@ -5,9 +5,6 @@
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \author chris@open1x.org, Terry.Simons@utah.edu
- *
- * $Id: xsup_ipc_win.c,v 1.5 2008/01/26 01:20:00 chessing Exp $
- * $Date: 2008/01/26 01:20:00 $
  **/
 
 #include <errno.h>
@@ -54,6 +51,9 @@ typedef struct
 pipestruct pipes[INSTANCES];
 
 LPTSTR pipename = TEXT("\\\\.\\pipe\\open1x_ctrl");
+
+// XXX Clean this up ;)
+extern void (*imc_ui_connect_callback)();
 
 // Forward decls.
 int xsup_ipc_win_event(context *ctx, HANDLE hevent);
@@ -157,6 +157,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 	uint8_t *result;
 	uint8_t retval;
 	int ressize;
+	int eventPipeConnectOccurred = FALSE;
 	DWORD bxfer, resulterr;
 
 	for (i=0; i<INSTANCES; i++)
@@ -284,6 +285,7 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 				// Need to change this handle to only send out events.
 				SET_FLAG(pipes[i].flags, IPC_EVENTS_ONLY);
 				debug_printf(DEBUG_IPC, "Changed IPC pipe %d to be events only.\n", pipes[i].hdl);
+				eventPipeConnectOccurred = TRUE;
 				break;
 
 			case IPC_CHANGE_TO_SYNC_ONLY:
@@ -347,6 +349,16 @@ int xsup_ipc_win_event(context *ctx, HANDLE hdl)
 		}
 	}
 
+	if(eventPipeConnectOccurred == TRUE) 
+	{
+#ifdef HAVE_TNC
+				// Notify IMC that the UI has connected.
+				if(imc_ui_connect_callback != NULL)
+				{
+					(*imc_ui_connect_callback)();
+				}
+#endif // HAVE_TNC
+	}
 	return XENONE;
 }
 

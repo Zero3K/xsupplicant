@@ -51,6 +51,7 @@ struct timer_ids_struct timer_ids[] = {
   {SCANCHECK_TIMER, "scan result timer"},
   {INT_HELD_TIMER, "interface held timer"},
   {SIG_STRENGTH, "signal strength indicator"},
+  {PSK_DEATH_TIMER, "PSK validation timer"},
   {PMKSA_CACHE_MGMT_TIMER, "PMKSA cache management timer"},
   {CONN_DEATH_TIMER, "connection timeout timer"}
 };

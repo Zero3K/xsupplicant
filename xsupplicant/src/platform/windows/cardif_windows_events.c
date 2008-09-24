@@ -21,6 +21,7 @@
 #include "../../context.h"
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
+#include "../cardif.h"
 #include "cardif_windows.h"
 #include "cardif_windows_wmi.h"
 #include "../../event_core_win.h"
@@ -55,6 +56,8 @@
 // XXX ICK..  Do this better.
 extern void (*imc_disconnect_callback)(uint32_t connectionID);
 
+HANDLE ipupdate_handle = INVALID_HANDLE_VALUE;
+
 int ipupdatecallback(context *ctx, HANDLE myhandle)
 {
 	LPOVERLAPPED ovr = NULL;
@@ -87,7 +90,7 @@ void cardif_windows_ip_update()
 
   ovr->hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-  ret = NotifyAddrChange(&hand, ovr);
+  ret = NotifyAddrChange(&ipupdate_handle, ovr);
 
   if ((ret != NO_ERROR) && (ret != ERROR_IO_PENDING))
   {
@@ -95,17 +98,76 @@ void cardif_windows_ip_update()
       return;
   }
 
-  if (event_core_register(hand, NULL, &ipupdatecallback, 0, HIGH_PRIORITY, "IP address change event") != 0)
+  if (event_core_register(ipupdate_handle, NULL, &ipupdatecallback, 0, HIGH_PRIORITY, "IP address change event") != 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Unable to register IP address change handler.\n");
 	  return;
   }
 
-  if (event_core_set_ovr(hand, 0, ovr) != TRUE)
+  if (event_core_set_ovr(ipupdate_handle, 0, ovr) != TRUE)
   {
 	  debug_printf(DEBUG_NORMAL, "Couldn't set ovr!\n");
 	  return;
   }
+}
+
+/**
+ * \brief Properly deregister the IP update handle.
+ **/
+void cardif_windows_ip_update_cleanup()
+{
+	event_core_deregister(ipupdate_handle, 0);
+}
+
+/**
+ * \brief Thread to delay connection of a wired interface for 1 second.
+ *
+ *  There are situations you can get in to with some switches when guest VLAN is enabled
+ *  where forwarding frames gets delayed.  Holding the authentication for 1 second seems
+ *  to work around this issue.
+ *
+ * @param[in] ctxptr   A pointer to the memory that contains the context we want to
+ *						activate.
+ **/
+void cardif_windows_events_delay_link_up_thread(void *ctxptr)
+{
+	context *ctx = NULL;
+
+	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE)) 
+	{
+		_endthread();
+		return;
+	}
+
+	ctx = (context *)ctxptr;
+
+	Sleep(1000);
+
+	if (event_core_lock() != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to obtain the event core lock.  Interface '%s' will miss it's link up event!\n", ctx->desc);
+		_endthread();
+		return;
+	}
+
+	debug_printf(DEBUG_INT, "Enabling wired port.\n");
+	debug_printf(DEBUG_NORMAL, "Interface '%s' now has link.\n", ctx->desc);
+	ctx->auths = 0;
+	ctx->statemachine->to_authenticated = 0;
+	SET_FLAG(ctx->flags, DHCP_RELEASE_RENEW);
+
+	// Reset the EAP state machine.
+	eap_sm_force_init(ctx->eap_state);
+	
+	ctx->eap_state->portEnabled = TRUE;
+	ctx->statemachine->portEnabled = TRUE;
+
+	if (event_core_unlock() != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to release the event core lock!  Bad stuff will happen!\n");
+	}
+
+	_endthread();
 }
 
 /**
@@ -168,6 +230,11 @@ void cardif_windows_int_event_connect(context *ctx)
 				{
 					// We hopped to a new SSID.  Reset our counters.
 					ctx->auths = 0;
+
+					if (ctx->statemachine != NULL)
+						ctx->statemachine->to_authenticated = 0;
+
+					SET_FLAG(ctx->flags, DHCP_RELEASE_RENEW);
 				}
 
 				// Set our new destination.
@@ -179,45 +246,18 @@ void cardif_windows_int_event_connect(context *ctx)
 			ctx->eap_state->reqId = 0xff;
 			ctx->eap_state->lastId = 0xff;
 
-			/*
-			if (memcmp(wctx->cur_bssid, &bssid, 6) != 0)
+			if ((ctx->conn != NULL) && (ctx->conn->association.auth_type == AUTH_PSK))
 			{
-				SET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);  // We are now associated.
-				UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
-
-				// Reset the EAP state machine.
-				eap_sm_force_init(ctx->eap_state); 
-				wireless_sm_change_state(ASSOCIATED, ctx);
-				memcpy(wctx->cur_bssid, bssid, 6);
+				SET_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK);
 			}
-			else
-			{
-				debug_printf(DEBUG_NORMAL, "Interface '%s' sent us an associate event about a BSSID we are already associated to.  This usually indicates a firmware, driver, or environmental issue.  This event has been ignored.\n", ctx->desc);
-				debug_printf(DEBUG_PHYSICAL_STATE, "Clearing replay counter.\n");
-				memset(&wctx->replay_counter, 0x00, 8);
-				wireless_sm_change_state(ASSOCIATED, ctx);
-			} */
 
-			if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
-			{
-				ipc_events_ui(ctx, IPC_EVENT_BAD_PSK, ctx->intName);
-
-				// We sent the error so unset the flag.
-				UNSET_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK);
-			}
+			ctx->eap_state->portEnabled = TRUE;
+			ctx->statemachine->portEnabled = TRUE;
 		}
 		else
 		{
-			debug_printf(DEBUG_INT, "Enabling wired port.\n");
-			debug_printf(DEBUG_NORMAL, "Interface '%s' now has link.\n", ctx->desc);
-			ctx->auths = 0;
-
-			// Reset the EAP state machine.
-			eap_sm_force_init(ctx->eap_state);
+			_beginthread(cardif_windows_events_delay_link_up_thread, 0, ctx);
 		}
-
-		ctx->eap_state->portEnabled = TRUE;
-		ctx->statemachine->portEnabled = TRUE;
 }
 
 /**
@@ -228,6 +268,11 @@ void cardif_windows_int_disconnect_prompt(context *ctx)
 	ipc_events_ui(ctx, IPC_EVENT_UI_POST_CONNECT_TIMEOUT, ctx->intName);
 
 	timer_cancel(ctx, CONN_DEATH_TIMER);
+
+	// By this point, if we have not aged out the scan data from the cache, it
+	// will go soon.  So call disassociate so that when/if the SSID comes back,
+	// we don't associate until we know enough to actually do it.
+	cardif_disassociate(ctx, 1);
 }
 
 /**
@@ -247,7 +292,7 @@ void cardif_windows_int_event_disconnect(context *ctx)
 	debug_printf(DEBUG_INT, "!!!!!!!!!!!!!!!!!!!! Disconnect Event !!!!!!!!!!!!!!!!!!!!!\n");
 	debug_printf(DEBUG_INT, "    Device : %s\n", ctx->desc);
 
-	if ((ctx->intType == ETH_802_11_INT) && (cardif_GetBSSID(ctx, &bssid_dest) == XENONE))
+	if ((ctx->intType == ETH_802_11_INT) && (cardif_GetBSSID(ctx, (char *)&bssid_dest) == XENONE))
 	{
 		if (memcmp(ctx->dest_mac, &bssid_dest, 6) == 0)
 		{
@@ -280,6 +325,7 @@ void cardif_windows_int_event_disconnect(context *ctx)
 
 			// We sent the error so unset the flag.
 			UNSET_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK);
+			timer_cancel(ctx, PSK_DEATH_TIMER);
 		}
 		else
 		{
@@ -297,7 +343,17 @@ void cardif_windows_int_event_disconnect(context *ctx)
 		debug_printf(DEBUG_NORMAL, "Interface '%s' no longer has link.\n", ctx->desc);
 		memcpy(&ctx->dest_mac[0], &dot1x_default_dest[0], 6);
 		ctx->statemachine->to_authenticated = 0;
+
+#ifdef HAVE_TNC
+		// Flush TNC state.
+		if(imc_disconnect_callback != NULL)
+			imc_disconnect_callback(ctx->tnc_connID);
+
+		ctx->tnc_connID = -1;
+#endif
 	}
+
+	cardif_windows_wireless_set_operstate(ctx, XIF_OPER_LOWERLAYERDOWN);
 
 	// We dropped our connection, so we want to reset our state machines.
 	ctx->statemachine->initialize = TRUE;
@@ -696,9 +752,9 @@ void cardif_windows_int_event_process(context *ctx, uint8_t *eventdata, DWORD ev
 
   case NDIS_STATUS_DOT11_DISASSOCIATION:
 	  // Process the disassocate message for logging purposes.
-	  cardif_windows_int_event_disassociate(ctx, eventdata, evtSize);
+	  //cardif_windows_int_event_disassociate(ctx, eventdata, evtSize);
 	  // Do any necessary state machine disconnection stuff.
-	  cardif_windows_int_event_disconnect(ctx);
+	  //cardif_windows_int_event_disconnect(ctx);
 	  break;
 
   case NDIS_STATUS_MEDIA_DISCONNECT:
@@ -745,6 +801,12 @@ int cardif_windows_int_event_callback(context *ctx, HANDLE evtHandle)
   DWORD dataSize = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+
+  if (event_core_is_terminating() == TRUE)
+  {
+	  // Discard the event.  The buffer may already be freed.
+	  return -1;
+  }
 
   sockData = (struct win_sock_data *)ctx->sockData;
 
@@ -802,6 +864,8 @@ void cardif_windows_setup_int_events(context *ctx)
   struct win_sock_data *sockData = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+  if (event_core_is_terminating() == TRUE) return;   // This should never happen, but better to be safe.
 
   debug_printf(DEBUG_INT, "Binding event IOCTL to interface '%s'.\n", ctx->desc);
 
@@ -959,6 +1023,7 @@ wchar_t *cardif_windows_events_get_ip_guid_str(context *ctx)
 	if (fullpath == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to allocate memory in %s()!\n", __FUNCTION__);
+		free(guid);
 		return NULL;
 	}
 
@@ -999,6 +1064,8 @@ int cardif_windows_events_is_dhcp_enabled(context *ctx)
 	PIP_ADAPTER_INFO pAdapterInfo = NULL;
 	PIP_ADAPTER_INFO pCur = NULL;
 
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return TRUE;  // err on the side of caution.
+
 	// First, determine how large of a buffer we need.
 	size = 0;
 	if (GetAdaptersInfo(NULL, &size) != ERROR_BUFFER_OVERFLOW)
@@ -1024,12 +1091,12 @@ int cardif_windows_events_is_dhcp_enabled(context *ctx)
 	// Walk the list, looking for our data.
 	pCur = pAdapterInfo;
 
-	while (memcmp(pCur->Address, ctx->source_mac, 6) != 0)
+	while ((pCur != NULL) && (memcmp(pCur->Address, ctx->source_mac, 6) != 0))
 	{
 		pCur = pCur->Next;
 	}
 
-	if (memcmp(pCur->Address, ctx->source_mac, 6) == 0)
+	if ((pCur != NULL) && (memcmp(pCur->Address, ctx->source_mac, 6) == 0))
 	{
 		if (pCur->DhcpEnabled == 0) 
 		{
@@ -1204,6 +1271,8 @@ void cardif_windows_events_interface_removed(void *devPtr)
 	// If we are using a TNC enabled build, signal the IMC to clean up.
 	if(imc_disconnect_callback != NULL)
 		imc_disconnect_callback(ctx->tnc_connID);
+
+	ctx->tnc_connID = -1;
 #endif
 
 	ctx->flags |= INT_GONE;
@@ -1239,6 +1308,13 @@ void cardif_windows_events_interface_inserted(void *devPtr)
 
 	if (!xsup_assert((devPtr != NULL), "devPtr != NULL", FALSE)) 
 	{
+		_endthread();
+		return;
+	}
+
+	if (event_core_get_sleep_state())
+	{
+		debug_printf(DEBUG_NORMAL, "Got an interface insertion event when we were going to sleep.  Discarding.\n");
 		_endthread();
 		return;
 	}

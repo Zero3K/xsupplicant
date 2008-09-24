@@ -323,6 +323,23 @@ void global_sigseg()
     exit(-1);
 }
 
+/**
+ * \brief Update any listeners that need to know we are still in the process of stopping.
+ *
+ * \note This is mainly used in Windows to notify the SCM that we are still in the process
+ *		 of stopping when we have to wait a long time for threads to terminate.
+ **/
+void stopping_status_update()
+{
+#ifdef BUILD_SERVICE
+      ServiceStatus.dwCurrentState = SERVICE_STOP_PENDING; 
+	  ServiceStatus.dwWin32ExitCode = NO_ERROR;
+	  ServiceStatus.dwCheckPoint++;
+
+      SetServiceStatus(hStatus, &ServiceStatus); 
+#endif
+}
+
 /****************************************
  *
  * Clean up any values that we have set up for use by the supplicant.  This
@@ -334,37 +351,52 @@ void global_sigseg()
  ****************************************/
 void global_deinit()
 {
+	stopping_status_update();
+#ifdef BUILD_SERVICE
+	UnregisterDeviceNotification(hDevStatus);
+#endif
+
+	stopping_status_update();
 	// XXX Temporary for excalibur_ga
 	unload_plugins();
 
-#ifdef HAVE_TNC
-	// Clean up the TNC library
-	debug_printf(DEBUG_DEINIT, "Clean up TNC.\n");
-	libtnc_tncc_Terminate();
-
-	debug_printf(DEBUG_DEINIT, "Clean up any TNC UI callbacks.\n");
-	tnc_compliance_callbacks_cleanup();
-#endif
-
   debug_printf(DEBUG_DEINIT, "Cert handler clean up.\n");
+  stopping_status_update();
   cert_handler_deinit();
 
   debug_printf(DEBUG_DEINIT, "Clean up IPC.\n");
+  stopping_status_update();
   xsup_ipc_cleanup(intiface);
 
+#ifdef HAVE_TNC
+	// Clean up the TNC library -- (Always do this last to minimize crashes from IMC bugs.)
+	debug_printf(DEBUG_DEINIT, "Clean up any TNC UI callbacks.\n");
+  	stopping_status_update();
+	tnc_compliance_callbacks_cleanup();
+
+	debug_printf(DEBUG_DEINIT, "Clean up TNC.\n");
+	stopping_status_update();
+	libtnc_tncc_Terminate();
+#endif
+
   debug_printf(DEBUG_DEINIT, "Clean up event core\n");
+  stopping_status_update();
   event_core_deinit();
 
   debug_printf(DEBUG_DEINIT, "Flush interface cache.\n");
+  stopping_status_update();
   interfaces_flush_cache();
 
   debug_printf(DEBUG_DEINIT, "Free up config\n");
+  stopping_status_update();
   config_destroy();
 
   debug_printf(DEBUG_DEINIT, "Clean up OpenSSL error strings\n");
+  stopping_status_update();
   ERR_free_strings();
 
   debug_printf(DEBUG_DEINIT, "Clean up OpenSSL library data\n");
+  stopping_status_update();
   EVP_cleanup();  // Clear memory allocated in SSL_library_init()
 
 #ifndef WINDOWS
@@ -374,12 +406,14 @@ void global_deinit()
 #endif
 
 #ifdef WINDOWS
+  stopping_status_update();
   crashdump_deinit();
 #else
-  #warning Need to implement crash dump file handlingfor this platform.
+  #warning Need to implement crash dump file handling for this platform.
 #endif // WINDOWS
 
   debug_printf(DEBUG_DEINIT, "Clean up log file\n");
+  stopping_status_update();
   logfile_cleanup();
 
   if (config_path)
@@ -388,15 +422,9 @@ void global_deinit()
       FREE(config_path);
     }
 
+  stopping_status_update();
 #ifndef BUILD_SERVICE
   exit(0);
-#else
-	UnregisterDeviceNotification(hDevStatus);
-
-      ServiceStatus.dwCurrentState = SERVICE_STOPPED; 
-	  ServiceStatus.dwWin32ExitCode = NO_ERROR;
-
-      SetServiceStatus(hStatus, &ServiceStatus); 
 #endif
 }
 
@@ -897,7 +925,11 @@ int main(int argc, char *argv[])
 		event_core(intiface);
    }
 
-   global_deinit();
+   ServiceStatus.dwCurrentState = SERVICE_STOPPED; 
+   ServiceStatus.dwWin32ExitCode = NO_ERROR;
+
+   SetServiceStatus(hStatus, &ServiceStatus); 
+
 #endif // BUILD_SERVICE
 
   return XENONE;
@@ -931,9 +963,10 @@ void ProcessDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
 			{
 				// The device name we care about will start with something like this :
 				//    \\?\Root#MS_PSCHEDMP#0008#
+				debug_printf(DEBUG_INT, "Got a device insertion event for '%ws'.\n", lpdb->dbcc_name);
 
 				// If it is the one we want, then process it, otherwise ignore it.
-				if (wcsncmp(lpdb->dbcc_name, L"\\\\?\\Root#MS_PSCHEDMP#", 21) == 0)
+				if (_wcsnicmp(lpdb->dbcc_name, L"\\\\?\\Root#MS_PSCHEDMP#", 21) == 0)
 				{
 					debug_printf(DEBUG_INT, "Processing interface insertion!\n");
 					cardif_windows_events_add_remove_interface(lpdb->dbcc_name, TRUE);
@@ -948,14 +981,19 @@ void ProcessDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
 			{
 				// The device name we care about will start with something like this :
 				//    \\?\Root#MS_PSCHEDMP#0008#
+				debug_printf(DEBUG_INT, "Got a device removal event for '%ws'.\n", lpdb->dbcc_name);
 
 				// If it is the one we want, then process it, otherwise ignore it.
-				if (wcsncmp(lpdb->dbcc_name, L"\\\\?\\Root#MS_PSCHEDMP#", 21) == 0)
+				if (_wcsnicmp(lpdb->dbcc_name, L"\\\\?\\Root#MS_PSCHEDMP#", 21) == 0)
 				{
 					debug_printf(DEBUG_INT, "Processing interface removal!\n");
 					cardif_windows_events_add_remove_interface(lpdb->dbcc_name, FALSE);
 				}
 			}
+			break;
+		
+		default:
+			debug_printf(DEBUG_INT, "Got event %x on device handler.\n", dwEventType);
 			break;
 	}
 }

@@ -86,6 +86,9 @@
 #define IPC_EVENT_UI_CONNECTION_DISCONNECT					   17  ///< The supplicant has disconnected the connection for interface %s.
 #define IPC_EVENT_PSK_SUCCESS								   18  ///< The PSK connection completed successfully.
 #define IPC_EVENT_8021X_FAILED								   19  ///< The 802.1X connection failed due to invalid credentials.
+#define IPC_EVENT_PSK_TIMEOUT								   20  ///< The PSK connection attempt timed out.
+#define IPC_EVENT_CONNECTION_UNBOUND						   21  ///< The connection was unbound from interface %s.
+#define IPC_EVENT_AUTO_SELECTED_CONNECTION					   22  ///< A connection was automagically selected based on prioritization information.
 
 // State machines that we may get state machine events for. 
 #define IPC_STATEMACHINE_PHYSICAL                              1   ///< Identify the physical state machine

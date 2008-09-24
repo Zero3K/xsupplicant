@@ -19,5 +19,6 @@
 
 int win_impersonate_desktop_user();
 void win_impersonate_back_to_self();
+HANDLE win_impersonate_get_impersonation_handle();
 
 #endif  // __WIN_IMPERSONATE_H__

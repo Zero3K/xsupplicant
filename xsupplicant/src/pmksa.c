@@ -329,6 +329,7 @@ int pmksa_add(context *ctx, uint8_t *aMac)
 	{
 		// Our cache entry already exists, so leave it alone.
 		debug_printf(DEBUG_INT, "Cache entry already exists.  Ignoring.\n");
+		FREE(pmkid);
 		return 1;
 	}
 

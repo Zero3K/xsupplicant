@@ -206,6 +206,7 @@ struct config_eap_sim
 {
   char *username;
   char *password;
+  char *reader;
   int auto_realm;
 };
 

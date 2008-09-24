@@ -288,6 +288,8 @@ void crashdump_deinit()
 {
 	int i = 0;
 
+	crash_handler_cleanup();
+
 	for (i=0; i < num_crashfiles; i++)
 	{
 		if (crashfiles[i].filename != NULL) free(crashfiles[i].filename);

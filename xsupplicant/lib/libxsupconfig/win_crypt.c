@@ -6,9 +6,6 @@
  * \file win_crypt.c
  *
  * \author chris@open1x.org
- *
- * $Id: win_crypt.c,v 1.3 2007/10/17 07:00:40 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:40 $
  **/
 
 #ifdef WINDOWS

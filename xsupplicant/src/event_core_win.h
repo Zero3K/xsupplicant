@@ -33,6 +33,7 @@
 void event_core_init();
 void event_core_deinit();
 void event_core();
+int event_core_is_terminating();
 context *event_core_get_active_ctx();
 void event_core_terminate();
 int event_core_register(HANDLE, context *, int(*)(context *, HANDLE), uint8_t, int, char *);

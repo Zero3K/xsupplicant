@@ -750,6 +750,14 @@ void backend_sm_change_to_timeout(context *ctx)
 
   ctx->statemachine->beCurState = TIMEOUT;
   snmp_backend_timeout();
+
+  // If we are using Cisco/Airespace gear, we need to drop association here,
+  // or we won't attempt a new auth.
+  if (ctx->intType == ETH_802_11_INT)
+  {
+	  cardif_disassociate(ctx, 1);
+  }
+
   backend_sm_change_state(ctx, IDLE);
 }
 

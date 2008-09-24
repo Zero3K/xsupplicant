@@ -20,24 +20,29 @@
 
 #ifdef EAP_SIM_ENABLE
 
+#ifndef WINDOWS
 #include <inttypes.h>
+#else
+#include "../../stdintwin.h"
+#endif
+
 #include <string.h>
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
 
 #include "winscard.h"
-#include "profile.h"
 #include "xsupconfig.h"
-#include "xsup_common.h"
-#include "eap_sm.h"
-#include "frame_structs.h"
+#include "../../context.h"
+#include "../../xsup_common.h"
+#include "../../eap_sm.h"
+#include "../../frame_structs.h"
 #include "../sim/eapsim.h"
 #include "eapaka.h"
-#include "xsup_debug.h"
-#include "xsup_err.h"
+#include "../../xsup_debug.h"
+#include "../../xsup_err.h"
 #include "../sim/sm_handler.h"
 #include "../sim/fips.h"
-#include "eap_types/eap_type_common.h"
+#include "../eap_type_common.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -303,7 +308,7 @@ uint8_t *aka_do_sync_fail(struct aka_eaptypedata *mydata, uint8_t reqId)
   struct eap_header *eaphdr;
 
   if (!xsup_assert((mydata != NULL), "mydata != NULL", FALSE))
-    return XEMALLOC;
+    return NULL;
 
   debug_printf(DEBUG_AUTHTYPES, "Building AKA Sync Failure!\n");
 

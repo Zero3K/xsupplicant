@@ -4,9 +4,6 @@
  * \file xsupgui_events.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupgui_events.c,v 1.6 2008/01/26 01:19:59 chessing Exp $
- * $Date: 2008/01/26 01:19:59 $
  **/
 
 #include <string.h>

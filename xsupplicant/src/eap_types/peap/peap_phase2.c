@@ -27,6 +27,7 @@
 #include "src/eap_sm.h"
 #include "peap_phase2.h"
 #include "eappeap.h"
+#include "peap_extensions.h"
 #include "../tls/eaptls.h"
 #include "../tls/tls_funcs.h"
 #include "src/xsup_err.h"
@@ -200,12 +201,15 @@ void peap_pad_frame(uint8_t *in, uint16_t in_size, uint8_t *out,
  * Process a PEAP v1 packet.
  *
  ***********************************************************************/
-int do_peap_version1(struct phase2_data *p2d, uint8_t *in, uint16_t in_size, 
+int do_peap_version1(eap_type_data *eapdata, struct phase2_data *p2d, uint8_t *in, uint16_t in_size, 
 		      uint8_t *out, uint16_t *out_size)
 {
   uint8_t *padded_frame = NULL;
   uint8_t eapvalue, eapid;
   int retval = XENONE;
+
+  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+	  return XEMALLOC;
 
   if (!xsup_assert((p2d != NULL), "p2d != NULL", FALSE))
     return XEMALLOC;
@@ -244,11 +248,7 @@ int do_peap_version1(struct phase2_data *p2d, uint8_t *in, uint16_t in_size,
     {
       case PEAP_EAP_EXTENSION: /* EAP Extension */
       debug_printf(DEBUG_AUTHTYPES, "Got an EAP extension frame!\n");
-      out[0] = EAP_RESPONSE_PKT;
-      memcpy(&out[1], &in[1], in_size-1);
-      p2d->sm->decision = COND_SUCC;
-      *out_size = in_size;
-      return XEINNERDONE;
+	  return peap_extensions_process(eapdata, p2d, in, in_size, out, out_size);
       break;
 
     default:
@@ -292,12 +292,15 @@ int do_peap_version1(struct phase2_data *p2d, uint8_t *in, uint16_t in_size,
  * padding, so that we send back a v0 packet.
  *
  **********************************************************************/
-int do_peap_version0(struct phase2_data *p2d, uint8_t *in, uint16_t in_size, 
+int do_peap_version0(eap_type_data *eapdata, struct phase2_data *p2d, uint8_t *in, uint16_t in_size, 
 		     uint8_t *out, uint16_t *out_size)
 {
   uint8_t *padded_frame = NULL, *new_frame = NULL, eframe = 0;
   uint16_t padded_size = 0, new_frame_size = 0;
   int retval = XENONE;
+
+  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+	  return XEMALLOC;
 
   if (!xsup_assert((p2d != NULL), "p2d != NULL", FALSE))
     return XEMALLOC;
@@ -353,7 +356,7 @@ int do_peap_version0(struct phase2_data *p2d, uint8_t *in, uint16_t in_size,
       goto out;
     }
  
-  retval = do_peap_version1(p2d, padded_frame, padded_size, 
+  retval = do_peap_version1(eapdata, p2d, padded_frame, padded_size, 
 			    (uint8_t *) new_frame, &new_frame_size);
 
   if (eframe != 1) 
@@ -539,7 +542,7 @@ void peap_phase2_process(eap_type_data *eapdata, uint8_t *indata,
     {
     case 0:
       debug_printf(DEBUG_AUTHTYPES, "Doing PEAP v0!\n");
-      res = do_peap_version0(p2d, indata, insize, p2d->result_data,
+      res = do_peap_version0(eapdata, p2d, indata, insize, p2d->result_data,
 			     &p2d->result_size);
       if ((res != XENONE) && (res != XEINNERDONE))
 	{
@@ -561,7 +564,7 @@ void peap_phase2_process(eap_type_data *eapdata, uint8_t *indata,
 
     case 1:
       debug_printf(DEBUG_AUTHTYPES, "Doing PEAP v1!\n");
-      res = do_peap_version1(p2d, indata, insize, p2d->result_data,
+      res = do_peap_version1(eapdata, p2d, indata, insize, p2d->result_data,
 			     &p2d->result_size);
 
       if ((res != XENONE) && (res != XEINNERDONE))

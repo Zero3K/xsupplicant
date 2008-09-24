@@ -55,6 +55,7 @@
 
 #ifdef WINDOWS
 #include "platform/windows/tthandler.h"
+#include "platform/windows/win_platform_calls.h"
 #endif
 
 // XXX These can be removed once ipc_callout_eap_cert_state() has moved to the proper location.
@@ -77,9 +78,6 @@
 #include "libxsupconfig/xsupconfig_devices.h"
 
 #include "buildnum.h"
-
-// XXX Clean this up ;)
-extern void (*imc_ui_connect_callback)();
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -171,6 +169,11 @@ struct ipc_calls my_ipc_calls[] ={
 	{"DHCP_Release_Renew", ipc_callout_dhcp_release_renew},
 	{"Disconnect_Connection", ipc_callout_disconnect_connection},
 	{"Get_Are_Doing_PSK", ipc_callout_get_doing_psk},
+	{"Get_Is_Connection_In_Use", ipc_callout_get_is_connection_in_use},
+	{"Get_Is_Profile_In_Use", ipc_callout_get_is_profile_in_use},
+	{"Get_Is_Trusted_Server_In_Use", ipc_callout_get_is_trusted_server_in_use},
+	{"Get_Are_Administrator", ipc_callout_get_are_administrator},
+	{"Enum_Smartcard_Readers", ipc_callout_enum_smartcard_readers},
 	{NULL, NULL}
 };
 
@@ -938,11 +941,11 @@ context *ipc_callout_get_context_from_int(xmlNodePtr innode)
 	ctx = event_core_locate((char *)content);
 	if (ctx == NULL)
 	{
-		free(content);
+		xmlFree(content);
 		return NULL;
 	}
 
-	free(content);
+	xmlFree(content);
 	return ctx;
 }
 
@@ -1040,9 +1043,6 @@ int ipc_callout_some_state_response(char *request_state, char *response_state, i
 		return IPC_FAILURE;
 
 	if (!xsup_assert((response_key != NULL), "response_key != NULL", FALSE))
-		return IPC_FAILURE;
-
-	if (!xsup_assert((device != NULL), "device != NULL", FALSE))
 		return IPC_FAILURE;
 
 	sprintf((char *)&resultstr, "%d", state_value);
@@ -2051,12 +2051,6 @@ int ipc_callout_request_logoff(xmlNodePtr innode, xmlNodePtr *outnode)
 #warning Fill this in for your OS!
 #endif
 
-#ifdef HAVE_TNC
-		// If we are using a TNC enabled build, signal the IMC to clean up.
-		if(imc_disconnect_callback != NULL)
-			imc_disconnect_callback(ctx->tnc_connID);
-#endif
-
 		return ipc_callout_create_ack(ctx->intName, "Request_Logoff", outnode);
 	}
 	else
@@ -2636,14 +2630,6 @@ int ipc_callout_change_socket_type(xmlNodePtr innode, xmlNodePtr *outnode)
 	{
 		retval = IPC_CHANGE_TO_EVENT_ONLY;
 	}
-
-#ifdef HAVE_TNC
-    // Notify IMC that the UI has connected.
-    if(imc_ui_connect_callback != NULL)
-    {
-        (*imc_ui_connect_callback)();
-    }
-#endif // HAVE_TNC
 	
     retval2 = ipc_callout_create_ack(NULL, "Change_Socket_Type", outnode);
 	if (retval2 == IPC_SUCCESS) return retval;
@@ -2758,6 +2744,14 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		break;
 	}
 
+	// If we currently have a forced connection, then we will do a forced unbind.
+	if ((TEST_FLAG(ctx->flags, FORCED_CONN)) && (ctx->conn != NULL))
+	{
+		ipc_events_ui(NULL, IPC_EVENT_CONNECTION_UNBOUND, ctx->conn->name);
+	}
+
+	SET_FLAG(ctx->flags, FORCED_CONN);
+	SET_FLAG(ctx->flags, DHCP_RELEASE_RENEW);      // Force a release/renew on this auth.
 	ctx->conn = config_find_connection(conn_name);
 	if (ctx->conn == NULL)
 	{
@@ -2780,7 +2774,6 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 
 
 	// We found it, so validate it, and update the connection name.
-	SET_FLAG(ctx->flags, FORCED_CONN);
 	FREE(ctx->conn_name);
 
 	ctx->conn_name = _strdup(conn_name);
@@ -2818,6 +2811,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 
 		// Make sure we weren't doing PSK before.  If we were, then we could get bogus error messages.
 		UNSET_FLAG(((wireless_ctx *)ctx->intTypeData)->flags, WIRELESS_SM_DOING_PSK);
+		timer_cancel(ctx, PSK_DEATH_TIMER);
 
 		FREE(wctx->cur_essid);
 		wctx->cur_essid = _strdup(ctx->conn->ssid);
@@ -2849,6 +2843,8 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 			statemachine_change_state(ctx, LOGOFF);
 		}
 	}
+
+	ctx->auths = 0;
 
 	free(conn_name);
 	free(iface);
@@ -2963,12 +2959,6 @@ int ipc_callout_disassociate(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	// Force a state machine reinit.
 	eap_sm_force_init(ctx->eap_state);
-
-#ifdef HAVE_TNC
-		// If we are using a TNC enabled build, signal the IMC to clean up.
-		if(imc_disconnect_callback != NULL)
-			imc_disconnect_callback(ctx->tnc_connID);
-#endif
 
 	retval2 = ipc_callout_create_ack(iface, "Request_Disassociate", outnode);
 
@@ -3120,22 +3110,22 @@ int ipc_callout_get_ip_data(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	ipaddr = cardif_get_ip(ctx);
-	debug_printf(DEBUG_IPC, "IP Address : %s\n", ipaddr);
+	if (ipaddr != NULL) debug_printf(DEBUG_IPC, "IP Address : %s\n", ipaddr);
 
 	netmask = cardif_get_netmask(ctx);
-	debug_printf(DEBUG_IPC, "Net Mask : %s\n", netmask);
+	if (netmask != NULL) debug_printf(DEBUG_IPC, "Net Mask : %s\n", netmask);
 
 	gateway = cardif_get_gw(ctx);
-	debug_printf(DEBUG_IPC, "Default GW : %s\n", gateway);
+	if (gateway != NULL) debug_printf(DEBUG_IPC, "Default GW : %s\n", gateway);
 
 	dns1 = cardif_get_dns1(ctx);
-	debug_printf(DEBUG_IPC, "DNS 1 : %s\n", dns1);
+	if (dns1 != NULL) debug_printf(DEBUG_IPC, "DNS 1 : %s\n", dns1);
 
 	dns2 = cardif_get_dns2(ctx);
-	debug_printf(DEBUG_IPC, "DNS 2 : %s\n", dns2);
+	if (dns2 != NULL) debug_printf(DEBUG_IPC, "DNS 2 : %s\n", dns2);
 
 	dns3 = cardif_get_dns3(ctx);
-	debug_printf(DEBUG_IPC, "DNS 3 : %s\n", dns3);
+	if (dns3 != NULL) debug_printf(DEBUG_IPC, "DNS 3 : %s\n", dns3);
 
 	// We have the data we need, so create the response.
 	n = xmlNewNode(NULL, (xmlChar *)"IP_Data");
@@ -3254,6 +3244,7 @@ int ipc_callout_enum_profiles(xmlNodePtr innode, xmlNodePtr *outnode)
 		count++;
 		cur = cur->next;
 	}
+
 	sprintf((char *)&res, "%d", count);
 	if (xmlNewChild(n, NULL, (xmlChar *)"Number_Of_Profiles", (xmlChar *)res) == NULL)
 	{
@@ -4201,6 +4192,41 @@ int ipc_callout_delete_managed_network(xmlNodePtr innode, xmlNodePtr *outnode)
 }
 
 /**
+ * \brief Search through all of the active contexts looking to see if the
+ *		named connection is in use.
+ * 
+ * @param[in] conname   The name of the connection we are looking for.
+ *
+ * \retval TRUE if it is in use.
+ * \retval FALSE if it is not in use.
+ **/
+int ipc_callout_is_connection_in_use(char *conname)
+{
+	context *ctx = NULL;
+
+	if (conname == NULL) return FALSE;
+
+  // Iterate through all of the contexts to be sure we aren't using this connection.
+  event_core_reset_locator();
+
+  ctx = event_core_get_next_context();
+  while (ctx != NULL)
+  {
+	  if ((ctx->conn != NULL) && (ctx->conn->name != NULL))
+	  {
+		  if (strcmp(ctx->conn->name, conname) == 0)
+		  {
+			  return TRUE;  // It is in use.
+		  }
+	  }
+
+	  ctx = event_core_get_next_context();
+  }
+
+  return FALSE;
+}
+
+/**
  *  \brief Got a request to delete a connection that we know about.
  *
  *  @param[in] innode   A pointer to the node that contains the request to 
@@ -4226,22 +4252,10 @@ int ipc_callout_delete_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 	  return ipc_callout_create_error(NULL, "Delete_Connection_Config", retval, outnode);
   }
 
-  // Iterate through all of the contexts to be sure we aren't using this connection.
-  event_core_reset_locator();
-
-  ctx = event_core_get_next_context();
-  while (ctx != NULL)
+  if (ipc_callout_is_connection_in_use(name) == TRUE)
   {
-	  if ((ctx->conn != NULL) && (ctx->conn->name != NULL))
-	  {
-		  if (strcmp(ctx->conn->name, name) == 0)
-		  {
-			  // ACK!  We can't delete a connection that is in use!
-			  return ipc_callout_create_error(ctx->intName, "Delete_Connection_Config", IPC_ERROR_CANT_DEL_CONN_IN_USE, outnode);
-		  }
-	  }
-
-	  ctx = event_core_get_next_context();
+	  // ACK!  We can't delete a connection that is in use!
+	  return ipc_callout_create_error(ctx->intName, "Delete_Connection_Config", IPC_ERROR_CANT_DEL_CONN_IN_USE, outnode);
   }
 
   if (config_delete_connection(name) != XENONE)
@@ -4255,6 +4269,40 @@ int ipc_callout_delete_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
       
   FREE(name);
   return ipc_callout_create_ack(NULL, "Delete_Connection_Config", outnode);
+}
+
+/**
+ * \brief Determine if the named profile is in use.
+ *
+ * @param[in] profname   The name of the profile we want to check.
+ *
+ * \retval TRUE if it is currently in use.
+ * \retval FALSE if it isn't.
+ **/
+int ipc_callout_is_profile_in_use(char *name)
+{
+	context *ctx = NULL;
+
+	if (name == NULL) return FALSE;
+
+  // Iterate through all of the contexts to be sure we aren't using this trusted server.
+  event_core_reset_locator();
+
+  ctx = event_core_get_next_context();
+  while (ctx != NULL)
+  {
+	  if ((ctx->conn != NULL) && (ctx->prof != NULL))
+	  {
+		  if (strcmp(ctx->prof->name, name) == 0)
+		  {
+			return TRUE;
+		  }
+	  }
+
+	  ctx = event_core_get_next_context();
+  }
+
+  return FALSE;
 }
 
 /**
@@ -4286,20 +4334,20 @@ int ipc_callout_delete_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 
   if (forced == FALSE)
   {
-	  // Verify that the profile isn't still in use.
-	  cur = conf_connections;
+	// Verify that the profile isn't still in use.
+	cur = conf_connections;
 
-	  while ((cur != NULL) && ((cur->profile == NULL) || (strcmp(cur->profile, name) != 0)))
-	  {
+	while ((cur != NULL) && ((cur->profile == NULL) || (strcmp(cur->profile, name) != 0)))
+	{
 		cur = cur->next;
-	  }
+	}
 
-	  if (cur != NULL)
-	  {
-		  // We found something.
+	if (cur != NULL)
+	{
+		// We found something.
 		  free(name);
 		  return ipc_callout_create_error(NULL, "Delete_Profile_Config", IPC_ERROR_STILL_IN_USE, outnode);
-	  }
+	}
   }
 
   if (config_delete_profile(name) != XENONE)
@@ -4352,6 +4400,76 @@ int ipc_callout_delete_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
 }
 
 /**
+ * \brief Return the trusted server name that is bound to a profile.
+ *
+ * \note DO NOT FREE the resulting pointer!  It is a pointer to the
+ *       source string, not a copied string.
+ *
+ * @param[in] cur   The profile to get the trusted server name for.
+ *
+ * \retval NULL if it isn't found, ptr otherwise.
+ **/
+char *ipc_callout_get_tsname_from_profile(config_profiles *cur)
+{
+	char *tsname = NULL;
+
+	  switch (cur->method->method_num)
+	  {
+		  // Only TLS, TTLS, and PEAP use trusted servers, so ignore the rest.
+	  case EAP_TYPE_TLS:
+		  tsname = ((struct config_eap_tls *)(cur->method->method_data))->trusted_server;
+		  break;
+
+	  case EAP_TYPE_TTLS:
+		  tsname = ((struct config_eap_ttls *)(cur->method->method_data))->trusted_server;
+			break;
+
+	  case EAP_TYPE_PEAP:
+		  tsname = ((struct config_eap_peap *)(cur->method->method_data))->trusted_server;
+		  break;
+	  }
+
+	  return tsname;
+}
+
+/**
+ * \brief Search through the active contexts looking to see if a named
+ *		trusted server is in use.
+ *
+ * @param[in] name   The name of the trusted server to look for.
+ *
+ * \retval TRUE if it is found.
+ * \retval FALSE if it is not found.
+ **/
+int ipc_callout_is_trusted_server_in_use(char *name)
+{
+	context *ctx = NULL;
+	char *tsname = NULL;
+
+	if (name == NULL) return FALSE;
+
+  // Iterate through all of the contexts to be sure we aren't using this trusted server.
+  event_core_reset_locator();
+
+  ctx = event_core_get_next_context();
+  while (ctx != NULL)
+  {
+	  if ((ctx->conn != NULL) && (ctx->prof != NULL))
+	  {
+		tsname = ipc_callout_get_tsname_from_profile(ctx->prof);
+		if ((tsname != NULL) && (strcmp(tsname, name) == 0))
+		{
+			return TRUE;
+		}
+	  }
+
+	  ctx = event_core_get_next_context();
+  }
+
+  return FALSE;
+}
+
+/**
  *  \brief Got a request to delete a trusted server that we know about.
  *
  *  @param[in] innode   A pointer to the node that contains the request to 
@@ -4367,7 +4485,7 @@ int ipc_callout_delete_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outn
 {
   char *name = NULL;
   char *tsname = NULL;
-  int retval;
+  int retval = 0;
   int done = FALSE;
   struct config_profiles *cur = NULL;
 
@@ -4385,21 +4503,7 @@ int ipc_callout_delete_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outn
   {
 	  tsname = NULL;
 
-	  switch (cur->method->method_num)
-	  {
-		  // Only TLS, TTLS, and PEAP use trusted servers, so ignore the rest.
-	  case EAP_TYPE_TLS:
-		  tsname = ((struct config_eap_tls *)(cur->method->method_data))->trusted_server;
-		  break;
-
-	  case EAP_TYPE_TTLS:
-		  tsname = ((struct config_eap_ttls *)(cur->method->method_data))->trusted_server;
-			break;
-
-	  case EAP_TYPE_PEAP:
-		  tsname = ((struct config_eap_peap *)(cur->method->method_data))->trusted_server;
-		  break;
-	  }
+	  tsname = ipc_callout_get_tsname_from_profile(cur);
 
 	  if ((tsname != NULL) && (strcmp(name, tsname) == 0))
 	  {
@@ -4491,6 +4595,7 @@ int ipc_callout_set_globals_config(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	reset_config_globals(newg);
 
+	xsup_debug_clear_level(); 
 	xsup_debug_set_level(newg->loglevel);
 
 	if (change == TRUE)
@@ -4516,6 +4621,7 @@ int ipc_callout_set_globals_config(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	struct config_connection *newc = NULL;
+	struct config_connection *tempc = NULL;
 	xmlNodePtr n = NULL, t = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
@@ -4544,6 +4650,20 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_PARSING, outnode);
 	}
 
+	// XXX TODO: Add this code back in.  But, we need to first provide a way to change priorities without
+	// editing the entire configuration block.
+/*
+	if (ipc_callout_is_connection_in_use(newc->name) == TRUE)
+	{
+		debug_printf(DEBUG_IPC, "Attempted to change a configuration that is already in use.\n");
+
+		// Free the memory used to parse the command.
+		delete_config_single_connection(&newc);
+
+		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_NOT_ALLOWED, outnode);
+	}
+*/
+
 	t = ipc_callout_find_node(n->children, "Connection");
 	if (t == NULL)
 	{
@@ -4553,13 +4673,28 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	newc->ou = (char *)xmlGetProp(t, (xmlChar *)"OU");   // Should return NULL if it isn't there.
 
-	if (add_change_config_connections(newc) != XENONE)
+	// XXX Band-aid to make the UI work correctly.  If the connection
+	// is in use we will only update the priority.  Updating everything
+	// could cause a crash.
+	if (ipc_callout_is_connection_in_use(newc->name) != TRUE)
 	{
-		debug_printf(DEBUG_NORMAL, "Couldn't change connection data!\n");
-		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_CANT_CHANGE_CONFIG, outnode);
+		if (add_change_config_connections(newc) != XENONE)
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't change connection data!\n");
+			return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_CANT_CHANGE_CONFIG, outnode);
+		}
 	}
+	else
+	{
+		tempc = config_find_connection(newc->name);
+		if (tempc != NULL)
+		{
+			tempc->priority = newc->priority;
+		}
 
-	context_rebind_all();
+		// Free the memory used to parse the command.
+		delete_config_single_connection(&newc);
+	}
 
   return ipc_callout_create_ack(NULL, "Set_Connection_Config", outnode);
 }
@@ -4607,6 +4742,21 @@ int ipc_callout_set_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_PARSING, outnode);
 	}
 
+	// XXX Revisit this.  If we prevent writing of the config, then a UI can't save the user's
+	// credentials.  This check isn't a big deal right now because the UI is doing similar checks,
+	// but we should probably add a derivation of this fix in an upcoming version.
+	/*
+	if (ipc_callout_is_profile_in_use(newp->name) == TRUE)
+	{
+		debug_printf(DEBUG_IPC, "Attempted to change the configuration of a profile already in use.\n");
+
+		// Free the memory used to parse the command.
+		delete_config_single_profile(&newp);
+
+		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_NOT_ALLOWED, outnode);
+	}
+	*/
+
 	t = ipc_callout_find_node(n->children, "Profile");
 	if (t == NULL)
 	{
@@ -4621,8 +4771,6 @@ int ipc_callout_set_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		debug_printf(DEBUG_IPC, "Couldn't change profile data!\n");
 		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_CANT_CHANGE_CONFIG, outnode);
 	}
-
-	context_rebind_all();
 
   return ipc_callout_create_ack(NULL, "Set_Profile_Config", outnode);
 }
@@ -4697,6 +4845,16 @@ int ipc_callout_set_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse trusted server config information!\n");
 		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_PARSING, outnode);
+	}
+
+	if (ipc_callout_is_trusted_server_in_use(newts->name) == TRUE)
+	{
+		debug_printf(DEBUG_IPC, "Attempted to change the configuration on a trusted server that is already in use.\n");
+
+		// Free the memory used to parse the command.
+		delete_config_trusted_server(&newts);
+
+		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_NOT_ALLOWED, outnode);
 	}
 
 	if (add_change_config_trusted_server(newts) != XENONE)
@@ -4800,6 +4958,22 @@ int ipc_callout_set_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
 				}
 
 				if (status == 0) ctx = event_core_get_next_context();
+			}
+
+			if (status == 0)  // No context was found.  Let's see if the interface is alive.
+			{
+				intname = interfaces_get_name_from_mac(newif->mac);
+				if (intname != NULL)
+				{
+					// But the interface is alive, so we need to bind it.
+					// This is usually a case where a second interface of the same hardware
+					// is plugged in, and Windows calls it the same thing.  (This could potentially be a problem
+					// on non-Windows platforms as well.)
+					if (context_init_interface(&ctx, newif->description, intname, NULL, 0) != 0)
+					{
+						debug_printf(DEBUG_NORMAL, "Couldn't initialize interface '%s'!\n", newif->description);
+					}
+				}
 			}
 		}
 	}
@@ -6175,13 +6349,18 @@ int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode
 			}
 		}
 
+		if (cur == NULL)
+		{
+			xmlFreeNode(n);
+			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_INVALID_REQUEST, outnode);
+		}
+
 		flags |= ipc_callout_auth_needs(cur);
 
 		sprintf((char *)&res, "%d", flags);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Flags", (xmlChar *)res) == NULL)
 		{
 			xmlFreeNode(n);
-			free(temp);
 			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
 		}
 
@@ -6297,6 +6476,7 @@ int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode
 int ipc_callout_request_unbind_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	context *ctx = NULL;
+	wireless_ctx *wctx = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -6304,14 +6484,29 @@ int ipc_callout_request_unbind_connection(xmlNodePtr innode, xmlNodePtr *outnode
 	if (ctx == NULL)
 		return ipc_callout_create_error(NULL, "Unbind_Connection", IPC_ERROR_INVALID_CONTEXT, outnode);
 
+	if (ctx->conn != NULL)
+		ipc_events_ui(NULL, IPC_EVENT_CONNECTION_UNBOUND, ctx->conn->name);
+
 	ctx->conn = NULL;
 	FREE(ctx->conn_name);
 	ctx->prof = NULL;
+
+	if (ctx->intType == ETH_802_11_INT)
+	{
+		if (ctx->intTypeData != NULL)
+		{
+			wctx = (wireless_ctx *)ctx->intTypeData;
+
+			FREE(wctx->cur_essid);
+		}
+	}
 
 #ifdef HAVE_TNC
 		// If we are using a TNC enabled build, signal the IMC to clean up.
 		if(imc_disconnect_callback != NULL)
 			imc_disconnect_callback(ctx->tnc_connID);
+
+		ctx->tnc_connID = -1;
 #endif
 
 	return ipc_callout_create_ack(ctx->intName, "Unbind_Connection", outnode);
@@ -7015,6 +7210,7 @@ int ipc_callout_get_tnc_conn_id(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_set_conn_lock(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
+	xmlChar *temp = NULL;
 	int retval = IPC_SUCCESS, retval2 = IPC_SUCCESS;
 	char *iface = NULL;
 	context *ctx = NULL;
@@ -7054,7 +7250,9 @@ int ipc_callout_set_conn_lock(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Connection_Lock", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
-	newval = atoi((char *)xmlNodeGetContent(t));
+	temp = xmlNodeGetContent(t);
+	newval = atoi((char *)temp);
+	xmlFree(temp);
 
 	debug_printf(DEBUG_IPC, "Setting connlock on interface %s to %d.\n", iface, newval);
 
@@ -7073,6 +7271,15 @@ int ipc_callout_set_conn_lock(xmlNodePtr innode, xmlNodePtr *outnode)
 	else
 	{
 		UNSET_FLAG(ctx->flags, FORCED_CONN);
+
+		// Since we are allowing the connection to 'float' we need to clear any posture state that may
+		// already be stored.
+#ifdef HAVE_TNC
+		if(imc_disconnect_callback != NULL)
+			imc_disconnect_callback(ctx->tnc_connID);
+
+		ctx->tnc_connID = -1;
+#endif
 	}
 
 	retval = ipc_callout_create_ack(iface, "Set_Connection_Lock", outnode);
@@ -7144,6 +7351,13 @@ int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr innode, xmlNodePtr *out
 		return ipc_callout_create_error(NULL, "Get_Interface_From_TNC_Conn_ID", IPC_ERROR_INVALID_INTERFACE, outnode);
 	}
 
+	n = xmlNewNode(NULL, "Interface_From_TNC_Conn_ID");
+	if (n == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't create <Interface_From_TNC_Conn_ID node.\n");
+		return ipc_callout_create_error(NULL, "Get_Interface_From_TNC_Conn_ID", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
+
 	// Otherwise, we should have what we need to know.
 	ipc_callout_convert_amp(ctx->intName, &temp);
 	if (xmlNewChild(n, NULL, "Interface_Name", temp) == NULL)
@@ -7154,8 +7368,51 @@ int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr innode, xmlNodePtr *out
 	}
 	free(temp);
 
+	(*outnode) = n;
+
 	return retval;
 #endif
+}
+
+/**
+ * \brief Determine if an interface is in the middle of doing WPA(2)-PSK.
+ *
+ * \param[in] innode   The XML node tree that contains the request to get the
+ *                     WPA(2)-PSK state for an interface name.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_get_doing_psk(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	context *ctx = NULL;
+	wireless_ctx *wctx = NULL;
+	int doing_psk = 0;
+
+	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
+		return IPC_FAILURE;
+
+	ctx = ipc_callout_get_context_from_int(innode);
+	if (ctx == NULL)
+		return ipc_callout_create_error(NULL, "Get_Are_Doing_PSK", IPC_ERROR_INVALID_CONTEXT, outnode);
+
+	if (ctx->intType != ETH_802_11_INT)
+		return ipc_callout_create_error(ctx->intName, "Get_Are_Doing_PSK", IPC_ERROR_INVALID_CONTEXT, outnode);
+
+	wctx = (wireless_ctx *)ctx->intTypeData;
+	if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
+	{
+		doing_psk = TRUE;
+	}
+	else
+	{
+		doing_psk = FALSE;
+	}
+
+	return ipc_callout_some_state_response("Get_Are_Doing_PSK", "Are_Doing_PSK", doing_psk, 
+		"Doing_PSK", ctx->intName, outnode);
 }
 
 /**
@@ -7339,6 +7596,7 @@ int ipc_callout_disconnect_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		imc_disconnect_callback(ctx->tnc_connID);
 #endif			
 
+	context_disconnect(ctx);
 	ipc_events_ui(ctx, IPC_EVENT_UI_CONNECTION_DISCONNECT, ctx->intName);
 
 	// Clear out any memory cached passwords of PSKs.
@@ -7360,42 +7618,212 @@ int ipc_callout_disconnect_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 }
 
 /**
- * \brief Determine if an interface is in the middle of doing WPA(2)-PSK.
+ * \brief Get a string out of a command XML blob.
+ *
+ * @param[in] cmd_root   The "root" command name.  (Used to verify the command structure.)
+ * @param[in] subvalue   The tag under the root that contains the string we are looking for.
+ *
+ * \retval NULL on error, ptr to string on success
+ **/
+char *ipc_callout_get_value_from_command(xmlNodePtr innode, char *cmd_root, char *subvalue)
+{
+	xmlNodePtr n = NULL, t = NULL;
+	int retval = IPC_SUCCESS;
+	char *retsval = NULL;
+
+	if ((cmd_root == NULL) || (subvalue == NULL)) return NULL;
+
+	n = ipc_callout_find_node(innode, cmd_root);
+	if (n == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get '%s' node.\n", cmd_root);
+		return NULL;
+	}
+
+	n = n->children;
+
+	t = ipc_callout_find_node(n, subvalue);
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't find the <%s> node in the request!\n", subvalue);
+		return NULL;
+	}
+
+	retsval = _strdup(xmlNodeGetContent(t));
+
+	return retsval;
+}
+
+/**
+ * \brief Determine if a named connection is currently in use.
  *
  * \param[in] innode   The XML node tree that contains the request to get the
- *                     WPA(2)-PSK state for an interface name.
+ *                     'in use' state of the named connection.
  * \param[out] outnode   The XML node tree that contains either the response to the
  *                        request, or an error message.
  *
  * \retval IPC_SUCCESS on success
  * \retval IPC_FAILURE on failure
  **/
-int ipc_callout_get_doing_psk(xmlNodePtr innode, xmlNodePtr *outnode)
+int ipc_callout_get_is_connection_in_use(xmlNodePtr innode, xmlNodePtr *outnode)
 {
-	context *ctx = NULL;
-	wireless_ctx *wctx = NULL;
-	int doing_psk = 0;
+	char *value = NULL;
+	int retval = FALSE;
+
+	value = ipc_callout_get_value_from_command(innode, "Get_Is_Connection_In_Use", "Connection_Name");
+	if (value == NULL)
+	{
+		return ipc_callout_create_error(NULL, "Get_Is_Connection_In_Use", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	retval = ipc_callout_is_connection_in_use(value);
+	free(value);
+
+	return ipc_callout_some_state_response("Get_Is_Connection_In_Use", "Is_Connection_In_Use", retval, 
+		"Use_State", NULL, outnode);
+}
+
+/**
+ * \brief Determine if a named profile is currently in use.
+ *
+ * \param[in] innode   The XML node tree that contains the request to get the
+ *                     'in use' state of the named profile.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_get_is_profile_in_use(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	char *value = NULL;
+	int retval = FALSE;
+
+	value = ipc_callout_get_value_from_command(innode, "Get_Is_Profile_In_Use", "Profile_Name");
+	if (value == NULL)
+	{
+		return ipc_callout_create_error(NULL, "Get_Is_Profile_In_Use", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	retval = ipc_callout_is_profile_in_use(value);
+	free(value);
+
+	return ipc_callout_some_state_response("Get_Is_Profile_In_Use", "Is_Profile_In_Use", retval, 
+		"Use_State", NULL, outnode);
+}
+
+/**
+ * \brief Determine if a named trusted server is currently in use.
+ *
+ * \param[in] innode   The XML node tree that contains the request to get the
+ *                     'in use' state of the named trusted server.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_get_is_trusted_server_in_use(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	char *value = NULL;
+	int retval = FALSE;
+
+	value = ipc_callout_get_value_from_command(innode, "Get_Is_Trusted_Server_In_Use", "Trusted_Server_Name");
+	if (value == NULL)
+	{
+		return ipc_callout_create_error(NULL, "Get_Is_Trusted_Server_In_Use", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	retval = ipc_callout_is_trusted_server_in_use(value);
+	free(value);
+
+	return ipc_callout_some_state_response("Get_Is_Trusted_Server_In_Use", "Is_Trusted_Server_In_Use", retval, 
+		"Use_State", NULL, outnode);
+}
+
+/**
+ * \brief Determine if the user on the console is an administrator.
+ *
+ * \param[in] innode   The XML node tree that contains the request to determine
+ *                     if the user on the console is administrator/root.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_get_are_administrator(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	int are_admin = FALSE;
 
 	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
 		return IPC_FAILURE;
 
-	ctx = ipc_callout_get_context_from_int(innode);
-	if (ctx == NULL)
-		return ipc_callout_create_error(NULL, "Get_Are_Doing_PSK", IPC_ERROR_INVALID_CONTEXT, outnode);
+#ifdef WINDOWS
+	are_admin = win_platform_calls_is_admin();
+#else
+#error Implement this for your platform!!!
+#endif
 
-	if (ctx->intType != ETH_802_11_INT)
-		return ipc_callout_create_error(ctx->intName, "Get_Are_Doing_PSK", IPC_ERROR_INVALID_CONTEXT, outnode);
-
-	wctx = (wireless_ctx *)ctx->intTypeData;
-	if (TEST_FLAG(wctx->flags, WIRELESS_SM_DOING_PSK))
-	{
-		doing_psk = TRUE;
-	}
-	else
-	{
-		doing_psk = FALSE;
-	}
-
-	return ipc_callout_some_state_response("Get_Are_Doing_PSK", "Are_Doing_PSK", doing_psk, 
-		"Doing_PSK", ctx->intName, outnode);
+	return ipc_callout_some_state_response("Get_Are_Administrator", "Are_Administrator", are_admin, 
+		"Administrator", NULL, outnode);
 }
+
+/**
+ * \brief Enumerate the smart card readers installed on the system.
+ *
+ * \param[in] innode   The XML node tree that contains the request to enumerate
+ *                     the smart card readers installed on the system.
+ * \param[out] outnode   The XML node tree that contains either the response to the
+ *                        request, or an error message.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_enum_smartcard_readers(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+#ifndef EAP_SIM_ENABLE
+	// If we aren't build with SIM/AKA, then we return an error.
+	return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers", IPC_ERROR_NOT_SUPPORTED, outnode);
+#else
+	char *readers = NULL;
+	char *pReader = NULL;
+	SCARDCONTEXT sctx;
+	xmlNodePtr n = NULL, t = NULL;
+	char temp[256];
+
+	if (sm_handler_init_ctx(&sctx) != 0)
+	{
+		return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers", IPC_ERROR_NOT_SUPPORTED, outnode);
+	}
+
+	readers = sm_handler_get_readers(&sctx);
+	pReader = readers;
+
+	n = xmlNewNode(NULL, "Smartcard_Readers");
+	if (n == NULL)
+	{
+		free(readers);
+		SCardReleaseContext(sctx);
+		return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers", IPC_ERROR_NOT_SUPPORTED, outnode);
+	}
+
+	while ( '\0' != *pReader)
+	{
+		debug_printf(DEBUG_IPC, "Found SC reader : %s\n", pReader);
+		if (xmlNewChild(n, NULL, "Reader", pReader) == NULL)
+		{
+			free(readers);
+			SCardReleaseContext(sctx);
+			return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers", IPC_ERROR_NOT_SUPPORTED, outnode);
+		}
+
+		pReader = pReader + strlen(pReader) + 1;
+	}
+
+	(*outnode) = n;
+
+	return IPC_SUCCESS;
+#endif
+}
+

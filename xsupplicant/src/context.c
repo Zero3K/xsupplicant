@@ -6,12 +6,6 @@
  * \file context.c
  *
  * \authors chris@open1x.org
- *
- * \par CVS Status Information:
- * \code
- * $Id: context.c,v 1.11 2008/01/30 21:07:01 galimorerpg Exp $
- * $Date: 2008/01/30 21:07:01 $
- * \endcode
  */
 
 #include <stdlib.h>
@@ -162,6 +156,9 @@ void context_destroy(context *ctx)
 
   FREE(ctx->conn_name);
   FREE(ctx->desc);
+
+  FREE(ctx->sendframe);
+  FREE(ctx->recvframe);
 }
 
 /**
@@ -275,6 +272,7 @@ char config_build(context *ctx, char *network_name)
 				if (context_has_all_data(result) == TRUE)
 				{
 					ctx->conn = result;
+					FREE(ctx->conn_name);
 					ctx->conn_name = _strdup(myint->default_connection);
 		
 					ctx->prof = config_find_profile(ctx->conn->profile);
@@ -306,10 +304,28 @@ char config_build(context *ctx, char *network_name)
 
       if (result != NULL) 
 	{
-		ctx->conn = result;
-		ctx->conn_name = _strdup(network_name);
+		if ((result->device != NULL) && (ctx->desc != NULL) && 
+			(strcmp(ctx->desc, result->device) == 0))
+		{
+			ctx->conn = result;
+			FREE(ctx->conn_name);
+			ctx->conn_name = _strdup(network_name);  // XXX This shouldn't be network name.  (Need to leave it broken for now.  Clean up later.)
 		
-		ctx->prof = config_find_profile(ctx->conn->profile);
+			ctx->prof = config_find_profile(ctx->conn->profile);
+		}
+		else
+		{
+			result = config_find_connection_from_ssid_and_desc(network_name, ctx->desc);
+			if (result != NULL)
+			{
+				ctx->conn = result;
+				FREE(ctx->conn_name);
+				ctx->conn_name = _strdup(network_name);  // XXX This shouldn't be network_name.  (Need to leave it broken for now.  Clean up later.)
+
+				ctx->prof = config_find_profile(ctx->conn->profile);
+			}
+		}
+
 	  return TRUE;
 	}
 
@@ -710,30 +726,25 @@ int context_destroy_wireless_ctx(wireless_ctx **dest_wctx)
 	return XENONE;
 }
 
-/**
- * \brief Rebind all of the associations between contexts, profiles, connections, etc.
- *
- * This call should be invoked following a change to anything configuration related that a context
- * might have a binding to.
- **/
-void context_rebind_all()
+void context_disconnect(context *ctx)
 {
-	context *ctx = NULL;
+	wireless_ctx *wctx = NULL;
 
-	event_core_reset_locator();
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 
-	ctx = event_core_get_next_context();
-	while (ctx != NULL)
+	if (ctx->intType == ETH_802_11_INT)
 	{
-		if (ctx->desc != NULL)
-		{
-			debug_printf(DEBUG_CONTEXT, "Rebinding context for '%s'.\n", ctx->desc);
-
-			config_build(ctx, ctx->conn_name);
-
-			ctx->eap_state->ident = NULL;
-
-			ctx = event_core_get_next_context();
-		}
+		wctx = (wireless_ctx *)ctx->intTypeData;
+		cardif_disassociate(ctx, 1);
+		FREE(wctx->cur_essid);
 	}
+	else
+	{
+		txLogoff(ctx);
+	}
+
+	ctx->conn = NULL;
+	FREE(ctx->conn_name);
+	ctx->prof = NULL;
 }
+

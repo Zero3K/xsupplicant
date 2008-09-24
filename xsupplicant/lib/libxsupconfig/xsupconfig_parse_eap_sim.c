@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_sim.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_sim.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -153,6 +150,32 @@ void *xsupconfig_parse_eap_sim_enc_password(void **attr, xmlNodePtr node)
   return sim;
 }
 
+void *xsupconfig_parse_eap_sim_reader(void **attr, xmlNodePtr node)
+{
+  struct config_eap_sim *sim = NULL;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+  sim = (*attr);
+
+#ifdef PARSE_DEBUG
+  printf("Reader for EAP-SIM  is '%s'!\n", value);
+#endif
+
+	if ((value == NULL) || (strlen(value) == 0))
+	{
+		free(value);
+		sim->reader = NULL;
+	}
+	else
+	{
+		sim->reader = value;
+	}
+
+  return sim;
+}
+
 void *xsupconfig_parse_eap_sim_auto_realm(void **attr, xmlNodePtr node)
 {
   struct config_eap_sim *sim;
@@ -194,6 +217,7 @@ parser eap_sim[] = {
   {"Password", NULL, FALSE, &xsupconfig_parse_eap_sim_password},
   {"Encrypted_Password", NULL, FALSE, &xsupconfig_parse_eap_sim_enc_password},
   {"Auto_Realm", NULL, FALSE, &xsupconfig_parse_eap_sim_auto_realm},
+  {"Reader", NULL, FALSE, &xsupconfig_parse_eap_sim_reader},
   {"Type", NULL, FALSE, xsupcommon_do_nothing},
 
   {NULL, NULL, FALSE, NULL}};

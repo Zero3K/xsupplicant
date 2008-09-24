@@ -6,9 +6,6 @@
  * \file ossl_tls_funcs.c
  *
  * \author chris@open1x.org
- *
- * $Id: ossl_tls_funcs.c,v 1.8 2008/01/26 03:19:42 chessing Exp $
- * $Date: 2008/01/26 03:19:42 $
  */
 
 #ifndef USE_GNUTLS
@@ -56,6 +53,12 @@
 #include "../../frame_structs.h"
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
+
+#ifndef WINDOWS
+#include "../../event_core.h"
+#else
+#include "../../event_core_win.h"
+#endif
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -724,11 +727,21 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 							ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
 							FREE(error_str);
 						}
+						context_disconnect(ctx);
 					}
 					else
 					{
 						debug_printf(DEBUG_NORMAL, "Got an unexpected message on interface '%s'.  Trying to restart authentication.\n", ctx->desc);
-						txStart(ctx);
+						if (ctx->intType == ETH_802_11_INT)
+						{
+							// If we are using Cisco/Airespace gear, sending a start doesn't restart the auth.
+							// So we need to drop our association.
+							cardif_disassociate(ctx, 1);
+						}
+						else
+						{
+							txStart(ctx);
+						}
 					}
 				}
 				else
@@ -746,6 +759,7 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 							ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
 							FREE(error_str);
 						}
+						context_disconnect(ctx);
 					}
 				}
 

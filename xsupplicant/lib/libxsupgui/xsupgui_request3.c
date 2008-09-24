@@ -4,9 +4,6 @@
  * \file xsupgui_request3.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupgui_request3.c,v 1.4 2007/10/20 06:14:53 galimorerpg Exp $
- * $Date: 2007/10/20 06:14:53 $
  **/
 
 #include <string.h>

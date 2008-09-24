@@ -327,7 +327,7 @@ int cardif_windows_wireless_xp_passive(context *ctx)
 	while (ssids != NULL)
 	{
 		// If the SSID in the cache is one that matches the SSID we are currently on.
-		if ((ssids->ssid_name != NULL) && (strcmp(ssids->ssid_name, wctx->cur_essid) == 0))
+		if ((ssids->ssid_name != NULL) && (wctx->cur_essid != NULL) && (strcmp(ssids->ssid_name, wctx->cur_essid) == 0))
 		{
 			// We only care if it is a WPA2 network.
 			if (ssids->rsn_ie != NULL)
@@ -1559,50 +1559,15 @@ int cardif_windows_wireless_wep_associate(context *ctx, int zero_keys)
   return XENONE;
 }
 
-/**
- * Send a disassociate request to the AP we are currently connected to.
- **/
-int cardif_windows_wireless_disassociate(context *ctx, int reason)
+int cardif_windows_wireless_native_disassociate(context *ctx, int reason)
 {
-	wireless_ctx *wctx = NULL;
-	int i = 0;
-	char randomssid[31];
-
-#if 1
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
-
-	wctx = (wireless_ctx *)ctx->intTypeData;
-
-	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
-
-	// This will clear any keys in the key cache.
-	cardif_windows_set_infra_mode(ctx);
-
-	for (i = 0; i < 30; i++)
-	{
-		randomssid[i] = (char)(((float)(rand() % 87)) + 35);
-	}
-	randomssid[30] = 0x00;
-
-	cardif_windows_wireless_set_ssid(ctx, randomssid);
-
-	// Clear out any async events that we might have for this context.
-	cardif_windows_wmi_async_clear_by_ctx(ctx);
-
-	// Set our association mode back to unknown.
-	wctx->assoc_type = ASSOC_TYPE_UNKNOWN;
-
-	memset(wctx->cur_bssid, 0x00, 6);
-
-	// Sending a disassociate turns off the radio, which is probably not what we want!
-#endif
-#if 0
     DWORD  BytesReturned;
     DWORD  result;
     UCHAR  QueryBuffer[sizeof(NDISPROT_QUERY_OID)];
-    PNDISPROT_QUERY_OID pQueryOid;
-	struct win_sock_data *sockData;
-	LPVOID lpMsgBuf;
+    PNDISPROT_QUERY_OID pQueryOid = NULL;
+	struct win_sock_data *sockData = NULL;
+	wireless_ctx *wctx = NULL;
+	LPVOID lpMsgBuf = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return -1;
@@ -1629,7 +1594,46 @@ int cardif_windows_wireless_disassociate(context *ctx, int reason)
 		LocalFree(lpMsgBuf);
         return -1;
     }
-#endif
+
+	return XENONE;
+}
+
+/**
+ * Send a disassociate request to the AP we are currently connected to.
+ **/
+int cardif_windows_wireless_disassociate(context *ctx, int reason)
+{
+	wireless_ctx *wctx = NULL;
+	int i = 0;
+	char randomssid[31];
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+
+	wctx = (wireless_ctx *)ctx->intTypeData;
+
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
+
+//	cardif_windows_wireless_native_disassociate(ctx, reason);
+
+	// This will clear any keys in the key cache.
+	cardif_windows_set_infra_mode(ctx);
+
+	for (i = 0; i < 30; i++)
+	{
+		randomssid[i] = (char)(((float)(rand() % 87)) + 35);
+	}
+	randomssid[30] = 0x00;
+
+	cardif_windows_wireless_set_ssid(ctx, randomssid);
+
+	// Clear out any async events that we might have for this context.
+	cardif_windows_wmi_async_clear_by_ctx(ctx);
+
+	// Set our association mode back to unknown.
+	wctx->assoc_type = ASSOC_TYPE_UNKNOWN;
+
+	memset(wctx->cur_bssid, 0x00, 6);
+
     return XENONE;
 }
 
@@ -2214,7 +2218,7 @@ int cardif_windows_get_capability(context *ctx, PNDIS_802_11_CAPABILITY *pcapa)
 		return -1;   // Couldn't do malloc.  We don't want to scream here, just return an error code.  (There may be cases where this IOCTL failing is perfectly fine.)
 	}
 
-	retCapa = malloc(BytesReturned - sizeof(pQueryOid->Oid));
+	retCapa = Malloc(BytesReturned - sizeof(pQueryOid->Oid));
 	if (retCapa == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to allocate memory in %s()!\n", __FUNCTION__);
@@ -2491,42 +2495,21 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			}
 
 			debug_printf(DEBUG_NORMAL, "Requesting DHCP information for '%s'.\n", ctx->desc);
-			cardif_windows_renew_ip(ctx);
 
-			/*
-			if (ctx->auths == 1) //&& (ctx->intType == ETH_802_11_INT))
+			if (TEST_FLAG(ctx->flags, DHCP_RELEASE_RENEW))
 			{
-				// If we are in force auth state, only do this if we don't have a 'valid' IP address.
-				// 'Valid' addresses are all but 0.0.0.0 and 169.254.x.x
-				if (ctx->statemachine->curState == S_FORCE_AUTH)
-				{
-					curip = cardif_get_ip(ctx);
-					if ((curip == NULL) || (strcmp("0.0.0.0", curip) == 0) || (strncmp("169.254", curip, 7) == 0))
-					{
-						cardif_windows_release_renew(ctx);
-					}
-					else
-					{
-						debug_printf(DEBUG_NORMAL, "Skipping release/renew because interface '%s' already seems to have a valid address.\n", ctx->desc);
-					}
-				}
-				else
-				{
-					//cardif_windows_release_renew(ctx);
-					cardif_windows_renew_ip(ctx);
-				}
+				cardif_windows_release_renew(ctx);
 			}
 			else
 			{
 				cardif_windows_renew_ip(ctx);
 			}
-			*/
 			break;
 
 		case CONFIG_IP_USE_STATIC:
 			if (ctx->auths > 1) return;   // We don't need to "renew" a static IP address.
 
-			debug_printf(DEBUG_INT, "Using a static IP!\n");
+			debug_printf(DEBUG_NORMAL, "Setting a static IP for %s.\n", ctx->desc);
 			retval = cardif_windows_set_static_ip(ctx, ctx->conn->ip.ipaddr, ctx->conn->ip.netmask, ctx->conn->ip.gateway);
 			if (retval != 0)
 			{
@@ -2547,15 +2530,20 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
 			switch (ctx->conn->ip.type)
 			{
 			case CONFIG_IP_USE_DHCP:
-				cardif_windows_is_dhcp_enabled(ctx, &dhcpenabled);
-			
-				if (dhcpenabled == FALSE)  // If DHCP is already enabled, don't try to do it again.
+				// Only do this if we have not authed yet.  Otherwise on Cisco switches we end up
+				// bouncing the connection each time we reauth.  :-(
+				if (ctx->auths == 0)
 				{
-					cardif_windows_enable_dhcp(ctx);
-				}
+					cardif_windows_is_dhcp_enabled(ctx, &dhcpenabled);
+			
+					if (dhcpenabled == FALSE)  // If DHCP is already enabled, don't try to do it again.
+					{
+						cardif_windows_enable_dhcp(ctx);
+					}
 
-				debug_printf(DEBUG_INT, "Requesting lease renew.\n");
-				cardif_windows_release_renew(ctx);
+					debug_printf(DEBUG_INT, "Requesting lease renew.\n");
+					cardif_windows_release_renew(ctx);
+				}
 				break;
 			}
 		}
@@ -2581,6 +2569,9 @@ uint8_t cardif_windows_wireless_get_num_pmkids(context *ctx)
 	}
 
 	result = (uint8_t)pCapa->NoOfPMKIDs;
+
+	FREE(pCapa);
+
 	return result;
 }
 
@@ -2623,6 +2614,8 @@ int cardif_windows_wireless_apply_pmkids(context *ctx, pmksa_list *pmklist)
 			if (pmklist[i].cache_element != NULL) numelems++;
 		}
 	}
+
+	if (numelems == 0) return TRUE;   // If there aren't any elements, we shouldn't try to set them.
 
 	buflen = FIELD_OFFSET(NDIS_802_11_PMKID, BSSIDInfo) + (numelems * sizeof(BSSID_INFO));
 	Buffer = Malloc(buflen + sizeof(NDISPROT_SET_OID));

@@ -79,6 +79,8 @@ ConfigProfileTabs::~ConfigProfileTabs()
  	 Util::myDisconnect(m_pInnerMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(slotInnerMethodChanged(int)));
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDifferentServerSelected(int)));	
+
+	 Util::myDisconnect(m_pSIMReaders, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDataChanged()));
 	}
 }
 
@@ -577,6 +579,46 @@ bool ConfigProfileTabs::saveEAPMSCHAPv2Inner(struct config_eap_peap *mypeap)
 	return true;
 }
 
+bool ConfigProfileTabs::saveEAPSIMData()
+{
+	struct config_eap_sim *mysim = NULL;
+
+	if (m_pProfile->method == NULL)
+	{
+		m_pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+		if (m_pProfile->method == NULL)
+		{
+			QMessageBox::critical(this, tr("Memory Allocation Error"), tr("Unable to allocate memory needed to save this profile."));
+			return false;
+		}
+
+		memset(m_pProfile->method, 0x00, sizeof(struct config_eap_method));
+		m_pProfile->method->method_num = EAP_TYPE_SIM;
+	}
+
+	if (m_pProfile->method->method_data == NULL)
+	{
+		m_pProfile->method->method_data = malloc(sizeof(struct config_eap_sim));
+		if (m_pProfile->method->method_data == NULL)
+		{
+			QMessageBox::critical(this, tr("Memory Allocation Error"), tr("Unable to allocate memory needed to save this profile."));
+			return false;
+		}
+
+		memset(m_pProfile->method->method_data, 0x00, sizeof(struct config_eap_sim));
+
+		mysim = (struct config_eap_sim *)m_pProfile->method->method_data;
+	}
+	else
+	{
+		mysim = (struct config_eap_sim *)m_pProfile->method->method_data;
+	}
+
+	mysim->reader = _strdup(m_pSIMReaders->currentText().toAscii());
+
+	return true;
+}
+
 bool ConfigProfileTabs::saveEAPPEAPData()
 {
 	struct config_eap_peap *mypeap = NULL;
@@ -685,6 +727,10 @@ bool ConfigProfileTabs::saveEAPData()
 	else if (m_EAPTypeInUse == "EAP-PEAP")
 	{
 		return saveEAPPEAPData();
+	}
+	else if (m_EAPTypeInUse == "EAP-SIM")
+	{
+		return saveEAPSIMData();
 	}
 
 	return false;
@@ -844,6 +890,13 @@ bool ConfigProfileTabs::attach()
 		 return false;
 	 }
 
+ 	 m_pSIMReaders = qFindChild<QComboBox*>(m_pRealWidget, "simCardSelectionBox");
+	 if (m_pSIMReaders == NULL)
+	 {
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QComboBox called 'simCardSelectionBox'."));
+		 return false;
+	 }
+
 	 m_pTSLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboProfilesTrustedServers");
 
  	if (m_pProfile == NULL)
@@ -858,7 +911,7 @@ bool ConfigProfileTabs::attach()
 	}
 
 	 // Hook up the signal that data has changed to the slot to update the value.
-	 Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
+	 //Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
 	 Util::myConnect(this, SIGNAL(signalDataChanged()), m_pParent, SLOT(slotDataChanged()));
 
 	 // Hook up the show/hide button on the User Credentials page
@@ -869,22 +922,23 @@ bool ConfigProfileTabs::attach()
 
 	 // Hook up the outer identity radio buttons.
 	 Util::myConnect(m_pUseThisIdent, SIGNAL(toggled(bool)), this, SLOT(slotPickIdentity(bool)));
-	 Util::myConnect(m_pPhase1Ident, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
-	 Util::myConnect(m_pAnonIdent, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
+	 Util::myConnect(m_pPhase1Ident, SIGNAL(textChanged(const QString &)), this, SLOT(slotDataChanged()));
+	 Util::myConnect(m_pAnonIdent, SIGNAL(toggled(bool)), this, SLOT(slotDataChanged()));
 
 	 // Hook up the inner identity radio buttons.
 	 Util::myConnect(m_pPromptForUPW, SIGNAL(toggled(bool)), this, SLOT(slotSetPromptForUPW(bool)));
 	 Util::myConnect(m_pPromptForPWD, SIGNAL(toggled(bool)), this, SLOT(slotSetPromptForPWD(bool)));
 	 Util::myConnect(m_pDontPrompt, SIGNAL(toggled(bool)), this, SLOT(slotDontPrompt(bool)));
 
-	 Util::myConnect(m_pUsername, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
-	 Util::myConnect(m_pPassword, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
+	 Util::myConnect(m_pUsername, SIGNAL(textChanged(const QString &)), this, SLOT(slotDataChanged()));
+	 Util::myConnect(m_pPassword, SIGNAL(textChanged(const QString &)), this, SLOT(slotDataChanged()));
 
 	 Util::myConnect(m_pInnerMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(slotInnerMethodChanged(int)));
-	 Util::myConnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
+	 Util::myConnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDataChanged()));
 	 Util::myConnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDifferentServerSelected(int)));
+	 Util::myConnect(m_pSIMReaders, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDataChanged()));
 
-	Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
+	//Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
 
 	m_bConnected = true;
 
@@ -1259,11 +1313,80 @@ void ConfigProfileTabs::populateTwoPhase()
 	}
 }
 
+void ConfigProfileTabs::populateEAPSIM()
+{
+	struct config_eap_sim *simconf = NULL;
+
+	if ((m_pProfile->method != NULL) && (m_pProfile->method->method_data != NULL))
+	{
+		simconf = (struct config_eap_sim *)m_pProfile->method->method_data;
+
+		if (simconf->reader != NULL)
+		{
+			if (m_pSIMReaders->findText(simconf->reader) == -1)
+			{
+				// Our configured reader isn't present.  Add it to the list anyway.
+				m_pSIMReaders->insertItem(m_pSIMReaders->count()+1, simconf->reader);
+
+				m_pSIMReaders->setCurrentIndex(m_pSIMReaders->findText(simconf->reader));
+			}
+		}
+		else
+		{
+			m_pSIMReaders->setCurrentIndex(0);
+		}
+	}
+}
+
+void ConfigProfileTabs::populateSIMReaders()
+{
+	char **list = NULL;
+	int retval = 0;
+	int count = 0;
+
+	retval = xsupgui_request_enum_smartcard_readers(&list);
+	if (retval != REQUEST_SUCCESS)
+	{
+		QMessageBox::critical(this, tr("Failed to Enumerate Smart Card Readers"),
+			tr("Unable to enumerate the available smart card readers.  This may indicate that your machine doesn't have any recognized readers attached."));
+		return;
+	}
+
+	m_pSIMReaders->clear();
+
+	m_pSIMReaders->insertItem(0, tr("<None>"));
+
+	while (list[count] != NULL)
+	{
+		m_pSIMReaders->insertItem(m_pSIMReaders->count()+1, list[count]);
+		count++;
+	}
+}
+
+void ConfigProfileTabs::populateSimAka()
+{
+	m_pProfileTabs->setTabEnabled(USER_CREDENTIALS_TAB, false);
+	m_pProfileTabs->setTabEnabled(PROTOCOL_SETTINGS_TAB, false);
+	m_pProfileTabs->setTabEnabled(SIM_AKA_TAB, true);
+	m_pProfileTabs->setCurrentIndex(SIM_AKA_TAB);
+
+	populateSIMReaders();
+
+	if (m_pProfile->method->method_num == EAP_TYPE_SIM)
+	{
+		populateEAPSIM();
+	}
+}
+
 void ConfigProfileTabs::updateWindow()
 {
 	if ((m_pProfile->method != NULL) && (m_pProfile->method->method_num == EAP_TYPE_MD5))
 	{
 		populateOnePhase();
+	}
+	else if ((m_pProfile->method != NULL) && ((m_pProfile->method->method_num == EAP_TYPE_SIM) || (m_pProfile->method->method_num == EAP_TYPE_AKA)))
+	{
+		populateSimAka();
 	}
 	else
 	{
@@ -1293,6 +1416,10 @@ void ConfigProfileTabs::showHelp()
 
 	case USER_CREDENTIALS_TAB:
 		HelpWindow::showPage("xsupphelp.html", "xsupuser");
+		break;
+
+	case SIM_AKA_TAB:
+		HelpWindow::showPage("xsupphelp.html", "xsupsimaka");
 		break;
 
 	default:
@@ -1325,6 +1452,8 @@ void ConfigProfileTabs::hideProtSettingsTab()
 void ConfigProfileTabs::showAllTabs()
 {
 	m_pProfileTabs->setTabEnabled(PROTOCOL_SETTINGS_TAB, true);
+	m_pProfileTabs->setTabEnabled(USER_CREDENTIALS_TAB, true);
+	m_pProfileTabs->setTabEnabled(SIM_AKA_TAB, false);
 }
 
 void ConfigProfileTabs::showBtnClicked()
