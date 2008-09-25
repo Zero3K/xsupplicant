@@ -2719,6 +2719,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	switch (xsupconfcheck_check_connection(ctx, conn_name, TRUE))
 	{
+	case CONNECTION_NEED_PIN:
 	case CONNECTION_NEED_UPW:
 	case CONNECTION_NEED_PSK:
 		// We need to ask the user for information.

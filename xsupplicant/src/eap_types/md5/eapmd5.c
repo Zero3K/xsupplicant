@@ -11,8 +11,6 @@
  **/
 
 #include <string.h>
-
-
 #include <stdlib.h>
 
 #include "md5.h"

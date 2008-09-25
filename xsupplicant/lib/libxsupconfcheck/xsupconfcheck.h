@@ -13,8 +13,10 @@
 
 #define CONNECTION_NEED_PSK     1
 #define CONNECTION_NEED_UPW     2
+#define CONNECTION_NEED_PIN		3
 
 #define PROFILE_NEED_UPW		1
+#define PROFILE_NEED_PIN		2
 
 int xsupconfcheck_trusted_server(char *, int);
 int xsupconfcheck_check_profile(char *, int);

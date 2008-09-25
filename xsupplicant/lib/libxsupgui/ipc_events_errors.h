@@ -58,6 +58,13 @@
 #define IPC_EVENT_ERROR_CANT_READ_FILE_STR                     "Unable to read the requested file."
 #define IPC_EVENT_ERROR_CERT_CHAIN_IS_INVALID_STR              "The certificate chain requested is invalid.  (See logs for more details.)"
 #define IPC_EVENT_ERROR_NOT_SUPPORTED_STR                      "You attempted to use %s, which your card reports it doesn't support."
+#define IPC_EVENT_ERROR_SIM_READER_NOT_FOUND_STR			   "SIM card reader '%s' isn't currently available.  Please connect it and try again."
+#define IPC_EVENT_ERROR_SIM_CANT_CONNECT_STR				   "Error connecting to smart card reader '%s'!"
+#define IPC_EVENT_ERROR_SIM_CARD_NOT_READY_STR				   "The SIM card or reader is not ready."
+#define IPC_EVENT_ERROR_NO_SIM_READERS_STR					   "There were no SIM card readers found on this machine."
+#define IPC_EVENT_ERROR_NO_PIN_STR							   "No PIN was provided to be used to authentication."
+#define IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS_STR			   "Invalid PIN.  At least one more attempt remains."
+#define IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED_STR			   "Invalid PIN.  Your card is now blocked."
 
 // Windows Specific Error Events 
 #define IPC_EVENT_ERROR_FAILED_TO_BIND_STR                     "Failed to bind interface %s to device handle."

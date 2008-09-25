@@ -73,6 +73,8 @@ CredentialsPopUp::CredentialsPopUp(QString connName, QWidget *parent, Emitter *e
 	p_user				= NULL;
 	p_pass				= NULL;
 	m_pWEPCombo			= NULL;
+	m_pRememberCreds	= NULL;
+
 	if (m_pCredManager == NULL)
 		m_pCredManager = new CredentialsManager(e);
 }
@@ -125,7 +127,15 @@ bool CredentialsPopUp::create()
 	{
 		m_doingPsk = false;
 		m_doingWEP = false;
-		return createUPW();
+
+		if (isPINType())
+		{
+			return createPIN();
+		}
+		else
+		{
+			return createUPW();
+		}
 	}
 	else if (authtype == AUTH_NONE)
 	{
@@ -135,6 +145,117 @@ bool CredentialsPopUp::create()
 		return createWEP();
 	}
 	return false;
+}
+
+/**
+ * \brief Create the dialog to prompt for a PIN code.
+ **/
+bool CredentialsPopUp::createPIN()
+{
+	m_pRealForm = FormLoader::buildform("PINWindow.ui");
+
+	if (m_pRealForm == NULL) return false;
+
+	// If the user hits the "X" button in the title bar, close us out gracefully.
+	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+
+	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
+	m_pUsername = NULL;
+
+	m_pPassword = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldPassword");
+
+	if (m_pPassword == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'dataFieldPassword' label."));
+		return false;
+	}
+
+	m_pButtonBox = qFindChild<QDialogButtonBox*>(m_pRealForm, "buttonBox");
+
+	if (m_pButtonBox == NULL)
+	{
+		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'Credentials Popup' did not contain the 'buttonBox' DialogButtonBox"));
+		return false;
+	}
+	else
+	{
+		Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this, SLOT(slotOkayBtn()));
+		Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
+	}
+
+	m_pDialogMsg = qFindChild<QLabel*>(m_pRealForm, "labelDialogMsg");
+
+	if (m_pDialogMsg != NULL)
+	{
+		QString networkName="";
+		
+		// if we have the name of the connection, try to retrieve the SSID of the network
+		// so that we can correctly prompt the user
+		if (m_connName.isEmpty() == false)
+		{
+			config_connection *pConnection = NULL;
+			if (m_supplicant.getConfigConnection(m_connName, &pConnection, false) == true)
+			{
+				if (pConnection != NULL && pConnection->ssid != NULL)
+					networkName = pConnection->ssid;
+				if (pConnection != NULL)
+					m_supplicant.freeConfigConnection(&pConnection);
+			}
+		}
+
+		// if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
+		// prompt message
+		QString dlgMsg;
+		if (networkName.isEmpty() == false)
+		{
+			dlgMsg.append(tr("The network \""));
+			dlgMsg.append(networkName);
+			dlgMsg.append(tr("\" requires a (U)SIM PIN to connect"));
+		}
+		else
+		{
+			dlgMsg.append(tr("The network you are trying to connect to requires a (U)SIM PIN to connect"));
+		}
+		m_pDialogMsg->setText(dlgMsg);
+	}
+
+	setupWindow();
+
+	// Then, populate some data.
+	updateData();
+
+	return true;
+}
+
+/**
+ * \brief Determine if the EAP method used in this connection uses a PIN.
+ *
+ * \return true if this EAP method uses a PIN
+ * \return false if it doesn't.
+ **/
+bool CredentialsPopUp::isPINType()
+{
+	config_connection *conn_config = NULL;
+	config_profiles *prof_config = NULL;
+	bool result = false;
+
+	if (xsupgui_request_get_connection_config(m_connName.toAscii().data(), &conn_config) == REQUEST_SUCCESS)
+	{
+		if (xsupgui_request_get_profile_config(conn_config->profile, &prof_config) == REQUEST_SUCCESS)
+		{
+			if ((prof_config->method->method_num == EAP_TYPE_SIM) || 
+				(prof_config->method->method_num == EAP_TYPE_AKA))
+			{
+				result = true;
+			}
+
+			xsupgui_request_free_profile_config(&prof_config);
+		}
+
+		xsupgui_request_free_connection_config(&conn_config);
+	}
+
+	return result;
 }
 
 bool CredentialsPopUp::createWEP()
@@ -453,6 +574,7 @@ void CredentialsPopUp::slotOkayBtn()
 {
 	config_connection *cconf = NULL;
 	char *intName = NULL;
+	char *username = NULL;
 
 	if (m_doingWEP == true)
 	{
@@ -557,8 +679,10 @@ void CredentialsPopUp::slotOkayBtn()
 	}
 	else
 	{
+		if (m_pUsername != NULL) username = m_pUsername->text().toAscii().data();
+
 		// Set our username/password.
-		if (xsupgui_request_set_connection_upw(m_connName.toAscii().data(), m_pUsername->text().toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
+		if (xsupgui_request_set_connection_upw(m_connName.toAscii().data(), username, m_pPassword->text().toAscii().data()) != XENONE)
 		{
 			QMessageBox::critical(this, tr("Error"), tr("Unable to set your username and password."));
 		}
@@ -583,7 +707,7 @@ void CredentialsPopUp::slotOkayBtn()
 					else
 					{
 						// if "remember credentials" is checked, make sure this isn't marked as volatile
-						if (m_pRememberCreds->checkState() == Qt::Checked)
+						if ((m_pRememberCreds != NULL) && (m_pRememberCreds->checkState() == Qt::Checked))
 						{
 							// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
 							// if we connect successfully

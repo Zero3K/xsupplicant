@@ -19,11 +19,22 @@
 #ifndef _SM_HANDLER_H_
 #define _SM_HANDLER_H_
 
+#define SM_HANDLER_ERROR_NONE					0
+#define SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS	1
+#define SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED	2
+#define SM_HANDLER_ERROR_INVALID_CARD_CTX		3
+#define SM_HANDLER_ERROR_PIN_TOO_LONG			4
+#define SM_HANDLER_ERROR_GETTING_MF				5
+#define SM_HANDLER_ERROR_NO_GSM					6
+#define SM_HANDLER_ERROR_GENERAL				7
+#define SM_HANDLER_ERROR_SENDING_PIN			8
+#define SM_HANDLER_ERROR_IMSI_SELECTION_FAILED  9
+
 int sm_handler_init_ctx(SCARDCONTEXT *);
 char *sm_handler_get_readers(SCARDCONTEXT *);
 long sm_handler_card_connect(SCARDCONTEXT *, SCARDHANDLE *, char *);
 int sm_handler_wait_card_ready(SCARDHANDLE *, int);
-char *sm_handler_2g_imsi(SCARDHANDLE *, char, char *);
+int sm_handler_2g_imsi(SCARDHANDLE *, char, char *, char **);
 int sm_handler_do_2g_auth(SCARDHANDLE *, char, unsigned char *, 
 			  unsigned char *, unsigned char *);
 

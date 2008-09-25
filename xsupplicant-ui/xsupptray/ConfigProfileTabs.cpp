@@ -80,7 +80,8 @@ ConfigProfileTabs::~ConfigProfileTabs()
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDifferentServerSelected(int)));	
 
-	 Util::myDisconnect(m_pSIMReaders, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDataChanged()));
+	 Util::myDisconnect(m_pSIMReaders, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
+	 Util::myConnect(m_pAutoRealm, SIGNAL(stateChanged(int)), this, SIGNAL(signalDataChanged()));
 	}
 }
 
@@ -614,7 +615,27 @@ bool ConfigProfileTabs::saveEAPSIMData()
 		mysim = (struct config_eap_sim *)m_pProfile->method->method_data;
 	}
 
-	mysim->reader = _strdup(m_pSIMReaders->currentText().toAscii());
+	if (m_pSIMReaders->currentIndex() == 0)
+	{
+		if (mysim->reader != NULL) 
+		{
+			free(mysim->reader);
+			mysim->reader = NULL;
+		}
+	}
+	else
+	{
+		mysim->reader = _strdup(m_pSIMReaders->currentText().toAscii());
+	}
+
+	if (m_pAutoRealm->isChecked())
+	{
+		mysim->auto_realm = TRUE;
+	}
+	else
+	{
+		mysim->auto_realm = FALSE;
+	}
 
 	return true;
 }
@@ -897,6 +918,13 @@ bool ConfigProfileTabs::attach()
 		 return false;
 	 }
 
+	 m_pAutoRealm = qFindChild<QCheckBox*>(m_pRealWidget, "generateRealm");
+	 if (m_pAutoRealm == NULL)
+	 {
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox called 'autoGenerateRealm'."));
+		 return false;
+	 }
+
 	 m_pTSLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboProfilesTrustedServers");
 
  	if (m_pProfile == NULL)
@@ -911,7 +939,7 @@ bool ConfigProfileTabs::attach()
 	}
 
 	 // Hook up the signal that data has changed to the slot to update the value.
-	 //Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
+	 Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
 	 Util::myConnect(this, SIGNAL(signalDataChanged()), m_pParent, SLOT(slotDataChanged()));
 
 	 // Hook up the show/hide button on the User Credentials page
@@ -922,23 +950,23 @@ bool ConfigProfileTabs::attach()
 
 	 // Hook up the outer identity radio buttons.
 	 Util::myConnect(m_pUseThisIdent, SIGNAL(toggled(bool)), this, SLOT(slotPickIdentity(bool)));
-	 Util::myConnect(m_pPhase1Ident, SIGNAL(textChanged(const QString &)), this, SLOT(slotDataChanged()));
-	 Util::myConnect(m_pAnonIdent, SIGNAL(toggled(bool)), this, SLOT(slotDataChanged()));
+	 Util::myConnect(m_pPhase1Ident, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
+	 Util::myConnect(m_pAnonIdent, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
 
 	 // Hook up the inner identity radio buttons.
 	 Util::myConnect(m_pPromptForUPW, SIGNAL(toggled(bool)), this, SLOT(slotSetPromptForUPW(bool)));
 	 Util::myConnect(m_pPromptForPWD, SIGNAL(toggled(bool)), this, SLOT(slotSetPromptForPWD(bool)));
 	 Util::myConnect(m_pDontPrompt, SIGNAL(toggled(bool)), this, SLOT(slotDontPrompt(bool)));
 
-	 Util::myConnect(m_pUsername, SIGNAL(textChanged(const QString &)), this, SLOT(slotDataChanged()));
-	 Util::myConnect(m_pPassword, SIGNAL(textChanged(const QString &)), this, SLOT(slotDataChanged()));
+	 Util::myConnect(m_pUsername, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
+	 Util::myConnect(m_pPassword, SIGNAL(textChanged(const QString &)), this, SIGNAL(signalDataChanged()));
 
 	 Util::myConnect(m_pInnerMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(slotInnerMethodChanged(int)));
-	 Util::myConnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDataChanged()));
+	 Util::myConnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 	 Util::myConnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDifferentServerSelected(int)));
-	 Util::myConnect(m_pSIMReaders, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDataChanged()));
+	 Util::myConnect(m_pSIMReaders, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 
-	//Util::myConnect(this, SIGNAL(signalDataChanged()), this, SLOT(slotDataChanged()));
+	Util::myConnect(m_pAutoRealm, SIGNAL(stateChanged(int)), this, SIGNAL(signalDataChanged()));
 
 	m_bConnected = true;
 
@@ -959,7 +987,6 @@ void ConfigProfileTabs::detach()
 
 		currentPlugin = currentPlugin->next;
 	}
-	
 }
 
 void ConfigProfileTabs::populateOnePhase()
@@ -1323,17 +1350,30 @@ void ConfigProfileTabs::populateEAPSIM()
 
 		if (simconf->reader != NULL)
 		{
-			if (m_pSIMReaders->findText(simconf->reader) == -1)
+			if (m_pSIMReaders->findText(QString(simconf->reader)) != -1)
 			{
 				// Our configured reader isn't present.  Add it to the list anyway.
 				m_pSIMReaders->insertItem(m_pSIMReaders->count()+1, simconf->reader);
 
 				m_pSIMReaders->setCurrentIndex(m_pSIMReaders->findText(simconf->reader));
 			}
+			else
+			{
+				m_pSIMReaders->setCurrentIndex(0);
+			}
 		}
 		else
 		{
 			m_pSIMReaders->setCurrentIndex(0);
+		}
+
+		if (simconf->auto_realm == TRUE)
+		{
+			m_pAutoRealm->setChecked(true);
+		}
+		else
+		{
+			m_pAutoRealm->setChecked(false);
 		}
 	}
 }
@@ -1363,12 +1403,19 @@ void ConfigProfileTabs::populateSIMReaders()
 	}
 }
 
-void ConfigProfileTabs::populateSimAka()
+void ConfigProfileTabs::showSIMTabs()
 {
 	m_pProfileTabs->setTabEnabled(USER_CREDENTIALS_TAB, false);
 	m_pProfileTabs->setTabEnabled(PROTOCOL_SETTINGS_TAB, false);
 	m_pProfileTabs->setTabEnabled(SIM_AKA_TAB, true);
 	m_pProfileTabs->setCurrentIndex(SIM_AKA_TAB);
+}
+
+void ConfigProfileTabs::populateSimAka()
+{
+	m_EAPTypeInUse = "EAP-SIM";
+
+	showSIMTabs();
 
 	populateSIMReaders();
 
@@ -1611,6 +1658,10 @@ void ConfigProfileTabs::setPhase1EAPType(QString newEAPtype)
 		showAllTabs();
 		setTtlsPhase2Types();
 	}
+	else if (newEAPtype == "EAP-SIM")
+	{
+		populateSimAka();
+	}
 	else
 	{
 		QMessageBox::critical(this, tr("Unknown EAP Method"), tr("The EAP method %1 is unknown to this program.").arg(newEAPtype));
@@ -1625,6 +1676,8 @@ int ConfigProfileTabs::eaptypeFromString(QString eapName)
 	if (eapName == "EAP-GTC") return EAP_TYPE_GTC;
 	if (eapName == "EAP-MSCHAPv2") return EAP_TYPE_MSCHAPV2;
 	if (eapName == "EAP-FAST") return EAP_TYPE_FAST;
+	if (eapName == "EAP-SIM") return EAP_TYPE_SIM;
+	if (eapName == "EAP-AKA") return EAP_TYPE_AKA;
 
 	return -1;  // We don't know what to return.
 }

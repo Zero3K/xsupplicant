@@ -84,6 +84,7 @@
 
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
+#include "sm_handler.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -424,7 +425,7 @@ int sm_handler_wait_card_ready(SCARDHANDLE *card_hdl, int waittime)
       dwState = 0;
       dwProtocol = 0;
       dwAtrLen = MAX_ATR_SIZE;
-      size = 50;
+      size = 150;
 
       mszReaders = (LPSTR)Malloc(size);
       if (mszReaders == NULL) 
@@ -843,7 +844,7 @@ char *decode_imsi(unsigned char *imsibytes)
   return imsi;
 }
 
-char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
+int sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char **imsi)
 {
   long len;
   unsigned char buf[512], buf2[512], buf3[8];
@@ -853,13 +854,13 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
     {
       debug_printf(DEBUG_NORMAL, "Invalid card handle passed to "
 		   "sm_handler_2g_imsi()!\n");
-      return NULL;
+      return SM_HANDLER_ERROR_INVALID_CARD_CTX;
     }
 
   if (strlen(pin)>8)
     {
       debug_printf(DEBUG_NORMAL, "PIN is too long!  Aborting!\n");
-      return NULL;
+      return SM_HANDLER_ERROR_PIN_TOO_LONG;
     }
 
   // Select the card master file in 2g mode.
@@ -868,14 +869,14 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
     {
       debug_printf(DEBUG_NORMAL, "Error trying to select the master file! "
 		   "(%s:%d)\n", __FUNCTION__, __LINE__);
-      return NULL;
+      return SM_HANDLER_ERROR_GETTING_MF;
     }
 
   if (cardio(card_hdl, SELECT_DF_GSM, reader_mode, MODE2G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Error selecting GSM authentication! "
 		   "(%s:%d)\n", __FUNCTION__, __LINE__);
-      return NULL;
+      return SM_HANDLER_ERROR_NO_GSM;
     }
 
   if (!(buf[13] & 0x80))
@@ -890,7 +891,7 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
 	  if (Strcat(buf2, sizeof(buf2), buf3) != 0)
 	    {
 	      fprintf(stderr, "Refusing to overflow string!\n");
-	      return NULL;
+	      return SM_HANDLER_ERROR_GENERAL;
 	    }
 	}
       for (i=strlen(pin); i<8; i++)
@@ -898,7 +899,7 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
 	  if (Strcat(buf2, sizeof(buf2), "FF") != 0)
 	    {
 	      fprintf(stderr, "Refusing to overflow string!\n");
-	      return NULL;
+	      return SM_HANDLER_ERROR_GENERAL;
 	    }
 	}
       
@@ -907,7 +908,7 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
 	{
 	  debug_printf(DEBUG_NORMAL, "Error sending PIN to smart card! "
 		       "(%s:%d)\n", __FUNCTION__, __LINE__);
-	  return NULL;
+	  return SM_HANDLER_ERROR_SENDING_PIN;
 	}
 
       // XXX When we get a GUI going, this should be sent to it.
@@ -917,13 +918,14 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
 	    {
 	      debug_printf(DEBUG_NORMAL, "Incorrect PIN, at least one attempt "
 			   "remaining!\n");
-	      return NULL;
+		  debug_printf(DEBUG_NORMAL, "%d attempts remain?!\n", buf[2]);
+	      return SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS;
 	    } 
 	  else if (buf[1] == 0x40)
 	    {
 	      debug_printf(DEBUG_NORMAL, "Incorrect PIN, no attempts "
 			   "remaining!\n");
-	      return NULL;
+	      return SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED;
 	    }
 	}
     }
@@ -933,7 +935,7 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
     {
       debug_printf(DEBUG_NORMAL, "Error attempting to select the IMSI on the"
 		   " smart card!  (%s:%d)\n", __FUNCTION__, __LINE__);
-      return NULL;
+      return SM_HANDLER_ERROR_IMSI_SELECTION_FAILED;
     }
 
   len = MAXBUFF;
@@ -942,10 +944,12 @@ char *sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin)
     {
       debug_printf(DEBUG_NORMAL, "Error attempting to get the IMSI from the "
 		   "smart card! (%s:%d)\n", __FUNCTION__, __LINE__);
-      return NULL;
+      return SM_HANDLER_ERROR_IMSI_SELECTION_FAILED;
     }
 
-  return decode_imsi((unsigned char *)&buf[1]);
+  (*imsi) = decode_imsi((unsigned char *)&buf[1]);
+
+  return SM_HANDLER_ERROR_NONE;
 }
 
 int sm_handler_do_2g_auth(SCARDHANDLE *card_hdl, char reader_mode, 

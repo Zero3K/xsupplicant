@@ -40,7 +40,8 @@ multichoice inner_method[] = {
   { 4, "MSCHAPV2"},
   { 4, "MSCHAPv2"},
   { 5, "eap"},
-  { 5, "EAP"}};
+  { 5, "EAP"},
+  { -1, NULL}};
 
 void *xsupconfig_parse_eap_ttls(void **attr, xmlNodePtr node)
 {

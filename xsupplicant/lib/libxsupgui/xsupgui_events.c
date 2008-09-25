@@ -747,6 +747,34 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NOT_SUPPORTED_STR, value);
 		break;
 
+	case IPC_EVENT_ERROR_SIM_READER_NOT_FOUND:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SIM_READER_NOT_FOUND_STR, value);
+		break;
+
+	case IPC_EVENT_ERROR_SIM_CANT_CONNECT:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SIM_CANT_CONNECT_STR, value);
+		break;
+
+	case IPC_EVENT_ERROR_SIM_CARD_NOT_READY:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SIM_CARD_NOT_READY_STR, value);
+		break;
+
+	case IPC_EVENT_ERROR_NO_SIM_READERS:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_SIM_READERS_STR, value);
+		break;
+
+	case IPC_EVENT_ERROR_NO_PIN:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_PIN_STR, value);
+		break;
+
+	case IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS_STR, value);
+		break;
+
+	case IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED_STR, value);
+		break;
+
 	default:
 		xsupgui_events_build_error(errstr, "Unknown error event!", NULL);
 		break;

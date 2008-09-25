@@ -106,13 +106,45 @@ int xsupconfcheck_profile_eap_sim(struct config_eap_sim *sim, config_profiles *p
 	if (sim == NULL)
 	{
 		if (log == TRUE) error_prequeue_add("You must configure EAP-SIM before using it.");
+		return -1;
+	}
+
+	if (sim->reader == NULL)
+	{
+		if (log == TRUE) error_prequeue_add("You must have a SIM card reader configured before attempting to use EAP-SIM.");
 		retval = -1;
 	}
 
 	if ((sim->password == NULL) && (prof->temp_password == NULL))
 	{
-		if (log == TRUE) error_prequeue_add("You must set a password before using EAP-SIM.");
-		retval = PROFILE_NEED_UPW;
+		retval = PROFILE_NEED_PIN;
+	}
+
+	return retval;
+}
+
+/**
+ * \brief Check to see if we have EAP-AKA configured correctly.
+ *
+ * @param[in] aka   The structure that contains data for the EAP-AKA authentication type.
+ *
+ * \retval 0 on success
+ * \retval -1 on failure
+ **/
+int xsupconfcheck_profile_eap_aka(struct config_eap_aka *aka, config_profiles *prof, int log)
+{
+	int retval = 0;
+
+	if (aka == NULL)
+	{
+		if (log == TRUE) error_prequeue_add("You must configure EAP-AKA before using it.");
+		retval = -1;
+	}
+
+	if ((aka->password == NULL) && (prof->temp_password == NULL))
+	{
+		if (log == TRUE) error_prequeue_add("You must set a password before using EAP-AKA.");
+		retval = PROFILE_NEED_PIN;
 	}
 
 	return retval;
@@ -405,11 +437,28 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method *myeap, config_prof
 		}
 		break;
 
+	case EAP_TYPE_AKA:
+		switch (xsupconfcheck_profile_eap_aka(myeap->method_data, prof, log))
+		{
+		case PROFILE_NEED_PIN:
+			retval = PROFILE_NEED_PIN;
+			break;
+
+		case 0:
+			break;
+			
+		default:
+			// No need to do anything here, the previous call did it all.
+			retval = -1;
+			break;
+		}
+		break;
+
 	case EAP_TYPE_SIM:
 		switch (xsupconfcheck_profile_eap_sim(myeap->method_data, prof, log))
 		{
-		case PROFILE_NEED_UPW:
-			retval = PROFILE_NEED_UPW;
+		case PROFILE_NEED_PIN:
+			retval = PROFILE_NEED_PIN;
 			break;
 			
 		case 0:
@@ -432,24 +481,6 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method *myeap, config_prof
 		case 0:
 			break;
 			
-		default:
-			// No need to do anything here, the previous call did it all.
-			retval = -1;
-			break;
-		}
-		break;
-
-	case EAP_TYPE_AKA:
-		// For now, it is the same settings as EAP-SIM, so use the same checks.
-		switch (xsupconfcheck_profile_eap_sim(myeap->method_data, prof, log))
-		{
-		case PROFILE_NEED_UPW:
-			retval = PROFILE_NEED_UPW;
-			break;
-			
-		case 0:
-			break;
-
 		default:
 			// No need to do anything here, the previous call did it all.
 			retval = -1;
@@ -532,13 +563,20 @@ int xsupconfcheck_profile_check(struct config_profiles *myprof, int log)
 	// Verify that we have a valid identity set.
 	if ((myprof->identity == NULL) && (myprof->temp_username == NULL))
 	{
-		if (log == TRUE) error_prequeue_add("Profile is missing a valid username.");
-		retval = PROFILE_NEED_UPW;
+		if ((myprof->method->method_num != EAP_TYPE_SIM) && (myprof->method->method_num != EAP_TYPE_AKA))
+		{
+			if (log == TRUE) error_prequeue_add("Profile is missing a valid username.");
+			retval = PROFILE_NEED_UPW;
+		}
 	}
 
 	// Verify that the other data is valid.
 	switch (xsupconfcheck_profile_check_eap_method(myprof->method, myprof, log))
 	{
+	case PROFILE_NEED_PIN:
+		retval = PROFILE_NEED_PIN;
+		break;
+
 	case PROFILE_NEED_UPW:
 		retval = PROFILE_NEED_UPW;
 		break;

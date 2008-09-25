@@ -53,6 +53,7 @@ class ConfigProfileTabs : public TabWidgetBase
 	 void showHelp();
 	 void hideProtSettingsTab();
 	 void showAllTabs();
+	 void showSIMTabs();
 
 	 void setPhase1EAPType(QString);
 	 void setPeapPhase2Types();
@@ -127,6 +128,7 @@ private slots:
 	 QLineEdit *m_pPassword;
 	 QPushButton *m_pShowBtn;
 	 QLabel *m_pTSLabel;
+	 QCheckBox *m_pAutoRealm;
 
 	 XSupCalls *m_pSupplicant;
 

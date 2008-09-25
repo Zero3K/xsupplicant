@@ -2308,7 +2308,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				break;
 
 			default:
-			    text = QString(tr("Error : '%1'")).arg(logline);
+			    text = QString(tr("Error : %1")).arg(logline);
 			    e.sendSupErrorEvent(text);
 				break;
 			}

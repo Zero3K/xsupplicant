@@ -1464,7 +1464,7 @@ void eap_sm_prepopulate_id(eap_sm *sm)
           return;
         }
       eapsim_get_username(ctx);
-	  if (ctx->prof->temp_username != NULL) sm->ident = strdup(ctx->prof->temp_username);
+	  if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) sm->ident = strdup(ctx->prof->temp_username);
     }
 
   // Same is true for AKA.
@@ -1479,6 +1479,7 @@ void eap_sm_prepopulate_id(eap_sm *sm)
           return;
         }
       eapaka_get_username(ctx);
+	  if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) sm->ident = strdup(ctx->prof->temp_username);
     }
 #endif
 

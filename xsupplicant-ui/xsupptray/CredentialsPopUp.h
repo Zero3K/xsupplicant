@@ -68,6 +68,8 @@ private:
 	bool createUPW();
 	bool createPSK();
 	bool createWEP();
+	bool createPIN();
+	bool isPINType();
 	void setupWindow();
 	
 private:

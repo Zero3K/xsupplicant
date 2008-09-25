@@ -107,6 +107,10 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 				// Check to see that the profile is valid.
 				switch (xsupconfcheck_check_profile(conn->profile, log))
 				{
+				case PROFILE_NEED_PIN:
+					retval = CONNECTION_NEED_PIN;
+					break;
+
 				case PROFILE_NEED_UPW:
 					retval = CONNECTION_NEED_UPW;
 					break;
@@ -128,6 +132,10 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 			{
 				switch (xsupconfcheck_check_profile(conn->profile, log))
 				{
+				case PROFILE_NEED_PIN:
+					retval = PROFILE_NEED_PIN;
+					break;
+
 				case PROFILE_NEED_UPW:
 					retval = PROFILE_NEED_UPW;
 					break;

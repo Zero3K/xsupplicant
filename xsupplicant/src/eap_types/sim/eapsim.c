@@ -7,10 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * \todo Put IPC error events in this file!
- * \todo Add UI provided username/password here.
- * \todo Add support for PIN reprompting.
- *
  **/
 
 /*******************************************************************
@@ -48,6 +44,9 @@
 #include "../../ipc_callout.h"
 #include "../../xsup_ipc.h"
 #include "../eap_type_common.h"
+#include "../../ipc_events.h"
+#include "../../ipc_events_index.h"
+#include "../../context.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -99,6 +98,7 @@ int eapsim_get_username(context *ctx)
   char *readers = NULL, *username = NULL;    // username is a reference pointer.  IT SHOULD NEVER BE FREED!
   char *password = NULL;                     // password is a reference pointer.  IT SHOULD NEVER BE FREED!
   struct config_eap_sim *userdata = NULL;
+  int retval = 0;
   SCARDCONTEXT sctx;
   SCARDHANDLE hdl;
 
@@ -160,13 +160,31 @@ int eapsim_get_username(context *ctx)
 	  }
   }
 
-  imsi = sm_handler_2g_imsi(&hdl, card_mode, password);
-  if (imsi == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Error starting smart card, and getting "
-		   "IMSI!\n");
-      return XESIMGENERR;
-    }
+  retval = sm_handler_2g_imsi(&hdl, card_mode, password, &imsi);
+  switch (retval)
+  {
+  case SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+
+  case SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+
+  case SM_HANDLER_ERROR_NONE:
+	  // Do nothing.
+	  break;
+
+  default:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  context_disconnect(ctx);
+	  return FALSE;
+	  break;
+  }
 
   debug_printf(DEBUG_AUTHTYPES, "SIM IMSI : %s\n",imsi);
 
@@ -224,7 +242,8 @@ int eapsim_get_username(context *ctx)
  ***********************************************************************/
 void eapsim_check(eap_type_data *eapdata)
 {
-  struct config_eap_sim *simconf;
+  struct config_eap_sim *simconf = NULL;
+  context *ctx = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -238,10 +257,14 @@ void eapsim_check(eap_type_data *eapdata)
 
   simconf = (struct config_eap_sim *)eapdata->eap_conf_data;
 
-  if (simconf->password == NULL)
+  ctx = event_core_get_active_ctx();
+
+  if ((simconf->password == NULL) && (ctx->prof->temp_password == NULL))
     {
       debug_printf(DEBUG_NORMAL, "No PIN available for EAP-SIM!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_NO_PIN, NULL);
       eap_type_common_fail(eapdata);
+	  context_disconnect(ctx);
       return;
     }
 }
@@ -255,7 +278,10 @@ uint8_t eapsim_init(eap_type_data *eapdata)
 {
   struct eaptypedata *simdata = NULL;
   struct config_eap_sim *userdata = NULL;
-  char *imsi;
+  char *imsi = NULL;
+  context *ctx = NULL;
+  char *password = NULL;
+  int retval = 0;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;
@@ -264,44 +290,12 @@ uint8_t eapsim_init(eap_type_data *eapdata)
     {
       eapdata->eap_data = Malloc(sizeof(struct eaptypedata));
       if (eapdata->eap_data == NULL)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store "
-		       "data for EAP-SIM!\n");
-	  return FALSE;
-	}
-    }
-
-  simdata = eapdata->eap_data;
-
-  FREE(simdata->keyingMaterial);
-
-  if (sm_handler_init_ctx(&simdata->scntx) != 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't initialize smart card context!\n");
-      return FALSE;
-    }
-
-  simdata->readers = sm_handler_get_readers(&simdata->scntx);
-  if (simdata->readers == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't find any smart card readers "
-		   "attached to the system!\n");
-      return FALSE;
-    }
-
-  if (sm_handler_card_connect(&simdata->scntx, &simdata->shdl, 
-			      simdata->readers) != 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
-      return FALSE;
-    }
-
-  // Wait 20 seconds for the smartcard to become ready.
-  if (sm_handler_wait_card_ready(&simdata->shdl, 20) != 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 20 "
-		   "seconds!\n");
-      return FALSE;
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store "
+					"data for EAP-SIM!\n");
+			ipc_events_malloc_failed(NULL);
+			return FALSE;
+		}
     }
 
   if (!xsup_assert((eapdata->eap_conf_data != NULL),
@@ -316,14 +310,81 @@ uint8_t eapsim_init(eap_type_data *eapdata)
       return FALSE;
     }
 
-  if (userdata->password == NULL)
+  ctx = event_core_get_active_ctx();
+
+  simdata = eapdata->eap_data;
+
+  FREE(simdata->keyingMaterial);
+
+  if (sm_handler_init_ctx(&simdata->scntx) != 0)
     {
-      debug_printf(DEBUG_NORMAL, "No PIN available.\n");
+      debug_printf(DEBUG_NORMAL, "Couldn't initialize smart card context!\n");
       return FALSE;
     }
 
-  imsi = sm_handler_2g_imsi(&simdata->shdl, simdata->card_mode,
-			    userdata->password);
+  if (sm_handler_card_connect(&simdata->scntx, &simdata->shdl, 
+								userdata->reader) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader '%s'!\n", userdata->reader);
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CANT_CONNECT, userdata->reader);
+	  context_disconnect(ctx);
+      return FALSE;
+    }
+
+  // Wait 20 seconds for the smartcard to become ready.
+  if (sm_handler_wait_card_ready(&simdata->shdl, 20) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 20 "
+		   "seconds!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+    }
+
+  if ((userdata->password == NULL) && (ctx->prof->temp_password == NULL))
+    {
+      debug_printf(DEBUG_NORMAL, "No PIN available.\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_NO_PIN, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+    }
+
+  if (ctx->prof->temp_password != NULL)
+  {
+	  password = ctx->prof->temp_password;
+  }
+  else
+  {
+	  password = userdata->password;
+  }
+
+  retval = sm_handler_2g_imsi(&simdata->shdl, simdata->card_mode, password, &imsi);
+  switch (retval)
+  {
+  case SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+
+  case SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+
+  case SM_HANDLER_ERROR_NONE:
+	  // Do nothing.
+	  break;
+
+  default:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  context_disconnect(ctx);
+	  return FALSE;
+	  break;
+  }
+
+  eapdata->credsSent = TRUE;   // We have attempted to use our PIN at this point, if it didn't work, fail the auth.
 
   if (userdata->username == NULL)
     {
@@ -346,12 +407,12 @@ uint8_t eapsim_init(eap_type_data *eapdata)
  ***********************************************************************/
 void eapsim_do_start(eap_type_data *eapdata)
 {
-  struct eaptypedata *simdata;
+  struct eaptypedata *simdata = NULL;
   int retval, outptr = 0;
   uint16_t offset = 0, size = 0, value16 = 0;
-  struct eap_header *eaphdr;
-  struct config_eap_sim *simconf;
-  char *username;
+  struct eap_header *eaphdr = NULL;
+  struct config_eap_sim *simconf = NULL;
+  char *username = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -513,6 +574,7 @@ void eapsim_do_challenge(eap_type_data *eapdata)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store response "
                    "data!\n");
+	  ipc_events_malloc_failed(NULL);
       eap_type_common_fail(eapdata);
       return;
     }
@@ -626,10 +688,10 @@ void eapsim_process(eap_type_data *eapdata)
   if (eapdata->methodState == INIT)
     {
       if (eapsim_init(eapdata) == FALSE)
-	{
-	  eap_type_common_fail(eapdata);
-	  return;
-	}
+		{
+			eap_type_common_fail(eapdata);
+			return;
+		}
     }
 
   switch (eapdata->eapReqData[sizeof(struct eap_header)])
@@ -687,6 +749,7 @@ uint8_t *eapsim_buildResp(eap_type_data *eapdata)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for response "
 		   "packet!\n");
+	  ipc_events_malloc_failed(NULL);
       FREE(simdata->response_data);
       return NULL;
     }
@@ -713,7 +776,7 @@ uint8_t *eapsim_buildResp(eap_type_data *eapdata)
  ***********************************************************************/
 uint8_t eapsim_isKeyAvailable(eap_type_data *eapdata)
 {
-  struct eaptypedata *simdata;
+  struct eaptypedata *simdata = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;
@@ -734,8 +797,8 @@ uint8_t eapsim_isKeyAvailable(eap_type_data *eapdata)
  ***********************************************************************/
 uint8_t *eapsim_getKey(eap_type_data *eapdata)
 {
-  struct eaptypedata *simdata;
-  uint8_t *keydata;
+  struct eaptypedata *simdata = NULL;
+  uint8_t *keydata = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;
@@ -751,6 +814,7 @@ uint8_t *eapsim_getKey(eap_type_data *eapdata)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store key "
 		   "data!\n");
+	  ipc_events_malloc_failed(NULL);
       return NULL;
     }
 
