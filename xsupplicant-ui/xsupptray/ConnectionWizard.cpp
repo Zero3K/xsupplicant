@@ -199,7 +199,10 @@ bool ConnectionWizard::loadPages(void)
 					break;	
 				case ConnectionWizard::pageDot1XCert:
 					newPage = new WizardPageDot1XCert(this, m_pStackedWidget);
-					break;																													
+					break;									
+				case ConnectionWizard::pageSCReader:
+					newPage = new WizardPageSCReader(this, m_pStackedWidget);
+					break;
 				default:
 					break;
 			}
@@ -483,6 +486,10 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 		case pageStaticIP:
 			nextPage = ConnectionWizard::pageFinishPage;
 			break;
+
+		case pageSCReader:
+			nextPage = pageIPOptions;
+			break;
 			
 		case pageDot1XProtocol:
 			if (m_connData.m_eapProtocol == ConnectionWizardData::eap_md5)
@@ -491,6 +498,11 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 					nextPage = ConnectionWizard::pageFinishPage;
 				else
 					nextPage = ConnectionWizard::pageIPOptions;
+			}
+			else if ((m_connData.m_eapProtocol == ConnectionWizardData::eap_aka) ||
+				(m_connData.m_eapProtocol == ConnectionWizardData::eap_sim))
+			{
+				nextPage = ConnectionWizard::pageSCReader;
 			}
 			else
 				nextPage = ConnectionWizard::pageDot1XInnerProtocol;

@@ -143,7 +143,6 @@ int xsupconfcheck_profile_eap_aka(struct config_eap_aka *aka, config_profiles *p
 
 	if ((aka->password == NULL) && (prof->temp_password == NULL))
 	{
-		if (log == TRUE) error_prequeue_add("You must set a password before using EAP-AKA.");
 		retval = PROFILE_NEED_PIN;
 	}
 

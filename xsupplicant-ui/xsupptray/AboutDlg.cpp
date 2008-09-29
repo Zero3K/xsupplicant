@@ -158,17 +158,10 @@ void AboutWindow::updateData()
   m_supplicant.getAndCheckSupplicantVersion(fullVersion, numberString, false);
   m_pSupVersion->setText(tr("%1").arg(numberString));
 
-//#ifdef TNC
-  m_pdataFieldPlugins->setText(tr("with Identity Engines Ignition Posture Module"));
-  if(m_pdataFieldPostureVersion != NULL) {
-	  m_pdataFieldPostureVersion->setText(m_postureVersionString);
-  }
-/*#else
   m_pdataFieldPlugins->setText("");
   if(m_pdataFieldPostureVersion != NULL) {
 	  m_pdataFieldPostureVersion->setText(QString(tr("No TNC")));
   }
-#endif*/
 
   m_pGUIVersion->setText(tr("%1").arg(getGUIVersion()));
 }

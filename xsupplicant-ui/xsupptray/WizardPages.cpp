@@ -1024,6 +1024,8 @@ bool WizardPageDot1XProtocol::create(void)
 		m_pProtocol->clear();
 		m_pProtocol->addItem(tr("EAP-PEAP"));
 		m_pProtocol->addItem(tr("EAP-TTLS"));
+		m_pProtocol->addItem(tr("EAP-AKA"));
+		m_pProtocol->addItem(tr("EAP-SIM"));
 		m_pProtocol->addItem(tr("EAP-MD5"));
 	}
 		
@@ -1039,7 +1041,9 @@ void WizardPageDot1XProtocol::init(const ConnectionWizardData &data)
 		m_pProtocol->clear();
 		m_pProtocol->addItem(tr("EAP-PEAP"));
 		m_pProtocol->addItem(tr("EAP-TTLS"));
-		
+		m_pProtocol->addItem(tr("EAP-AKA"));
+		m_pProtocol->addItem(tr("EAP-SIM"));
+
 		// EAP-MD5 not allowed for wireless connections
 		if (m_curData.m_wireless == false)
 			m_pProtocol->addItem(tr("EAP-MD5"));
@@ -1052,8 +1056,14 @@ void WizardPageDot1XProtocol::init(const ConnectionWizardData &data)
 			case ConnectionWizardData::eap_ttls:
 				m_pProtocol->setCurrentIndex(1);
 				break;
-			case ConnectionWizardData::eap_md5:
+			case ConnectionWizardData::eap_aka:
 				m_pProtocol->setCurrentIndex(2);
+				break;
+			case ConnectionWizardData::eap_sim:
+				m_pProtocol->setCurrentIndex(3);
+				break;
+			case ConnectionWizardData::eap_md5:
+				m_pProtocol->setCurrentIndex(4);
 				break;
 			default:
 				m_pProtocol->setCurrentIndex(0);
@@ -1077,6 +1087,14 @@ const ConnectionWizardData &WizardPageDot1XProtocol::wizardData(void)
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_ttls;
 				break;
 			case 2:
+				// EAP-AKA
+				m_curData.m_eapProtocol = ConnectionWizardData::eap_aka;
+				break;
+			case 3:
+				// EAP-SIM
+				m_curData.m_eapProtocol = ConnectionWizardData::eap_sim;
+				break;
+			case 4:
 				// EAP-MD5
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_md5;
 				break;
@@ -1628,4 +1646,96 @@ void WizardPageAdapter::handleAdapterChange(int index)
 		if (index >= 0 && index < m_adapterVector.size())
 			m_pAdapterCombo->setToolTip(m_adapterVector.at(index));
 	}
+}
+
+WizardPageSCReader::WizardPageSCReader(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+}
+
+bool WizardPageSCReader::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageSIMReader.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// cache off pointers to objects	
+	m_pReader = qFindChild<QComboBox*>(m_pRealForm, "comboBoxReader");
+		
+	// dynamically populate text
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("Select the smartcard reader to use:"));	
+
+	QLabel *pReaderLabel = qFindChild<QLabel*>(m_pRealForm, "labelReader");
+	if (pReaderLabel != NULL)
+		pReaderLabel->setText(tr("Reader:"));
+		
+	if (m_pReader != NULL)
+	{
+		populateSIMReaders();
+	}
+
+	m_pAutoRealm = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxAutoRealm");
+	if (m_pAutoRealm != NULL)
+		m_pAutoRealm->setText(tr("Auto Generate Realm from IMSI"));
+		
+	return true;
+}
+
+void WizardPageSCReader::init(const ConnectionWizardData &data)
+{
+	m_curData = data;
+
+	if (m_pReader != NULL)
+	{
+		populateSIMReaders();
+	}
+}
+
+void WizardPageSCReader::populateSIMReaders()
+{
+	char **list = NULL;
+	int retval = 0;
+	int count = 0;
+
+	retval = xsupgui_request_enum_smartcard_readers(&list);
+	if (retval != REQUEST_SUCCESS)
+	{
+		QMessageBox::critical(this, tr("Failed to Enumerate Smart Card Readers"),
+			tr("Unable to enumerate the available smart card readers.  This may indicate that your machine doesn't have any recognized readers attached."));
+		return;
+	}
+
+	m_pReader->clear();
+
+	while (list[count] != NULL)
+	{
+		m_pReader->insertItem(m_pReader->count()+1, list[count]);
+		count++;
+	}
+
+	// XXX Free list[]!
+}
+
+bool WizardPageSCReader::validate(void)
+{
+	if (m_pReader->currentText() == "") return false;
+
+	return true;
+}
+
+const ConnectionWizardData &WizardPageSCReader::wizardData(void)
+{
+	if (m_pReader != NULL)
+	{
+		m_curData.m_SCreader = m_pReader->currentText();
+	}
+
+	if (m_pAutoRealm != NULL)
+	{
+		m_curData.m_autoRealm = m_pAutoRealm->isChecked();
+	}
+
+	return m_curData;
 }

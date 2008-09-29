@@ -1503,6 +1503,8 @@ void ConfigProfileTabs::populateSIMReaders()
 		m_pSIMReaders->insertItem(m_pSIMReaders->count()+1, list[count]);
 		count++;
 	}
+
+	// XXX Free list[]!
 }
 
 void ConfigProfileTabs::showSIMTabs()

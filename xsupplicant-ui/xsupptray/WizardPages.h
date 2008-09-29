@@ -304,4 +304,23 @@ private:
 	QLabel *m_pMsgLabel;
 	QVector<QString> m_adapterVector;
 };
+
+class WizardPageSCReader : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageSCReader(QWidget *parent, QWidget *parentWidget);
+	virtual bool create(void);
+	virtual void init(const ConnectionWizardData &data);
+	virtual QString getHeaderString(void) { return tr("Smartcard Reader"); };
+	virtual bool validate(void);
+	virtual const ConnectionWizardData &wizardData(void);	
+private:
+	void populateSIMReaders();
+
+	QComboBox *m_pReader;
+	QCheckBox *m_pAutoRealm;
+};
+
 #endif

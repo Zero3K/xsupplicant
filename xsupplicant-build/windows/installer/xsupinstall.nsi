@@ -293,6 +293,7 @@ Section "XSupplicant (required)"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWiredSecurity.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWirelessInfo.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWirelessNetwork.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageSIMReader.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WEPWindow.ui"
 
 
@@ -507,6 +508,7 @@ Section "Uninstall"
 	Delete $INSTDIR\Skins\Default\wizardPageWiredSecurity.ui
 	Delete $INSTDIR\Skins\Default\wizardPageWirelessInfo.ui
 	Delete $INSTDIR\Skins\Default\wizardPageWirelessNetwork.ui
+        Delete $INSTDIR\Skins\Default\wizardPageSIMReader.ui
 	Delete $INSTDIR\Skins\Default\WEPWindow.ui
 	Delete $INSTDIR\Skins\Default\PSKWindow.ui
 	Delete $INSTDIR\Skins\Default\UPWWindow.ui

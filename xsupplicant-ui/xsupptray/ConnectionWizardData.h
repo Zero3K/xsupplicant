@@ -53,7 +53,9 @@ public:
 private:
 	bool toProfileEAP_PEAPProtocol(config_profiles * const, config_trusted_server const * const);
 	bool toProfileEAP_MD5Protocol(config_profiles * const);
-	bool toEAP_TTLSProtocol(config_profiles * const, config_trusted_server const * const);
+	bool toProfileEAP_AKAProtocol(config_profiles * const);
+	bool toProfileEAP_SIMProtocol(config_profiles * const);
+	bool toProfileEAP_TTLSProtocol(config_profiles * const, config_trusted_server const * const);
 	bool toProfileOuterIdentity(config_profiles * const);
 	bool toServerData(config_trusted_server **);
 	bool toProfileData(config_profiles **, config_trusted_server const * const);
@@ -110,6 +112,8 @@ public:
 	typedef enum {
 		eap_peap,
 		eap_ttls,
+		eap_aka,
+		eap_sim,
 		eap_md5
 	} Dot1XProtocol;
 	
@@ -125,6 +129,8 @@ public:
 	
 	Dot1XProtocol m_eapProtocol;
 	QString m_outerIdentity;
+	QString m_SCreader;
+	bool m_autoRealm;
 	bool m_validateCert;
 	Dot1XInnerProtocol m_innerPEAPProtocol;
 	Dot1XInnerProtocol m_innerTTLSProtocol;

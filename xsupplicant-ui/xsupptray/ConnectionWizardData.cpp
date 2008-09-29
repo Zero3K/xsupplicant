@@ -107,6 +107,88 @@ bool ConnectionWizardData::toProfileOuterIdentity(config_profiles * const pProfi
 	return true;
 }
 
+bool ConnectionWizardData::toProfileEAP_AKAProtocol(config_profiles * const pProfile)
+{
+	bool success  = true;
+	struct config_eap_aka *akaData = NULL;
+
+	if (pProfile->method == NULL)
+	{
+		pProfile->method = (config_eap_method *)malloc(sizeof(config_eap_method));
+		if (pProfile->method == NULL)
+			success = false;
+		else
+		{
+			memset(pProfile->method, 0x00, sizeof(config_eap_method));
+			pProfile->method->method_num = EAP_TYPE_AKA;
+			pProfile->method->method_data = (config_eap_aka *)malloc(sizeof(config_eap_aka));
+			if (pProfile->method->method_data == NULL)
+				success = false;
+			else
+			{
+				memset(pProfile->method->method_data, 0x00, sizeof(config_eap_aka));
+
+				akaData = (struct config_eap_aka *)pProfile->method->method_data;
+				akaData->reader = _strdup(m_SCreader.toAscii().data());
+
+				if (m_autoRealm == true)
+				{
+					akaData->auto_realm = TRUE;
+				}
+				else
+				{
+					akaData->auto_realm = FALSE;
+				}
+			}
+		}
+	}
+	else
+		success = false;// unexpected
+
+	return success;
+}
+
+bool ConnectionWizardData::toProfileEAP_SIMProtocol(config_profiles * const pProfile)
+{
+	bool success  = true;
+	struct config_eap_sim *simData = NULL;
+
+	if (pProfile->method == NULL)
+	{
+		pProfile->method = (config_eap_method *)malloc(sizeof(config_eap_method));
+		if (pProfile->method == NULL)
+			success = false;
+		else
+		{
+			memset(pProfile->method, 0x00, sizeof(config_eap_method));
+			pProfile->method->method_num = EAP_TYPE_SIM;
+			pProfile->method->method_data = (config_eap_sim *)malloc(sizeof(config_eap_sim));
+			if (pProfile->method->method_data == NULL)
+				success = false;
+			else
+			{
+				memset(pProfile->method->method_data, 0x00, sizeof(config_eap_sim));
+
+				simData = (struct config_eap_sim *)pProfile->method->method_data;
+				simData->reader = _strdup(m_SCreader.toAscii().data());
+
+				if (m_autoRealm == true)
+				{
+					simData->auto_realm = TRUE;
+				}
+				else
+				{
+					simData->auto_realm = FALSE;
+				}
+			}
+		}
+	}
+	else
+		success = false;// unexpected
+
+	return success;
+}
+
 // assumes profile is being built from scratch and thus none of this data is populated
 bool ConnectionWizardData::toProfileEAP_MD5Protocol(config_profiles * const pProfile)
 {
@@ -249,7 +331,7 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 	return success;	
 }
 
-bool ConnectionWizardData::toEAP_TTLSProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
+bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
 {
 	bool success = true;
 	if (pProfile == NULL)
@@ -389,7 +471,13 @@ bool ConnectionWizardData::toProfileData(config_profiles **retProfile, config_tr
 					success = this->toProfileEAP_PEAPProtocol(pProfile, pServer);
 					break;
 				case ConnectionWizardData::eap_ttls:
-					success = this->toEAP_TTLSProtocol(pProfile,pServer);
+					success = this->toProfileEAP_TTLSProtocol(pProfile,pServer);
+					break;
+				case ConnectionWizardData::eap_aka:
+					success = this->toProfileEAP_AKAProtocol(pProfile);
+					break;
+				case ConnectionWizardData::eap_sim:
+					success = this->toProfileEAP_SIMProtocol(pProfile);
 					break;
 				case ConnectionWizardData::eap_md5:
 					success = this->toProfileEAP_MD5Protocol(pProfile);
