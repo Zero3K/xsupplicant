@@ -775,6 +775,10 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED_STR, value);
 		break;
 
+	case IPC_EVENT_ERROR_3G_NOT_SUPPORTED:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_3G_NOT_SUPPORTED_STR, value);
+		break;
+
 	default:
 		xsupgui_events_build_error(errstr, "Unknown error event!", NULL);
 		break;

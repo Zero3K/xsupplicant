@@ -11,12 +11,12 @@
  *
  **/
 
-/*******************************************************************
+/**
  *
  * The development of the EAP/AKA support was funded by Internet
  * Foundation Austria (http://www.nic.at/ipa)
  *
- *******************************************************************/
+ **/
 
 #ifdef EAP_SIM_ENABLE
 
@@ -49,6 +49,27 @@
 #endif
 
 char *do_sha1(char *tohash, int size);
+
+int aka_do_at_identity(struct aka_eaptypedata *mydata, uint8_t *dataoffs, 
+		   int *packet_offset)
+{
+  struct typelength *typelen = NULL;
+
+  if (!xsup_assert((mydata != NULL), "mydata != NULL", FALSE))
+    return XEMALLOC;
+
+  if (!xsup_assert((dataoffs != NULL), "dataoffs != NULL", FALSE))
+    return XEMALLOC;
+
+  if (!xsup_assert((packet_offset != NULL), "packet_offset != NULL", FALSE))
+    return XEMALLOC;
+
+  debug_printf(DEBUG_AUTHTYPES, "Got an AT_IDENTITY (of some sort).\n");
+  typelen = (struct typelength *)&dataoffs[*packet_offset];
+  *packet_offset+=2;
+  
+  return XENONE;
+}
 
 int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t *dataoffs, 
 		   int *packet_offset)
@@ -123,7 +144,8 @@ int aka_do_at_mac(eap_type_data *eapdata,
 		  struct aka_eaptypedata *mydata, uint8_t *dataoffs, int insize,
 		  int *packet_offset, char *username)
 {
-  int saved_offset, reslen, i, value16, x;
+  int saved_offset, i, value16, x;
+  unsigned char reslen = 0;
   unsigned char auts[16], sres[16], ck[16], *keydata, mac_val[16];
   unsigned char mac_calc[20], ik[16], *mk, kc[16], *tohash, *framecpy;
 
@@ -168,8 +190,8 @@ int aka_do_at_mac(eap_type_data *eapdata,
   memcpy(ck, "4444444444444444", 16);
 #endif
  
-  debug_printf(DEBUG_AUTHTYPES, "SRES = ");
-  debug_hex_printf(DEBUG_AUTHTYPES, sres, 16);
+  debug_printf(DEBUG_AUTHTYPES, "SRES (%d) = ", reslen);
+  debug_hex_printf(DEBUG_AUTHTYPES, sres, reslen);
   memcpy(mydata->res, sres, reslen);
   mydata->reslen = reslen;
   debug_printf(DEBUG_AUTHTYPES, "CK = ");
@@ -194,7 +216,7 @@ int aka_do_at_mac(eap_type_data *eapdata,
   memcpy((char *)&tohash[strlen(username)], (char *)&ik, 16);
   memcpy((char *)&tohash[strlen(username)+16], (char *)&ck, 16);
 
-  printf("To hash : ");
+  printf("To hash (%s) : ", username);
 
   for (x=0;x < (strlen(username)+32); x++)
     {
@@ -300,12 +322,11 @@ int aka_do_at_mac(eap_type_data *eapdata,
 
 uint8_t *aka_do_sync_fail(struct aka_eaptypedata *mydata, uint8_t reqId)
 {
-  struct typelength *typelen;
-  struct typelengthres *typelenres;
+  struct typelength *typelen = NULL;
   int outptr = 0;
-  uint8_t *eapres;
+  uint8_t *eapres = NULL;
   uint16_t buffersize = 0;
-  struct eap_header *eaphdr;
+  struct eap_header *eaphdr = NULL;
 
   if (!xsup_assert((mydata != NULL), "mydata != NULL", FALSE))
     return NULL;
@@ -313,9 +334,9 @@ uint8_t *aka_do_sync_fail(struct aka_eaptypedata *mydata, uint8_t reqId)
   debug_printf(DEBUG_AUTHTYPES, "Building AKA Sync Failure!\n");
 
   buffersize = sizeof(struct eap_header) + sizeof(struct typelength) +
-    sizeof(struct typelengthres) + 16;
+    sizeof(struct typelength) + 16;
 
-  eapres = Malloc(buffersize);
+  eapres = Malloc(buffersize + 1);
   if (eapres == NULL) 
     {
       debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for AKA sync "
@@ -335,14 +356,13 @@ uint8_t *aka_do_sync_fail(struct aka_eaptypedata *mydata, uint8_t reqId)
 
   typelen->type = AKA_SYNC_FAILURE;
   typelen->length = 0;
-  outptr += 3;
+  outptr += sizeof(struct typelength) +1;
   
-  typelenres = (struct typelengthres *)&eapres[outptr];
-  outptr+=4;
+  typelen = (struct typelength *)&eapres[outptr];
+  outptr+= sizeof(struct typelength);
 
-  typelenres->type = AT_AUTS;
-  typelenres->length = 5;
-  typelenres->reserved = 0;
+  typelen->type = AT_AUTS;
+  typelen->length = 5;
 
   memcpy(&eapres[outptr], mydata->auts, 16);
   outptr+=16;
@@ -350,5 +370,61 @@ uint8_t *aka_do_sync_fail(struct aka_eaptypedata *mydata, uint8_t reqId)
   return eapres;
 }
 
+/**
+ * \brief Build an AKA response Identity message.
+ **/
+uint8_t *aka_resp_identity(struct aka_eaptypedata *mydata, uint8_t reqId, char *imsi)
+{
+  struct typelength *typelen = NULL;
+  struct typelengthres *typelenres = NULL;
+  int outptr = 0;
+  uint8_t *eapres = NULL;
+  uint16_t buffersize = 0;
+  struct eap_header *eaphdr = NULL;
+
+  if (!xsup_assert((mydata != NULL), "mydata != NULL", FALSE))
+    return NULL;
+
+  debug_printf(DEBUG_AUTHTYPES, "Building AKA Identity!\n");
+
+  buffersize = sizeof(struct eap_header) + sizeof(struct typelength) + sizeof(struct typelengthres) + strlen(imsi)-1;
+
+  buffersize += (buffersize % 4);
+
+  eapres = Malloc(buffersize+5);
+  if (eapres == NULL) 
+    {
+      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for AKA sync "
+		   "failure result!\n");
+      return NULL;
+    }
+
+  eaphdr = (struct eap_header *)eapres;
+
+  eaphdr->eap_code = EAP_RESPONSE_PKT;
+  eaphdr->eap_identifier = reqId;
+  eaphdr->eap_type = EAP_TYPE_AKA;
+  eaphdr->eap_length = htons(buffersize);
+
+  outptr = sizeof(struct eap_header);
+  typelen = (struct typelength *)&eapres[outptr];
+
+  typelen->type = AKA_IDENTITY;
+  typelen->length = 0;
+  outptr += 3;
+  
+  typelenres = (struct typelengthres *)&eapres[outptr];
+  outptr+=4;
+
+  typelenres->type = AT_IDENTITY;
+  typelenres->length = ((strlen(imsi) + sizeof(struct typelengthres))/4);
+  typelenres->reserved = htons(strlen(imsi) + sizeof(struct typelengthres));
+
+  strcpy(&eapres[outptr], imsi);
+
+  outptr+=strlen(imsi)-1;
+
+  return eapres;
+}
 
 #endif

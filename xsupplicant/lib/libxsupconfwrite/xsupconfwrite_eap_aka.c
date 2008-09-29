@@ -7,9 +7,6 @@
  * \file xsupconfwrite_eap_aka.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_eap_aka.c,v 1.5 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>
@@ -110,6 +107,17 @@ xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_aka *akadata,
 #endif
 				return NULL;
 			}
+		}
+	}
+
+	if ((write_all == TRUE) || (akadata->reader != NULL))
+	{
+		if (xsupconfwrite_common_newSibling(akanode, "Reader", akadata->reader) == NULL)
+		{
+#ifdef WRITE_EAP_AKA_DEBUG
+			printf("Couldn't create <Reader> node for AKA!\n");
+#endif
+			return NULL;
 		}
 	}
 

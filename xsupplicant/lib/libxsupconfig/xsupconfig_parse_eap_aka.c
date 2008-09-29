@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_aka.c
  *
  * \authors chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_aka.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -30,7 +27,7 @@
 
 void *xsupconfig_parse_eap_aka(void **attr, xmlNodePtr node)
 {
-  struct config_eap_method *meth;
+  struct config_eap_method *meth = NULL;
 
   meth = (*attr);
 
@@ -66,8 +63,8 @@ void *xsupconfig_parse_eap_aka(void **attr, xmlNodePtr node)
 
 void *xsupconfig_parse_eap_aka_username(void **attr, xmlNodePtr node)
 {
-  struct config_eap_aka *aka;
-  char *value;
+  struct config_eap_aka *aka = NULL;
+  char *value = NULL;
 
   aka = (*attr);
 
@@ -92,8 +89,8 @@ void *xsupconfig_parse_eap_aka_username(void **attr, xmlNodePtr node)
 
 void *xsupconfig_parse_eap_aka_password(void **attr, xmlNodePtr node)
 {
-  struct config_eap_aka *aka;
-  char *value;
+  struct config_eap_aka *aka = NULL;
+  char *value = NULL;
 
   aka = (*attr);
 
@@ -153,11 +150,37 @@ void *xsupconfig_parse_eap_aka_enc_password(void **attr, xmlNodePtr node)
   return aka;
 }
 
+void *xsupconfig_parse_eap_aka_reader(void **attr, xmlNodePtr node)
+{
+  struct config_eap_aka *aka = NULL;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+  aka = (*attr);
+
+#ifdef PARSE_DEBUG
+  printf("Reader for EAP-AKA  is '%s'!\n", value);
+#endif
+
+	if ((value == NULL) || (strlen(value) == 0))
+	{
+		free(value);
+		aka->reader = NULL;
+	}
+	else
+	{
+		aka->reader = value;
+	}
+
+  return aka;
+}
+
 void *xsupconfig_parse_eap_aka_auto_realm(void **attr, xmlNodePtr node)
 {
-  struct config_eap_aka *aka;
-  uint8_t result;
-  char *value;
+  struct config_eap_aka *aka = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   aka = (*attr);
 
@@ -190,6 +213,7 @@ parser eap_aka[] = {
   {"Password", NULL, FALSE, &xsupconfig_parse_eap_aka_password},
   {"Encrypted_Password", NULL, FALSE, &xsupconfig_parse_eap_aka_enc_password},
   {"Auto_Realm", NULL, FALSE, &xsupconfig_parse_eap_aka_auto_realm},
+  {"Reader", NULL, FALSE, &xsupconfig_parse_eap_aka_reader},
   {"Type", NULL, FALSE, xsupcommon_do_nothing},
 
   {NULL, NULL, FALSE, NULL}};

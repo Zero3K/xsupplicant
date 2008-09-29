@@ -200,6 +200,12 @@ void ConfigWidgetEditProfile::updateWindow()
 			m_pEapType->setCurrentIndex(index);
 			break;
 
+		case EAP_TYPE_AKA:
+			index = m_pEapType->findText("EAP-AKA");
+
+			m_pEapType->setCurrentIndex(index);
+			break;
+
 		default:
 			QMessageBox::critical(m_pRealWidget, tr("Unknown EAP Method"), tr("You selected an EAP method we know nothing about!"));
 			break;

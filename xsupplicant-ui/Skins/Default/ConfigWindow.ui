@@ -10476,6 +10476,11 @@
             </item>
             <item>
              <property name="text" >
+              <string>EAP-AKA</string>
+             </property>
+            </item>
+            <item>
+             <property name="text" >
               <string>EAP-SIM</string>
              </property>
             </item>

@@ -92,6 +92,7 @@ private slots:
 	 bool saveEAPTTLSData();
 	 bool saveEAPPEAPData();
 	 bool saveEAPSIMData();
+	 bool saveEAPAKAData();
 	 bool checkPwdSettings();
 	 int eaptypeFromString(QString);
 	 void setIdentity();
@@ -100,6 +101,7 @@ private slots:
 	 void populateTwoPhase();
 	 void populateSimAka();
 	 void populateEAPSIM();
+	 void populateEAPAKA();
 	 void populatePEAPData();
 	 void populateTTLSData();
 	 void freeTTLSInner(struct config_eap_ttls *ttlsdata);

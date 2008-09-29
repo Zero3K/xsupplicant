@@ -123,15 +123,8 @@ int eapsim_get_username(context *ctx)
       return XESIMGENERR;
     }
 
-  readers = sm_handler_get_readers(&sctx);
-  if (readers == NULL) 
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't find any valid card readers!\n");
-      return XESIMGENERR;
-    }
-
   // Connect to the smart card.
-  if (sm_handler_card_connect(&sctx, &hdl, readers) != 0)
+  if (sm_handler_card_connect(&sctx, &hdl, userdata->reader) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
       return XESIMGENERR;

@@ -640,6 +640,66 @@ bool ConfigProfileTabs::saveEAPSIMData()
 	return true;
 }
 
+bool ConfigProfileTabs::saveEAPAKAData()
+{
+	struct config_eap_aka *myaka = NULL;
+
+	if (m_pProfile->method == NULL)
+	{
+		m_pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+		if (m_pProfile->method == NULL)
+		{
+			QMessageBox::critical(this, tr("Memory Allocation Error"), tr("Unable to allocate memory needed to save this profile."));
+			return false;
+		}
+
+		memset(m_pProfile->method, 0x00, sizeof(struct config_eap_method));
+		m_pProfile->method->method_num = EAP_TYPE_AKA;
+	}
+
+	if (m_pProfile->method->method_data == NULL)
+	{
+		m_pProfile->method->method_data = malloc(sizeof(struct config_eap_aka));
+		if (m_pProfile->method->method_data == NULL)
+		{
+			QMessageBox::critical(this, tr("Memory Allocation Error"), tr("Unable to allocate memory needed to save this profile."));
+			return false;
+		}
+
+		memset(m_pProfile->method->method_data, 0x00, sizeof(struct config_eap_aka));
+
+		myaka = (struct config_eap_aka *)m_pProfile->method->method_data;
+	}
+	else
+	{
+		myaka = (struct config_eap_aka *)m_pProfile->method->method_data;
+	}
+
+	if (m_pSIMReaders->currentIndex() == 0)
+	{
+		if (myaka->reader != NULL) 
+		{
+			free(myaka->reader);
+			myaka->reader = NULL;
+		}
+	}
+	else
+	{
+		myaka->reader = _strdup(m_pSIMReaders->currentText().toAscii());
+	}
+
+	if (m_pAutoRealm->isChecked())
+	{
+		myaka->auto_realm = TRUE;
+	}
+	else
+	{
+		myaka->auto_realm = FALSE;
+	}
+
+	return true;
+}
+
 bool ConfigProfileTabs::saveEAPPEAPData()
 {
 	struct config_eap_peap *mypeap = NULL;
@@ -752,6 +812,10 @@ bool ConfigProfileTabs::saveEAPData()
 	else if (m_EAPTypeInUse == "EAP-SIM")
 	{
 		return saveEAPSIMData();
+	}
+	else if (m_EAPTypeInUse == "EAP-AKA")
+	{
+		return saveEAPAKAData();
 	}
 
 	return false;
@@ -1378,6 +1442,44 @@ void ConfigProfileTabs::populateEAPSIM()
 	}
 }
 
+void ConfigProfileTabs::populateEAPAKA()
+{
+	struct config_eap_aka *akaconf = NULL;
+
+	if ((m_pProfile->method != NULL) && (m_pProfile->method->method_data != NULL))
+	{
+		akaconf = (struct config_eap_aka *)m_pProfile->method->method_data;
+
+		if (akaconf->reader != NULL)
+		{
+			if (m_pSIMReaders->findText(QString(akaconf->reader)) != -1)
+			{
+				// Our configured reader isn't present.  Add it to the list anyway.
+				m_pSIMReaders->insertItem(m_pSIMReaders->count()+1, akaconf->reader);
+
+				m_pSIMReaders->setCurrentIndex(m_pSIMReaders->findText(akaconf->reader));
+			}
+			else
+			{
+				m_pSIMReaders->setCurrentIndex(0);
+			}
+		}
+		else
+		{
+			m_pSIMReaders->setCurrentIndex(0);
+		}
+
+		if (akaconf->auto_realm == TRUE)
+		{
+			m_pAutoRealm->setChecked(true);
+		}
+		else
+		{
+			m_pAutoRealm->setChecked(false);
+		}
+	}
+}
+
 void ConfigProfileTabs::populateSIMReaders()
 {
 	char **list = NULL;
@@ -1413,15 +1515,19 @@ void ConfigProfileTabs::showSIMTabs()
 
 void ConfigProfileTabs::populateSimAka()
 {
-	m_EAPTypeInUse = "EAP-SIM";
-
 	showSIMTabs();
 
 	populateSIMReaders();
 
 	if (m_pProfile->method->method_num == EAP_TYPE_SIM)
 	{
+		m_EAPTypeInUse = "EAP-SIM";
 		populateEAPSIM();
+	}
+	else if (m_pProfile->method->method_num == EAP_TYPE_AKA)
+	{
+		m_EAPTypeInUse = "EAP-AKA";
+		populateEAPAKA();
 	}
 }
 
@@ -1659,6 +1765,10 @@ void ConfigProfileTabs::setPhase1EAPType(QString newEAPtype)
 		setTtlsPhase2Types();
 	}
 	else if (newEAPtype == "EAP-SIM")
+	{
+		populateSimAka();
+	}
+	else if (newEAPtype == "EAP-AKA")
 	{
 		populateSimAka();
 	}

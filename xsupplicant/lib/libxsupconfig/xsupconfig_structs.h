@@ -214,6 +214,7 @@ struct config_eap_aka
 {
   char *username;
   char *password;
+  char *reader;
   int auto_realm;
 };
 

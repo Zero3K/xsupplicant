@@ -29,6 +29,9 @@
 #define SM_HANDLER_ERROR_GENERAL				7
 #define SM_HANDLER_ERROR_SENDING_PIN			8
 #define SM_HANDLER_ERROR_IMSI_SELECTION_FAILED  9
+#define SM_HANDLER_ERROR_NO_USIM				10
+#define SM_HANDLER_ERROR_READ_FAILURE			11
+#define SM_HANDLER_ERROR_3G_NOT_SUPPORTED		12
 
 int sm_handler_init_ctx(SCARDCONTEXT *);
 char *sm_handler_get_readers(SCARDCONTEXT *);
@@ -38,7 +41,7 @@ int sm_handler_2g_imsi(SCARDHANDLE *, char, char *, char **);
 int sm_handler_do_2g_auth(SCARDHANDLE *, char, unsigned char *, 
 			  unsigned char *, unsigned char *);
 
-char *sm_handler_3g_imsi(SCARDHANDLE *, char, char *);
+int sm_handler_3g_imsi(SCARDHANDLE *, char, char *, char **);
 int sm_handler_do_3g_auth(SCARDHANDLE *, char reader_mode,
 			  unsigned char *, unsigned char *,
 			  unsigned char *, char *, unsigned char *,

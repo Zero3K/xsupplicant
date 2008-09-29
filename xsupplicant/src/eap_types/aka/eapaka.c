@@ -8,7 +8,6 @@
  * \author chris@open1x.org
  *
  * \todo Add IPC error message signaling.
- * \todo Add support for temporary username/password pairs.
  * \todo Add support for PIN reprompting.
  *
  **/
@@ -51,6 +50,8 @@
 #include "../../ipc_callout.h"
 #include "../../xsup_ipc.h"
 #include "../../frame_structs.h"
+#include "../../ipc_events_index.h"
+#include "../../event_core.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -71,6 +72,7 @@ int eapaka_get_username(context *ctx)
   struct config_eap_aka *userdata = NULL;
   SCARDCONTEXT sctx;
   SCARDHANDLE hdl;
+  int retval = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEBADCONFIG;
@@ -90,15 +92,8 @@ int eapaka_get_username(context *ctx)
       return XESIMGENERR;
     }
 
-  readers = sm_handler_get_readers(&sctx);
-  if (readers == NULL) 
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't list available smart card readers!\n");
-      return XESIMGENERR;
-    }
-
   // Connect to the smart card.
-  if (sm_handler_card_connect(&sctx, &hdl, readers) != 0)
+  if (sm_handler_card_connect(&sctx, &hdl, userdata->reader) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
       return XESIMGENERR;
@@ -128,12 +123,40 @@ int eapaka_get_username(context *ctx)
 	  }
   }
 
-  imsi = sm_handler_3g_imsi(&hdl, card_mode, password);
-  if (imsi == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Error starting smart card, and getting IMSI!\n");
-      return XESIMGENERR;
-    }
+  retval = sm_handler_3g_imsi(&hdl, card_mode, password, &imsi);
+  switch (retval)
+  {
+  case SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+	  break;
+
+  case SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+	  break;
+
+  case SM_HANDLER_ERROR_3G_NOT_SUPPORTED:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_3G_NOT_SUPPORTED, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+	  break;
+
+  case SM_HANDLER_ERROR_NONE:
+	  // Do nothing.
+	  break;
+
+  default:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  context_disconnect(ctx);
+	  return FALSE;
+	  break;
+  }
 
   debug_printf(DEBUG_AUTHTYPES, "SIM IMSI (AKA) : %s\n",imsi);
 
@@ -193,6 +216,11 @@ int eapaka_setup(eap_type_data *eapdata)
   struct aka_eaptypedata *mydata = NULL;
   struct config_eap_aka *userdata = NULL;
   char *imsi = NULL;
+  context *ctx = NULL;
+  int retval = 0;
+  char *password = NULL;
+  char *username = NULL;
+  char realm[25];
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-AKA) Initalized\n");
 
@@ -212,6 +240,9 @@ int eapaka_setup(eap_type_data *eapdata)
       return XEMALLOC;
     }
 
+
+  ctx = event_core_get_active_ctx();
+
   mydata = (struct aka_eaptypedata *)eapdata->eap_data;
   userdata = (struct config_eap_aka *)eapdata->eap_conf_data;
 
@@ -230,15 +261,8 @@ int eapaka_setup(eap_type_data *eapdata)
       return XESIMGENERR;
     }
 
-  mydata->readers = sm_handler_get_readers(&mydata->scntx);
-  if (mydata->readers == NULL) 
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't get any available readers!\n");
-      return XESIMGENERR;
-    }
-
   // Connect to the smart card.
-  if (sm_handler_card_connect(&mydata->scntx, &mydata->shdl, mydata->readers) != 0)
+  if (sm_handler_card_connect(&mydata->scntx, &mydata->shdl, userdata->reader) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
       return XESIMGENERR;
@@ -251,17 +275,90 @@ int eapaka_setup(eap_type_data *eapdata)
       return XESIMGENERR;
     }
 
-  imsi = sm_handler_3g_imsi(&mydata->shdl, mydata->card_mode, userdata->password);
-  if (imsi == NULL)
+  if ((userdata->password == NULL) && (ctx->prof->temp_password == NULL))
     {
-      debug_printf(DEBUG_NORMAL, "Error starting smart card, and getting IMSI!\n");
-      return XESIMGENERR;
+      debug_printf(DEBUG_NORMAL, "No PIN available.\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_NO_PIN, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
     }
+
+  if (ctx->prof->temp_password != NULL)
+  {
+	  password = ctx->prof->temp_password;
+  }
+  else
+  {
+	  password = userdata->password;
+  }
+
+  retval = sm_handler_3g_imsi(&mydata->shdl, mydata->card_mode, password, &imsi);
+  switch (retval)
+  {
+  case SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+	  break;
+
+  case SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+	  break;
+
+  case SM_HANDLER_ERROR_3G_NOT_SUPPORTED:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_3G_NOT_SUPPORTED, NULL);
+	  context_disconnect(ctx);
+      return FALSE;
+	  break;
+
+  case SM_HANDLER_ERROR_NONE:
+	  // Do nothing.
+	  break;
+
+  default:
+	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  context_disconnect(ctx);
+	  return FALSE;
+	  break;
+  }
 #endif
+
+  eapdata->credsSent = TRUE;
 
   if (userdata->username == NULL)
     {
-      userdata->username = imsi;
+		userdata->username = Malloc(50);
+		if (userdata->username == NULL)
+		{
+			debug_printf(DEBUG_NORMAL, "Unable to allocate memory to store IMSI!\n");
+			eap_type_common_fail(eapdata);
+			return FALSE;
+		}
+
+		username = userdata->username;
+		username[0] = '1';
+		Strncpy(&username[1], 49, imsi, strlen(imsi)+1);
+		FREE(imsi);
+
+		if (userdata->auto_realm == TRUE)
+		{
+			memset(&realm, 0x00, 25);
+			_snprintf((char *)&realm, 25, "@mnc%c%c%c.mcc%c%c%c.owlan.org",
+				username[4], username[5], username[6], username[1], username[2],
+				username[3]);
+
+			debug_printf(DEBUG_AUTHTYPES, "Realm Portion : %s\n",realm);
+			if (Strcat(username, 50, realm) != 0)
+			{
+				fprintf(stderr, "Refusing to overflow the string!\n");
+				return XEMALLOC;
+			}
+		}
     } else {
 #ifndef RADIATOR_TEST
       FREE(imsi);
@@ -280,43 +377,51 @@ int eapaka_setup(eap_type_data *eapdata)
  ************************************************************************/
 void eapaka_check(eap_type_data *eapdata)
 {
-  struct config_eap_aka *akaconf;
+  struct config_eap_aka *akaconf = NULL;
+  context *ctx = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
 
-  if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL",
+  if (!xsup_assert((eapdata->eap_conf_data != NULL), "eapdata->eap_data != NULL",
 		   FALSE))
     {
       eap_type_common_fail(eapdata);
       return;
     }
 
-  akaconf = eapdata->eap_data;
+  ctx = event_core_get_active_ctx();
 
-  if (akaconf->password == NULL)
+  akaconf = eapdata->eap_conf_data;
+
+  if ((akaconf->password == NULL) && (ctx->prof->temp_password == NULL))
     {
       debug_printf(DEBUG_NORMAL, "Don't have a valid password for EAP-AKA!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_NO_PIN, NULL);
       eap_type_common_fail(eapdata);
+	  context_disconnect(ctx);
       return;
     }
 
-  if (eapaka_setup(eapdata) != XENONE)
-    {
-      eap_type_common_fail(eapdata);
-      return;
-    }
+  if (eapdata->methodState == INIT)
+  {
+	  if (eapaka_setup(eapdata) != XENONE)
+	    {
+	      eap_type_common_fail(eapdata);
+	      return;
+	    }
+  }
 }
 
 /************************************************************************
  *
- * Process an EAP-AKA challenge message.
+ * Process an EAP-AKA identity message.
  *
  *  The value passed in to eappayload should be the first byte following
  *  the challenge/response identifier.
  *
  ************************************************************************/
-void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload, 
+void eapaka_do_identity(eap_type_data *eapdata, uint8_t *eappayload, 
 			 uint16_t size)
 {
   uint16_t packet_offset = 0;
@@ -344,23 +449,83 @@ void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload,
   aka = (struct aka_eaptypedata *)eapdata->eap_data;
   akaconf = (struct config_eap_aka *)eapdata->eap_conf_data;
 
+  debug_printf(DEBUG_AUTHTYPES, "Packet dump :\n");
+  debug_hex_dump(DEBUG_AUTHTYPES, eappayload, size);
+
+  while (packet_offset < size)
+    {
+      switch (eappayload[packet_offset])
+		{
+		  case AT_ANY_ID_REQ:
+		  case AT_IDENTITY:
+		  case AT_FULLAUTH_ID_REQ:
+			debug_printf(DEBUG_AUTHTYPES, "ID request %d.\n", eappayload[packet_offset]);
+			retval = aka_do_at_identity(aka, eappayload, &packet_offset);
+			if (retval != XENONE) return;
+			break;
+		}
+    }
+}
+
+/**
+ *
+ * Process an EAP-AKA challenge message.
+ *
+ *  The value passed in to eappayload should be the first byte following
+ *  the challenge/response identifier.
+ *
+ **/
+void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload, 
+			 uint16_t size)
+{
+  uint16_t packet_offset = 0;
+  int retval = XENONE;
+  struct aka_eaptypedata *aka = NULL;
+  struct config_eap_aka *akaconf = NULL;
+  context *ctx = NULL;
+
+  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((eappayload != NULL), "eappayload != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((size < 1500), "size < 1500", FALSE))
+    return;
+
+  if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", 
+		   FALSE))
+    return;
+
+  if (!xsup_assert((eapdata->eap_conf_data != NULL), 
+		   "eapdata->eap_conf_data != NULL", FALSE))
+    return;
+
+  aka = (struct aka_eaptypedata *)eapdata->eap_data;
+  akaconf = (struct config_eap_aka *)eapdata->eap_conf_data;
+
+  debug_printf(DEBUG_AUTHTYPES, "Inner dump : \n");
+  debug_hex_dump(DEBUG_AUTHTYPES, eappayload, size);
+
+  packet_offset += 3;  // To get past the 2 reserved bytes and outer type.
+
   while (packet_offset < size)
     {
       switch (eappayload[packet_offset])
 	{
 	case AT_RAND:
-      	  retval = aka_do_at_rand(aka, eappayload, &packet_offset);
+   	  retval = aka_do_at_rand(aka, eappayload, &packet_offset);
 	  if (retval != XENONE) return;
 	  break;
 
 	case AT_AUTN:
-       	  retval = aka_do_at_autn(aka, eappayload, &packet_offset);
+   	  retval = aka_do_at_autn(aka, eappayload, &packet_offset);
 	  if (retval != XENONE) return;
 	  break;
 
 	case AT_IV:
 	  debug_printf(DEBUG_AUTHTYPES, "Got an IV (Not supported)\n");
-    	  aka_skip_not_implemented(eappayload, &packet_offset);
+  	  aka_skip_not_implemented(eappayload, &packet_offset);
 	  break;
 
 	case AT_MAC:
@@ -372,18 +537,30 @@ void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload,
 			   "failure.\n");
 	      aka->sync_fail = TRUE;
 	      if (retval != XENONE) return;
-	    } else if (retval != XENONE) return;
+	    } else if (retval == XESIMBADMAC)
+		{
+			debug_printf(DEBUG_NORMAL, "MAC check failure in EAP-AKA.\n");
+			eap_type_common_fail(eapdata);
+
+			ctx = event_core_get_active_ctx();
+			context_disconnect(ctx);
+			return;
+		} else if (retval != XENONE) return;
 	  break;
+
+	default:
+		debug_printf(DEBUG_NORMAL, "Unknown AKA inner type %d!\n", eappayload[packet_offset]);
+		break;
 	}
     }
 
 }
 
-/************************************************************************
+/**
  *
  * Process an AKA request.
  *
- ************************************************************************/
+ **/
 void eapaka_process(eap_type_data *eapdata)
 {
   uint8_t *eappayload = NULL, chal_type = 0;
@@ -414,8 +591,9 @@ void eapaka_process(eap_type_data *eapdata)
     {
     case AKA_IDENTITY:
       debug_printf(DEBUG_AUTHTYPES, "Got AKA_IDENTITY!\n");
-      debug_printf(DEBUG_AUTHTYPES, "Not implemented!\n");
+      eapaka_do_identity(eapdata, (uint8_t *)&eappayload[3], (size-5));  // -5 since we already consumed [0] through [3].
       chal_type = AKA_IDENTITY;
+	  akadata->chal_type = AKA_IDENTITY;
       break;
 
     case AKA_AUTHENTICATION_REJECT:
@@ -451,7 +629,8 @@ void eapaka_process(eap_type_data *eapdata)
 
     case AKA_CHALLENGE:
       debug_printf(DEBUG_AUTHTYPES, "Got AKA_CHALLENGE!\n");
-      eapaka_do_challenge(eapdata, (uint8_t *)&eappayload[1], (size-2));  // -2 since we already consumed [0], and [1].
+      eapaka_do_challenge(eapdata, (uint8_t *)&eappayload[0], size); 
+	  akadata->chal_type = AKA_CHALLENGE;
       chal_type = AKA_CHALLENGE;
       break;
 
@@ -481,7 +660,7 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
   struct aka_eaptypedata *akadata = NULL;
   struct typelength *typelen = NULL;
   struct typelengthres *typelenres = NULL;
-  uint8_t reqId = 0, mac_calc[16];
+  uint8_t reqId = 0, mac_calc[20];
   struct eap_header *eaphdr = NULL;
   uint8_t *payload = NULL, *framecpy = NULL, *data = NULL;
   uint16_t offset = 0, i = 0, retsize = 0;
@@ -500,23 +679,33 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
   akaconf = eapdata->eap_conf_data;
   akadata = eapdata->eap_data;
 
-  if (akadata->chal_type == AKA_CHALLENGE)
+  if (akadata->chal_type == AKA_IDENTITY)
+  {
+	  framecpy = aka_resp_identity(akadata, eap_type_common_get_eap_reqid(eapdata->eapReqData), eapdata->ident);
+	  eapdata->ignore = FALSE;
+	  eapdata->methodState = CONT;
+	  return framecpy;
+  }
+  else if (akadata->chal_type == AKA_CHALLENGE)
     {
       if (akadata->sync_fail == TRUE)
-	{
-	  // Handle a sync failure response.
-	  return aka_do_sync_fail(akadata, eap_type_common_get_eap_reqid(eapdata->eapReqData));
-	}
+		{
+			// Make sure we don't do this again. ;)
+			akadata->sync_fail = FALSE;
+
+		  // Handle a sync failure response.
+		  return aka_do_sync_fail(akadata, eap_type_common_get_eap_reqid(eapdata->eapReqData));
+		}
 
       reqId = eap_type_common_get_eap_reqid(eapdata->eapReqData);
 
       data = Malloc(1024);  // Should be enough to hold our response.
       if (data ==  NULL)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store "
+		{
+		  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store "
 		       "response data in %s()!\n", __FUNCTION__);
-	  return NULL;
-	}
+		  return NULL;
+		}
 
       eaphdr = (struct eap_header *)data;
 
@@ -526,60 +715,59 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
 
       payload = &data[sizeof(struct eap_header)];
 
-      memset(payload, 0x00, 10);
-
       offset = 0;
-      typelen = (struct typelength *)payload;
+      typelen = (struct typelengthres *)payload;
       typelen->type = AKA_CHALLENGE;
 
       reslen = akadata->reslen;
       if ((reslen % 4) != 0)
-	{
-	  reallen = reslen + (reslen % 4);
-	}
-      else
-	{
-	  reallen = reslen;
-	}
+		{
+		  reallen = reslen + (reslen % 4);
+		}
+	    else
+		{
+		  reallen = reslen;
+		}
       
-      offset += 3;
+      offset += sizeof(struct typelengthres)-1;
+
       typelenres = (struct typelengthres *)&payload[offset];
       typelenres->type = AT_RES;
       typelenres->length = (reallen/4)+1;
-      typelenres->reserved = htons(reslen);
+      typelenres->reserved = htons(reslen*8);		// Size in bits.
       
-      offset += 4;
+      offset += sizeof(struct typelengthres);
 
       memcpy(&payload[offset], akadata->res, reslen);
 
       offset += reslen;
 
       if (reallen > reslen)
-	{
-	  for (i=0;i<(reallen-reslen);i++)
-	    {
-	      payload[offset] = 0x00;
-	      offset++;
-	    }
-	}
+		{
+		  for (i=0;i<(reallen-reslen);i++)
+		    {
+		      payload[offset] = 0x00;
+		      offset++;
+		    }
+		}
     
-      typelenres = (struct typelenres *)&payload[offset];
+      typelenres = (struct typelengthres *)&payload[offset];
       typelenres->type = AT_MAC;
       typelenres->length = 5;
       typelenres->reserved = 0x0000;
-      offset += 4;
+      offset += sizeof(struct typelengthres);
 
       retsize = offset+16+sizeof(struct eap_header);
 
-      framecpy = Malloc(retsize);
+      framecpy = Malloc(retsize+1);
       if (framecpy == NULL)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store the "
+		{
+		  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store the "
 		       "packet to hash!\n");
-	  eapdata->ignore = TRUE;
-	  eapdata->decision = EAP_FAIL;
-	  return NULL;
-	}
+		  eapdata->ignore = TRUE;
+		  eapdata->decision = EAP_FAIL;
+		  return NULL;
+		}
 
       eaphdr->eap_length = htons(retsize);
 
@@ -592,7 +780,7 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
       debug_printf(DEBUG_AUTHTYPES, "Frame to hash :\n");
       debug_hex_dump(DEBUG_AUTHTYPES, framecpy, retsize);
 
-      HMAC(EVP_sha1(), (uint8_t *)&akadata->K_aut[0], 16, framecpy, retsize,
+      HMAC(EVP_sha1(), akadata->K_aut, 16, framecpy, retsize,
 	   mac_calc, &i);
 
       FREE(framecpy);
@@ -619,7 +807,7 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
  ************************************************************************/
 uint8_t eapaka_isKeyAvailable(eap_type_data *eapdata)
 {
-  struct aka_eaptypedata *akadata;
+  struct aka_eaptypedata *akadata = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;
@@ -642,8 +830,8 @@ uint8_t eapaka_isKeyAvailable(eap_type_data *eapdata)
  ************************************************************************/
 uint8_t *eapaka_getKey(eap_type_data *eapdata)
 {
-  struct aka_eaptypedata *akadata;
-  uint8_t *keydata;
+  struct aka_eaptypedata *akadata = NULL;
+  uint8_t *keydata = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;
@@ -674,7 +862,7 @@ uint8_t *eapaka_getKey(eap_type_data *eapdata)
  ************************************************************************/
 void eapaka_deinit(eap_type_data *eapdata)
 {
-  struct aka_eaptypedata *mydata;
+  struct aka_eaptypedata *mydata = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -687,6 +875,7 @@ void eapaka_deinit(eap_type_data *eapdata)
 #endif
 
   FREE(mydata);
+  eapdata->eap_data = NULL;
 }
 
 #endif
