@@ -26,6 +26,8 @@
 ; C:\>"C:\Program Files\NSIS\makensis.exe" /D<VARIABLE>=<VALUE> C:\OpenSEA\SeaAnt\xsupplicant-build\windows\installer\xsupinstall.nsi
 ;
 
+!define PROTOCOL_DRIVER_REV     3     ; If the protocol driver is updated, this needs to be incremented to get it upgraded on user's systems.
+
 !ifndef QTDIR
 	!define QTDIR C:\Qt\qt-win-opensource-src-4.3.4
 !endif
@@ -49,6 +51,12 @@
 !ifndef DOCDIR
 	!define DOCDIR .
 !endif 
+
+; Define a global to determine if we need to install the protocol driver.
+Var InstallProtDriver
+
+;------------------------
+; Set our default compressor
 
 SetCompressor /SOLID lzma
 
@@ -81,7 +89,7 @@ InstallDirRegKey HKLM "Software\XSupplicant" "Install_Dir"
 ;-----------------------
 ; Pages
 
-  !insertmacro MUI_PAGE_LICENSE "win-LICENSE"
+  !insertmacro MUI_PAGE_LICENSE ${SOFTWARE_LICENSE_FILE}
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
 
@@ -95,7 +103,33 @@ InstallDirRegKey HKLM "Software\XSupplicant" "Install_Dir"
 
 ;-----------------------
 ; Functions
+Function SetUpgradeEnv
+	ClearErrors
+	ReadRegDWORD $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "ProtocolRev"
+	IfErrors do_prot_upgrade
+
+	; If the value stored in the registry is less than what we have, then we want to do an upgrade.
+	IntCmp $R1 ${PROTOCOL_DRIVER_REV} dont_prot_upgrade do_prot_upgrade do_prot_upgrade
+
+	; Depending on if we want to reinstall the protocol driver, we need to set (or unset) two different
+	; things.  We need to set a temporary registry key to let the uninstaller know that we don't want it
+	; to remove the driver.  And we need to store a variable for ourselves to let us know to skip installing
+	; it.  We need the variable because the uninstaller will delete the registry key when it is done.
+dont_prot_upgrade:
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "UpgradeFlags" 1
+	StrCpy $InstallProtDriver "NO"
+	goto prot_done
+
+do_prot_upgrade:
+        DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "UpgradeFlags"
+	StrCpy $InstallProtDriver "YES"
+
+prot_done:
+FunctionEnd  ; SetUpgradeEnv
+
 Function .onInit
+
+;------------- Begin Vista Bits ----------------
 
 UAC_Elevate:
   UAC::RunElevated
@@ -118,6 +152,8 @@ UAC_Success:
   StrCmp 3 $1 0 UAC_ElevationAborted ; Try again?
   MessageBox mb_iconstop "User needs to have administrator rights in order to install application, abortin!"
   goto UAC_Elevate
+
+;------------- End Vista Bits ----------------
  
   ReadRegStr $R0 HKLM \
   "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" \
@@ -133,6 +169,7 @@ UAC_Success:
 ;Run the uninstaller
 uninst:
   ClearErrors
+  Call SetUpgradeEnv
   ExecWait '$R0 _?=$INSTDIR' ;Do not copy the uninstaller to a temp file
  
   IfErrors no_remove_uninstaller
@@ -146,6 +183,8 @@ done:
  
 FunctionEnd
 
+;------------- Begin Vista Bits ----------------
+
 Function .OnInstSuccess
   UAC::Unload ; Must call unload!
 FunctionEnd
@@ -153,6 +192,8 @@ FunctionEnd
 Function .OnInstFailed
   UAC::Unload ; Must call unload!
 FunctionEnd
+
+;------------- End Vista Bits ----------------
 
 Function CheckAdmin
 
@@ -267,20 +308,21 @@ Section "XSupplicant (required)"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\AboutWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConfigWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionInfoWindow.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionPromptWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionManagerWindow.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionPromptWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionWizardWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\GTCWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\HelpWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\LogWindow.ui"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PinWindow.ui"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SelectTrustedServerWindow.ui"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ViewLogWindow.ui"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PINWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PSKWindow.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\UPWWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SelectTrustedServerWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SSIDListWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\UPWWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ViewLogWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WEPWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessScanDialog.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageAdapter.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XCert.ui"
@@ -289,12 +331,11 @@ Section "XSupplicant (required)"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageFinished.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageIPOptions.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageNetworkType.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageSIMReader.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageStaticIP.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWiredSecurity.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWirelessInfo.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWirelessNetwork.ui"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageSIMReader.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WEPWindow.ui"
 
 
         SetOutPath "$INSTDIR\Skins\Default\images"
@@ -428,6 +469,7 @@ finish_service_install:
         nsExec::Exec '"$WINDIR\system32\net.exe" start open1x'
 
 	; Start the supplicant service.
+        SetOutPath $INSTDIR
 	DetailPrint "Starting XSupplicant"
         nsExec::Exec '"$WINDIR\system32\net.exe" start XSupplicant'
 
@@ -436,11 +478,16 @@ finish_service_install:
         Exec '"$INSTDIR\XSupplicantUI.exe"'
 
 dont_start_app:
+        DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "UpgradeFlags"
 	WriteRegStr  HKLM SOFTWARE\XSupplicant "Install_Dir" "$INSTDIR"
 	WriteRegStr  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "DisplayName" "XSupplicant"
+	WriteRegStr  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "DisplayVersion" '${VERSION}'
+	WriteRegStr  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "URLInfoAbout" "http://www.open1x.org"
+	WriteRegStr  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "URLUpdateInfo" "http://www.open1x.org"
 	WriteRegStr  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "UninstallString" '"$INSTDIR\uninstall.exe"'
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "NoModify" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "NoRepair" 1
+	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "ProtocolRev" ${PROTOCOL_DRIVER_REV}
         WriteUninstaller "uninstall.exe"    
 
 	IfRebootFlag 0 noreboot
@@ -467,9 +514,18 @@ Section "Uninstall"
         DetailPrint "Unregistering XSupplicant..."
         nsExec::Exec '"$WINDIR\system32\sc.exe" delete XSupplicant'
 
+	ReadRegDWORD $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "UpgradeFlags"
+	IntCmp $R0 1 no_prot_uninstall
+
         DetailPrint "Uninstalling the protocol driver..."
         nsExec::Exec '"$INSTDIR\ProtInstall.exe" /Uninstall /hide open1x.inf'
+	goto remove_program_files
 
+no_prot_uninstall:
+	DetailPrint "Doing an upgrade where the protocol driver doesn't need to be replaced."
+	; Fall through
+
+remove_program_files:
 	DetailPrint "Removing program files..."
 	Delete $INSTDIR\XSupplicant_service.exe
 	Delete $INSTDIR\QtCore4.dll
@@ -485,16 +541,20 @@ Section "Uninstall"
         Delete $INSTDIR\Skins\Default\AboutWindow.ui
         Delete $INSTDIR\Skins\Default\ConfigWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionInfoWindow.ui
-	Delete $INSTDIR\Skins\Default\ConnectionPromptWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionManagerWindow.ui
-	Delete $INSTDIR\Skins\Default\ConnectionWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectionPromptWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionWizardWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectWindow.ui
+	Delete $INSTDIR\Skins\Default\GTCWindow.ui
         Delete $INSTDIR\Skins\Default\HelpWindow.ui
         Delete $INSTDIR\Skins\Default\LogWindow.ui
-	Delete $INSTDIR\Skins\Default\PinWindow.ui
+	Delete $INSTDIR\Skins\Default\PINWindow.ui
+	Delete $INSTDIR\Skins\Default\PSKWindow.ui
         Delete $INSTDIR\Skins\Default\SelectTrustedServerWindow.ui
 	Delete $INSTDIR\Skins\Default\SSIDListWindow.ui
+	Delete $INSTDIR\Skins\Default\UPWWindow.ui
         Delete $INSTDIR\Skins\Default\ViewLogWindow.ui
+	Delete $INSTDIR\Skins\Default\WEPWindow.ui
 	Delete $INSTDIR\Skins\Default\WirelessPriorityWindow.ui
 	Delete $INSTDIR\Skins\Default\WirelessScanDialog.ui
 	Delete $INSTDIR\Skins\Default\wizardPageAdapter.ui
@@ -504,15 +564,11 @@ Section "Uninstall"
 	Delete $INSTDIR\Skins\Default\wizardPageFinished.ui
 	Delete $INSTDIR\Skins\Default\wizardPageIPOptions.ui
 	Delete $INSTDIR\Skins\Default\wizardPageNetworkType.ui
+        Delete $INSTDIR\Skins\Default\wizardPageSIMReader.ui
 	Delete $INSTDIR\Skins\Default\wizardPageStaticIP.ui
 	Delete $INSTDIR\Skins\Default\wizardPageWiredSecurity.ui
 	Delete $INSTDIR\Skins\Default\wizardPageWirelessInfo.ui
 	Delete $INSTDIR\Skins\Default\wizardPageWirelessNetwork.ui
-        Delete $INSTDIR\Skins\Default\wizardPageSIMReader.ui
-	Delete $INSTDIR\Skins\Default\WEPWindow.ui
-	Delete $INSTDIR\Skins\Default\PSKWindow.ui
-	Delete $INSTDIR\Skins\Default\UPWWindow.ui
-	Delete $INSTDIR\Skins\Default\GTCWindow.ui
 	
 	Delete $INSTDIR\Skins\Default\images\banner\banner_center.png
 	Delete $INSTDIR\Skins\Default\images\banner\banner_left.png
@@ -600,7 +656,7 @@ Section "Uninstall"
 	RMDir $SMPROGRAMS\${TARGET}
 
 	; remove Open1X.sys from the System Drivers directory
-	Delete %SYSTEMROOT%\system32\drivers\Open1X.sys
+	;Delete %SYSTEMROOT%\system32\drivers\Open1X.sys
 
 	; Clean up registry keys.
 	DetailPrint "Cleaning up registry keys..."

@@ -3,6 +3,13 @@
 	!define VERSION 2.1.1.080610
 !endif
 
+; This variable defines the license file to be presented when the installer is launched
+; This variable can be overridden by passing /DSOFTWARE_LICENSE_FILE=<whatever> to the nullsoft compiler.
+; Defaults to "win-LICENSE"
+!ifndef SOFTWARE_LICENSE_FILE 
+     !define SOFTWARE_LICENSE_FILE "win-LICENSE"
+!endif ;SOFTWARE_LICENSE_FILE
+
 ; This variable can be overridden by passing /DINSTALLER_NAME_PREFIX=<whatever> to the nullsoft compiler.
 !ifndef INSTALLER_NAME_PREFIX
 	!define INSTALLER_NAME_PREFIX xsupplicant-setup-v
@@ -25,6 +32,34 @@
 ; Target Directory for Start Menu
 ; i.e. "XSupplicant"  (C:\Program Files\XSupplicant)
 !define TARGET "XSupplicant"
+
+; This defines a third-party root directory for installing
+; skinned files over the top (or in addition) to the normal
+; OpenSEA provided skin files.
+;!ifndef THIRDPARTYSKINROOT
+;	!define THIRDPARTYSKINROOT <path to your skin root>
+;!endif ;THIRDPARTYSKINROOT
+
+; This is a relative path from the skin root where
+; the skin files can be located, keeping in mind that
+; any skin files that need to replace existing
+; files in the OpenSEA builds need to be set up in the
+; same file structure
+;
+; Example:  
+; ${THIRDPARTYSKINROOT}\${THIRDPARTYSKINDIR}\<whatever>.ui
+; ${THIRDPARTYSKINROOT}\${THIRDPARTYSKINDIR}\icons\<whatever>
+; ${THIRDPARTYSKINROOT}\${THIRDPARTYSKINDIR}\images\<whatever>
+;
+;!ifndef THIRDPARTYSKINDIR
+;	!define THIRDPARTYSKINDIR .
+;!endif ;THIRDPARTYSKINDIR
+
+; The documentation directory for any third party-overrides or 
+; new documentation that you wish to add.
+;!ifndef THIRDPARTYDOCDIR
+;	!define THIRDPARTYDOCDIR ${SRCDIR}\${THIRDPARTYSKINROOT}\${THIRDPARTYSKINDIR}\Doc
+;!endif ;THIRDPARTYDOCDIR
 
 ;------------------------
 ; General
@@ -145,7 +180,7 @@ FunctionEnd ;InstallOpenSEAPlugins
 Function un.InstallOpenSEAPlugins 
      Delete "$INSTDIR\Modules\BirdDog.dll"
 
-     RMDir $INSTDIR\Modules
+     RMDir "$INSTDIR\Modules"
 FunctionEnd ;un.InstallOpenSEAPlugins
 
 !ifdef THIRDPARTYADDITIONS
@@ -164,10 +199,13 @@ FunctionEnd ;ThirdPartyPostInstall
 
 ; Do post-installation stuff here
 Function ThirdPartyPostInstall
+	Call ThirdPartySkinInstall
 FunctionEnd ;ThirdPartyPostInstall
 
 ; Do post-uninstallation stuff here.
 Function un.ThirdPartyPostInstall
+	; Call this last, in case any plugins/etc are using any skin files.
+	Call un.ThirdPartySkinInstall
 FunctionEnd ;un.ThirdPartyPostInstall
 
 Function InstallSupplicantChecker
@@ -175,8 +213,12 @@ Function InstallSupplicantChecker
 
         File "${THIRDPARTY}\checksuppsapp.exe"
 
+	SetShellVarContext All
+	CreateDirectory "$SMPROGRAMS\${TARGET}"
+	CreateShortCut "$SMPROGRAMS\${TARGET}\Check for other supplicants.lnk" $INSTDIR\checksuppsapp.exe
+
         DetailPrint "Checking for other supplicants..."
-        nsExec::Exec '"$INSTDIR\checksuppsapp.exe" -Q'  ; If there are no other supplicants, be quiet about it. ;)
+        nsExec::Exec '"$INSTDIR\checksuppsapp.exe" -Q -L'  ; If there are no other supplicants, be quiet about it. ;)
 	Pop $0
         DetailPrint "  Checksuppsapp return value : $0"
 
@@ -208,9 +250,25 @@ FunctionEnd  ;InstallSupplicantChecker
 Function un.InstallSupplicantChecker
 	Delete $INSTDIR\checksuppsapp.exe
 
-        Delete "$SMPROGRAMS\XSupplicant\Check for other supplicants.lnk"
+	SetShellVarContext All
+        Delete "$SMPROGRAMS\${TARGET}\Check for other supplicants.lnk"
 FunctionEnd ;un.InstallSupplicantChecker
 !endif ;THIRDPARTY
+
+
+;-----------------------------------
+; Install any third-party skins/docs
+Function ThirdPartySkinInstall
+FunctionEnd 
+
+;-------------------------------------
+; Uninstall any third-party skins/docs
+Function un.ThirdPartySkinInstall
+FunctionEnd
+
+!endif ;THIRDPARTY
+
+
 ; -------- End 3rd Party Functions --------
 
 ; -------- Start Debug Functions --------
