@@ -1519,15 +1519,29 @@ void ConfigProfileTabs::populateSimAka()
 
 	populateSIMReaders();
 
-	if (m_pProfile->method->method_num == EAP_TYPE_SIM)
+	if (m_pProfile->method != NULL)
 	{
-		m_EAPTypeInUse = "EAP-SIM";
-		populateEAPSIM();
+		if (m_pProfile->method->method_num == EAP_TYPE_SIM)
+		{
+			m_EAPTypeInUse = "EAP-SIM";
+			populateEAPSIM();
+		}
+		else if (m_pProfile->method->method_num == EAP_TYPE_AKA)
+		{
+			m_EAPTypeInUse = "EAP-AKA";
+			populateEAPAKA();
+		}
 	}
-	else if (m_pProfile->method->method_num == EAP_TYPE_AKA)
+	else
 	{
-		m_EAPTypeInUse = "EAP-AKA";
-		populateEAPAKA();
+		if (m_EAPTypeInUse == "EAP-SIM")
+		{
+			populateEAPSIM();
+		}
+		else if (m_EAPTypeInUse == "EAP-AKA")
+		{
+			populateEAPAKA();
+		}
 	}
 }
 
@@ -1766,10 +1780,12 @@ void ConfigProfileTabs::setPhase1EAPType(QString newEAPtype)
 	}
 	else if (newEAPtype == "EAP-SIM")
 	{
+		m_EAPTypeInUse = "EAP-SIM";
 		populateSimAka();
 	}
 	else if (newEAPtype == "EAP-AKA")
 	{
+		m_EAPTypeInUse = "EAP-AKA";
 		populateSimAka();
 	}
 	else
