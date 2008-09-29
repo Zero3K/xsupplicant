@@ -266,19 +266,20 @@ Section "XSupplicant (required)"
 
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\AboutWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConfigWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionInfoWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionPromptWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionManagerWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectWindow.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionWizardWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\GTCWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\HelpWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\LogWindow.ui"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\LoginWindow.ui"
+        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PinWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SelectTrustedServerWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ViewLogWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PSKWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\UPWWindow.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionManagerWindow.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionWizardWindow.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectWindow.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionInfoWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SSIDListWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessScanDialog.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageAdapter.ui"
@@ -482,13 +483,14 @@ Section "Uninstall"
 
         Delete $INSTDIR\Skins\Default\AboutWindow.ui
         Delete $INSTDIR\Skins\Default\ConfigWindow.ui
-	Delete $INSTDIR\Skins\Default\ConnectionManagerWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionInfoWindow.ui
-	Delete $INSTDIR\Skins\Default\ConnectionWizardWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectionPromptWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectionManagerWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionWindow.ui
+	Delete $INSTDIR\Skins\Default\ConnectionWizardWindow.ui
         Delete $INSTDIR\Skins\Default\HelpWindow.ui
         Delete $INSTDIR\Skins\Default\LogWindow.ui
-        Delete $INSTDIR\Skins\Default\LoginWindow.ui
+	Delete $INSTDIR\Skins\Default\PinWindow.ui
         Delete $INSTDIR\Skins\Default\SelectTrustedServerWindow.ui
 	Delete $INSTDIR\Skins\Default\SSIDListWindow.ui
         Delete $INSTDIR\Skins\Default\ViewLogWindow.ui
