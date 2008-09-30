@@ -419,6 +419,8 @@ Section "XSupplicant (required)"
 
         Call ExtrasPostInstall   ; Make this call before we turn everything on.
 
+	StrCmpS $InstallProtDriver "NO" continue_service_install
+
         ; Then, install the protocol driver.
         DetailPrint "Installing the protocol driver.."
         nsExec::Exec '"$INSTDIR\ProtInstall.exe" /Install /hide open1x.inf'
