@@ -253,8 +253,6 @@ Function un.InstallSupplicantChecker
 	SetShellVarContext All
         Delete "$SMPROGRAMS\${TARGET}\Check for other supplicants.lnk"
 FunctionEnd ;un.InstallSupplicantChecker
-!endif ;THIRDPARTY
-
 
 ;-----------------------------------
 ; Install any third-party skins/docs
