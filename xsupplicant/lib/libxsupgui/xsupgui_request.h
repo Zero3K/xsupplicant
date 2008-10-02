@@ -561,6 +561,7 @@ void xsupgui_request_free_cert_enum(cert_enum **);
 void xsupgui_request_free_cert_info(cert_info **);
 void xsupgui_request_free_error_msgs(error_messages **);
 int xsupgui_request_free_poss_conn_enum(poss_conn_enum **);
+int xsupgui_request_free_enum_smartcard_readers(char ***);
 
 /**
  * Calls to free the values returned from the configuration file calls.

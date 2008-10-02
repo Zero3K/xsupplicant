@@ -1699,15 +1699,12 @@ void WizardPageSCReader::populateSIMReaders()
 	int retval = 0;
 	int count = 0;
 
-	retval = xsupgui_request_enum_smartcard_readers(&list);
-	if (retval != REQUEST_SUCCESS)
-	{
-		QMessageBox::critical(this, tr("Failed to Enumerate Smart Card Readers"),
-			tr("Unable to enumerate the available smart card readers.  This may indicate that your machine doesn't have any recognized readers attached."));
-		return;
-	}
-
 	m_pReader->clear();
+	m_pReader->insertItem(0, tr("<None>"));
+
+	retval = xsupgui_request_enum_smartcard_readers(&list);
+	if (retval != REQUEST_SUCCESS) 
+		return;
 
 	while (list[count] != NULL)
 	{
@@ -1715,11 +1712,13 @@ void WizardPageSCReader::populateSIMReaders()
 		count++;
 	}
 
-	// XXX Free list[]!
+	xsupgui_request_free_enum_smartcard_readers(&list);
 }
 
 bool WizardPageSCReader::validate(void)
 {
+	if (m_pReader->currentIndex() == 0) return false;
+
 	if (m_pReader->currentText() == "") return false;
 
 	return true;

@@ -1960,3 +1960,20 @@ request_done:
 	return done;
 }
 
+int xsupgui_request_free_enum_smartcard_readers(char ***readers)
+{
+	char **readerlist = NULL;
+	int i = 0;
+
+	readerlist = (*readers);
+
+	while (readerlist[i] != NULL)
+	{
+		free(readerlist[i]);
+		i++;
+	}
+
+	free(readerlist);
+	readers = NULL;
+}
+
