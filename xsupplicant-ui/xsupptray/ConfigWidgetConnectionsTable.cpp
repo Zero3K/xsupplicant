@@ -123,11 +123,25 @@ void ConfigWidgetConnectionsTable::updateWindow()
 	i = 0;
 
 	m_pRealTable->setCursor(Qt::WaitCursor);   // This may take a second.
-
-	m_pRealTable->resizeColumnsToContents();
-	m_pRealTable->horizontalHeader()->setStretchLastSection(true);
+	
 	m_pRealTable->horizontalHeader()->setHighlightSections(false);   // Don't "push in" the header.
 	m_pRealTable->verticalHeader()->setHighlightSections(false);     // Ditto for the vertical header.
+	        
+	// don't allow user to re-size columns
+	m_pRealTable->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
+	
+	// let the first column take up as much space as possible
+	m_pRealTable->horizontalHeader()->setResizeMode(0, QHeaderView::Stretch);
+	m_pRealTable->horizontalHeaderItem(0)->setText(tr("Connection"));
+	
+	m_pRealTable->horizontalHeader()->resizeSection(1,70);
+	m_pRealTable->horizontalHeaderItem(1)->setText(tr("Adapter"));
+	
+	m_pRealTable->horizontalHeader()->resizeSection(2,70);
+	m_pRealTable->horizontalHeaderItem(2)->setText(tr("Priority"));
+	
+	m_pRealTable->horizontalHeader()->resizeSection(3,180);
+	m_pRealTable->horizontalHeaderItem(3)->setText(tr("Secure"));
 
 	if (m_pConnectionsEnum == NULL) return;
 
@@ -263,9 +277,6 @@ void ConfigWidgetConnectionsTable::updateWindow()
 	m_pRealTable->setSortingEnabled(sorting);
 
 	m_pRealTable->setCursor(Qt::ArrowCursor);  // okay, back to normal.
-
-	m_pRealTable->resizeColumnsToContents();
-	m_pRealTable->horizontalHeader()->setStretchLastSection(true);
 }
 
 void ConfigWidgetConnectionsTable::slotDoubleClicked(int row, int column)

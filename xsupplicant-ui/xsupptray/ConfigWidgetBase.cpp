@@ -80,4 +80,8 @@ void ConfigWidgetBase::detach()
 {
 }
 
+bool ConfigWidgetBase::allowEdit()
+{
+	return true;
+}
 

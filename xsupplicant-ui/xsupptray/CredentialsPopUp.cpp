@@ -243,8 +243,9 @@ bool CredentialsPopUp::isPINType()
 	{
 		if (xsupgui_request_get_profile_config(conn_config->profile, &prof_config) == REQUEST_SUCCESS)
 		{
-			if ((prof_config->method->method_num == EAP_TYPE_SIM) || 
-				(prof_config->method->method_num == EAP_TYPE_AKA))
+			if ((prof_config->method != NULL) && 
+				((prof_config->method->method_num == EAP_TYPE_SIM) || 
+				(prof_config->method->method_num == EAP_TYPE_AKA)))
 			{
 				result = true;
 			}
@@ -372,7 +373,7 @@ bool CredentialsPopUp::createUPW()
 	if (m_pRealForm == NULL) return false;
 
 	// If the user hits the "X" button in the title bar, close us out gracefully.
-	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
 	m_pUsername = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldUserName");
@@ -462,7 +463,7 @@ bool CredentialsPopUp::createPSK()
 	if (m_pRealForm == NULL) return false;
 
 	// If the user hits the "X" button in the title bar, close us out gracefully.
-	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
 	m_pUsername = NULL;

@@ -107,6 +107,10 @@ signals:
   void signalPSKSuccess(const QString &);
   void signalNewInterfaceInserted();
   void signalBadCreds(const QString &);
+  void signalNetworkConnectDisconnect();
+  void signalPSKTimeout(const QString &);
+  void signalConnectionUnbound(const QString &);
+  void signalAutoConnectionChange(const QString &);
 
 public:
   Emitter();
@@ -164,6 +168,10 @@ public:
   void sendPSKSuccess(const QString &);
   void sendBadCreds(const QString &);
   void sendNewInterfaceInserted();
+  void sendNetworkConnectDisconnect();
+  void sendPSKTimeout(QString);
+  void sendConnectionUnbound(QString);
+  void sendAutoConnectionChange(QString);
 };
 
 #endif  // _EMITTER_H_

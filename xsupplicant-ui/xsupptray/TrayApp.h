@@ -52,6 +52,8 @@ class ConnectionWizard;
 class WirelessNetworkMenu;
 class ConnectionSelectDlg;
 
+#define RECONNECT_MAX_ATTEMPTS	  10   // A timeout takes 30 seconds.  So 10 attempts is 5 minutes.
+
 class TrayApp : public QWidget
 {
     Q_OBJECT
@@ -170,6 +172,7 @@ private:
 	Emitter *m_pEmitter;
     QTimer m_timer;
     bool m_bConnectFailed;
+	unsigned char m_cConnectFailures;
     
     // dialog window classes
 	ConfigDlg *m_pConfDlg;

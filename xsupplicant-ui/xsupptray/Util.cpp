@@ -394,3 +394,120 @@ QString Util::getConnectionTextFromConnectionState(Util::ConnectionStatus state)
 	}
 	return text;
 }
+
+bool Util::isIPAddrValid(QString addr)
+{
+	if ((addr == "0.0.0.0") || (addr == "255.255.255.255")) return false;
+
+	return true;
+}
+
+unsigned int Util::ipToInt(QString addr, unsigned int failure)
+{
+	QRegExp regex("^(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)");
+	unsigned int result = 0, temp = 0;
+	bool ok;
+
+	regex.indexIn(addr);
+	if (regex.exactMatch(addr) == false) return failure;   // return all Fs, so that any tests done fail.
+
+	result = regex.cap(1).toInt(&ok);
+	if (!ok) return failure;
+	result = result << 24;
+
+	temp = regex.cap(2).toInt(&ok);
+	if (!ok) return failure;
+	result |= (temp << 16);
+
+	temp = regex.cap(3).toInt(&ok);
+	if (!ok) return failure;
+	result |= (temp << 8);
+
+	temp = regex.cap(4).toInt(&ok);
+	if (!ok) return failure;
+	result |= temp;
+
+	return result;
+}
+
+bool Util::isNetmaskValid(QString netmask)
+{
+	uint32_t addr = 0;
+	bool ones = true;
+	int i = 0;
+	int x = 0;
+
+	if (netmask == "") return false;
+
+	addr = ipToInt(netmask, 0);
+	if (addr == 0) return false;
+
+	if ((addr & 0x80000000) != 0x80000000)
+	{
+		// Our first bit isn't 1, this mask is invalid.
+		return false;
+	}
+
+	for (i=31; i>=0; i--)
+	{
+		x = 0;
+		x = (1 << i);
+		if ((x & addr) == x)
+		{
+			if (ones != true) return false;   // We got an "out of place" 1.
+		}
+		else
+		{
+			if (ones == true)
+			{
+				ones = false;   // From here on out, everything should be a 0.
+			}
+		}
+	}
+
+	return true;
+}
+
+bool Util::isGWinSubnet(QString addr, QString netmask, QString gateway)
+{
+	uint32_t addr_n = 0, netmask_n = 0, gateway_n = 0;
+	uint32_t addr_net_part = 0;
+	uint32_t gw_net_part = 0;
+
+	if ((addr == "") || (netmask == "") || (gateway == "")) return FALSE;
+
+	addr_n = ipToInt(addr, 0);
+	netmask_n = ipToInt(netmask, 0);
+	gateway_n = ipToInt(gateway, 0);
+
+	if ((addr_n == 0) || (netmask_n == 0) || (gateway_n == 0)) return FALSE;
+
+	addr_net_part = addr_n & netmask_n;
+	gw_net_part = gateway_n & netmask_n;
+
+	if (addr_net_part != gw_net_part) return false;  // They are in different subnets.
+
+	return true;
+}
+
+bool Util::ipIsBroadcast(QString addr, QString netmask)
+{
+	uint32_t addr_n = 0, netmask_n = 0;
+	uint32_t addr_host_part = 0;
+
+	if ((addr == "") || (netmask == "")) return false;
+
+	addr_n = ipToInt(addr, 0);
+	netmask_n = ipToInt(netmask, 0);
+
+	if ((addr_n == 0) || (netmask_n == 0)) return false;
+
+	netmask_n = ~netmask_n;
+	addr_host_part = addr_n & netmask_n;
+
+	if ((addr_host_part == 0) || (addr_host_part == netmask_n)) return true;
+
+	return false;
+}
+
+

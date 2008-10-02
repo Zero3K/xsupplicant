@@ -54,6 +54,7 @@ class ConfigWidgetEditConnection : public ConfigWidgetBase
 	 void discard();
 	 void detach();
 	 void getPageName(QString &);
+	 bool allowEdit();
 
 signals:
 	 void signalDataChanged();
@@ -71,7 +72,6 @@ private slots:
 	 };
 
 	void updateWindow();
-	void connectionInUse();
 
 	 QWidget *m_pParent;
 

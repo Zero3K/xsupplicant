@@ -44,6 +44,7 @@ ConfigConnAdaptTabWireless::ConfigConnAdaptTabWireless(QWidget *pRealWidget, Emi
 
 ConfigConnAdaptTabWireless::~ConfigConnAdaptTabWireless()
 {
+	m_Timer.stop();
 	if (m_bTimerConnected)
 	{
 		Util::myDisconnect(&m_Timer, SIGNAL(timeout()), this, SLOT(slotScanTimeout()));
@@ -286,6 +287,13 @@ void ConfigConnAdaptTabWireless::updateSSIDData()
 	int index =  0;
 
 	populateSSIDs();   // Will also return if the interface is enabled.
+
+	if (m_pConn == NULL)
+	{
+		QMessageBox::critical(this, tr("Invalid Data"), tr("There is no connection data for the connection selected.  "
+			"This is a bug in the program, please report it along with steps to reproduce it."));
+		return;
+	}
 
 	if (m_pConn->flags & CONFIG_NET_IS_HIDDEN)
 	{
@@ -606,7 +614,7 @@ void ConfigConnAdaptTabWireless::slotHiddenToggled(bool enabled)
 	{
 		m_pBroadcastCombo->setEnabled(true);
 		m_pHiddenName->setEnabled(false);
-		m_pRescan->setEnabled(true);
+		m_pRescan->setEnabled((!m_bTimerConnected));
 		m_pKeyTypeCombo->setEnabled(false);
 		m_pKeyTypeLabel->setEnabled(false);
 	}
@@ -938,13 +946,10 @@ void ConfigConnAdaptTabWireless::slotRescan()
 		m_pRescan->setText(tr("Rescan"));
 		m_pRescan->setEnabled(true);
 	}
-
-	m_Timer.setInterval(30000);  // Give it 30 seconds to time out on.
-	m_Timer.start();
-
-	m_bTimerConnected = true;
-
+ 
+	m_Timer.start(30000); // Give it 30 seconds to time out on.
 	Util::myConnect(&m_Timer, SIGNAL(timeout()), this, SLOT(slotScanTimeout()));
+	m_bTimerConnected = true;
 }
 
 void ConfigConnAdaptTabWireless::slotAssocChanged()
@@ -990,9 +995,10 @@ void ConfigConnAdaptTabWireless::slotScanComplete(const QString &scanInt)
 
 	if (m_DeviceName != scanInt) return;
 
+	m_Timer.stop();
+	
 	if (m_bTimerConnected)
 	{
-		m_Timer.stop();
 		Util::myDisconnect(&m_Timer, SIGNAL(timeout()), this, SLOT(slotScanTimeout()));
 		m_bTimerConnected = false;
 	}
@@ -1023,10 +1029,9 @@ void ConfigConnAdaptTabWireless::slotScanComplete(const QString &scanInt)
 void ConfigConnAdaptTabWireless::slotScanTimeout()
 {
 	m_Timer.stop();
-
-	QMessageBox::information(this, tr("Scan Timeout"), tr("The attempt to rescan for wireless networks timed out.  Your SSID list could not be updated."));
 	Util::myDisconnect(&m_Timer, SIGNAL(timeout()), this, SLOT(slotScanTimeout()));
-	m_bTimerConnected = false;
+	m_bTimerConnected = false;	
+	QMessageBox::information(this, tr("Scan Timeout"), tr("The attempt to rescan for wireless networks timed out.  Your SSID list could not be updated."));
 	m_pRescan->setEnabled(true);
 	m_pRescan->setText(tr("Rescan"));
 }

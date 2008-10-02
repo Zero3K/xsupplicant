@@ -140,6 +140,22 @@ bool ConfigWidgetEditProfile::newItem()
 		return true;
 }
 
+bool ConfigWidgetEditProfile::allowEdit()
+{
+	int state = 0;
+
+	if (xsupgui_request_get_is_profile_in_use(m_pProfile->name, &state) == REQUEST_SUCCESS)
+	{
+		if (state == TRUE) 
+		{
+			QMessageBox::information(this, tr("Profile In Use"), tr("This profile is currently in use by an active connection.  You need to disconnect that connection in order to modify the settings of this profile."));
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void ConfigWidgetEditProfile::updateWindow()
 {
 	int index = 0;

@@ -93,8 +93,12 @@ TrayApp::TrayApp(QApplication &app):
   m_pConnWizard				= NULL;
   m_pConnSelDlg				= NULL;
   m_pQuickConnectMenu		= NULL;
+  m_cConnectFailures		= 0;
 
   uiCallbacks.launchHelpP = &HelpWindow::showPage;
+  uiCallbacks.connectionNameForConnectionIDP = &XSupCalls::connectionNameFromConnectionID;
+  uiCallbacks.connectionAdapterIsWirelessP = &XSupCalls::connectionIsWirelessFromConnectionID;
+  uiCallbacks.postureSettingsForConnectionIDP = &XSupCalls::postureSettingsForConnectionID;
 }
 
 //! Destructor
@@ -246,6 +250,8 @@ bool TrayApp::init(int argc)
     return false;
   }
 
+  loadPlugins();
+
   createTrayActionsAndConnections();
 
   createTrayIcon();
@@ -257,8 +263,6 @@ bool TrayApp::init(int argc)
   if(m_pTrayIcon != NULL) {
     m_pTrayIcon->show();
   }
-
-  loadPlugins();
   
   return true;
 }
@@ -310,6 +314,7 @@ void TrayApp::slotConnectToSupplicant()
   bool bcode = true;
   QString full, number;
   UIPlugins *plugin = m_pPlugins;
+  char verResult = 0;
 
   m_timer.stop();
   if (!m_bSupplicantConnected)
@@ -345,7 +350,36 @@ void TrayApp::slotConnectToSupplicant()
     }
     else if (m_supplicant.getAndCheckSupplicantVersion(full, number) == false)
     {
-      slotExit();
+	  // Disconnect any live connections to the engine so we don't plug up the works.
+	  m_supplicant.disconnectEventListener();
+	  m_supplicant.disconnectXSupplicant();
+
+      if (verResult == VERSION_CHECK_TIMEOUT)
+	  {
+		  // Something is going on that has caused the engine to block.  (Usually some posture behvaior.)
+		  // Take a nap and try again later up to RECONNECT_MAX_ATTEMPTS time(s).
+		  if (m_cConnectFailures >= RECONNECT_MAX_ATTEMPTS)
+		  {
+			  QMessageBox::critical(this, tr("Startup Failed"), tr("Unable to establish a stable connection to the supplicant engine.  This UI will now terminate."));
+			  slotExit();
+			  return;
+		  }
+
+		  m_cConnectFailures++;
+	      m_bConnectFailed = true;
+
+		  m_pTrayIcon->setToolTip(tr("The XSupplicant service is responding slowly.  Please wait."));
+	      setTrayIconState(ENGINE_DISCONNECTED);
+	      // disable the menu options
+	      setEnabledMenuItems(false);
+
+	      m_timer.start(1000); // wait one second and try again
+	  }
+	  else
+	  {
+		  QMessageBox::critical(this, tr("Startup Failed"), tr("This version of the UI is not compatible with the supplicant engine version in use."));
+		  slotExit();
+	  }
     }
     else
     {
@@ -358,8 +392,10 @@ void TrayApp::slotConnectToSupplicant()
       // Enable the menu items
       setEnabledMenuItems(true);
       m_bSupplicantConnected = true;
-      postConnectActions();
-      start(); // once connected - do this
+
+	  m_supplicant.updateAdapters(false);
+
+	  m_pEmitter = new Emitter();
 
 	  // Initialize and setup all the plugins...
 	  while(plugin != NULL)
@@ -370,8 +406,12 @@ void TrayApp::slotConnectToSupplicant()
 			plugin = plugin->next;
 	  }
 
+
 	  connect(m_pEmitter, SIGNAL(signalTNCReply(uint32_t, uint32_t, uint32_t, uint32_t, bool, int)), 
 		  &m_supplicant, SLOT(TNCReply(uint32_t, uint32_t, uint32_t, uint32_t, bool, int)));
+
+      postConnectActions();
+      start(); // once connected - do this
     }
   }
 }
@@ -735,6 +775,7 @@ void TrayApp::setGlobalTrayIconState()
 			i++;
 		}
 	}
+	xsupgui_request_free_int_enum(&intlist);
 	
 	updateGlobalTrayIconState();
 	connectGlobalTrayIconSignals();
@@ -1385,8 +1426,9 @@ void TrayApp::slotCreateTroubleticket()
 
 	if (m_pCreateTT != NULL)
 	{
-		delete m_pCreateTT;
-		m_pCreateTT = NULL;
+		QMessageBox::information(this, tr("Trouble Ticket Creation In Progress"),
+			tr("There is already a trouble ticket being created.  Please wait until it is complete before attempting to create another one."));
+		return;
 	}
 
     err = m_supplicant.createTroubleTicket((char *)path, "c:\\", 1);

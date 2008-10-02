@@ -34,8 +34,9 @@
 
 UICallbacks::UICallbacks() 
 {
-	launchHelpP                    = NULL;
-	connectionNameForConnectionIDP = NULL;
+	launchHelpP                     = NULL;
+	connectionNameForConnectionIDP  = NULL;
+	postureSettingsForConnectionIDP = NULL;
 }
 
 UICallbacks::~UICallbacks()
@@ -50,7 +51,7 @@ void UICallbacks::launchHelp(const QString &file, const QString &anchor)
 	}
 }
 
-QString UICallbacks::connectionNameForConnectionID(int connectionID)
+QString UICallbacks::connectionNameForConnectionID(unsigned int connectionID)
 {
 	if(connectionNameForConnectionIDP != NULL) 
 	{
@@ -59,3 +60,22 @@ QString UICallbacks::connectionNameForConnectionID(int connectionID)
 
 	return QString("Not Available");
 }
+
+bool UICallbacks::connectionAdapterIsWireless(unsigned int connectionID)
+{
+	if (connectionAdapterIsWirelessP != NULL)
+		return connectionAdapterIsWirelessP(connectionID);
+		
+	// default to wired connection
+	return false;
+}
+
+unsigned int UICallbacks::postureSettingsForConnectionID(unsigned int connectionID)
+{
+	if (postureSettingsForConnectionIDP != NULL)
+		return postureSettingsForConnectionIDP(connectionID);
+
+	// default to no posture information
+	return 0;
+}
+

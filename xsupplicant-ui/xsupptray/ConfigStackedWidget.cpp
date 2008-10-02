@@ -67,12 +67,12 @@ ConfigStackedWidget::~ConfigStackedWidget()
 		Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SIGNAL(signalHelpClicked()));
 		Util::myDisconnect(m_pNavPanel, SIGNAL(signalNewItem(int)), this, SLOT(slotNewItem(int)));
 
-/*		Util::myDisconnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pNavPanel, SIGNAL(signalAddItem(int, const QString &)));
-		Util::myDisconnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pNavPanel, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
-		Util::myDisconnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pNavPanel, SIGNAL(signalRemoveItem(int, const QString &)));
-		Util::myDisconnect(this, SIGNAL(signalNavChangeItem(int, const QString &)), m_pParent, SIGNAL(signalNavChangeItem(int, const QString &)));
-*/
 		Util::myDisconnect(m_pNavPanel, SIGNAL(signalItemDeleted(int)), this, SLOT(slotDeletedItem(int)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalNetworkConnectDisconnect()), this, SLOT(slotConnectionStateChanged()));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotConnectionStateChanged()));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotConnectionStateChanged()));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalConnectionUnbound(const QString &)), this, SLOT(slotConnectionStateChanged()));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalAutoConnectionChange(const QString &)), this, SLOT(slotConnectionStateChanged()));
 	}
 
 	if (m_pActivePage != NULL)
@@ -93,16 +93,31 @@ bool ConfigStackedWidget::attach()
 	Util::myConnect(m_pParent, SIGNAL(signalHelpClicked()), this, SIGNAL(signalHelpClicked()));
 	Util::myConnect(m_pNavPanel, SIGNAL(signalNewItem(int)), this, SLOT(slotNewItem(int)));
 
-/*	Util::myConnect(this, SIGNAL(signalAddItem(int, const QString &)), m_pNavPanel, SIGNAL(signalAddItem(int, const QString &)));
-	Util::myConnect(this, SIGNAL(signalRenameItem(int, const QString &, const QString &)), m_pNavPanel, SIGNAL(signalRenameItem(int, const QString &, const QString &)));
-	Util::myConnect(this, SIGNAL(signalRemoveItem(int, const QString &)), m_pNavPanel, SIGNAL(signalRemoveItem(int, const QString &)));
-	Util::myConnect(this, SIGNAL(signalNavChangeItem(int, const QString &)), m_pParent, SIGNAL(signalNavChangeItem(int, const QString &)));
-*/
 	Util::myConnect(m_pNavPanel, SIGNAL(signalItemDeleted(int)), this, SLOT(slotDeletedItem(int)));
+
+	Util::myConnect(m_pEmitter, SIGNAL(signalNetworkConnectDisconnect()), this, SLOT(slotConnectionStateChanged()));
+	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(slotConnectionStateChanged()));
+	Util::myConnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(slotConnectionStateChanged()));
+	Util::myConnect(m_pEmitter, SIGNAL(signalConnectionUnbound(const QString &)), this, SLOT(slotConnectionStateChanged()));
+	Util::myConnect(m_pEmitter, SIGNAL(signalAutoConnectionChange(const QString &)), this, SLOT(slotConnectionStateChanged()));
 
 	m_bConnected = true;
 
 	return true;
+}
+
+void ConfigStackedWidget::slotConnectionStateChanged()
+{
+	if (m_pActivePage->allowEdit())
+	{
+		m_pRealWidget->currentWidget()->setEnabled(true);
+		emit signalSetSaveBtn(true);
+	}
+	else
+	{
+		m_pRealWidget->currentWidget()->setEnabled(false);
+		emit signalSetSaveBtn(false);
+	}
 }
 
 void ConfigStackedWidget::slotNewItem(int itemType)
@@ -218,6 +233,15 @@ void ConfigStackedWidget::changeWidget(int stackIdx, const QString &editItem, bo
 
 	// If this is a new connection, we should have already moved to the right place.
 	if (!isNew) m_pNavPanel->changeSelectedItem(curPage, editItem);
+
+	if (m_pActivePage->allowEdit())
+	{
+		m_pRealWidget->currentWidget()->setEnabled(true);
+	}
+	else
+	{
+		m_pRealWidget->currentWidget()->setEnabled(false);
+	}
 }
 
 void ConfigStackedWidget::doConnectionsPanels(QString toEdit, bool isNew)

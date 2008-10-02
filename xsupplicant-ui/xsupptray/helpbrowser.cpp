@@ -135,3 +135,4 @@ void HelpWindow::showPage(const QString &file, const QString &page)
 	}
 }
 
+

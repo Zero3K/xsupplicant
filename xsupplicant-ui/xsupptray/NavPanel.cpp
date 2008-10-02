@@ -464,25 +464,39 @@ void NavPanel::slotDelItem()
 	else if (selectedItem->parent() == m_pConnectionsItem)
 	{
 	  temp = selectedItem->text(0);
-	  if (QMessageBox::question(this, tr("Delete a Connection"), 
-		  tr("Are you sure you want to delete connection '%1'?").arg(temp), 
-		  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+	  
+	  // check if the current connection is in use. If so, alert user and disallow deletion
+	  int state = 0;
+	  bool connectionInUse = false;
+	  if (xsupgui_request_get_is_connection_in_use(temp.toAscii().data(), &state) == REQUEST_SUCCESS)
+		  connectionInUse = state;
+		  
+	  if (connectionInUse == true)
 	  {
-		if (m_supplicant->deleteConnectionConfig(temp) == true)
-		{
-			emit signalItemDeleted(CONNECTIONS_ITEM);
-
-			toDeleteIdx = m_pConnectionsItem->indexOfChild(selectedItem);
-			toDelete = m_pConnectionsItem->takeChild(toDeleteIdx);
-
-			delete toDelete;
-
-			selectedItem = getSelectedItem();
-			slotItemClicked(selectedItem, 0);
-
-			m_pEmitter->sendConnConfigUpdate();
-		}
+		QMessageBox::warning(NULL,tr("Connection In Use"), tr("The selected connection cannot be deleted because it is currently in use."));
 	  }
+	  else
+	  {
+		  if (QMessageBox::question(this, tr("Delete a Connection"), 
+			  tr("Are you sure you want to delete connection '%1'?").arg(temp), 
+			  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+		  {
+			if (m_supplicant->deleteConnectionConfig(temp) == true)
+			{
+				emit signalItemDeleted(CONNECTIONS_ITEM);
+
+				toDeleteIdx = m_pConnectionsItem->indexOfChild(selectedItem);
+				toDelete = m_pConnectionsItem->takeChild(toDeleteIdx);
+
+				delete toDelete;
+
+				selectedItem = getSelectedItem();
+				slotItemClicked(selectedItem, 0);
+
+				m_pEmitter->sendConnConfigUpdate();
+			}
+		  }
+		}
 	}
 	else if (selectedItem == m_pProfilesItem) 
 	{
@@ -491,22 +505,36 @@ void NavPanel::slotDelItem()
 	else if (selectedItem->parent() == m_pProfilesItem)
 	{
 	  temp = selectedItem->text(0);
-	  if (QMessageBox::question(this, tr("Delete a Profile"), 
-		  tr("Are you sure you want to delete profile '%1'?").arg(temp), 
-		  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+	  
+	  // check if the current profile is in use. If so, alert user and disallow deletion
+	  int state = 0;
+	  bool profileInUse = false;
+	  if (xsupgui_request_get_is_profile_in_use(temp.toAscii().data(), &state) == REQUEST_SUCCESS)
+		  profileInUse = state;
+		  
+	  if (profileInUse == true)
 	  {
-		if (m_supplicant->deleteProfileConfig(temp) == true)
-		{
-			emit signalItemDeleted(PROFILES_ITEM);
+		QMessageBox::warning(NULL,tr("Profile In Use"), tr("The selected profile cannot be deleted because it is currently in use."));
+	  }
+	  else
+	  {	  
+		  if (QMessageBox::question(this, tr("Delete a Profile"), 
+			  tr("Are you sure you want to delete profile '%1'?").arg(temp), 
+			  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+		  {
+			if (m_supplicant->deleteProfileConfig(temp) == true)
+			{
+				emit signalItemDeleted(PROFILES_ITEM);
 
-			toDeleteIdx = m_pProfilesItem->indexOfChild(selectedItem);
-			toDelete = m_pProfilesItem->takeChild(toDeleteIdx);
+				toDeleteIdx = m_pProfilesItem->indexOfChild(selectedItem);
+				toDelete = m_pProfilesItem->takeChild(toDeleteIdx);
 
-			delete toDelete;
+				delete toDelete;
 
-			selectedItem = getSelectedItem();
-			slotItemClicked(selectedItem, 0);
-		}
+				selectedItem = getSelectedItem();
+				slotItemClicked(selectedItem, 0);
+			}
+		  }
 	  }
 	}
 	else if (selectedItem == m_pTrustedServersItem) 
@@ -516,22 +544,36 @@ void NavPanel::slotDelItem()
 	else if (selectedItem->parent() == m_pTrustedServersItem)
 	{
 	  temp = selectedItem->text(0);
-	  if (QMessageBox::question(this, tr("Delete a Trusted Server"), 
-		  tr("Are you sure you want to delete trusted server '%1'?").arg(temp), 
-		  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+	  
+	  // check if the current trusted server is in use. If so, alert user and disallow deletion
+	  int state = 0;
+	  bool serverInUse = false;
+	  if (xsupgui_request_get_is_trusted_server_in_use(temp.toAscii().data(), &state) == REQUEST_SUCCESS)
+		  serverInUse = state;
+		  
+	  if (serverInUse == true)
 	  {
-		if (m_supplicant->deleteTrustedServerConfig(temp) == true)
-		{
-			emit signalItemDeleted(TRUSTED_SERVERS_ITEM);
+		QMessageBox::warning(NULL,tr("Trusted Server In Use"), tr("The selected trusted server cannot be deleted because it is currently in use."));
+	  }
+	  else
+	  {		  
+		  if (QMessageBox::question(this, tr("Delete a Trusted Server"), 
+			  tr("Are you sure you want to delete trusted server '%1'?").arg(temp), 
+			  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
+		  {
+			if (m_supplicant->deleteTrustedServerConfig(temp) == true)
+			{
+				emit signalItemDeleted(TRUSTED_SERVERS_ITEM);
 
-			toDeleteIdx = m_pTrustedServersItem->indexOfChild(selectedItem);
-			toDelete = m_pTrustedServersItem->takeChild(toDeleteIdx);
+				toDeleteIdx = m_pTrustedServersItem->indexOfChild(selectedItem);
+				toDelete = m_pTrustedServersItem->takeChild(toDeleteIdx);
 
-			delete toDelete;
+				delete toDelete;
 
-			selectedItem = getSelectedItem();
-			slotItemClicked(selectedItem, 0);
-		}
+				selectedItem = getSelectedItem();
+				slotItemClicked(selectedItem, 0);
+			}
+		  }
 	  }
 	}
 	else

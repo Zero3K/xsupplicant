@@ -248,6 +248,7 @@ void TrustedRootCertsDlg::slotImport()
 			  addRowsToCertTable();
 		  }
 	  }
+	  free(path);
   }
 }
 

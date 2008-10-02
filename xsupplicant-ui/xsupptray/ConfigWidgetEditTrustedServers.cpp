@@ -188,6 +188,22 @@ bool ConfigWidgetEditTrustedServers::attach()
 	return true;
 }
 
+bool ConfigWidgetEditTrustedServers::allowEdit()
+{
+	int state;
+
+	if (xsupgui_request_get_is_trusted_server_in_use(m_pTrustedServer->name, &state) == REQUEST_SUCCESS)
+	{
+		if (state == TRUE) 
+		{
+			QMessageBox::information(this, tr("Trusted Server In Use"), tr("This trusted server is in use by an active connection.  You will not be able to edit the configuration until that connection is terminated."));
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool ConfigWidgetEditTrustedServers::newItem()
 {
 		// This is a new server configuration.
@@ -314,11 +330,27 @@ void ConfigWidgetEditTrustedServers::slotDataChanged()
 bool ConfigWidgetEditTrustedServers::save()
 {
   QString temp;
+  char *temp_ptr = NULL;
+  config_trusted_server *pConfig = NULL;
+  int retval = 0;
 
 	if (m_pServerNameEdit->text() == "")
 	{
 		QMessageBox::critical(this, tr("Trusted Server Name Error"), tr("You must specify a valid trusted server name before attempting to save."));
 		return false;
+	}
+
+	if (m_bNewServer)
+	{
+		temp_ptr = _strdup(m_pServerNameEdit->text().toAscii());
+		retval = xsupgui_request_get_trusted_server_config(temp_ptr, &pConfig);
+		free(temp_ptr);
+		if ((retval == REQUEST_SUCCESS) && (pConfig != NULL))
+		{
+			xsupgui_request_free_trusted_server_config(&pConfig);
+			QMessageBox::critical(this, tr("Invalid Trusted Server Name"), tr("A trusted server with this name already exists.  Please correct this and try again."));
+			return false;
+		}
 	}
 
 	if (m_pCNEdit != NULL)

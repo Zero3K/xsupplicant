@@ -168,6 +168,12 @@ bool ConfigConnNetTab::save()
 			return false;
 		}
 
+		if (Util::isIPAddrValid(m_pIPAddrEdit->text()) == false) 
+		{
+			QMessageBox::critical(this, tr("Configuration Error"), tr("The IP address provided is a broadcast address.  Please provide a valid address."));
+			return false;
+		}
+
 		if (m_pConn->ip.ipaddr != NULL)
 		{
 			free(m_pConn->ip.ipaddr);
@@ -188,11 +194,35 @@ bool ConfigConnNetTab::save()
 			m_pConn->ip.netmask = NULL;
 		}
 
+		if (Util::isNetmaskValid(m_pNetmaskEdit->text()) == false) 
+		{
+			QMessageBox::critical(this, tr("Configuration Error"), tr("The netmask provided is invalid."));
+			return false;
+		}
+		
+		if (Util::ipIsBroadcast(m_pIPAddrEdit->text(), m_pNetmaskEdit->text()) == true)
+		{
+			QMessageBox::critical(this, tr("Configuration Error"), tr("The IP address provided is a broadcast address.  Please provide a valid IP address."));
+			return false;
+		}
+
 		m_pConn->ip.netmask = _strdup(m_pNetmaskEdit->text().toAscii());
 
 		if (m_pGWEdit->text() == "")
 		{
 			QMessageBox::critical(this, tr("Configuration Error"), tr("Please enter a valid gateway address in the space provided."));
+			return false;
+		}
+
+		if (Util::isIPAddrValid(m_pGWEdit->text()) == false) 
+		{
+			QMessageBox::critical(this, tr("Configuration Error"), tr("Please enter a valid gateway address in the space provided."));
+			return false;
+		}
+
+		if (Util::isGWinSubnet(m_pIPAddrEdit->text(), m_pNetmaskEdit->text(), m_pGWEdit->text()) == false)
+		{
+			QMessageBox::critical(this, tr("Configuration Error"), tr("The provided gateway is not a member of the same subnet as the IP address."));
 			return false;
 		}
 

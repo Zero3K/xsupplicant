@@ -119,13 +119,6 @@ void eapmd5_check(eap_type_data *eapdata)
       return;
     }
 
-  if (eapdata->eapReqData[sizeof(struct eap_header)] != MD5_LENGTH)
-    {
-      debug_printf(DEBUG_NORMAL, "MD5 challenge is greater than 16 bytes!\n");
-      eap_type_common_fail(eapdata);
-      return;
-    }
-
   md5conf = (struct config_pwd_only *)eapdata->eap_conf_data;
 
   if (md5conf == NULL)

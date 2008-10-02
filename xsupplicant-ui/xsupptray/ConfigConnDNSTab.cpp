@@ -217,6 +217,11 @@ bool ConfigConnDNSTab::save()
 
 		if (m_pPrimaryDNS->text() != "")
 		{
+			if (Util::isIPAddrValid(m_pPrimaryDNS->text()) == false) 
+			{
+				QMessageBox::critical(this, tr("DNS Setting Error"), tr("The address provided for the primary DNS is a broadcast address.  Please enter a valid address."));
+				return false;
+			}
 			m_pConn->ip.dns1 = _strdup(m_pPrimaryDNS->text().toAscii());
 		}
 
@@ -228,6 +233,11 @@ bool ConfigConnDNSTab::save()
 
 		if (m_pSecondaryDNS->text() != "")
 		{
+			if (Util::isIPAddrValid(m_pSecondaryDNS->text()) == false) 
+			{
+				QMessageBox::critical(this, tr("DNS Setting Error"), tr("The address provided for the secondary DNS is a broadcast address.  Please enter a valid address."));
+				return false;
+			}
 			m_pConn->ip.dns2 = _strdup(m_pSecondaryDNS->text().toAscii());
 		}
 

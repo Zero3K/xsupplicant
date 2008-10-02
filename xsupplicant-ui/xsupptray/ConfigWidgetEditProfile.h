@@ -55,6 +55,7 @@ class ConfigWidgetEditProfile : public ConfigWidgetBase
 	 bool newItem();
 	 void discard();
 	 void getPageName(QString &);
+	 bool allowEdit();
 
 private slots:
 	 void slotDataChanged();

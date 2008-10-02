@@ -136,7 +136,7 @@ void ConfigWidgetEditConnection::updateWindow()
 
 	if (m_bNewConnection)
 	{
-	  temp = "New Connection";
+	  temp = tr("New Connection");
 		if (m_pSupplicant->createNewConnection(temp, &m_pConnection) != true)
 		{
 			QMessageBox::critical(this, tr("New Connection"), tr("There was an error attempting to create a new Connection."));
@@ -152,7 +152,6 @@ void ConfigWidgetEditConnection::updateWindow()
 	else if (m_pSupplicant->getConfigConnection(m_originalConnName, &m_pConnection, true) == true)
 	{
 		m_lastConnName = m_originalConnName;
-		connectionInUse();
 	}
 
 	if (m_pConnection != NULL) m_pConnNameEdit->setText(QString(m_pConnection->name));
@@ -168,6 +167,9 @@ void ConfigWidgetEditConnection::slotDataChanged()
 bool ConfigWidgetEditConnection::save()
 {
   QString temp;
+  int retval = 0;
+  config_connection *pConfig = NULL;
+  char *temp_ptr = NULL;
 
 	if (m_pConnNameEdit->text() == "")
 	{
@@ -178,6 +180,19 @@ bool ConfigWidgetEditConnection::save()
 	if (m_pTabsWidget != NULL)
 	{
 		if (m_pTabsWidget->save() == false) return false;
+	}
+
+	if (m_bNewConnection)
+	{
+		temp_ptr = _strdup(m_pConnNameEdit->text().toAscii());
+		retval = xsupgui_request_get_connection_config(temp_ptr, &pConfig);
+		free(temp_ptr);
+		if ((retval == REQUEST_SUCCESS) && (pConfig != NULL))
+		{
+			xsupgui_request_free_connection_config(&pConfig);
+			QMessageBox::critical(this, tr("Invalid Connection Name"), tr("A connection with this name already exists.  Please correct this and try again."));
+			return false;
+		}
 	}
 
 	if (m_pConnection->name != NULL)
@@ -277,23 +292,18 @@ void ConfigWidgetEditConnection::slotHelp()
 /**
  * \brief Check to see if this connection is in use.  If it is, then display a warning to the user.
  **/
-void ConfigWidgetEditConnection::connectionInUse()
+bool ConfigWidgetEditConnection::allowEdit()
 {
-	QString m_deviceName;
-	QString m_connName;
-	QString temp;
+	int state = 0;
 
-	if (m_pSupplicant->getDeviceName(QString(m_pConnection->device), m_deviceName, false) == false)
-		return;
-
-	temp = m_pConnection->device;
-	if (m_pSupplicant->getConfigConnectionName(temp, m_deviceName, m_connName, false) == false)
-		return;
-
-	if (m_connName == QString(m_pConnection->name))
+	if (xsupgui_request_get_is_connection_in_use(m_pConnection->name, &state) == REQUEST_SUCCESS)
 	{
-		QMessageBox::warning(this, tr("Connection In Use"), tr("This connection is currently in use.  "
-			"Changing the configuration of this connection will immediately take effect.  This may cause "
-			"your existing network connection to fail."));
+		if (state == TRUE) 
+		{
+			QMessageBox::information(this, tr("Connection In Use"), tr("This connection is currently in use.  You will not be able to edit the connection settings until the connection has been terminated."));
+			return false;
+		}
 	}
+
+	return true;
 }

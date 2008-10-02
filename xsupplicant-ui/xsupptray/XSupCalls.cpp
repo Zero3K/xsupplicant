@@ -1359,7 +1359,7 @@ bool XSupCalls::getDeviceDescription(const QString &deviceName, QString &deviceD
     {
       QMessageBox::critical(NULL, tr("Get device info"),
         tr("An error occurred while getting the device description for device '%1'\n%2\n%3\n%4\n%5\n%6\n\n")
-        .arg(deviceDescription)
+        .arg(deviceName)
         .arg(tr("This has multiple causes:"))
         .arg(tr("1. Your network card is disabled."))
         .arg(tr("2. Your configuration file (*.conf) is incorrectly formatted."))
@@ -1534,7 +1534,7 @@ void XSupCalls::mapPhysicalState(int state, QString &status)
 	    break;
 
     case WIRELESS_INT_HELD:
-	    status = tr("The interface is waiting..");
+	    status = tr("Network Unavailable");
 	    break;
 
     case 255:
@@ -1598,7 +1598,7 @@ void XSupCalls::map1XState(int state, QString &status)
       break;
 
     case DISCONNECTED:
-      status = tr("Disconnected");
+      status = tr("Network Unavailable");
       break;
 
     case CONNECTING:
@@ -1865,8 +1865,8 @@ bool XSupCalls::setConnection(QString &deviceName, QString &connectionName)
     else
     {
       QMessageBox::critical(NULL, tr("Set connection info"),
-        tr("An error occurred while setting the connection information for connection '%1' and device '%2'.\n")
-        .arg(connectionName).arg(deviceName));
+		  tr("An error occurred while setting the connection information for connection '%1' and device '%2'.  (Error : %3)\n")
+        .arg(connectionName).arg(deviceName).arg(retval));
     }
   }
   return bValue;
@@ -2337,6 +2337,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 	  {
 		  e.sendUIMessage(tr("Got a wireless scan complete message from an unknown interface."));
 	  }
+	  free(ints);
       break;
 
 	  case IPC_EVENT_REQUEST_PWD:
@@ -2465,6 +2466,20 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				e.sendBadCreds(temp);
 				break;
 
+			case IPC_EVENT_PSK_TIMEOUT:
+				temp = value;
+				e.sendPSKTimeout(temp);
+				break;
+
+			case IPC_EVENT_CONNECTION_UNBOUND:
+				temp = value;
+				e.sendConnectionUnbound(temp);
+				break;
+
+			case IPC_EVENT_AUTO_SELECTED_CONNECTION:
+				temp = value;
+
+
             default:
             if (getUIEventString(uievent, desc))
             {
@@ -2588,6 +2603,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 					if (pTNCMessages != NULL)
 					{
 						e.sendTNCUILoginWindowStatusUpdateEvent(imc, connID, oui, pTNCMessages[0].msgid);
+						xsupgui_events_free_tnc_msg_batch_data(&pTNCMessages);
 					}
                 }
                 break;
@@ -2596,12 +2612,19 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 				    e.sendUIMessage(tr("Notifying listeners of a remediation event."));
                     e.sendTNCUIRemediationEventBatchEvent(imc, connID, oui, batchType, pTNCMessages);
                 }break;
+			case BATCH_RECONNECT_REQUEST:
+				{
+					e.sendUIMessage("Notifying listeners of a reconnect request.");
+					e.sendTNCUIReconnectBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+				}
+				break;
 			case BATCH_TNC_CONNECTION_PURGE_EVENT:
 				{
 					e.sendUIMessage(tr("Notifying listeners of a TNC connection purge event."));
 					e.sendTNCUIPurgeConnectionBatchEvent(imc, connID, oui, batchType, pTNCMessages);
 				}break;
             default: // do nothing
+			  xsupgui_events_free_tnc_msg_batch_data(&pTNCMessages);
               break;
           }
 
@@ -4103,4 +4126,105 @@ int XSupCalls::createTroubleTicket(char *filename, char *scratchdir, int overwri
 	return xsupgui_request_create_trouble_ticket_file(filename, scratchdir, overwrite);
 }
 
+QString XSupCalls::connectionNameFromConnectionID(unsigned int connID)
+{
+	QString connName = "";
+	int retVal;
+	char *pIntName;
+	
+	retVal = xsupgui_request_intname_from_tnc_conn_id(connID, &pIntName);
+	if (retVal == REQUEST_SUCCESS && pIntName != NULL)
+	{
+		char *pConnName = NULL;
+		retVal = xsupgui_request_get_conn_name_from_int(pIntName, &pConnName);
+		if (retVal == REQUEST_SUCCESS && pConnName != NULL)
+			connName = pConnName;
+			
+		if (pConnName != NULL)
+			free(pConnName);
+	}
+	if (pIntName != NULL)
+		free(pIntName);
+	
+	return connName;
+}
+
+bool XSupCalls::connectionIsWirelessFromConnectionID(unsigned int connID)
+{
+	bool isWireless = false; // default to wired
+	int retVal;
+	char *pIntName = NULL;
+	
+	retVal = xsupgui_request_intname_from_tnc_conn_id(connID, &pIntName);
+	if (retVal == REQUEST_SUCCESS && pIntName != NULL)
+	{
+		char *pIntDesc = NULL;
+		
+		retVal = xsupgui_request_get_devdesc(pIntName, &pIntDesc);
+		if (retVal == REQUEST_SUCCESS && pIntDesc != NULL)
+		{
+			config_interfaces *pConfig = NULL;
+			retVal = xsupgui_request_get_interface_config(pIntDesc, &pConfig);
+			if (retVal == REQUEST_SUCCESS && pConfig != NULL)
+			{
+				if ((pConfig->flags & CONFIG_INTERFACE_IS_WIRELESS) == CONFIG_INTERFACE_IS_WIRELESS)
+					isWireless = true;
+			}
+				
+			if (pConfig != NULL)
+			{
+				xsupgui_request_free_interface_config(&pConfig);
+				pConfig = NULL;
+			}
+		}
+		
+		if (pIntDesc != NULL)
+			free(pIntDesc);
+	}
+	if (pIntName != NULL)
+		free(pIntName);
+	
+	return isWireless;
+}
+
+unsigned int XSupCalls::postureSettingsForConnectionID(unsigned int connID)
+{
+	char *intname = NULL;
+	char *conname = NULL;
+	config_connection *config = NULL;
+	config_profiles *profile = NULL;
+	unsigned int settings = 0;
+
+	if (xsupgui_request_intname_from_tnc_conn_id(connID, &intname) != REQUEST_SUCCESS)
+	{
+		return 0;
+	}
+
+	if (xsupgui_request_get_conn_name_from_int(intname, &conname) != REQUEST_SUCCESS)
+	{
+		free(intname);
+		return 0;
+	}
+	free(intname);
+
+	if (xsupgui_request_get_connection_config(conname, &config) != REQUEST_SUCCESS)
+	{
+		free(conname);
+		return 0;
+	}
+	free(conname);
+
+	if (xsupgui_request_get_profile_config(config->profile, &profile) != REQUEST_SUCCESS)
+	{
+		xsupgui_request_free_connection_config(&config);
+		return 0;
+	}
+	xsupgui_request_free_connection_config(&config);
+
+	settings = profile->compliance;
+
+	xsupgui_request_free_profile_config(&profile);
+
+	return settings;
+}
 

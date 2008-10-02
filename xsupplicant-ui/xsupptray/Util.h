@@ -78,6 +78,12 @@ public:
   static QString removePacketSchedulerFromName(char *fullName);
   static QString removePacketSchedulerFromName(const QString &fullName);
 
+  static bool isIPAddrValid(QString);
+  static unsigned int ipToInt(QString, unsigned int);
+  static bool isNetmaskValid(QString netmask);
+  static bool isGWinSubnet(QString addr, QString netmask, QString gateway);
+  static bool ipIsBroadcast(QString addr, QString netmask);
+
 #ifdef WINDOWS
   static char *myNullStrdup(const char *p);
 #else

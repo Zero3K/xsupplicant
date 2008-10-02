@@ -36,12 +36,16 @@ class UICallbacks
 {
 public:
 	void (*launchHelpP)(const QString &file, const QString &anchor);
-	QString (*connectionNameForConnectionIDP)(int connectionID);
+	QString (*connectionNameForConnectionIDP)(unsigned int connectionID);
+	bool (*connectionAdapterIsWirelessP)(unsigned int connectionID);
+	unsigned int (*postureSettingsForConnectionIDP)(unsigned int connectionID);
 
 	UICallbacks();
 	~UICallbacks();
 	void launchHelp(const QString &file, const QString &anchor);
-	QString connectionNameForConnectionID(int connectionID);
+	QString connectionNameForConnectionID(unsigned int connectionID);
+	bool connectionAdapterIsWireless(unsigned int connectionID);
+	unsigned int postureSettingsForConnectionID(unsigned int connectionID);
 };
 
 #endif // UI_CALLBACKS_H

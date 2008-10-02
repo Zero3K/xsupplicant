@@ -68,13 +68,11 @@ class ConfigStackedWidget : public QWidget
 
 signals:
 	 void signalSetSaveBtn(bool);
-// 	 void signalNavChangeSelected(int, const QString &);
 	 void signalSaveClicked();
 	 void signalHelpClicked();
      void signalAddItem(int, const QString &);
      void signalRenameItem(int, const QString &, const QString &);
 	 void signalRemoveItem(int, const QString &);
-//	 void signalNavChangeItem(int, const QString &);
 
  public slots:
 	 void slotSetWidget(int, const QString &);
@@ -83,6 +81,7 @@ signals:
  private slots:
 	void slotSaveClicked();
 	void slotDeletedItem(int);
+	void slotConnectionStateChanged();
 
  private:
 	 void doConnectionsPanels(QString toEdit, bool isNew);

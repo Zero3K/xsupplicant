@@ -53,6 +53,7 @@ class ConfigWidgetEditTrustedServers : public ConfigWidgetBase
 	 void discard();
 	 void detach();
 	 void getPageName(QString &);
+	 bool allowEdit();
 
 private slots:
 	 void slotDataChanged();

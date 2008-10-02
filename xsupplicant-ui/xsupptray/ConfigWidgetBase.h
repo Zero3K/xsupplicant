@@ -50,6 +50,7 @@ class ConfigWidgetBase : public QWidget
 	 virtual void discard();
 	 virtual void detach();
 	 virtual void getPageName(QString &);
+	 virtual bool allowEdit();
 
 signals:
 	 void signalSetSaveBtn(bool);

@@ -495,3 +495,23 @@ void Emitter::sendNewInterfaceInserted()
 	emit signalNewInterfaceInserted();
 }
 
+void Emitter::sendNetworkConnectDisconnect()
+{
+	emit signalNetworkConnectDisconnect();
+}
+
+void Emitter::sendPSKTimeout(QString devName)
+{
+	emit signalPSKTimeout(devName);
+}
+
+void Emitter::sendConnectionUnbound(QString devName)
+{
+	emit signalConnectionUnbound(devName);
+}
+
+void Emitter::sendAutoConnectionChange(QString newConn)
+{
+	emit signalAutoConnectionChange(newConn);
+}
+

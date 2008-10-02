@@ -71,6 +71,12 @@ enum ConnSortType{
   SORT_BY_PRIORITY
 };
 
+enum VersionCheckResults {
+	VERSION_CHECK_SUCCESS,
+	VERSION_CHECK_TIMEOUT,
+	VERSION_CHECK_MISMATCH
+};
+
 //!\class XSupCalls
 /*!\brief Class to interface with the supplicant
 */
@@ -237,6 +243,10 @@ public:
   int config_set_ttls_user(struct config_eap_method *meth, char *pUser);
   int config_set_peap_user(struct config_eap_method *meth, char *pUser);
   int config_set_user(struct config_eap_method *meth, char *pUser);
+  
+  static QString connectionNameFromConnectionID(unsigned int connID);
+  static bool connectionIsWirelessFromConnectionID(unsigned int connID);
+  static unsigned int postureSettingsForConnectionID(unsigned int connID);
 
 signals:
   void signalStateChange(QString &, int, int, int, unsigned int);
