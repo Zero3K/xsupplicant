@@ -108,6 +108,8 @@ bool ConfigStackedWidget::attach()
 
 void ConfigStackedWidget::slotConnectionStateChanged()
 {
+	if (m_pRealWidget == NULL) return;
+
 	if (m_pActivePage->allowEdit())
 	{
 		m_pRealWidget->currentWidget()->setEnabled(true);
@@ -157,6 +159,8 @@ void ConfigStackedWidget::close()
 void ConfigStackedWidget::changeWidget(int stackIdx, const QString &editItem, bool isNew = false)
 {
 	QString name;
+
+	if (m_pRealWidget == NULL) return;
 
 	if ((m_pActivePage != NULL) && (m_pActivePage->dataChanged() == true) 
 		&& (m_bIsDeleted == false))

@@ -323,7 +323,14 @@ void *xsupconfig_parse_volatile(void **attr, xmlNodePtr node)
     }
   else
     {
-		SET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
+		if (result == 1)
+		{
+			SET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
+		}
+		else
+		{
+			UNSET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
+		}
     }
 
   FREE(value);
