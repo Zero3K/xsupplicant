@@ -73,12 +73,17 @@ bool ConfigConnDNSTab::attach()
 		return false;
 	}
 
+	m_pPrimaryDNS->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pPrimaryDNS));
+
 	m_pSecondaryDNS = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticDNSSecondary");
 	if (m_pSecondaryDNS == NULL)
 	{
 		QMessageBox::critical(this, tr("Form Design Error"), tr("Couldn't find the QLineEdit called 'dataFieldStaticDNSSecondary'."));
 		return false;
 	}
+
+	m_pSecondaryDNS->setValidator(new QRegExpValidator(QRegExp("^(([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])\\.){3}([3-9]\\d?|[01]\\d{0,2}|2\\d?|2[0-4]\\d|25[0-5])$"), m_pSecondaryDNS));
+
 
 	m_pSuffix = qFindChild<QLineEdit*>(m_pRealWidget, "dataFieldStaticDNSDomainSuffix");
 	if (m_pSuffix == NULL)
@@ -229,7 +234,7 @@ bool ConfigConnDNSTab::save()
 
 		if (m_pPrimaryDNS->text() != "")
 		{
-			if (Util::isIPAddrValid(m_pPrimaryDNS->text()) == false) 
+			if ((Util::isIPAddrValid(m_pPrimaryDNS->text()) == false)  || (m_pPrimaryDNS->hasAcceptableInput() == false))
 			{
 				QMessageBox::critical(this, tr("DNS Setting Error"), tr("The address provided for the primary DNS is a broadcast address.  Please enter a valid address."));
 				return false;
@@ -245,7 +250,7 @@ bool ConfigConnDNSTab::save()
 
 		if (m_pSecondaryDNS->text() != "")
 		{
-			if (Util::isIPAddrValid(m_pSecondaryDNS->text()) == false) 
+			if ((Util::isIPAddrValid(m_pSecondaryDNS->text()) == false) || (m_pSecondaryDNS->hasAcceptableInput() == false))
 			{
 				QMessageBox::critical(this, tr("DNS Setting Error"), tr("The address provided for the secondary DNS is a broadcast address.  Please enter a valid address."));
 				return false;
