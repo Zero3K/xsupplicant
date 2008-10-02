@@ -209,6 +209,18 @@ bool ConfigConnDNSTab::save()
 			m_pConn->ip.dns1 = NULL;
 		}
 
+		if ((m_pPrimaryDNS->text() == "") && (m_pSecondaryDNS->text() == ""))
+		{
+			QMessageBox::critical(this, tr("DNS Setting Error"), tr("You must configure at least a primary DNS server when using static DNS settings."));
+			return false;
+		}
+
+		if ((m_pPrimaryDNS->text() == "") && (m_pSecondaryDNS->text() != ""))
+		{
+			QMessageBox::critical(this, tr("DNS Setting Error"), tr("If you only have one DNS server to use, please configure it as the primary DNS server."));
+			return false;
+		}
+
 		if (m_pPrimaryDNS->text() == m_pSecondaryDNS->text())
 		{
 			QMessageBox::critical(this, tr("DNS Setting Error"), tr("Your primary and secondary DNS servers can not be set to the same value.  Please correct this and try again."));

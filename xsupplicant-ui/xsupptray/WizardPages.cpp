@@ -421,45 +421,49 @@ bool WizardPageStaticIP::validate(void)
 	// just query the text fields
 	if (m_pIPAddress != NULL)
 	{
-		if (m_pIPAddress->hasAcceptableInput() == false)
+		if ((m_pIPAddress->hasAcceptableInput() == false)
+			|| (Util::isIPAddrValid(m_pIPAddress->text()) == false))
 		{
-			QMessageBox::warning(m_pRealForm, tr("Invalid IP Address"), tr("Please input a valid IP Address"));
+			QMessageBox::warning(m_pRealForm, tr("Invalid IP Address"), tr("Please provide a valid IP Address"));
 			return false;
 		}
 	}
 	
 	if (m_pNetmask != NULL)
 	{
-		if (m_pNetmask->hasAcceptableInput() == false)
+		if ((m_pNetmask->hasAcceptableInput() == false) 
+			|| (Util::isNetmaskValid(m_pNetmask->text()) == false))
 		{
-			QMessageBox::warning(m_pRealForm, tr("Invalid Netmask"), tr("Please input a valid Netmask"));
+			QMessageBox::warning(m_pRealForm, tr("Invalid Netmask"), tr("Please provide a valid Netmask"));
 			return false;
 		}	
 	}
 	
 	if (m_pGateway != NULL)
 	{
-		if (m_pGateway->hasAcceptableInput() == false)
+		if ((m_pGateway->hasAcceptableInput() == false) 
+			|| (Util::isGWinSubnet(m_pIPAddress->text(), m_pNetmask->text(), m_pGateway->text()) == false))
 		{
-			QMessageBox::warning(m_pRealForm, tr("Invalid Gateway Address"), tr("Please input a valid Gateway address"));
+			QMessageBox::warning(m_pRealForm, tr("Invalid Gateway Address"), tr("Please provide a valid Gateway address"));
 			return false;
 		}		
 	}
 	
 	if (m_pPrimaryDNS != NULL)
 	{
-		if (m_pPrimaryDNS->hasAcceptableInput() == false)
+		if ((m_pPrimaryDNS->hasAcceptableInput() == false) || (Util::isIPAddrValid(m_pPrimaryDNS->text()) == false))
 		{
-			QMessageBox::warning(m_pRealForm, tr("Invalid Primary DNS Server"), tr("Please input a valid Primary DNS Server address"));
+			QMessageBox::warning(m_pRealForm, tr("Invalid Primary DNS Server"), tr("Please provide a valid Primary DNS Server address"));
 			return false;
 		}			
 	}	
 	
 	if (m_pSecondaryDNS != NULL)
 	{
-		if (m_pSecondaryDNS->hasAcceptableInput() == false)
+		if ((m_pSecondaryDNS->text() != "") && ((m_pSecondaryDNS->hasAcceptableInput() == false)
+			|| (Util::isIPAddrValid(m_pSecondaryDNS->text()) == false)))
 		{
-			QMessageBox::warning(m_pRealForm, tr("Invalid Primary DNS Server"), tr("Please input a valid Primary DNS Server address"));
+			QMessageBox::warning(m_pRealForm, tr("Invalid Secondary DNS Server"), tr("Please provide a valid Secondary DNS Server address"));
 			return false;
 		}			
 	}
@@ -1717,9 +1721,17 @@ void WizardPageSCReader::populateSIMReaders()
 
 bool WizardPageSCReader::validate(void)
 {
-	if (m_pReader->currentIndex() == 0) return false;
+	if (m_pReader->currentIndex() == 0) 
+	{
+		QMessageBox::warning(this, tr("Invalid Reader"), tr("Please select a valid smart card reader.  If none are listed, then you will be unable to use this EAP type."));
+		return false;
+	}
 
-	if (m_pReader->currentText() == "") return false;
+	if (m_pReader->currentText() == "") 
+	{
+		QMessageBox::warning(this, tr("Invalid Reader"), tr("Please select a valid smart card reader.  If none are listed, then you will be unable to use this EAP type."));
+		return false;
+	}
 
 	return true;
 }
