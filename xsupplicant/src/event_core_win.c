@@ -824,6 +824,10 @@ void event_core()
 				active_ctx = events[i].ctx;
 				events[i].func_to_call(events[i].ctx, events[i].devHandle);
 				events[i].silent = 0;
+			
+				// Make sure our globals variable is up-to-date in case the IPC channel changed 
+				// something.
+				globals = config_get_globals();
 			  }
 			  else
 			  {
