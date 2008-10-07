@@ -3597,17 +3597,13 @@ bool XSupCalls::networkDisconnect(QString &deviceName, QString &deviceDescriptio
   bool bValue = true;
   CharC d(deviceName);
 
-  // Call the supplicant and request that the logon be aborted
-  if (bWireless)
+  if (xsupgui_request_disconnect_connection((char *)deviceName.data()) == REQUEST_SUCCESS)
   {
-    bValue = disassociateWireless(deviceName, deviceDescription);
-
-	// Lock the connection in a disconnected state so that we don't change to something else.
-	xsupgui_request_set_connection_lock(d.charPtr(), TRUE);
+	  bValue = true;
   }
   else
   {
-	  bValue = logoffWired(deviceName, deviceDescription);
+	  bValue = false;
   }
 
   // Unbind the connection so that the user can delete or change the config.

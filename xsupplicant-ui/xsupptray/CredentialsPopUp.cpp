@@ -101,7 +101,7 @@ CredentialsPopUp::~CredentialsPopUp()
 		
 	if (m_pRealForm != NULL) 
 	{
-		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 		delete m_pRealForm;
 	}
 }
@@ -157,7 +157,7 @@ bool CredentialsPopUp::createPIN()
 	if (m_pRealForm == NULL) return false;
 
 	// If the user hits the "X" button in the title bar, close us out gracefully.
-	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
 	m_pUsername = NULL;
@@ -590,6 +590,8 @@ void CredentialsPopUp::slotOkayBtn()
 				
 			QString message = tr("Please input a WEP password containing %1 hexadecimal (0-9, A-F) digits").arg(numDigits);
 			QMessageBox::warning(m_pRealForm, tr("Invalid WEP Password"),message);
+
+			return;
 		}
 		else
 		{
@@ -638,6 +640,12 @@ void CredentialsPopUp::slotOkayBtn()
 	
 	else if (m_doingPsk)
 	{
+		if (m_pPassword->text() == "")
+		{
+			QMessageBox::information(this, tr("Invalid Credentials"), tr("Please enter a valid PSK before attempting to connect to this network."));
+			return;
+		}
+
 		// Set our PSK.		
 		if (xsupgui_request_set_connection_pw(m_connName.toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
 		{
@@ -680,7 +688,38 @@ void CredentialsPopUp::slotOkayBtn()
 	}
 	else
 	{
-		if (m_pUsername != NULL) username = m_pUsername->text().toAscii().data();
+		if (m_pUsername != NULL) 
+		{
+			username = m_pUsername->text().toAscii().data();
+			if (m_pUsername->text() == "")
+			{
+				if (m_pPassword->text() == "")
+				{
+					QMessageBox::information(this, tr("Invalid Credentials"), tr("Please enter a user name and password before attempting to connect to this network."));
+					return;
+				}
+				else
+				{
+					QMessageBox::information(this, tr("Invalid Credentials"), tr("Please enter a user name before attempting to connect to this network."));
+					return;
+				}
+			}
+
+			if (m_pPassword->text() == "")
+			{
+				QMessageBox::information(this, tr("Invalid Credentials"), tr("Please enter a password before attempting to connect to this network."));
+				return;
+			}
+		}
+		else
+		{
+			// It is acceptible to have no PIN needed on a (U)SIM.
+			if (isPINType() == false)
+			{
+				QMessageBox::information(this, tr("Invalid Credentials"), tr("Please enter a valid password before attempting to connect to this network."));
+				return;
+			}
+		}
 
 		// Set our username/password.
 		if (xsupgui_request_set_connection_upw(m_connName.toAscii().data(), username, m_pPassword->text().toAscii().data()) != XENONE)
