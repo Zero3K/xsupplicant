@@ -7809,17 +7809,20 @@ int ipc_callout_enum_smartcard_readers(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers", IPC_ERROR_NOT_SUPPORTED, outnode);
 	}
 
-	while ( '\0' != *pReader)
+	if (readers != NULL)
 	{
-		debug_printf(DEBUG_IPC, "Found SC reader : %s\n", pReader);
-		if (xmlNewChild(n, NULL, "Reader", pReader) == NULL)
+		while ( '\0' != (*pReader))
 		{
-			free(readers);
-			SCardReleaseContext(sctx);
-			return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers", IPC_ERROR_NOT_SUPPORTED, outnode);
-		}
+			debug_printf(DEBUG_IPC, "Found SC reader : %s\n", pReader);
+			if (xmlNewChild(n, NULL, "Reader", pReader) == NULL)
+			{
+				free(readers);
+				SCardReleaseContext(sctx);
+				return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers", IPC_ERROR_NOT_SUPPORTED, outnode);
+			}
 
-		pReader = pReader + strlen(pReader) + 1;
+			pReader = pReader + strlen(pReader) + 1;
+		}
 	}
 
 	(*outnode) = n;
