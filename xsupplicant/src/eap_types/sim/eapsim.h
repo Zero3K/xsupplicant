@@ -80,6 +80,9 @@ struct eaptypedata {
   uint16_t response_size;
 };  
 
+#ifdef WINDOWS
+#pragma pack(1)
+
 struct typelength {
   uint8_t type;
   uint8_t length;
@@ -90,6 +93,22 @@ struct typelengthres {
   uint8_t length;
   uint16_t reserved;
 };
+
+#pragma pack()
+#else
+
+struct typelength {
+  uint8_t type;
+  uint8_t length;
+}  __attribute__((__packed__));
+
+struct typelengthres {
+  uint8_t type;
+  uint8_t length;
+  uint16_t reserved;
+}  __attribute__((__packed__));
+
+#endif
 
 // Get the IMSI as the username.
 int eapsim_get_username(context *ctx);

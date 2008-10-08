@@ -172,7 +172,7 @@ int eapaka_get_username(context *ctx)
   // 'username' is a referential pointer!  It should never be freed!
   username = ctx->prof->temp_username;
 
-  username[0] = '1';  // An IMSI should always start with a 1.
+  username[0] = '0';  // An AKA IMSI should always start with a 0.
   if (Strncpy(&username[1], 50, imsi, 18) != 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Attempted to overflow buffer in %s() at %d!\n",
@@ -341,7 +341,7 @@ int eapaka_setup(eap_type_data *eapdata)
 		}
 
 		username = userdata->username;
-		username[0] = '1';
+		username[0] = '0';   // AKA uses 0 to identify it as opposed to EAP-SIM.
 		Strncpy(&username[1], 49, imsi, strlen(imsi)+1);
 		FREE(imsi);
 
@@ -459,12 +459,96 @@ void eapaka_do_identity(eap_type_data *eapdata, uint8_t *eappayload,
 		  case AT_ANY_ID_REQ:
 		  case AT_IDENTITY:
 		  case AT_FULLAUTH_ID_REQ:
+		  case AT_PERMANENT_ID_REQ:
 			debug_printf(DEBUG_AUTHTYPES, "ID request %d.\n", eappayload[packet_offset]);
 			retval = aka_do_at_identity(aka, eappayload, &packet_offset);
 			if (retval != XENONE) return;
 			break;
+
+		  default:
+			  debug_printf(DEBUG_NORMAL, "Unknown message in AKA identity request!\n");
+			  eap_type_common_fail(eapdata);
+			  return;
 		}
     }
+}
+
+/**
+ * \brief Process an AKA Notification message.
+ *
+ **/
+void eapaka_do_notification(eap_type_data *eapdata, uint8_t *eappayload, 
+			 uint16_t size)
+{
+  uint16_t packet_offset = 0;
+  int retval = XENONE;
+  struct aka_eaptypedata *aka = NULL;
+  struct config_eap_aka *akaconf = NULL;
+  struct typelengthres *tlr = NULL;
+  context *ctx = NULL;
+
+  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((eappayload != NULL), "eappayload != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((size < 1500), "size < 1500", FALSE))
+    return;
+
+  if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", 
+		   FALSE))
+    return;
+
+  if (!xsup_assert((eapdata->eap_conf_data != NULL), 
+		   "eapdata->eap_conf_data != NULL", FALSE))
+    return;
+
+  aka = (struct aka_eaptypedata *)eapdata->eap_data;
+  akaconf = (struct config_eap_aka *)eapdata->eap_conf_data;
+
+  debug_printf(DEBUG_AUTHTYPES, "Inner dump : \n");
+  debug_hex_dump(DEBUG_AUTHTYPES, eappayload, size);
+
+  packet_offset += 3;  // To get past the 2 reserved bytes and outer type.
+  tlr = (struct typelengthres *)&eappayload[packet_offset];
+
+  // XXX TODO : Send error messages to the UI to be displayed to the user.
+  switch (ntohs(tlr->reserved))
+  {
+  case GENERAL_FAILURE_POST_AUTH:
+	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] General failure after authentication.\n");
+	  eap_type_common_fail(eapdata);
+	  break;
+
+  case GENERAL_FAILURE_PRE_AUTH: 
+	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] General failure.\n");
+	  eap_type_common_fail(eapdata);
+	  break;
+
+  case USER_AUTHENTICATED:
+	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] Success.  User has been successfully authenticated.\n");
+	  return;
+	  break;
+
+  case USER_DENIED:
+	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] User has been temporarily denied access to the requested service.\n");
+	  eap_type_common_fail(eapdata);
+	  break;
+	  
+  case USER_NO_SUBSCRIPTION:
+	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] User has not subscribed to the requested service.\n");
+	  eap_type_common_fail(eapdata);
+	  break;
+	  
+  default:
+	  debug_printf(DEBUG_NORMAL, "Unknown AKA notification value (%d).  Assuming failure.\n", ntohs(tlr->reserved));
+	  eap_type_common_fail(eapdata);
+	  break;
+  }
+
+	ctx = event_core_get_active_ctx();
+	context_disconnect(ctx);
 }
 
 /**
@@ -523,6 +607,16 @@ void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload,
 	  if (retval != XENONE) return;
 	  break;
 
+	case AT_ENCR_DATA:
+		debug_printf(DEBUG_AUTHTYPES, "Got an AT_ENCR_DATA (Not supported)\n");
+		aka_skip_not_implemented(eappayload, &packet_offset);
+		break;
+
+	case AT_CHECKCODE:
+		debug_printf(DEBUG_AUTHTYPES, "Got an AT_CHECKCODE (Not supported)\n");
+		aka_skip_not_implemented(eappayload, &packet_offset);
+		break;
+
 	case AT_IV:
 	  debug_printf(DEBUG_AUTHTYPES, "Got an IV (Not supported)\n");
   	  aka_skip_not_implemented(eappayload, &packet_offset);
@@ -549,7 +643,8 @@ void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload,
 	  break;
 
 	default:
-		debug_printf(DEBUG_NORMAL, "Unknown AKA inner type %d!\n", eappayload[packet_offset]);
+		debug_printf(DEBUG_NORMAL, "Unknown AKA inner type %d!  Skipping.\n", eappayload[packet_offset]);
+		aka_skip_not_implemented(eappayload, &packet_offset);
 		break;
 	}
     }
@@ -611,8 +706,9 @@ void eapaka_process(eap_type_data *eapdata)
 
     case AKA_NOTIFICATION:
       debug_printf(DEBUG_AUTHTYPES, "Got an AKA_NOTIFICATION!\n");
-      debug_printf(DEBUG_AUTHTYPES, "Not implemented!\n");
+      eapaka_do_notification(eapdata, (uint8_t *)&eappayload[3], (size-5));  // -5 since we already consumed [0] through [3].
       chal_type = AKA_NOTIFICATION;
+	  akadata->chal_type = AKA_NOTIFICATION;
       break;
   
     case AKA_REAUTHENTICATION:

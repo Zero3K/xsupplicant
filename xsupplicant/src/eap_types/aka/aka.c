@@ -74,7 +74,7 @@ int aka_do_at_identity(struct aka_eaptypedata *mydata, uint8_t *dataoffs,
 int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t *dataoffs, 
 		   int *packet_offset)
 {
-  struct typelengthres *typelenres;
+  struct typelengthres *typelenres = NULL;
 
   if (!xsup_assert((mydata != NULL), "mydata != NULL", FALSE))
     return XEMALLOC;
@@ -99,7 +99,7 @@ int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t *dataoffs,
 
 int aka_skip_not_implemented(uint8_t *dataoffs, int *packet_offset)
 {
-  struct typelengthres *typelenres;
+  struct typelengthres *typelenres = NULL;
 
   if (!xsup_assert((dataoffs != NULL), "dataoffs != NULL", FALSE))
     return XEMALLOC;
@@ -109,7 +109,7 @@ int aka_skip_not_implemented(uint8_t *dataoffs, int *packet_offset)
 
   typelenres = (struct typelengthres *)&dataoffs[*packet_offset];
   debug_printf(DEBUG_NORMAL, "Skipping unknown type! (%02X)\n", typelenres->type);
-  *packet_offset+= (typelenres->length * 4);
+  (*packet_offset) += (typelenres->length * 4);
 
   return XENONE;
 }
@@ -206,6 +206,7 @@ int aka_do_at_mac(eap_type_data *eapdata,
       return XEMALLOC;
     }
   
+  debug_printf(DEBUG_NORMAL, "Username : %s\n", username);
   if (Strncpy(tohash, (strlen(username)+33), username, strlen(username) + 1) != 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Attempt to overflow buffer in %s() at %d!\n",
@@ -333,8 +334,8 @@ uint8_t *aka_do_sync_fail(struct aka_eaptypedata *mydata, uint8_t reqId)
 
   debug_printf(DEBUG_AUTHTYPES, "Building AKA Sync Failure!\n");
 
-  buffersize = sizeof(struct eap_header) + sizeof(struct typelength) +
-    sizeof(struct typelength) + 16;
+  buffersize = sizeof(struct eap_header) + sizeof(struct typelength) + 1 +
+    sizeof(struct typelength) + 14;
 
   eapres = Malloc(buffersize + 1);
   if (eapres == NULL) 
@@ -356,16 +357,16 @@ uint8_t *aka_do_sync_fail(struct aka_eaptypedata *mydata, uint8_t reqId)
 
   typelen->type = AKA_SYNC_FAILURE;
   typelen->length = 0;
-  outptr += sizeof(struct typelength) +1;
+  outptr += sizeof(struct typelength)+1;
   
   typelen = (struct typelength *)&eapres[outptr];
   outptr+= sizeof(struct typelength);
 
   typelen->type = AT_AUTS;
-  typelen->length = 5;
+  typelen->length = 4;
 
-  memcpy(&eapres[outptr], mydata->auts, 16);
-  outptr+=16;
+  memcpy(&eapres[outptr], mydata->auts, 14);
+  outptr+=14;
 
   return eapres;
 }
