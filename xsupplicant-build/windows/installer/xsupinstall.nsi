@@ -26,7 +26,7 @@
 ; C:\>"C:\Program Files\NSIS\makensis.exe" /D<VARIABLE>=<VALUE> C:\OpenSEA\SeaAnt\xsupplicant-build\windows\installer\xsupinstall.nsi
 ;
 
-!define PROTOCOL_DRIVER_REV     3     ; If the protocol driver is updated, this needs to be incremented to get it upgraded on user's systems.
+!define PROTOCOL_DRIVER_REV     4     ; If the protocol driver is updated, this needs to be incremented to get it upgraded on user's systems.
 
 !ifndef QTDIR
 	!define QTDIR C:\Qt\qt-win-opensource-src-4.3.4
