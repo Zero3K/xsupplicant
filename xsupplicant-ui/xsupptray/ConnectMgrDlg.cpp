@@ -256,6 +256,8 @@ bool ConnectMgrDlg::initUI(void)
 		m_pConnectionsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);		
 		
 		this->populateConnectionsList();
+
+		m_pConnectionsTable->sortItems(0);   // Start out by sorting on column 0.
 		
 		// enable/disable buttons dependent on selection
 		handleConnectionListSelectionChange();

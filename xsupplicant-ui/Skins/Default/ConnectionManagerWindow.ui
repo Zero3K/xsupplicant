@@ -857,7 +857,7 @@
                     <number>6</number>
                    </property>
                    <property name="columnCount" >
-                    <number>3</number>
+                    <number>2</number>
                    </property>
                    <row/>
                    <row/>
@@ -873,11 +873,6 @@
                    <column>
                     <property name="text" >
                      <string>Interface</string>
-                    </property>
-                   </column>
-                   <column>
-                    <property name="text" >
-                     <string/>
                     </property>
                    </column>
                    <item row="0" column="0" >
