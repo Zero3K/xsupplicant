@@ -563,12 +563,10 @@ void TrayApp::updateGlobalTrayIconState()
 			++i;
 		}
 
-		temp.setNum(authed);
-		tooltip += tr(" - Authenticated : ")+temp+"\n";
-		temp.setNum(connected);
+		temp.setNum(authed+connected);
 		tooltip += tr(" - Connected : ")+temp+"\n";
 		temp.setNum(authing);
-		tooltip += tr(" - Authenticating : ")+temp+"\n";
+		tooltip += tr(" - Connecting : ")+temp+"\n";
 		temp.setNum(failed);
 		tooltip += tr(" - Failed : ")+temp+"\n";
 		temp.setNum(inactive);

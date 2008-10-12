@@ -1622,8 +1622,6 @@ int cardif_windows_wireless_disassociate(context *ctx, int reason)
 	}
 	randomssid[30] = 0x00;
 
-	cardif_windows_wireless_set_ssid(ctx, randomssid);
-
 	// This will clear any keys in the key cache.
 	cardif_windows_set_infra_mode(ctx);
 
