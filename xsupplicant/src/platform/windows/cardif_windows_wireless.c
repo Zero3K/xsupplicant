@@ -1613,16 +1613,19 @@ int cardif_windows_wireless_disassociate(context *ctx, int reason)
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
 
-//	cardif_windows_wireless_native_disassociate(ctx, reason);
+	cardif_windows_wireless_native_disassociate(ctx, reason);
 
-	// This will clear any keys in the key cache.
-	cardif_windows_set_infra_mode(ctx);
-
+	// Set an SSID to turn the radio back on.
 	for (i = 0; i < 30; i++)
 	{
 		randomssid[i] = (char)(((float)(rand() % 87)) + 35);
 	}
 	randomssid[30] = 0x00;
+
+	cardif_windows_wireless_set_ssid(ctx, randomssid);
+
+	// This will clear any keys in the key cache.
+	cardif_windows_set_infra_mode(ctx);
 
 	cardif_windows_wireless_set_ssid(ctx, randomssid);
 
