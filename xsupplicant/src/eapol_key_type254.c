@@ -906,16 +906,16 @@ void eapol_key_type254_process(context *ctx)
 		if (pskptr != NULL)
 	    {
 	      if (wctx->cur_essid == NULL)
-		{
-		  debug_printf(DEBUG_NORMAL, "Unknown SSID, checking!\n");
-		  wctx->cur_essid = (char *)Malloc(33);
-		  if (wctx->cur_essid == NULL)
-		    {
-		      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory! "
-				   "(%s:%d)\n", __FUNCTION__, __LINE__);
-			  ipc_events_malloc_failed(ctx);
-		      return;
-		    }
+			{
+			  debug_printf(DEBUG_NORMAL, "Unknown SSID, checking!\n");
+			  wctx->cur_essid = (char *)Malloc(33);
+			  if (wctx->cur_essid == NULL)
+			    {
+			      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory! "
+					   "(%s:%d)\n", __FUNCTION__, __LINE__);
+				  ipc_events_malloc_failed(ctx);
+			      return;
+			    }
 
 		  if (cardif_GetSSID(ctx, wctx->cur_essid, 33) != XENONE)
 		    {

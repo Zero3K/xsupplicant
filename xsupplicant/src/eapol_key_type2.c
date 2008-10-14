@@ -1426,8 +1426,6 @@ void eapol_key_type2_process(context *intdata)
 		      return;
 		    }
 
-		  memset(wctx->cur_essid, 0x00, 99);
-
 		  if (cardif_GetSSID(intdata, wctx->cur_essid, 33) != XENONE)
 		    {
 		      debug_printf(DEBUG_NORMAL, "Couldn't get ESSID!\n");
