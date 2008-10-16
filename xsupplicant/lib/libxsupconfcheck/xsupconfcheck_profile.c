@@ -390,6 +390,8 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method *myeap, config_prof
 {
 	int retval = 0;
 
+	if (myeap == NULL) return -1;
+
 	if (myeap->method_data == NULL)
 	{
 		if (log == TRUE) error_prequeue_add("No method data is configured for the EAP method.");

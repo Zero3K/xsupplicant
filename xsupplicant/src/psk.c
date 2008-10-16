@@ -11,7 +11,7 @@
 
 #include <openssl/hmac.h>
 #include <openssl/err.h>
-#include <openssl/sha.h>
+#include <openssl/sha.h> 
 #include <assert.h>
 #include <string.h>
 
@@ -104,7 +104,7 @@ int psk_wpa_pbkdf2(char *password, unsigned char *ssid, int ssidlength,
 
   if ((strlen(password) > 63) || (ssidlength > 32))
     {
-      debug_printf(DEBUG_NORMAL, "Invalid WPA-PSK password!\n");
+		debug_printf(DEBUG_NORMAL, "Invalid WPA-PSK password! (Length : %d)\n", strlen(password));
       return FALSE;
     }
 

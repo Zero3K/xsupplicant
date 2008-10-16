@@ -1613,7 +1613,7 @@ int cardif_windows_wireless_disassociate(context *ctx, int reason)
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
 
-	cardif_windows_wireless_native_disassociate(ctx, reason);
+	//cardif_windows_wireless_native_disassociate(ctx, reason);
 
 	// Set an SSID to turn the radio back on.
 	for (i = 0; i < 30; i++)
