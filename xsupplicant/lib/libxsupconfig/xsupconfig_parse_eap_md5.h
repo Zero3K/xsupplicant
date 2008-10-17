@@ -1,12 +1,12 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.   (See LICENSE file for more info.)
  *
- * File: xsupconfig_parse_eap_md5.h
+ * \file xsupconfig_parse_eap_md5.h
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef __XSUPCONFIG_PARSE_EAP_MD5_H__
 #define __XSUPCONFIG_PARSE_EAP_MD5_H__

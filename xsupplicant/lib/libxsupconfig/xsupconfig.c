@@ -1642,6 +1642,7 @@ void delete_config_eap_sim(struct config_eap_sim **tmp_sim)
 
   FREE_STRING((*tmp_sim)->username);
   FREE_STRING((*tmp_sim)->password);
+  FREE_STRING((*tmp_sim)->reader);
 
   free (*tmp_sim);
   *tmp_sim = NULL;
@@ -1695,6 +1696,7 @@ void delete_config_eap_aka(struct config_eap_aka **tmp_aka)
 
   FREE_STRING((*tmp_aka)->username);
   FREE_STRING((*tmp_aka)->password);
+  FREE_STRING((*tmp_sim)->reader);
 
   free (*tmp_aka);
   *tmp_aka = NULL;
