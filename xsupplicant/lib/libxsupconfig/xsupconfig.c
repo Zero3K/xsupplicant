@@ -1696,7 +1696,7 @@ void delete_config_eap_aka(struct config_eap_aka **tmp_aka)
 
   FREE_STRING((*tmp_aka)->username);
   FREE_STRING((*tmp_aka)->password);
-  FREE_STRING((*tmp_sim)->reader);
+  FREE_STRING((*tmp_aka)->reader);
 
   free (*tmp_aka);
   *tmp_aka = NULL;
