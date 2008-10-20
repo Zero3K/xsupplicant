@@ -229,6 +229,10 @@ TNC_Result libtnc_tncc_BindFunction(
 		*pOutfunctionPointer = (void*)TNC_28383_TNCC_Request_Answer_From_UI_by_ID;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_debug_log"))
 		*pOutfunctionPointer = (void*)TNC_28383_TNCC_debug_log;
+	else if (!strcmp(functionName, "TNC_9048_LogMessage"))
+		*pOutfunctionPointer = (void*)TNC_9048_LogMessage;
+	else if (!strcmp(functionName, "TNC_9048_UserMessage"))
+		*pOutfunctionPointer = (void*)TNC_9048_UserMessage;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_Add_To_Batch"))
 		*pOutfunctionPointer = (void*)TNC_28383_TNCC_Add_To_Batch;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_Send_Batch"))

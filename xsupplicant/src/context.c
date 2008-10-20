@@ -109,7 +109,9 @@ int context_init(context *work, char *intname)
   work->recv_size = 0;
 
 #ifdef HAVE_TNC
-  work->tnc_connID = -1;  // Set it to something that we won't be using for a LOOONG time!
+  if(work->tnc_data != NULL) {
+	work->tnc_data->connectionID = -1;  // Set it to something that we won't be using for a LOOONG time!
+  }
 #endif
 
   return XENONE;

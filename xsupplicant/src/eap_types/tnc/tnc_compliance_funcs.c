@@ -101,6 +101,30 @@ TNC_UInt32 TNC_28383_TNCC_Request_Answer_From_UI_by_ID(TNC_IMCID imcID,
 	return TNC_RESULT_SUCCESS;
 }
 
+
+/** 
+ * \brief Stub call that maps to TNC_28383_TNCC_debug_log.
+ * 
+ * @param[in] severity The TNC severity level which is used to determine how to log the message.
+ * @param[in] message An ASCII string that will be written to the debug log.
+ *
+ **/
+TNC_Result TNC_9048_LogMessage(
+/*in*/ TNC_UInt32 severity,
+/*in*/ const char * message) 
+{
+	TNC_28383_TNCC_debug_log(-1, severity, message);
+}
+
+TNC_Result TNC_9048_UserMessage(
+/*in*/ TNC_IMCID imcID,
+/*in*/ TNC_ConnectionID connectionID,
+/*in*/ const char * message) 
+{
+	TNC_28383_TNCC_debug_log(imcID, connectionID, message);
+}
+
+
 /**
  * \brief Write a log string to the supplicant's log file.  This string will *NOT* be
  *        passed up to the UI, and will *ONLY* be logged if TNC IMC debug logging is
@@ -316,7 +340,7 @@ TNC_UInt32 find_context_for_imc_id_and_connection(context **ctx, TNC_IMCID imcID
 	(*ctx) = event_core_get_next_context();
 	while ((*ctx) != NULL)
 	{
-		if ((*ctx)->tnc_connID == connectionID)
+		if ((*ctx)->tnc_data && (*ctx)->tnc_data->connectionID == connectionID)
 		{
 			break;
 		}

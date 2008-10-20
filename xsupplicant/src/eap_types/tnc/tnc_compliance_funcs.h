@@ -56,6 +56,17 @@ XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Single_Shot_Batch(TNC_IMCID imcID, TNC_Co
 														 TNC_UInt32 parent_msg, TNC_UInt32 msg, TNC_BufferReference attr, callback *cb);
 XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Set_UI_Connect_Callback(void *);
 
+// Callbacks from libtnc:
+
+XSUP_OUI_API TNC_Result TNC_9048_LogMessage(
+/*in*/ TNC_UInt32 severity,
+/*in*/ const char * message);
+
+XSUP_OUI_API TNC_Result TNC_9048_UserMessage(
+/*in*/ TNC_IMCID imcID,
+/*in*/ TNC_ConnectionID connectionID,
+/*in*/ const char * message);
+
 #endif // HAVE_TNC
 
 #endif //__TNC_COMPLIANCE_FUNCS_H__

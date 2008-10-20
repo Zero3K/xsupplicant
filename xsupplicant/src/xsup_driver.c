@@ -532,13 +532,8 @@ int xsup_driver_init(uint8_t clear_ipc, char *device, char *drivername,
   global_init();
 
 #if ((HAVE_TNC == 1)  ||  (HAVE_OSC_TNC == 1))
-  // This specifies the location of a TNC configuration file
-  // which contains the name and location of the loadable TNC IMC modules 
-  // that are required to perform Integrity Measurement during 
-  // EAP-TTLS authentications
  {
-     char* tnc_config_file = "/etc/tnc_config";
-     libtnc_tncc_Initialize(tnc_config_file);
+	 libtnc_tncc_InitializeStd();
  }
 #endif
   

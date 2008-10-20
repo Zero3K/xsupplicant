@@ -346,10 +346,14 @@ void cardif_windows_int_event_disconnect(context *ctx)
 
 #ifdef HAVE_TNC
 		// Flush TNC state.
-		if(imc_disconnect_callback != NULL)
-			imc_disconnect_callback(ctx->tnc_connID);
+		if(ctx->tnc_data != NULL) {
+			if(imc_disconnect_callback != NULL)
+				imc_disconnect_callback(ctx->tnc_data->connectionID);
 
-		ctx->tnc_connID = -1;
+			libtnc_tncc_DeleteConnection(ctx->tnc_data);
+
+			ctx->tnc_data = NULL;
+		}
 #endif
 	}
 
@@ -1269,10 +1273,14 @@ void cardif_windows_events_interface_removed(void *devPtr)
 
 #ifdef HAVE_TNC
 	// If we are using a TNC enabled build, signal the IMC to clean up.
-	if(imc_disconnect_callback != NULL)
-		imc_disconnect_callback(ctx->tnc_connID);
+		if(ctx->tnc_data != NULL) {
+			if(imc_disconnect_callback != NULL)
+				imc_disconnect_callback(ctx->tnc_data->connectionID);
 
-	ctx->tnc_connID = -1;
+			libtnc_tncc_DeleteConnection(ctx->tnc_data);
+
+			ctx->tnc_data = NULL;
+		}
 #endif
 
 	ctx->flags |= INT_GONE;

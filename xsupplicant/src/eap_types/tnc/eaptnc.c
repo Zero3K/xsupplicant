@@ -144,15 +144,23 @@ int eaptnc_do_start(eap_type_data *eapdata)
 	  return XEGENERROR;
   }
 
-  // Remember the TNC connection ID, so that we can operate on the right context if the IMC
-  // asks us to do something.
-  if (ctx->tnc_connID == -1) {
-	  ctx->tnc_connID = connectionID;
+  // Create the TNC connection context if needed.
+  if (ctx->tnc_data == NULL) {
+
+	  ctx->tnc_data = libtnc_tncc_CreateConnection(ctx);
+
+	  ctx->tnc_data->connectionID = -1;
+  }
+
+  // Allocate a new connection ID if needed.
+  if(ctx->tnc_data->connectionID == -1){
+
+	  ctx->tnc_data->connectionID = connectionID;
 
 	  connectionID++;
   }
 
-  if (libtnc_tncc_BeginSession(ctx->tnc_connID) != TNC_RESULT_SUCCESS)
+  if (libtnc_tncc_BeginSession(ctx->tnc_data) != TNC_RESULT_SUCCESS)
     {
       debug_printf(DEBUG_NORMAL, "(EAP-TNC) Failed to start TNC session!\n");
       return XETNCLIBFAILURE;
@@ -302,7 +310,7 @@ int eaptnc_do_bulk_data(eap_type_data *eapdata)
 		}
 
       // We have an XML block to send.
-      if (libtnc_tncc_ReceiveBatch(ctx->tnc_connID, tosend, value32) != TNC_RESULT_SUCCESS)
+      if (libtnc_tncc_ReceiveBatch(ctx->tnc_data, tosend, value32) != TNC_RESULT_SUCCESS)
 	{
 	  debug_printf(DEBUG_NORMAL, "Couldn't send TNC batch to libtnc!\n");
 	  if (queue_destroy(&tnc->tncinqueue) != 0)

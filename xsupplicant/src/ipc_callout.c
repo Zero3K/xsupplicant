@@ -6504,10 +6504,15 @@ int ipc_callout_request_unbind_connection(xmlNodePtr innode, xmlNodePtr *outnode
 
 #ifdef HAVE_TNC
 		// If we are using a TNC enabled build, signal the IMC to clean up.
+	if(ctx->tnc_data != NULL)
+	{
 		if(imc_disconnect_callback != NULL)
-			imc_disconnect_callback(ctx->tnc_connID);
+			imc_disconnect_callback(ctx->tnc_data->connectionID);
 
-		ctx->tnc_connID = -1;
+		libtnc_tncc_DeleteConnection(ctx->tnc_data);
+
+		ctx->tnc_data = NULL;
+	}
 #endif
 
 	return ipc_callout_create_ack(ctx->intName, "Unbind_Connection", outnode);
@@ -7187,8 +7192,16 @@ int ipc_callout_get_tnc_conn_id(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Get_TNC_Conn_ID", IPC_ERROR_INVALID_CONTEXT, outnode);
 	}
 
-	debug_printf(DEBUG_VERBOSE, "Returning TNC connection ID : %d\n", ctx->tnc_connID);
-	return ipc_callout_some_state_response("Get_TNC_Conn_ID", "TNC_Conn_ID", ctx->tnc_connID, 
+	if(ctx->tnc_data == NULL)
+	{
+		debug_printf(DEBUG_VERBOSE, "Context does not posess TNC data.\n");
+
+		return ipc_callout_some_state_response("Get_TNC_Conn_ID", "TNC_Conn_ID", -1, 
+			"Conn_ID", ctx->intName, outnode);
+	}
+
+	debug_printf(DEBUG_VERBOSE, "Returning TNC connection ID : %d\n", ctx->tnc_data->connectionID);
+	return ipc_callout_some_state_response("Get_TNC_Conn_ID", "TNC_Conn_ID", ctx->tnc_data->connectionID, 
 		"Conn_ID", ctx->intName, outnode);
 #endif // HAVE_TNC
 }
@@ -7276,10 +7289,15 @@ int ipc_callout_set_conn_lock(xmlNodePtr innode, xmlNodePtr *outnode)
 		// Since we are allowing the connection to 'float' we need to clear any posture state that may
 		// already be stored.
 #ifdef HAVE_TNC
-		if(imc_disconnect_callback != NULL)
-			imc_disconnect_callback(ctx->tnc_connID);
+		if(ctx->tnc_data != NULL) 
+		{
+			if(imc_disconnect_callback != NULL)
+				imc_disconnect_callback(ctx->tnc_data->connectionID);
 
-		ctx->tnc_connID = -1;
+			libtnc_tncc_DeleteConnection(ctx->tnc_data);
+
+			ctx->tnc_data = NULL;
+		}
 #endif
 	}
 
@@ -7341,7 +7359,7 @@ int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr innode, xmlNodePtr *out
 	event_core_reset_locator();
 
 	ctx = event_core_get_next_context();
-	while ((ctx != NULL) && (ctx->tnc_connID != newval))
+	while ((ctx != NULL) && (ctx->tnc_data != NULL) && (ctx->tnc_data->connectionID != newval))
 	{
 		ctx = event_core_get_next_context();
 	}
@@ -7593,8 +7611,16 @@ int ipc_callout_disconnect_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 
 #ifdef HAVE_TNC
 	// If we are using a TNC enabled build, signal the IMC to clean up.
-	if(imc_disconnect_callback != NULL)
-		imc_disconnect_callback(ctx->tnc_connID);
+	// We didn't reset the tnc_data structure here... why?
+	if(ctx->tnc_data != NULL) 
+	{
+		if(imc_disconnect_callback != NULL)
+			imc_disconnect_callback(ctx->tnc_data->connectionID);
+
+		libtnc_tncc_DeleteConnection(ctx->tnc_data);
+
+		ctx->tnc_data = NULL;
+	}
 #endif			
 
 	context_disconnect(ctx);

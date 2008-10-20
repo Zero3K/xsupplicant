@@ -21,6 +21,10 @@
 #include "xsup_common.h"
 #endif
 
+#ifdef HAVE_TNC
+#include "libtnctncc.h"
+#endif 
+
 // Define our supplicant status values
 #define UNAUTHORIZED 0
 #define AUTHORIZED   1
@@ -324,7 +328,7 @@ typedef struct context_data
   uint32_t auths;			   ///< The number of auths that have completed on this interface. Since we last cleared it.  (Used to determine if we need to renew a DHCP address.)
 
 #ifdef HAVE_TNC
-  uint32_t tnc_connID;         ///< The connection ID that maps in to the IMC.
+  libtnc_tncc_connection *tnc_data; ///< The TNC connection data.
 #endif
 
   void *pwd_callback_data;       ///< Data to be used in the password callback.  (Currently only used in EAP-GTC.)

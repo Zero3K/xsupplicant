@@ -622,12 +622,15 @@ int ipc_events_statemachine_transition(context *ctx, int statemachine,
 	}
 
 #ifdef HAVE_TNC
-    sprintf((char *)&temp, "%d", ctx->tnc_connID);
-    if (xmlNewChild(t, NULL, (xmlChar *)"TNC_Connection_ID", (xmlChar *)temp) == NULL)
-    {
-        retval = IPC_FAILURE;
-        goto statemachine_transition_ipc_done;
-    }
+	if(ctx->tnc_data != NULL)
+	{
+		sprintf((char *)&temp, "%d", ctx->tnc_data->connectionID);
+		if (xmlNewChild(t, NULL, (xmlChar *)"TNC_Connection_ID", (xmlChar *)temp) == NULL)
+		{
+			retval = IPC_FAILURE;
+			goto statemachine_transition_ipc_done;
+		}
+	}
 #endif // HAVE_TNC
 
 	if (ipc_events_send(indoc) != XENONE)

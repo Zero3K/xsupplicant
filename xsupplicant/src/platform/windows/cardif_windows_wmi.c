@@ -575,10 +575,16 @@ int cardif_windows_wmi_event_check_remove()
 
 #ifdef HAVE_TNC
 		// If we are using a TNC enabled build, signal the IMC to clean up.
-		if(imc_disconnect_callback != NULL)
-			imc_disconnect_callback(ctx->tnc_connID);
+		// Since the interface context will be going away 
+		// we need to clean this up properly.
+		if(ctx->tnc_data != NULL) {
+			if(imc_disconnect_callback != NULL)
+				imc_disconnect_callback(ctx->tnc_data->connectionID);
 
-		ctx->tnc_connID = -1;
+			libtnc_tncc_DeleteConnection(ctx->tnc_data);
+
+			ctx->tnc_data = NULL;
+		}
 #endif
 
 		ctx->flags |= INT_GONE;

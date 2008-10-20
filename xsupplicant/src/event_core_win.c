@@ -1290,10 +1290,15 @@ void event_core_waking_up()
 				cardif_restart_io(events[i].ctx);
 
 #ifdef HAVE_TNC
-				if(imc_disconnect_callback != NULL)
-					imc_disconnect_callback(events[i].ctx->tnc_connID);
+		if(events[i].ctx->tnc_data != NULL) 
+		{
+			if(imc_disconnect_callback != NULL)
+				imc_disconnect_callback(events[i].ctx->tnc_data->connectionID);
 
-				events[i].ctx->tnc_connID = -1;
+			libtnc_tncc_DeleteConnection(events[i].ctx->tnc_data);
+
+			events[i].ctx->tnc_data = NULL;
+		}
 #endif
 
 				// Depending on the order that things are restarted, and the events that 
@@ -1491,10 +1496,15 @@ void event_core_win_do_user_logoff()
 
 #ifdef HAVE_TNC
 					// If we are using a TNC enabled build, signal the IMC to clean up.
-					if(imc_disconnect_callback != NULL)
-						imc_disconnect_callback(ctx->tnc_connID);
+					if(ctx->tnc_data != NULL) 
+					{
+						if(imc_disconnect_callback != NULL)
+							imc_disconnect_callback(ctx->tnc_data->connectionID);
 
-					ctx->tnc_connID = -1;
+						libtnc_tncc_DeleteConnection(ctx->tnc_data);
+
+						ctx->tnc_data = NULL;
+					}
 #endif
 				}
 			}
