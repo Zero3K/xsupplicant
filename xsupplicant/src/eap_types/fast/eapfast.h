@@ -57,34 +57,38 @@
 // Session Ticket TLS Extension
 #define FAST_SESSION_TICKET          35
 
-struct eapfast_tlv {
-  uint16_t type;
-  uint16_t length;
-  uint8_t data[0];
-} __attribute__((__packed__));
-
 struct eapfast_tlv_error {
   uint16_t type;
   uint16_t length;
   uint32_t error_code;
 };
 
+struct provisioning_keys {
+  uint8_t session_key_seed[40];
+  uint8_t MSCHAPv2_ServerChallenge[16];
+  uint8_t MSCHAPv2_ClientChallenge[16];
+};
+
+#ifdef WINDOWS
+
+#pragma pack(1)
+
+struct eapfast_tlv {
+  uint16_t type;
+  uint16_t length;
+  uint8_t data[0];
+};
+
 struct eapfast_tlv_request_action {
   uint16_t type;
   uint16_t length;
   uint16_t action;
-} __attribute__((__packed__));
+};
 
 struct eapfast_tlv_result {
   uint16_t type;
   uint16_t length;
   uint16_t status;
-} __attribute__((__packed__));
-
-struct provisioning_keys {
-  uint8_t session_key_seed[40];
-  uint8_t MSCHAPv2_ServerChallenge[16];
-  uint8_t MSCHAPv2_ClientChallenge[16];
 };
 
 struct tls_server_hello {
@@ -101,7 +105,45 @@ struct tls_server_hello {
   uint16_t shake_version;
   uint8_t server_random[32];
   // We are looking for the random, so we don't care about the rest.
+};
+
+#pragma pack()
+
+#else
+struct eapfast_tlv {
+  uint16_t type;
+  uint16_t length;
+  uint8_t data[0];
 } __attribute__((__packed__));
+
+struct eapfast_tlv_request_action {
+  uint16_t type;
+  uint16_t length;
+  uint16_t action;
+} __attribute__((__packed__));
+
+struct eapfast_tlv_result {
+  uint16_t type;
+  uint16_t length;
+  uint16_t status;
+} __attribute__((__packed__));
+
+struct tls_server_hello {
+  uint8_t content_type;
+  uint16_t rec_version;
+  uint16_t rec_length;
+  uint8_t handshake_type;
+
+  // The handshake length value is three bytes.  We don't do anything with it,
+  // so we just need padding to make sure we parse the right bytes that follow.
+  uint8_t shake_length_pre;
+  uint16_t shake_length;
+
+  uint16_t shake_version;
+  uint8_t server_random[32];
+  // We are looking for the random, so we don't care about the rest.
+} __attribute__((__packed__));
+#endif
 
 #define TLS_HANDSHAKE_TYPE                 22
 #define TLS_SERVER_HELLO                   2 

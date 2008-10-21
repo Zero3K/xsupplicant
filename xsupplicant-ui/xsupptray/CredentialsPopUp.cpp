@@ -575,7 +575,6 @@ void CredentialsPopUp::slotOkayBtn()
 {
 	config_connection *cconf = NULL;
 	char *intName = NULL;
-	char *username = NULL;
 
 	if (m_doingWEP == true)
 	{
@@ -690,7 +689,6 @@ void CredentialsPopUp::slotOkayBtn()
 	{
 		if (m_pUsername != NULL) 
 		{
-			username = m_pUsername->text().toAscii().data();
 			if (m_pUsername->text() == "")
 			{
 				if (m_pPassword->text() == "")
@@ -722,7 +720,7 @@ void CredentialsPopUp::slotOkayBtn()
 		}
 
 		// Set our username/password.
-		if (xsupgui_request_set_connection_upw(m_connName.toAscii().data(), username, m_pPassword->text().toAscii().data()) != XENONE)
+		if (xsupgui_request_set_connection_upw(m_connName.toAscii().data(), m_pUsername->text().toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
 		{
 			QMessageBox::critical(this, tr("Error"), tr("Unable to set your username and password."));
 		}

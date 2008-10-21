@@ -107,7 +107,7 @@ void eapmschapv2_set_eap_fast_mode(eap_type_data *ctx, uint8_t enable)
     return;
 
   debug_printf(DEBUG_AUTHTYPES, "Setting EAP-FAST mode for MS-CHAPv2!\n");
-  eap_fast_mode = enable;
+//  eap_fast_mode = enable;
 }
 
 /******************************************************************

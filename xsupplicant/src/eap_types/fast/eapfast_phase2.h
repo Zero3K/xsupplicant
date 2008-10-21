@@ -22,6 +22,23 @@
 #define FAST_BINDING_REQUEST        0
 #define FAST_BINDING_RESPONSE       1
 
+#ifdef WINDOWS
+
+#pragma pack(1)
+struct eapfast_crypto_binding_tlv {
+  uint16_t type;
+  uint16_t length;
+  uint8_t reserved;
+  uint8_t version;
+  uint8_t eap_version;
+  uint8_t subtype;
+  uint8_t nonce[32];
+  uint8_t compound_mac[20];
+};
+#pragma pack()
+
+#else
+
 struct eapfast_crypto_binding_tlv {
   uint16_t type;
   uint16_t length;
@@ -32,6 +49,8 @@ struct eapfast_crypto_binding_tlv {
   uint8_t nonce[32];
   uint8_t compound_mac[20];
 } __attribute__((__packed__));
+
+#endif
 
 struct pac_info {
   uint8_t cred_lifetime[4];

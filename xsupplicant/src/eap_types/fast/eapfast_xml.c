@@ -13,17 +13,24 @@
 #ifdef EAP_FAST
 
 #include <stdio.h>
+#include <stdlib.h>
+
+#ifndef WINDOWS
 #include <stdint.h>
+#else
+#define snprintf  _snprintf
+#endif
+
 #include <string.h>
 
 #include "xsupconfig.h"
-#include "eap_sm.h"
-#include "eap_types/eap_type_common.h"
+#include "../../eap_sm.h"
+#include "../../eap_types/eap_type_common.h"
 #include "eapfast_phase2.h"
 #include "eapfast_xml.h"
-#include "xsup_common.h"
-#include "xsup_debug.h"
-#include "eap_types/mschapv2/mschapv2.h"
+#include "../../xsup_common.h"
+#include "../../xsup_debug.h"
+#include "../../eap_types/mschapv2/mschapv2.h"
 
 #define XSUP_PAC_ROOT_ELEMENT  "XsupplicantPACs"
 

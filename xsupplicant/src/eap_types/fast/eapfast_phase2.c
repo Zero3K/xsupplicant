@@ -8,25 +8,25 @@
  * \author chris@open1x.org
  *
  * \todo Add IPC error message signaling.
- *
- * $Id: eapfast_phase2.c,v 1.2 2007/09/24 02:12:28 galimorerpg Exp $
- * $Date: 2007/09/24 02:12:28 $
  **/
 
 #ifdef EAP_FAST
 
+#ifdef WINDOWS
+#include <Winsock2.h>
+#endif
+
 #include <openssl/hmac.h>
 
-#include "xsup_err.h"
-#include "xsup_debug.h"
-#include "xsup_common.h"
+#include "../../xsup_err.h"
+#include "../../xsup_debug.h"
+#include "../../xsup_common.h"
 #include "xsupconfig.h"
-#include "profile.h"
-#include "eap_sm.h"
-#include "eap_types/tls/eaptls.h"
-#include "eap_types/eap_type_common.h"
-#include "eap_types/tls/tls_funcs.h"
-#include "eap_types/mschapv2/eapmschapv2.h"
+#include "../../eap_sm.h"
+#include "../tls/eaptls.h"
+#include "../eap_type_common.h"
+#include "../tls/tls_funcs.h"
+#include "../mschapv2/eapmschapv2.h"
 #include "eapfast.h"
 #include "eapfast_phase2.h"
 #include "eapfast_xml.h"
@@ -43,9 +43,9 @@ uint8_t *eapfast_phase2_gen_error_tlv(uint32_t, uint16_t);
  ***************************************************************/
 void eapfast_phase2_init(eap_type_data *eapdata)
 {
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  struct config_eap_fast *fastconf;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  struct config_eap_fast *fastconf = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -116,7 +116,7 @@ void eapfast_phase2_init(eap_type_data *eapdata)
  ***************************************************************/
 void eapfast_phase2_deinit(eap_type_data *eapdata)
 {
-  struct eapfast_phase2 *phase2;
+  struct eapfast_phase2 *phase2 = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -164,10 +164,10 @@ void eapfast_phase2_check(eap_type_data *eapdata)
 uint16_t eapfast_phase2_tlv_nak(eap_type_data *eapdata, uint8_t *indata, 
 				uint32_t vendor_id, uint16_t tlvtype)
 {
-  struct nak_tlvs *nak;
-  struct eapfast_tlv *tlv, *srctlv;
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
+  struct nak_tlvs *nak = NULL;
+  struct eapfast_tlv *tlv = NULL, *srctlv = NULL;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return 0;
@@ -204,7 +204,7 @@ uint16_t eapfast_phase2_tlv_nak(eap_type_data *eapdata, uint8_t *indata,
  ***************************************************************/
 uint16_t eapfast_phase2_vendor_tlv_nak(eap_type_data *eapdata, uint8_t *indata)
 {
-  struct vendor_tlv_type *tlv;
+  struct vendor_tlv_type *tlv = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return 0;
@@ -284,7 +284,7 @@ void eapfast_phase2_PAC_id_to_str(int debuglevel, uint8_t pacid)
  *******************************************************************/
 uint16_t eapfast_phase2_process_pac_key(uint8_t *indata, uint8_t *pac_key)
 {
-  struct eapfast_tlv *fasttlv;
+  struct eapfast_tlv *fasttlv = NULL;
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
@@ -314,8 +314,8 @@ uint16_t eapfast_phase2_process_pac_key(uint8_t *indata, uint8_t *pac_key)
 uint16_t eapfast_phase2_process_pac_opaque(uint8_t *indata, 
 					   uint8_t **pac_opaque, uint16_t *len)
 {
-  struct eapfast_tlv *fasttlv;
-  uint8_t *opaque;
+  struct eapfast_tlv *fasttlv = NULL;
+  uint8_t *opaque = NULL;
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
@@ -351,7 +351,7 @@ uint16_t eapfast_phase2_process_pac_opaque(uint8_t *indata,
  *******************************************************************/
 uint16_t eapfast_phase2_process_pac_type(uint8_t *indata, uint16_t *pac_type)
 {
-  struct pac_info_pac_type *pacinfo;
+  struct pac_info_pac_type *pacinfo = NULL;
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
@@ -381,8 +381,8 @@ uint16_t eapfast_phase2_process_pac_type(uint8_t *indata, uint16_t *pac_type)
 uint16_t eapfast_phase2_process_aid(uint8_t *indata, uint8_t **aid, 
 				    uint16_t *len)
 {
-  struct eapfast_tlv *fasttlv;
-  uint8_t *myaid;
+  struct eapfast_tlv *fasttlv = NULL;
+  uint8_t *myaid = NULL;
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
@@ -420,8 +420,8 @@ uint16_t eapfast_phase2_process_aid(uint8_t *indata, uint8_t **aid,
 uint16_t eapfast_phase2_process_iid(uint8_t *indata, uint8_t **iid, 
 				    uint16_t *len)
 {
-  struct eapfast_tlv *fasttlv;
-  uint8_t *tempiid;
+  struct eapfast_tlv *fasttlv = NULL;
+  uint8_t *tempiid = NULL;
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
@@ -460,8 +460,8 @@ uint16_t eapfast_phase2_process_pac_aidinfo(uint8_t *indata,
 					    uint8_t **aid_info,
 					    uint16_t *len)
 {
-  struct eapfast_tlv *fasttlv;
-  uint8_t *tempaidi;
+  struct eapfast_tlv *fasttlv = NULL;
+  uint8_t *tempaidi = NULL;
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
@@ -498,7 +498,7 @@ uint16_t eapfast_phase2_process_pac_aidinfo(uint8_t *indata,
  *******************************************************************/
 uint16_t eapfast_phase2_process_cred_lifetime(uint8_t *indata, uint8_t *cred)
 {
-  struct eapfast_tlv *fasttlv;
+  struct eapfast_tlv *fasttlv = NULL;
   
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
@@ -529,7 +529,7 @@ uint16_t eapfast_phase2_process_cred_lifetime(uint8_t *indata, uint8_t *cred)
 uint16_t eapfast_phase2_process_pac_info(uint8_t *indata, 
 					 struct pac_info *pacinfo)
 {
-  struct eapfast_tlv *fasttlv;
+  struct eapfast_tlv *fasttlv = NULL;
   uint16_t consumed = 0, result = 0, size = 0;
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
@@ -607,8 +607,8 @@ uint16_t eapfast_phase2_process_pac_info(uint8_t *indata,
  *******************************************************************/
 int eapfast_phase2_store_pac(eap_type_data *eapdata, struct pac_values *pacs)
 {
-  xmlDocPtr doc;
-  struct config_eap_fast *fastconf;
+  xmlDocPtr doc = NULL;
+  struct config_eap_fast *fastconf = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return -1;
@@ -661,10 +661,10 @@ void eapfast_phase2_build_pac_ack(eap_type_data *eapdata)
 {
   // The ACK structure is the same as the TLV result.  So we will just
   // use that here.
-  struct eapfast_tlv_result *ack;
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  struct eapfast_tlv *tlv;
+  struct eapfast_tlv_result *ack = NULL;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  struct eapfast_tlv *tlv = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -699,12 +699,12 @@ void eapfast_phase2_build_pac_ack(eap_type_data *eapdata)
 uint16_t eapfast_phase2_pac_process(eap_type_data *eapdata, uint8_t *indata, 
 				    uint16_t insize)
 {
-  struct eapfast_tlv *fastlv;
+  struct eapfast_tlv *fastlv = NULL;
   uint16_t consumed = 0, result = 0, size = 0;
   struct pac_values pacs;
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  uint8_t *temp;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  uint8_t *temp = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return 0;
@@ -804,10 +804,10 @@ uint16_t eapfast_phase2_pac_process(eap_type_data *eapdata, uint8_t *indata,
  **************************************************************/
 void eapfast_phase2_provision_gen_crypt(eap_type_data *eapdata)
 {
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  uint8_t *keyblock, *temp;
-  int offset_to_prov_keys;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  uint8_t *keyblock = NULL, *temp = NULL;
+  int offset_to_prov_keys = 0;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -852,12 +852,12 @@ void eapfast_phase2_provision_gen_crypt(eap_type_data *eapdata)
 uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata, 
 				    uint16_t insize)
 {
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  uint16_t eapsize;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  uint16_t eapsize = 0;
   uint8_t doneinit = 0;
-  struct eapfast_tlv *fasttlv;
-  struct config_eap_fast *fastconfig;
+  struct eapfast_tlv *fasttlv = NULL;
+  struct config_eap_fast *fastconfig = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return 0;
@@ -977,8 +977,8 @@ uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata,
  ***************************************************************/
 uint8_t *eapfast_phase2_gen_error_tlv(uint32_t reason, uint16_t mandatory)
 {
-  uint8_t *result;
-  struct eapfast_tlv_error *error;
+  uint8_t *result = NULL;
+  struct eapfast_tlv_error *error = NULL;
 
   if (result_tlv_included == FALSE) result_tlv_needed = TRUE;
 
@@ -1001,8 +1001,8 @@ uint8_t *eapfast_phase2_gen_error_tlv(uint32_t reason, uint16_t mandatory)
  ********************************************************************/
 uint8_t *eapfast_phase2_gen_request_action_tlv(uint16_t reason)
 {
-  uint8_t *result;
-  struct eapfast_tlv_request_action *action;
+  uint8_t *result = NULL;
+  struct eapfast_tlv_request_action *action = NULL;
 
   result = Malloc(sizeof(struct eapfast_tlv_request_action));
   if (result == NULL) return NULL;
@@ -1023,8 +1023,8 @@ uint8_t *eapfast_phase2_gen_request_action_tlv(uint16_t reason)
  ***************************************************************/
 uint8_t *eapfast_phase2_get_result_tlv(uint16_t status)
 {
-  uint8_t *result;
-  struct eapfast_tlv_result *resulttlv;
+  uint8_t *result = NULL;
+  struct eapfast_tlv_result *resulttlv = NULL;
 
   result = Malloc(sizeof(struct eapfast_tlv_result));
   if (result == NULL) return NULL;
@@ -1046,10 +1046,10 @@ uint8_t *eapfast_phase2_get_result_tlv(uint16_t status)
 uint16_t eapfast_phase2_process_result_tlv(eap_type_data *eapdata, 
 					   uint8_t *indata, uint16_t insize)
 {
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  struct eapfast_tlv_result *fasttlv;
-  uint8_t *temp;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  struct eapfast_tlv_result *fasttlv = NULL;
+  uint8_t *temp = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return 0;
@@ -1128,8 +1128,8 @@ uint16_t eapfast_phase2_process_result_tlv(eap_type_data *eapdata,
  ***************************************************************/
 uint8_t *eapfast_phase2_get_intermediate_result_tlv(uint16_t status)
 {
-  uint8_t *result;
-  struct eapfast_tlv_result *resulttlv;
+  uint8_t *result = NULL;
+  struct eapfast_tlv_result *resulttlv = NULL;
 
   result = Malloc(sizeof(struct eapfast_tlv_result));
   if (result == NULL) return NULL;
@@ -1152,10 +1152,10 @@ uint8_t *eapfast_phase2_get_intermediate_result_tlv(uint16_t status)
  ***************************************************************/
 void eapfast_phase2_binding_failed(eap_type_data *eapdata)
 {
-  uint8_t *temp;
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  struct eapfast_tlv *tlv;
+  uint8_t *temp = NULL;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  struct eapfast_tlv *tlv = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -1207,10 +1207,10 @@ int eapfast_phase2_intermediate_result_process(eap_type_data *eapdata,
 					       uint8_t *indata,
 					       uint16_t insize)
 {
-  struct eapfast_tlv_result *fasttlv;
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  uint8_t *temp;
+  struct eapfast_tlv_result *fasttlv = NULL;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  uint8_t *temp = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return 0;
@@ -1285,9 +1285,9 @@ uint8_t *eapfast_phase2_t_prf(uint8_t *key, uint16_t keylen, char *label,
 			      uint16_t result_size)
 {
   uint8_t *s = NULL, *result = NULL, *feed = NULL;
-  uint16_t length, i, sizeofs, sizeoffeed;
+  uint16_t length = 0, i = 0, sizeofs = 0, sizeoffeed = 0;
   uint8_t mac[20];
-  unsigned int mdlen;
+  unsigned int mdlen = 0;
 
   if (!xsup_assert((key != NULL), "key != NULL", FALSE))
     return NULL;
@@ -1397,8 +1397,8 @@ uint8_t *eapfast_phase2_t_prf(uint8_t *key, uint16_t keylen, char *label,
  *****************************************************************/
 uint8_t *eapfast_phase2_get_simckj(eap_type_data *eapdata)
 {
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return NULL;
@@ -1416,11 +1416,11 @@ uint8_t *eapfast_phase2_get_simckj(eap_type_data *eapdata)
  ****************************************************************/
 uint8_t *eapfast_phase2_gen_cmkj(eap_type_data *eapdata)
 {
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  uint8_t *keyblock;
-  uint8_t *key;
-  uint8_t *cmkj;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  uint8_t *keyblock = NULL;
+  uint8_t *key = NULL;
+  uint8_t *cmkj = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return NULL;
@@ -1489,13 +1489,13 @@ uint8_t *eapfast_phase2_gen_cmkj(eap_type_data *eapdata)
 int eapfast_phase2_check_crypto_binding(eap_type_data *eapdata, 
 					uint8_t *indata, uint16_t insize)
 {
-  struct eapfast_crypto_binding_tlv *binding, *maccheck;
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
-  uint8_t *temp;
+  struct eapfast_crypto_binding_tlv *binding = NULL, *maccheck = NULL;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  uint8_t *temp = NULL;
   uint8_t mac[20], nonce[32];
-  int len;
-  uint8_t *cmkj;
+  int len = 0;
+  uint8_t *cmkj = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return 0;
@@ -1668,7 +1668,7 @@ int eapfast_phase2_check_crypto_binding(eap_type_data *eapdata,
  *********************************************************************/
 uint16_t eapfast_phase2_process_error_tlv(uint8_t *indata)
 {
-  struct eapfast_tlv_error *error;
+  struct eapfast_tlv_error *error = NULL;
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
@@ -1710,10 +1710,10 @@ uint16_t eapfast_phase2_process_error_tlv(uint8_t *indata)
 void eapfast_phase2_process(eap_type_data *eapdata, uint8_t *indata, 
 			    uint16_t insize)
 {
-  struct eapfast_tlv *fastlv;
-  uint16_t value16;
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
+  struct eapfast_tlv *fastlv = NULL;
+  uint16_t value16 = 0;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
   uint16_t consumed = 0, result = 0;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -1871,8 +1871,8 @@ void eapfast_phase2_process(eap_type_data *eapdata, uint8_t *indata,
 void eapfast_phase2_buildResp(eap_type_data *eapdata, uint8_t *result,
 			      uint16_t *result_size)
 {
-  struct tls_vars *mytls_vars;
-  struct eapfast_phase2 *phase2;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     {
