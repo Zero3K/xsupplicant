@@ -32,7 +32,7 @@
 
 #define TLS_SESSION_KEY_CONST       "client EAP encryption"
 #define TLS_SESSION_KEY_CONST_SIZE  21
-#define TLS_SESSION_KEY_SIZE        192
+#define TLS_SESSION_KEY_SIZE        512  //192
 
 // This could be 1398, but some authenticators are stupid, and won't handle
 // anything larger.

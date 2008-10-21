@@ -58,7 +58,9 @@ void *xsupconfig_parse_eap_fast(void **attr, xmlNodePtr node)
     }
 
   memset(meth->method_data, 0x00, sizeof(struct config_eap_fast));
-  
+
+  ((struct config_eap_fast *)(meth->method_data))->provision_flags = EAP_FAST_PROVISION_ALLOWED | EAP_FAST_PROVISION_AUTHENTICATED;
+
   return meth->method_data;
 }
 
@@ -80,18 +82,18 @@ void *xsupconfig_parse_eap_fast_provision(void **attr, xmlNodePtr node)
 
   if (result == 1)
     {
-      fast->provision = RES_YES;
+		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
     }
   else if (result == 0)
     {
-      fast->provision = RES_NO;
+		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
     }
   else
     {
       xsupconfig_common_log("Invalid value was passed for 'Allow_Provision'!  (Line %ld)\n"
 	     "   Will use the default value of yes.\n",
 	     xsupconfig_parse_get_line_num());
-      fast->provision = RES_YES;
+		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
     }
 
   FREE(value);
@@ -151,7 +153,6 @@ void *xsupconfig_parse_eap_fast_innerid(void **attr, xmlNodePtr node)
   return fast;
 }
 
-
 void *xsupconfig_parse_eap_fast_chunk_size(void **attr, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL;
@@ -180,8 +181,84 @@ void *xsupconfig_parse_eap_fast_chunk_size(void **attr, xmlNodePtr node)
   return fast;
 }
 
+void *xsupconfig_parse_eap_fast_allow_anon_provision(void **attr, xmlNodePtr node)
+{
+  struct config_eap_fast *fast = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Allow anonymous provisioning : %s\n", value);
+#endif
+
+  fast = (*attr);
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result == 1)
+    {
+		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+    }
+  else if (result == 0)
+    {
+		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+    }
+  else
+    {
+      xsupconfig_common_log("Invalid value was passed for 'Allow_Anonymous_Provision'!  (Line %ld)\n"
+	     "   Will use the default value of no.\n",
+	     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+    }
+
+  FREE(value);
+
+  return fast;
+}
+
+void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr, xmlNodePtr node)
+{
+  struct config_eap_fast *fast = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Allow authenticated provisioning : %s\n", value);
+#endif
+
+  fast = (*attr);
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result == 1)
+    {
+		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+    }
+  else if (result == 0)
+    {
+		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+    }
+  else
+    {
+      xsupconfig_common_log("Invalid value was passed for 'Allow_Authenticated_Provision'!  (Line %ld)\n"
+	     "   Will use the default value of yes.\n",
+	     xsupconfig_parse_get_line_num());
+		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+    }
+
+  FREE(value);
+
+  return fast;
+}
+
 parser eap_fast[] = {
   {"Allow_Provision", NULL, FALSE, &xsupconfig_parse_eap_fast_provision},
+  {"Allow_Anonymous_Provision", NULL, FALSE, &xsupconfig_parse_eap_fast_allow_anon_provision},
+  {"Allow_Authenticated_Provision", NULL, FALSE, &xsupconfig_parse_eap_fast_allow_auth_provision},
   {"PAC_File", NULL, FALSE, &xsupconfig_parse_eap_fast_pac_file},
   {"Chunk_Size", NULL, FALSE, &xsupconfig_parse_eap_fast_chunk_size},
   {"Inner_ID", NULL, FALSE, &xsupconfig_parse_eap_fast_innerid},

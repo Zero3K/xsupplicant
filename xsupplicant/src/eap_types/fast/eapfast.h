@@ -1,4 +1,4 @@
-/**************************************************************************
+/**
  * EAP-FAST function headers
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
@@ -7,7 +7,7 @@
  *
  * \author  chris@open1x.org
  *
- **************************************************************************/
+ **/
 
 #ifdef EAP_FAST
 
@@ -57,6 +57,10 @@
 // Session Ticket TLS Extension
 #define FAST_SESSION_TICKET          35
 
+#ifdef WINDOWS
+
+#pragma pack(1)
+
 struct eapfast_tlv_error {
   uint16_t type;
   uint16_t length;
@@ -68,10 +72,6 @@ struct provisioning_keys {
   uint8_t MSCHAPv2_ServerChallenge[16];
   uint8_t MSCHAPv2_ClientChallenge[16];
 };
-
-#ifdef WINDOWS
-
-#pragma pack(1)
 
 struct eapfast_tlv {
   uint16_t type;
@@ -110,6 +110,19 @@ struct tls_server_hello {
 #pragma pack()
 
 #else
+
+struct eapfast_tlv_error {
+  uint16_t type;
+  uint16_t length;
+  uint32_t error_code;
+} __attribute__((__packed__));
+
+struct provisioning_keys {
+  uint8_t session_key_seed[40];
+  uint8_t MSCHAPv2_ServerChallenge[16];
+  uint8_t MSCHAPv2_ClientChallenge[16];
+} __attribute__((__packed__));
+
 struct eapfast_tlv {
   uint16_t type;
   uint16_t length;
@@ -164,6 +177,7 @@ struct eapfast_phase2 {
   uint8_t *result_data;
   uint16_t result_size;
   uint8_t provisioning;        // Do we want to provision a PAC?
+  uint8_t anon_provisioning;	// Is it anonymous provisioning?
   struct provisioning_keys *pkeys;
   struct pac_values *pacs;
   uint8_t need_ms;

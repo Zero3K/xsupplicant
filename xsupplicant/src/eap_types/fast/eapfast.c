@@ -22,7 +22,6 @@
 #include <Winsock2.h>
 #endif
 
-//#include "profile.h"
 #include "xsupconfig.h"
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
@@ -480,12 +479,12 @@ void eapfast_parse_tls(struct tls_vars *mytls_vars, uint8_t *packet)
 void eapfast_process(eap_type_data *eapdata)
 {
   uint8_t *tls_type = NULL, *resbuf = NULL;
-  uint8_t fast_version;
+  uint8_t fast_version = 0;
   struct tls_vars *mytls_vars = NULL;
   struct eapfast_phase2 *phase2 = NULL;
   uint8_t *aid = NULL;
-  uint16_t aid_len, resout;
-  int bufsiz;
+  uint16_t aid_len = 0, resout = 0;
+  int bufsiz = 0;
   struct config_eap_fast *fastconf = NULL;
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-FAST) Processing.\n");
@@ -514,7 +513,7 @@ void eapfast_process(eap_type_data *eapdata)
 
   eapfast_set_ver(eapdata, fast_version);
 
-  debug_printf(DEBUG_AUTHTYPES, "Request EAP-FAST version is %d.\n", 
+  debug_printf(DEBUG_AUTHTYPES, "Requested EAP-FAST version is %d.\n", 
 	       fast_version);
 
   tls_type[0] = (tls_type[0] & FAST_VERSION_MASK_OUT);
@@ -525,62 +524,66 @@ void eapfast_process(eap_type_data *eapdata)
       debug_printf(DEBUG_AUTHTYPES, "(EAP-FAST) Processing packet.\n");
 
       if (eapdata->eapReqData[sizeof(struct eap_header)] == EAPTLS_START)
-	{
-	  if (eapfast_get_aid(&eapdata->eapReqData[sizeof(struct eap_header)+1],
+		{
+		  if (eapfast_get_aid(&eapdata->eapReqData[sizeof(struct eap_header)+1],
 			      &aid, &aid_len) == TRUE)
-	    {
-	      debug_printf(DEBUG_AUTHTYPES, "Got AID (%d byte(s)) : ", aid_len);
-	      debug_hex_printf(DEBUG_AUTHTYPES, aid, aid_len);
+		    {
+		      debug_printf(DEBUG_AUTHTYPES, "Got AID (%d byte(s)) : ", aid_len);
+		      debug_hex_printf(DEBUG_AUTHTYPES, aid, aid_len);
 	      
-	      if (eapfast_check_pac(eapdata, aid, aid_len) == FALSE)
-		{
-		  debug_printf(DEBUG_AUTHTYPES, "Couldn't locate a PAC file. "
-			       "We will provision one.\n");
+		      if (eapfast_check_pac(eapdata, aid, aid_len) == FALSE)
+				{
+				  debug_printf(DEBUG_AUTHTYPES, "Couldn't locate a PAC file. "
+					       "We will provision one.\n");
 
-		  // We don't have a PAC, are we allowed to provision one?
-		  if (fastconf->provision != RES_YES)
-		    {
-		      debug_printf(DEBUG_NORMAL, "We are not configured to "
-				   "allow provisioning!  Your authentication"
-				   " cannot continue.\n");
-		      eap_type_common_fail(eapdata);
-		      return;
-		    }
+				  // We don't have a PAC, are we allowed to provision one?
+				  if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_ALLOWED))
+				  {
+					  phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
+					  phase2->provisioning = TRUE;
 
-		  // Otherwise, determine how we can provision credentials.
-		  // Right now, we only support unauthenticated mode.
+					  if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))	
+					  {
+						  // Do authenticated mode.
+						  debug_printf(DEBUG_NORMAL, "Doing authenticated provisioning mode.\n");
+						  phase2->anon_provisioning = FALSE;
+					  }
+					  else if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
+					  {
+						  // Set our cipher suite to only allow Anon-DH mode, which should force
+						  // any authenticator in to anonymous provisioning, or a failure case.
+						  debug_printf(DEBUG_NORMAL, "Doing unauthenticated provisioning mode.\n");
+						  tls_funcs_set_cipher_list(mytls_vars, "ADH-AES128-SHA");
+						  phase2->anon_provisioning = TRUE;
+					  }
+				  }
+				  else
+				  {
+					  debug_printf(DEBUG_NORMAL, "EAP-FAST provisioning is currently disabled!  We cannot continue!\n");
+					  eap_type_common_fail(eapdata);
+				  }
+			  }
+		      else
+  			  {
+				  phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
+				  phase2->provisioning = FALSE;
 
-		  // XXX -  Add authenticated mode!
-		  if (tls_funcs_set_anon_dh_aes(mytls_vars) == -1)
-		    {
-		      eap_type_common_fail(eapdata);
-		      return;
-		    }
-
-		  phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
-		  phase2->provisioning = TRUE;
-		}
-	      else
-		{
-		  phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
-		  phase2->provisioning = FALSE;
-
-		  // We have a PAC, so configure TLS, and move on.
-		  if (tls_funcs_set_hello_extension(mytls_vars, 
+				  // We have a PAC, so configure TLS, and move on.
+				  if (tls_funcs_set_hello_extension(mytls_vars, 
 						    FAST_SESSION_TICKET,
 						    phase2->pacs->pac_opaque,
 						    phase2->pacs->pac_opaque_len) != 1)
-		    {
-		      debug_printf(DEBUG_NORMAL, "Error attempting to set the "
-				   "session key data for EAP-FAST!\n");
-		      eap_type_common_fail(eapdata);
-		      return;
-		    }
+				    {
+				      debug_printf(DEBUG_NORMAL, "Error attempting to set the "
+						   "session key data for EAP-FAST!\n");
+				      eap_type_common_fail(eapdata);
+				      return;
+				    }
 		  
-		  // Let us know that we need to "hand parse" the Server 
-		  // Hello packet to get the server random.
-		  phase2->need_ms = TRUE;
-		}
+				  // Let us know that we need to "hand parse" the Server 
+				  // Hello packet to get the server random.
+				  phase2->need_ms = TRUE;
+			}
 	    }
 	  else
 	    {
@@ -594,15 +597,15 @@ void eapfast_process(eap_type_data *eapdata)
       phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
 
       if (phase2->need_ms == 1)
-	{
-	  eapfast_parse_tls(mytls_vars, eapdata->eapReqData);
-	}
+		{
+		  eapfast_parse_tls(mytls_vars, eapdata->eapReqData);
+		}
 
       eapdata->methodState = tls_funcs_process(eapdata->eap_data,
 					       eapdata->eapReqData);
 
       if ((mytls_vars->handshake_done == TRUE) && (phase2->provisioning == TRUE))
-	mytls_vars->send_ack = TRUE;
+		mytls_vars->send_ack = TRUE;
     }
   else
     {

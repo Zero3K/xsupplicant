@@ -237,34 +237,6 @@ int tls_funcs_load_engine(struct tls_vars *mytls_vars, struct smartcard *sc)
 }
 #endif  // WINDOWS
 
-
-/***********************************************************************
- *
- *  Configure the cipher suites to only do TLS_DH_anon_WITH_AES_128_CBC_SHA
- *  this is use with EAP-FAST to provide unauthenticated provisioning.
- *
- ***********************************************************************/
-int tls_funcs_set_anon_dh_aes(struct tls_vars *mytls_vars)
-{
-  if (!xsup_assert((mytls_vars != NULL), "mytls_vars != NULL", FALSE))
-    return -1;
-
-  if (!xsup_assert((mytls_vars->ssl != NULL), "mytls_vars->ssl != NULL",
-		   FALSE))
-    return -1;
-
-  if (SSL_set_cipher_list(mytls_vars->ssl, "ADH-AES128-SHA") != 1)
-    {
-      // The cipher type wasn't allowed. (Probably not compiled in.)
-      debug_printf(DEBUG_NORMAL, "Anonymous cipher ADH-AES128-SHA was not "
-		   "available!  It is possible that your OpenSSL was not "
-		   "compiled with support for it!\n");
-      return -1;
-    }
-
-  return 0;
-}
-
 /***********************************************************************
  *
  *  Allocate memory, and set up structures needed to complete a TLS
@@ -379,6 +351,17 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 			debug_printf(DEBUG_NORMAL, "Error building a new session!\n");
 			return resval;
 		}
+
+	  if (mytls_vars->cipher_list != NULL)
+	  {
+		  if (SSL_set_cipher_list(mytls_vars->ssl, mytls_vars->cipher_list) != 1)
+		  {
+			// The cipher type wasn't allowed. (Probably not compiled in.)
+			debug_printf(DEBUG_NORMAL, "Unable to set allowed ciphers to '%s'.\n");
+			return -1;
+		  }
+	  }
+
     } else {
       // We already established a connection, so we probably we need to
       // resume the session.
@@ -838,6 +821,17 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
     }
 
   return MAY_CONT;
+}
+
+/**
+ * \brief Set a text list of ciphers that we want to allow to be used in our authentication.
+ *
+ * @param[in] mytls_vars   A pointer to the struct containing the TLS context.
+ * @param[in] cipherlist   An OpenSSL formatted cipher list to be used.
+ **/
+void tls_funcs_set_cipher_list(struct tls_vars *mytls_vars, char *cipherlist)
+{
+	mytls_vars->cipher_list = _strdup(cipherlist);
 }
 
 /**************************************************************************
@@ -2045,12 +2039,16 @@ void tls_funcs_deinit(struct tls_vars *mytls_vars)
 
 int tls_funcs_get_keyblock_len(struct tls_vars *mytls_vars)
 {
-  EVP_CIPHER *key_material;
-  EVP_MD *hash;
-  int len;
+  EVP_CIPHER *key_material = NULL;
+  EVP_MD *hash = NULL;
+  int len = 0;
 
   key_material = (EVP_CIPHER *)mytls_vars->ssl->enc_read_ctx->cipher;
+#if OPENSSL_VERSION_NUMBER >= 0x00909000L
+  hash = EVP_MD_CTX_md(mytls_vars->ssl->read_hash);
+#else
   hash = (EVP_MD *)mytls_vars->ssl->read_hash;
+#endif
 
   len = 0;
 

@@ -89,5 +89,5 @@ uint8_t eapmschapv2_isKeyAvailable(eap_type_data *);
 uint8_t *eapmschapv2_getKey(eap_type_data *);
 void eapmschapv2_deinit(eap_type_data *);
 uint8_t eapmschapv2_set_challenges(uint8_t *, uint8_t *);
-void eapmschapv2_set_eap_fast_mode(eap_type_data *, uint8_t);
+void eapmschapv2_set_eap_fast_anon_mode(eap_type_data *, uint8_t);
 #endif

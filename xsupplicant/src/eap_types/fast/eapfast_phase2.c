@@ -799,7 +799,7 @@ uint16_t eapfast_phase2_pac_process(eap_type_data *eapdata, uint8_t *indata,
 /**************************************************************
  *
  *  Generate the values needed to crypto bind the tunnel, and to
- *  populate EAP-MSCHAPv2 if we are going anonymous provisioning.
+ *  populate EAP-MSCHAPv2 if we are going to use anonymous provisioning.
  *
  **************************************************************/
 void eapfast_phase2_provision_gen_crypt(eap_type_data *eapdata)
@@ -896,7 +896,7 @@ uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata,
       // Need to generate some crypto data.
       eapfast_phase2_provision_gen_crypt(eapdata);
 
-      if ((phase2->provisioning == TRUE) && 
+	  if ((phase2->provisioning == TRUE) && (phase2->anon_provisioning == TRUE) &&
 	  (fastconfig->phase2->method_num == EAP_TYPE_MSCHAPV2))
 	{
 	  debug_printf(DEBUG_AUTHTYPES, "Setting up EAP-MS-CHAPv2.\n");
@@ -916,7 +916,7 @@ uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata,
 	    }
 	}
 
-      if (phase2->provisioning == FALSE)
+      if (phase2->provisioning == FALSE) 
 	{
 	  debug_printf(DEBUG_AUTHTYPES, "Clearing EAP-FAST provisioning mode "
 		       "from MS-CHAPv2.\n");
@@ -930,20 +930,23 @@ uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata,
     }
 
   eap_sm_run(phase2->sm);
-
+  
+  // Add this back in when we mess with anonymous provisioning again.
+  /*
   if (doneinit) 
     {
-      if (phase2->provisioning == TRUE)
-	{
-	  eapmschapv2_set_eap_fast_mode((eap_type_data *)phase2->sm->active, 
+		if ((phase2->provisioning == TRUE) && (phase2->anon_provisioning == TRUE))
+		{
+			eapmschapv2_set_eap_fast_anon_mode((eap_type_data *)phase2->sm->active, 
 					TRUE);
-	}
+		}
       else
-	{
-	  eapmschapv2_set_eap_fast_mode((eap_type_data *)phase2->sm->active, 
+		{
+			eapmschapv2_set_eap_fast_anon_mode((eap_type_data *)phase2->sm->active, 
 					FALSE);
-	}
+		}
     }
+*/
 
   if (phase2->sm->eapRespData != NULL)
     {
@@ -1419,7 +1422,7 @@ uint8_t *eapfast_phase2_gen_cmkj(eap_type_data *eapdata)
   struct tls_vars *mytls_vars = NULL;
   struct eapfast_phase2 *phase2 = NULL;
   uint8_t *keyblock = NULL;
-  uint8_t *key = NULL;
+  uint8_t *key = NULL;						// The keyblock modified to fit in EAP-FAST mode.
   uint8_t *cmkj = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -1429,7 +1432,23 @@ uint8_t *eapfast_phase2_gen_cmkj(eap_type_data *eapdata)
   phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
 
   debug_printf(DEBUG_AUTHTYPES, "Key data :\n");
-  debug_hex_dump(DEBUG_AUTHTYPES, phase2->sm->eapKeyData, 32);
+  debug_hex_dump(DEBUG_AUTHTYPES, phase2->sm->eapKeyData, 64);
+
+  key = Malloc(32);
+  if (key == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "Unable to allocate memory to create EAP-FAST formatted keyblock!\n");
+	  eap_type_common_fail(eapdata);
+	  return NULL;
+  }
+
+  // If we get here, then EAP-FAST is using us as an inner method.  So,
+  // mangle the key data in the way that it wants, and return it.
+  memcpy(&key[16], &phase2->sm->eapKeyData[0], 16);
+  memcpy(&key[0], &phase2->sm->eapKeyData[32], 16);
+
+  debug_printf(DEBUG_AUTHTYPES, "Key data : ");
+  debug_hex_printf(DEBUG_AUTHTYPES, key, 32);
 
   if (phase2->simckj == NULL)
     {
@@ -1443,21 +1462,9 @@ uint8_t *eapfast_phase2_gen_cmkj(eap_type_data *eapdata)
 	}
 
       memcpy(phase2->simckj, phase2->pkeys->session_key_seed, 40);
-    }
 
-  key = Malloc(32);
-  if (key == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store "
-		   "temporary key data!\n");
-      return NULL;
-    }
-
-  memset(key, 0x00, 32);
-
-  if (phase2->sm->eapKeyData != NULL)
-    {
-      memcpy(key, phase2->sm->eapKeyData, 32);
+	  debug_printf(DEBUG_AUTHTYPES, "S-IMCK[0] : ");
+	  debug_hex_printf(DEBUG_AUTHTYPES, phase2->simckj, 40);
     }
 
   keyblock = eapfast_phase2_t_prf(phase2->simckj, 40,
@@ -1472,8 +1479,14 @@ uint8_t *eapfast_phase2_gen_cmkj(eap_type_data *eapdata)
 
   // Store the new S-IMCK[j]
   memcpy(phase2->simckj, keyblock, 40);
-  
+
+  debug_printf(DEBUG_AUTHTYPES, "S-IMCK[j] : ");
+  debug_hex_printf(DEBUG_AUTHTYPES, phase2->simckj, 40);
+
   memcpy(cmkj, keyblock+40, 20);
+
+  debug_printf(DEBUG_AUTHTYPES, "CMK[j] : ");
+  debug_hex_printf(DEBUG_AUTHTYPES, cmkj, 20);
 
   return cmkj;
 }
@@ -1831,8 +1844,7 @@ void eapfast_phase2_process(eap_type_data *eapdata, uint8_t *indata,
 	  
 	case FAST_REQUEST_ACTION_TLV:
 	  debug_printf(DEBUG_NORMAL, "The server sent us a request for "
-		       "action TLV.  But, we should NEVER get one!  NAKing"
-		       "!\n");
+		       "action TLV.  But, we should NEVER get one!  NAKing!\n");
 	  result = eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
 					  0x00000000, FAST_REQUEST_ACTION_TLV);
 	  break;

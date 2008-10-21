@@ -1072,18 +1072,26 @@ void dump_config_eap_fast(struct config_eap_fast *fast)
   printf("\t  PAC File: \"%s\"\n", fast->pac_location);
   printf("\t  TLS Chunk Size: %d\n", fast->chunk_size);
   printf("\t  Provisioning: ");
-  switch (fast->provision)
-    {
-    case RES_UNSET:
-      printf("UNSET\n");
-      break;
-    case RES_YES:
-      printf("YES\n");
-      break;
-    case RES_NO:
-      printf("NO\n");
-      break;
-    }
+
+  if (TEST_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED))
+  {
+	  if (TEST_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
+	  {
+		  printf("Anonymous mode     ");
+	  }
+
+	  if (TEST_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))
+	  {
+		  printf("Authenticated mode");
+	  }
+
+	  printf("\n");
+  }
+  else
+  {
+	  printf("NO\n");
+  }
+
   printf("\t  Inner ID: %s\n", fast->innerid);
 
   if (fast->phase2) dump_config_eap_method(fast->phase2, 1);

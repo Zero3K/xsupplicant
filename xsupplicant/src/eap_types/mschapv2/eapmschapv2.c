@@ -96,18 +96,27 @@ uint8_t eapmschapv2_set_challenges(uint8_t *pc, uint8_t *ac)
   return TRUE;
 }
 
-/******************************************************************
+/**
+ * \brief Configure EAP-MS-CHAPv2 to run in EAP-FAST anon provisioning mode.
  *
- *  Configured EAP-MS-CHAPv2 to run in the weird EAP-FAST modes.
+ * @param[in] eapdata   An eap_type_data structure that holds information about this authentication.
+ * @apram[in] enable   A TRUE/FALSE value that indicates if we should be in anon provisioning mode.
  *
- ******************************************************************/
-void eapmschapv2_set_eap_fast_mode(eap_type_data *ctx, uint8_t enable)
+ **/
+void eapmschapv2_set_eap_fast_anon_mode(eap_type_data *eapdata, uint8_t enable)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+  struct mschapv2_vars *mscv2data = NULL;
+
+  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
 
+  if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	  return;
+
+  mscv2data = (struct mschapv2_vars *)eapdata->eap_data;
+
   debug_printf(DEBUG_AUTHTYPES, "Setting EAP-FAST mode for MS-CHAPv2!\n");
-//  eap_fast_mode = enable;
+  mscv2data->eap_fast_mode = enable;
 }
 
 /******************************************************************
@@ -1129,21 +1138,6 @@ uint8_t *eapmschapv2_getKey(eap_type_data *eapdata)
     return FALSE;
 
   myvars = (struct mschapv2_vars *)eapdata->eap_data;
-
-  // XXX Fix this up.  (Low priority, since MS-CHAPv2 keying doesn't
-  // provide anything useful except for with EAP-FAST.
-  /*
-  if (myvars->eap_fast_mode == TRUE) printf("Weird EAP-FAST mode enabled!\n");
-
-  if (((peer_challenge != NULL) && (authenticator_challenge != NULL)) ||
-  (myvars->eap_fast_mode == TRUE))*/
-    {
-      // If we get here, then EAP-FAST is using us as an inner method.  So,
-      // mangle the key data in the way that it wants, and return it.
-      debug_printf(DEBUG_AUTHTYPES, "Returning EAP-FAST style keying material.\n");
-      memcpy(&myvars->keyingMaterial[16], &myvars->keyingMaterial[0], 16);
-      memcpy(&myvars->keyingMaterial[0], &myvars->keyingMaterial[32], 16);
-    }
 
   keydata = Malloc(64);
   if (keydata == NULL)

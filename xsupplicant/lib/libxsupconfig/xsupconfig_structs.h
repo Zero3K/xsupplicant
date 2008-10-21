@@ -97,13 +97,17 @@ struct config_eap_tls
 
 };
 
+#define EAP_FAST_PROVISION_ALLOWED			BIT(0)
+#define EAP_FAST_PROVISION_ANONYMOUS		BIT(1)
+#define EAP_FAST_PROVISION_AUTHENTICATED	BIT(2)
+
 // All of the variables that are needed to successfully complete an
 // EAP-FAST authentication.
 struct config_eap_fast
 {
   char *pac_location;			///< The path to the file that contains the EAP-FAST PAC for this user.
-  sess_res provision;			///< A tri-state value that determines if we should allow the server to send us in to provisioning mode.
-  int chunk_size;				///< A.K.A. the TLS fragment size.  How big should TLS messages be when sent.
+  uint8_t provision_flags;		///< A set of flags that determine if we will allow provisioning, and which types of provisioning.
+  int chunk_size;				///< a.k.a. the TLS fragment size.  How big should TLS messages be when sent.
   char *innerid;				///< The username that will be used inside the tunnel that is created using the EAP-FAST PAC.
 
   struct config_eap_method *phase2; ///< A linked-list of valid inner (phase 2) configuration methods that can be used to authenticate an EAP-FAST connection.
