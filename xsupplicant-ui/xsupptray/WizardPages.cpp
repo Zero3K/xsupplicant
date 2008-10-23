@@ -1695,12 +1695,26 @@ bool WizardPageSCReader::create(void)
 
 void WizardPageSCReader::init(const ConnectionWizardData &data)
 {
+	int index = 0;
+
 	m_curData = data;
 
 	if (m_pReader != NULL)
 	{
-		populateSIMReaders();
+		index = m_pReader->findText(m_curData.m_SCreader);		
+		if (index == -1)
+		{
+			m_pReader->addItem(m_curData.m_SCreader);
+			m_pReader->setCurrentIndex(m_pReader->findText(m_curData.m_SCreader));
+		}
+		else
+		{
+			m_pReader->setCurrentIndex(index);
+		}
 	}
+
+	if (m_pAutoRealm) m_pAutoRealm->setChecked(m_curData.m_autoRealm);
+
 }
 
 void WizardPageSCReader::populateSIMReaders()

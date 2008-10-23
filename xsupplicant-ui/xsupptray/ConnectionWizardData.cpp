@@ -803,6 +803,34 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 			{
 				m_eapProtocol = ConnectionWizardData::eap_md5;
 			}
+			else if (pEAPMethod->method_num == EAP_TYPE_AKA)
+			{
+				config_eap_aka *pAKAData = (config_eap_aka *)pEAPMethod->method_data;
+				m_eapProtocol = ConnectionWizardData::eap_aka;
+				m_SCreader = pAKAData->reader;
+				if (pAKAData->auto_realm == TRUE)
+				{
+					m_autoRealm = true;
+				}
+				else
+				{
+					m_autoRealm = false;
+				}
+			}
+			else if (pEAPMethod->method_num == EAP_TYPE_SIM)
+			{
+				config_eap_sim *pSIMData = (config_eap_sim *)pEAPMethod->method_data;
+				m_eapProtocol = ConnectionWizardData::eap_sim;
+				m_SCreader = pSIMData->reader;
+				if (pSIMData->auto_realm == TRUE)
+				{
+					m_autoRealm = true;
+				}
+				else
+				{
+					m_autoRealm = false;
+				}
+			}
 			else if (pEAPMethod->method_num == EAP_TYPE_TTLS)
 			{
 				m_eapProtocol = ConnectionWizardData::eap_ttls;
