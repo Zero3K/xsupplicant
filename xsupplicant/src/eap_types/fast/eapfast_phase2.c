@@ -117,6 +117,7 @@ void eapfast_phase2_init(eap_type_data *eapdata)
 void eapfast_phase2_deinit(eap_type_data *eapdata)
 {
   struct eapfast_phase2 *phase2 = NULL;
+  struct tls_vars *mytls_vars = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -127,7 +128,15 @@ void eapfast_phase2_deinit(eap_type_data *eapdata)
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-FAST) Phase 2 deinit.\n");
 
-  phase2 = (struct eapfast_phase2 *)eapdata->eap_data;
+  mytls_vars = (struct tls_vars *)eapdata->eap_data;
+
+  if (mytls_vars->phase2data == NULL)
+  {
+	  // Nothing to free here, bail out.
+	  return;
+  }
+
+  phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
 
   eap_sm_deinit(&phase2->sm);
 
@@ -140,6 +149,7 @@ void eapfast_phase2_deinit(eap_type_data *eapdata)
       FREE(phase2->pacs->pacinfo.aid);
       FREE(phase2->pacs->pacinfo.iid);
       FREE(phase2->pacs->pacinfo.aid_info);
+	  FREE(phase2->pacs);
     }
 
   FREE(phase2->simckj);
@@ -370,7 +380,7 @@ uint16_t eapfast_phase2_process_pac_type(uint8_t *indata, uint16_t *pac_type)
 
   (*pac_type) = ntohs(pacinfo->pac_type);
 
-  return sizeof(struct pac_info_pac_type);
+  return sizeof(struct pac_info_pac_type)+4;
 }
 
 /*******************************************************************
@@ -506,9 +516,9 @@ uint16_t eapfast_phase2_process_cred_lifetime(uint8_t *indata, uint8_t *cred)
   if (!xsup_assert((cred != NULL), "cred != NULL", FALSE))
     return 0;
 
-  fasttlv = (struct eapfast_tlv *)cred;
+  fasttlv = (struct eapfast_tlv *)indata;
 
-  if (fasttlv->length != 4)
+  if (ntohs(fasttlv->length) != 4)
     {
       debug_printf(DEBUG_NORMAL, "Invalid Credential length!  Expected a "
 		   "length of 4, got a length of %d.\n", fasttlv->length);
@@ -517,7 +527,7 @@ uint16_t eapfast_phase2_process_cred_lifetime(uint8_t *indata, uint8_t *cred)
 
   memcpy(cred, fasttlv->data, 4);
 
-  return fasttlv->length+4;
+  return ntohs(fasttlv->length)+4;
 }
 
 
@@ -715,6 +725,8 @@ uint16_t eapfast_phase2_pac_process(eap_type_data *eapdata, uint8_t *indata,
 
   if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
     return 0;
+
+  memset(&pacs, 0x00, sizeof(pacs));
 
   // We need to loop through all of the TLVs that we have in this EAP message,
   // and process each one.
@@ -1390,6 +1402,8 @@ uint8_t *eapfast_phase2_t_prf(uint8_t *key, uint16_t keylen, char *label,
       sizeoffeed = 0;
     }
 
+	FREE(s);
+
   return result;
 }
 
@@ -1714,6 +1728,57 @@ uint16_t eapfast_phase2_process_error_tlv(uint8_t *indata)
 
   return ntohs(error->length)+4;
 }
+
+/**
+ * \brief Create a request to get a PAC.
+ *
+ * @param[in] eapdata   The EAP-FAST state data.
+ **/
+void eapfast_phase2_create_PAC_request(eap_type_data *eapdata)
+{
+	struct eapfast_pac_request_tlv *pac_request = NULL;
+	struct eapfast_phase2 *phase2 = NULL;
+	struct tls_vars *mytls_vars = NULL;
+	uint8_t *data = NULL;
+
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+	{
+		eap_type_common_fail(eapdata);
+		return;
+	}
+
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL",
+		   FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return;
+    }
+
+	mytls_vars = (struct tls_vars *)eapdata->eap_data;
+
+	if (!xsup_assert((mytls_vars->phase2data != NULL),
+		   "mytls_vars->phase2data != NULL", FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return;
+    }
+
+	debug_printf(DEBUG_NORMAL, "Requesting a new PAC.\n");
+	phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
+
+	data = eapfast_phase2_gen_request_action_tlv(FAST_REQUEST_PROCESS_TLV);
+	memcpy(&phase2->result_data[phase2->result_size], data, sizeof(struct eapfast_tlv_request_action));
+	phase2->result_size += sizeof(struct eapfast_tlv_request_action);
+
+	pac_request = (struct eapfast_pac_request_tlv *)&phase2->result_data[phase2->result_size];
+	phase2->result_size += sizeof(struct eapfast_pac_request_tlv);
+
+	pac_request->type = ntohs(FAST_PAC_TLV);
+	pac_request->length = ntohs(sizeof(struct eapfast_pac_request_tlv)-4);
+	pac_request->pac_type = ntohs(10);
+	pac_request->pac_length = ntohs(2);
+	pac_request->req_type = ntohs(1);
+}
 						   
 /***************************************************************
  *
@@ -1728,6 +1793,7 @@ void eapfast_phase2_process(eap_type_data *eapdata, uint8_t *indata,
   struct tls_vars *mytls_vars = NULL;
   struct eapfast_phase2 *phase2 = NULL;
   uint16_t consumed = 0, result = 0;
+  uint8_t request_pac = FALSE;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -1787,6 +1853,12 @@ void eapfast_phase2_process(eap_type_data *eapdata, uint8_t *indata,
 	  result = eapfast_phase2_process_result_tlv(eapdata, 
 						     &indata[consumed], 
 						     (insize - consumed));
+
+  	  if ((phase2->provisioning == TRUE) && (phase2->anon_provisioning == FALSE))
+	  {
+		  // We need to explicitly request a PAC.
+		  request_pac = TRUE;
+	  }
 	  break;
 	  
 	case FAST_NAK_TLV:
@@ -1832,6 +1904,11 @@ void eapfast_phase2_process(eap_type_data *eapdata, uint8_t *indata,
 	  result = eapfast_phase2_check_crypto_binding(eapdata, 
 						       &indata[consumed],
 						       (insize - consumed));
+
+	  if (request_pac == TRUE)
+	  {
+		  eapfast_phase2_create_PAC_request(eapdata);
+	  }
 	  break;
 	  
 	case FAST_SERVER_TRUSTED_ROOT_TLV:
@@ -1903,10 +1980,9 @@ void eapfast_phase2_buildResp(eap_type_data *eapdata, uint8_t *result,
   mytls_vars = (struct tls_vars *)eapdata->eap_data;
   phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
       
-  if (!xsup_assert((phase2->result_data != NULL), 
-		   "phase2->result_data != NULL", FALSE))
+  if (phase2->result_data == NULL)
     {
-      eap_type_common_fail(eapdata);
+		debug_printf(DEBUG_AUTHTYPES, "Nothing to return, ACKing.\n");
       *result_size = 0;
       return;
     }

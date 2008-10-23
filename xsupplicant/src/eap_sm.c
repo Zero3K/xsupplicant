@@ -1085,6 +1085,7 @@ void eap_sm_change_to_get_method(eap_sm *sm)
 				if ((eaphandlers[eapstruct].eap_deinit != NULL) && (sm->active != NULL))
 				{
 					eaphandlers[eapstruct].eap_deinit(sm->active);
+					if (sm->eapKeyData != NULL) FREE(sm->eapKeyData);
 					sm->eapKeyData = NULL;
 					sm->eapKeyAvailable = FALSE;
 				}
@@ -2021,13 +2022,13 @@ void eap_sm_deinit(eap_sm **sm)
 			if ((*sm)->lastMethod != 0)
 			{
 				debug_printf(DEBUG_EAP_STATE, "Calling deinit for EAP type %d\n",
-					   (*sm)->selectedMethod);
+					   (*sm)->lastMethod);
 
 				eapstruct = eap_sm_find_method((*sm)->lastMethod);
 				if (eaphandlers[eapstruct].eap_deinit != NULL)
 				{
 					eaphandlers[eapstruct].eap_deinit((*sm)->active);
-					(*sm)->eapKeyData = NULL;
+					FREE((*sm)->eapKeyData);
 					(*sm)->eapKeyAvailable = FALSE;
 				}
 			}

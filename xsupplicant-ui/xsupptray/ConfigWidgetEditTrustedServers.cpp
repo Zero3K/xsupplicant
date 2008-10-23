@@ -366,6 +366,14 @@ bool ConfigWidgetEditTrustedServers::save()
 			m_pTrustedServer->common_name = _strdup(m_pCNEdit->text().toAscii());
 			m_pTrustedServer->exact_common_name = FALSE;
 		}
+		else
+		{
+			if ((m_pValidateServer != NULL) && (m_pValidateServer->checkState() == Qt::Checked))
+			{
+				QMessageBox::warning(this, tr("Invalid Common Name"), tr("You must enter a valid common name if you have common name checking enabled!"));
+				return false;
+			}
+		}
 	}
 
 	if (m_pValidateServer != NULL)

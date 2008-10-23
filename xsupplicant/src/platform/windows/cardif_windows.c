@@ -2769,6 +2769,7 @@ void ListDevs(HANDLE devHandle)
 		lpMsgBuf = GetLastErrorStr(dw);
 		debug_printf(DEBUG_NORMAL, "Error getting interface information.  Error was : %s\n", lpMsgBuf);
 		ipc_events_error(NULL, IPC_EVENT_ERROR_GETTING_INT_INFO, NULL);
+		LocalFree(lpMsgBuf);
 	}
 
 	free(pQueryBinding);
@@ -2967,6 +2968,7 @@ char *cardif_windows_find_os_name_from_desc(wchar_t *devdesc)
 		lpMsgBuf = GetLastErrorStr(dw);
 		ipc_events_error(NULL, IPC_EVENT_ERROR_GETTING_INT_INFO, shortdesc);
 		debug_printf(DEBUG_NORMAL, "Error getting interface information!  Error was (%d) : %s\n", dw, lpMsgBuf);
+		LocalFree(lpMsgBuf);
 	}
 
 	CloseHandle(devHandle);
@@ -3043,6 +3045,7 @@ char *cardif_find_description(char *intname)
 		printf("Error getting interface information!\n");
 		ipc_events_error(NULL, IPC_EVENT_ERROR_GETTING_INT_INFO, NULL);
 		printf("  Error was : %s\n", lpMsgBuf);
+		LocalFree(lpMsgBuf);
 	}
 
 	CloseHandle(devHandle);

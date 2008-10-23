@@ -50,6 +50,7 @@ uint8_t eapfast_init(eap_type_data *eapdata)
   struct tls_vars *mytls_vars = NULL;
   struct config_eap_fast *fastconf = NULL;
   struct eapfast_phase2 *fastphase2 = NULL;
+  struct config_globals *globals = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;
@@ -63,11 +64,11 @@ uint8_t eapfast_init(eap_type_data *eapdata)
     {
       eapdata->eap_data = Malloc(sizeof(struct tls_vars));
       if (eapdata->eap_data == NULL)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store FAST "
+		{
+		  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store FAST "
 		       "specific data structures.\n");
-	  return FALSE;
-	}
+		  return FALSE;
+		}
     }
 
   mytls_vars = eapdata->eap_data;
@@ -83,6 +84,41 @@ uint8_t eapfast_init(eap_type_data *eapdata)
       debug_printf(DEBUG_NORMAL, "Couldn't initialize SSL context!\n");
       return FALSE;
     }
+
+  if ((TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED)) && ((mytls_vars->certs_loaded & ROOT_CERTS_LOADED) == 0x00))
+    {
+	  if (fastconf->validate_cert == FALSE)
+        {
+          // We were told not to verify certificates.  Spew out a warning, and
+          // then do it!
+          mytls_vars->verify_cert = FALSE;
+
+		  FREE(mytls_vars->cncheck);
+
+          globals = config_get_globals();
+
+          if (globals != NULL)
+            {
+              if (!TEST_FLAG(globals->flags,
+                             CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+                {
+					debug_printf(DEBUG_NORMAL, "WARNING - Verification of the Trusted Server's certificate is disabled.  The connection's security could be compromised.\n");
+                }
+            }
+        }
+      else
+        {
+			mytls_vars->verify_cert = TRUE;
+
+			if (certificates_load_root(mytls_vars, fastconf->trusted_server) != XENONE)
+			{
+				debug_printf(DEBUG_NORMAL, "Unable to load root certificate(s)!\n");
+				return FALSE;
+			}
+	    }
+	
+		mytls_vars->certs_loaded |= ROOT_CERTS_LOADED;
+  }
 
   mytls_vars->cncheck = FALSE;
   mytls_vars->cnexact = FALSE;
@@ -325,6 +361,7 @@ uint8_t eapfast_check_pac(eap_type_data *eapdata, uint8_t *aid,
   if (doc == NULL) 
     {
       eapfast_xml_deinit(doc);
+	  FREE(straid);
       return FALSE;
     }
 
@@ -338,12 +375,14 @@ uint8_t eapfast_check_pac(eap_type_data *eapdata, uint8_t *aid,
   if (eapfast_xml_find_pac_data(doc, straid, fastp2->pacs) != 0)
     {
       eapfast_xml_deinit(doc);
+	  FREE(straid);
       FREE(fastp2->pacs);
       return FALSE;
     }
 
   // If it is there, then store it and return TRUE.
   eapfast_xml_deinit(doc);
+  FREE(straid);
 
   return TRUE;
 }
@@ -533,7 +572,7 @@ void eapfast_process(eap_type_data *eapdata)
 	      
 		      if (eapfast_check_pac(eapdata, aid, aid_len) == FALSE)
 				{
-				  debug_printf(DEBUG_AUTHTYPES, "Couldn't locate a PAC file. "
+				  debug_printf(DEBUG_AUTHTYPES, "Couldn't locate a PAC. "
 					       "We will provision one.\n");
 
 				  // We don't have a PAC, are we allowed to provision one?
@@ -569,16 +608,8 @@ void eapfast_process(eap_type_data *eapdata)
 				  phase2->provisioning = FALSE;
 
 				  // We have a PAC, so configure TLS, and move on.
-				  if (tls_funcs_set_hello_extension(mytls_vars, 
-						    FAST_SESSION_TICKET,
-						    phase2->pacs->pac_opaque,
-						    phase2->pacs->pac_opaque_len) != 1)
-				    {
-				      debug_printf(DEBUG_NORMAL, "Error attempting to set the "
-						   "session key data for EAP-FAST!\n");
-				      eap_type_common_fail(eapdata);
-				      return;
-				    }
+				  mytls_vars->pac = phase2->pacs->pac_opaque;
+				  mytls_vars->pac_length = phase2->pacs->pac_opaque_len;
 		  
 				  // Let us know that we need to "hand parse" the Server 
 				  // Hello packet to get the server random.
@@ -706,9 +737,18 @@ uint8_t *eapfast_buildResp(eap_type_data *eapdata)
 		      return NULL;
 		    }
 		  eapfast_phase2_buildResp(eapdata, res, &res_size);
-	  
+
+      if (res_size == 0)
+		{
+          // Build ACK.
+          res = eap_type_common_buildAck(eapdata, EAP_TYPE_FAST);
+		  res[sizeof(struct eap_header)] |= eapfast_get_ver(eapdata);
+		  return res; 
+        }
+      else
+	  {
 		  tls_funcs_encrypt(eapdata->eap_data, res, res_size);
-	  
+	  }
 		  FREE(res);
 		}
     }
@@ -840,7 +880,6 @@ void eapfast_deinit(eap_type_data *eapdata)
   eapfast_phase2_deinit(eapdata);
   tls_funcs_deinit(mytls_vars);
 
-  FREE(mytls_vars);
   FREE(eapdata->eap_data);
 
   debug_printf(DEBUG_DEINIT, "(EAP-FAST) Cleaned up.\n");

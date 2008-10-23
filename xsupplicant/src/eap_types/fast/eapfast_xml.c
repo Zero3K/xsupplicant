@@ -107,6 +107,7 @@ xmlNodePtr eapfast_xml_find_pac(xmlDocPtr doc, char *aid)
           if (strcmp(prop, aid) == 0)
             {
               done = TRUE;
+			  xmlFree(prop);
             }
           else
             {
@@ -171,6 +172,12 @@ int eapfast_xml_add_pac(xmlDocPtr doc, struct pac_values *pacs)
       return -1;
     }
 
+  if (pacs->pacinfo.aid == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "PAC information doesn't include the A-ID.  The PAC data is invalid!\n");
+	  return -1;
+  }
+
   temp = eap_type_common_convert_hex(pacs->pacinfo.aid, pacs->pacinfo.aid_len);
   eapfast_xml_check_clear_node(doc, temp);
 
@@ -189,18 +196,44 @@ int eapfast_xml_add_pac(xmlDocPtr doc, struct pac_values *pacs)
   eapfast_xml_add_content(cur_node, "PAC_opaque", temp);
   FREE(temp);
 
-  temp = eap_type_common_convert_hex(pacs->pacinfo.cred_lifetime, 4);
+  // The credential lifetime is optional, if it isn't provided, we shouldn't write anything.
+  if (memcmp(pacs->pacinfo.cred_lifetime, "\x00\x00\x00\x00", 4) == 0)
+  {
+	  temp = NULL;
+  }
+  else
+  {
+	temp = eap_type_common_convert_hex(pacs->pacinfo.cred_lifetime, 4);
+  }
   eapfast_xml_add_content(cur_node, "Cred_Lifetime", temp);
   FREE(temp);
 
-  temp = eap_type_common_convert_hex(pacs->pacinfo.iid, pacs->pacinfo.iid_len);
+  // The I-ID will only be included if the server wants to check it.  Since it is
+  // optional, it may be NULL, which causes the eap_type_common_convert_hex() call
+  // to assert.  This isn't what we want.
+  if (pacs->pacinfo.iid != NULL)
+  {
+	temp = eap_type_common_convert_hex(pacs->pacinfo.iid, pacs->pacinfo.iid_len);
+  }
+  else
+  {
+	  temp = NULL;
+  }
   eapfast_xml_add_content(cur_node, "IID", temp);
   FREE(temp);
 
+  if (pacs->pacinfo.aid_info == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "The A-ID_Info was not included in the PAC provisioning!  The PAC is invalid!\n");
+	  return -1;
+  }
   temp = eap_type_common_convert_hex(pacs->pacinfo.aid_info,
 				     pacs->pacinfo.aid_info_len);
   eapfast_xml_add_content(cur_node, "AID_Info", temp);
   FREE(temp);
+
+  // If the PAC provisioning didn't include the PAC type, then we default to a tunnel PAC.
+  if (pacs->pacinfo.pac_type == 0) pacs->pacinfo.pac_type = 1;
 
   memset(num, 0x00, 3);
   snprintf(num, 3, "%d", pacs->pacinfo.pac_type);
@@ -319,6 +352,8 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid,
 		}
 	      process_hex(prop, strlen(prop), pacs->pac_key);
 	      // No need to save the length here.  It should ALWAYS be 32!
+
+		  xmlFree(prop);
 	    }
 
 	  if (strcmp(cur_node->name, "Cred_Lifetime") == 0)
@@ -331,6 +366,8 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid,
 		  return -1;
 		}
 	      process_hex(prop, strlen(prop), pacs->pacinfo.cred_lifetime);
+
+		  xmlFree(prop);
 	    }
 
 	  if (strcmp(cur_node->name, "IID") == 0)
@@ -351,6 +388,8 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid,
 		}
 	      process_hex(prop, strlen(prop), pacs->pacinfo.iid);
 	      pacs->pacinfo.iid_len = (strlen(prop) / 2);
+
+		  xmlFree(prop);
 	    }
 
 	  if (strcmp(cur_node->name, "AID_Info") == 0)
@@ -372,12 +411,15 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid,
 
 	      process_hex(prop, strlen(prop), pacs->pacinfo.aid_info);
 	      pacs->pacinfo.aid_info_len = (strlen(prop) / 2);
+
+		  xmlFree(prop);
 	    }
 
 	  if (strcmp(cur_node->name, "PAC_Type") == 0)
 	    {
 	      prop = xmlNodeGetContent(cur_node);
 	      pacs->pacinfo.pac_type = atoi(prop);
+		  xmlFree(prop);
 	    }
 
 	  if (strcmp(cur_node->name, "PAC_opaque") == 0)
@@ -401,6 +443,8 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid,
 
 	      process_hex(prop, strlen(prop), pacs->pac_opaque);
 	      pacs->pac_opaque_len = (strlen(prop) / 2);
+
+		  xmlFree(prop);
 	    }
 
 	  cur_node = cur_node->next;

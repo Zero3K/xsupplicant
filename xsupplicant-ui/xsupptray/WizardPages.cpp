@@ -1496,6 +1496,12 @@ bool WizardPageDot1XCert::validate(void)
 	{
 		if (m_pVerifyName != NULL && m_pVerifyName->isChecked() == true)
 		{
+			if (m_pNameField->text() == "")
+			{
+				QMessageBox::warning(m_pRealForm, tr("Invalid Common Name String"), tr("You must enter a valid common name string if common name verification is enabled."));
+				return false;
+			}
+
 			if (m_pNameField->hasAcceptableInput() == false)
 			{
 				QMessageBox::warning(m_pRealForm, tr("Invalid Common Name String"), tr("Please input a valid common name string.  Domain names must be of the form \"subdomain.domain\" or \"*.subdomain.domain\" if using wildcards."));

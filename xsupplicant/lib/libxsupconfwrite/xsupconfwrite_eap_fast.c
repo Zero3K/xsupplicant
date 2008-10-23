@@ -188,6 +188,44 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata,
 		free(temp);
 	}
 
+	if ((write_all == TRUE) || (fastdata->trusted_server != NULL))
+	{
+		if (xsupconfwrite_common_newSibling(fastnode, "Trusted_Server", fastdata->trusted_server) == NULL)
+		{
+#ifdef WRITE_EAP_FAST_DEBUG
+			printf("Couldn't create <Trusted_Server> node for FAST!\n");
+#endif
+			xmlFreeNode(fastnode);
+			return NULL;
+		}
+	}
+
+	if ((write_all == TRUE) || (fastdata->validate_cert != TRUE))
+	{
+		if (fastdata->validate_cert != FALSE)
+		{
+			if (xsupconfwrite_common_newSibling(fastnode, "Validate_Certificate", "yes") == NULL)
+			{
+#ifdef WRITE_EAP_FAST_DEBUG
+				printf("Couldn't create <Validate_Certificate> for PEAP!\n");
+#endif
+				xmlFreeNode(fastnode);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xsupconfwrite_common_newSibling(fastnode, "Validate_Certificate", "no") == NULL)
+			{
+#ifdef WRITE_EAP_FAST_DEBUG
+				printf("Couldn't create <Validate_Certificate> for FAST!\n");
+#endif
+				xmlFreeNode(fastnode);
+				return NULL;
+			}
+		}
+	}
+
 	p2node = xmlNewNode(NULL, (xmlChar *)"Phase2");
 	if (p2node == NULL)
 	{

@@ -13,6 +13,9 @@
 #define TLS_FUNCS_CLIENT_FIRST   1
 #define TLS_FUNCS_SERVER_FIRST   2
 
+// EAP-FAST Session Ticket TLS Extension
+#define FAST_SESSION_TICKET          35
+
 #ifdef WINDOWS
 #define EWOULDBLOCK 0xff
 #endif
@@ -55,6 +58,8 @@ struct tls_vars {
   uint16_t derived_shared_secret_len;
   uint8_t method_in_use;
   char *cipher_list;
+  uint8_t *pac;							// Used in EAP-FAST  (Reference pointer.  DO NOT FREE!)
+  uint16_t pac_length;					// Used in EAP-FAST
 };
 
 int tls_funcs_init(struct tls_vars *, uint8_t);
@@ -70,7 +75,6 @@ int tls_funcs_decrypt_ready(struct tls_vars *);
 int tls_funcs_decrypt(struct tls_vars *, uint8_t *, uint16_t *);
 int tls_funcs_load_random(struct tls_vars *, char *);
 void tls_funcs_deinit(struct tls_vars *);
-//int tls_funcs_set_anon_dh_aes(struct tls_vars *);
 int tls_funcs_get_keyblock_len(struct tls_vars *);
 int tls_funcs_set_hello_extension(struct tls_vars *, int, void *, int);
 uint8_t *tls_funcs_get_client_random(struct tls_vars *);

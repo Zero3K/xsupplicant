@@ -255,6 +255,65 @@ void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr, xmlNodePtr nod
   return fast;
 }
 
+void *xsupconfig_parse_eap_fast_trusted_server(void **attr, xmlNodePtr node)
+{
+  struct config_eap_fast *fast = NULL;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+  fast = (*attr);
+
+#ifdef PARSE_DEBUG
+  printf("FAST Trusted Server : %s\n", value);
+#endif
+
+	if ((value == NULL) || (strlen(value) == 0))
+	{
+		free(value);
+		fast->trusted_server = NULL;
+	}
+	else
+	{
+		fast->trusted_server = value;
+	}
+
+  return fast;
+}
+
+void *xsupconfig_parse_eap_fast_validate_cert(void **attr, xmlNodePtr node)
+{
+  struct config_eap_fast *fast = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+  fast = (*attr);
+
+#ifdef PARSE_DEBUG
+  printf("FAST certificate validation : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result > 1)
+    {
+      xsupconfig_common_log("Invalid value was passed for 'Validate_Certificate'!  Will use "
+	     "the default value of yes.  (Config line %ld)\n",
+	     xsupconfig_parse_get_line_num());
+      fast->validate_cert = TRUE;
+    }
+  else
+    {
+      fast->validate_cert = result;
+    }
+
+  FREE(value);
+
+  return fast;
+}
+
 parser eap_fast[] = {
   {"Allow_Provision", NULL, FALSE, &xsupconfig_parse_eap_fast_provision},
   {"Allow_Anonymous_Provision", NULL, FALSE, &xsupconfig_parse_eap_fast_allow_anon_provision},
@@ -262,6 +321,8 @@ parser eap_fast[] = {
   {"PAC_File", NULL, FALSE, &xsupconfig_parse_eap_fast_pac_file},
   {"Chunk_Size", NULL, FALSE, &xsupconfig_parse_eap_fast_chunk_size},
   {"Inner_ID", NULL, FALSE, &xsupconfig_parse_eap_fast_innerid},
+  {"Trusted_Server", NULL, FALSE, &xsupconfig_parse_eap_fast_trusted_server},
+  {"Validate_Certificate", NULL, FALSE, &xsupconfig_parse_eap_fast_validate_cert},
   {"Type", NULL, FALSE, xsupcommon_do_nothing},
   {"Phase2", (struct conf_parse_struct *)&fast_phase2, TRUE, xsupcommon_do_nothing},
 

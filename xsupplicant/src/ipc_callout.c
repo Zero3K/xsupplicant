@@ -7851,6 +7851,8 @@ int ipc_callout_enum_smartcard_readers(xmlNodePtr innode, xmlNodePtr *outnode)
 		}
 	}
 
+	FREE(readers);
+
 	(*outnode) = n;
 
 	return IPC_SUCCESS;

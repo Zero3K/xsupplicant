@@ -109,6 +109,8 @@ struct config_eap_fast
   uint8_t provision_flags;		///< A set of flags that determine if we will allow provisioning, and which types of provisioning.
   int chunk_size;				///< a.k.a. the TLS fragment size.  How big should TLS messages be when sent.
   char *innerid;				///< The username that will be used inside the tunnel that is created using the EAP-FAST PAC.
+  char *trusted_server;			///< A trusted server to use with authenticated provisioning mode.
+  char validate_cert;			///< A TRUE/FALSE value to determine if we should validate the certificate.
 
   struct config_eap_method *phase2; ///< A linked-list of valid inner (phase 2) configuration methods that can be used to authenticate an EAP-FAST connection.
 };

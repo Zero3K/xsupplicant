@@ -25,6 +25,14 @@
 #ifdef WINDOWS
 
 #pragma pack(1)
+struct eapfast_pac_request_tlv {
+	uint16_t type;
+	uint16_t length;
+	uint16_t pac_type;
+	uint16_t pac_length;
+	uint16_t req_type;
+};
+
 struct eapfast_crypto_binding_tlv {
   uint16_t type;
   uint16_t length;
@@ -35,22 +43,6 @@ struct eapfast_crypto_binding_tlv {
   uint8_t nonce[32];
   uint8_t compound_mac[20];
 };
-#pragma pack()
-
-#else
-
-struct eapfast_crypto_binding_tlv {
-  uint16_t type;
-  uint16_t length;
-  uint8_t reserved;
-  uint8_t version;
-  uint8_t eap_version;
-  uint8_t subtype;
-  uint8_t nonce[32];
-  uint8_t compound_mac[20];
-} __attribute__((__packed__));
-
-#endif
 
 struct pac_info {
   uint8_t cred_lifetime[4];
@@ -89,6 +81,69 @@ struct vendor_tlv_type {
   uint32_t vendor_id;
   uint8_t  data[0];
 };
+
+#pragma pack()
+
+#else
+struct eapfast_pac_request_tlv {
+	uint16_t type;
+	uint16_t length;
+	uint16_t pac_type;
+	uint16_t pac_length;
+	uint8_t pac_inner_type;
+} __attribute__((__packed__));
+
+struct eapfast_crypto_binding_tlv {
+  uint16_t type;
+  uint16_t length;
+  uint8_t reserved;
+  uint8_t version;
+  uint8_t eap_version;
+  uint8_t subtype;
+  uint8_t nonce[32];
+  uint8_t compound_mac[20];
+} __attribute__((__packed__));
+
+struct pac_info {
+  uint8_t cred_lifetime[4];
+  uint8_t *aid;
+  uint16_t aid_len;
+  uint8_t *iid;
+  uint16_t iid_len;
+  uint8_t *aid_info;
+  uint16_t aid_info_len;
+  uint16_t pac_type;
+} __attribute__((__packed__));
+
+struct pac_values {
+  uint8_t pac_key[32];
+  uint8_t *pac_opaque;
+  uint16_t pac_opaque_len;
+  struct pac_info pacinfo;
+} __attribute__((__packed__));
+
+struct pac_info_pac_type {
+  uint16_t type;
+  uint16_t length;
+  uint16_t pac_type;
+} __attribute__((__packed__));
+
+struct nak_tlvs {
+  uint32_t vendorid;
+  uint16_t naktype;
+
+  // TLVs are currently optional, and not supported.
+} __attribute__((__packed__));
+
+struct vendor_tlv_type {
+  uint16_t type;
+  uint16_t length;
+  uint32_t vendor_id;
+  uint8_t  data[0];
+} __attribute__((__packed__));
+
+#endif
+
 
 uint8_t *eapfast_phase2_t_prf(uint8_t *, uint16_t, char *, uint8_t *,
 			      uint16_t, uint16_t);

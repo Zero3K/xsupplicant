@@ -122,6 +122,7 @@ void ListDevs(HANDLE devHandle)
 		lpMsgBuf = GetLastErrorStr(dw);
 		printf("Error getting interface information!\n");
 		printf("  Error was : %s\n", lpMsgBuf);
+		LocalFree(lpMsgBuf);
 	}
 
 	free(pQueryBinding);

@@ -54,9 +54,6 @@
 #define FAST_REQUEST_PROCESS_TLV     1
 #define FAST_REQUEST_NEGOTIATE_EAP   2
 
-// Session Ticket TLS Extension
-#define FAST_SESSION_TICKET          35
-
 #ifdef WINDOWS
 
 #pragma pack(1)

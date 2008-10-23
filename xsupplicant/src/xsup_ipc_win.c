@@ -63,7 +63,8 @@ int xsup_ipc_win_create_pipe(int i)
 {
 	DWORD err = 0;
 	char handle_str[128];
-	LPOVERLAPPED ovr;
+	LPOVERLAPPED ovr = NULL;
+	LPVOID lpMsgBuf = NULL;
 	SECURITY_ATTRIBUTES *pSA = NULL;
      TCHAR * szSD = TEXT("D:")       // Discretionary ACL
         TEXT("(D;OICI;GA;;;BG)")     // Deny access to 
@@ -82,8 +83,10 @@ int xsup_ipc_win_create_pipe(int i)
 		if (pipes[i].hevent == NULL)
 		{
 			err = GetLastError();
+			lpMsgBuf = GetLastErrorStr(err);
 			debug_printf(DEBUG_NORMAL, "Couldn't create event handler for IPC! (Error %d : %s)\n",
-				err, GetLastErrorStr(err));
+				err, lpMsgBuf);
+			LocalFree(lpMsgBuf);
 			return -1;
 		}
 
@@ -122,8 +125,10 @@ int xsup_ipc_win_create_pipe(int i)
 		if (pipes[i].hdl == INVALID_HANDLE_VALUE)
 		{
 			err = GetLastError();
+			lpMsgBuf = GetLastErrorStr(err);
 			debug_printf(DEBUG_NORMAL, "Couldn't create named pipes for IPC control!  (Error %d : %s)\n",
-				err, GetLastErrorStr(err));
+				err, lpMsgBuf);
+			LocalFree(lpMsgBuf);
 			return -1;
 		}
 
@@ -142,8 +147,10 @@ int xsup_ipc_win_create_pipe(int i)
 		if (ConnectNamedPipe(pipes[i].hdl, ovr) != 0)
 		{
 			err = GetLastError();
+			lpMsgBuf = GetLastErrorStr(err);
 			debug_printf(DEBUG_NORMAL, "Couldn't establish listener for named pipe! (Error %d : %s)\n",
-				err, GetLastErrorStr(err));
+				err, lpMsgBuf);
+			LocalFree(lpMsgBuf);
 			return -1;
 		}
 

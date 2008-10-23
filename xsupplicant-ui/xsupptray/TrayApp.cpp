@@ -1051,6 +1051,16 @@ void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
 
 void TrayApp::buildPopupMenu(void)
 {
+	if (m_pQuickConnectMenu != NULL)
+	{
+		// Determine if the menu is showing.
+		if (m_pQuickConnectMenu->isVisible() == true)
+		{
+			// Do nothing to avoid whack-a-mole.
+			return;
+		}
+	}
+
 	// clear out any wireless network menu data
 	for (int i=0;i<m_networkMenuVec.size();i++)
 		delete m_networkMenuVec.at(i);

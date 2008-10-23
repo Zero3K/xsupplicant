@@ -466,6 +466,20 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 
   SSL_set_bio(mytls_vars->ssl, mytls_vars->ssl_in, mytls_vars->ssl_out);
 
+#ifdef EAP_FAST
+  if (mytls_vars->pac != NULL)
+  {
+	  if (tls_funcs_set_hello_extension(mytls_vars, 
+			    FAST_SESSION_TICKET,
+				mytls_vars->pac,
+				mytls_vars->pac_length) != 1)
+	    {
+	      debug_printf(DEBUG_NORMAL, "Error attempting to set the "
+			   "session key data for EAP-FAST!\n");
+	      return -1;
+	    }
+  }
+#endif
   // Set this to SSL_VERIFY_NONE if we don't want to do anything with a failed
   // verification.
 
@@ -1969,6 +1983,10 @@ int tls_funcs_encrypt(struct tls_vars *mytls_vars, uint8_t *inbuf,
 	case SSL_ERROR_SYSCALL:
 	  debug_printf_nl(DEBUG_NORMAL, "error syscall.\n");
 	  break;
+
+	default:
+		debug_printf_nl(DEBUG_NORMAL, "other/unknown.\n");
+		break;
 	}
 
       tls_funcs_process_error();
@@ -2035,6 +2053,10 @@ void tls_funcs_deinit(struct tls_vars *mytls_vars)
       SSL_CTX_free(mytls_vars->ctx);
       mytls_vars->ctx = NULL;
     }
+
+  FREE(mytls_vars->derived_shared_secret);
+  FREE(mytls_vars->phase2data);
+  mytls_vars->pac = NULL;				// DO NOT FREE!  This is only a reference pointer!
 }
 
 int tls_funcs_get_keyblock_len(struct tls_vars *mytls_vars)
@@ -2066,6 +2088,7 @@ int tls_funcs_set_hello_extension(struct tls_vars *myvars, int type,
 				  void *data, int len)
 {
 #ifdef EAP_FAST
+	debug_printf(DEBUG_NORMAL, "Set hello extension.\n");
   return SSL_set_hello_extension(myvars->ssl, type, data, len);
 #else
   return -1;
@@ -2099,7 +2122,7 @@ static int tls_funcs_set_secret_cb(SSL *s, void *secret, int *secret_len,
 
   mytls_vars = (struct tls_vars *)arg;
 
-  debug_printf(DEBUG_NORMAL, "Secret CB called!\n");
+  debug_printf(DEBUG_TLS_CORE, "Secret CB called!\n");
   memcpy(secret, mytls_vars->derived_shared_secret, 
 	 mytls_vars->derived_shared_secret_len);
 

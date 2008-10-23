@@ -1051,6 +1051,9 @@ void delete_config_eap_fast(struct config_eap_fast **tmp_fast)
 
   FREE_STRING((*tmp_fast)->pac_location);
   FREE_STRING((*tmp_fast)->innerid);
+  FREE_STRING((*tmp_fast)->trusted_server);
+
+  free((*tmp_fast)->phase2);
 
   free (*tmp_fast);
   *tmp_fast = NULL;

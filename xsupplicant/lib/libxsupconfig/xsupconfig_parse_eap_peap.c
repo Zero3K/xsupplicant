@@ -304,9 +304,9 @@ void *xsupconfig_parse_eap_peap_proper_v1_keying(void **attr, xmlNodePtr node)
 
 void *xsupconfig_parse_peap_validate_cert(void **attr, xmlNodePtr node)
 {
-  struct config_eap_peap *peap;
-  uint8_t result;
-  char *value;
+  struct config_eap_peap *peap = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
