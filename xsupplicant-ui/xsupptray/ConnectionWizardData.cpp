@@ -331,6 +331,141 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 	return success;	
 }
 
+bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
+{
+	bool success = true;
+
+	if (pProfile == NULL)
+		return false;
+		
+	if (m_eapProtocol == ConnectionWizardData::eap_fast) {
+		this->toProfileOuterIdentity(pProfile);
+	
+		if (pProfile->method == NULL)
+		{
+			pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+			if (pProfile->method == NULL)
+				success = false;
+			else
+			{	
+				memset(pProfile->method, 0x00, sizeof(config_eap_method));
+				pProfile->method->method_num = EAP_TYPE_FAST;
+
+				pProfile->method->method_data = malloc(sizeof(config_eap_fast));
+				if (pProfile->method->method_data == NULL)
+					success = false;
+				else
+				{
+					config_eap_fast *myfast = NULL;
+					myfast = (config_eap_fast *)pProfile->method->method_data;					
+					memset(myfast, 0x00, sizeof(config_eap_fast));
+					
+					// We don't allow users to disable provisioning when using the wizard.
+					SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+
+					if (m_anonymousProvisioning == true)
+					{
+						SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+					}
+					else
+					{
+						UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+					}
+
+					if (m_authenticatedProvisioning == true)
+					{
+						SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+					}
+					else
+					{
+						UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+					}
+
+					// server cert
+					if (m_validateCert == true)
+					{
+						if ((pServer != NULL) && (m_authenticatedProvisioning == true))
+						{
+							myfast->validate_cert = TRUE;
+							myfast->trusted_server = _strdup(pServer->name);
+						}
+						else
+						{
+							// we should have had a trusted server passed in
+							myfast->validate_cert = FALSE;
+							success = false;
+						}
+					}
+					else
+						myfast->validate_cert = FALSE;
+					
+					// inner protocol
+					if (m_innerFASTProtocol == ConnectionWizardData::inner_eap_mschapv2)
+					{
+						myfast->phase2 = (config_eap_method *)malloc(sizeof(config_eap_method));
+						if (myfast->phase2 == NULL) 
+							success = false;
+						else
+						{
+							config_eap_method *myeap = NULL;
+							myeap = (config_eap_method *)myfast->phase2;
+							memset(myeap, 0x00, sizeof(config_eap_method));
+					
+							myeap->method_num = EAP_TYPE_MSCHAPV2;
+							myeap->method_data = (config_eap_mschapv2 *)malloc(sizeof(config_eap_mschapv2));
+							if (myeap->method_data == NULL) 
+								success = false;
+							else
+							{
+								config_eap_mschapv2 *mscv2 = NULL;
+								mscv2 = (config_eap_mschapv2 *)myeap->method_data;
+								memset(mscv2, 0x00, sizeof(config_eap_mschapv2));
+
+								// Set some defaults.
+								mscv2->ias_quirk = FALSE;
+								mscv2->nthash = NULL;
+								mscv2->password = NULL;
+							}
+						}
+					}
+					else if (m_innerFASTProtocol == ConnectionWizardData::inner_eap_gtc)
+					{
+						myfast->phase2 = (config_eap_method *)malloc(sizeof(config_eap_method));
+						if (myfast->phase2 == NULL) 
+							success = false;
+						else
+						{
+							config_eap_method *myeap = NULL;
+							myeap = (config_eap_method *)myfast->phase2;
+							memset(myeap, 0x00, sizeof(config_eap_method));
+							myeap->method_num = EAP_TYPE_GTC;
+							myeap->method_data = (config_pwd_only *)malloc(sizeof(config_pwd_only));
+							if (myeap->method_data == NULL)
+								success = false;
+							else
+								memset(myeap->method_data, 0x00, sizeof(config_pwd_only));
+						}				
+					}
+					else
+					{
+						// invalid value
+						success = false;
+					}
+				}
+			}
+		}
+		else
+		{
+			// unexpected
+			success = false;
+		}
+	}
+	else
+		success = false;
+		
+	return success;	
+}
+
 bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
 {
 	bool success = true;
@@ -472,6 +607,9 @@ bool ConnectionWizardData::toProfileData(config_profiles **retProfile, config_tr
 					break;
 				case ConnectionWizardData::eap_ttls:
 					success = this->toProfileEAP_TTLSProtocol(pProfile,pServer);
+					break;
+				case ConnectionWizardData::eap_fast:
+					success = this->toProfileEAP_FASTProtocol(pProfile, pServer);
 					break;
 				case ConnectionWizardData::eap_aka:
 					success = this->toProfileEAP_AKAProtocol(pProfile);
@@ -623,8 +761,8 @@ bool ConnectionWizardData::toServerData(config_trusted_server **retServer)
 		|| m_wirelessAssocMode == ConnectionWizardData::assoc_WPA2_ENT)))
 	{
 		// only if eap-peap and eap-ttls and validate server cert is true
-		if ((m_eapProtocol == ConnectionWizardData::eap_peap || m_eapProtocol == ConnectionWizardData::eap_ttls)
-			&& m_validateCert == true)
+		if ((m_eapProtocol == ConnectionWizardData::eap_peap || m_eapProtocol == ConnectionWizardData::eap_ttls
+			|| m_eapProtocol == ConnectionWizardData::eap_fast) && m_validateCert == true)
 		{
 			success = XSupWrapper::createNewTrustedServer(m_serverName,&pServer, (m_newConnection == false && m_hasServer == true));
 			if (success && pServer != NULL)
@@ -877,6 +1015,47 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 						m_validateCert = false;			
 				}				
 			}
+			else if (pEAPMethod->method_num == EAP_TYPE_FAST)
+			{
+				m_eapProtocol = ConnectionWizardData::eap_fast;
+				if (pEAPMethod->method_data != NULL)
+				{
+					config_eap_fast *pFASTData = (config_eap_fast *)pEAPMethod->method_data;
+					if (pFASTData->phase2 != NULL)
+					{
+						config_eap_method *myeap = NULL;
+						myeap = (config_eap_method *)pFASTData->phase2;					
+						if (myeap->method_num == EAP_TYPE_MSCHAPV2)
+							m_innerFASTProtocol = ConnectionWizardData::inner_mschapv2;
+						else if (myeap->method_num == EAP_TYPE_GTC)
+							m_innerFASTProtocol = ConnectionWizardData::inner_eap_gtc;
+					}
+						
+					if (pFASTData->validate_cert == TRUE)
+						m_validateCert = true;
+					else
+						m_validateCert = false;			
+
+					if (TEST_FLAG(pFASTData->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
+					{
+						m_anonymousProvisioning = true;
+					}
+					else
+					{
+						m_anonymousProvisioning = false;
+					}
+
+					if (TEST_FLAG(pFASTData->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))
+					{
+						m_authenticatedProvisioning = true;
+					}
+					else
+					{
+						m_authenticatedProvisioning = false;
+					}
+				}				
+			}
+
 		}
 	}
 	

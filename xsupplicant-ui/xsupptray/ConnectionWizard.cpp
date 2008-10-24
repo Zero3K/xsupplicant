@@ -197,6 +197,9 @@ bool ConnectionWizard::loadPages(void)
 				case ConnectionWizard::pageDot1XInnerProtocol:
 					newPage = new WizardPageDot1XInnerProtocol(this, m_pStackedWidget);
 					break;	
+				case ConnectionWizard::pageFastInnerProtocol:
+					newPage = new WizardPageFASTInnerProtocol(this, m_pStackedWidget);
+					break;
 				case ConnectionWizard::pageDot1XCert:
 					newPage = new WizardPageDot1XCert(this, m_pStackedWidget);
 					break;									
@@ -499,6 +502,10 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 				else
 					nextPage = ConnectionWizard::pageIPOptions;
 			}
+			else if (m_connData.m_eapProtocol == ConnectionWizardData::eap_fast)
+			{
+				nextPage = ConnectionWizard::pageFastInnerProtocol;
+			}
 			else if ((m_connData.m_eapProtocol == ConnectionWizardData::eap_aka) ||
 				(m_connData.m_eapProtocol == ConnectionWizardData::eap_sim))
 			{
@@ -509,6 +516,18 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 			break;
 			
 		case pageDot1XInnerProtocol:
+			if ((m_connData.m_authenticatedProvisioning == true) && (m_connData.m_validateCert == true))
+				nextPage = ConnectionWizard::pageDot1XCert;
+			else
+			{
+				if (m_dot1Xmode == true)
+					nextPage = ConnectionWizard::pageFinishPage;
+				else
+					nextPage = ConnectionWizard::pageIPOptions;
+			}
+			break;
+
+		case pageFastInnerProtocol:
 			if (m_connData.m_validateCert == true)
 				nextPage = ConnectionWizard::pageDot1XCert;
 			else

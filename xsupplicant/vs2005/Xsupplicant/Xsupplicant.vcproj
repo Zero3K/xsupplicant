@@ -2016,6 +2016,237 @@
 			<DebuggerTool
 			/>
 		</Configuration>
+		<Configuration
+			Name="Debug with FAST|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;EAP_FAST"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="3"
+				StructMemberAlignment="0"
+				DebugInformationFormat="3"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/FIXED:NO"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="MSVCRT;LIBCMT"
+				GenerateDebugInformation="true"
+				GenerateMapFile="false"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug with FAST|Pocket PC 2003 (ARMV4)"
+			OutputDirectory="$(SolutionDir)Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
+			IntermediateDirectory="Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
+			ConfigurationType="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="1"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				ExecutionBucket="7"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;..\..\..\libtnc-1.10\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;IMC_EXPORTS"
+				RuntimeLibrary="3"
+				StructMemberAlignment="0"
+				DebugInformationFormat="3"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/FIXED:NO"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;..\..\..\libtnc-1.10\vs2005\libtnc\Debug&quot;;&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;;&quot;$(OutDir)&quot;"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="MSVCRT;LIBCMT"
+				GenerateDebugInformation="true"
+				TargetMachine="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCCodeSignTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+			<DeploymentTool
+				ForceDirty="-1"
+				RemoteDirectory=""
+				RegisterOutput="0"
+				AdditionalFiles=""
+			/>
+			<DebuggerTool
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug with FAST|Smartphone 2003 (ARMV4)"
+			OutputDirectory="$(SolutionDir)Smartphone 2003 (ARMV4)\$(ConfigurationName)"
+			IntermediateDirectory="Smartphone 2003 (ARMV4)\$(ConfigurationName)"
+			ConfigurationType="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="1"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				ExecutionBucket="7"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;..\..\..\libtnc-1.10\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;IMC_EXPORTS"
+				RuntimeLibrary="3"
+				StructMemberAlignment="0"
+				DebugInformationFormat="3"
+				CompileAs="1"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions="/FIXED:NO"
+				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;..\..\..\libtnc-1.10\vs2005\libtnc\Debug&quot;;&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;;&quot;$(OutDir)&quot;"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="MSVCRT;LIBCMT"
+				GenerateDebugInformation="true"
+				TargetMachine="0"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCCodeSignTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+			<DeploymentTool
+				ForceDirty="-1"
+				RemoteDirectory=""
+				RegisterOutput="0"
+				AdditionalFiles=""
+			/>
+			<DebuggerTool
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -2382,6 +2613,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Rel. as Svc. with TNC and FAST|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug with FAST|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"

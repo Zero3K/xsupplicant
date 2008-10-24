@@ -261,6 +261,30 @@ private:
 	QCheckBox *m_pValidateCert;
 };
 
+class WizardPageFASTInnerProtocol : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageFASTInnerProtocol(QWidget *parent, QWidget *parentWidget);
+	virtual ~WizardPageFASTInnerProtocol();
+	virtual bool create(void);
+	virtual void init(const ConnectionWizardData &data);
+	virtual QString getHeaderString(void) { return tr("802.1X Protocol Settings"); };
+	virtual bool validate(void) { return true; };
+	virtual const ConnectionWizardData &wizardData(void);	
+
+private slots:
+	void slotToggleRadioButton(bool checked);
+
+private:
+	QComboBox *m_pProtocol;
+	QLineEdit *m_pOuterID;
+	QCheckBox *m_pValidateCert;
+	QRadioButton *m_pAnonymousProvision;
+	QRadioButton *m_pAuthenticatedProvision;
+};
+
 class WizardPageDot1XCert : public WizardPage
 {
 	Q_OBJECT

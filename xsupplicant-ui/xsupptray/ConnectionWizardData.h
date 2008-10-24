@@ -56,6 +56,7 @@ private:
 	bool toProfileEAP_AKAProtocol(config_profiles * const);
 	bool toProfileEAP_SIMProtocol(config_profiles * const);
 	bool toProfileEAP_TTLSProtocol(config_profiles * const, config_trusted_server const * const);
+	bool toProfileEAP_FASTProtocol(config_profiles * const, config_trusted_server const * const);
 	bool toProfileOuterIdentity(config_profiles * const);
 	bool toServerData(config_trusted_server **);
 	bool toProfileData(config_profiles **, config_trusted_server const * const);
@@ -114,6 +115,7 @@ public:
 		eap_ttls,
 		eap_aka,
 		eap_sim,
+		eap_fast,
 		eap_md5
 	} Dot1XProtocol;
 	
@@ -131,9 +133,12 @@ public:
 	QString m_outerIdentity;
 	QString m_SCreader;
 	bool m_autoRealm;
+	bool m_anonymousProvisioning;
+	bool m_authenticatedProvisioning;
 	bool m_validateCert;
 	Dot1XInnerProtocol m_innerPEAPProtocol;
 	Dot1XInnerProtocol m_innerTTLSProtocol;
+	Dot1XInnerProtocol m_innerFASTProtocol;
 	QStringList m_serverCerts;
 	bool m_verifyCommonName;
 	QStringList m_commonNames;

@@ -1504,7 +1504,7 @@ void ConfigProfileTabs::populateSIMReaders()
 		count++;
 	}
 
-	// XXX Free list[]!
+	xsupgui_request_free_enum_smartcard_readers(&list);
 }
 
 void ConfigProfileTabs::showSIMTabs()

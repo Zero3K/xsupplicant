@@ -1028,6 +1028,7 @@ bool WizardPageDot1XProtocol::create(void)
 		m_pProtocol->clear();
 		m_pProtocol->addItem(tr("EAP-PEAP"));
 		m_pProtocol->addItem(tr("EAP-TTLS"));
+		m_pProtocol->addItem(tr("EAP-FAST"));
 		m_pProtocol->addItem(tr("EAP-AKA"));
 		m_pProtocol->addItem(tr("EAP-SIM"));
 		m_pProtocol->addItem(tr("EAP-MD5"));
@@ -1045,6 +1046,7 @@ void WizardPageDot1XProtocol::init(const ConnectionWizardData &data)
 		m_pProtocol->clear();
 		m_pProtocol->addItem(tr("EAP-PEAP"));
 		m_pProtocol->addItem(tr("EAP-TTLS"));
+		m_pProtocol->addItem(tr("EAP-FAST"));
 		m_pProtocol->addItem(tr("EAP-AKA"));
 		m_pProtocol->addItem(tr("EAP-SIM"));
 
@@ -1060,14 +1062,17 @@ void WizardPageDot1XProtocol::init(const ConnectionWizardData &data)
 			case ConnectionWizardData::eap_ttls:
 				m_pProtocol->setCurrentIndex(1);
 				break;
-			case ConnectionWizardData::eap_aka:
+			case ConnectionWizardData::eap_fast:
 				m_pProtocol->setCurrentIndex(2);
 				break;
-			case ConnectionWizardData::eap_sim:
+			case ConnectionWizardData::eap_aka:
 				m_pProtocol->setCurrentIndex(3);
 				break;
-			case ConnectionWizardData::eap_md5:
+			case ConnectionWizardData::eap_sim:
 				m_pProtocol->setCurrentIndex(4);
+				break;
+			case ConnectionWizardData::eap_md5:
+				m_pProtocol->setCurrentIndex(5);
 				break;
 			default:
 				m_pProtocol->setCurrentIndex(0);
@@ -1091,14 +1096,18 @@ const ConnectionWizardData &WizardPageDot1XProtocol::wizardData(void)
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_ttls;
 				break;
 			case 2:
+				// EAP-FAST
+				m_curData.m_eapProtocol = ConnectionWizardData::eap_fast;
+				break;
+			case 3:
 				// EAP-AKA
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_aka;
 				break;
-			case 3:
+			case 4:
 				// EAP-SIM
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_sim;
 				break;
-			case 4:
+			case 5:
 				// EAP-MD5
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_md5;
 				break;
@@ -1246,6 +1255,138 @@ const ConnectionWizardData &WizardPageDot1XInnerProtocol::wizardData(void)
 				; // error										
 		}
 	}			
+	
+	return m_curData;
+}
+
+WizardPageFASTInnerProtocol::WizardPageFASTInnerProtocol(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+	m_pRealForm = NULL;
+}
+
+WizardPageFASTInnerProtocol::~WizardPageFASTInnerProtocol()
+{
+	if (m_pRealForm != NULL)
+	{
+		Util::myDisconnect(m_pAnonymousProvision, SIGNAL(toggled(bool)), this, SLOT(slotToggleRadioButton(bool)));
+	}
+}
+
+bool WizardPageFASTInnerProtocol::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageFASTInnerProtocol.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// cache off pointers to objects	
+	m_pProtocol = qFindChild<QComboBox*>(m_pRealForm, "comboBoxProtocol");
+	m_pOuterID = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldOuterID");
+	m_pValidateCert = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxValidateCert");
+	m_pAnonymousProvision = qFindChild<QRadioButton*>(m_pRealForm, "unauthProv");
+	m_pAuthenticatedProvision = qFindChild<QRadioButton*>(m_pRealForm, "authProv");
+		
+	// dynamically populate text
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("Enter your FAST settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));	
+
+	QLabel *pProtocolLabel = qFindChild<QLabel*>(m_pRealForm, "labelProtocol");
+	if (pProtocolLabel != NULL)
+		pProtocolLabel->setText(tr("Tunnel Protocol:"));
+		
+	QLabel *pOuterIDLabel = qFindChild<QLabel*>(m_pRealForm, "labelOuterID");
+	if (pOuterIDLabel != NULL)
+		pOuterIDLabel->setText(tr("Outer Identity:"));
+		
+	QLabel *pOptionalLabel = qFindChild<QLabel*>(m_pRealForm, "labelOptional");
+	if (pOptionalLabel != NULL)
+		pOptionalLabel->setText(tr("(Optional)"));			
+		
+	if (m_pValidateCert != NULL)
+		m_pValidateCert->setText(tr("Validate Server Certificate"));
+		
+	if (m_pProtocol != NULL)
+		m_pProtocol->clear();
+		
+	Util::myConnect(m_pAnonymousProvision, SIGNAL(toggled(bool)), this, SLOT(slotToggleRadioButton(bool)));
+
+	return true;
+}
+
+void WizardPageFASTInnerProtocol::slotToggleRadioButton(bool checked)
+{
+	if (checked == true)
+	{
+		m_pValidateCert->setEnabled(false);
+	}
+	else
+	{
+		m_pValidateCert->setEnabled(true);
+	}
+}
+
+void WizardPageFASTInnerProtocol::init(const ConnectionWizardData &data)
+{
+	m_curData = data;
+	
+	// populate this label dynamically because the text references the outer protocol used
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+	{
+		pMsgLabel->setText(tr("Enter your FAST settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
+	}
+			
+	if (m_pOuterID != NULL)
+		m_pOuterID->setText(m_curData.m_outerIdentity);
+		
+	if (m_pValidateCert != NULL)
+		m_pValidateCert->setChecked(m_curData.m_validateCert);
+	
+	if (m_pProtocol != NULL)
+	{
+		m_pProtocol->clear();	
+		m_pProtocol->addItem("EAP-MSCHAPv2");
+		m_pProtocol->addItem("EAP-GTC");
+			
+		if (m_curData.m_innerFASTProtocol == ConnectionWizardData::inner_eap_mschapv2)
+			m_pProtocol->setCurrentIndex(0);
+		else if (m_curData.m_innerFASTProtocol == ConnectionWizardData::inner_eap_gtc)
+			m_pProtocol->setCurrentIndex(1);
+		else
+			; // error
+	}
+}
+
+const ConnectionWizardData &WizardPageFASTInnerProtocol::wizardData(void)
+{
+	if (m_pOuterID != NULL)
+		m_curData.m_outerIdentity = m_pOuterID->text();
+		
+	if (m_pValidateCert != NULL)
+		m_curData.m_validateCert = m_pValidateCert->isChecked();
+		
+	if (m_pProtocol != NULL)
+	{
+		if (m_pProtocol->currentIndex() == 0)
+			m_curData.m_innerFASTProtocol = ConnectionWizardData::inner_eap_mschapv2;
+		else if (m_pProtocol->currentIndex() == 1)
+			m_curData.m_innerFASTProtocol = ConnectionWizardData::inner_eap_gtc;
+		else
+			; // error
+	}
+
+	if (m_pAnonymousProvision->isChecked() == true)
+	{
+		m_curData.m_anonymousProvisioning = true;
+		m_curData.m_authenticatedProvisioning = false;
+		m_curData.m_validateCert = false;
+	}
+	else
+	{
+		m_curData.m_anonymousProvisioning = false;
+		m_curData.m_authenticatedProvisioning = true;
+	}
 	
 	return m_curData;
 }
