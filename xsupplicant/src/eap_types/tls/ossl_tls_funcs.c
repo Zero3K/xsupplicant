@@ -2088,7 +2088,7 @@ int tls_funcs_set_hello_extension(struct tls_vars *myvars, int type,
 				  void *data, int len)
 {
 #ifdef EAP_FAST
-	debug_printf(DEBUG_NORMAL, "Set hello extension.\n");
+	debug_printf(DEBUG_AUTHTYPES, "Set hello extension.\n");
   return SSL_set_hello_extension(myvars->ssl, type, data, len);
 #else
   return -1;
