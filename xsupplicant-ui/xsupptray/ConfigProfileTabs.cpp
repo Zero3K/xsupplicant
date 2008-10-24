@@ -81,7 +81,11 @@ ConfigProfileTabs::~ConfigProfileTabs()
 	 Util::myDisconnect(m_pTrustedServerCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(slotDifferentServerSelected(int)));	
 
 	 Util::myDisconnect(m_pSIMReaders, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
-	 Util::myConnect(m_pAutoRealm, SIGNAL(stateChanged(int)), this, SIGNAL(signalDataChanged()));
+	 Util::myDisconnect(m_pAutoRealm, SIGNAL(stateChanged(int)), this, SIGNAL(signalDataChanged()));
+
+ 	Util::myDisconnect(m_pFASTAllowProvision, SIGNAL(toggled(bool)), this, SLOT(slotFastAllowProvision(bool)));
+	Util::myDisconnect(m_pFASTAuthProvision, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
+	Util::myDisconnect(m_pFASTAnonProvision, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
 	}
 }
 
@@ -473,24 +477,24 @@ void ConfigProfileTabs::freeTTLSInner(struct config_eap_ttls *ttlsdata)
 	}
 }
 
-bool ConfigProfileTabs::saveEAPGTCInner(struct config_eap_peap *mypeap)
+bool ConfigProfileTabs::saveEAPGTCInner(struct config_eap_method **mymeth)
 {
 	struct config_eap_method *myeap = NULL;
 	struct config_pwd_only *pwdonly = NULL;
 
-	if (mypeap->phase2 == NULL)
+	if ((*mymeth) == NULL)
 	{
-		mypeap->phase2 = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
-		if (mypeap->phase2 == NULL) return false;
+		(*mymeth) = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+		if ((*mymeth) == NULL) return false;
 
-		memset(mypeap->phase2, 0x00, sizeof(struct config_eap_method));
+		memset((*mymeth), 0x00, sizeof(struct config_eap_method));
 	}
 
-	myeap = (struct config_eap_method *)mypeap->phase2;
+	myeap = (*mymeth);
 	
 	if ((myeap->method_num != EAP_TYPE_GTC) && (myeap->method_data != NULL))
 	{
-		m_pSupplicant->freeConfigEAPMethod((struct config_eap_method **)&mypeap->phase2);
+		m_pSupplicant->freeConfigEAPMethod(mymeth);
 	}
 
 	if (myeap->method_data == NULL)
@@ -522,24 +526,24 @@ bool ConfigProfileTabs::saveEAPGTCInner(struct config_eap_peap *mypeap)
 	return true;
 }
 
-bool ConfigProfileTabs::saveEAPMSCHAPv2Inner(struct config_eap_peap *mypeap)
+bool ConfigProfileTabs::saveEAPMSCHAPv2Inner(struct config_eap_method **mymeth)
 {
 	struct config_eap_method *myeap = NULL;
 	struct config_eap_mschapv2 *mscv2 = NULL;
 
-	if (mypeap->phase2 == NULL)
+	if ((*mymeth) == NULL)
 	{
-		mypeap->phase2 = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
-		if (mypeap->phase2 == NULL) return false;
+		(*mymeth) = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+		if ((*mymeth) == NULL) return false;
 
-		memset(mypeap->phase2, 0x00, sizeof(struct config_eap_method));
+		memset((*mymeth), 0x00, sizeof(struct config_eap_method));
 	}
 
-	myeap = (struct config_eap_method *)mypeap->phase2;
+	myeap = (*mymeth);
 	
 	if ((myeap->method_num != EAP_TYPE_MSCHAPV2) && (myeap->method_data != NULL))
 	{
-		m_pSupplicant->freeConfigEAPMethod((struct config_eap_method **)&mypeap->phase2);
+		m_pSupplicant->freeConfigEAPMethod(mymeth);
 	}
 
 	if (myeap->method_data == NULL)
@@ -700,6 +704,127 @@ bool ConfigProfileTabs::saveEAPAKAData()
 	return true;
 }
 
+bool ConfigProfileTabs::saveEAPFASTData()
+{
+	struct config_eap_fast *myfast = NULL;
+
+	if (m_pProfile->method == NULL)
+	{
+		m_pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+		if (m_pProfile->method == NULL)
+		{
+			QMessageBox::critical(this, tr("Memory Allocation Error"), tr("Unable to allocate memory needed to save this profile."));
+			return false;
+		}
+
+		memset(m_pProfile->method, 0x00, sizeof(struct config_eap_method));
+		m_pProfile->method->method_num = EAP_TYPE_FAST;
+	}
+
+	if (m_pProfile->method->method_data == NULL)
+	{
+		m_pProfile->method->method_data = malloc(sizeof(struct config_eap_fast));
+		if (m_pProfile->method->method_data == NULL)
+		{
+			QMessageBox::critical(this, tr("Memory Allocation Error"), tr("Unable to allocate memory needed to save this profile."));
+			return false;
+		}
+
+		memset(m_pProfile->method->method_data, 0x00, sizeof(struct config_eap_fast));
+
+		myfast = (struct config_eap_fast *)m_pProfile->method->method_data;
+	}
+	else
+	{
+		myfast = (struct config_eap_fast *)m_pProfile->method->method_data;
+	}
+
+	if (checkPwdSettings() != true) return false;
+
+	setIdentity();
+
+	if (m_pUsername->text() != "")
+	{
+		if (myfast->innerid != NULL) free(myfast->innerid);
+		myfast->innerid = _strdup(m_pUsername->text().toAscii());
+	}
+	else
+	{
+		if (myfast->innerid != NULL) free(myfast->innerid);
+		myfast->innerid = NULL;
+	}
+
+	if (m_pValidateServer->isChecked() == true)
+	{
+		myfast->validate_cert = TRUE;
+
+		if (myfast->trusted_server != NULL)
+		{
+			free(myfast->trusted_server);
+			myfast->trusted_server = NULL;
+		}
+
+		if (m_pTrustedServerCombo->currentIndex() > 0)
+		{
+			myfast->trusted_server = _strdup(m_pTrustedServerCombo->currentText().toAscii());
+		}
+	}
+	else
+	{
+		myfast->validate_cert = FALSE;
+
+		if (myfast->trusted_server != NULL)
+		{
+			free(myfast->trusted_server);
+			myfast->trusted_server = NULL;
+		}
+	}
+
+	if (m_pFASTAllowProvision->isChecked())
+	{
+		SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+	}
+	else
+	{
+		UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+	}
+
+	if (m_pFASTAuthProvision->isChecked())
+	{
+		SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+	}
+	else
+	{
+		UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+	}
+
+	if (m_pFASTAnonProvision->isChecked())
+	{
+		SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+	}
+	else
+	{
+		UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+	}
+
+	// Determine the inner method in use...
+	if (m_pInnerMethod->currentText() == "EAP-MSCHAPv2")
+	{
+		if (saveEAPMSCHAPv2Inner(&myfast->phase2) == false) return false;
+	}
+	else if (m_pInnerMethod->currentText() == "EAP-GTC")
+	{
+		if (saveEAPGTCInner(&myfast->phase2) == false) return false;
+	}
+	else
+	{
+		QMessageBox::critical(this, tr("Unknown EAP Type Selected"), tr("The EAP method selected for the inner method is unknown.  Please select a different one."));
+		return false;
+	}
+
+	return true;
+}
+
 bool ConfigProfileTabs::saveEAPPEAPData()
 {
 	struct config_eap_peap *mypeap = NULL;
@@ -780,11 +905,11 @@ bool ConfigProfileTabs::saveEAPPEAPData()
 	// Determine the inner method in use...
 	if (m_pInnerMethod->currentText() == "EAP-MSCHAPv2")
 	{
-		if (saveEAPMSCHAPv2Inner(mypeap) == false) return false;
+		if (saveEAPMSCHAPv2Inner(&mypeap->phase2) == false) return false;
 	}
 	else if (m_pInnerMethod->currentText() == "EAP-GTC")
 	{
-		if (saveEAPGTCInner(mypeap) == false) return false;
+		if (saveEAPGTCInner(&mypeap->phase2) == false) return false;
 	}
 	else
 	{
@@ -808,6 +933,10 @@ bool ConfigProfileTabs::saveEAPData()
 	else if (m_EAPTypeInUse == "EAP-PEAP")
 	{
 		return saveEAPPEAPData();
+	}
+	else if (m_EAPTypeInUse == "EAP-FAST")
+	{
+		return saveEAPFASTData();
 	}
 	else if (m_EAPTypeInUse == "EAP-SIM")
 	{
@@ -989,6 +1118,28 @@ bool ConfigProfileTabs::attach()
 		 return false;
 	 }
 
+ 	 m_pFASTAllowProvision = qFindChild<QCheckBox*>(m_pRealWidget, "FASTallowProvision");
+	 if (m_pFASTAllowProvision == NULL)
+	 {
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox called 'FASTallowProvision'."));
+		 return false;
+	 }
+
+	 m_pFASTAuthProvision = qFindChild<QCheckBox*>(m_pRealWidget, "FASTauthPAC");
+	 if (m_pFASTAuthProvision == NULL)
+	 {
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox called 'FASTauthPAC'."));
+		 return false;
+	 }
+
+	 m_pFASTAnonProvision = qFindChild<QCheckBox*>(m_pRealWidget, "FASTanonPAC");
+	 if (m_pFASTAnonProvision == NULL)
+	 {
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QCheckBox called 'FASTanonPAC'."));
+		 return false;
+	 }
+
+
 	 m_pTSLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboProfilesTrustedServers");
 
  	if (m_pProfile == NULL)
@@ -1031,6 +1182,10 @@ bool ConfigProfileTabs::attach()
 	 Util::myConnect(m_pSIMReaders, SIGNAL(currentIndexChanged(int)), this, SIGNAL(signalDataChanged()));
 
 	Util::myConnect(m_pAutoRealm, SIGNAL(stateChanged(int)), this, SIGNAL(signalDataChanged()));
+
+	Util::myConnect(m_pFASTAllowProvision, SIGNAL(toggled(bool)), this, SLOT(slotFastAllowProvision(bool)));
+	Util::myConnect(m_pFASTAuthProvision, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
+	Util::myConnect(m_pFASTAnonProvision, SIGNAL(toggled(bool)), this, SIGNAL(signalDataChanged()));
 
 	m_bConnected = true;
 
@@ -1083,6 +1238,169 @@ void ConfigProfileTabs::populateOnePhase()
 		m_pShowBtn->setEnabled(false);
 	}
 	else if ((m_pProfile->identity != NULL) && (password == NULL))
+	{
+		m_pPromptForUPW->setChecked(false);
+		m_pPromptForPWD->setChecked(true);
+		m_pDontPrompt->setChecked(false);
+		m_pUsername->setEnabled(true);
+		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
+	}
+	else
+	{
+		m_pPromptForUPW->setChecked(false);
+		m_pPromptForPWD->setChecked(false);
+		m_pDontPrompt->setChecked(true);
+		m_pUsername->setEnabled(true);
+		m_pPassword->setEnabled(true);
+		m_pShowBtn->setEnabled(true);
+	}
+}
+
+void ConfigProfileTabs::populateFASTData()
+{
+	struct config_eap_fast *fastdata = NULL;
+	struct config_eap_mschapv2 *mscv2 = NULL;
+	struct config_pwd_only *gtc = NULL;
+	char *password = NULL;
+	int index = 0;
+
+	showFASTTabs();
+
+	m_EAPTypeInUse = "EAP-FAST";
+
+	if (m_pProfile->method == NULL)   // This is a new profile being created.
+	{
+		m_pValidateServer->setChecked(true);
+		m_pUsername->clear();
+		m_pPassword->clear();
+		m_pAnonIdent->setChecked(true);
+		m_pUseThisIdent->setChecked(false);
+		m_pPhase1Ident->clear();
+		m_pPromptForUPW->setChecked(true);
+		m_pPromptForPWD->setChecked(false);
+		m_pDontPrompt->setChecked(false);
+		m_pUsername->setEnabled(false);
+		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
+		m_pFASTAllowProvision->setEnabled(true);
+		m_pFASTAuthProvision->setEnabled(true);
+		m_pFASTAnonProvision->setEnabled(false);
+		slotDifferentServerSelected(0);   // Set the trusted server stuff to invalid.
+		return;
+	}
+
+	fastdata = (struct config_eap_fast *)m_pProfile->method->method_data;
+
+	if (fastdata->validate_cert == TRUE)
+	{
+		m_pValidateServer->setChecked(true);
+		index = m_pTrustedServerCombo->findText(QString(fastdata->trusted_server));
+		if (index < 0) index = 0;
+		m_pTrustedServerCombo->setCurrentIndex(index);
+		m_pTrustedServerCombo->setEnabled(true);
+	}
+	else
+	{
+		m_pValidateServer->setChecked(false);
+		m_pTrustedServerCombo->setCurrentIndex(0);  // Will cause it to show <None>
+		m_pTrustedServerCombo->setEnabled(false);
+	}
+
+	if (fastdata->innerid != NULL)
+	{
+		m_pUsername->setText(QString(fastdata->innerid));
+	}
+
+	if (TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_ALLOWED))
+	{
+		m_pFASTAllowProvision->setChecked(true);
+	}
+	else
+	{
+		m_pFASTAllowProvision->setChecked(false);
+	}
+
+	if (TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
+	{
+		m_pFASTAnonProvision->setChecked(true);
+	}
+	else
+	{
+		m_pFASTAnonProvision->setChecked(false);
+	}
+
+	if (TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))
+	{
+		m_pFASTAuthProvision->setChecked(true);
+	}
+	else
+	{
+		m_pFASTAuthProvision->setChecked(false);
+	}
+
+	switch (fastdata->phase2->method_num)
+	{
+	case EAP_TYPE_MSCHAPV2:
+		mscv2 = (struct config_eap_mschapv2 *)fastdata->phase2->method_data;
+		if (mscv2->password == NULL)
+		{
+			m_pPassword->clear();
+		}
+		else
+		{
+			m_pPassword->setText(QString(mscv2->password));
+			password = mscv2->password;
+		}
+
+		// Configure our "User Credentials" tab properly.
+		m_pDontPrompt->setEnabled(true);
+		m_pPassword->setEnabled(true);
+		m_pShowBtn->setEnabled(true);
+
+		index = m_pInnerMethod->findText(QString("EAP-MSCHAPv2"));
+		m_pInnerMethod->setCurrentIndex(index);
+		break;
+
+	case EAP_TYPE_GTC:
+		gtc = (struct config_pwd_only *)fastdata->phase2->method_data;
+		if (gtc->password == NULL)
+		{
+			m_pPassword->clear();
+		}
+		else
+		{
+			m_pPassword->setText(QString(gtc->password));
+			password = gtc->password;
+		}
+
+		// Configure our "User Credentials" tab properly.
+		m_pDontPrompt->setEnabled(false);
+		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
+
+		index = m_pInnerMethod->findText(QString("EAP-GTC"));
+		m_pInnerMethod->setCurrentIndex(index);
+		break;
+
+	default:
+		QMessageBox::critical(this, tr("EAP Configuration Error"), tr("There was an unknown inner EAP method used.  Configuration data will be empty."));
+		m_pUsername->clear();
+		m_pPassword->clear();
+		break;
+	}
+
+	if (fastdata->innerid == NULL)
+	{
+		// Set the no username/password stored radio button.
+		m_pPromptForUPW->setChecked(true);
+		m_pPromptForPWD->setChecked(false);
+		m_pDontPrompt->setChecked(false);
+		m_pUsername->setEnabled(false);
+		m_pPassword->setEnabled(false);
+		m_pShowBtn->setEnabled(false);
+	}
+	else if ((fastdata->innerid != NULL) && (password == NULL))
 	{
 		m_pPromptForUPW->setChecked(false);
 		m_pPromptForPWD->setChecked(true);
@@ -1402,6 +1720,11 @@ void ConfigProfileTabs::populateTwoPhase()
 		setTtlsPhase2Types();
 		populateTTLSData();
 	}
+	else if (m_pProfile->method->method_num == EAP_TYPE_FAST)
+	{
+		setPeapPhase2Types();   // PEAP and FAST have the same phase 2 types for now, so this works. ;)
+		populateFASTData();
+	}
 }
 
 void ConfigProfileTabs::populateEAPSIM()
@@ -1511,8 +1834,18 @@ void ConfigProfileTabs::showSIMTabs()
 {
 	m_pProfileTabs->setTabEnabled(USER_CREDENTIALS_TAB, false);
 	m_pProfileTabs->setTabEnabled(PROTOCOL_SETTINGS_TAB, false);
+	m_pProfileTabs->setTabEnabled(EAP_FAST_TAB, false);
 	m_pProfileTabs->setTabEnabled(SIM_AKA_TAB, true);
 	m_pProfileTabs->setCurrentIndex(SIM_AKA_TAB);
+}
+
+void ConfigProfileTabs::showFASTTabs()
+{
+	m_pProfileTabs->setTabEnabled(USER_CREDENTIALS_TAB, true);
+	m_pProfileTabs->setTabEnabled(PROTOCOL_SETTINGS_TAB, true);
+	m_pProfileTabs->setTabEnabled(EAP_FAST_TAB, true);
+	m_pProfileTabs->setTabEnabled(SIM_AKA_TAB, false);
+	m_pProfileTabs->setCurrentIndex(PROTOCOL_SETTINGS_TAB);
 }
 
 void ConfigProfileTabs::populateSimAka()
@@ -1587,6 +1920,10 @@ void ConfigProfileTabs::showHelp()
 		HelpWindow::showPage("xsupphelp.html", "xsupuser");
 		break;
 
+	case EAP_FAST_TAB:
+		HelpWindow::showPage("xsupphelp.html", "xsupfast");
+		break;
+
 	case SIM_AKA_TAB:
 		HelpWindow::showPage("xsupphelp.html", "xsupsimaka");
 		break;
@@ -1622,6 +1959,7 @@ void ConfigProfileTabs::showAllTabs()
 {
 	m_pProfileTabs->setTabEnabled(PROTOCOL_SETTINGS_TAB, true);
 	m_pProfileTabs->setTabEnabled(USER_CREDENTIALS_TAB, true);
+	m_pProfileTabs->setTabEnabled(EAP_FAST_TAB, false);
 	m_pProfileTabs->setTabEnabled(SIM_AKA_TAB, false);
 }
 
@@ -1780,6 +2118,12 @@ void ConfigProfileTabs::setPhase1EAPType(QString newEAPtype)
 		showAllTabs();
 		setTtlsPhase2Types();
 	}
+	else if (newEAPtype == "EAP-FAST")
+	{
+		m_EAPTypeInUse = "EAP-FAST";
+		showFASTTabs();
+		setPeapPhase2Types();   // This is okay, since the EAP-FAST types are the same for now.
+	}
 	else if (newEAPtype == "EAP-SIM")
 	{
 		m_EAPTypeInUse = "EAP-SIM";
@@ -1887,5 +2231,13 @@ void ConfigProfileTabs::slotInnerMethodChanged(int newItem)
 		m_pShowBtn->setEnabled(false);
 		m_pPromptForUPW->setChecked(true);
 	}
+}
+
+void ConfigProfileTabs::slotFastAllowProvision(bool checked)
+{
+	m_pFASTAuthProvision->setEnabled(checked);
+	m_pFASTAnonProvision->setEnabled(checked);
+
+	emit signalDataChanged();
 }
 

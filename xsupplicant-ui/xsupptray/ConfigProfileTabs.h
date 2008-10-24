@@ -54,6 +54,7 @@ class ConfigProfileTabs : public TabWidgetBase
 	 void hideProtSettingsTab();
 	 void showAllTabs();
 	 void showSIMTabs();
+	 void showFASTTabs();
 
 	 void setPhase1EAPType(QString);
 	 void setPeapPhase2Types();
@@ -77,11 +78,13 @@ private slots:
 	 void slotDontPrompt(bool);
 	 void slotDataChanged();
 	 void slotInnerMethodChanged(int);
+	 void slotFastAllowProvision(bool);
 
  private:
 	 enum {
 		 PROTOCOL_SETTINGS_TAB,
 		 USER_CREDENTIALS_TAB,
+		 EAP_FAST_TAB,
 		 SIM_AKA_TAB
 	 };
 
@@ -91,6 +94,7 @@ private slots:
 	 bool saveEAPMD5Data();
 	 bool saveEAPTTLSData();
 	 bool saveEAPPEAPData();
+	 bool saveEAPFASTData();
 	 bool saveEAPSIMData();
 	 bool saveEAPAKAData();
 	 bool checkPwdSettings();
@@ -103,10 +107,11 @@ private slots:
 	 void populateEAPSIM();
 	 void populateEAPAKA();
 	 void populatePEAPData();
+	 void populateFASTData();
 	 void populateTTLSData();
 	 void freeTTLSInner(struct config_eap_ttls *ttlsdata);
-	 bool saveEAPGTCInner(struct config_eap_peap *mypeap);
-	 bool saveEAPMSCHAPv2Inner(struct config_eap_peap *mypeap);
+	 bool saveEAPGTCInner(struct config_eap_method **mymeth);
+	 bool saveEAPMSCHAPv2Inner(struct config_eap_method **mymeth);
 	 void setLabelInvalid(QLabel *toEditLabel);
 	 void setLabelValid(QLabel *toEditLabel);
 
@@ -131,6 +136,9 @@ private slots:
 	 QPushButton *m_pShowBtn;
 	 QLabel *m_pTSLabel;
 	 QCheckBox *m_pAutoRealm;
+	 QCheckBox *m_pFASTAllowProvision;
+	 QCheckBox *m_pFASTAuthProvision;
+	 QCheckBox *m_pFASTAnonProvision;
 
 	 XSupCalls *m_pSupplicant;
 
