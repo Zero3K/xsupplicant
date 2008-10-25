@@ -348,12 +348,6 @@ int xsupconfcheck_profile_eap_fast(struct config_eap_fast *fast, config_profiles
 		return -1;
 	}
 
-	if (fast->pac_location == NULL)
-	{
-		if (log == TRUE) error_prequeue_add("Please specify a PAC file location.");
-		retval = -1;
-	}
-
 	if (fast->phase2 == NULL)
 	{
 		if (log == TRUE) error_prequeue_add("There is no phase 2 configuration defined for EAP-FAST.");

@@ -871,9 +871,7 @@ void eapfast_deinit(eap_type_data *eapdata)
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
 
-  if (!xsup_assert((eapdata->eap_data != NULL),
-		   "eapdata->eap_data != NULL", FALSE))
-    return;
+  if (eapdata->eap_data == NULL) return;				// Nothing to do.
 
   mytls_vars = (struct tls_vars *)eapdata->eap_data;
 

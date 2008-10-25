@@ -631,13 +631,6 @@ int eapfast_phase2_store_pac(eap_type_data *eapdata, struct pac_values *pacs)
 
   eapfast_xml_init();
 
-  if (fastconf->pac_location == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "You need to specify a location to store PAC"
-		   " data in your configuration file!\n");
-      return -1;
-    }
-
   doc = eapfast_xml_open_pac(fastconf->pac_location);
   if (doc == NULL)
     {

@@ -18,6 +18,8 @@
 #ifndef WINDOWS
 #include <stdint.h>
 #else
+#include <windows.h>
+#include "../../platform/windows/win_impersonate.h"		// Contains get_users_data_store_path().
 #define snprintf  _snprintf
 #endif
 
@@ -249,8 +251,34 @@ int eapfast_xml_add_pac(xmlDocPtr doc, struct pac_values *pacs)
  **************************************************************/
 int eapfast_xml_save(char *filename, xmlDocPtr doc)
 {
-  xmlSaveFormatFile(filename, doc, 1);
+  char *pac_path = NULL;
+  char *temp = NULL;
 
+  if (filename == NULL) 
+  {
+	temp = get_users_data_store_path();
+	if (temp == NULL) return NULL;
+
+	pac_path = Malloc(strlen(temp)+50);
+	if (pac_path == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to create the path to the pac file for the current user!\n");
+		FREE(temp);
+		return NULL;
+	}
+
+	strcpy(pac_path, temp);
+	strcat(pac_path, "\\pac_file.xml");
+	FREE(temp);
+  }
+  else
+  {
+	  pac_path = _strdup(filename);
+  }
+
+  xmlSaveFormatFile(pac_path, doc, 1);
+
+  FREE(pac_path);
   return 0;
 }
 
@@ -276,24 +304,52 @@ void eapfast_xml_deinit(xmlDocPtr doc)
   xmlCleanupParser();
 }
 
-/**************************************************************
+/**
+ * \brief Open (and parse) an XML document containing PACs.
  *
- *  Open (and parse) an XML document containing PACs.
+ * @param[in] filename   The full path to the file name that contains our PAC.  If this value is NULL, we
+ *							we attempt to locate a file called pac_file.xml in a subdirectory off the home directory of the user.
  *
- **************************************************************/
+ * \retval NULL on error, xmlDocPtr to a PAC file on success.
+ **/
 xmlDocPtr eapfast_xml_open_pac(char *filename)
 {
-  xmlDocPtr doc;
-  xmlNodePtr node;
+  xmlDocPtr doc = NULL;
+  xmlNodePtr node = NULL;
+  char *pac_path = NULL;
+  char *temp = NULL;
 
-  if (filename == NULL) return NULL;
+  if (filename == NULL) 
+  {
+	temp = get_users_data_store_path();
+	if (temp == NULL) return NULL;
 
-  doc = xmlReadFile(filename, NULL, 0);
+	pac_path = Malloc(strlen(temp)+50);
+	if (pac_path == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to create the path to the pac file for the current user!\n");
+		FREE(temp);
+		return NULL;
+	}
+
+	strcpy(pac_path, temp);
+	strcat(pac_path, "\\pac_file.xml");
+	FREE(temp);
+  }
+  else
+  {
+	  pac_path = _strdup(filename);
+  }
+
+  doc = xmlReadFile(pac_path, NULL, 0);
   if (doc == NULL)
     {
       debug_printf(DEBUG_NORMAL, "Error reading EAP-FAST PAC file.\n");
+	  FREE(pac_path);
       return NULL;
     }
+
+  FREE(pac_path);
 
   node = xmlDocGetRootElement(doc);
   
