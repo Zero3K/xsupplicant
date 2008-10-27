@@ -2650,6 +2650,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_eap_psk.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_eap_sim.c"
 				>
 			</File>
@@ -2829,6 +2833,10 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_eap_peap_phase2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_eap_psk.h"
 				>
 			</File>
 			<File

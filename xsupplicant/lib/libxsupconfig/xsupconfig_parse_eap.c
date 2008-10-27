@@ -35,6 +35,7 @@
 #include "xsupconfig_parse_eap_tls.h"
 #include "xsupconfig_parse_eap_tnc.h"
 #include "xsupconfig_parse_leap.h"
+#include "xsupconfig_parse_eap_psk.h"
 
 eap_methods meths[] = {
 	{ "TTLS", EAP_TYPE_TTLS, eap_ttls, xsupconfig_parse_eap_ttls},
@@ -60,6 +61,8 @@ eap_methods meths[] = {
 	{ "tls", EAP_TYPE_TLS, eap_tls, xsupconfig_parse_eap_tls},
 	{ "LEAP", EAP_TYPE_LEAP, leap, xsupconfig_parse_leap},
 	{ "leap", EAP_TYPE_LEAP, leap, xsupconfig_parse_leap},
+	{ "PSK", EAP_TYPE_PSK, eap_psk, xsupconfig_parse_eap_psk},
+	{ "psk", EAP_TYPE_PSK, eap_psk, xsupconfig_parse_eap_psk},
 
 	{NULL, 0, NULL, NULL}};
 

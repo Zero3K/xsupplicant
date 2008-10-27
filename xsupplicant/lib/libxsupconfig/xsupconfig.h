@@ -99,6 +99,7 @@
 #define EAP_TYPE_TNC        38   /* tentative assignment per TNC_IFT_v1_0_r3 */
                                  /* (Section 7.1.3, page 27) */
 #define EAP_TYPE_FAST       43
+#define EAP_TYPE_PSK		47
 
 // Phase 2 Types for TTLS
 #define TTLS_PHASE2_PAP       1

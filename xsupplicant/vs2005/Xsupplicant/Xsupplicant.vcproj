@@ -2249,7 +2249,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug, TNC, Experimental|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)build-debug"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			>
@@ -2480,7 +2480,7 @@
 		</Configuration>
 		<Configuration
 			Name="Rel. as Service, TNC, Experimental|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)build-release"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			>
@@ -2813,6 +2813,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\eap_types\psk\eappsk.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\eap_types\sim\eapsim.c"
 				>
 			</File>
@@ -2922,6 +2926,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\psk.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\eap_types\psk\psk_crypt.c"
 				>
 			</File>
 			<File
@@ -3275,6 +3283,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\eap_types\psk\eappsk.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\eap_types\sim\eapsim.h"
 				>
 			</File>
@@ -3392,6 +3404,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\psk.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\eap_types\psk\psk_crypt.h"
 				>
 			</File>
 			<File

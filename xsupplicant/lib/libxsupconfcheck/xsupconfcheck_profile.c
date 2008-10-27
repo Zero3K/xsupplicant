@@ -401,6 +401,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method *myeap, config_prof
 
 	case EAP_TYPE_MD5:
 	case EAP_TYPE_LEAP:
+	case EAP_TYPE_PSK:
 		switch (xsupconfcheck_profile_pwd_only(myeap->method_data, prof, log))
 		{
 		case PROFILE_NEED_UPW:

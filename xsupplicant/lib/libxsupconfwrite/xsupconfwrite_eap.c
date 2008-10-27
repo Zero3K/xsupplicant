@@ -128,6 +128,10 @@ xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method,
 		eapdata = xsupconfwrite_eap_fast_create_tree(method->method_data, write_all);
 		break;
 
+	case EAP_TYPE_PSK:
+		eapdata = xsupconfwrite_pwd_only_create_tree("PSK", method->method_data, write_all); 
+  	    break;
+
 	default:
 		// Unknown!  Return an error.
 		xmlFreeNode(eapnode);

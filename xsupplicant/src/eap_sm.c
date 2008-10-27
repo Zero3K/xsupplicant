@@ -47,6 +47,7 @@
 #include "eap_types/peap/eappeap.h"
 #include "eap_types/leap/eapleap.h"
 #include "eap_types/otp/eapotp.h"
+#include "eap_types/psk/eappsk.h"
 
 #ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 #include "eap_types/fast/eapfast.h"
@@ -124,6 +125,12 @@ struct rfc4137_eap_handler eaphandlers[] = {
   {EAP_TYPE_FAST, "EAP-FAST", eapfast_check, eapfast_process,
    eapfast_buildResp, eapfast_isKeyAvailable, eapfast_getKey, 
    eap_type_common_get_common_key_len, eapfast_deinit},
+#endif
+
+#ifdef EXPERIMENTAL
+  {EAP_TYPE_PSK, "EAP-PSK", eappsk_check, eappsk_process,
+  eappsk_buildResp, eappsk_isKeyAvailable, eappsk_getKey,
+  eap_type_common_get_common_key_len, eappsk_deinit},
 #endif
 
   {NO_EAP_AUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
