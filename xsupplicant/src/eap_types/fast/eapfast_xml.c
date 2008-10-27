@@ -10,7 +10,9 @@
  * \todo Add IPC error message signaling.
  **/
 
-#ifdef EAP_FAST
+#include <openssl/ssl.h>
+
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -568,4 +570,4 @@ int main()
 #endif
 
 
-#endif // EAP_FAST
+#endif // OPENSSL_HELLO_EXTENSION_SUPPORTED

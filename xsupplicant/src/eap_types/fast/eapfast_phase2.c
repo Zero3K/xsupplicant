@@ -10,7 +10,9 @@
  * \todo Add IPC error message signaling.
  **/
 
-#ifdef EAP_FAST
+#include <openssl/ssl.h>
+
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 
 #ifdef WINDOWS
 #include <Winsock2.h>
@@ -1984,4 +1986,4 @@ void eapfast_phase2_buildResp(eap_type_data *eapdata, uint8_t *result,
   *result_size = phase2->result_size;
 }
 
-#endif // EAP_FAST
+#endif // OPENSSL_HELLO_EXTENSION_SUPPORTED

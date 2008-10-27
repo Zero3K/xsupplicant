@@ -9,7 +9,9 @@
  *
  **************************************************************************/
 
-#ifdef EAP_FAST
+#include <openssl/ssl.h>
+
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 
 #ifndef __EAP_FAST_PHASE2__
 #define __EAP_FAST_PHASE2__
@@ -156,4 +158,4 @@ void eapfast_phase2_buildResp(eap_type_data *, uint8_t *, uint16_t *);
 void eapfast_phase2_deinit(eap_type_data *);
 
 #endif  // __EAP_FAST_PHASE2__
-#endif  //  EAP_FAST
+#endif  //  OPENSSL_HELLO_EXTENSION_SUPPORTED

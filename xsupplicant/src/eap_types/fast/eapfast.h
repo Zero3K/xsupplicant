@@ -9,7 +9,9 @@
  *
  **/
 
-#ifdef EAP_FAST
+#include <openssl/ssl.h>
+
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 
 #ifndef _EAPFAST_H_
 #define _EAPFAST_H_
@@ -192,4 +194,4 @@ uint8_t eapfast_get_ver(eap_type_data *);
 
 #endif
 
-#endif // EAP_FAST
+#endif // OPENSSL_HELLO_EXTENSION_SUPPORTED

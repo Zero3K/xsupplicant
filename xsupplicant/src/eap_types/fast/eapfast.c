@@ -13,7 +13,11 @@
  *
  **/
 
-#ifdef EAP_FAST
+// Include this before the OPENSSL_HELLO_EXTENSION_SUPPORTED #ifdef because that #define will be
+// located in this header.
+#include <openssl/ssl.h>
+
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 
 #include <string.h>
 #include <stdlib.h>
@@ -883,4 +887,4 @@ void eapfast_deinit(eap_type_data *eapdata)
   debug_printf(DEBUG_DEINIT, "(EAP-FAST) Cleaned up.\n");
 }
 
-#endif // EAP_FAST
+#endif // OPENSSL_HELLO_EXTENSION_SUPPORTED

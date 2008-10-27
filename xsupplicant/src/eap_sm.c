@@ -48,7 +48,7 @@
 #include "eap_types/leap/eapleap.h"
 #include "eap_types/otp/eapotp.h"
 
-#ifdef EAP_FAST
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 #include "eap_types/fast/eapfast.h"
 #endif
 
@@ -120,7 +120,7 @@ struct rfc4137_eap_handler eaphandlers[] = {
    eapleap_buildResp, eapleap_isKeyAvailable, eapleap_getKey, 
    eapleap_getKey_len, eapleap_deinit},
 
-#ifdef EAP_FAST
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
   {EAP_TYPE_FAST, "EAP-FAST", eapfast_check, eapfast_process,
    eapfast_buildResp, eapfast_isKeyAvailable, eapfast_getKey, 
    eap_type_common_get_common_key_len, eapfast_deinit},

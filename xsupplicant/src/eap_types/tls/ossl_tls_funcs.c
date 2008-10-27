@@ -466,7 +466,7 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 
   SSL_set_bio(mytls_vars->ssl, mytls_vars->ssl_in, mytls_vars->ssl_out);
 
-#ifdef EAP_FAST
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
   if (mytls_vars->pac != NULL)
   {
 	  if (tls_funcs_set_hello_extension(mytls_vars, 
@@ -2087,7 +2087,7 @@ int tls_funcs_get_keyblock_len(struct tls_vars *mytls_vars)
 int tls_funcs_set_hello_extension(struct tls_vars *myvars, int type,
 				  void *data, int len)
 {
-#ifdef EAP_FAST
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 	debug_printf(DEBUG_AUTHTYPES, "Set hello extension.\n");
   return SSL_set_hello_extension(myvars->ssl, type, data, len);
 #else
@@ -2113,7 +2113,7 @@ uint8_t *tls_funcs_get_client_random(struct tls_vars *myvars)
   return temp;
 }
 
-#ifdef EAP_FAST
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 static int tls_funcs_set_secret_cb(SSL *s, void *secret, int *secret_len,
 				   STACK_OF(SSL_CIPHER) *peer_ciphers, 
 				   SSL_CIPHER **cipher, void *arg)
@@ -2167,6 +2167,6 @@ int tls_funcs_set_master_secret(struct tls_vars *myvars, uint8_t *new_secret,
 
   return 0;
 }
-#endif // EAP_FAST
+#endif // OPENSSL_HELLO_EXTENSION_SUPPORTED
 
 #endif
