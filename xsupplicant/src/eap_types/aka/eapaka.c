@@ -812,8 +812,8 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
       payload = &data[sizeof(struct eap_header)];
 
       offset = 0;
-      typelen = (struct typelengthres *)payload;
-      typelen->type = AKA_CHALLENGE;
+      typelenres = (struct typelengthres *)payload;
+      typelenres->type = AKA_CHALLENGE;
 
       reslen = akadata->reslen;
       if ((reslen % 4) != 0)

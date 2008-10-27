@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  * Control the backend state machine as defined in 802.1X-REV-d11.
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
@@ -7,7 +7,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _BACKEND_SM_
 #define _BACKEND_SM_

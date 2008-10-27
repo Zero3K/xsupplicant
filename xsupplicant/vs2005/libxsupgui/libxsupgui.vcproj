@@ -1007,6 +1007,8 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
+				ProgramDataBaseFileName="$(IntDir)\libxsupgui\vc80.pdb"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool

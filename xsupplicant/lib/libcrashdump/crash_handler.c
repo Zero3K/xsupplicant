@@ -6,10 +6,9 @@
  * \file crash_handler.c
  *
  * \author chris@open1x.org
- *
- * $Id: crash_handler.c,v 1.3 2008/01/23 23:45:08 galimorerpg Exp $
- * $Date: 2008/01/23 23:45:08 $
  **/
+
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <windows.h>
 #include <stdio.h>
@@ -81,7 +80,7 @@ char *GetExceptionString( DWORD code)
 		EXCEPTION( INVALID_HANDLE )
 
 	default:
-		return strdup("Unknown");
+		return _strdup("Unknown");
 	}
 }
 
@@ -625,7 +624,7 @@ void crash_handler_install(char *dumpname)
 {
 	if (dumploc != NULL) free(dumploc);
 
-	dumploc = strdup(dumpname);
+	dumploc = _strdup(dumpname);
 	previousFilter = SetUnhandledExceptionFilter(crash_handler_callback);
 }
 

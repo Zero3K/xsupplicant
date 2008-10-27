@@ -4,12 +4,10 @@
  *  \file windows_calls.c
  *
  *  \author chris@open1x.org
- *
- * $Id: windows_calls.c,v 1.4 2008/01/23 23:45:08 galimorerpg Exp $
- * $Date: 2008/01/23 23:45:08 $
  **/
 #ifdef WINDOWS
 
+#define _CRT_SECURE_NO_WARNINGS		// Silence warnings about older C calls.
 
 #define _WIN32_DCOM
 

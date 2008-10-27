@@ -7,10 +7,11 @@
  *
  *  \warning  This library expects to be able to use some calls from the main part of the
  *            supplicant.  It is *NOT* suitable for using with other programs!
- *
- * $Id: supdetect.c,v 1.4 2007/10/20 09:19:26 galimorerpg Exp $
- * $Date: 2007/10/20 09:19:26 $
  **/
+
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

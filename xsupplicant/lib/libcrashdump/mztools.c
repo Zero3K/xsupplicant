@@ -4,6 +4,10 @@
   License: Same as ZLIB (www.gzip.org)
 */
 
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 /* Code */
 #include <stdio.h>
 #include <stdlib.h>

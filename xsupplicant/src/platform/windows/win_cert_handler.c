@@ -24,6 +24,7 @@
 #include "../../xsup_debug.h"
 #include "../cert_handler.h"
 #include "../../ipc_events_index.h"
+#include "cardif_windows.h"
 
 //  #define CHECK_EKU   1      // Only show root certs with the server EKUs.  (Same as Windows XP defaults.)
 

@@ -8,6 +8,10 @@
  * \author chris@open1x.org
  *
  **/
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <string.h>
 

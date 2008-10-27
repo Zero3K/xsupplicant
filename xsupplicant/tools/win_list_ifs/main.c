@@ -6,19 +6,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: main.c,v 1.2 2007/09/24 02:12:31 galimorerpg Exp $
- * $Date: 2007/09/24 02:12:31 $
- * $Log: main.c,v $
- * Revision 1.2  2007/09/24 02:12:31  galimorerpg
- * The previous commit didn't take fully.
- *
- * Hopefully this one will.
- *
- * Note: Don't check out head with -r HEAD... it will break things unhappily. ;)
- *
- * Revision 1.1.2.4  2007/02/07 07:17:42  chessing
- * Updated my e-mail address in all source files.  Replaced strcpy() with a safer version.  Updated Strncpy() to be a little safer.
- *
  **/
 
 #include <stdio.h>

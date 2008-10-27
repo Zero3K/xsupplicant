@@ -6,14 +6,16 @@
    Copyright (C) 1998-2005 Gilles Vollant
 */
 
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "zlib.h"
 #include "ioapi.h"
-
-
 
 /* I've found an old Unix (a SunOS 4.1.3_U1) without all SEEK_* defined.... */
 

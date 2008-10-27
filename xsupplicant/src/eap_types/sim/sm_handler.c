@@ -881,7 +881,7 @@ int sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
 
   if (!(buf[13] & 0x80))
     {
-      if (pin == NULL) return NULL;
+      if (pin == NULL) return -1;
 
       xsup_common_strcpy((char *)&buf2, 512, "A020000108");
       for (i=0;i < strlen(pin); i++)

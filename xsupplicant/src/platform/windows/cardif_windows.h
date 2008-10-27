@@ -29,6 +29,7 @@ struct win_sock_data {
 };
 
 LPVOID GetLastErrorStr(DWORD);
+char *uni_to_ascii(wchar_t *instr);
 
 int devioctl_blk(HANDLE devHandle, DWORD ioctlValue, LPVOID lpInBuf, DWORD nInBufSiz,
                 LPVOID lpOutBuf,  DWORD nOutBufSiz, LPDWORD lpBytesReturned);

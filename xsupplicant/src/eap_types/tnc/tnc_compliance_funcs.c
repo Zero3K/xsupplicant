@@ -114,6 +114,7 @@ TNC_Result TNC_9048_LogMessage(
 /*in*/ const char * message) 
 {
 	TNC_28383_TNCC_debug_log(-1, severity, message);
+	return TNC_RESULT_SUCCESS;
 }
 
 TNC_Result TNC_9048_UserMessage(
@@ -122,6 +123,7 @@ TNC_Result TNC_9048_UserMessage(
 /*in*/ const char * message) 
 {
 	TNC_28383_TNCC_debug_log(imcID, connectionID, message);
+	return TNC_RESULT_SUCCESS;
 }
 
 
@@ -225,6 +227,8 @@ node_delete_func tnc_compliance_funcs_delete_node(void **node)
 	FREE(cur->parameter);
 
 	FREE((*node));
+
+	return NULL;
 }
 
 /**

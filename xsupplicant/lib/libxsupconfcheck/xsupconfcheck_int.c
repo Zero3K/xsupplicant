@@ -6,10 +6,11 @@
  * \file xsupconfcheck_int.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfcheck_int.c,v 1.3 2007/10/17 07:00:39 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:39 $
  **/
+
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>

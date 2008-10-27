@@ -53,6 +53,11 @@
 #include "wpa_common.h"
 #include "ipc_events_index.h"
 
+#ifdef EAP_SIM_ENABLE
+#include <winscard.h>
+#include "eap_types/sim/sm_handler.h"
+#endif
+
 #ifdef WINDOWS
 #include "platform/windows/tthandler.h"
 #include "platform/windows/win_platform_calls.h"

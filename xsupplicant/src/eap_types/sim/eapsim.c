@@ -23,6 +23,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #else
+#include <windows.h>
 #include "../../stdintwin.h"
 #endif
 
@@ -30,7 +31,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "xsupconfig.h"
+#include "libxsupconfig/xsupconfig.h"
+#include "libxsupconfig/xsupconfig_structs.h"
 #include "../../context.h"
 #include "../../xsup_common.h"
 #include "winscard.h"
@@ -47,6 +49,10 @@
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
 #include "../../context.h"
+
+#ifdef WINDOWS
+#include "../../event_core_win.h"
+#endif
 
 #ifdef USE_EFENCE
 #include <efence.h>

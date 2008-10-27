@@ -1,3 +1,17 @@
+/**
+ * Framework to trap crashes on an OS and create information needed for debugging the crash.
+ *
+ * Licensed under the dual GPL/BSD license.  (See LICENSE file for more info.)
+ *
+ * \file crashdump.c
+ *
+ * \author chris@open1x.org
+ **/
+
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +23,7 @@
 
 #include "zip.h"
 #include "crashdump.h"
+#include "crash_handler.h"
 
 #ifdef WINDOWS
 #define USEWIN32IOAPI
@@ -203,7 +218,7 @@ void crashdump_gather_files(char *destoverride)
 		filetime(crashfiles[i].filename, &zi.tmz_date, &zi.dosDate);  // Get the date/time of the file.
 
 		// Find the filename part of the file in the list.
-		x = strlen(crashfiles[i].filename);
+		x = (int)strlen(crashfiles[i].filename);
 		while ((x >= 0) && (crashfiles[i].filename[x] != '\\')) x--;
 
 		if (x < 0)

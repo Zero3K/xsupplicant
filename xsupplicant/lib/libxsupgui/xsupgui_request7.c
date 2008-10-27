@@ -1975,5 +1975,8 @@ int xsupgui_request_free_enum_smartcard_readers(char ***readers)
 
 	free(readerlist);
 	readers = NULL;
+
+	return 0;
 }
+
 

@@ -35,6 +35,10 @@
 #include "../../ipc_events_index.h"
 #include "../tls/certificates.h"
 
+#ifdef WINDOWS
+#include "../../event_core_win.h"
+#endif
+
 #ifdef USE_EFENCE
 #include <efence.h>
 #endif

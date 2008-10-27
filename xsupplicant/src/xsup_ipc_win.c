@@ -23,6 +23,7 @@
 #include "xsup_err.h"
 #include "ipc_callout.h"
 #include "event_core_win.h"
+#include "platform/windows/cardif_windows.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>

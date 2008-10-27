@@ -16,6 +16,7 @@
 #include <wincrypt.h>
 
 #include "../../stdintwin.h"
+#include "../../platform/windows/win_cert_handler.h"
 #endif
 
 #include <openssl/ssl.h>

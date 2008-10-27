@@ -21,7 +21,7 @@
 #include <stdint.h>
 #else
 #include <windows.h>
-#include "../../platform/windows/win_impersonate.h"		// Contains get_users_data_store_path().
+#include "../../platform/platform.h"
 #define snprintf  _snprintf
 #endif
 
@@ -258,15 +258,15 @@ int eapfast_xml_save(char *filename, xmlDocPtr doc)
 
   if (filename == NULL) 
   {
-	temp = get_users_data_store_path();
-	if (temp == NULL) return NULL;
+	temp = platform_get_users_data_store_path();
+	if (temp == NULL) return -1;
 
 	pac_path = Malloc(strlen(temp)+50);
 	if (pac_path == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to create the path to the pac file for the current user!\n");
 		FREE(temp);
-		return NULL;
+		return -1;
 	}
 
 	strcpy(pac_path, temp);
@@ -323,7 +323,7 @@ xmlDocPtr eapfast_xml_open_pac(char *filename)
 
   if (filename == NULL) 
   {
-	temp = get_users_data_store_path();
+	temp = platform_get_users_data_store_path();
 	if (temp == NULL) return NULL;
 
 	pac_path = Malloc(strlen(temp)+50);

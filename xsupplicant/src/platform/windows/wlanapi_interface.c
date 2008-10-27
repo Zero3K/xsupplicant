@@ -6,16 +6,17 @@
  * \file wlanapi_interface.c
  *
  * \author chris@open1x.org
- *
- * $Id: $
- * $Date: $
  **/
 
 #include <windows.h>
 #include <wlanapi.h>
 
 #include "../../xsup_debug.h"
+#include "libxsupconfig/xsupconfig.h"
+#include "libxsupconfig/xsupconfig_structs.h"
+#include "../../context.h"
 #include "wlanapi_interface.h"
+#include "cardif_windows.h"
 
 /**
  * \note Below we define entrypoints in to the wlanapi.dll when we could achive something similar by

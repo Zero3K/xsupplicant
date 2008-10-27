@@ -2921,6 +2921,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\platform\windows\platform.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\pmksa.c"
 				>
 			</File>
@@ -3396,6 +3400,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\eap_types\ttls\phase2_common.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\platform\platform.h"
 				>
 			</File>
 			<File
