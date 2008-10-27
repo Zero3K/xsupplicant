@@ -14,5 +14,6 @@
 
 char *platform_get_machine_data_store_path();
 char *platform_get_users_data_store_path();
+int platform_user_is_admin();
 
 #endif  // _PLATFORM_H_

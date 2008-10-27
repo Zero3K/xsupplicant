@@ -2586,9 +2586,6 @@ int main(int argc, char *argv[])
 
 	nt("Changing trusted server settings");
 	change_ts();
-
-	nt("Changing managed networks settings");
-	change_mn();
 #endif
 
 	nt("Writing config to 'test2.out'...");

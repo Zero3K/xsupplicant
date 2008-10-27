@@ -9,7 +9,7 @@
 
 /**
  * \brief Get the path to the data store for the current user.  This will append a \xsupplicant directory
- *		to the "Documents and Settings\<username>\Application Data" directory if it doesn't already exist.
+ *		to the "Documents and Settings\<username>\Local Settings\Application Data" directory if it doesn't already exist.
  *
  * \retval NULL on error, otherwise a path that can be used to store user data.
  **/
@@ -77,7 +77,7 @@ char *platform_get_users_data_store_path()
 /**
  * \brief Get the path to the data store for the machine.
  *
- * \todo IMPLEMENT!
+ * \retval NULL on error, otherwise the path to the location that global supplicant data should be stored.
  **/
 char *platform_get_machine_data_store_path()
 {
@@ -92,5 +92,65 @@ char *platform_get_machine_data_store_path()
 
 	path = _strdup(szMyPath);
 	return path;
+}
+
+ BOOL win_platform_calls_IsUserAdmin(HANDLE activeHandle)
+/*++ 
+Routine Description: This routine returns TRUE if the caller's
+process is a member of the Administrators local group. 
+
+Arguments: None. 
+Return Value: 
+   TRUE - Caller has Administrators local group. 
+   FALSE - Caller does not have Administrators local group. --
+*/ 
+{
+	BOOL b;
+	SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+	PSID AdministratorsGroup; 
+
+	b = AllocateAndInitializeSid(
+		&NtAuthority,
+		2,
+		SECURITY_BUILTIN_DOMAIN_RID,
+		DOMAIN_ALIAS_RID_ADMINS,
+		0, 0, 0, 0, 0, 0,
+		&AdministratorsGroup); 
+	if(b) 
+	{
+		if (!CheckTokenMembership( activeHandle, AdministratorsGroup, &b)) 
+		{
+			b = FALSE;
+		} 
+		FreeSid(AdministratorsGroup); 
+	}
+
+	return(b);
+}
+
+/**
+ * \brief Determine if the user at the console is an administrative user.
+ *
+ * \retval TRUE if the user at the console is an admin.  (Or, if there is no way to tell for sure.)
+ * \retval FALSE if the user is a normal level user.
+ **/
+int platform_user_is_admin()
+{
+	HANDLE activeHandle = NULL;
+	int retval = FALSE;
+
+	if (win_impersonate_desktop_user() == IMPERSONATE_NO_ERROR)
+	{
+		activeHandle = win_impersonate_get_impersonation_handle();
+
+		if (win_platform_calls_IsUserAdmin(activeHandle) != FALSE)
+		{
+			retval = TRUE;
+		}
+
+		win_impersonate_back_to_self();
+	}
+
+	return retval;
 }
 

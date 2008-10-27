@@ -58,7 +58,6 @@
 
 #ifdef WINDOWS
 #include "platform/windows/tthandler.h"
-#include "platform/windows/win_platform_calls.h"
 #endif
 
 // XXX These can be removed once ipc_callout_eap_cert_state() has moved to the proper location.
@@ -7589,11 +7588,7 @@ int ipc_callout_get_are_administrator(xmlNodePtr innode, xmlNodePtr *outnode)
 	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
 		return IPC_FAILURE;
 
-#ifdef WINDOWS
-	are_admin = win_platform_calls_is_admin();
-#else
-#error Implement this for your platform!!!
-#endif
+	are_admin = platform_user_is_admin();
 
 	return ipc_callout_some_state_response("Get_Are_Administrator", "Are_Administrator", are_admin, 
 		"Administrator", NULL, outnode);
