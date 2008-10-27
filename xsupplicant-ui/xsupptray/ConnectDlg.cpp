@@ -1423,6 +1423,6 @@ void ConnectDlg::menuHelp(void)
 {
 	HelpWindow::showPage("xsupphelp.html", "xsuploginmain");
 }
-void ConnectDlg::pskSuccess(const QString &intName)
+void ConnectDlg::pskSuccess(const QString &)
 {
 }

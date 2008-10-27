@@ -30,6 +30,10 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include "stdafx.h"
 #include "Util.h"
 #include "ConfigWidgetEditAdvancedInternals.h"

@@ -77,7 +77,7 @@ bool ConfigWidgetGlobalsTable::attach()
 	return true;
 }
 
-void ConfigWidgetGlobalsTable::slotDoubleClicked(int row, int column)
+void ConfigWidgetGlobalsTable::slotDoubleClicked(int row, int)
 {
 	// We only care about the row.
 	if (row == GLOBALS_LOGGING)

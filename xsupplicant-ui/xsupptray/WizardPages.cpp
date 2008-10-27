@@ -1561,7 +1561,7 @@ void WizardPageDot1XCert::init(const ConnectionWizardData &data)
 	}
 }
 
-void WizardPageDot1XCert::handleCertTableClick(int row, int col)
+void WizardPageDot1XCert::handleCertTableClick(int, int)
 {
 /*
 	// if user clicks on name of server, toggle checkbox

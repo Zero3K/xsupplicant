@@ -81,7 +81,7 @@ int UIPlugins::loadPlugin(char *location)
 #ifdef WIN32
 	hdll = LoadLibraryA(location);   // Probably need to change this to LoadLibraryW later on.
 
-	DWORD error = GetLastError();
+	//DWORD error = GetLastError();
 
 	if(hdll == NULL)
 		return PLUGIN_LOAD_FAILURE;
@@ -176,7 +176,8 @@ int UIPlugins::addToParent(QWidget *pParent)
 
 int UIPlugins::removeFromParent(QWidget *pParent)
 {
-
+	// XXX Is this function still needed?
+	pParent = pParent;		// Silence the compiler.
 	/*if(isInitialized())
 	{
 		if(plugin != NULL)

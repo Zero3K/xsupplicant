@@ -86,11 +86,7 @@ void xsup_debug_check_log_roll()
 
 	if (next_logroll_check > 0)  return;   // Not time to check yet.
 
-	if (active_logfile == NULL)
-	{
-//		debug_printf(DEBUG_EVENT_CORE, "There is no log file defined.  Ignoring.\n");
-		return;
-	}
+	if (active_logfile == NULL) return;
 
 	globals = config_get_globals();
 	if (globals == NULL)
@@ -105,7 +101,6 @@ void xsup_debug_check_log_roll()
 
 	if (stat64(active_logfile, &statdata) != 0)
 	{
-//		debug_printf(DEBUG_NORMAL, "Unable to get file status information for file '%s'.  Log will not be rolled.\n", active_logfile);
 		next_logroll_check = LOGCHECK_INTERVAL;
 		return;
 	}

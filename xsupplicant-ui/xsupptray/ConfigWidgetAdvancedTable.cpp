@@ -77,7 +77,7 @@ bool ConfigWidgetAdvancedTable::attach()
 	return true;
 }
 
-void ConfigWidgetAdvancedTable::slotDoubleClicked(int row, int column)
+void ConfigWidgetAdvancedTable::slotDoubleClicked(int row, int)
 {
 	// We only care about the row.
 	if (row == ADVANCED_SETTINGS)

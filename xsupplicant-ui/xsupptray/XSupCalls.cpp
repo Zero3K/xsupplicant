@@ -3592,10 +3592,12 @@ bool XSupCalls::isLiveInterface(const int_enum *pLiveInts, const char *pConfigIn
    \param [in] bWireless - true or false
    \return true/false
 */
-bool XSupCalls::networkDisconnect(QString &deviceName, QString &deviceDescription, bool bWireless)
+bool XSupCalls::networkDisconnect(QString &deviceName, QString &deviceDescription, bool)
 {
   bool bValue = true;
   CharC d(deviceName);
+
+  deviceDescription = deviceDescription;	// Silence the compiler.
 
   if (xsupgui_request_disconnect_connection((char *)deviceName.data()) == REQUEST_SUCCESS)
   {

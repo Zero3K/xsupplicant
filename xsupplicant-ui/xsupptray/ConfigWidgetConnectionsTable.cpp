@@ -279,7 +279,7 @@ void ConfigWidgetConnectionsTable::updateWindow()
 	m_pRealTable->setCursor(Qt::ArrowCursor);  // okay, back to normal.
 }
 
-void ConfigWidgetConnectionsTable::slotDoubleClicked(int row, int column)
+void ConfigWidgetConnectionsTable::slotDoubleClicked(int row, int)
 {
 	QTableWidgetItem *myItem = NULL;
 

@@ -62,6 +62,7 @@ bool ConfigWidgetBase::dataChanged()
 
 void ConfigWidgetBase::getPageName(QString &name)
 {
+	name = name;
 	QMessageBox::critical(this, tr("Code Error"), tr("You didn't override the getPageName member of the ConfigWidgetBase class!"));
 }
 

@@ -85,7 +85,7 @@ bool ConfigWidgetProfilesTable::attach()
 	return true;
 }
 
-void ConfigWidgetProfilesTable::slotDoubleClicked(int row, int column)
+void ConfigWidgetProfilesTable::slotDoubleClicked(int row, int)
 {
 	QTableWidgetItem *myItem = NULL;
 

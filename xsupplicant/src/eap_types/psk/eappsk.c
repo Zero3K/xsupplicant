@@ -234,7 +234,7 @@ uint8_t *eappsk_get_psk(char *password, char *id_s, char *id_p)
 		{
 			AES_set_encrypt_key(hash, 16*8, &key);
 
-			AES_ecb_encrypt(&datablock[(i*16)], &temp_data, &key, AES_ENCRYPT);
+			AES_ecb_encrypt((unsigned char *)&datablock[(i*16)], (unsigned char *)&temp_data, &key, AES_ENCRYPT);
 
 			for (x = 0; x < 16; x++)
 			{
@@ -713,7 +713,7 @@ uint8_t *eappsk_create_packet3(eap_type_data *eapdata)
 	memcpy(&pskpacket->rand_s[0], &pskdata->rand_s[0], 16);
 	toencdata[0] = EAP_PSK_FLAGS_SUCCESS;
 
-	nonce_ptr = &pskdata->nonce;
+	nonce_ptr = (unsigned int *)&pskdata->nonce;
 	(*nonce_ptr)++;
 
 	if (eax_encrypt(pskdata->keydata, &pskdata->nonce[0], (unsigned char *)eaphdr, &toencdata[0], 1, &encdata,

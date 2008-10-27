@@ -81,5 +81,16 @@ char *platform_get_users_data_store_path()
  **/
 char *platform_get_machine_data_store_path()
 {
-	return NULL;
+	TCHAR szMyPath[MAX_PATH];
+	char *path = NULL;
+
+	if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
+	{
+	  printf("Couldn't determine the path to the common app data.\n");
+	  return NULL;
+	}
+
+	path = _strdup(szMyPath);
+	return path;
 }
+

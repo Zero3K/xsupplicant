@@ -29,6 +29,9 @@
  *   and distribute your source code for those products under the GPL, please contact
  *   Identity Engines for an OEM Commercial License.
  **/
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include "stdafx.h"
 

@@ -348,9 +348,11 @@ QList<WirelessNetworkInfo> SSIDList::getNetworkInfo(QString adapterName)
 							}
 							else
 								networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_NONE;
-								
+						
+/*
 							if ((abilities & ABILITY_DOT11_STD) != 0)
 								; // no flags to pass on
+								*/
 							if ((abilities & ABILITY_DOT11_A) != 0)
 								networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_A;
 							if ((abilities & ABILITY_DOT11_B) != 0)

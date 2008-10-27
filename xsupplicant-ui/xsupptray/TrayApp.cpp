@@ -30,6 +30,10 @@
  *   Identity Engines for an OEM Commercial License.
  **/
 
+#ifdef WINDOWS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <QMessageBox>
 
 #include "stdafx.h" 
@@ -682,7 +686,7 @@ void TrayApp::disconnectGlobalTrayIconSignals()
  * \brief Catch a state change event, and update our state hash.
  *
  **/
-void TrayApp::slotStateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid)
+void TrayApp::slotStateChange(const QString &intName, int sm, int, int newstate, unsigned int)
 {
 	QString temp, desc;
 	QList<QString> valList;
@@ -1035,7 +1039,7 @@ void TrayApp::setTrayMenuBasedOnControl()
 	}
 }
 
-void TrayApp::slotControlInterfacesDone(bool xsupCtrl)
+void TrayApp::slotControlInterfacesDone(bool)
 {
 	if (m_pIntCtrl != NULL)
 	{
@@ -2127,25 +2131,6 @@ void TrayApp::handleBadPSK(const QString &intName)
 // if we fail on 802.1X authentication, alert user and reprompt for creds
 void TrayApp::handleBadCreds(const QString &connName)
 {
-	QString errMsg;
-	bool success;
-	config_connection *pConn = NULL;
-/*	
-	// commented out for now to avoid barraging the user with dialogs
-
-	success = XSupWrapper::getConfigConnection(connName, &pConn);
-	
-	if (success == true && pConn != NULL)
-		errMsg = tr("The credentials you entered for the 802.1X network '%1' are invalid.  Please correct this and try again.").arg(QString(pConn->ssid));
-	else
-		errMsg = tr("The credentials you entered for the 802.1X network are invalid.  Please correct this and try again.");
-	
-	if (pConn != NULL)
-		XSupWrapper::freeConfigConnection(&pConn);
-			
-	// let user know there was an error
-	QMessageBox::critical(this, tr("Invalid Credentials"), errMsg);
-*/	
 	// re-prompt for credentials
 	this->slotRequestUPW(connName);
 }

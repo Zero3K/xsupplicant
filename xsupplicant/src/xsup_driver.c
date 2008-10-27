@@ -11,7 +11,7 @@
  **/
 
 /***
- *** This code implements 802.1X Authentication on a supplicant
+ *** This code implements 802.1X Authentication as a supplicant
  *** and supports multiple Authentication types.  
  ***/
 
@@ -55,6 +55,7 @@
 #include "eapol.h"
 #include "snmp.h"
 #include "platform/cardif.h"
+#include "platform/platform.h"
 #include "timer.h"
 #include "event_core.h"
 #include "interfaces.h"
@@ -182,7 +183,7 @@ void xsup_driver_init_config(char *config)
 	struct config_globals *globals = NULL;
 #ifdef WINDOWS
 	char *default_cfg = "c:\\windows\\system32\\drivers\\etc\\xsupplicant.conf";
-	TCHAR szMyPath[MAX_PATH];
+	char *global_conf_path = NULL;
 #else
   char *default_cfg = "/etc/xsupplicant.conf";
 #endif
@@ -192,21 +193,24 @@ void xsup_driver_init_config(char *config)
 #ifndef WINDOWS
       config = default_cfg;
 #else
-		// Use CSIDL_SYSTEM for global system config?
-	  if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
+	  global_conf_path = platform_get_machine_data_store_path();
+	  if (global_conf_path == NULL)
 	  {
-		  printf("Couldn't determine the path to the common app data.\n");
+		  printf("Couldn't allocate memory to store the path to the configuration file!\n");
 		  global_deinit();
+		  return;
 	  }
 
-	  config = Malloc(strlen(szMyPath)+strlen("xsupplicant.conf")+5);
+	  config = Malloc(strlen(global_conf_path)+strlen("xsupplicant.conf")+5);
 	  if (config == NULL)
 	  {
 		  printf("Couldn't allocate memory to store the configuration file path string!\n");
 		  global_deinit();
+		  return;
 	  }
 
-	  sprintf(config, "%s\\xsupplicant.conf", szMyPath);
+	  sprintf(config, "%s\\xsupplicant.conf", global_conf_path);
+	  FREE(global_conf_path);
 #endif
     }
 
@@ -215,7 +219,7 @@ void xsup_driver_init_config(char *config)
   // *DO NOT* delete the configuration file, though. ;)
   crashdump_add_file(config, 0);
 #else
-  #warning Need to implement crash dump file handlingfor this platform.
+  #warning Need to implement crash dump file handling for this platform.
 #endif // WINDOWS
 
   config_path = _strdup(config);
@@ -303,7 +307,7 @@ int global_init()
   SSL_library_init();
   SSL_load_error_strings();
 
-  // XXX Temporary for excalibur_ga
+  // XXX Temporary (Fix to put in a proper location?)
   load_plugins();
   
   return XENONE;
@@ -357,7 +361,7 @@ void global_deinit()
 #endif
 
 	stopping_status_update();
-	// XXX Temporary for excalibur_ga
+	// XXX Temporary (Fix to put in a better location?)
 	unload_plugins();
 
   debug_printf(DEBUG_DEINIT, "Cert handler clean up.\n");
@@ -369,7 +373,7 @@ void global_deinit()
   xsup_ipc_cleanup(intiface);
 
 #ifdef HAVE_TNC
-	// Clean up the TNC library -- (Always do this last to minimize crashes from IMC bugs.)
+	// Clean up the TNC library 
 	debug_printf(DEBUG_DEINIT, "Clean up any TNC UI callbacks.\n");
   	stopping_status_update();
 	tnc_compliance_callbacks_cleanup();
@@ -603,6 +607,7 @@ int ServiceMain(int argc, char *argv[])
 int main(int argc, char *argv[])
 #endif
 {
+	// XXX Revisit these options.  Many of them don't make sense anymore!
   struct options opts[] =
   {
 	  { PARAM_CONFIG, "config",  "Load a specific config file", "c", 1 },
