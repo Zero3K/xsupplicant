@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_trusted_servers.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_trusted_servers.c,v 1.3 2007/10/17 07:00:41 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:41 $
  **/
 
 #include <stdio.h>
@@ -51,7 +48,7 @@ void *xsupconfig_parse_trusted_servers(void **attr, xmlNodePtr node)
 
 
 parser trusted_servers[] = {
-  {"Trusted_Server", (struct conf_parse_struct *)&trusted_server, TRUE, 
+  {"Trusted_Server", (struct conf_parse_struct *)&trusted_server, TRUE, OPTION_ANY_CONFIG, 
 	xsupconfig_parse_trusted_server},
   
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

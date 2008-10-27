@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_otp.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_otp.c,v 1.3 2007/10/17 07:00:40 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:40 $
  **/
 
 #include <stdio.h>
@@ -64,6 +61,6 @@ void *xsupconfig_parse_eap_otp(void **attr, xmlNodePtr node)
 }
 
 parser eap_otp[] = {
-  {"Type", NULL, FALSE, xsupcommon_do_nothing},
+  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

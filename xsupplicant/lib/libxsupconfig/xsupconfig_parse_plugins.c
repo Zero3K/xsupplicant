@@ -40,5 +40,5 @@ void *xsupconfig_parse_plugins(void **attr, xmlNodePtr node)
 }
 
 parser plugins[] = {
-	{"Plugin", (struct conf_parse_struct *)&plugin, TRUE, xsupconfig_parse_plugin},
-	{NULL, NULL, FALSE, NULL}};
+	{"Plugin", (struct conf_parse_struct *)&plugin, TRUE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin},
+	{NULL, NULL, FALSE, 0, NULL}};

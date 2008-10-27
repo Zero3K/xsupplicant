@@ -209,11 +209,11 @@ void *xsupconfig_parse_eap_aka_auto_realm(void **attr, xmlNodePtr node)
 }
 
 parser eap_aka[] = {
-  {"Username", NULL, FALSE, &xsupconfig_parse_eap_aka_username},
-  {"Password", NULL, FALSE, &xsupconfig_parse_eap_aka_password},
-  {"Encrypted_Password", NULL, FALSE, &xsupconfig_parse_eap_aka_enc_password},
-  {"Auto_Realm", NULL, FALSE, &xsupconfig_parse_eap_aka_auto_realm},
-  {"Reader", NULL, FALSE, &xsupconfig_parse_eap_aka_reader},
-  {"Type", NULL, FALSE, xsupcommon_do_nothing},
+  {"Username", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_username},
+  {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_password},
+  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_enc_password},
+  {"Auto_Realm", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_auto_realm},
+  {"Reader", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_reader},
+  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

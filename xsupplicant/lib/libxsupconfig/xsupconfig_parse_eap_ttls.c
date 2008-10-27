@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_ttls.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_ttls.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -477,21 +474,21 @@ void *xsupconfig_parse_eap_ttls_inner_method(void **attr, xmlNodePtr node)
 }
 
 parser eap_ttls[] = {
-  {"Type", NULL, FALSE, xsupcommon_do_nothing},   // So we don't complain about the option we already consumed.
-  {"User_Certificate", NULL, FALSE, &xsupconfig_parse_eap_ttls_user_cert},
-  {"CRL_Directory", NULL, FALSE, &xsupconfig_parse_eap_ttls_crl_dir},
-  {"User_Key_File", NULL, FALSE, &xsupconfig_parse_eap_ttls_user_key_file},
-  {"User_Key_Password", NULL, FALSE, &xsupconfig_parse_eap_ttls_user_key_pass},
-  {"Encrypted_User_Key_Password", NULL, FALSE, &xsupconfig_parse_eap_ttls_enc_user_key_pass},
-  {"Session_Resume", NULL, FALSE, &xsupconfig_parse_eap_ttls_session_resume},
-  {"Chunk_Size", NULL, FALSE, &xsupconfig_parse_eap_ttls_chunk_size},
-  {"Random_File", NULL, FALSE, &xsupconfig_parse_eap_ttls_random_file},
-  {"Inner_Method", NULL, FALSE, &xsupconfig_parse_eap_ttls_inner_method},
-  {"Common_Name", NULL, FALSE, &xsupconfig_parse_eap_ttls_cncheck},
-  {"Exact_Common_Name", NULL, FALSE, &xsupconfig_parse_eap_ttls_cnexact},
-  {"Inner_ID", NULL, FALSE, &xsupconfig_parse_eap_ttls_inner_id},
-  {"Trusted_Server", NULL, FALSE, &xsupconfig_parse_eap_ttls_trusted_server},
-  {"Validate_Certificate", NULL, FALSE, &xsupconfig_parse_eap_ttls_validate_cert},
-  {"Phase2", NULL, FALSE, &xsupconfig_parse_eap_ttls_phase2},
+  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},   // So we don't complain about the option we already consumed.
+  {"User_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_user_cert},
+  {"CRL_Directory", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_crl_dir},
+  {"User_Key_File", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_user_key_file},
+  {"User_Key_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_user_key_pass},
+  {"Encrypted_User_Key_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_enc_user_key_pass},
+  {"Session_Resume", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_session_resume},
+  {"Chunk_Size", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_chunk_size},
+  {"Random_File", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_random_file},
+  {"Inner_Method", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_inner_method},
+  {"Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_cncheck},
+  {"Exact_Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_cnexact},
+  {"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_inner_id},
+  {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_trusted_server},
+  {"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_validate_cert},
+  {"Phase2", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_phase2},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

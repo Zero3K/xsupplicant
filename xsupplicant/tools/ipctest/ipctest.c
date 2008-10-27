@@ -1724,68 +1724,6 @@ void doget_int()
 }
 
 /**
- * \brief Enumerate managed networks and list them to the console.
- **/
-void doget_enum_managed_nets()
-{
-	managed_nets_enum *nenum;
-	int i = 0;
-
-	printf("Getting Managed Networks list : ");
-
-	if (xsupgui_request_enum_managed_networks(&nenum) != REQUEST_SUCCESS)
-	{
-		printf("Failed!\n");
-		die();
-		return;
-	}
-
-	printf("Success!\n\n");
-
-	while (nenum[i].ou != NULL)
-	{
-		printf("Managed Network OU : %s\n", nenum[i].ou);
-		i++;
-	}
-
-	xsupgui_request_free_managed_networks_enum(&nenum);
-}
-
-/**
- * \brief Ask the supplicant to give us information about a managed network.
- **/
-void get_managed_net()
-{
-	config_managed_networks *head = NULL;
-
-	if (xsupgui_request_get_managed_network_config("testme.com", &head) != REQUEST_SUCCESS)
-	{
-		printf("Failed!\n");
-		die();
-		return;
-	}
-
-	printf("Update URL : %s\n", head->update_url);
-}
-
-/**
- * \brief Ask the supplicant to delete a managed network from memory.
- **/
-void del_managed_net()
-{
-  if (xsupgui_request_delete_managed_network_config("testme.com") != REQUEST_SUCCESS)
-    {
-      printf("Couldn't delete 'testme.com' from the managed networks list!\n");
-	  die();
-      return;
-    }
-  else
-    {
-      printf("Delete 'testme.com' from the managed networks list.\n");
-    }
-}
-
-/**
  * \brief Ask the supplicant to delete a profile from memory.
  **/
 void del_profile()
@@ -2005,42 +1943,6 @@ void change_ts()
 	}
 
 	printf("Store type is now set to '%s'.\n", ts->store_type);
-}
-
-/**
- * \brief Change a value in the managed network settings.
- **/
-void change_mn()
-{
-	struct config_managed_networks *mn = NULL;
-	char *val = NULL;
-
-	if (xsupgui_request_get_managed_network_config("testme.com", &mn) != REQUEST_SUCCESS)
-	{
-		printf("Couldn't get managed network settings.\n");
-		die();
-		return;
-	}
-
-	val = mn->last_update;
-	free(mn->last_update);
-	mn->last_update = _strdup("GO AWAY!");
-
-	if (xsupgui_request_set_managed_network_config(mn) != REQUEST_SUCCESS)
-	{
-		printf("Couldn't set managed network settings.\n");
-		die();
-		return;
-	}
-
-	if (xsupgui_request_get_managed_network_config("testme.com", &mn)  != REQUEST_SUCCESS)
-	{
-		printf("Couldn't get managed network config the second time!\n");
-		die();
-		return;
-	}
-
-	printf("Last update is now set to '%s'.\n", mn->last_update);
 }
 
 /**
@@ -2659,17 +2561,6 @@ int main(int argc, char *argv[])
 
 	nt("Getting interfaces defined in the configuration file.");
 	doint_conf_enum();
-
-	nt("Enumerating Managed Networks...");
-	doget_enum_managed_nets();
-
-#if 0
-	nt("Get 'testme.com' managed network");
-	get_managed_net();
-
-	//nt("Deleting 'testme.com' from the managed network list in memory");
-	//del_managed_net();
-#endif
 
 	nt("Deleting 'Beat me!' profile");
 	del_profile();

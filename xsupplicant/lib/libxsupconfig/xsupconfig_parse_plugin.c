@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_plugin.c
  *
  * \author galimorerpg@users.sourceforge.net
- *
- * $Id: xsupconfig_parse_plugin.c,v 1.3 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -188,6 +185,6 @@ void *xsupconfig_parse_plugin_path(void **attr, xmlNodePtr node)
 }
 
 parser plugin[] = {
-	{"Name", NULL, FALSE, xsupconfig_parse_plugin_name},
-	{"Path", NULL, FALSE, xsupconfig_parse_plugin_path},
-	{NULL, NULL, FALSE, NULL}};
+	{"Name", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin_name},
+	{"Path", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin_path},
+	{NULL, NULL, FALSE, 0, NULL}};

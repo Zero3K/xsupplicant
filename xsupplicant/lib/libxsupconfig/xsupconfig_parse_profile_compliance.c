@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_profile.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_profile_compliance.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -321,13 +318,13 @@ void *xsupconfig_parse_profile_compliance_allow_auto_update(void **attr, xmlNode
 }
 
 parser compliance[] = {
-	{"Enable", NULL, FALSE, xsupconfig_parse_profile_compliance_enable},
-	{"Personality_Check", NULL, FALSE, xsupconfig_parse_profile_compliance_personality_check},
-	{"Firewall_Check", NULL, FALSE, xsupconfig_parse_profile_compliance_firewall_check},	
-	{"Anti_Spyware_Check", NULL, FALSE, xsupconfig_parse_profile_compliance_anti_spyware_check},
-	{"Anti_Virus_Check", NULL, FALSE, xsupconfig_parse_profile_compliance_anti_virus_check},
-	{"Anti_Phishing_Check", NULL, FALSE, xsupconfig_parse_profile_compliance_anti_phishing_check},
-	{"Allow_Full_Scan", NULL, FALSE, xsupconfig_parse_profile_compliance_allow_full_system_scan},
-	{"Allow_Auto_Update", NULL, FALSE, xsupconfig_parse_profile_compliance_allow_auto_update},
+	{"Enable", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_enable},
+	{"Personality_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_personality_check},
+	{"Firewall_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_firewall_check},	
+	{"Anti_Spyware_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_anti_spyware_check},
+	{"Anti_Virus_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_anti_virus_check},
+	{"Anti_Phishing_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_anti_phishing_check},
+	{"Allow_Full_Scan", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_allow_full_system_scan},
+	{"Allow_Auto_Update", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_allow_auto_update},
 
-    {NULL, NULL, FALSE, NULL}};
+    {NULL, NULL, FALSE, 0, NULL}};

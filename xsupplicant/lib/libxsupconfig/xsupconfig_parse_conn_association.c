@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_conn_association.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_conn_association.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -510,30 +507,30 @@ void *xsupconfig_parse_conn_psk_hex(void **attr, xmlNodePtr node)
 }
 
 parser conn_association[] = {
-  {"Type", NULL, FALSE, 
+  {"Type", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_association_type},
-  {"Pairwise_Key_Type", NULL, FALSE, 
+  {"Pairwise_Key_Type", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_pairwise_key_type},
-  {"Group_Key_Type", NULL, FALSE, 
+  {"Group_Key_Type", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_group_key_type},
-  {"Authentication", NULL, FALSE, 
+  {"Authentication", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_authentication_type},
 
-  {"TX_Key", NULL, FALSE, 
+  {"TX_Key", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_tx_key},
-  {"Key_1", NULL, FALSE, 
+  {"Key_1", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_key1},
-  {"Key_2", NULL, FALSE, 
+  {"Key_2", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_key2},
-  {"Key_3", NULL, FALSE,
+  {"Key_3", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_key3},
-  {"Key_4", NULL, FALSE, 
+  {"Key_4", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_key4},
 
-  {"PSK", NULL, FALSE,
+  {"PSK", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_psk},
-  {"Encrypted_PSK", NULL, FALSE, xsupconfig_parse_conn_enc_psk},
-  {"PSK_Hex", NULL, FALSE, 
+  {"Encrypted_PSK", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_enc_psk},
+  {"PSK_Hex", NULL, FALSE, OPTION_ANY_CONFIG,
   xsupconfig_parse_conn_psk_hex},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

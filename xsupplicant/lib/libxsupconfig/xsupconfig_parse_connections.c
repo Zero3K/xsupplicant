@@ -5,9 +5,6 @@
  * \file xsupconfig_parse_connections.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_connections.c,v 1.3 2007/10/17 07:00:40 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:40 $
  **/
 
 #include <stdio.h>
@@ -42,7 +39,7 @@ void *xsupconfig_parse_connections(void **attr, xmlNodePtr node)
 }
   
 parser connections[] = {
-  {"Connection", (struct conf_parse_struct *)&connection, TRUE, 
+  {"Connection", (struct conf_parse_struct *)&connection, TRUE, OPTION_ANY_CONFIG,
   xsupconfig_parse_connection},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

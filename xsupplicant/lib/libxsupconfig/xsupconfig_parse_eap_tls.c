@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_tls.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_tls.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -400,20 +397,20 @@ void *xsupconfig_parse_eap_tls_key_id(void **attr, xmlNodePtr node)
 }
 
 parser eap_tls[] = {
-  {"User_Certificate", NULL, FALSE, &xsupconfig_parse_eap_tls_user_cert},
-  {"CRL_Directory", NULL, FALSE, &xsupconfig_parse_eap_tls_crl_dir},
-  {"User_Key_File", NULL, FALSE, &xsupconfig_parse_eap_tls_user_key_file},
-  {"User_Key_Password", NULL, FALSE, &xsupconfig_parse_eap_tls_user_key_pass},
-  {"Encrypted_User_Key_Password", NULL, FALSE, &xsupconfig_parse_eap_tls_enc_user_key_pass},
-  {"Session_Resume", NULL, FALSE, &xsupconfig_parse_eap_tls_session_resume},
-  {"Chunk_Size", NULL, FALSE, &xsupconfig_parse_eap_tls_chunk_size},
-  {"Random_File", NULL, FALSE, &xsupconfig_parse_eap_tls_random_file},
-  {"Engine_ID", NULL, FALSE, &xsupconfig_parse_eap_tls_engine_id},
-  {"OpenSC_Lib_Path", NULL, FALSE, &xsupconfig_parse_eap_tls_opensc_path},
-  {"Key_ID", NULL, FALSE, &xsupconfig_parse_eap_tls_key_id},
-  {"Trusted_Server", NULL, FALSE, &xsupconfig_parse_eap_tls_trusted_server},
-  {"Type", NULL, FALSE, xsupcommon_do_nothing},
+  {"User_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_user_cert},
+  {"CRL_Directory", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_crl_dir},
+  {"User_Key_File", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_user_key_file},
+  {"User_Key_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_user_key_pass},
+  {"Encrypted_User_Key_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_enc_user_key_pass},
+  {"Session_Resume", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_session_resume},
+  {"Chunk_Size", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_chunk_size},
+  {"Random_File", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_random_file},
+  {"Engine_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_engine_id},
+  {"OpenSC_Lib_Path", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_opensc_path},
+  {"Key_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_key_id},
+  {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_trusted_server},
+  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
   // Add Certificate_ID and Root_Certificate_ID if they are ever implemented.
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

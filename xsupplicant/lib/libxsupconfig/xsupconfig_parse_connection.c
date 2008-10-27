@@ -449,16 +449,16 @@ void *xsupconfig_parse_connection_volatile(void **attr, xmlNodePtr node)
 }
   
 parser connection[] = {
-  {"Name", NULL, FALSE, xsupconfig_parse_connection_name},
-  {"Priority", NULL, FALSE, &xsupconfig_parse_connection_priority},
-  {"Profile", NULL, FALSE, &xsupconfig_parse_connection_profile},
-  {"Force_EAPoL_Version", NULL, FALSE, &xsupconfig_parse_connection_eapol_ver},
-  {"SSID", NULL, FALSE, xsupconfig_parse_connection_ssid},
-  {"Volatile", NULL, FALSE, xsupconfig_parse_connection_volatile},
-  {"Interface", NULL, FALSE, xsupconfig_parse_connection_device},
-  {"Association", (struct conf_parse_struct *)&conn_association, TRUE, xsupconfig_parse_conn_association},
-  {"Destination_MAC", NULL, FALSE, &xsupconfig_parse_connection_mac_addr},
-  {"Hidden_SSID", NULL, FALSE, &xsupconfig_parse_connection_hidden_ssid},
-  {"IPv4_Configuration", (struct conf_parse_struct *)&conn_ip, TRUE, xsupconfig_parse_conn_ip},
+  {"Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_name},
+  {"Priority", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_priority},
+  {"Profile", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_profile},
+  {"Force_EAPoL_Version", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_eapol_ver},
+  {"SSID", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_ssid},
+  {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_volatile},
+  {"Interface", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_device},
+  {"Association", (struct conf_parse_struct *)&conn_association, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_association},
+  {"Destination_MAC", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_mac_addr},
+  {"Hidden_SSID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_hidden_ssid},
+  {"IPv4_Configuration", (struct conf_parse_struct *)&conn_ip, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

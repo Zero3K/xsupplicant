@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_ttls_mschapv2.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_ttls_mschapv2.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -114,6 +111,6 @@ void *xsupconfig_parse_eap_ttls_enc_mschapv2_password(void **attr, xmlNodePtr no
 }
 
 parser eap_ttls_mschapv2[] = {
-  {"Password", NULL, FALSE, 
+  {"Password", NULL, FALSE, OPTION_ANY_CONFIG,
    &xsupconfig_parse_eap_ttls_mschapv2_password},
-  {"Encrypted_Password", NULL, FALSE, &xsupconfig_parse_eap_ttls_enc_mschapv2_password}};
+  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_enc_mschapv2_password}};

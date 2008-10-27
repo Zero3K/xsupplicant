@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_profiles.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_profiles.c,v 1.3 2007/10/17 07:00:41 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:41 $
  **/
 
 #include <stdio.h>
@@ -42,6 +39,6 @@ void *xsupconfig_parse_profiles(void **attr, xmlNodePtr node)
 }
 
 parser profiles[] = {
-	{"Profile", (struct conf_parse_struct *)&profile, TRUE, xsupconfig_parse_profile},
+	{"Profile", (struct conf_parse_struct *)&profile, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_profile},
 
-	{NULL, NULL, FALSE, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}};

@@ -9,10 +9,15 @@
 #ifndef __XSUPCONFIG_PARSE_H__
 #define __XSUPCONFIG_PARSE_H__
 
+#define OPTION_GLOBAL_CONFIG_ONLY	BIT(0)
+#define OPTION_USER_CONFIG_ONLY		BIT(1)
+#define OPTION_ANY_CONFIG			(BIT(0) | BIT(1))
+
 typedef struct conf_parse_struct {
   char *name;
   struct conf_parse_struct *parsedata;
   char descend;
+  uint8_t config_allowed;								// Configuration file types this option is allowed in.
   void *(*process)(void **attr, xmlNodePtr node);
 } parser;
 

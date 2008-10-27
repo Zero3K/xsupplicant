@@ -530,21 +530,17 @@ int xsupgui_request_get_profile_config(char *prof_name, config_profiles **prof_c
 int xsupgui_request_get_connection_config(char *conn_name, config_connection **conn_config);
 int xsupgui_request_get_interface_config(char *intdesc, config_interfaces **int_config);
 int xsupgui_request_get_trusted_server_config(char *servname, config_trusted_server **ts_config);
-int xsupgui_request_get_managed_network_config(char *ouname, config_managed_networks **mnconfig);
 int xsupgui_request_set_trusted_server_config(config_trusted_server *);
 int xsupgui_request_set_connection_config(config_connection *conn_config);
 int xsupgui_request_set_profile_config(config_profiles *prof_config);
 int xsupgui_request_set_interface_config(config_interfaces *int_config);
 int xsupgui_request_set_globals_config(config_globals *globals);
-int xsupgui_request_set_managed_network_config(config_managed_networks *mnconfig);
 int xsupgui_request_delete_profile_config(char *prof_name, int force);
 int xsupgui_request_delete_connection_config(char *conn_name);
 int xsupgui_request_delete_interface_config(char *intdesc);
 int xsupgui_request_delete_trusted_server_config(char *servname, int force);
-int xsupgui_request_delete_managed_network_config(char *ouname);
 int xsupgui_request_delete_some_conf(char *deletefrom, char *searchtag, char *searchitem, int force);
 int xsupgui_request_enum_trusted_servers(trusted_servers_enum **);
-int xsupgui_request_enum_managed_networks(managed_nets_enum **);
 int xsupgui_request_write_config(char *);
 int xsupgui_request_rename_connection(char *, char *);
 int xsupgui_request_rename_trusted_server(char *, char *);
@@ -570,14 +566,12 @@ int xsupgui_request_free_int_config_enum(int_config_enum **);
 int xsupgui_request_free_namedesc_enum(namedesc_enum **);
 int xsupgui_request_free_profile_enum(profile_enum **);
 int xsupgui_request_free_conn_enum(conn_enum **);
-int xsupgui_request_free_managed_networks_enum(managed_nets_enum **);
 int xsupgui_request_free_trusted_servers_enum(trusted_servers_enum **);
 int xsupgui_request_free_config_globals(config_globals **);
 int xsupgui_request_free_profile_config(config_profiles **);
 int xsupgui_request_free_connection_config(config_connection **);
 int xsupgui_request_free_interface_config(config_interfaces **);
 int xsupgui_request_free_trusted_server_config(config_trusted_server **);
-int xsupgui_request_free_managed_network_config(config_managed_networks **);
 
 
 /**

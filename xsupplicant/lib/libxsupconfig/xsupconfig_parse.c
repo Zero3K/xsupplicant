@@ -5,9 +5,6 @@
  * \file xsupconfig_parse.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse.c,v 1.5 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -29,7 +26,6 @@
 #include "xsupconfig_parse_connections.h"
 #include "xsupconfig_parse_devices.h"
 #include "xsupconfig_parse_trusted_servers.h"
-#include "xsupconfig_parse_managed_networks.h"
 #include "xsupconfig_parse_plugins.h"
 #include "xsupconfig.h"
 #include "xsupconfig_common.h"
@@ -204,29 +200,27 @@ void *xsupconfig_parse_global_and_network(void **attr, xmlNodePtr node)
 
 
 parser global_and_network[] = {
-  {"Globals",  (struct conf_parse_struct *)&globals, TRUE, 
+  {"Globals",  (struct conf_parse_struct *)&globals, TRUE, OPTION_GLOBAL_CONFIG_ONLY,
    &xsupconfig_parse_build_globals},
-  {"Profiles", (struct conf_parse_struct *)&profiles, TRUE, 
+  {"Profiles", (struct conf_parse_struct *)&profiles, TRUE, OPTION_ANY_CONFIG,
    &xsupconfig_parse_profiles}, 
-  {"Connections", (struct conf_parse_struct *)&connections, TRUE, 
+  {"Connections", (struct conf_parse_struct *)&connections, TRUE, OPTION_ANY_CONFIG,
 	xsupconfig_parse_connections}, 
-  {"Devices", (struct conf_parse_struct *)&devices, TRUE,
+  {"Devices", (struct conf_parse_struct *)&devices, TRUE, OPTION_GLOBAL_CONFIG_ONLY,
    &xsupconfig_parse_devices},
-  {"Trusted_Servers", (struct conf_parse_struct *)&trusted_servers, TRUE,
+  {"Trusted_Servers", (struct conf_parse_struct *)&trusted_servers, TRUE, OPTION_ANY_CONFIG,
   &xsupconfig_parse_trusted_servers},
-  {"Managed_Networks", (struct conf_parse_struct *)&managed_networks, TRUE,
-  &xsupconfig_parse_managed_networks},
-  {"Plugins", (struct conf_parse_struct *)&plugins, TRUE,
+  {"Plugins", (struct conf_parse_struct *)&plugins, TRUE, OPTION_GLOBAL_CONFIG_ONLY,
   &xsupconfig_parse_plugins},
    
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};
 
 
 parser baselevel[] = {
-  {"XsupplicantConfig", (struct conf_parse_struct *)&global_and_network, TRUE, 
+  {"XsupplicantConfig", (struct conf_parse_struct *)&global_and_network, TRUE, OPTION_ANY_CONFIG,
    &xsupconfig_parse_global_and_network},
   
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};
 
 
 #if 0

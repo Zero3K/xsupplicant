@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_peap_phase2.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_peap_phase2.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -91,6 +88,6 @@ void *xsupconfig_parse_eap_peap_phase2_eap(void **attr, xmlNodePtr node)
 }
 
 parser peap_phase2[] = {
-  {"EAP", NULL, FALSE, &xsupconfig_parse_eap_peap_phase2_eap},
+  {"EAP", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_phase2_eap},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

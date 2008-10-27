@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_devices.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_devices.c,v 1.3 2007/10/17 07:00:40 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:40 $
  **/
 
 #include <stdio.h>
@@ -51,7 +48,7 @@ void *xsupconfig_parse_devices(void **attr, xmlNodePtr node)
 
 
 parser devices[] = {
-  {"Interface", (struct conf_parse_struct *)&interf, TRUE, 
+  {"Interface", (struct conf_parse_struct *)&interf, TRUE, OPTION_GLOBAL_CONFIG_ONLY,
 	xsupconfig_parse_interface},
   
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_md5.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_md5.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -128,8 +125,8 @@ void *xsupconfig_parse_eap_psk_enc_password(void **attr, xmlNodePtr node)
 }
 
 parser eap_psk[] = {
-  {"Password", NULL, FALSE, &xsupconfig_parse_eap_psk_password},
-  {"Encrypted_Password", NULL, FALSE, &xsupconfig_parse_eap_psk_enc_password},
-  {"Type", NULL, FALSE, xsupcommon_do_nothing},
+  {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_psk_password},
+  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_psk_enc_password},
+  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

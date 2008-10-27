@@ -2703,14 +2703,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_managed_network.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_managed_networks.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_plugin.c"
 				>
 			</File>
@@ -2886,14 +2878,6 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_leap.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_managed_network.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\lib\libxsupconfig\xsupconfig_parse_managed_networks.h"
 				>
 			</File>
 			<File

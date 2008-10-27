@@ -231,10 +231,10 @@ void *xsupconfig_parse_profile_volatile(void **attr, xmlNodePtr node)
 }
 
 parser profile[] = {
-	{"Name", NULL, FALSE, xsupconfig_parse_profile_name},
-	{"Identity", NULL, FALSE, xsupconfig_parse_profile_identity},
-	{"EAP", NULL, FALSE, xsupconfig_parse_eap},
-	{"Volatile", NULL, FALSE, xsupconfig_parse_profile_volatile},
-	{"Compliance", compliance, TRUE, xsupconfig_parse_profile_compliance},
+	{"Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_name},
+	{"Identity", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_identity},
+	{"EAP", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_eap},
+	{"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_volatile},
+	{"Compliance", compliance, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance},
 
-    {NULL, NULL, FALSE, NULL}};
+    {NULL, NULL, FALSE, 0, NULL}};

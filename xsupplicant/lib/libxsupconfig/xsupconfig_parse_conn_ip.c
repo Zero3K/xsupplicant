@@ -5,9 +5,6 @@
  * \file xsupconfig_parse_conn_ip.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_conn_ip.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -368,14 +365,14 @@ void *xsupconfig_parse_conn_ip_renew_on_reauth(void **attr, xmlNodePtr node)
 }
 
 parser conn_ip[] = {
-  {"Type", NULL, FALSE, xsupconfig_parse_conn_ip_type},
-  {"IP_Address", NULL, FALSE, xsupconfig_parse_conn_ip_addr},
-  {"Netmask", NULL, FALSE, xsupconfig_parse_conn_ip_netmask},
-  {"Gateway", NULL, FALSE, xsupconfig_parse_conn_ip_gateway},
-  {"DNS1", NULL, FALSE, xsupconfig_parse_conn_ip_dns1},
-  {"DNS2", NULL, FALSE, xsupconfig_parse_conn_ip_dns2},
-  {"DNS3", NULL, FALSE, xsupconfig_parse_conn_ip_dns3},
-  {"Search_Domain", NULL, FALSE, xsupconfig_parse_conn_ip_search_domain},
-  {"Renew_DHCP_on_Reauthentication", NULL, FALSE, xsupconfig_parse_conn_ip_renew_on_reauth},
+  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_type},
+  {"IP_Address", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_addr},
+  {"Netmask", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_netmask},
+  {"Gateway", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_gateway},
+  {"DNS1", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns1},
+  {"DNS2", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns2},
+  {"DNS3", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns3},
+  {"Search_Domain", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_search_domain},
+  {"Renew_DHCP_on_Reauthentication", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_renew_on_reauth},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

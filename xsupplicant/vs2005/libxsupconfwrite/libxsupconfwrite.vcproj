@@ -2405,10 +2405,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\lib\libxsupconfwrite\xsupconfigwrite_managed_networks.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\lib\libxsupconfwrite\xsupconfwrite.c"
 				>
 			</File>
@@ -2560,10 +2556,6 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\libxsupconfwrite\xsupconfwrite_interface.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\lib\libxsupconfwrite\xsupconfwrite_managed_networks.h"
 				>
 			</File>
 			<File

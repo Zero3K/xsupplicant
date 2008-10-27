@@ -30,13 +30,11 @@
 #include "libxsupconfwrite/xsupconfwrite_connection.h"
 #include "libxsupconfwrite/xsupconfwrite_interface.h"
 #include "libxsupconfwrite/xsupconfwrite_trusted_server.h"
-#include "libxsupconfwrite/xsupconfwrite_managed_networks.h"
 #include "libxsupconfig/xsupconfig_parse.h"
 #include "libxsupconfig/xsupconfig_parse_globals.h"
 #include "libxsupconfig/xsupconfig_parse_connection.h"
 #include "libxsupconfig/xsupconfig_parse_profile.h"
 #include "libxsupconfig/xsupconfig_parse_trusted_server.h"
-#include "libxsupconfig/xsupconfig_parse_managed_network.h"
 #include "libxsupconfig/xsupconfig_parse_interface.h"
 #include "libxsupconfcheck/xsupconfcheck.h"
 #include "context.h"
@@ -135,9 +133,6 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_Connection_Config", ipc_callout_get_connection},
 	{"Get_Trusted_Server_Config", ipc_callout_get_trusted_server_config},
 	{"Get_Interface_Config", ipc_callout_get_interface_config},
-	{"Get_Managed_Network_Config", ipc_callout_get_managed_network_config},
-	{"Enum_Managed_Networks", ipc_callout_enum_managed_networks},
-	{"Delete_Managed_Network_Config", ipc_callout_delete_managed_network},
 	{"Delete_Connection_Config", ipc_callout_delete_connection_config},
 	{"Delete_Profile_Config", ipc_callout_delete_profile_config},
 	{"Delete_Trusted_Server_Config", ipc_callout_delete_trusted_server_config},
@@ -146,7 +141,6 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Set_Connection_Config", ipc_callout_set_connection_config},
 	{"Set_Profile_Config", ipc_callout_set_profile_config},
 	{"Set_Trusted_Server_Config", ipc_callout_set_trusted_server_config},
-	{"Set_Managed_Network_Config", ipc_callout_set_managed_network_config},
 	{"Enum_Config_Interfaces", ipc_callout_enum_config_interfaces},
 	{"Enum_Known_SSIDs", ipc_callout_enum_known_ssids},
 	{"Wireless_Scan", ipc_callout_wireless_scan},
@@ -3848,150 +3842,6 @@ int ipc_callout_get_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
 }
 
 /**
- * \brief Catch an IPC request to get interface configuration settings out of our configuration file.
- *
- * \param[in] innode  The root of the XML tree that contains the information we
- *                    are interested in.
- * \param[out] outnode   The root of the XML tree that contains the return information
- *                       used to let the IPC caller know the status of the request.
- *
- * \retval IPC_SUCCESS on success
- * \retval IPC_FAILURE on failure
- **/
-int ipc_callout_get_managed_network_config(xmlNodePtr innode, xmlNodePtr *outnode)
-{
-	xmlNodePtr n = NULL, t = NULL;
-	char *ouname = NULL;
-	struct config_managed_networks *nets = NULL;
-
-	if (innode == NULL) return IPC_FAILURE;
-
-	debug_printf(DEBUG_IPC, "Got an IPC get managed networks configuration request!\n");
-
-	n = ipc_callout_find_node(innode, "Get_Managed_Network_Config");
-	if (n == NULL) 
-	{
-		debug_printf(DEBUG_IPC, "Couldn't get 'Get_Managed_Network_Config' node.\n");
-		return ipc_callout_create_error(NULL, "Get_Managed_Network_Config", IPC_ERROR_INVALID_NODE, outnode);	
-	}
-
-	t = ipc_callout_find_node(n->children, "OU");
-	if (t == NULL)
-	{
-		debug_printf(DEBUG_IPC, "Couldn't get 'OU' node from 'Get_Managed_Network_Config'!\n");
-		return ipc_callout_create_error(NULL, "Get_Managed_Network_Config", IPC_ERROR_CANT_LOCATE_NODE, outnode);
-	}
-
-	ouname = (char *)xmlNodeGetContent(t);
-
-	if (ouname == NULL)
-	{
-		debug_printf(DEBUG_IPC, "Couldn't determine the name of the OU we want to get!\n");
-		return ipc_callout_create_error(NULL, "Get_Managed_Network_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
-	}
-
-	debug_printf(DEBUG_IPC, "Looking for OU '%s'.\n", ouname);
-
-	n = xmlNewNode(NULL, (xmlChar *)"Managed_Network_Config");
-	if (n == NULL) 
-		return ipc_callout_create_error(NULL, "Get_Managed_Network_Config", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-
-	nets = config_get_managed_networks();
-
-	while ((nets != NULL) && ((nets->ou != NULL) && (strcmp(nets->ou, ouname) != 0)))
-	{
-		nets = nets->next;
-	}
-
-	if ((nets == NULL) || (strcmp(nets->ou, ouname) != 0))
-	{
-		return ipc_callout_create_error(NULL, "Get_Managed_Network_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
-	}
-
-	// Write out ALL settings, so there is no confusion on the other end.
-	t = xsupconfwrite_managed_network_create_tree(nets, TRUE);
-	if (t == NULL) 
-	{
-		xmlFreeNode(n);
-		return ipc_callout_create_error(NULL, "Get_Managed_Network_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
-	}
-
-	if (xmlAddChild(n, t) == NULL)
-	{
-		xmlFreeNode(n);
-		return ipc_callout_create_error(NULL, "Get_Managed_Network_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
-	}
-
-	(*outnode) = n;
-	return IPC_SUCCESS;
-}
-
-/**
- *  \brief Got a request to enumerate the managed networks that we know about.
- *
- *  @param[in] innode   A pointer to the node that contains the enumerate managed networks
- *                      request.
- *  @param[out] outnode   The resulting XML node(s) from the enumerate managed networks
- *                        request.
- *
- *  \retval IPC_SUCCESS   on success
- *  \retval IPC_FAILURE   on failure
- **/
-int ipc_callout_enum_managed_networks(xmlNodePtr innode, xmlNodePtr *outnode)
-{
-	xmlNodePtr n = NULL, t = NULL;
-	unsigned int count;
-	char res[100];
-	struct config_managed_networks *nets = NULL, *cur = NULL;
-
-	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
-		return IPC_FAILURE;
-
-	(*outnode) = NULL;
-
-	debug_printf(DEBUG_IPC, "Got an IPC Enum Managed Networks request!\n");
-
-	// If we got here, then we know this is a managed networks request, so we really don't need any
-	// information from indoc.  We just need to build a response, and send it off.
-	n = xmlNewNode(NULL, (xmlChar *)"Managed_Networks_List");
-	if (n == NULL) 
-	{
-		return ipc_callout_create_error(NULL, "Managed_Networks_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-	}
-
-	count = 0;
-
-	nets = cur = config_get_managed_networks();
-	while (cur != NULL)
-	{
-		count++;
-		cur = cur->next;
-	}
-	sprintf((char *)&res, "%d", count);
-	if (xmlNewChild(n, NULL, (xmlChar *)"Number_Of_Networks", (xmlChar *)res) == NULL)
-	{
-		xmlFreeNode(n);
-		return ipc_callout_create_error(NULL, "Managed_Networks_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-	}
-
-	cur = nets;
-	while (cur != NULL)
-	{
-		t = xmlNewChild(n, NULL, (xmlChar *)"OU", (xmlChar *)cur->ou);
-		if (t == NULL)
-		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Managed_Networks_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-		}
-		
-		cur = cur->next;
-	}
-
-	(*outnode) = n;
-	return IPC_SUCCESS;
-}
-
-/**
  * \brief Process the headers for a delete command.
  *
  * @param[in] innode   The root node from the XML document that was sent over.
@@ -4985,58 +4835,6 @@ int ipc_callout_set_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
   return ipc_callout_create_ack(NULL, "Set_Interface_Config", outnode);
-}
-
-/**
- *  \brief Got a request to set/change managed network data.
- *
- *  @param[in] innode   A pointer to the node that contains the request to 
- *                      set/change managed network data in memory.
- *                      
- *  @param[out] outnode   The resulting XML node(s) from the set/change 
- *                        managed network data request.
- *
- *  \retval IPC_SUCCESS   on success
- *  \retval IPC_FAILURE   on failure
- **/
-int ipc_callout_set_managed_network_config(xmlNodePtr innode, xmlNodePtr *outnode)
-{
-	struct config_managed_networks *newmn = NULL;
-	xmlNodePtr n = NULL;
-
-	if (innode == NULL) return IPC_FAILURE;
-
-	debug_printf(DEBUG_IPC, "Got an IPC set managed network configuration request!\n");
-
-	n = ipc_callout_find_node(innode, "Set_Managed_Network_Config");
-	if (n == NULL) 
-	{
-		debug_printf(DEBUG_IPC, "Couldn't get 'Set_Managed_Network_Config' node.\n");
-		return ipc_callout_create_error(NULL, "Set_Managed_Network_Config", IPC_ERROR_INVALID_NODE, outnode);	
-	}
-	
-	// Set up the new ones.
-	newmn = Malloc(sizeof(struct config_managed_networks));
-	if (newmn == NULL)
-	{
-		debug_printf(DEBUG_IPC, "Couldn't allocate memory to store new config managed network structure.\n");
-		return ipc_callout_create_error(NULL, "Set_Managed_Network_Config", IPC_ERROR_MALLOC, outnode);
-	}
-
-	xsupconfig_parse(n->children->children, managed_network, (void **)&newmn);
-	if (newmn == NULL)
-	{
-		debug_printf(DEBUG_IPC, "Couldn't parse managed network config information!\n");
-		return ipc_callout_create_error(NULL, "Set_Managed_Network_Config", IPC_ERROR_PARSING, outnode);
-	}
-
-	if (add_change_config_managed_network(newmn) != XENONE)
-	{
-		debug_printf(DEBUG_IPC, "Couldn't add/change managed network data in memory!\n");
-		return ipc_callout_create_error(NULL, "Set_Managed_Network_Config", IPC_ERROR_CANT_CHANGE_CONFIG, outnode);
-	}
-
-  return ipc_callout_create_ack(NULL, "Set_Managed_Network_Config", outnode);
 }
 
 /**

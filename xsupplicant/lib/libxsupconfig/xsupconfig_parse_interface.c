@@ -338,11 +338,11 @@ void *xsupconfig_parse_manage_interface(void **attr, xmlNodePtr node)
 
 
 parser interf[] = {
-  {"Description", NULL, FALSE, &xsupconfig_parse_interface_description},
-  {"MAC", NULL, FALSE, &xsupconfig_parse_interface_mac},
-  {"Type", NULL, FALSE, &xsupconfig_parse_interface_type},
-  {"Wireless", NULL, FALSE, &xsupconfig_parse_interface_is_wireless},
-  {"Default_Connection", NULL, FALSE, &xsupconfig_parse_default_connection},
-  {"Manage", NULL, FALSE, xsupconfig_parse_manage_interface},
+  {"Description", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_description},
+  {"MAC", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_mac},
+  {"Type", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_type},
+  {"Wireless", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_is_wireless},
+  {"Default_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_default_connection},
+  {"Manage", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_manage_interface},
   
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

@@ -31,7 +31,6 @@
 #include "xsupconfwrite_globals.h"
 #include "xsupconfwrite_devices.h"
 #include "xsupconfwrite_trusted_servers.h"
-#include "xsupconfwrite_managed_networks.h"
 #include "xsupconfwrite_connections.h"
 #include "xsupconfwrite_profiles.h"
 #include "xsupconfwrite.h"
@@ -121,21 +120,6 @@ xmlNodePtr xsupconfwrite_create_connections(struct config_connection *conf_conne
 }
 
 /**
- * \brief Make the calls needed to create an XML node set that contains the <Managed_Networks> 
- *        variable information.
- *
- * @param[in] conf_nets
- * 
- * \retval NULL on failure
- * \retval xmlNodePtr pointing to a tree of nodes that contains the <Managed_Networks> piece
- *                    of a configuration file.
- **/
-xmlNodePtr xsupconfwrite_create_managed_nets(struct config_managed_networks *conf_nets)
-{
-	return xsupconfwrite_managed_networks_create_tree(conf_nets, FALSE);
-}
-
-/**
  * \brief Make the calls needed to create an XML node set that contains the <Profiles> 
  *        variable information.
  *
@@ -168,7 +152,6 @@ int xsupconfwrite_write_config(char *destfile)
   xmlNodePtr trusted_servers = NULL;
   xmlNodePtr connections = NULL;
   xmlNodePtr profiles = NULL;
-  xmlNodePtr managed_nets = NULL;
   xmlNodePtr rootnode = NULL;
   xmlDocPtr doc = NULL;
   char tempstatic[26];
@@ -284,20 +267,6 @@ int xsupconfwrite_write_config(char *destfile)
 	  return XSUPCONFWRITE_FAILED;
 	}
 	xmlAddChild(rootnode, trusted_servers);
-  }
-
-  if (conf_managed_networks != NULL)
-  {
-	managed_nets = xsupconfwrite_create_managed_nets(conf_managed_networks);
-	if (managed_nets == NULL)
-	{
-#ifdef DEBUG
-	  printf("Error creating <Managed_Networks> block!\n");
-#endif
- 	  xmlFreeDoc(doc);
-	  return XSUPCONFWRITE_FAILED;
-	}
-	xmlAddChild(rootnode, managed_nets);
   }
 
   if ((destfile == NULL) || (strlen(destfile) < 1))

@@ -4,9 +4,6 @@
  * \file xsupconfig_parse_eap_mschapv2.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_parse_eap_mschapv2.c,v 1.4 2007/10/20 08:10:13 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:13 $
  **/
 
 #include <stdio.h>
@@ -187,11 +184,11 @@ void *xsupconfig_parse_eap_mschapv2_ias_quirk(void **attr, xmlNodePtr node)
 }
 
 parser eap_mschapv2[] = {
-  {"Password", NULL, FALSE, &xsupconfig_parse_eap_mschapv2_password},
-  {"Encrypted_Password", NULL, FALSE, &xsupconfig_parse_eap_mschapv2_enc_password},
-  {"NT_Password_Hash", NULL, FALSE, 
+  {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_password},
+  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_enc_password},
+  {"NT_Password_Hash", NULL, FALSE, OPTION_ANY_CONFIG,
    &xsupconfig_parse_eap_mschapv2_nt_pwd_hash},
-  {"IAS_Quirk", NULL, FALSE, &xsupconfig_parse_eap_mschapv2_ias_quirk},
-  {"Type", NULL, FALSE, xsupcommon_do_nothing},
+  {"IAS_Quirk", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_ias_quirk},
+  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};

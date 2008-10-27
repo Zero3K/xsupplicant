@@ -339,11 +339,11 @@ void *xsupconfig_parse_volatile(void **attr, xmlNodePtr node)
 }
 
 parser trusted_server[] = {
-  {"Name", NULL, FALSE, xsupconfig_parse_trusted_server_name},
-  {"Store_Type", NULL, FALSE, xsupconfig_parse_trusted_server_type},
-  {"Location", NULL, FALSE, xsupconfig_parse_trusted_server_location},
-  {"Common_Name", NULL, FALSE, xsupconfig_parse_trusted_server_cn},
-  {"Volatile", NULL, FALSE, xsupconfig_parse_volatile},
-  {"Exact_Common_Name", NULL, FALSE, xsupconfig_parse_trusted_server_ecn},
+  {"Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_name},
+  {"Store_Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_type},
+  {"Location", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_location},
+  {"Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_cn},
+  {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_volatile},
+  {"Exact_Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_ecn},
 
-  {NULL, NULL, FALSE, NULL}};
+  {NULL, NULL, FALSE, 0, NULL}};
