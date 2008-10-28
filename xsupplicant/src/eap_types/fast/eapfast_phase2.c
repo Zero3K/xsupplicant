@@ -938,23 +938,6 @@ uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata,
 
   eap_sm_run(phase2->sm);
   
-  // Add this back in when we mess with anonymous provisioning again.
-  /*
-  if (doneinit) 
-    {
-		if ((phase2->provisioning == TRUE) && (phase2->anon_provisioning == TRUE))
-		{
-			eapmschapv2_set_eap_fast_anon_mode((eap_type_data *)phase2->sm->active, 
-					TRUE);
-		}
-      else
-		{
-			eapmschapv2_set_eap_fast_anon_mode((eap_type_data *)phase2->sm->active, 
-					FALSE);
-		}
-    }
-*/
-
   if (phase2->sm->eapRespData != NULL)
     {
       // Build up the response data.
@@ -1453,12 +1436,19 @@ uint8_t *eapfast_phase2_gen_cmkj(eap_type_data *eapdata)
 
   // If we get here, then EAP-FAST is using us as an inner method.  So,
   // mangle the key data in the way that it wants, and return it.
-  memcpy(&key[16], &phase2->sm->eapKeyData[0], 16);
-  memcpy(&key[0], &phase2->sm->eapKeyData[32], 16);
+
+  // NOTE : Some inner methods don't return keys.  In this case, we are supposed to use
+  // a key of all 0s.  Since we memset() the keydata to 0s when we allocate it, we need
+  // to just skip this next part if there is no data.
+  if (phase2->sm->eapKeyData != NULL)
+  {
+	  memcpy(&key[16], &phase2->sm->eapKeyData[0], 16);
+	  memcpy(&key[0], &phase2->sm->eapKeyData[32], 16);
+  }
 
   debug_printf(DEBUG_AUTHTYPES, "Key data : ");
   debug_hex_printf(DEBUG_AUTHTYPES, key, 32);
-
+ 
   if (phase2->simckj == NULL)
     {
       debug_printf(DEBUG_AUTHTYPES, "Generating a new S-IMCK[0].\n");

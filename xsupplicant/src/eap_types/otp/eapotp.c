@@ -109,8 +109,51 @@ uint8_t *eapotp_buildResp(eap_type_data *eapdata)
 
   if (new_response == TRUE)
     {
-      datasize = sizeof(struct eap_header) + strlen(RESPONSE_TEXT) + 
-	+strlen(eapdata->ident) + strlen(otpconf->password) + 1;
+		if (eapdata->ident == NULL)
+		{
+			// The RADIUS server build in to my Cisco 1200 doesn't do an identity exchange as part of
+			// phase 2.  Since we need to know the identity, we will have to dig it out of the context.
+			// (ICK!)
+			if ((ctx == NULL) || (ctx->prof == NULL))
+			{
+				debug_printf(DEBUG_NORMAL, "No profile was bound to your inner EAP method!?  This shouldn't happen!\n");
+				eap_type_common_fail(eapdata);
+				return NULL;
+			}
+
+			if (ctx->prof->temp_username != NULL)
+			{
+				eapdata->ident = _strdup(ctx->prof->temp_username);
+			}
+			else if (ctx->prof->identity != NULL)
+			{
+				eapdata->ident = _strdup(ctx->prof->identity);
+			}
+			else
+			{
+				// ACK!  We don't know a username to send!?
+				debug_printf(DEBUG_NORMAL, "Unable to determine a valid username to send to the server.  Aborting the authentication.\n");
+				eap_type_common_fail(eapdata);
+				return NULL;
+			}
+		}
+
+		if (otpconf->password != NULL)
+		{
+			pwd = otpconf->password;
+		} 
+		else if ((ctx != NULL) && (ctx->prof != NULL) && (ctx->prof->temp_password != NULL))
+		{
+			pwd = ctx->prof->temp_password;
+		}
+		else
+		{
+			debug_printf(DEBUG_NORMAL, "Unable to find a valid password to use for authentication.  Aborting.\n");
+			eap_type_common_fail(eapdata);
+			return NULL;
+		}
+
+      datasize = sizeof(struct eap_header) + strlen(RESPONSE_TEXT) + strlen(eapdata->ident) + strlen(pwd) + 2;
     }
   else
     {
@@ -269,6 +312,7 @@ void eapotp_pwd_callback(void *ctxptr)
 void eapotp_process(eap_type_data *eapdata)
 {
   char *otp_chal = NULL;
+  char *chalptr = NULL;							// Only a reference pointer, doesn't need to be freed.
   struct config_pwd_only *userdata = NULL;
   uint16_t eaplen = 0;
   struct eap_header *header = NULL;
@@ -306,7 +350,9 @@ void eapotp_process(eap_type_data *eapdata)
 	  ipc_events_malloc_failed(NULL);
       return;
     }
-  
+
+  chalptr = otp_chal;
+
   memcpy(otp_chal, &eapdata->eapReqData[sizeof(struct eap_header)], 
 	 eaplen - sizeof(struct eap_header));
   debug_printf(DEBUG_AUTHTYPES, "(GTC/OTP) Challenge : %s\n",otp_chal);
@@ -315,6 +361,7 @@ void eapotp_process(eap_type_data *eapdata)
     {
       debug_printf(DEBUG_AUTHTYPES, "Will use broken Cisco response method!\n");
       new_response = TRUE;
+	  chalptr += strlen(CHALLENGE_TEXT);		// Skip past the REQUEST= part of the EAP-FAST style challenge.
     }
   
   ctx = event_core_get_active_ctx();
@@ -322,7 +369,7 @@ void eapotp_process(eap_type_data *eapdata)
   if ((userdata->password == NULL) && ((ctx != NULL) && (ctx->prof != NULL) && (ctx->prof->temp_password == NULL)))
     {
       debug_printf(DEBUG_NORMAL, "No password available for EAP-GTC/OTP! (Trying to request one.)\n");
-	  if (ipc_events_request_eap_upwd("EAP-GTC", otp_chal) != IPC_SUCCESS)
+	  if (ipc_events_request_eap_upwd("EAP-GTC", chalptr) != IPC_SUCCESS)
 	  {
 		  debug_printf(DEBUG_NORMAL, "Couldn't request password from UI!  Failing.\n");
 		  eap_type_common_fail(eapdata);

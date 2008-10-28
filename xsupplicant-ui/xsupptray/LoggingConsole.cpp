@@ -317,6 +317,7 @@ void LogWindow::slotFinishPassword()
 {
 	QString password;
 	QString connection;
+	int result = 0;
 
 	password = m_pPassword->getPassword();
 	connection = m_pPassword->getConnName();
@@ -327,9 +328,9 @@ void LogWindow::slotFinishPassword()
 		return;
 	}
 
-	if (xsupgui_request_set_connection_pw(connection.toAscii().data(), password.toAscii().data()) != REQUEST_SUCCESS)
+	if ((result = xsupgui_request_set_connection_pw(connection.toAscii().data(), password.toAscii().data())) != REQUEST_SUCCESS)
 	{
-		QMessageBox::critical(this, tr("Error Setting Token Response"), tr("Unable to send the provided token response."));
+		QMessageBox::critical(this, tr("Error Setting Token Response"), tr("Unable to send the provided token response.  Error %1.").arg(result));
 	}
 
 	slotClearGTC();

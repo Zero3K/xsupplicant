@@ -18,11 +18,13 @@ char *platform_get_users_data_store_path()
 	TCHAR szMyPath[MAX_PATH];
 	char *path = NULL;
 
+#ifndef _DEBUG
 	if (win_impersonate_desktop_user() != IMPERSONATE_NO_ERROR)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to impersonate the desktop user.  Cannot return the path to the local common app data.\n");
 		return NULL;
 	}
+#endif
 
 	if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szMyPath)))
 	  {
@@ -70,7 +72,9 @@ char *platform_get_users_data_store_path()
 		}
 	}
 
+#ifndef _DEBUG
 	win_impersonate_back_to_self();
+#endif
 	return path;
 }
 

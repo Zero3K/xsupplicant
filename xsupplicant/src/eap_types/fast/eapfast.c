@@ -38,6 +38,7 @@
 #include "../tls/eaptls.h"
 #include "../tls/tls_funcs.h"
 #include "../eap_type_common.h"
+#include "../../context.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -249,6 +250,8 @@ void eapfast_check(eap_type_data *eapdata)
       eap_type_common_fail(eapdata);
       return;
     }
+
+  eapdata->ignore = FALSE;
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-FAST) Checking...\n");
   if (eapdata->methodState == INIT)
@@ -529,6 +532,8 @@ void eapfast_process(eap_type_data *eapdata)
   uint16_t aid_len = 0, resout = 0;
   int bufsiz = 0;
   struct config_eap_fast *fastconf = NULL;
+  context *ctx = NULL;
+  uint8_t *temp = NULL;
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-FAST) Processing.\n");
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -547,6 +552,31 @@ void eapfast_process(eap_type_data *eapdata)
       eap_type_common_fail(eapdata);
       return;
     }
+
+  ctx = event_core_get_active_ctx();
+  // Check to see if we have a 'reprocess' request.  If we do, pass the inner data, and skip the decryption.
+  if ((ctx != NULL) && (TEST_FLAG(ctx->flags, INT_REPROCESS)))
+  {
+	  (*ctx->p2_pwd_callback)(ctx, ((struct eapfast_phase2 *)eapdata)->sm, &resbuf, &bufsiz);
+
+	  temp = Malloc(bufsiz+5);
+	  if (temp == NULL)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Can't allocate memory to store replayed packet!\n");
+		  eap_type_common_fail(eapdata);
+		  return;
+	  }
+
+	  memcpy(&temp[4], resbuf, bufsiz);
+	  FREE(resbuf);
+
+	  eapfast_phase2_eap_process(eapdata, temp, (bufsiz+4));  
+	  FREE(temp);
+	  UNSET_FLAG(ctx->flags, INT_REPROCESS);
+	  eapdata->ignore = FALSE;
+	  event_core_set_active_ctx(NULL);
+	  return;
+  }
 
   fastconf = (struct config_eap_fast *)eapdata->eap_conf_data;
   mytls_vars = eapdata->eap_data;

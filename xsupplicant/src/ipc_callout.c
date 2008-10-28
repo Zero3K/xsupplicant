@@ -2467,14 +2467,14 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 	t = ipc_callout_find_node(n, "Connection_Name");
 	if (t == NULL) 
 	{
-		debug_printf(DEBUG_IPC, "Couldn't get 'Connection_Name' node.\n");
+		debug_printf(DEBUG_IPC, "Couldn't get 'Set_Connection_PW' node.\n");
 		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
 	request = xmlNodeGetContent(t);
 	if (request == NULL) 
 	{
-		debug_printf(DEBUG_IPC, "Couldn't get data from the 'Connection_Name' node.\n");
+		debug_printf(DEBUG_IPC, "Couldn't get data from the 'Set_Connection_PW' node.\n");
 		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
@@ -2489,6 +2489,27 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	// Done with 'request'.
 	FREE(request);
+
+	// If we don't know the auth type, try to reason it out.
+	if (conn->association.auth_type == AUTH_UNKNOWN)
+	{
+		// See if we can figure it out.
+		if (conn->profile != NULL)
+		{
+			// We are probably using EAP.
+			conn->association.auth_type = AUTH_EAP;
+		} else if ((conn->profile == NULL) && ((conn->association.association_type == ASSOC_WPA) || 
+			(conn->association.association_type == ASSOC_WPA2)))
+		{
+			// We are probably doing PSK.
+			conn->association.auth_type = AUTH_PSK;
+		} else if ((conn->profile == NULL) && ((conn->association.association_type == ASSOC_OPEN) ||
+			(conn->association.association_type == ASSOC_SHARED)))
+		{
+			// We are probably doing static WEP.
+			conn->association.auth_type = AUTH_NONE;
+		}
+	}
 
 	if (conn->association.auth_type == AUTH_EAP)
 	{
@@ -2537,7 +2558,7 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_COULDNT_CHANGE_UPW, outnode);
 		}
 	}
-	else if (conn->association.association_type == AUTH_NONE)
+	else if (conn->association.auth_type == AUTH_NONE)
 	{
 		// Set our static WEP key.
 		conn->association.keys[1] = _strdup(password);
