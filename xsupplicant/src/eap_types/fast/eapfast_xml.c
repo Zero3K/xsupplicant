@@ -417,14 +417,16 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid,
 	  if (strcmp(cur_node->name, "Cred_Lifetime") == 0)
 	    {
 	      prop = xmlNodeGetContent(cur_node);
-	      if (((strlen(prop) % 2) != 0) || (strlen(prop) != 8))
-		{
-		  debug_printf(DEBUG_NORMAL, "Invalid setting stored for "
-			       "credential lifetime!\n");
-		  return -1;
-		}
-	      process_hex(prop, strlen(prop), pacs->pacinfo.cred_lifetime);
-
+		  if (strlen(prop) != 0)
+		  {
+		      if (((strlen(prop) % 2) != 0) || (strlen(prop) != 8))
+				{
+					debug_printf(DEBUG_NORMAL, "Invalid setting stored for "
+				       "credential lifetime!\n");
+					return -1;
+				}
+		      process_hex(prop, strlen(prop), pacs->pacinfo.cred_lifetime);
+		  }
 		  xmlFree(prop);
 	    }
 

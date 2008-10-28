@@ -46,30 +46,6 @@ void xsupconfig_defaults_set_globals(config_globals *toset)
 }
 
 /**
- * \brief Create a managed network structure, and populate it with it's defaults.
- *
- * @param[in,out] mnet   A double dereferenced pointer that will be populated with
- *                       a config_managed_networks structure that has all values
- *                       set to defaults.
- *
- * \retval DEFAULTS_SUCCESS on success
- * \retval DEFAULTS_MALLOC_ERR on failure
- **/
-int xsupconfig_defaults_create_managed_network(config_managed_networks **mnet)
-{
-	(*mnet) = malloc(sizeof(config_managed_networks));
-	if ((*mnet) == NULL)
-	{
-		printf("Couldn't allocate memory to store managed networks!\n");
-		return DEFAULTS_MALLOC_ERR;
-	}
-
-	memset((*mnet), 0x00, sizeof(config_managed_networks));
-
-	return DEFAULTS_SUCCESS;
-}
-
-/**
  * \brief Create an interface structure and populate it with it's default values.
  *
  * @param[in,out] newint   A double dereference pointer that will be populated with

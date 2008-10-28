@@ -13,6 +13,9 @@
 #define OPTION_USER_CONFIG_ONLY		BIT(1)
 #define OPTION_ANY_CONFIG			(BIT(0) | BIT(1))
 
+#define CONFIG_LOAD_GLOBAL			OPTION_GLOBAL_CONFIG_ONLY
+#define CONFIG_LOAD_USER			OPTION_USER_CONFIG_ONLY
+
 typedef struct conf_parse_struct {
   char *name;
   struct conf_parse_struct *parsedata;

@@ -122,36 +122,6 @@ struct config_trusted_servers *config_get_trusted_servers()
 
 /**
  * \brief Return a pointer to the master structure that contains all of the
- *        managed networks information.
- *  
- * \retval NULL if there are no managed networks loaded in to memory.  (Indicates
- *         that either there are no managed networks defined in the configuration file
- *         or, the configuration file isn't loaded.)
- * \retval ptr to the trusted servers structure.
- *
- * \warning You should *NOT* free the pointer that is returned from this function call.  It
- *       is *NOT* a copy of the connections structure, it is a pointer to the master
- *       configuration structure!  If you free it, bad stuff *WILL* happen.
- **/
-struct config_managed_networks *config_get_managed_networks()
-{
-	return conf_managed_networks;
-}
-
-/**
- * \brief Change the head of the linked list for managed networks to point
- *        to something else.
- *
- * @param[in] nets   A pointer to the new head of the list.
- **/
-void config_set_managed_networks(struct config_managed_networks *nets)
-{
-  conf_managed_networks = nets;
-}
-
-
-/**
- * \brief Return a pointer to the master structure that contains all of the
  *        profile configurations.
  *  
  * \retval NULL if there are no profiles loaded in to memory.  (Indicates
@@ -1961,55 +1931,6 @@ void initialize_config_connections(struct config_connection **tmp_conn)
 }
 
 /**
- * \brief Delete a single managed network stored in memory.
- *
- * @param[in] tmp_mn  A double dereferenced pointer to a location
- *                    in memory where the managed network data is
- *                    stored.
- **/
-void delete_config_managed_network(struct config_managed_networks **tmp_mn)
-{
-  if ((*tmp_mn) == NULL)
-    return;
-
-  FREE_STRING((*tmp_mn)->ou);
-  FREE_STRING((*tmp_mn)->key);
-  FREE_STRING((*tmp_mn)->update_url);
-  FREE_STRING((*tmp_mn)->last_update);
-
-  FREE((*tmp_mn));
-  (*tmp_mn) = NULL;
-}
-
-/**
- * \brief Delete all of the managed networks that are currently stored
- *        in memory.
- *
- * @param[in] head   The pointer to the head of the linked list that 
- *                   contains the managed networks information.
- **/
-void delete_config_managed_networks(struct config_managed_networks **head)
-{
-  struct config_managed_networks *next, *cur;
-
-  if (*head == NULL)
-    return;
-
-  cur = (*head);
-  next = (*head)->next;
-
-  while (cur)
-    {
-      delete_config_managed_network(&cur);
-      cur = next;
-      if (next != NULL)
-	{
-	  next = next->next;
-	}
-    }
-}
-
-/**
  * \brief Delete all information for a single interface in the linked list.
  *
  * @param[in] intdata   A double dereferenced pointer to the structure that we
@@ -2359,46 +2280,6 @@ void initialize_config_globals(struct config_globals **tmp_globals)
 }
 
 /**
- * \brief Dump to the screen, all of the configuration infomration
- *        from the "<Managed_Network>" section of the configuration.
- *
- * @param[in] nets   A pointer to the structure that contains the 
- *                   information from the "<Managed_Network>" section of
- *                   the configuration.
- **/
-void dump_config_managed_network(struct config_managed_networks *nets)
-{
-	printf("\t---------- Managed Network -----------\n");
-	printf("\tOU          : %s\n", nets->ou);
-	printf("\tKey         : %s\n", nets->key);
-	printf("\tSerial ID   : %d\n", nets->serialid);
-	printf("\tUpdate URL  : %s\n", nets->update_url);
-	printf("\tAuto Update : %d\n", nets->auto_update);
-	printf("\tUpdate Freq.: %d\n", nets->update_freq);
-	printf("\tLast Update : %s\n", nets->last_update);
-	printf("\t--------------------------------------\n");
-}
-
-/**
- * \brief Dump to the screen, all of the configuration information
- *        from the "<Managed_Networks>" section of the configuration.
- *
- * @param[in] nets   A pointer to the structure that contains the 
- *                   information from the "<Managed_Networks>" section of the
- *                   configuration.
- **/
-void dump_config_managed_networks(struct config_managed_networks *nets)
-{
-	printf("-!-!-!-!- Managed Networks -!-!-!-!-\n");
-	while (nets != NULL)
-	{
-		dump_config_managed_network(nets);
-		nets = nets->next;
-	}
-	printf("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!\n");
-}
-
-/**
  * \brief Dump to the screen, all of the configuration information
  *        from the <Globals> section of the configuration.
  *
@@ -2532,9 +2413,6 @@ void delete_config_data()
 
   if (conf_trusted_servers)
 	  delete_config_trusted_servers(&conf_trusted_servers);
-
-  if (conf_managed_networks)
-    delete_config_managed_networks(&conf_managed_networks);
 
   if (conf_devices)
 	  delete_config_devices(&conf_devices);
@@ -2687,7 +2565,6 @@ void dump_config_data()
   dump_config_connections(conf_connections);
   dump_config_devices(conf_devices);
   dump_config_trusted_servers(conf_trusted_servers);
-  dump_config_managed_networks(conf_managed_networks);
   dump_config_plugins(conf_plugins);
   printf("=-=-=-=-=-=-=-=-=-=-=-=-=\n");
 }
@@ -2958,68 +2835,6 @@ int add_change_config_interface(struct xsup_interfaces *confif)
 	delete_config_interface(&cur);
 
 	return XDATACHANGED;
-}
-
-/**
- * \brief Take a managed network configuration structure and change it if it
- *        exists, or add it if it doesn't.
- *
- * @param[in] confmn   The managed network data that we want to either change, or
- *                     add to the managed network list.
- *
- * \retval XENONE on success
- * \retval XEMALLOC on memory allocation error
- * \retval XEGENERROR on general failure
- **/
-int add_change_config_managed_network(struct config_managed_networks *confmn)
-{
-	struct config_managed_networks *cur = NULL, *prev = NULL;
-
-	if (confmn == NULL) 
-	{
-		debug_printf(DEBUG_CONFIG_PARSE | DEBUG_CONFIG_WRITE, "Nothing passed in to %s()!\n", __FUNCTION__);
-		return XEGENERROR;
-	}
-
-	// If we don't have any profiles currently in memory.
-	if (conf_managed_networks == NULL)
-	{
-		conf_managed_networks = confmn;
-		
-		return XENONE;
-	}
-
-	if (strcmp(conf_managed_networks->ou, confmn->ou) == 0)
-	{
-		// The first node is the one we are changing.
-		confmn->next = conf_managed_networks->next;
-		delete_config_managed_networks(&conf_managed_networks);
-		conf_managed_networks = confmn;
-		return XENONE;
-	}
-
-	cur = conf_managed_networks->next;
-	prev = conf_managed_networks;
-
-	while ((cur != NULL) && (strcmp(cur->ou, confmn->ou) != 0))
-	{
-		prev = cur;
-		cur = cur->next;
-	}
-
-	if (cur == NULL)
-	{
-		// It is an addition.
-		prev->next = confmn;
-		return XENONE;
-	}
-
-	// Otherwise, we need to replace the node that cur points to.
-	confmn->next = cur->next;
-	prev->next = confmn;
-	delete_config_managed_networks(&cur);
-
-	return XENONE;
 }
 
 /**

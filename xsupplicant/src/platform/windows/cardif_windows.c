@@ -1019,7 +1019,6 @@ int cardif_init(context *ctx, char driver)
       return XEMALLOC;
     }
 
-  //wireless = &cardif_windows_wireless_driver;
 #if 1
   sockData->osver = cardif_windows_get_os_ver();
   switch (sockData->osver)

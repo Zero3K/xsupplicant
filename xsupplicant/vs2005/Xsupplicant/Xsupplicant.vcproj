@@ -3001,10 +3001,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\platform\windows\win_platform_calls.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\platform\windows\windows_eapol_ctrl.cpp"
 				>
 				<FileConfiguration
@@ -3500,10 +3496,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\platform\windows\win_ip_manip.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\platform\windows\win_platform_calls.h"
 				>
 			</File>
 			<File

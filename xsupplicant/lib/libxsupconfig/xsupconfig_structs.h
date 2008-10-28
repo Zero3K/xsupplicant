@@ -31,12 +31,11 @@
     1. update initialize_config_<struct>
     2. update delete_config_<struct>
     3. update dump_config_<struct> if it exists
-    4. modify the grammar to account for the new fields (config_grammar.y)
-    5. modify the lexicon for the new tokens (config_lexicon.l)
-    6. add the code to have it written to a file in libxsupconfwrite.
-    7. if it is a required piece to make an authentication work, add it to
+    4. modify libxsupconfig to understand new tags in the config file.
+    5. add the code to have it written to a file in libxsupconfwrite.
+    6. if it is a required piece to make an authentication work, add it to
         libxsupconfcheck.
-	8. add password return to config_get_pwd_from_profile().
+	7. add password return to config_get_pwd_from_profile().
 */
 
 typedef enum {RES_UNSET, RES_YES, RES_NO} sess_res;
@@ -97,9 +96,9 @@ struct config_eap_tls
 
 };
 
-#define EAP_FAST_PROVISION_ALLOWED			BIT(0)
-#define EAP_FAST_PROVISION_ANONYMOUS		BIT(1)
-#define EAP_FAST_PROVISION_AUTHENTICATED	BIT(2)
+#define EAP_FAST_PROVISION_ALLOWED			BIT(0)		// Should we allow the server to send us a new PAC?
+#define EAP_FAST_PROVISION_ANONYMOUS		BIT(1)		// Should we allow anonymous provisioning?
+#define EAP_FAST_PROVISION_AUTHENTICATED	BIT(2)		// Should we allow authenticted (certificate based) provisioning?
 
 // All of the variables that are needed to successfully complete an
 // EAP-FAST authentication.
@@ -397,18 +396,6 @@ struct xsup_devices {
 	struct xsup_interfaces *interf;
 };
 
-struct config_managed_networks {
-	char *ou;
-	char *key;
-	uint32_t serialid;
-	char *update_url;
-	uint8_t auto_update;
-	uint16_t update_freq;
-	char *last_update;
-
-	struct config_managed_networks *next;
-};
-
 struct config_plugins {
   struct config_plugins *next;
   char *name;
@@ -424,7 +411,6 @@ typedef struct config_trusted_servers config_trusted_servers;
 typedef struct config_trusted_server config_trusted_server;
 typedef struct xsup_devices config_devices;
 typedef struct xsup_interfaces config_interfaces;
-typedef struct config_managed_networks config_managed_networks;
 typedef struct config_plugins config_plugins;
 
 typedef struct config_eap_tls config_eap_tls;

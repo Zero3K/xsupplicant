@@ -1698,7 +1698,7 @@ static int cardif_windows_wmi_call_async(context *ctx, char *cmdname, char *call
 		}
 	}
 
-	sprintf(&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
+	sprintf((char *)&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
 	mbstowcs((wchar_t *)&lpath, apath, strlen(apath)+1);
 
 	IntPath = SysAllocString((OLECHAR *)&lpath);
@@ -1821,7 +1821,7 @@ static int cardif_windows_wmi_call(context *ctx, char *cmdname)
 		}
 	}
 
-	sprintf(&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
+	sprintf((char *)&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
 	mbstowcs((wchar_t *)&lpath, apath, strlen(apath)+1);
 
 	IntPath = SysAllocString((OLECHAR *)&lpath);
@@ -2010,7 +2010,7 @@ int cardif_windows_wmi_set_static_ip(context *ctx, char *ipaddr, char *netmask)
 		}
 	}
 
-	sprintf(&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
+	sprintf((char *)&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
 	mbstowcs((wchar_t *)&lpath, apath, strlen(apath)+1);
 
 	IntPath = SysAllocString((OLECHAR *)&lpath);
@@ -2193,7 +2193,7 @@ int cardif_windows_wmi_enable_static(context *ctx, char *ipaddr, char *netmask)
 		}
 	}
 
-	sprintf(&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
+	sprintf((char *)&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
 	mbstowcs((wchar_t *)&lpath, apath, strlen(apath)+1);
 
 	IntPath = SysAllocString((OLECHAR *)&lpath);
@@ -2378,7 +2378,7 @@ int cardif_windows_wmi_set_dns_domain(context *ctx, char *newdomain)
 		}
 	}
 
-	sprintf(&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
+	sprintf((char *)&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
 	mbstowcs((wchar_t *)&lpath, apath, strlen(apath)+1);
 
 	IntPath = SysAllocString((OLECHAR *)&lpath);
@@ -2541,7 +2541,7 @@ int cardif_windows_wmi_set_dns_servers(context *ctx, char *dns1, char *dns2, cha
 		}
 	}
 
-	sprintf(&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
+	sprintf((char *)&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
 	mbstowcs((wchar_t *)&lpath, apath, strlen(apath)+1);
 
 	IntPath = SysAllocString((OLECHAR *)&lpath);
@@ -2788,7 +2788,7 @@ int cardif_windows_wmi_set_static_gw(context *ctx, char *gwip)
 		}
 	}
 
-	sprintf(&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
+	sprintf((char *)&apath, "Win32_NetworkAdapterConfiguration.Index='%d'", sockData->wmiIntIdx);
 	mbstowcs((wchar_t *)&lpath, apath, strlen(apath)+1);
 
 	IntPath = SysAllocString((OLECHAR *)&lpath);
