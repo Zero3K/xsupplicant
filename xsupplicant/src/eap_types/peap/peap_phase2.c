@@ -490,9 +490,9 @@ uint8_t peap_phase2_init(eap_type_data *eapdata)
 void peap_phase2_process(eap_type_data *eapdata, uint8_t *indata, 
 			 uint16_t insize)
 {
-  struct tls_vars *mytls_vars;
-  struct phase2_data *p2d;
-  struct config_eap_peap *peapconf;
+  struct tls_vars *mytls_vars = NULL;
+  struct phase2_data *p2d = NULL;
+  struct config_eap_peap *peapconf = NULL;
   int res = 0;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))

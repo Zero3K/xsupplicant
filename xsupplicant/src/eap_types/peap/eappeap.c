@@ -51,9 +51,9 @@
  ************************************************************************/
 uint8_t eappeap_init(eap_type_data *eapdata)
 {
-  struct tls_vars *mytls_vars;
-  struct config_eap_peap *peapconf;
-  struct config_globals *globals;
+  struct tls_vars *mytls_vars = NULL;
+  struct config_eap_peap *peapconf = NULL;
+  struct config_globals *globals = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;

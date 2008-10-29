@@ -48,6 +48,7 @@ void eapfast_phase2_init(eap_type_data *eapdata)
   struct tls_vars *mytls_vars = NULL;
   struct eapfast_phase2 *phase2 = NULL;
   struct config_eap_fast *fastconf = NULL;
+  context *ctx = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -105,8 +106,14 @@ void eapfast_phase2_init(eap_type_data *eapdata)
   phase2->sm->methodState = INIT;
   if (fastconf->innerid != NULL)
     {
-      phase2->sm->ident = strdup(fastconf->innerid);
+      phase2->sm->ident = fastconf->innerid;
     }
+
+  ctx = event_core_get_active_ctx();
+  if ((ctx != NULL) && (ctx->prof != NULL) && (ctx->prof->temp_username != NULL))
+  {
+	  phase2->sm->ident = ctx->prof->temp_username;
+  }
 
   eap_sm_run(phase2->sm);
 }
