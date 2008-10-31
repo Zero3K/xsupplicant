@@ -389,7 +389,7 @@ uint16_t eapfast_phase2_process_pac_type(uint8_t *indata, uint16_t *pac_type)
 
   (*pac_type) = ntohs(pacinfo->pac_type);
 
-  return sizeof(struct pac_info_pac_type)+4;
+  return ntohs(pacinfo->length)+4;
 }
 
 /*******************************************************************
