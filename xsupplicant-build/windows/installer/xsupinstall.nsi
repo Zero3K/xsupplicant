@@ -328,7 +328,7 @@ Section "XSupplicant (required)"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XCert.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XInnerProtocol.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XProtocol.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageFASTInnerProtocol.ui
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageFASTInnerProtocol.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageFinished.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageIPOptions.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageNetworkType.ui"
