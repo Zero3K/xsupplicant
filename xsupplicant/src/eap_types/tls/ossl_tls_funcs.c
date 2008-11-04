@@ -663,7 +663,15 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 #endif
 
   // If there are more fragments coming, our response should be an ACK.
-  if (temp & EAPTLS_MORE_FRAGS) mytls_vars->send_ack = TRUE;
+  if ((temp & EAPTLS_MORE_FRAGS) == EAPTLS_MORE_FRAGS) 
+  {
+	  debug_printf(DEBUG_AUTHTYPES, "More fragments are expected, will send an ACK.\n");
+	  mytls_vars->send_ack = TRUE;
+  }
+  else
+  {
+	  mytls_vars->send_ack = FALSE;
+  }
 
   mytls_vars->in_so_far += packet_size;
   
@@ -689,7 +697,7 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
           return DONE;
         }
 
-      debug_printf(DEBUG_TLS_CORE, "Writing %d byte(s) of data to OpenSSL:\n",
+      debug_printf(DEBUG_TLS_CORE, "Writing %d byte(s) of data to OpenSSL.\n",
 		   mytls_vars->expected_in);
 
 	  mytls_vars->in_so_far = 0;
