@@ -7,9 +7,6 @@
  * \file xsupconfwrite_eap_mschapv2.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_eap_mschapv2.c,v 1.5 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>
@@ -134,9 +131,9 @@ xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *ch
 		}
 	}
 
-	if ((write_all == TRUE) || (chap2data->ias_quirk != FALSE))
+	if ((write_all == TRUE) || (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK)))
 	{
-		if (chap2data->ias_quirk != FALSE)
+		if (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
 		{
 			if (xsupconfwrite_common_newSibling(chap2node, "IAS_Quirk", "no") == NULL)
 			{
@@ -153,6 +150,32 @@ xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *ch
 			{
 #ifdef WRITE_EAP_MSCHAPV2_DEBUG
 				printf("Couldn't create <IAS_Quirk> node for MSCHAPv2!\n");
+#endif
+				xmlFreeNode(chap2node);
+				return NULL;
+			}
+		}
+	}
+
+	if ((write_all == TRUE) || (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_VOLATILE)))
+	{
+		if (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_VOLATILE))
+		{
+			if (xsupconfwrite_common_newSibling(chap2node, "Volatile", "yes") == NULL)
+			{
+#ifdef WRITE_EAP_MSCHAPV2_DEBUG
+				printf("Couldn't allocate memory to store <Volatile> node!\n");
+#endif
+				xmlFreeNode(chap2node);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xsupconfwrite_common_newSibling(chap2node, "Volatile", "no") == NULL)
+			{
+#ifdef WRITE_EAP_MSCHAPV2_DEBUG
+				printf("Couldn't allocate memory to store <Volatile> node!\n");
 #endif
 				xmlFreeNode(chap2node);
 				return NULL;

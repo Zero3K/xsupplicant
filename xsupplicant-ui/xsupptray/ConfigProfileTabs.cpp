@@ -560,7 +560,7 @@ bool ConfigProfileTabs::saveEAPMSCHAPv2Inner(struct config_eap_method **mymeth)
 		mscv2 = (struct config_eap_mschapv2 *)myeap->method_data;
 		
 		// Set some defaults.
-		mscv2->ias_quirk = FALSE;
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
 		mscv2->nthash = NULL;
 		mscv2->password = NULL;
 	}

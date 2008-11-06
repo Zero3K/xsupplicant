@@ -153,31 +153,71 @@ void *xsupconfig_parse_eap_mschapv2_nt_pwd_hash(void **attr, xmlNodePtr node)
 
 void *xsupconfig_parse_eap_mschapv2_ias_quirk(void **attr, xmlNodePtr node)
 {
+  char *value = NULL;
   struct config_eap_mschapv2 *mscv2 = NULL;
   uint8_t result = 0;
-  char *value = NULL;
+
+  mscv2 = (struct config_eap_mschapv2 *)(*attr);
 
   value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("IAS Quirk = %s\n", value);
+  printf("IAS Quirk : %s\n", value);
 #endif
 
-  mscv2 = (*attr);
   result = xsupconfig_common_yesno(value);
-
-  if (result > 1)
+ 
+    if (result == 1)
     {
-      xsupconfig_common_log("Didn't understand value '%s' in the IAS Quirk tag. "
-             "Defaulting to no.  (Config file line %ld)\n", (char *)value,
-	     xsupconfig_parse_get_line_num());
-      mscv2->ias_quirk = FALSE;
+      SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
     }
   else
     {
-      mscv2->ias_quirk = result;
+		xsupconfig_common_log("Unknown value for <IAS_Quirk> at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
     }
-  
+
+  FREE(value);
+
+  return mscv2;
+}
+
+void *xsupconfig_parse_eap_mschapv2_volatile(void **attr, xmlNodePtr node)
+{
+  char *value = NULL;
+  struct config_eap_mschapv2 *mscv2 = NULL;
+  uint8_t result = 0;
+
+  mscv2 = (struct config_eap_mschapv2 *)(*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Volatile : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for Volatile at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
+    }
+
   FREE(value);
 
   return mscv2;
@@ -189,6 +229,7 @@ parser eap_mschapv2[] = {
   {"NT_Password_Hash", NULL, FALSE, OPTION_ANY_CONFIG,
    &xsupconfig_parse_eap_mschapv2_nt_pwd_hash},
   {"IAS_Quirk", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_ias_quirk},
+  {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_volatile},
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
   {NULL, NULL, FALSE, 0, NULL}};

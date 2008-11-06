@@ -61,6 +61,7 @@ xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method,
 {
 	xmlNodePtr eapnode = NULL;
 	xmlNodePtr eapdata = NULL;
+	struct config_eap_mschapv2 *mscv2 = NULL;
 		
 	if (method == NULL) return NULL;
 
@@ -117,7 +118,13 @@ xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method,
 		break;
 
 	case EAP_TYPE_MSCHAPV2:
-		eapdata = xsupconfwrite_eap_mschapv2_create_tree(method->method_data, write_all);
+		mscv2 = (struct config_eap_mschapv2 *)method->method_data;
+
+		// Don't write the config out if it is flagged volatile.
+		if (!TEST_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE))
+		{
+			eapdata = xsupconfwrite_eap_mschapv2_create_tree(method->method_data, write_all);
+		}
 		break;
 
 	case EAP_TYPE_TNC:

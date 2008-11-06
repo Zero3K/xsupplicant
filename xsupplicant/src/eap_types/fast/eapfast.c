@@ -517,11 +517,169 @@ void eapfast_parse_tls(struct tls_vars *mytls_vars, uint8_t *packet)
     }
 }
 
-/***************************************************************
+void eapfast_process_phase2(eap_type_data *eapdata, int buffer)
+{
+  uint8_t *tls_type = NULL, *resbuf = NULL;
+  uint8_t fast_version = 0;
+  struct tls_vars *mytls_vars = NULL;
+  struct eapfast_phase2 *phase2 = NULL;
+  uint8_t *aid = NULL;
+  uint16_t aid_len = 0, resout = 0;
+  int bufsiz = 0;
+  struct config_eap_fast *fastconf = NULL;
+  context *ctx = NULL;
+  uint8_t *temp = NULL;
+
+  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((eapdata->eap_data != NULL),
+		   "eapdata->eap_data != NULL", FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return;
+    }
+
+  if (!xsup_assert((eapdata->eap_conf_data != NULL),
+		   "eapdata->eap_conf_data != NULL", FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return;
+    }
+
+  fastconf = (struct config_eap_fast *)eapdata->eap_conf_data;
+  mytls_vars = eapdata->eap_data;
+
+  if (buffer == 1)
+  {
+      // Handle phase 2 stuff.
+      resout = eap_type_common_get_eap_length(eapdata->eapReqData);
+
+      if (tls_funcs_buffer(eapdata->eap_data, 
+			   &eapdata->eapReqData[sizeof(struct eap_header)],
+			   resout) != XENONE)
+	{
+	  debug_printf(DEBUG_NORMAL, "There was an error buffering data "
+		       "fragments.  Discarding fragment.\n");
+	  eapdata->ignore = FALSE;
+	  return;
+	}
+ 
+
+      bufsiz = tls_funcs_decrypt_ready(eapdata->eap_data);
+      debug_printf(DEBUG_AUTHTYPES, "Decrypt ready returned : %d\n", bufsiz);
+
+  }
+  else
+  {
+	  bufsiz = 100;
+  }
+      switch (bufsiz)
+	{
+	case 0:
+	  // Nothing to do yet.
+	  break;
+
+	case -1:
+	  // Got an error.  Discard the frame.
+	  eap_type_common_fail(eapdata);
+	  break;
+
+	default:
+	  resbuf = Malloc(bufsiz);
+	  if (resbuf == NULL)
+	    {
+	      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory needed to "
+			   "store decrypted data!\n");
+	      eap_type_common_fail(eapdata);
+	      break;
+	    }
+
+	  resout = bufsiz;
+
+	  if (tls_funcs_decrypt(eapdata->eap_data, resbuf, &resout) != XENONE)
+	    {
+	      debug_printf(DEBUG_NORMAL, "Decryption failed!\n");
+	      eap_type_common_fail(eapdata);
+	      break;
+	    }
+
+	  debug_printf(DEBUG_AUTHTYPES, "Inner dump (%d) :\n", resout);
+	  debug_hex_dump(DEBUG_AUTHTYPES, resbuf, resout);
+	  eapfast_phase2_process(eapdata, resbuf, resout);
+
+	  FREE(resbuf);
+	  break;
+	}
+}
+
+/**
+ * \brief Check our phase 2 data, and make sure that there is an MS-CHAPv2 configuration available.
+ *		  If there isn't, then chain one on, mark it volatile, and flag it as a provisioning configuration.
+ *		  If there is, then flag it as a provisioning configuration.
+ **/
+void eapfast_check_and_build_mschapv2(eap_type_data *eapdata)
+{
+  struct config_eap_fast *fastconf = NULL;
+  struct config_eap_mschapv2 *mscv2 = NULL;
+  struct config_eap_method *eap = NULL;
+
+  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((eapdata->eap_data != NULL),
+		   "eapdata->eap_data != NULL", FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return;
+    }
+
+  if (!xsup_assert((eapdata->eap_conf_data != NULL),
+		   "eapdata->eap_conf_data != NULL", FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return;
+    }
+
+  fastconf = (struct config_eap_fast *)eapdata->eap_conf_data;
+  
+  if ((fastconf->phase2->method_num != EAP_TYPE_MSCHAPV2) && (fastconf->phase2->next == NULL))
+  {
+	  debug_printf(DEBUG_AUTHTYPES, "Creating temp MS-CHAPv2 config for provisioning.\n");
+	  fastconf->phase2->next = Malloc(sizeof(struct config_eap_method));
+	  if (fastconf->phase2->next == NULL)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Unable to allocate memory needed to create the secondary MS-CHAPv2 config.\n");
+		  return;
+	  }
+
+	  eap = (struct config_eap_method *)fastconf->phase2->next;
+
+	  eap->method_num = EAP_TYPE_MSCHAPV2;
+
+	  eap->method_data = Malloc(sizeof(struct config_eap_mschapv2));
+	  if (eap->method_data == NULL)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Unable to allocate memory needed to create the secondary MS-CHAPv2 config.\n");
+		  return;
+	  }
+
+	  mscv2 = (struct config_eap_mschapv2 *)eap->method_data;
+	  SET_FLAG(mscv2->flags, (FLAGS_EAP_MSCHAPV2_VOLATILE | FLAGS_EAP_MSCHAPV2_FAST_PROVISION));
+  }
+  else
+  {
+	  mscv2 = (struct config_eap_mschapv2 *)fastconf->phase2->method_data;
+	  SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_FAST_PROVISION);
+  }
+}
+
+/**
+ * \brief Process an EAP-FAST packet.
  *
- *  Process an EAP-FAST packet.
- *
- ***************************************************************/
+ * @param[in] eapdata   A structure that contains all of the information that should be needed to complete
+ *						the EAP-FAST authentication.
+ **/
 void eapfast_process(eap_type_data *eapdata)
 {
   uint8_t *tls_type = NULL, *resbuf = NULL;
@@ -628,6 +786,7 @@ void eapfast_process(eap_type_data *eapdata)
 						  debug_printf(DEBUG_NORMAL, "Doing unauthenticated provisioning mode.\n");
 						  tls_funcs_set_cipher_list(mytls_vars, "ADH-AES128-SHA");
 						  phase2->anon_provisioning = TRUE;
+						  eapfast_check_and_build_mschapv2(eapdata);
 					  }
 				  }
 				  else
@@ -669,63 +828,28 @@ void eapfast_process(eap_type_data *eapdata)
       eapdata->methodState = tls_funcs_process(eapdata->eap_data,
 					       eapdata->eapReqData);
 
-      if ((mytls_vars->handshake_done == TRUE) && (phase2->provisioning == TRUE))
-		mytls_vars->send_ack = TRUE;
+	  if (mytls_vars->handshake_done == TRUE)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Handshake done, checking for additional data.\n");
+
+		  if (tls_funcs_get_embedded_appdata(mytls_vars, &temp, &resout) != 0)
+		  {
+			  debug_printf(DEBUG_AUTHTYPES, "Unable to read any embedded app data.\n");
+			  mytls_vars->send_ack = TRUE;
+		  }
+		  else
+		  {
+			  debug_printf(DEBUG_AUTHTYPES, "Embedded App Data (%d) :\n", resout);
+			  debug_hex_dump(DEBUG_AUTHTYPES, temp, resout);
+
+			  eapfast_phase2_process(eapdata, temp, resout);
+		  }
+	  }
+
     }
   else
     {
-      // Handle phase 2 stuff.
-      resout = eap_type_common_get_eap_length(eapdata->eapReqData);
-
-      if (tls_funcs_buffer(eapdata->eap_data, 
-			   &eapdata->eapReqData[sizeof(struct eap_header)],
-			   resout) != XENONE)
-	{
-	  debug_printf(DEBUG_NORMAL, "There was an error buffering data "
-		       "fragments.  Discarding fragment.\n");
-	  eapdata->ignore = FALSE;
-	  return;
-	}
-
-      bufsiz = tls_funcs_decrypt_ready(eapdata->eap_data);
-      debug_printf(DEBUG_AUTHTYPES, "Decrypt ready returned : %d\n", bufsiz);
-      switch (bufsiz)
-	{
-	case 0:
-	  // Nothing to do yet.
-	  break;
-
-	case -1:
-	  // Got an error.  Discard the frame.
-	  eap_type_common_fail(eapdata);
-	  break;
-
-	default:
-	  resbuf = Malloc(bufsiz);
-	  if (resbuf == NULL)
-	    {
-	      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory needed to "
-			   "store decrypted data!\n");
-	      eap_type_common_fail(eapdata);
-	      break;
-	    }
-
-	  resout = bufsiz;
-
-	  if (tls_funcs_decrypt(eapdata->eap_data, resbuf, &resout) != XENONE)
-	    {
-	      debug_printf(DEBUG_NORMAL, "Decryption failed!\n");
-	      eap_type_common_fail(eapdata);
-	      break;
-	    }
-
-	  debug_printf(DEBUG_AUTHTYPES, "Inner dump (%d) :\n", resout);
-	  debug_hex_dump(DEBUG_AUTHTYPES, resbuf, resout);
-	  eapfast_phase2_process(eapdata, resbuf, resout);
-
-	  FREE(resbuf);
-	  break;
-	}
+		eapfast_process_phase2(eapdata, TRUE);
     }
 }
 

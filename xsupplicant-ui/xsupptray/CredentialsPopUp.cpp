@@ -575,6 +575,7 @@ void CredentialsPopUp::slotOkayBtn()
 {
 	config_connection *cconf = NULL;
 	char *intName = NULL;
+	int result = 0;
 
 	if (m_doingWEP == true)
 	{
@@ -719,10 +720,26 @@ void CredentialsPopUp::slotOkayBtn()
 			}
 		}
 
-		// Set our username/password.
-		if (xsupgui_request_set_connection_upw(m_connName.toAscii().data(), m_pUsername->text().toAscii().data(), m_pPassword->text().toAscii().data()) != XENONE)
+		if (isPINType() == true)
 		{
-			QMessageBox::critical(this, tr("Error"), tr("Unable to set your username and password."));
+			result = xsupgui_request_set_connection_upw(m_connName.toAscii().data(), NULL, m_pPassword->text().toAscii().data());
+		}
+		else
+		{
+			result = xsupgui_request_set_connection_upw(m_connName.toAscii().data(), m_pUsername->text().toAscii().data(), m_pPassword->text().toAscii().data());
+		}
+
+		// Set our username/password.
+		if (result != XENONE)
+		{
+			if (isPINType() == true)
+			{
+				QMessageBox::critical(this, tr("Error"), tr("Unable to set your PIN."));
+			}
+			else
+			{
+				QMessageBox::critical(this, tr("Error"), tr("Unable to set your username and password."));
+			}
 		}
 		else
 		{

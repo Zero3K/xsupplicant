@@ -27,6 +27,7 @@
 #include "../../eap_types/eap_type_common.h"
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
+#include "../../platform/cardif.h"
 
 #ifndef WINDOWS
 #include <netinet/in.h>
@@ -45,6 +46,79 @@
 static uint8_t *peer_challenge = NULL;
 static uint8_t *authenticator_challenge = NULL;
 static uint8_t eap_fast_mode = 0;
+
+void eapmschapv2_p2_pwd_callback(void *ctxptr, struct eap_sm_vars *p2sm, uint8_t **packet, uint16_t *pktsize)
+{
+	context *ctx = NULL;
+	struct eap_mschapv2_stored_frame *myFrame = NULL;
+
+	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE)) return;
+
+	debug_printf(DEBUG_AUTHTYPES, "%s()\n", __FUNCTION__);
+
+	ctx = ctxptr;
+
+	// Clear the callback.
+	ctx->p2_pwd_callback = NULL;
+
+	myFrame = ctx->pwd_callback_data;
+
+	if (!xsup_assert((myFrame != NULL), "myFrame != NULL", FALSE)) return;
+
+	(*packet) = myFrame->eappkt;
+	(*pktsize) = myFrame->eaplen;
+
+	myFrame->eappkt = NULL;  // This is okay, because we passed the pointer out.
+
+	// Back up our EAP ID so that we don't discard when we reprocess this frame.
+	p2sm->lastId-=3;
+	p2sm->ignore = FALSE;
+}
+
+/**
+ * \brief This callback will be called when a password is set.  We need to reset the context to process the frame, kick it off,
+ *        and clear the callback.  (Not necessarily in that order. ;)
+ *
+ * @param[in] ctxptr   A void pointer to the context that we are processing for.
+ **/
+void eapmschapv2_pwd_callback(void *ctxptr)
+{
+	context *ctx = NULL;
+	struct eap_mschapv2_stored_frame *myFrame = NULL;
+	void *temp = NULL;
+
+	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE)) return;
+
+	ctx = ctxptr;
+
+	event_core_set_active_ctx(ctx);
+
+	// Clear the callback.
+	ctx->pwd_callback = NULL;
+
+	myFrame = ctx->pwd_callback_data;
+
+	if (!xsup_assert((myFrame != NULL), "myFrame != NULL", FALSE)) return;
+
+	temp = ctx->recvframe;
+
+	ctx->recvframe = myFrame->frame;
+	ctx->recv_size = myFrame->length;
+
+	myFrame->frame = NULL;   // This is okay, because we passed the pointer to ctx->recvframe.
+
+	// Back up our EAP ID so that we don't discard when we reprocess this frame.
+	ctx->eap_state->lastId--;
+	ctx->statemachine->eapolEap = TRUE;
+	ctx->eap_state->ignore = FALSE;   // Don't ignore anymore.
+
+	SET_FLAG(ctx->flags, INT_REPROCESS);
+
+	eapol_execute(ctx);   // Kick it off.
+
+	FREE(ctx->recvframe);
+	ctx->recvframe = temp;
+}
 
 /******************************************************************
  *
@@ -119,11 +193,13 @@ void eapmschapv2_set_eap_fast_anon_mode(eap_type_data *eapdata, uint8_t enable)
   mscv2data->eap_fast_mode = enable;
 }
 
-/******************************************************************
+/**
+ * \brief Execute the INIT functions for this EAP method.
  *
- * Execute the INIT functions for this EAP method.
- *
- ******************************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ * \retval XENONE on success.
+ **/
 int eapmschapv2_init(eap_type_data *eapdata)
 {
   struct mschapv2_vars *mscv2data = NULL;
@@ -166,39 +242,73 @@ int eapmschapv2_init(eap_type_data *eapdata)
 	ctx = event_core_get_active_ctx();
 	if (ctx == NULL)
 	{
-      debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
+      debug_printf(DEBUG_NORMAL, "No context was available, so no password is available for EAP-MSCHAPv2!\n");
       eap_type_common_fail(eapdata);
       return XEGENERROR;
 	}
 
-	if (ctx->prof->temp_password == NULL)
-    {
-		if (eapconf->password == NULL)
+	if (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_FAST_PROVISION))
+	{
+		if (ctx->prof->temp_password == NULL)
+		 {
+			if (eapconf->password == NULL)
+			{
+				debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
+				eap_type_common_fail(eapdata);
+				return XEGENERROR;
+			}
+			else
+			{
+				mscv2data->password = _strdup(eapconf->password);
+			}
+	    }
+	  else
 		{
-			debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
+			mscv2data->password = _strdup(ctx->prof->temp_password);
+		}
+	}
+
+	if (eapdata->ident == NULL)
+	{
+		// The RADIUS server build in to my Cisco 1200 doesn't do an identity exchange as part of
+		// phase 2.  (When doing provisioning.) Since we need to know the identity, we will have to dig it out of the context.
+		// (ICK!)
+		if ((ctx == NULL) || (ctx->prof == NULL))
+		{
+			debug_printf(DEBUG_NORMAL, "No profile was bound to your inner EAP method!?  This shouldn't happen!\n");
 			eap_type_common_fail(eapdata);
-			return XEGENERROR;
+			return NULL;
+		}
+
+		if (ctx->prof->temp_username != NULL)
+		{
+			eapdata->ident = _strdup(ctx->prof->temp_username);
+		}
+		else if (ctx->prof->identity != NULL)
+		{
+			eapdata->ident = _strdup(ctx->prof->identity);
 		}
 		else
 		{
-			mscv2data->password = _strdup(eapconf->password);
+			// ACK!  We don't know a username to send!?
+			debug_printf(DEBUG_NORMAL, "Unable to determine a valid username to send to the server.  Aborting the authentication.\n");
+			eap_type_common_fail(eapdata);
+			return NULL;
 		}
-    }
-  else
-  {
-	  mscv2data->password = _strdup(ctx->prof->temp_password);
-  }
+	}
 
   eap_type_common_init_eap_data(eapdata);
 
   return XENONE;
 }
 
-/******************************************************************
+/**
+ * \brief Verify that this packet is really an EAP-MSCHAPv2 packet.
  *
- * Verify that this packet is really an EAP-MSCHAPv2 packet.
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an EAP-MSCHAPv2.
  *
- ******************************************************************/
+ **/
 void eapmschapv2_check(eap_type_data *eapdata)
 {
   struct eap_header *myeap = NULL;
@@ -253,7 +363,9 @@ void eapmschapv2_check(eap_type_data *eapdata)
       return;
     }
 
-  if (eapconf->password == NULL)
+  // If we are running in EAP-FAST provisioning mode, it is okay if we don't have a password, we
+  // will prompt for one.
+  if ((eapconf->password == NULL) && (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_FAST_PROVISION)))
     {
 		ctx = event_core_get_active_ctx();
 		if (ctx == NULL)
@@ -301,12 +413,14 @@ void eapmschapv2_strip_backslash(char *longname, char **shortname)
 	(*shortname) = _strdup(substr+1);   // Ick!  Pointer math. ;)
 }
 
-/******************************************************************
+/**
+ * \brief Process an MSCHAPv2 challenge message.  It should return one of the
+ *			eapMethod state values.
  *
- *  Process an MSCHAPv2 challenge message.  It should return one of the
- *  eapMethod state values.
- *
- ******************************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ *  \retval uint8_t  one of EAP_FAIL or MAY_CONT.
+ **/
 uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
 {
   struct mschapv2_challenge *challenge = NULL;
@@ -345,7 +459,7 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
   // This value should *ALWAYS* be 0x10.
   if (challenge->Value_Size != 0x10)
     {
-      if (eapconf->ias_quirk == 1)
+      if (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
 	{
 	  debug_printf(DEBUG_NORMAL, "(EAP-MS-CHAPv2) Invalid Value-Size! "
 		       "(%d), forced to 0x10 (ias_quirk = yes)\n", 
@@ -439,12 +553,14 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
   return MAY_CONT;
 }
 
-/******************************************************************
+/**
+ * \brief Process a success message.  It should return one of the eapMethod state
+ *			values.
  *
- *  Process a success message.  It should return one of the eapMethod state
- *  values.
- *
- ******************************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ *  \retval uint8_t  one of EAP_FAIL or MAY_CONT.
+ **/
 uint8_t eapmschapv2_success(eap_type_data *eapdata)
 {
   struct mschapv2_success_request *success;
@@ -551,12 +667,14 @@ uint8_t eapmschapv2_success(eap_type_data *eapdata)
   return MAY_CONT;
 }
 
-/******************************************************************
+/**
+ * \brief Parse an MS-CHAPv2 error string in to the numeric failure value, 
+ *			and the text error value.
  *
- *  Parse an MS-CHAPv2 error string in to the numeric failure value, 
- *  and the text error value.
- *
- ******************************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ *  \retval uint8_t  one of EAP_FAIL or MAY_CONT.
+ **/
 uint8_t eapmschapv2_parse_error_string(char *err_string, uint16_t *errcode, 
 				       char **errtext)
 {
@@ -674,11 +792,13 @@ uint8_t eapmschapv2_parse_error_string(char *err_string, uint16_t *errcode,
   return XENONE;
 }
 
-/******************************************************************
+/**
+ * \brief Process a failure message.
  *
- *  Process a failure message.
- *
- ******************************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ *  \retval uint8_t  one of EAP_FAIL or MAY_CONT.
+ **/
 uint8_t eapmschapv2_failure(eap_type_data *eapdata)
 {
   struct mschapv2_fail_request *fail = NULL;
@@ -776,16 +896,41 @@ uint8_t eapmschapv2_failure(eap_type_data *eapdata)
   return EAP_FAIL;
 }
 
-/******************************************************************
+/**
+ * \brief Clean up the memory on the EAP-MSCHAPv2 data hook.
  *
- * Process an EAP-MSCHAPv2 packet, and develop the data needed for
- * the response.
+ * @param[in] cbdata   The callback data stored in the context that we need to free.
+ **/
+void eapmschapv2_cleanup_p2_datahook(void *cbdata)
+{
+  struct eap_mschapv2_stored_frame *myFrame = NULL;
+
+  // Because of the nature of GTC/OTP, it is possible that cleanup will get called on a NULL pointer.
+  // If that happens, silently move on.
+  if (cbdata == NULL) return;
+
+  myFrame = cbdata;
+
+  if (myFrame != NULL)
+  {
+	  FREE(myFrame->frame);
+  }
+}
+
+/**
+ * \brief Process an EAP-MSCHAPv2 packet, and develop the data needed for
+ *			the response.
  *
- ******************************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ *
+ **/
 void eapmschapv2_process(eap_type_data *eapdata)
 {
   struct config_eap_mschapv2 *eapconf = NULL;
   struct mschapv2_challenge *challenge = NULL;
+  context *ctx = NULL;
+  struct eap_mschapv2_stored_frame *myFrame = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -803,13 +948,78 @@ void eapmschapv2_process(eap_type_data *eapdata)
   if (eapdata->methodState == INIT)
     {
       if (eapmschapv2_init(eapdata) != XENONE)
-	{
-	  debug_printf(DEBUG_NORMAL, "Failed to properly initialize "
-		       "EAP-MSCHAPv2!\n");
-	  eapdata->methodState = EAP_FAIL;
-	  return;
-	}
+		{
+		  debug_printf(DEBUG_NORMAL, "Failed to properly initialize "
+			       "EAP-MSCHAPv2!\n");
+		  eapdata->methodState = EAP_FAIL;
+		  return;
+		}
+
+	  ctx = event_core_get_active_ctx();
+
+	  if (ctx == NULL)
+	  {
+		  // This shouldn't be possible, but....
+		  debug_printf(DEBUG_NORMAL, "NULL context in %s()!\n", __FUNCTION__);
+		  eap_type_common_fail(eapdata);
+		  return;
+	  }
+
+	  if ((eapconf->password == NULL) && (ctx->prof->temp_password == NULL))
+	  {
+	      debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2! (Trying to request one.)\n");
+		  if (ipc_events_request_eap_upwd("EAP-MSCHAPv2", "Please enter your password.") != IPC_SUCCESS)
+		  {
+			  debug_printf(DEBUG_NORMAL, "Couldn't request password from UI!  Failing.\n");
+			  eap_type_common_fail(eapdata);
+			  return;
+		  }
+		  else
+		  {
+			  eapdata->ignore = TRUE;       // Don't do anything just yet.
+			  eapdata->methodState = CONT;
+			  eapdata->decision = COND_SUCC;  // We may be able to succeed.
+
+			  if ((ctx != NULL) && (ctx->pwd_callback_data != NULL)) 
+			  {
+				  eapmschapv2_cleanup_p2_datahook(ctx->pwd_callback_data);
+				  FREE(ctx->pwd_callback_data);
+			  }
+
+			  ctx->pwd_callback_data = Malloc(sizeof(struct eap_mschapv2_stored_frame));
+			  if (ctx->pwd_callback_data != NULL)
+			  {
+				  myFrame = ctx->pwd_callback_data;
+				  myFrame->frame = Malloc(FRAMESIZE);
+	 			  if (myFrame->frame == NULL)
+					{
+						FREE(ctx->pwd_callback_data);
+					}
+					else
+					{
+						memcpy(myFrame->frame, ctx->recvframe, ctx->recv_size);
+						myFrame->length = ctx->recv_size;
+
+						myFrame->eaplen = eap_type_common_get_eap_length(eapdata->eapReqData);
+						myFrame->eappkt = Malloc(myFrame->eaplen);
+						if (myFrame->eappkt != NULL)
+						{
+							memcpy(myFrame->eappkt, eapdata->eapReqData, myFrame->eaplen);
+						}
+
+						ctx->pwd_callback = eapmschapv2_pwd_callback;
+						ctx->p2_pwd_callback = eapmschapv2_p2_pwd_callback;
+
+						// Since we return ignore, our EAP ID won't get updated.  But we need it to, so we
+						// update it manually here.  (That way we discard retransmissions.)
+						ctx->eap_state->lastId = ctx->eap_state->reqId;
+					}
+
+				  return;
+			}
+	  }
     }
+  }
 
   challenge = (struct mschapv2_challenge *)&eapdata->eapReqData[sizeof(struct eap_header)];
 
@@ -842,20 +1052,23 @@ void eapmschapv2_process(eap_type_data *eapdata)
     }
 }
 
-/*******************************************************************
+/**
+ * \brief Build a challenge response message.
  *
- *  Build a challenge response message.
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
  *
- *******************************************************************/
+ *  \retval ptr   to an EAP-MSCHAPv2 packet to send to the server.
+ **/
 uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
 {
-  struct mschapv2_vars *myvars;
-  struct config_eap_mschapv2 *eapconf;
-  struct mschapv2_response *response;
+  struct mschapv2_vars *myvars = NULL;
+  struct config_eap_mschapv2 *eapconf = NULL;
+  struct mschapv2_response *response = NULL;
   uint8_t *resp = NULL;
-  uint16_t respsize;
+  uint16_t respsize = 0;
   uint8_t eapid = 0;
-  struct eap_header *eap_header;
+  struct eap_header *eap_header = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return NULL;
@@ -874,6 +1087,13 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
 
   myvars = (struct mschapv2_vars *)eapdata->eap_data;
   eapconf = (struct config_eap_mschapv2 *)eapdata->eap_conf_data;
+
+  if (eapdata->ident == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "No identity available to EAP-MSCHAPv2!  Authentication will fail.\n");
+	  eap_type_common_fail(eapdata);
+	  return NULL;
+  }
 
   // 54 bytes is the length of the response, including MS-CHAPv2 header.
   respsize = 54+strlen(eapdata->ident)+sizeof(struct eap_header);
@@ -925,11 +1145,14 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
   return resp;
 }
 
-/******************************************************************
+/**
+ * \brief Build a success response message.
  *
- *  Build a success response message.
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
  *
- ******************************************************************/
+ *  \retval ptr   to a success reponse to send to the server.
+ **/
 uint8_t *eapmschapv2_success_resp(eap_type_data *eapdata)
 {
   struct mschapv2_vars *myvars;
@@ -986,18 +1209,21 @@ uint8_t *eapmschapv2_success_resp(eap_type_data *eapdata)
   return resp;
 }
 
-/**********************************************************************
+/**
+ * \brief Return a response to a failure message.
  *
- *  Return a response to a failure message.
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
  *
- **********************************************************************/
+ *  \retval ptr   a pointer to a failure packet to send to the server.
+ **/
 uint8_t *eapmschapv2_failure_resp(eap_type_data *eapdata)
 {
-  struct mschapv2_vars *myvars;
-  struct config_eap_mschapv2 *eapconf;
+  struct mschapv2_vars *myvars = NULL;
+  struct config_eap_mschapv2 *eapconf = NULL;
   uint8_t *resp = NULL;
   uint16_t respsize = 0;
-  struct eap_header *eap_header;
+  struct eap_header *eap_header = NULL;
   uint8_t eapid = 0;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -1159,7 +1385,7 @@ uint8_t *eapmschapv2_getKey(eap_type_data *eapdata)
  **********************************************************************/
 void eapmschapv2_deinit(eap_type_data *eapdata)
 {
-  struct mschapv2_vars *myvars;
+  struct mschapv2_vars *myvars = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;

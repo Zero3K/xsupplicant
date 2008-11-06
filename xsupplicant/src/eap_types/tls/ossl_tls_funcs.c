@@ -318,6 +318,9 @@ int tls_funcs_build_new_session(struct tls_vars *mytls_vars)
       return XETLSSTARTFAIL;
     }
 
+  SSL_set_options(mytls_vars->ssl, (SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_SINGLE_DH_USE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
+
+
   return XENONE;
 }
   
@@ -578,11 +581,55 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
   return XENONE;
 }
 
-/**************************************************************************
+/**
+ * \brief Get any appdata that was embedded in the handshake message.
  *
- * Process packets that aren't start packets.
+ * @param[in] mytls_vars   A structure containing all of the necessary state information for TLS.
+ * @param[out] buffer		A buffer for storing the embedded appdata.
+ * @param[out] size   The amount of data that is in the buffer.
  *
- **************************************************************************/
+ * \retval -1 on error, 0 on success.
+ **/
+int tls_funcs_get_embedded_appdata(struct tls_vars *mytls_vars, uint8_t **buffer, uint16_t *size)
+{
+	int result = 0;
+
+	if (!xsup_assert((buffer != NULL), "buffer != NULL", FALSE)) return -1;
+
+	if (!xsup_assert((size != NULL), "size != NULL", FALSE)) return -1;
+
+	if (!SSL_is_init_finished(mytls_vars->ssl))
+	{
+		debug_printf(DEBUG_TLS_CORE, "Attempted to get appdata from an SSL session that wasn't finished.\n");
+		return -1;
+	}
+
+	(*buffer) = Malloc(1000);	// Should be more than enough for our purposes!
+	if ((*buffer) == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to acquire a buffer to store embedded application data!\n");
+		return -1;
+	}
+
+	result = SSL_read(mytls_vars->ssl, (*buffer), 1000);
+	if (result <= 0)
+	{
+		debug_printf(DEBUG_AUTHTYPES, "No embedded application data found! (result = %d) - OpenSSL error : %d\n", result, SSL_get_error(mytls_vars->ssl, result));
+		free((*buffer));
+		(*buffer) = NULL;
+		(*size) = 0;
+		return -1;
+	}
+
+	(*size) = result;
+
+	return 0;
+}
+
+/**
+ * \brief Process packets that aren't start packets.
+ *
+ **/
 uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 				 uint8_t *eappacket)
 {
@@ -633,7 +680,7 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
   cur++;
   packet_size--;
 
-  if (temp & EAPTLS_LENGTH_INCL)
+  if ((temp & EAPTLS_LENGTH_INCL) == EAPTLS_LENGTH_INCL)
     {
       // Grab out the total size of the response.
       memcpy(&resp_size, cur, sizeof(uint32_t));
@@ -667,10 +714,6 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
   {
 	  debug_printf(DEBUG_AUTHTYPES, "More fragments are expected, will send an ACK.\n");
 	  mytls_vars->send_ack = TRUE;
-  }
-  else
-  {
-	  mytls_vars->send_ack = FALSE;
   }
 
   mytls_vars->in_so_far += packet_size;
@@ -776,6 +819,7 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 
       size = BIO_ctrl_pending(mytls_vars->ssl_out);
 
+	  debug_printf(DEBUG_AUTHTYPES, "BIO indicates there are %d byte(s) available to read.\n", size);
 	  if (size > 0)
 	  {
 		tempdata = Malloc(size);
@@ -815,16 +859,6 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 		FREE(tempdata);
 	  }
 	}
-#if 0
-      else
-	{
-	  if (size == 0)
-	    {
-
-	      debug_printf(DEBUG_TLS_CORE, "Nothing to return, ACKing!\n");
-		}
-    }
-#endif
 
   if (SSL_get_state(mytls_vars->ssl) == 0x0003)
     {
@@ -1663,6 +1697,18 @@ uint8_t *tls_funcs_gen_keyblock(struct tls_vars *mytls_vars, uint8_t first,
       return NULL;
     }
 
+  if (!mytls_vars->ssl->s3)
+  {
+	  debug_printf(DEBUG_NORMAL, "No SSL3 information found!\n");
+	  return NULL;
+  }
+
+  if (!SSL_get_session(mytls_vars->ssl))
+  {
+	  debug_printf(DEBUG_NORMAL, "No valid SSL session data found!\n");
+	  return NULL;
+  }
+
   debug_printf(DEBUG_TLS_CORE, "Using session key const of : %s\n",
                sesskey);
 
@@ -2073,6 +2119,20 @@ int tls_funcs_get_keyblock_len(struct tls_vars *mytls_vars)
   EVP_MD *hash = NULL;
   int len = 0;
 
+  if (!xsup_assert((mytls_vars != NULL), "mytls_vars != NULL", FALSE)) return -1;
+
+  if (mytls_vars->ssl == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "No SSL context available in %s()!\n", __FUNCTION__);
+	  return -1;
+  }
+
+  if (mytls_vars->ssl->enc_read_ctx == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "No enc_read_ctx available in %s()!\n", __FUNCTION__);
+	  return -1;
+  }
+
   key_material = (EVP_CIPHER *)mytls_vars->ssl->enc_read_ctx->cipher;
 #if OPENSSL_VERSION_NUMBER >= 0x00909000L
   hash = EVP_MD_CTX_md(mytls_vars->ssl->read_hash);
@@ -2097,6 +2157,12 @@ int tls_funcs_set_hello_extension(struct tls_vars *myvars, int type,
 {
 #ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 	debug_printf(DEBUG_AUTHTYPES, "Set hello extension.\n");
+	if (data == NULL)  // Don't do anything.
+	{
+		debug_printf(DEBUG_AUTHTYPES, "No hello extension data to set.  Ignoring.\n");
+		return 0;
+	}
+
   return SSL_set_hello_extension(myvars->ssl, type, data, len);
 #else
   return -1;

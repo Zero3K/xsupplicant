@@ -68,6 +68,13 @@ struct mschapv2_fail_request {
   uint8_t MsgField[0];
 };
 
+struct eap_mschapv2_stored_frame {
+	uint8_t *frame;
+	uint16_t length;
+	uint8_t *eappkt;
+	uint16_t eaplen;
+};
+
 // Define the failure codes listed in the internet draft standard.
 #define MSCHAPV2_RESTRICTED_LOGON_HOURS   646
 #define MSCHAPV2_ACCT_DISABLED            647

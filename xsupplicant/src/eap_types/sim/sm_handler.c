@@ -1124,7 +1124,9 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
       pinretries = buf[1] & 0x0f;
     }
 
-  //  if (!(buf2[13] & 0x80))
+  debug_printf(DEBUG_AUTHTYPES, "CHV output : \n");
+  debug_hex_printf(DEBUG_AUTHTYPES, buf, len);
+  if (!(buf[13] & 0x80))
     {
       if (pinretries == 0)
 	{
@@ -1170,9 +1172,9 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
 	  if ((pinretries-1) <= 0) return SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED;
 	  return SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS;
 	}
-    } //else {
-      //      debug_printf(DEBUG_SMARTCARD, "PIN not needed!\n");
-      //}
+    } else {
+            debug_printf(DEBUG_NORMAL, "PIN not needed!\n");
+    }
 
   // Now, get the IMSI
   if (cardio(card_hdl, USELECT_EF_IMSI, reader_mode, MODE3G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
@@ -1279,7 +1281,6 @@ int sm_handler_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
       // Success.
       s = buf+1;
       *res_len = *s;
-	  printf("reslen = %d\n", (*res_len));
       memcpy(c_sres, s+1, *s); 
       s += (*s+1);  // Step over TLV vectors
       memcpy(c_ck, s+1, *s);

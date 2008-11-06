@@ -47,11 +47,14 @@
 
 static uint8_t new_response = FALSE;
 
-/*****************************************************
+/**
+ * \brief Setup to handle GTC/OTP EAP requests
  *
- * Setup to handle OTP EAP requests
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
  *
- *****************************************************/
+ * \retval XENONE on success.
+ **/
 int eapotp_init(eap_type_data *eapdata)
 {
   // Do anything special that might be needed for this EAP type to work.
@@ -62,30 +65,34 @@ int eapotp_init(eap_type_data *eapdata)
   return XENONE;
 }
 
-/*****************************************************
+/**
+ * \brief Check to see if we are prepared to do an OTP authentication.
  *
- * Check to see if we are prepared to do an OTP authentication.
- *
- *****************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ **/
 void eapotp_check(eap_type_data *eapdata)
 {
   // For GTC and OTP, there really isn't anything to check.
 	eapdata->ignore = FALSE;
 }
 
-/*****************************************************
+/**
+ * \brief Respond to an OTP or GTC request.
  *
- * Respond to an OTP request.
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
  *
- *****************************************************/
+ * \retval PTR to a packet to return.  (NULL on failure.)
+ **/
 uint8_t *eapotp_buildResp(eap_type_data *eapdata)
 {
   struct eap_header *eaphdr = NULL;
   struct config_pwd_only *otpconf = NULL;
-  uint8_t *retdata;
+  uint8_t *retdata = NULL;
   uint16_t datasize, respofs = 0;
-  uint8_t reqId;
-  uint8_t eapType;
+  uint8_t reqId = 0;
+  uint8_t eapType = 0;
   context *ctx = NULL;
   char *pwd = NULL;
 
@@ -304,11 +311,12 @@ void eapotp_pwd_callback(void *ctxptr)
 	ctx->recvframe = temp;
 }
 
-/*****************************************************
+/**
+ * \brief Process GTC/OTP EAP Requests
  *
- * Process OTP EAP Requests
- *
- ******************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ **/
 void eapotp_process(eap_type_data *eapdata)
 {
   char *otp_chal = NULL;
@@ -374,6 +382,7 @@ void eapotp_process(eap_type_data *eapdata)
 		  debug_printf(DEBUG_NORMAL, "Couldn't request password from UI!  Failing.\n");
 		  eap_type_common_fail(eapdata);
 	      FREE(otp_chal);
+		  return;
 	  }
 	  else
 	  {
@@ -427,21 +436,27 @@ void eapotp_process(eap_type_data *eapdata)
   eapdata->decision = COND_SUCC;
 }
 
-/*******************************************************
+/**
+ * \brief Return any keying material that we may have.
  *
- * Return any keying material that we may have.
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
  *
- *******************************************************/
+ * \retval FALSE   there is no keying material from OTP or GTC.
+ **/
 uint8_t eapotp_isKeyAvailable(eap_type_data *eapdata)
 {
   return FALSE;   // No keys to return (ever)
 }
 
-/*******************************************************
+/**
+ * \brief Stub for key returning function.
  *
- * Stub for key returning function.
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
  *
- *******************************************************/
+ * \retval NULL   no keying material will be returned from OTP or GTC.
+ **/
 uint8_t *eapotp_getKey(eap_type_data *eapdata)
 {
   debug_printf(DEBUG_NORMAL, "There is an error in your build of Xsupplicant!"
@@ -471,13 +486,15 @@ void eapotp_cleanup(void *cbdata)
   }
 }
 
-/*******************************************************
- *
- * Clean up after ourselves.  This will get called when we get a packet that
+/**
+ * \brief Clean up after ourselves.  This will get called when we get a packet that
  * needs to be processed requests a different EAP type.  It will also be 
  * called on termination of the program.
  *
- *******************************************************/
+ * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
+ *											complete an OTP or GTC auth.
+ *
+ **/
 void eapotp_deinit(eap_type_data *eapdata)
 {
 	context *ctx = NULL;

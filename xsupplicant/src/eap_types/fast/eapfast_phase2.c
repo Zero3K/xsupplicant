@@ -29,20 +29,28 @@
 #include "../eap_type_common.h"
 #include "../tls/tls_funcs.h"
 #include "../mschapv2/eapmschapv2.h"
+#include "../../context.h"
 #include "eapfast.h"
 #include "eapfast_phase2.h"
 #include "eapfast_xml.h"
+
+#ifdef WINDOWS
+#include "../../event_core_win.h"
+#else
+#include "../../event_core.h"
+#endif
 
 static uint8_t result_tlv_needed = FALSE, result_tlv_included = FALSE;
 
 // Forward decls for things that need it.
 uint8_t *eapfast_phase2_gen_error_tlv(uint32_t, uint16_t);
 
-/***************************************************************
+/**
+ *  \brief Init phase 2 for EAP-FAST.
  *
- *  Init phase 2 for EAP-FAST.
- *
- ***************************************************************/
+ * @param[in] eapdata   A pointer to a structure that contains the information we need to complete phase 2 of the 
+ *						EAP-FAST authentication.
+ **/
 void eapfast_phase2_init(eap_type_data *eapdata)
 {
   struct tls_vars *mytls_vars = NULL;
@@ -104,6 +112,7 @@ void eapfast_phase2_init(eap_type_data *eapdata)
   phase2->sm->idleWhile = config_get_idleWhile();
   phase2->sm->curMethods = fastconf->phase2;
   phase2->sm->methodState = INIT;
+
   if (fastconf->innerid != NULL)
     {
       phase2->sm->ident = fastconf->innerid;
@@ -363,11 +372,14 @@ uint16_t eapfast_phase2_process_pac_opaque(uint8_t *indata,
   return (ntohs(fasttlv->length)+4);
 }
 
-/*******************************************************************
+/**
+ * \brief Process a PAC-Info, PAC-Type TLV.
  *
- *  Process a PAC-Info, PAC-Type TLV.
+ * @param[in] indata   The payload of a packet, starting with the PAC-Info, PAC-Type TLV.
+ * @param[out] pac_type   The value in the PAC-Type TLV.
  *
- *******************************************************************/
+ * \retval uint16_t  The number of bytes consumed.
+ **/
 uint16_t eapfast_phase2_process_pac_type(uint8_t *indata, uint16_t *pac_type)
 {
   struct pac_info_pac_type *pacinfo = NULL;
@@ -842,6 +854,13 @@ void eapfast_phase2_provision_gen_crypt(eap_type_data *eapdata)
 				    FAST_PROVISIONING_SESSION_KEY,
 				    FAST_PROVISIONING_SESSION_KEY_LEN);
 
+  if (keyblock == NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "Unable to generate cryptobinding keys!  Your authentication will fail.\n");
+	  eap_type_common_fail(eapdata);
+	  return;
+  }
+
   temp = &keyblock[offset_to_prov_keys];
 
   phase2->pkeys = Malloc(sizeof (struct provisioning_keys));
@@ -944,8 +963,10 @@ uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata,
     }
 
   eap_sm_run(phase2->sm);
+
+  eapdata->ignore = phase2->sm->ignore;
   
-  if (phase2->sm->eapRespData != NULL)
+  if ((phase2->sm->eapRespData != NULL) && (phase2->result_data != NULL))
     {
       // Build up the response data.
       eapsize = eap_type_common_get_eap_length(phase2->sm->eapRespData);
@@ -1971,6 +1992,20 @@ void eapfast_phase2_buildResp(eap_type_data *eapdata, uint8_t *result,
 
   mytls_vars = (struct tls_vars *)eapdata->eap_data;
   phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
+
+  if (eapdata->ignore == TRUE)
+  {
+	  (*result) = NULL;
+	  (*result_size) = 0;
+
+	  if (phase2->result_data != NULL)
+	  {
+		  FREE(phase2->result_data);
+		  phase2->result_size = 0;
+	  }
+
+	  return;
+  }
       
   if (phase2->result_data == NULL)
     {

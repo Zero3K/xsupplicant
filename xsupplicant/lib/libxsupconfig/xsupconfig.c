@@ -1506,7 +1506,7 @@ void dump_config_eap_mschapv2(struct config_eap_mschapv2 *mschapv2, int level)
     if (mschapv2->nthash != NULL)
       printf("\t  MSCHAPV2 NtPwd Hash: \"%s\"\n", mschapv2->nthash);
 
-    if (mschapv2->ias_quirk == TRUE)
+    if (TEST_FLAG(mschapv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
       {
 	printf("\t  MSCHAPV2 IAS Quirk : Yes\n");
       }
@@ -1519,7 +1519,7 @@ void dump_config_eap_mschapv2(struct config_eap_mschapv2 *mschapv2, int level)
   printf("\t\t^ ^ ^  eap-mschapv2  ^ ^ ^\n");
     printf("\t\t  MSCHAPV2 Pass      : \"%s\"\n", mschapv2->password);
     printf("\t\t  MSCHAPV2 NtPwd Hash: \"%s\"\n", mschapv2->nthash);
-    if (mschapv2->ias_quirk == TRUE)
+    if (TEST_FLAG(mschapv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
       {
 	printf("\t\t  MSCHAPV2 IAS Quirk : Yes\n");
       }

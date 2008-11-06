@@ -287,7 +287,7 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 								memset(mscv2, 0x00, sizeof(config_eap_mschapv2));
 
 								// Set some defaults.
-								mscv2->ias_quirk = FALSE;
+								UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
 								mscv2->nthash = NULL;
 								mscv2->password = NULL;
 							}
@@ -422,7 +422,7 @@ bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pPr
 								memset(mscv2, 0x00, sizeof(config_eap_mschapv2));
 
 								// Set some defaults.
-								mscv2->ias_quirk = FALSE;
+								UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
 								mscv2->nthash = NULL;
 								mscv2->password = NULL;
 							}
