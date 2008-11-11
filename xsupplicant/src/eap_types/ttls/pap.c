@@ -20,7 +20,6 @@
 #include "src/xsup_ipc.h"
 #include "src/xsup_debug.h"
 #include "phase2_common.h"
-#include "osc_ttls_tnc.h"
 #include "pap.h"
 #include "src/eap_types/eap_type_common.h"
 #include "src/ipc_events.h"

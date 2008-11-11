@@ -21,7 +21,6 @@
 #include "src/xsup_debug.h"
 #include "phase2_common.h"
 #include "src/eap_types/mschapv2/mschapv2.h"
-#include "osc_ttls_tnc.h"
 #include "p2mschapv2.h"
 #include "src/eap_types/eap_type_common.h"
 

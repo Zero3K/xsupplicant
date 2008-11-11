@@ -2889,10 +2889,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\eap_types\ttls\osc_ttls_tnc.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\eap_types\tls\ossl_tls_funcs.c"
 				>
 			</File>
@@ -3364,10 +3360,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\eap_types\mschapv2\mschapv2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\eap_types\ttls\osc_ttls_tnc.h"
 				>
 			</File>
 			<File
