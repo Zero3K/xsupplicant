@@ -117,9 +117,11 @@ struct rfc4137_eap_handler eaphandlers[] = {
    eapsim_deinit},
 #endif
 
+#ifdef ENABLE_LEAP
   {EAP_TYPE_LEAP, "EAP-LEAP", eapleap_check, eapleap_process, 
    eapleap_buildResp, eapleap_isKeyAvailable, eapleap_getKey, 
    eapleap_getKey_len, eapleap_deinit},
+#endif
 
 #ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
   {EAP_TYPE_FAST, "EAP-FAST", eapfast_check, eapfast_process,

@@ -11,6 +11,7 @@
  * Gilbert Goodwill.
  **/
 
+#ifdef ENABLE_LEAP
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -741,3 +742,5 @@ void eapleap_deinit(eap_type_data *eapdata)
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-LEAP) Cleaning up.\n");
 }
+
+#endif   // ENABLE_LEAP

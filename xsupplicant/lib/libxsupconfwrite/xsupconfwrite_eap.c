@@ -97,9 +97,11 @@ xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method,
 		eapdata = xsupconfwrite_eap_tls_create_tree(method->method_data, write_all);
 		break;
 
+#ifdef ENABLE_LEAP
 	case EAP_TYPE_LEAP:
 		eapdata = xsupconfwrite_pwd_only_create_tree("LEAP", method->method_data, write_all);
 		break;
+#endif  // ENABLE_LEAP
 
 	case EAP_TYPE_SIM:
 		eapdata = xsupconfwrite_eap_sim_create_tree(method->method_data, write_all);

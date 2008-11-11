@@ -6,6 +6,8 @@
  * \author chris@open1x.org
  **/
 
+#ifdef ENABLE_LEAP
+
 #include <stdio.h>
 
 #ifndef WINDOWS
@@ -125,3 +127,5 @@ parser leap[] = {
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
   {NULL, NULL, FALSE, 0, NULL}};
+
+#endif  // ENABLE_LEAP

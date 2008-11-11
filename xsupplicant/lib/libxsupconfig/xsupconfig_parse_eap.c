@@ -59,8 +59,12 @@ eap_methods meths[] = {
 	{ "sim", EAP_TYPE_SIM, eap_sim, xsupconfig_parse_eap_sim},
 	{ "TLS", EAP_TYPE_TLS, eap_tls, xsupconfig_parse_eap_tls},
 	{ "tls", EAP_TYPE_TLS, eap_tls, xsupconfig_parse_eap_tls},
+
+#ifdef ENABLE_LEAP
 	{ "LEAP", EAP_TYPE_LEAP, leap, xsupconfig_parse_leap},
 	{ "leap", EAP_TYPE_LEAP, leap, xsupconfig_parse_leap},
+#endif  // ENABLE_LEAP
+
 	{ "PSK", EAP_TYPE_PSK, eap_psk, xsupconfig_parse_eap_psk},
 	{ "psk", EAP_TYPE_PSK, eap_psk, xsupconfig_parse_eap_psk},
 

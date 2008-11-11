@@ -3,6 +3,7 @@
  *
  * \file eapleap.h
  **/
+#ifdef ENABLE_LEAP
 #ifndef EAPLEAP_H
 #define EAPLEAP_H
 
@@ -56,3 +57,5 @@ uint8_t eapleap_getKey_len(eap_type_data *);
 void eapleap_deinit(eap_type_data *);
 
 #endif
+
+#endif  // ENABLE_LEAP
