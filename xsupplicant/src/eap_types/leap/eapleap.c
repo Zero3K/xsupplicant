@@ -19,6 +19,8 @@
 #include <winsock2.h>
 #endif
 
+#include <openssl/md4.h>
+
 #include "libxsupconfig/xsupconfig_structs.h"
 #include "src/xsup_common.h"
 #include "libxsupconfig/xsupconfig.h"
@@ -57,6 +59,7 @@ static void ntPwdHash(unsigned char *MD4Hash, char *password)
     char unicodePass[513];
     char passLen;
     int i;
+//	MD4_CTX md4ctx;
 
     if (!xsup_assert((MD4Hash != NULL), "MD4Hash != NULL", FALSE))
       return;
@@ -72,7 +75,7 @@ static void ntPwdHash(unsigned char *MD4Hash, char *password)
         unicodePass[2 * i + 1] = 0;
     }
     /* Encrypt plain text password to a 16-byte MD4 hash */
-    md4_calc(MD4Hash, (uint8_t *) unicodePass, passLen * 2);
+	MD4(unicodePass, (passLen * 2), MD4Hash);
 }
 
 void leap_mschap(char * password, char * response, uint8_t *apc) 
@@ -86,7 +89,7 @@ void leap_mschap(char * password, char * response, uint8_t *apc)
       return;
 
     ntPwdHash(MD4Hash, password);
-    md4_calc(MD4HashHash, MD4Hash, 16);
+	MD4(MD4Hash, 16, MD4HashHash);
     ChallengeResponse((char *)apc, (char *) MD4HashHash, response);
 }
 
@@ -399,7 +402,8 @@ void eapleap_response_pkt(eap_type_data *eapdata)
 
   // We were successful, so generate keying material.
   ntPwdHash(MD4Hash, leapdata->password);
-  md4_calc(MD4HashHash, MD4Hash, 16);
+  MD4(MD4Hash, 16, MD4HashHash);
+
   debug_printf(DEBUG_AUTHTYPES, "leap_session_key : ");
   debug_hex_printf(DEBUG_AUTHTYPES, MD4HashHash, 16);
 

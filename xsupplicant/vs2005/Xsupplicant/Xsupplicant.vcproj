@@ -2873,10 +2873,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\eap_types\leap\leapmd4.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\eap_types\md5\md5.c"
 				>
 			</File>
@@ -3352,10 +3348,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\key_statemachine.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\eap_types\leap\leapmd4.h"
 				>
 			</File>
 			<File
