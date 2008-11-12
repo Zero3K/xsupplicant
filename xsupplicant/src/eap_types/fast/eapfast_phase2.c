@@ -160,6 +160,7 @@ void eapfast_phase2_deinit(eap_type_data *eapdata)
 
   FREE(phase2->result_data);
   FREE(phase2->pkeys);
+  FREE(phase2->aid);
 
   if (phase2->pacs != NULL)
     {

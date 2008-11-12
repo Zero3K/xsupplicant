@@ -394,6 +394,80 @@ uint8_t eapfast_check_pac(eap_type_data *eapdata, uint8_t *aid,
   return TRUE;
 }
 
+uint8_t eapfast_delete_pac(eap_type_data *eapdata, uint8_t *aid, 
+			  uint16_t aid_len)
+{
+  struct config_eap_fast *eapfast_config = NULL;
+  struct eapfast_phase2 *fastp2 = NULL;
+  struct tls_vars *mytls_vars = NULL;
+  char *straid = NULL;
+  xmlDocPtr doc = NULL;
+
+  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+    return FALSE;
+
+  if (!xsup_assert((eapdata->eap_conf_data != NULL), 
+		   "eapdata->eap_conf_data != NULL", FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return FALSE;
+    }
+
+  if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL",
+		   FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return FALSE;
+    }
+
+  eapfast_config = (struct config_eap_fast *)eapdata->eap_conf_data;
+
+  mytls_vars = eapdata->eap_data;
+
+  if (!xsup_assert((mytls_vars->phase2data != NULL), 
+		   "mytls_vars->phase2data != NULL", FALSE))
+    {
+      eap_type_common_fail(eapdata);
+      return FALSE;
+    }
+
+  fastp2 = mytls_vars->phase2data;
+
+  // Convert AID to a string.
+  straid = eap_type_common_convert_hex(aid, aid_len);
+
+  // Search for the AID in the XML file.
+  eapfast_xml_init();
+  doc = eapfast_xml_open_pac(eapfast_config->pac_location);
+
+  if (doc == NULL) 
+    {
+      eapfast_xml_deinit(doc);
+	  FREE(straid);
+      return FALSE;
+    }
+
+  if (eapfast_xml_delete_pac(doc, straid) != 0)
+  {
+	  eapfast_xml_deinit(doc);
+	  FREE(straid);
+	  return FALSE;
+  }
+
+  if (eapfast_xml_save(eapfast_config->pac_location, doc) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Couldn't save PAC file to location '%s'.\n");
+      debug_printf(DEBUG_NORMAL, "You will be forced to provision again.\n");
+      return FALSE;
+    }
+
+  // If it is there, then store it and return TRUE.
+  eapfast_xml_deinit(doc);
+  FREE(straid);
+
+  return TRUE;
+}
+
 /***************************************************************
  *
  *  Given the server random, create the master secret, and pass
@@ -762,6 +836,20 @@ void eapfast_process(eap_type_data *eapdata)
 		      debug_printf(DEBUG_AUTHTYPES, "Got AID (%d byte(s)) : ", aid_len);
 		      debug_hex_printf(DEBUG_AUTHTYPES, aid, aid_len);
 	      
+			  phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
+			
+			  FREE(phase2->aid);
+			  phase2->aid = Malloc(aid_len+2);
+			  if (phase2->aid == NULL)
+			  {
+				  debug_printf(DEBUG_NORMAL, "Couldn't allocate temporary memory to store the AID.\n");
+				  eap_type_common_fail(eapdata);
+				  return;
+			  }
+
+			  phase2->aid_len = aid_len;
+			  memcpy(phase2->aid, aid, phase2->aid_len);
+
 		      if (eapfast_check_pac(eapdata, aid, aid_len) == FALSE)
 				{
 				  debug_printf(DEBUG_AUTHTYPES, "Couldn't locate a PAC. "
@@ -770,7 +858,6 @@ void eapfast_process(eap_type_data *eapdata)
 				  // We don't have a PAC, are we allowed to provision one?
 				  if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_ALLOWED))
 				  {
-					  phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
 					  phase2->provisioning = TRUE;
 
 					  if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))	
@@ -827,6 +914,25 @@ void eapfast_process(eap_type_data *eapdata)
 
       eapdata->methodState = tls_funcs_process(eapdata->eap_data,
 					       eapdata->eapReqData);
+
+	  if (eapdata->methodState == PAC_EXPIRED)
+	  {
+		  // We need to clear our PAC, and start a new provisioning.
+		  debug_printf(DEBUG_NORMAL, "PAC AID : %s\n", phase2->aid);
+		  eapdata->methodState = MAY_CONT;
+
+	      if (eapfast_delete_pac(eapdata, phase2->aid, phase2->aid_len) == FALSE)
+			{
+				debug_printf(DEBUG_NORMAL, "Unable to delete PAC!\n");
+				eapdata->methodState = DONE;
+				eap_type_common_fail(eapdata);
+				return;
+		  }
+
+		  txStart(ctx);
+		  eapdata->methodState = DONE;
+		  return;
+	  }
 
 	  if (mytls_vars->handshake_done == TRUE)
 	  {

@@ -35,7 +35,6 @@
 #include "p2mschapv2.h"
 #include "ttls_eap.h"
 #include "ttlsphase2.h"
-#include "osc_ttls_tnc.h"
 #include "../../eap_types/tls/eaptls.h"
 #include "../../eap_types/tls/tls_funcs.h"
 #include "../../eap_types/eap_type_common.h"

@@ -38,6 +38,9 @@
 #define CONT           6
 #define MAY_CONT       7
 
+// A special state for EAP-FAST
+#define PAC_EXPIRED	   8
+
 typedef struct eap_type_data {
   void *eap_conf_data;       // Pointer to the configuration information for
                              // the EAP type we are going to use.

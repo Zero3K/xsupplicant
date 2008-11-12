@@ -756,6 +756,15 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 				debug_printf(DEBUG_INT, "OpenSSL error : %d  (%d, %d, %d)\n", err, ERR_GET_LIB(err), ERR_GET_FUNC(err),
 					ERR_GET_REASON(err));
 
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
+				if ((mytls_vars->method_in_use == EAP_TYPE_FAST) && (ERR_GET_REASON(err) == SSL_R_SSLV3_ALERT_BAD_CERTIFICATE))
+				{
+					// The server indicated our PAC is invalid.
+					debug_printf(DEBUG_NORMAL, "Your EAP-FAST PAC has expired.  Flushing and requesting a new provision.\n");
+					return PAC_EXPIRED;
+				}
+#endif // OPENSSL_HELLO_EXTENSION_SUPPORTED
+
 				// Any of these reason codes usually indicate we got out of sync.
 				if ((ERR_GET_REASON(err) == SSL_R_UNEXPECTED_MESSAGE) || (ERR_GET_REASON(err) == SSL_R_UNEXPECTED_RECORD) ||
 					(ERR_GET_REASON(err) == SSL_R_WRONG_VERSION_NUMBER))

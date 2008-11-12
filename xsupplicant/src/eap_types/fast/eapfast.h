@@ -179,6 +179,8 @@ struct eapfast_phase2 {
   uint8_t anon_provisioning;	// Is it anonymous provisioning?
   struct provisioning_keys *pkeys;
   struct pac_values *pacs;
+  char *aid;
+  uint16_t aid_len;
   uint8_t need_ms;
   uint8_t *simckj;            // The current S-IMCK[j].
 };

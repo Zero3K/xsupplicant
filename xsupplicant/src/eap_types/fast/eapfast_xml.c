@@ -80,9 +80,9 @@ void eapfast_xml_add_content(xmlNodePtr node, char *name, char *content)
  ****************************************************************/
 xmlNodePtr eapfast_xml_find_pac(xmlDocPtr doc, char *aid)
 {
-  xmlNodePtr root_node, cur_node;
+  xmlNodePtr root_node = NULL, cur_node = NULL;
   int done = FALSE;
-  xmlChar *prop;
+  xmlChar *prop = NULL;
 
   if (!xsup_assert((doc != NULL), "doc != NULL", FALSE))
     return NULL;
@@ -372,6 +372,28 @@ xmlDocPtr eapfast_xml_open_pac(char *filename)
   return doc;
 }
 
+/**
+ * \brief Locate a PAC in our PAC store, and delete it.
+ **/
+int eapfast_xml_delete_pac(xmlDocPtr doc, char *aid)
+{
+  xmlNodePtr cur_node = NULL;
+  int done = 0;
+  xmlChar *prop = NULL;
+
+  // Check values passed in
+
+  // Search XML space to find the string.
+  cur_node = eapfast_xml_find_pac(doc, aid);
+
+  if (cur_node == NULL) return -1;
+
+  xmlUnlinkNode(cur_node);
+  xmlFreeNode(cur_node);
+
+  return 0;
+}
+
 /***********************************************************************
  *
  *  Locate a PAC and return it's data.  (Returns 0 on success.)
@@ -380,9 +402,9 @@ xmlDocPtr eapfast_xml_open_pac(char *filename)
 int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid, 
 			      struct pac_values *pacs)
 {
-  xmlNodePtr cur_node;
+  xmlNodePtr cur_node = NULL;
   int done = 0;
-  xmlChar *prop;
+  xmlChar *prop = NULL;
 
   // Check values passed in
 

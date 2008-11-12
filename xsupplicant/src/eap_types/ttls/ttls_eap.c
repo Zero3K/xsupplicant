@@ -30,7 +30,6 @@
 #include "../../xsup_debug.h"
 #include "../../xsup_common.h"
 #include "phase2_common.h"
-#include "osc_ttls_tnc.h"
 #include "../../eap_types/tls/eaptls.h"
 #include "../../eap_types/tls/tls_funcs.h"
 #include "ttls_eap.h"
