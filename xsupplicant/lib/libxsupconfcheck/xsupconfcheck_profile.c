@@ -354,18 +354,27 @@ int xsupconfcheck_profile_eap_fast(struct config_eap_fast *fast, config_profiles
 		retval = -1;
 	}
 
-	switch (xsupconfcheck_profile_check_eap_method(fast->phase2, prof, log))
+	if (fast->phase2->method_num == EAP_TYPE_GTC)
 	{
-	case PROFILE_NEED_UPW:
-		retval = PROFILE_NEED_UPW;
-		break;
+		// Because EAP-FAST pretty much breaks EAP-GTC, we won't let it prompt for a password during the authentication.
+		// We prompt for it at connection time just like any other inner EAP method.
+		if (prof->temp_password == NULL) retval = PROFILE_NEED_UPW;
+	}
+	else
+	{
+		switch (xsupconfcheck_profile_check_eap_method(fast->phase2, prof, log))
+		{
+		case PROFILE_NEED_UPW:
+			retval = PROFILE_NEED_UPW;
+			break;
 		
-	case 0:
-		break;
+		case 0:
+			break;
 		
-	default:
-		retval = -1;
-		break;
+		default:
+			retval = -1;
+			break;
+		}
 	}
 
 	return retval;

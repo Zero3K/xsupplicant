@@ -892,6 +892,8 @@ uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata,
   uint8_t doneinit = 0;
   struct eapfast_tlv *fasttlv = NULL;
   struct config_eap_fast *fastconfig = NULL;
+  int mschapv2_enabled = FALSE;
+  struct config_eap_method *temp = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return 0;
@@ -930,8 +932,15 @@ uint16_t eapfast_phase2_eap_process(eap_type_data *eapdata, uint8_t *indata,
       // Need to generate some crypto data.
       eapfast_phase2_provision_gen_crypt(eapdata);
 
+	  temp = fastconfig->phase2;
+	  while (temp != NULL)
+	  {
+		  if (temp->method_num == EAP_TYPE_MSCHAPV2) mschapv2_enabled = TRUE;
+		  temp = temp->next;
+	  }
+
 	  if ((phase2->provisioning == TRUE) && (phase2->anon_provisioning == TRUE) &&
-	  (fastconfig->phase2->method_num == EAP_TYPE_MSCHAPV2))
+	  (mschapv2_enabled = TRUE))
 	{
 	  debug_printf(DEBUG_AUTHTYPES, "Setting up EAP-MS-CHAPv2.\n");
 	  debug_printf(DEBUG_AUTHTYPES, "Peer Challenge : ");

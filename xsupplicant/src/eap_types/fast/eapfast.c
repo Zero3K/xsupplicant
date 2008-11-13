@@ -878,6 +878,7 @@ void eapfast_process(eap_type_data *eapdata)
 				  }
 				  else
 				  {
+					  phase2->provisioning = FALSE;
 					  debug_printf(DEBUG_NORMAL, "EAP-FAST provisioning is currently disabled!  We cannot continue!\n");
 					  eap_type_common_fail(eapdata);
 				  }

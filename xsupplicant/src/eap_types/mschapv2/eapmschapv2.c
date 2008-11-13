@@ -247,25 +247,22 @@ int eapmschapv2_init(eap_type_data *eapdata)
       return XEGENERROR;
 	}
 
-	if (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_FAST_PROVISION))
-	{
-		if (ctx->prof->temp_password == NULL)
-		 {
-			if (eapconf->password == NULL)
-			{
-				debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
-				eap_type_common_fail(eapdata);
-				return XEGENERROR;
-			}
-			else
-			{
-				mscv2data->password = _strdup(eapconf->password);
-			}
-	    }
-	  else
+	if (ctx->prof->temp_password == NULL)
+	 {
+		if (eapconf->password == NULL)
 		{
-			mscv2data->password = _strdup(ctx->prof->temp_password);
+			debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
+			eap_type_common_fail(eapdata);
+			return XEGENERROR;
 		}
+		else
+		{
+			mscv2data->password = _strdup(eapconf->password);
+		}
+    }
+  else
+	{
+		mscv2data->password = _strdup(ctx->prof->temp_password);
 	}
 
 	if (eapdata->ident == NULL)

@@ -2681,6 +2681,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	context *ctx = NULL;
 	wireless_ctx *wctx = NULL;
 	struct found_ssids *ssid = NULL;
+	xmlChar *content = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -2702,7 +2703,9 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Request_Connection_Change", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
 	}
 
-	iface = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	iface = _strdup(content);
+	xmlFree(content);
 
 	if ((iface == NULL) || (strlen(iface) <= 0))
 	{
@@ -2717,7 +2720,9 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Request_Connection_Change", IPC_ERROR_INTERFACE_NOT_FOUND, outnode);
 	}
 
-	conn_name = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	conn_name = _strdup(content);
+	xmlFree(content);
 
 	if ((conn_name == NULL) || (strlen(conn_name) <= 0))
 	{
