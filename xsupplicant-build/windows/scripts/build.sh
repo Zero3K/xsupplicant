@@ -7,9 +7,9 @@ fdate=`date '+%Y%m%d'`
 branch=trunk
 relative_src=../../..
 cd $relative_src
-src=`pwd`
+src=`dirname $0`; cd $src
 build_script_dir=xsupplicant-build/windows/scripts
-install_script_dir=xsupplicant-build/windows/installer
+install_script_dir=../installer
 update=false
 build=true
 revision="head"
