@@ -57,12 +57,12 @@
 #include <efence.h>
 #endif
 
-/*************************************************************************
+/**
  *
  *  Ask the SIM card what our IMSI is so that it can be used for our username
  *  during the authentication.
  *
- *************************************************************************/
+ **/
 int eapaka_get_username(context *ctx)
 {
   char *imsi = NULL;  
@@ -115,12 +115,6 @@ int eapaka_get_username(context *ctx)
   else
   {
 	  password = userdata->password;
-
-	  if (password == NULL)
-	  {
-		  debug_printf(DEBUG_NORMAL, "No temporary, or stored password was found for EAP-AKA on interface '%s'!\n", ctx->desc);
-		  return XEGENERROR;
-	  }
   }
 
   retval = sm_handler_3g_imsi(&hdl, card_mode, password, &imsi);
@@ -206,6 +200,64 @@ int eapaka_get_username(context *ctx)
   return XENONE;
 }
 
+/**
+ * \brief Determine in a PIN is needed.
+ **/
+int eapaka_is_pin_needed(context *ctx, struct config_eap_aka *userdata)
+{
+  char card_mode=0;
+  char *readers = NULL;
+  SCARDCONTEXT sctx;
+  SCARDHANDLE hdl;
+  int retval = 0;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+    return XEBADCONFIG;
+
+  if (!xsup_assert((userdata != NULL), "userdata != NULL", FALSE)) return XEBADCONFIG;
+
+  // Initalize our smartcard context, and get ready to authenticate.
+  if (sm_handler_init_ctx(&sctx) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Couldn't initialize smart card context!\n");
+      return XESIMGENERR;
+    }
+
+  // Connect to the smart card.
+  if (sm_handler_card_connect(&sctx, &hdl, userdata->reader) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
+      return XESIMGENERR;
+    }
+
+  // Wait for up to 10 seconds for the smartcard to become ready.
+  // XXX This needs to be fixed!  It blocks, and it shouldn't!
+  if (sm_handler_wait_card_ready(&hdl, 10) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 10 seconds!\n");
+      return XESIMGENERR;
+    }
+
+
+  retval = sm_handler_3g_pin_needed(&hdl, 0);
+  if (retval == -1) 
+  {
+	  retval = FALSE;
+  }
+  else
+  {
+	  retval = TRUE;
+  }
+
+  // Close the smartcard, so that we know what state we are in.
+  sm_handler_close_sc(&hdl, &sctx);
+
+  FREE(readers);
+
+  return retval;
+}
+
+
 /*************************************************************************
  *
  *  Allocate temporary memory, and determine if the card reader is attached.
@@ -275,6 +327,7 @@ int eapaka_setup(eap_type_data *eapdata)
       return XESIMGENERR;
     }
 
+  /*
   if ((userdata->password == NULL) && (ctx->prof->temp_password == NULL))
     {
       debug_printf(DEBUG_NORMAL, "No PIN available.\n");
@@ -282,6 +335,7 @@ int eapaka_setup(eap_type_data *eapdata)
 	  context_disconnect(ctx);
       return FALSE;
     }
+*/
 
   if (ctx->prof->temp_password != NULL)
   {
@@ -394,14 +448,7 @@ void eapaka_check(eap_type_data *eapdata)
 
   akaconf = eapdata->eap_conf_data;
 
-  if ((akaconf->password == NULL) && (ctx->prof->temp_password == NULL))
-    {
-      debug_printf(DEBUG_NORMAL, "Don't have a valid password for EAP-AKA!\n");
-	  ipc_events_error(ctx, IPC_EVENT_ERROR_NO_PIN, NULL);
-      eap_type_common_fail(eapdata);
-	  context_disconnect(ctx);
-      return;
-    }
+  // A PIN may not be needed, so don't check for it.
 
   if (eapdata->methodState == INIT)
   {

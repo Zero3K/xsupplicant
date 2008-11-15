@@ -343,9 +343,9 @@ int sm_handler_init_ctx(SCARDCONTEXT *card_ctx)
 
 char *sm_handler_get_readers(SCARDCONTEXT *card_ctx)
 {
-  long readerstrlen;
-  char *readername;
-  int ret;
+  long readerstrlen = 0;
+  char *readername = NULL;
+  int ret = 0;
 
   ret = SCardListReaders(*card_ctx, NULL, NULL, &readerstrlen);
   if (ret != SCARD_S_SUCCESS)
@@ -381,7 +381,7 @@ long sm_handler_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *card_hdl,
 {
   long ret, activeprotocol;
 
-  debug_printf(DEBUG_NORMAL, "Using reader : %s\n", cardreader);
+  debug_printf(DEBUG_AUTHTYPES, "Using reader : %s\n", cardreader);
 
   while (1)
     {
@@ -757,9 +757,6 @@ cardio(SCARDHANDLE *card_hdl, char *cmd, long reader_protocol, char mode2g,
     }
   } 
 
-  //  debug_hex_printf(DEBUG_NORMAL, outbuff, *olen);
-  //  printf("\n\n");
-
   if (*olen >= 2)
     {
       t_response *t = response;
@@ -918,7 +915,7 @@ int sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
 	    {
 	      debug_printf(DEBUG_NORMAL, "Incorrect PIN, at least one attempt "
 			   "remaining!\n");
-		  debug_printf(DEBUG_NORMAL, "%d attempts remain?!\n", buf[2]);
+		  debug_printf(DEBUG_NORMAL, "%d attempts remain.\n", buf[2]);
 	      return SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS;
 	    } 
 	  else if (buf[1] == 0x40)
@@ -993,8 +990,86 @@ int sm_handler_do_2g_auth(SCARDHANDLE *card_hdl, char reader_mode,
   return XENONE;
 }
 
+/**
+ * \brief Parse the TLVs returned from the AID file, and see if PIN1 is listed 
+ *			as being required.
+ *
+ * The AID data format is specified in ETSI TS 102 221, section 11.1.1.3.
+ **/
+int sm_handler_parse_aid_pin_needed(uint8_t *aiddata, uint16_t aidlen)
+{
+	int i = 0;
 
-int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char **imsi)
+	if (aiddata == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Invalid AID data!\n");
+		return -1;
+	}
+
+	if (aiddata[0] != 0x62)
+	{
+		debug_printf(DEBUG_NORMAL, "AID data doesn't start with a valid header!\n");
+		return -1;
+	}
+
+	// +4 because the length doesn't include the 0x62 above, the length byte itself, and the 0x90 0x00 at the end.
+	if ((aiddata[1] + 4) != aidlen)
+	{
+		debug_printf(DEBUG_NORMAL, "AID length isn't what was expected.\n");
+		return -1;
+	}
+
+	i = 2;
+	while (i < aidlen)
+	{
+		if (aiddata[i] != 0xc6)  // PIN DO.
+		{
+			i += aiddata[i+1];  // Skip the data part
+			i += 2;				// And the tag and length bytes.
+		}
+		else
+		{
+			if (aiddata[i+1] < 3)   // Our DO isn't big enough.
+			{
+				debug_printf(DEBUG_NORMAL, "D0 data was invalid!\n");
+				return -1;
+			}
+
+			if (aiddata[i+2] != 0x90)
+			{
+				debug_printf(DEBUG_NORMAL, "Unsure how to parse the pin information.  We will assume a PIN is required.\n");
+				return TRUE;
+			}
+
+			if (aiddata[i+3] != 0x01)
+			{
+				debug_printf(DEBUG_NORMAL, "The length is more than it should be!  Assuming a PIN is required.\n");
+				return TRUE;
+			}
+
+			// The bits in i+4 indicate which PINs are required.  We only care about PIN1, so we check the high bit.
+			if ((aiddata[i+4] & 0x80) == 0x80)
+			{
+				return TRUE;
+			}
+			else
+			{
+				return FALSE;
+			}
+		}
+	}
+
+	// If we get here, then we aren't sure, so we assume a PIN is needed.
+	return TRUE;
+}
+
+/**
+ * \brief Do the card initialization and see if a PIN needs to be presented.  Calling this
+ *			function will also get the card in a state to complete an AUTHENTICATE call.
+ *
+ * \retval int  Number of PIN retries remaining, -1 if no pin is needed, or SM_* error code.
+ **/
+int sm_handler_3g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode)
 {
   DWORD len;
   unsigned char buf[MAXBUFF], buf2[MAXBUFF], aid[MAXBUFF], temp[MAXBUFF], *p = NULL;
@@ -1002,19 +1077,13 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
   int i,l,q, foundaid=0, pinretries=0;
   unsigned char threeG[2] = { 0x10, 0x02 };
   struct t_efdir *t = NULL;
+  int result = 0;
 
   if (!card_hdl)
     {
       debug_printf(DEBUG_NORMAL, "Invalid card handle passed to "
 		   "sm_handler_3g_imsi()!\n");
       return SM_HANDLER_ERROR_INVALID_CARD_CTX;
-    }
-
-  if (strlen(pin) > 8)
-    {
-      // XXX This should be returned to a GUI when we have one!
-      debug_printf(DEBUG_NORMAL, "PIN is too long!\n");
-      return SM_HANDLER_ERROR_PIN_TOO_LONG;
     }
 
   // Select the USIM master file.
@@ -1052,6 +1121,7 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
 		   " (%s:%d)\n", __FUNCTION__, __LINE__);
       return SM_HANDLER_ERROR_READ_FAILURE;
     }
+
 
   if (cardio(card_hdl, EFDIR_READREC1, reader_mode, MODE3G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
     {
@@ -1093,7 +1163,7 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
 	foundaid = 1;
       }
     
-  } while ((buf2[len-2] == 0x90) && (buf2[len-1] == 0));
+  } while (((buf2[len-2] == 0x90) && (buf2[len-1] == 0)) && (foundaid != 1));
 
   // Select the USIM aid.
   xsup_common_strcpy(cmd, MAXBUFF, "00A404040C");
@@ -1110,6 +1180,18 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
       return SM_HANDLER_ERROR_NO_USIM;
     }
 
+  debug_printf(DEBUG_AUTHTYPES, "USIM AID read :\n");
+  debug_hex_dump(DEBUG_AUTHTYPES, buf2, len);
+
+  result = sm_handler_parse_aid_pin_needed(buf2, len);
+  if (result == FALSE)
+  {
+	  debug_printf(DEBUG_AUTHTYPES, "No PIN required!\n");
+	  return -1;			// No PIN is needed.
+  }
+
+  debug_printf(DEBUG_AUTHTYPES, "PIN needed.\n");
+
   // Determine remaining CHV retires.
   if (cardio(card_hdl, CHV_RETRIES, reader_mode, MODE3G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
     {
@@ -1119,14 +1201,43 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
       return SM_HANDLER_ERROR_GENERAL;
     }
 
-  if (buf[0] == 0x63)
+  if ((buf[0] == 0x63) && ((buf[1] & 0xc0) == 0xc0))
     {
       pinretries = buf[1] & 0x0f;
     }
 
   debug_printf(DEBUG_AUTHTYPES, "CHV output : \n");
   debug_hex_printf(DEBUG_AUTHTYPES, buf, len);
-  if (!(buf[13] & 0x80))
+
+  return pinretries;
+}
+
+int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char **imsi)
+{
+  DWORD len;
+  unsigned char buf[MAXBUFF], buf2[MAXBUFF], aid[MAXBUFF], temp[MAXBUFF], *p = NULL;
+  unsigned char cmd[MAXBUFF], buf3[MAXBUFF];
+  int i,l,q, foundaid=0, pinretries=0;
+  unsigned char threeG[2] = { 0x10, 0x02 };
+  struct t_efdir *t = NULL;
+
+  if (!card_hdl)
+    {
+      debug_printf(DEBUG_NORMAL, "Invalid card handle passed to "
+		   "sm_handler_3g_imsi()!\n");
+      return SM_HANDLER_ERROR_INVALID_CARD_CTX;
+    }
+
+  if ((pin != NULL) && (strlen(pin) > 8))
+    {
+      // XXX This should be returned to a GUI when we have one!
+      debug_printf(DEBUG_NORMAL, "PIN is too long!\n");
+      return SM_HANDLER_ERROR_PIN_TOO_LONG;
+    }
+
+	pinretries = sm_handler_3g_pin_needed(card_hdl, reader_mode);
+
+	if (pinretries >= 0)
     {
       if (pinretries == 0)
 	{
@@ -1134,46 +1245,35 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
 	  return SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED;
 	}
 
-      // Otherwise, enter the PIN.
-      xsup_common_strcpy(buf2, MAXBUFF, CHV_ATTEMPT);
-      for (i=0;i < strlen(pin); i++)
-	{
-	  memset((char *)&buf3, 0x00, 8);
-	  _snprintf(buf3, MAXBUFF, "%02X", pin[i]);
-	  if (Strcat(buf2, sizeof(buf2), buf3) != 0)
-	    {
-	      fprintf(stderr, "Refusing to overflow string!\n");
-	      return SM_HANDLER_ERROR_GENERAL;
-	    }
-	}
-      for (i=strlen(pin); i<8; i++)
-	{
-	  if (Strcat(buf2, sizeof(buf2), "FF") != 0)
-	    {
-	      fprintf(stderr, "Refusing to overflow string!\n");
-	      return SM_HANDLER_ERROR_GENERAL;
-	    }
-	}
+	   // Otherwise, enter the PIN.
+	   xsup_common_strcpy(buf2, MAXBUFF, CHV_ATTEMPT);
+	   for (i=0;i < strlen(pin); i++)
+		{
+		  memset((char *)&buf3, 0x00, 8);
+		  _snprintf(buf3, MAXBUFF, "%02X", pin[i]);
+		  if (Strcat(buf2, sizeof(buf2), buf3) != 0)
+		    {
+		      fprintf(stderr, "Refusing to overflow string!\n");
+		      return SM_HANDLER_ERROR_GENERAL;
+		    }
+		}
+	   for (i=strlen(pin); i<8; i++)
+		{
+		  if (Strcat(buf2, sizeof(buf2), "FF") != 0)
+		    {
+		      fprintf(stderr, "Refusing to overflow string!\n");
+		      return SM_HANDLER_ERROR_GENERAL;
+		    }
+		}
 
-      if (cardio(card_hdl, buf2, reader_mode, MODE3G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Invalid PIN! (%d tries remain.)\n",
-		       pinretries-1);
+	   if (cardio(card_hdl, buf2, reader_mode, MODE3G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
+		{
+		  debug_printf(DEBUG_NORMAL, "Invalid PIN! (%d tries remain.)\n",
+			       pinretries-1);
 
-	  if ((pinretries -1) <= 0) return SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED;
-	  return SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS;
-	}
-
-      if (cardio(card_hdl, buf2, reader_mode, MODE3G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Invalid PIN! (%d tries remain.)\n",
-		       pinretries-1);
-
-	  if ((pinretries-1) <= 0) return SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED;
-	  return SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS;
-	}
-    } else {
-            debug_printf(DEBUG_NORMAL, "PIN not needed!\n");
+		  if ((pinretries -1) <= 0) return SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED;
+		  return SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS;
+		}
     }
 
   // Now, get the IMSI

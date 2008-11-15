@@ -206,7 +206,6 @@ int aka_do_at_mac(eap_type_data *eapdata,
       return XEMALLOC;
     }
   
-  debug_printf(DEBUG_NORMAL, "Username : %s\n", username);
   if (Strncpy(tohash, (strlen(username)+33), username, strlen(username) + 1) != 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Attempt to overflow buffer in %s() at %d!\n",

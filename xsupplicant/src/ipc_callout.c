@@ -2682,6 +2682,8 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	wireless_ctx *wctx = NULL;
 	struct found_ssids *ssid = NULL;
 	xmlChar *content = NULL;
+	struct config_profiles *myprof = NULL;
+	struct config_connection *mycon = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -2744,6 +2746,20 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	switch (xsupconfcheck_check_connection(ctx, conn_name, TRUE))
 	{
 	case CONNECTION_NEED_PIN:
+		mycon = config_find_connection(conn_name);
+		if (mycon != NULL)
+		{
+			myprof = config_find_profile(mycon->profile);
+			if (myprof != NULL)
+			{
+				if (myprof->method->method_num == EAP_TYPE_AKA)
+				{
+					if (eapaka_is_pin_needed(ctx, myprof->method->method_data) == FALSE) break;
+				}
+			}
+		}
+		// Fall through.
+
 	case CONNECTION_NEED_UPW:
 	case CONNECTION_NEED_PSK:
 		// We need to ask the user for information.

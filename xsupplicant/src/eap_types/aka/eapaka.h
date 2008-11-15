@@ -83,6 +83,7 @@ struct aka_eaptypedata {
 
 // Get the IMSI as the username.
 int eapaka_get_username(context *);
+int eapaka_is_pin_needed(context *ctx, struct config_eap_aka *userdata);
 
 void eapaka_check(eap_type_data *);
 void eapaka_process(eap_type_data *);
