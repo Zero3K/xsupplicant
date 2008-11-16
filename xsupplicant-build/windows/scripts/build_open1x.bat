@@ -64,13 +64,13 @@ if [%ICONVDIR%]==[] (
 	set ICONVDIR=%OPEN1X_LIBRARY_ROOT%\iconv-1.9.2.win32
 )
 if [%OPENSSLDIR%]==[] (
-	set OPENSSLDIR=%OPEN1X_LIBRARY_ROOT%\openssl-0.9.8g.win32
+	set OPENSSLDIR=%OPEN1X_LIBRARY_ROOT%\openssl-0.9.8i-patched.win32
 )
 if [%ZLIBDIR%]==[] (
 	set ZLIBDIR=%OPEN1X_LIBRARY_ROOT%\zlib-1.2.3.win32
 )
 if [%LIBTNCDIR%]==[] (
-	set LIBTNCDIR=%OPEN1X_LIBRARY_ROOT%\libtnc-1.10-modified
+	set LIBTNCDIR=%OPEN1X_LIBRARY_ROOT%\libtnc-1.19
 )
 
 if [%NUIOUSERDIR%]==[] (
