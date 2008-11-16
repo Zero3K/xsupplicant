@@ -1,2 +1,2 @@
-#define BUILDNUM "080610"
+#define BUILDNUM "@BUILDNUM@"
 
