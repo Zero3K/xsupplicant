@@ -46,7 +46,7 @@ To build from a different branch use -Dopen1x.svn.branch="path" (i.e. trunk or b
 
     <property file="${open1x.property.file}" prefix="open1x."/>
 
-    <record name="${open1x.build.name}.txt" action="start" loglevel="verbose"/>
+    <record name="${basedir}\${open1x.build.name}.txt" action="start" loglevel="verbose"/>
 
     <!-- Skip the SVN portion of the build if the build type is a private build -->
     <condition property="open1x.svn.disabled">
@@ -185,6 +185,7 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
         
       <fileset dir="${open1x.installer.path}">
         <include name="${open1x.installer.file}"/>
+        <include name="${open1x.installer.file}.asc"/>
       </fileset>
       
     </ftp>
