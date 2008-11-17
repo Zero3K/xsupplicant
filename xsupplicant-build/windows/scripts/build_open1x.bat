@@ -121,8 +121,6 @@ echo on
 rem Dump the environment variables for debugging purposes
 set
 
-echo off
-
 set BUILD_PROJECT="Open1X Engine"
 copy %NUIOUSERDIR%\nuiouser.h %OPEN1X_ENGINE%\ndis_proto_driver
 vcbuild /time "%OPEN1X_ENGINE%\Xsupplicant.sln" "%BUILD_TYPE% as Service with TNC|Win32" %BUILD_FLAGS%

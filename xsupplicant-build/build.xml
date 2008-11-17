@@ -1,0 +1,224 @@
+<!--
+Author: Terry Simons (galimorerpg@users.sourceforge.net)
+This script requires the following Ant add-ons:
+
+*SVN add-on (tigris.org)
+*Sun Java Mail (sun.com)
+*One or both of FTP/SCP
+
+To set up nightly builds for Windows do something like:
+
+schtasks /Create /SC DAILY /TN SeaAnt-Nightly /TR "C:\ant\bin\ant.bat -f C:\OpenSEA\build.xml -Dopen1x.major=2 -Dopen1x.minor=1 -Dopen1x.patch=nightly -Dopen1x.publish.username='your ftp username' -Dopen1x.publish.password='your ftp password'" 
+
+To run a release build:
+
+C:\ant\bin\ant.bat -f C:\OpenSEA\build.xml -Dopen1x.major=2 -Dopen1x.minor=1 -Dopen1x.patch=6 -Dopen1x.build.type=release -Dopen1x.publish.username='your ftp username' -Dopen1x.publish.password='your ftp password'
+
+To build from a specific SVN revision use -Dopen1x.build.revision=# (Default is HEAD)
+
+To build from a different branch use -Dopen1x.svn.branch="path" (i.e. trunk or branches/yourbranch)
+
+-->
+
+<project name="XSupplicant SVN Checkout" basedir="." default="Publish">
+
+<property environment="env"/>
+
+<!-- path to the svnant libraries. Usually they will be located in ANT_HOME/lib -->
+<path id="svnant.classpath">
+  <fileset dir="C:\ant\lib">
+    <include name="**/*.jar"/>
+  </fileset>
+</path>  
+  
+<!-- load the svn task -->
+<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant.classpath" />
+
+<target name="init">
+
+    <condition property="open1x.property.file" value="windows.build.properties">
+        <os family="windows"/>
+    </condition>
+
+    <fail unless="open1x.property.file">
+        A property file check hasn't been created for the OS you are running this script on.
+    </fail>
+
+    <property file="${open1x.property.file}" prefix="open1x."/>
+
+    <record name="${open1x.build.name}.txt" action="start" loglevel="verbose"/>
+
+    <!-- Skip the SVN portion of the build if the build type is a private build -->
+    <condition property="open1x.svn.disabled">
+        <equals arg1="private" arg2="${open1x.build.type}"/>
+    </condition>
+    
+</target>
+
+<target name="Checkout" unless="open1x.svn.disabled">
+<!--
+TODO:
+
+Save the last successful build # in a file and use that to determine what changed, whodunnit, and the like.
+-->    
+    <delete dir="${open1x.build.path}\..\vendor" failonerror="false"/>
+    <delete dir="${open1x.build.path}" failonerror="false"/>
+
+    <svn username="${open1x.svn.username}" password="${open1x.svn.password}">
+        <checkout url="${open1x.svn.repository}/${open1x.svn.branch}" revision="${open1x.svn.revision}" destPath="${open1x.build.path}"/>
+        <checkout url="${open1x.svn.repository}/vendor" revision="${open1x.svn.revision}" destPath="${open1x.build.path}\..\vendor"/>
+    </svn>
+
+</target>
+
+<target name="Prebuild" depends="Preclean, Clean">
+<!--
+TODO:
+
+Be smarter about whether the buildnum.h and version.h files are up to date or not.
+-->
+    <svn username="${open1x.svn.username}" password="${open1x.svn.password}">
+        <wcVersion path="${open1x.build.path}"/>
+    </svn>
+    
+    <!-- Now we can determine the installer filename -->    
+    <property name="open1x.installer.file" value="${open1x.installer.prefix}${open1x.version}.${revision.max}.${open1x.installer.postfix}"/>
+    
+    <!-- We also need to tweak the buildnum.h and version.h files for the engine and UI -->
+    <!-- This can probably be simplified down a bunch, but this will work for us for now -->
+    <copy file="${open1x.build.path}\xsupplicant\src\buildnum.h" toFile="${open1x.build.path}\xsupplicant\src\buildnum-ant.h">
+        <filterset>
+            <filter token="BUILDNUM" value="${revision.max}"/>
+        </filterset>
+    </copy>
+    
+    <copy file="${open1x.build.path}\xsupplicant\src\version.h" toFile="${open1x.build.path}\xsupplicant\src\version-ant.h">
+        <filterset>
+            <filter token="VERSION" value="${open1x.version}"/>
+        </filterset>
+    </copy>
+    
+    <move file="${open1x.build.path}\xsupplicant\src\buildnum-ant.h" toFile="${open1x.build.path}\xsupplicant\src\buildnum.h"/>
+    <move file="${open1x.build.path}\xsupplicant\src\version-ant.h" toFile="${open1x.build.path}\xsupplicant\src\version.h"/>
+    
+    <copy file="${open1x.build.path}\xsupplicant-ui\xsupptray\buildnum.h" toFile="${open1x.build.path}\xsupplicant-ui\xsupptray\buildnum-ant.h">
+        <filterset>
+            <filter token="BUILDNUM" value="${revision.max}"/>
+        </filterset>
+    </copy>
+    
+    <copy file="${open1x.build.path}\xsupplicant-ui\xsupptray\version.h" toFile="${open1x.build.path}\xsupplicant-ui\xsupptray\version-ant.h">
+        <filterset>
+            <filter token="VERSION" value="${open1x.version}"/>
+        </filterset>
+    </copy>
+    
+    <move file="${open1x.build.path}\xsupplicant-ui\xsupptray\buildnum-ant.h" toFile="${open1x.build.path}\xsupplicant-ui\xsupptray\buildnum.h"/>
+    <move file="${open1x.build.path}\xsupplicant-ui\xsupptray\version-ant.h" toFile="${open1x.build.path}\xsupplicant-ui\xsupptray\version.h"/>
+    
+
+</target>
+
+<target name="Clean" unless="open1x.build.noclean">
+
+    <!-- Clean the code for completeness sake -->
+    <exec executable="${open1x.build.script.path}\${open1x.build.script}">
+        <arg value="Release"/>
+        <arg value="/Clean"/>
+    </exec>
+
+</target>
+
+<!-- 
+    By default we don't pre-clean, but this could be an interesting option for those
+    needing to do testing where they want their build system params to be reset by
+    the build script prior to build rather than from the host's ENV
+-->
+<target name="Preclean" if="build.preclean">
+
+    <!-- 
+        Reset the shell environment on the build system.
+    -->
+    <exec executable="${open1x.build.script.path}\${open1x.build.script}">
+        <arg value="Reset"/>
+    </exec>
+
+</target>
+
+<target name="Build" depends="Checkout,Prebuild">
+
+    <!-- Build the code -->
+    <exec executable="${open1x.build.script.path}\${open1x.build.script}">
+        <arg value="Release"/>
+    </exec>
+    
+        
+</target>
+
+<target name="Package" depends="Build">
+
+    <exec executable="makensis">
+      <arg value="/DVERSION=${open1x.version}.${revision.max}"/>
+      <arg value="/DINSTALLER_NAME_PREFIX=${open1x.installer.prefix}"/>
+      <arg value="${open1x.installer.path}\xsupinstall.nsi"/>
+    </exec>
+        
+    <checksum file="${open1x.installer.path}\${open1x.installer.file}" todir="${open1x.installer.path}" algorithm="SHA" forceOverwrite="yes" fileext="asc"/>
+    
+</target>
+
+<target name="Publish" depends="init, Package" unless="open1x.publish.disabled">
+
+    <antcall target="${open1x.publish.type}"/>
+
+    <antcall target="E-Mail"/>
+    
+</target>
+
+<target name="ftp">
+    
+    <ftp server="${open1x.publish.server}"
+        remotedir="${open1x.publish.path}"
+        userid="${open1x.publish.username}"
+        password="${open1x.publish.password}"
+        binary="yes">
+        
+      <fileset dir="${open1x.installer.path}">
+        <include name="${open1x.installer.file}"/>
+      </fileset>
+      
+    </ftp>
+    
+</target>
+
+<target name="scp">
+    
+    <scp todir="${open1x.publish.username}:${open1x.publish.password}@${open1x.publish.server}:${open1x.publish.path}" trust="yes">
+      <fileset dir="${open1x.installer.path}">
+        <include name="${open1x.installer.file}"/>
+        <include name="${open1x.checksum.file}.asc"/>
+      </fileset>
+    </scp>
+
+</target>
+
+<target name="E-Mail" unless="open1x.email.disabled">
+
+    <mail mailhost="${open1x.email.host}" 
+        subject="OpenSEA ${open1x.build.name} (${open1x.build.type}) Build Status (${open1x.build.status})" 
+        user="${open1x.email.username}" 
+        password="${open1x.email.password}" 
+        ssl="${open1x.email.ssl}" 
+        mailport="${open1x.email.port}" 
+        from="${open1x.email.username}" 
+        bcclist="${open1x.email.recipients}">
+
+      <message>
+A attempt of a ${open1x.build.type} build of ${open1x.build.name} (${open1x.version} revision ${revision.max}) was a ${open1x.build.status}.
+      </message>
+    
+    </mail>
+    
+</target>
+
+</project>
