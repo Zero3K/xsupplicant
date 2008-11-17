@@ -24,7 +24,7 @@ set OPEN1X_BUILD_SDK=%OPEN1X_BUILD_SDK%
 
 
 if ["%OPEN1X_BUILD_ROOT%"]==[""] (
-	set OPEN1X_BUILD_ROOT=..\..\..
+	set OPEN1X_BUILD_ROOT=%~dp0\..\..\..
 )
 
 if ["%OPEN1X_VENDOR_ROOT%"]==[""] (
