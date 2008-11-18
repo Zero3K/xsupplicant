@@ -27,7 +27,7 @@
 /**
  * Stub to allow the parser to be more logical.
  **/
-void *xsupconfig_parse_profiles(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profiles(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
 	printf("Parsing profiles..\n");
@@ -38,7 +38,28 @@ void *xsupconfig_parse_profiles(void **attr, xmlNodePtr node)
 	return (*attr);
 }
 
+/**
+ * Stub to allow the parser to be more logical.
+ **/
+void *xsupconfig_parse_user_profiles(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+#ifdef PARSE_DEBUG
+	printf("Parsing profiles..\n");
+#endif
+
+	conf_user_profiles = NULL;
+
+	return (*attr);
+}
+
+
 parser profiles[] = {
 	{"Profile", (struct conf_parse_struct *)&profile, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_profile},
 
 	{NULL, NULL, FALSE, 0, NULL}};
+
+parser user_profiles[] = {
+	{"Profile", (struct conf_parse_struct *)&profile, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_user_profile},
+
+	{NULL, NULL, FALSE, 0, NULL}};
+

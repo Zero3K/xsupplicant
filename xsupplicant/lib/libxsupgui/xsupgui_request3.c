@@ -734,7 +734,7 @@ request_set_pw_done:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299   An error occurred.
  **/
-int xsupgui_request_enum_profiles(profile_enum **profs)
+int xsupgui_request_enum_profiles(uint8_t config_type, profile_enum **profs)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -743,6 +743,7 @@ int xsupgui_request_enum_profiles(profile_enum **profs)
 	int done = REQUEST_SUCCESS;
 	int numprofs = 0, i = 0, err = 0;
 	profile_enum *myprofs = NULL;
+	char tempnum[5];
 
 	if (profs == NULL) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -758,7 +759,15 @@ int xsupgui_request_enum_profiles(profile_enum **profs)
 		goto finish_enum_profiles;
 	}
 
-	if (xmlNewChild(n, NULL, (xmlChar *)"Enum_Profiles", NULL) == NULL)
+	t = xmlNewChild(n, NULL, (xmlChar *)"Enum_Profiles", NULL);
+	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_enum_profiles;
+	}
+
+	sprintf((char *)&tempnum, "%d", config_type);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", tempnum) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_profiles;
@@ -848,6 +857,18 @@ int xsupgui_request_enum_profiles(profile_enum **profs)
 
 		myprofs[i].name = (char *)xmlNodeGetContent(t);
 	
+		t = xsupgui_request_find_node(n->children, "Config_Type");
+		if (t == NULL)
+		{
+			if (myprofs != NULL) free(myprofs);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish_enum_profiles;
+		}
+
+		content = xmlNodeGetContent(t);
+		myprofs[i].config_type = atoi(content);
+		xmlFree(content);
+
 		n = n->next;
 	}
 

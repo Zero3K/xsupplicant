@@ -522,7 +522,8 @@ bool WizardPageFinished::validate(void)
 			config_connection *pConfig = NULL;	
 	  
 			QString connName = m_pConnectionName->text();
-			if (XSupWrapper::getConfigConnection(connName, &pConfig) == true)
+			if ((XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL, connName, &pConfig) == true) ||
+				(XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, connName, &pConfig) == true))
 			{
 				XSupWrapper::freeConfigConnection(&pConfig);
 				
@@ -1835,8 +1836,15 @@ void WizardPageSCReader::init(const ConnectionWizardData &data)
 		index = m_pReader->findText(m_curData.m_SCreader);		
 		if (index == -1)
 		{
-			m_pReader->addItem(m_curData.m_SCreader);
-			m_pReader->setCurrentIndex(m_pReader->findText(m_curData.m_SCreader));
+			if (m_curData.m_SCreader == "")
+			{
+				m_pReader->setCurrentIndex(0);
+			}
+			else
+			{
+				m_pReader->addItem(m_curData.m_SCreader);
+				m_pReader->setCurrentIndex(m_pReader->findText(m_curData.m_SCreader));
+			}
 		}
 		else
 		{

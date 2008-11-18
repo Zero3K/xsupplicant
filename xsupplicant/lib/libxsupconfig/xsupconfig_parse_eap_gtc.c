@@ -58,7 +58,7 @@ void *xsupconfig_parse_phase2_gtc(void **dest, void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_gtc(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_gtc(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth = NULL;
 
@@ -94,10 +94,10 @@ void *xsupconfig_parse_eap_gtc(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_gtc_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_gtc_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_pwd_only *gtc;
-  char *value;
+  struct config_pwd_only *gtc = NULL;
+  char *value = NULL;
 
   gtc = (*attr);
 
@@ -120,7 +120,7 @@ void *xsupconfig_parse_eap_gtc_password(void **attr, xmlNodePtr node)
   return gtc;
 }
 
-void *xsupconfig_parse_eap_gtc_enc_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_gtc_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *gtc = NULL;
   char *value = NULL;
@@ -134,7 +134,7 @@ void *xsupconfig_parse_eap_gtc_enc_password(void **attr, xmlNodePtr node)
   printf("Password for EAP-GTC is '%s'!\n", value);
 #endif
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&gtc->password, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&gtc->password, &size) != 0)
   {
 	  free(value);
 	  gtc->password = NULL;

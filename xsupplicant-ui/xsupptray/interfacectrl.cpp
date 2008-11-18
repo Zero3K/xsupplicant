@@ -98,7 +98,7 @@ bool InterfaceCtrl::updateSupplicant()
 	}
 
 	m_pSupplicant->freeConfigGlobals(&globals);
-	m_pSupplicant->writeConfig();
+	m_pSupplicant->writeConfig(CONFIG_LOAD_GLOBAL);
 
 	return retVal;
 }

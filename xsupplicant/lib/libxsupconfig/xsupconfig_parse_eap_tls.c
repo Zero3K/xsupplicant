@@ -25,7 +25,7 @@
 #include "xsupconfig_common.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_tls(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth = NULL;
 
@@ -61,7 +61,7 @@ void *xsupconfig_parse_eap_tls(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_tls_user_cert(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_user_cert(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -87,7 +87,7 @@ void *xsupconfig_parse_eap_tls_user_cert(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_crl_dir(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_crl_dir(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -113,7 +113,7 @@ void *xsupconfig_parse_eap_tls_crl_dir(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_user_key_file(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_user_key_file(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -139,7 +139,7 @@ void *xsupconfig_parse_eap_tls_user_key_file(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_user_key_pass(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_user_key_pass(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -165,7 +165,7 @@ void *xsupconfig_parse_eap_tls_user_key_pass(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_enc_user_key_pass(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_enc_user_key_pass(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -185,7 +185,7 @@ void *xsupconfig_parse_eap_tls_enc_user_key_pass(void **attr, xmlNodePtr node)
 		return tls;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&tls->user_key_pass, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&tls->user_key_pass, &size) != 0)
   {
 	  free(value);
 	  tls->user_key_pass = NULL;
@@ -202,7 +202,7 @@ void *xsupconfig_parse_eap_tls_enc_user_key_pass(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_session_resume(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_session_resume(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   uint8_t result = 0;
@@ -238,7 +238,7 @@ void *xsupconfig_parse_eap_tls_session_resume(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_chunk_size(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_chunk_size(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -266,7 +266,7 @@ void *xsupconfig_parse_eap_tls_chunk_size(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_random_file(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_random_file(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -292,7 +292,7 @@ void *xsupconfig_parse_eap_tls_random_file(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_engine_id(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_engine_id(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -318,7 +318,7 @@ void *xsupconfig_parse_eap_tls_engine_id(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_trusted_server(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -344,7 +344,7 @@ void *xsupconfig_parse_eap_tls_trusted_server(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_opensc_path(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_opensc_path(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;
@@ -370,7 +370,7 @@ void *xsupconfig_parse_eap_tls_opensc_path(void **attr, xmlNodePtr node)
   return tls;
 }
 
-void *xsupconfig_parse_eap_tls_key_id(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tls_key_id(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *tls = NULL;
   char *value = NULL;

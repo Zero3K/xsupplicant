@@ -51,7 +51,7 @@
  * \retval xmlNodePtr containing the AKA configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_aka *akadata, 
+xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_aka *akadata, uint8_t config_type,
 										     char write_all)
 {
 	xmlNodePtr akanode = NULL;
@@ -74,7 +74,7 @@ xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_aka *akadata,
 		if ((akadata->password != NULL) && (pwcrypt_funcs_available() == TRUE))
 		{
 			// Write the encrypted version.
-			if (pwcrypt_encrypt((uint8_t *)akadata->password, strlen(akadata->password), (uint8_t **)&temp, &ressize) != 0)
+			if (pwcrypt_encrypt(config_type, (uint8_t *)akadata->password, strlen(akadata->password), (uint8_t **)&temp, &ressize) != 0)
 			{
 				// Couldn't encrypt the data.  So write the cleartext version.
 				if (xmlNewChild(akanode, NULL, (xmlChar *)"Encrypted_Password", (xmlChar *)akadata->password) == NULL)

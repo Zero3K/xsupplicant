@@ -619,7 +619,11 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 		debug_printf(DEBUG_PHYSICAL_STATE, "Checking %s with Priority %d\n",
 		   cur->ssid_name, cur_pri);
 
-	  conf = config_find_connection_from_ssid_and_desc(cur->ssid_name, ctx->desc);
+	  conf = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_GLOBAL, cur->ssid_name, ctx->desc);
+	  if (conf == NULL)
+	  {
+		  conf = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_USER, cur->ssid_name, ctx->desc);
+	  }
 
 	  if (conf != NULL)
 	  {
@@ -651,7 +655,11 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
       debug_printf(DEBUG_PHYSICAL_STATE, "    Signal : %d   Noise : %d   Quality : "
 		   "%d\n", best->signal, best->noise, best->quality);
 
-	  conf = config_find_connection_from_ssid_and_desc(best->ssid_name, ctx->desc);
+	  conf = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_GLOBAL, best->ssid_name, ctx->desc);
+	  if (conf == NULL)
+	  {
+		  conf = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_USER, best->ssid_name, ctx->desc);
+	  }
 
 	  if (conf != NULL)
 	  {
@@ -785,7 +793,7 @@ char *config_ssid_get_desired_ssid(context *ctx)
       memset(cur_ssid, 0x00, 33);
 
       // Get our current SSID
-      if (cardif_GetSSID(ctx, cur_ssid, 33) == XENONE)
+      if ((cardif_GetSSID(ctx, cur_ssid, 33) == XENONE) && (strlen(cur_ssid) > 0))
 	{
 	  ssid = config_ssid_find_by_name(wctx, cur_ssid);
 	  

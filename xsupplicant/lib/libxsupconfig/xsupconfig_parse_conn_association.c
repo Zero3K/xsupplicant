@@ -64,12 +64,12 @@ multichoice enc_types[] = {
 	{ CRYPT_WEP104,  "wep104"},
 	{ -1, NULL}};
 
-void *xsupconfig_parse_conn_association(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_association(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   return (*attr);
 }
 
-void *xsupconfig_parse_conn_association_type(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_association_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
   char *value = NULL;
@@ -114,7 +114,7 @@ void *xsupconfig_parse_conn_association_type(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_conn_authentication_type(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_authentication_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
   char *value = NULL;
@@ -158,13 +158,16 @@ void *xsupconfig_parse_conn_authentication_type(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_conn_group_key_type(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_group_key_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
   char *value = NULL;
+  xmlChar *content = NULL;
   char *errstr = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Group Key Type : %s\n", value);
@@ -174,7 +177,7 @@ void *xsupconfig_parse_conn_group_key_type(void **attr, xmlNodePtr node)
 
   conn->association.group_keys = xsupconfig_common_select_from_list(enc_types, value);
 
-  if (conn->association.group_keys == -1)
+  if (conn->association.group_keys == 0xff)
   {
 	  if (xsup_common_in_startup() == TRUE)
 	  {
@@ -203,7 +206,7 @@ void *xsupconfig_parse_conn_group_key_type(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_conn_pairwise_key_type(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_pairwise_key_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
   char *value = NULL;
@@ -267,10 +270,11 @@ void *xsupconfig_parse_conn_pairwise_key_type(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_conn_tx_key(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_tx_key(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
   char *value = NULL;
+  uint8_t vval = 0;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -289,10 +293,22 @@ void *xsupconfig_parse_conn_tx_key(void **attr, xmlNodePtr node)
     {
 		xsupconfig_common_log("Value assigned to WEP TX key is not a number!  Using default!  (Line %ld)",
 			xsupconfig_parse_get_line_num());
+		conn->association.txkey = 0;
     }
   else
     {
-		conn->association.txkey = atoi(value);
+		vval = atoi(value);
+
+		if (vval > 4)
+		{
+			xsupconfig_common_log("Value assigned to WEP TX key is greater than 4!  Using default!  (Line %ld)",
+				xsupconfig_parse_get_line_num());
+			conn->association.txkey = 0;
+		}
+		else
+		{
+			conn->association.txkey = vval;
+		}
     }
 
   FREE(value);
@@ -312,12 +328,12 @@ int string_is_hex(char *instr)
 	return TRUE;
 }
 
-void *xsupconfig_parse_conn_key1(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_key1(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	char *value;
-	struct config_connection *conn;
+	xmlChar *value = NULL;
+	struct config_connection *conn = NULL;
 
-	value = (char *)xmlNodeGetContent(node);
+	value = xmlNodeGetContent(node);
 	conn = (*attr);
 
 #ifdef PARSE_DEBUG
@@ -328,22 +344,23 @@ void *xsupconfig_parse_conn_key1(void **attr, xmlNodePtr node)
 	{
 		conn->association.keys[1] = NULL;
 
-		if (strlen(value) == 0) free(value);		
+		if (strlen(value) == 0) xmlFree(value);		
 	}
 	else
 	{
-		conn->association.keys[1] = value;
+		conn->association.keys[1] = _strdup(value);
+		xmlFree(value);
 	}
 
 	return (*attr);
 }
 
-void *xsupconfig_parse_conn_key2(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_key2(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	char *value;
-	struct config_connection *conn;
+	xmlChar *value = NULL;
+	struct config_connection *conn = NULL;
 
-	value = (char *)xmlNodeGetContent(node);
+	value = xmlNodeGetContent(node);
 	conn = (*attr);
 
 #ifdef PARSE_DEBUG
@@ -354,22 +371,23 @@ void *xsupconfig_parse_conn_key2(void **attr, xmlNodePtr node)
 	{
 		conn->association.keys[2] = NULL;
 
-		if (strlen(value) == 0) free(value);
+		if (strlen(value) == 0) xmlFree(value);
 	}
 	else
 	{
-		conn->association.keys[2] = value;
+		conn->association.keys[2] = _strdup(value);
+		xmlFree(value);
 	}
 
 	return (*attr);
 }
 
-void *xsupconfig_parse_conn_key3(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_key3(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	char *value;
-	struct config_connection *conn;
+	xmlChar *value = NULL;
+	struct config_connection *conn = NULL;
 
-	value = (char *)xmlNodeGetContent(node);
+	value = xmlNodeGetContent(node);
 	conn = (*attr);
 
 #ifdef PARSE_DEBUG
@@ -380,22 +398,23 @@ void *xsupconfig_parse_conn_key3(void **attr, xmlNodePtr node)
 	{
 		conn->association.keys[3] = NULL;
 
-		if (strlen(value) == 0) free(value);
+		if (strlen(value) == 0) xmlFree(value);
 	}
 	else
 	{
-		conn->association.keys[3] = value;
+		conn->association.keys[3] = _strdup(value);
+		xmlFree(value);
 	}
 
 	return (*attr);
 }
 
-void *xsupconfig_parse_conn_key4(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_key4(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	char *value;
-	struct config_connection *conn;
+	xmlChar *value = NULL;
+	struct config_connection *conn = NULL;
 
-	value = (char *)xmlNodeGetContent(node);
+	value = xmlNodeGetContent(node);
 	conn = (*attr);	
 
 #ifdef PARSE_DEBUG
@@ -406,24 +425,25 @@ void *xsupconfig_parse_conn_key4(void **attr, xmlNodePtr node)
 	{
 		conn->association.keys[4] = NULL;
 
-		if (strlen(value) == 0) free(value);
+		if (strlen(value) == 0) xmlFree(value);
 	}
 	else
 	{
-		conn->association.keys[4] = value;
+		conn->association.keys[4] = _strdup(value);
+		xmlFree(value);
 	}
 
 	return (*attr);
 }
 
-void *xsupconfig_parse_conn_psk(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_psk(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *value;
+  struct config_connection *conn = NULL;
+  xmlChar *value = NULL;
 
   conn = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+  value = xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("WPA Preshared Key is '%s'!\n", value);
@@ -433,25 +453,26 @@ void *xsupconfig_parse_conn_psk(void **attr, xmlNodePtr node)
 	{
 		conn->association.psk = NULL;
 
-		if (strlen(value) == 0) free(value);
+		if (strlen(value) == 0) xmlFree(value);
 	}
 	else
 	{
-		conn->association.psk = value;
+		conn->association.psk = _strdup(value);
+		xmlFree(value);
 	}
 
   return conn;
 }
 
-void *xsupconfig_parse_conn_enc_psk(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_enc_psk(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *value;
-  uint16_t size;
+  struct config_connection *conn = NULL;
+  xmlChar *value = NULL;
+  uint16_t size = 0;
 
   conn = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+  value = xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("WPA (Encrypted) Preshared Key is '%s'!\n", value);
@@ -459,13 +480,13 @@ void *xsupconfig_parse_conn_enc_psk(void **attr, xmlNodePtr node)
 
   if ((value == NULL) || (strlen(value) == 0))
   {
-	  free(value);
+	  xmlFree(value);
 	  return conn;
   }
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&conn->association.psk, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&conn->association.psk, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  conn->association.psk = NULL;
 	  return conn;
   }
@@ -475,19 +496,19 @@ void *xsupconfig_parse_conn_enc_psk(void **attr, xmlNodePtr node)
 	  FREE(conn->association.psk);
   }
 
-  free(value);
+  xmlFree(value);
 
   return conn;
 }
 
-void *xsupconfig_parse_conn_psk_hex(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_psk_hex(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *value;
+  struct config_connection *conn = NULL;
+  xmlChar *value = NULL;
 
   conn = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+  value = xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("WPA Hex Key is '%s'!\n", value);
@@ -495,12 +516,13 @@ void *xsupconfig_parse_conn_psk_hex(void **attr, xmlNodePtr node)
 
   if ((value == NULL) || (strlen(value) == 0))
   {
-	  free(value);
+	  xmlFree(value);
 	  conn->association.psk_hex = NULL;
   }
   else
   {
-	conn->association.psk_hex = value;
+	conn->association.psk_hex = _strdup(value);
+	xmlFree(value);
   }
 
   return conn;

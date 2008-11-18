@@ -85,6 +85,8 @@ ConnectionWizardData::ConnectionWizardData()
 	m_hasProfile = false;
 	m_hasServer = false;
 	m_nameChanged = false;
+
+	m_config_type = CONFIG_LOAD_USER;
 }
 
 ConnectionWizardData::~ConnectionWizardData()
@@ -856,7 +858,7 @@ bool ConnectionWizardData::toSupplicantProfiles(config_connection **retConnectio
 	return success;
 }
 
-bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer)
+bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type, config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer)
 {
 	if (pConfig == NULL && pProfile == NULL && pServer == NULL)
 		return false;  // no data to convert
@@ -865,6 +867,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(config_connection const * 
 	m_wireless = pConfig->ssid != NULL && QString(pConfig->ssid).isEmpty() == false;
 	m_adapterDesc = pConfig->device;
 	m_connectionName = pConfig->name;
+	m_config_type = config_type;
 	
 	if (m_wireless == true)
 	{

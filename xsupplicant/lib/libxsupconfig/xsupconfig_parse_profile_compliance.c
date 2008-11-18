@@ -24,18 +24,21 @@
 #include "xsupconfig_common.h"
 #include "src/eap_types/tnc/tnc_compliance_options.h"
 
-void *xsupconfig_parse_profile_compliance(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_enable(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_enable(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *myprofile;
-  uint8_t result;
-  char *value;
+  struct config_profiles *myprofile = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Compliance Enable : %s\n", value);
@@ -65,13 +68,16 @@ void *xsupconfig_parse_profile_compliance_enable(void **attr, xmlNodePtr node)
   return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_personality_check(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_personality_check(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *myprofile;
-  uint8_t result;
-  char *value;
+  struct config_profiles *myprofile = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Personality Check : %s\n", value);
@@ -101,13 +107,16 @@ void *xsupconfig_parse_profile_compliance_personality_check(void **attr, xmlNode
   return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_firewall_check(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_firewall_check(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *myprofile;
-  uint8_t result;
-  char *value;
+  struct config_profiles *myprofile = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Firewall Check : %s\n", value);
@@ -137,13 +146,16 @@ void *xsupconfig_parse_profile_compliance_firewall_check(void **attr, xmlNodePtr
   return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_anti_spyware_check(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_anti_spyware_check(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *myprofile;
-  uint8_t result;
-  char *value;
+  struct config_profiles *myprofile = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Anti-Spyware Check : %s\n", value);
@@ -173,13 +185,16 @@ void *xsupconfig_parse_profile_compliance_anti_spyware_check(void **attr, xmlNod
   return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_anti_virus_check(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_anti_virus_check(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *myprofile;
-  uint8_t result;
-  char *value;
+  struct config_profiles *myprofile = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Anti-Virus Check : %s\n", value);
@@ -209,13 +224,16 @@ void *xsupconfig_parse_profile_compliance_anti_virus_check(void **attr, xmlNodeP
   return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_anti_phishing_check(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_anti_phishing_check(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *myprofile;
-  uint8_t result;
-  char *value;
+  struct config_profiles *myprofile = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Anti-Phishing Check : %s\n", value);
@@ -245,13 +263,16 @@ void *xsupconfig_parse_profile_compliance_anti_phishing_check(void **attr, xmlNo
   return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_allow_full_system_scan(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_allow_full_system_scan(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *myprofile;
-  uint8_t result;
-  char *value;
+  struct config_profiles *myprofile = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Allow full system scan : %s\n", value);
@@ -281,13 +302,16 @@ void *xsupconfig_parse_profile_compliance_allow_full_system_scan(void **attr, xm
   return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_allow_auto_update(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_allow_auto_update(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *myprofile;
-  uint8_t result;
-  char *value;
+  struct config_profiles *myprofile = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
 #ifdef PARSE_DEBUG
   printf("Allow auto update : %s\n", value);

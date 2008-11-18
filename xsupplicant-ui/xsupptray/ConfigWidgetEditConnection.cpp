@@ -37,7 +37,7 @@
 #include "helpbrowser.h"
 #include "Util.h"
 
-ConfigWidgetEditConnection::ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, NavPanel *pPanel, QWidget *parent) :
+ConfigWidgetEditConnection::ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, NavPanel *pPanel, unsigned char config_type, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalConnName(connName), m_pEmitter(e), m_pNavPanel(pPanel)
 {
 	m_pTabs = NULL;
@@ -48,6 +48,8 @@ ConfigWidgetEditConnection::ConfigWidgetEditConnection(QWidget *pRealWidget, Emi
 	m_bChangedData = false;
 	m_bNewConnection = false;
 	m_bConnectionRenamed = false;
+
+	m_config_type = config_type;
 }
 
 ConfigWidgetEditConnection::~ConfigWidgetEditConnection()
@@ -120,6 +122,7 @@ bool ConfigWidgetEditConnection::newItem()
 		// This is a new server configuration.
 		m_bNewConnection = true;
 		m_bChangedData = true;
+		m_config_type = CONFIG_LOAD_USER;
 
 		return true;
 }
@@ -149,7 +152,7 @@ void ConfigWidgetEditConnection::updateWindow()
 		m_originalConnName = QString(m_pConnection->name);
 		m_lastConnName = QString(m_pConnection->name);
 	}
-	else if (m_pSupplicant->getConfigConnection(m_originalConnName, &m_pConnection, true) == true)
+	else if (m_pSupplicant->getConfigConnection(m_config_type, m_originalConnName, &m_pConnection, true) == true)
 	{
 		m_lastConnName = m_originalConnName;
 	}
@@ -185,7 +188,9 @@ bool ConfigWidgetEditConnection::save()
 	if (m_bNewConnection)
 	{
 		temp_ptr = _strdup(m_pConnNameEdit->text().toAscii());
-		retval = xsupgui_request_get_connection_config(temp_ptr, &pConfig);
+		retval = xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, temp_ptr, &pConfig);
+		if (retval != REQUEST_SUCCESS) retval = xsupgui_request_get_connection_config(CONFIG_LOAD_USER, temp_ptr, &pConfig);
+
 		free(temp_ptr);
 		if ((retval == REQUEST_SUCCESS) && (pConfig != NULL))
 		{
@@ -207,15 +212,15 @@ bool ConfigWidgetEditConnection::save()
 	if ((m_bConnectionRenamed) && (QString(m_pConnection->name) != m_originalConnName))
 	{
 	  temp = m_pConnection->name;
-		if (m_pSupplicant->renameConnection(m_originalConnName, temp) == false)
+		if (m_pSupplicant->renameConnection(m_config_type, m_originalConnName, temp) == false)
 			return false;
 
 		m_bConnectionRenamed = false;
 	}
 
-	if (m_pSupplicant->setConfigConnection(m_pConnection) == true)
+	if (m_pSupplicant->setConfigConnection(m_config_type, m_pConnection) == true)
 	{
-		if (m_pSupplicant->writeConfig() == true)
+		if (m_pSupplicant->writeConfig(m_config_type) == true)
 		{
 			m_originalConnName = m_lastConnName;
 			m_bChangedData = false;

@@ -13,6 +13,6 @@
 
 extern parser compliance[];
 
-void *xsupconfig_parse_profile_compliance(void **, xmlNodePtr);
+void *xsupconfig_parse_profile_compliance(void **, uint8_t, xmlNodePtr);
 
 #endif // __XSUPCONFIG_PARSE_PROFILE_COMPLIANCE_H__

@@ -105,6 +105,8 @@ void ConfigWidgetProfilesTable::fillTable()
 	bool sorting = false;
 	QString temp;
 
+	if (m_pProfilesEnum == NULL) return;
+
 	m_pRealTable->setCursor(Qt::WaitCursor);   // This may take a second.
 
 	sorting = m_pRealTable->isSortingEnabled();
@@ -121,7 +123,7 @@ void ConfigWidgetProfilesTable::fillTable()
 		m_pRealTable->setItem(i, 0, newItem);
 
 	  temp = m_pProfilesEnum[i].name;
-		if (m_pSupplicant->getConfigProfile(temp, &myProfile, true))
+	  if (m_pSupplicant->getConfigProfile(m_pProfilesEnum[i].config_type, temp, &myProfile, true))
 		{
 			m_pSupplicant->getTunnelNames(myProfile->method, outer, inner);
 

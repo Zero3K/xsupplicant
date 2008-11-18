@@ -454,6 +454,7 @@ void NavPanel::slotDelItem()
 	QTreeWidgetItem *toDelete;
 	int toDeleteIdx;
 	QString temp;
+	unsigned char conn_type = 0;
 
 	selectedItem = getSelectedItem();
 	
@@ -481,7 +482,14 @@ void NavPanel::slotDelItem()
 			  tr("Are you sure you want to delete connection '%1'?").arg(temp), 
 			  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 		  {
-			if (m_supplicant->deleteConnectionConfig(temp) == true)
+			  conn_type = m_supplicant->getConnectionType(temp);
+			  if (conn_type == 0)
+			  {
+				  QMessageBox::critical(NULL, tr("Invalid Connection"), tr("You selected a configuration that couldn't be found in either the system level configuration, or your user's configuration."));
+				  return;
+			  }
+
+			if (m_supplicant->deleteConnectionConfig(conn_type, temp) == true)
 			{
 				emit signalItemDeleted(CONNECTIONS_ITEM);
 
@@ -522,7 +530,14 @@ void NavPanel::slotDelItem()
 			  tr("Are you sure you want to delete profile '%1'?").arg(temp), 
 			  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 		  {
-			if (m_supplicant->deleteProfileConfig(temp) == true)
+			  conn_type = m_supplicant->getProfileType(temp);
+			  if (conn_type == 0)
+			  {
+				  QMessageBox::critical(NULL, tr("Unknown Profile"), tr("The profile you selected couldn't be found in either the system configuration or your user's configuration!"));
+				  return;
+			  }
+
+			if (m_supplicant->deleteProfileConfig(conn_type, temp) == true)
 			{
 				emit signalItemDeleted(PROFILES_ITEM);
 
@@ -561,7 +576,14 @@ void NavPanel::slotDelItem()
 			  tr("Are you sure you want to delete trusted server '%1'?").arg(temp), 
 			  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes)
 		  {
-			if (m_supplicant->deleteTrustedServerConfig(temp) == true)
+			  conn_type = m_supplicant->getTSType(temp);
+			  if (conn_type == 0)
+			  {
+				  QMessageBox::critical(NULL, tr("Unknown Trusted Server"), tr("The selected trusted server couldn't be found in either the system level configuration or the user's configuration!"));
+				  return;
+			  }
+
+			if (m_supplicant->deleteTrustedServerConfig(conn_type, temp) == true)
 			{
 				emit signalItemDeleted(TRUSTED_SERVERS_ITEM);
 

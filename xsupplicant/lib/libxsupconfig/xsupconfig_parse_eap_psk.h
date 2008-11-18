@@ -13,6 +13,6 @@
 
 extern parser eap_psk[];
 
-void *xsupconfig_parse_eap_psk(void **, xmlNodePtr);
+void *xsupconfig_parse_eap_psk(void **, uint8_t, xmlNodePtr);
 
 #endif  // __XSUPCONFIG_PARSE_EAP_PSK_H__

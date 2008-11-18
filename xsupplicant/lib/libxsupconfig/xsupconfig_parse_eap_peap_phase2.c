@@ -38,7 +38,7 @@ eap_methods peap_p2_meths[] = {
 
 	{NULL, 0, NULL, NULL}};
 
-void *xsupconfig_parse_eap_peap_phase2_eap(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_phase2_eap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	xmlNodePtr t = NULL;
 	char *value = NULL;
@@ -76,8 +76,9 @@ void *xsupconfig_parse_eap_peap_phase2_eap(void **attr, xmlNodePtr node)
   if (meth->init_method != NULL)
   {
 	// Go ahead and parse the EAP data.
-	meth->init_method((void **)&peap->phase2, node->children);
-	xsupconfig_parse(node->children, meth->parsedata, &peap->phase2->method_data);
+	meth->init_method((void **)&peap->phase2, config_type, node->children);
+
+	xsupconfig_parse(node->children, meth->parsedata, config_type, &peap->phase2->method_data);
   }
   else
   {

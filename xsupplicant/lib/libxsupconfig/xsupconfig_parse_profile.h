@@ -13,6 +13,7 @@
 
 extern parser profile[];
 
-void *xsupconfig_parse_profile(void **, xmlNodePtr);
+void *xsupconfig_parse_profile(void **, uint8_t, xmlNodePtr);
+void *xsupconfig_parse_user_profile(void **, uint8_t, xmlNodePtr);
 
 #endif // __XSUPCONFIG_PARSE_PROFILE_H__

@@ -13,7 +13,7 @@
 
 extern parser trusted_server[];
 
-void *xsupconfig_parse_trusted_server(void **, xmlNodePtr);
+void *xsupconfig_parse_trusted_server(void **, uint8_t, xmlNodePtr);
 
 #endif // __XSUPCONFIG_PARSE_TRUSTED_SERVER_H__
 

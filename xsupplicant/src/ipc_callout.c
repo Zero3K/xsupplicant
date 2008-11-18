@@ -46,6 +46,7 @@
 #include "config_ssid.h"
 #include "platform/cardif.h"
 #include "platform/cert_handler.h"
+#include "platform/platform.h"
 #include "error_prequeue.h"
 #include "timer.h"
 #include "wpa_common.h"
@@ -111,7 +112,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_BSSID", ipc_callout_get_bssid},
 	{"Get_Seconds_Authenticated", ipc_callout_get_seconds_authenticated},
 	{"Get_Signal_Strength_Percent", ipc_callout_get_signal_strength_percent},
-	{"Get_Connections", ipc_callout_enum_connections},
+	{"Enum_Connections", ipc_callout_enum_connections},
 	{"Get_Connection_UPW", ipc_callout_get_connection_upw},
 	{"Get_Association_Type", ipc_callout_get_association_type},
 	{"Request_Logoff", ipc_callout_request_logoff},
@@ -231,11 +232,11 @@ xmlDocPtr ipc_callout_validate_msg(xmlChar *xmlbuf, int buffersize)
 	if (strcmp((char *)prop, CMD_VERSION) != 0)
 	{
 		xmlFreeDoc(doc);
-		FREE(prop);
+		xmlFree(prop);
 		return NULL;
 	}
 
-	FREE(prop);
+	if (prop != NULL) xmlFree(prop);
 
 	return doc;
 }
@@ -1605,99 +1606,84 @@ int ipc_callout_get_signal_strength_percent(xmlNodePtr innode, xmlNodePtr *outno
 }
 
 /**
- *  \brief Handle a request for all connections defined in a configuration file.
+ * \brief Count the number of connections found in a config_connection list.
  *
- *  \param[in] innode   A pointer to the nodes that contain a request to determine all of 
- *                      the available connections.
+ * @param[in] cur   A pointer to the list that contains a connection information.
  *
- *  \param[out] outnode   A pointer to the resulting nodes that contain various information
- *                        about the available connection.  (The connection name, the device
- *                        description for the interface that a connection is bound to, the 
- *                        SSID name (if it is wireless), and the priority value for the 
- *                        connection.)
- *
- *  \retval IPC_SUCCESS on success
- *  \retval IPC_FAILURE on failure
+ * \retval int  Number of connections in the list.
  **/
-int ipc_callout_enum_connections(xmlNodePtr innode, xmlNodePtr *outnode)
+unsigned int ipc_callout_helper_count_connections(struct config_connection *cur)
 {
-	xmlNodePtr n, t;
-	struct config_connection *cur;
-	unsigned int count, i;
-	char res[100];
-	char *temp = NULL;
-	uint8_t flags = 0;
+	unsigned int count = 0;
 
-	if (innode == NULL) return IPC_FAILURE;
-
-	debug_printf(DEBUG_IPC, "Got an IPC connections request!\n");
-
-	// If we got here, then we know this is a Interface request, so we really don't need any
-	// information from indoc.  We just need to build a response, and send it off.
-	cur = config_get_connections();
-
-	n = xmlNewNode(NULL, (xmlChar *)"Connections");
-	if (n == NULL) 
-	{
-		return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-	}
-
-	count = 0;
 	while (cur != NULL)
 	{
 		count++;
 		cur = cur->next;
 	}
 
-	sprintf((char *)&res, "%d", count);
-	if (xmlNewChild(n, NULL, (xmlChar *)"Number_Of_Connections", (xmlChar *)res) == NULL)
-	{
-		xmlFreeNode(n);
-		return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-	}
+	return count;
+}
 
-	cur = config_get_connections();
+/**
+ * \brief Build a list of available connections for a certain type.
+ *
+ * @param[in] config_type   The list of connections in memory to return.
+ * @param[in] baseNode   The base node to build on.
+ *
+ * \retval XENONE on success
+ **/
+int ipc_callout_helper_build_connection_list(uint8_t config_type, xmlNodePtr baseNode)
+{
+	struct config_connection *cur = NULL;
+	xmlNodePtr t = NULL;
+	char *temp = NULL;
+	char res[100];
+	int i = 0;
+
+	cur = config_get_connections(config_type);
 	while (cur != NULL)
 	{
-		t = xmlNewChild(n, NULL, (xmlChar *)"Connection", NULL);
+		t = xmlNewChild(baseNode, NULL, (xmlChar *)"Connection", NULL);
 		if (t == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		ipc_callout_convert_amp(cur->name, &temp);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Connection_Name", (xmlChar *)temp) == NULL)
 		{
-			xmlFreeNode(n);
 			free(temp);
-			return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 		free(temp);
+
+		sprintf((char *)&res, "%d", config_type);
+		if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
+		{
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
+		}
 
 		ipc_callout_convert_amp(cur->ssid, &temp);
 		if (xmlNewChild(t, NULL, (xmlChar *)"SSID_Name", (xmlChar *)temp) == NULL)
 		{
-			xmlFreeNode(n);
 			free(temp);
-			return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 		free(temp);
 
 		ipc_callout_convert_amp(cur->device, &temp);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Device_Description", (xmlChar *)temp) == NULL)
 		{
-			xmlFreeNode(n);
 			free(temp);
-			return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 		free(temp);
 
 		sprintf((char *)&res, "%d", cur->priority);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Priority", (xmlChar *)res) == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		if (cur->association.association_type == ASSOC_AUTO)
@@ -1731,8 +1717,7 @@ int ipc_callout_enum_connections(xmlNodePtr innode, xmlNodePtr *outnode)
 		sprintf((char *)&res, "%d", i);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Encryption", (xmlChar *)res) == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		if (cur->association.auth_type == 0)
@@ -1761,19 +1746,104 @@ int ipc_callout_enum_connections(xmlNodePtr innode, xmlNodePtr *outnode)
 
 		if (xmlNewChild(t, NULL, (xmlChar *)"Authentication", (xmlChar *)res) == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		sprintf((char *)&res, "%d", cur->association.association_type);
 
 		if (xmlNewChild(t, NULL, (xmlChar *)"Association_Type", (xmlChar *)res) == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		cur = cur->next;
+	}
+
+	return XENONE;
+}
+
+/**
+ *  \brief Handle a request for all connections defined in a configuration file.
+ *
+ *  \param[in] innode   A pointer to the nodes that contain a request to determine all of 
+ *                      the available connections.
+ *
+ *  \param[out] outnode   A pointer to the resulting nodes that contain various information
+ *                        about the available connection.  (The connection name, the device
+ *                        description for the interface that a connection is bound to, the 
+ *                        SSID name (if it is wireless), and the priority value for the 
+ *                        connection.)
+ *
+ *  \retval IPC_SUCCESS on success
+ *  \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_enum_connections(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	xmlNodePtr n = NULL, t = NULL;
+	unsigned int count = 0, result = 0;
+	uint8_t flags = 0;
+	uint8_t config_type = 0;
+	xmlChar *ttype = NULL;
+	char res[100];
+
+	if (innode == NULL) return IPC_FAILURE;
+
+	debug_printf(DEBUG_IPC, "Got an IPC enum connections request!\n");
+
+	n = ipc_callout_find_node(innode, "Enum_Connections");
+	if (n == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Invalid request to enumerate connections!\n");
+		return ipc_callout_create_error(NULL, "Enum_Connections", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	t = ipc_callout_find_node(n->children, "Config_Type");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "No <Config_Type> node found in the <Enum_Connections> request!  Not sure what to do.\n");
+		return ipc_callout_create_error(NULL, "Enum_Connections", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	ttype = xmlNodeGetContent(t);
+	config_type = atoi(ttype);
+	xmlFree(ttype);
+
+	count = 0;
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		count = ipc_callout_helper_count_connections(config_get_connections(CONFIG_LOAD_GLOBAL));
+	}
+
+	if ((config_type & CONFIG_LOAD_USER) == CONFIG_LOAD_USER)
+	{
+		count += ipc_callout_helper_count_connections(config_get_connections(CONFIG_LOAD_USER));
+	}
+
+	n = xmlNewNode(NULL, (xmlChar *)"Connections");
+	if (n == NULL) 
+	{
+		return ipc_callout_create_error(NULL, "Enum_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
+
+	sprintf((char *)&res, "%d", count);
+	if (xmlNewChild(n, NULL, (xmlChar *)"Number_Of_Connections", (xmlChar *)res) == NULL)
+	{
+		xmlFreeNode(n);
+		return ipc_callout_create_error(NULL, "Enum_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
+
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		result = ipc_callout_helper_build_connection_list(CONFIG_LOAD_GLOBAL, n);
+		if (result != XENONE)
+			return ipc_callout_create_error(NULL, "Enum_Connections", result, outnode);
+	}
+
+	if ((config_type & CONFIG_LOAD_USER) == CONFIG_LOAD_USER)
+	{
+		result = ipc_callout_helper_build_connection_list(CONFIG_LOAD_USER, n);
+		if (result != XENONE)
+			return ipc_callout_create_error(NULL, "Enum_Connections", result, outnode);
 	}
 
 	(*outnode) = n;
@@ -1832,16 +1902,28 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	debug_printf(DEBUG_IPC, "Looking for connection : %s\n", request);
-	conn = config_find_connection(request);
+	conn = config_find_connection(CONFIG_LOAD_GLOBAL, request);
 	if (conn == NULL)
 	{
-		debug_printf(DEBUG_NORMAL, "Connection not found!\n");
-		free(request);
-		return ipc_callout_create_error(NULL, "Get_Connection_UPW", IPC_ERROR_INVALID_CONN_NAME, outnode);
+		// Didn't find it in the global, so look in the user specific.
+		conn = config_find_connection(CONFIG_LOAD_USER, request);
+		if (conn == NULL)
+		{
+			debug_printf(DEBUG_NORMAL, "Connection not found!\n");
+			free(request);
+			return ipc_callout_create_error(NULL, "Get_Connection_UPW", IPC_ERROR_INVALID_CONN_NAME, outnode);
+		}
 	}
 
 	free(request);
-	prof = config_find_profile(conn->profile);
+
+	// Aside from doing our best to locate the named profile, we shouldn't check that
+	// prof has a value here.  Those checks are done later.
+	prof = config_find_profile(CONFIG_LOAD_GLOBAL, conn->profile);
+	if (prof == NULL)
+	{
+		prof = config_find_profile(CONFIG_LOAD_USER, conn->profile);
+	}
 
 	n = xmlNewNode(NULL, (xmlChar *)"Connection_UPW");
 	if (n == NULL) 
@@ -2265,8 +2347,12 @@ uint8_t ipc_callout_auth_needs(struct config_connection *cur)
 
 	if (!xsup_assert((cur != NULL), "cur != NULL", FALSE)) return 0;
 
-	profile = config_find_profile(cur->profile);
-	if (profile == NULL) return 0;
+	profile = config_find_profile(CONFIG_LOAD_GLOBAL, cur->profile);
+	if (profile == NULL) 
+	{
+		profile = config_find_profile(CONFIG_LOAD_USER, cur->profile);
+		if (profile == NULL) return 0;
+	}
 
 	if (profile->method->method_num == EAP_TYPE_PEAP)
 	{
@@ -2335,12 +2421,16 @@ int ipc_callout_set_connection_upw(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	debug_printf(DEBUG_IPC, "Looking for connection : %s\n", request);
-	conn = config_find_connection(request);
+	conn = config_find_connection(CONFIG_LOAD_GLOBAL, request);
 	if (conn == NULL)
 	{
-		debug_printf(DEBUG_IPC, "Couldn't locate connection '%s'!\n", request);
-		FREE(request);
-		return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_INVALID_CONN_NAME, outnode);
+		conn = config_find_connection(CONFIG_LOAD_USER, request);
+		if (conn == NULL)
+		{
+			debug_printf(DEBUG_IPC, "Couldn't locate connection '%s'!\n", request);
+			FREE(request);
+			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_INVALID_CONN_NAME, outnode);
+		}
 	}
 
 	// Done with 'request'.
@@ -2348,11 +2438,15 @@ int ipc_callout_set_connection_upw(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	if (conn->association.auth_type != AUTH_PSK)
 	{
-		prof = config_find_profile(conn->profile);
+		prof = config_find_profile(CONFIG_LOAD_GLOBAL, conn->profile);
 		if (prof == NULL)
 		{
-			debug_printf(DEBUG_IPC, "Couldn't locate profile '%s'!\n", conn->profile);
-			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_INVALID_PROF_NAME, outnode);
+			prof = config_find_profile(CONFIG_LOAD_USER, conn->profile);
+			if (prof == NULL)
+			{
+				debug_printf(DEBUG_IPC, "Couldn't locate profile '%s'!\n", conn->profile);
+				return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_INVALID_PROF_NAME, outnode);
+			}
 		}
 	}
 
@@ -2479,12 +2573,16 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	debug_printf(DEBUG_IPC, "Looking for connection : %s\n", request);
-	conn = config_find_connection(request);
+	conn = config_find_connection(CONFIG_LOAD_GLOBAL, request);
 	if (conn == NULL)
 	{
-		debug_printf(DEBUG_IPC, "Couldn't locate connection '%s'!\n", request);
-		FREE(request);
-		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_CONN_NAME, outnode);
+		conn = config_find_connection(CONFIG_LOAD_USER, request);
+		if (conn == NULL)
+		{
+			debug_printf(DEBUG_IPC, "Couldn't locate connection '%s'!\n", request);
+			FREE(request);
+			return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_CONN_NAME, outnode);
+		}
 	}
 
 	// Done with 'request'.
@@ -2513,11 +2611,15 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	if (conn->association.auth_type == AUTH_EAP)
 	{
-		prof = config_find_profile(conn->profile);
+		prof = config_find_profile(CONFIG_LOAD_GLOBAL, conn->profile);
 		if (prof == NULL)
 		{
-			debug_printf(DEBUG_IPC, "Couldn't locate profile '%s'!\n", conn->profile);
-			return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_PROF_NAME, outnode);
+			prof = config_find_profile(CONFIG_LOAD_USER, conn->profile);
+			if (prof == NULL)
+			{
+				debug_printf(DEBUG_IPC, "Couldn't locate profile '%s'!\n", conn->profile);
+				return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_PROF_NAME, outnode);
+			}
 		}
 	}
 
@@ -2746,10 +2848,14 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	switch (xsupconfcheck_check_connection(ctx, conn_name, TRUE))
 	{
 	case CONNECTION_NEED_PIN:
-		mycon = config_find_connection(conn_name);
+		mycon = config_find_connection(CONFIG_LOAD_USER, conn_name);
+		if (mycon == NULL) mycon = config_find_connection(CONFIG_LOAD_GLOBAL, conn_name);
+
 		if (mycon != NULL)
 		{
-			myprof = config_find_profile(mycon->profile);
+			myprof = config_find_profile(CONFIG_LOAD_USER, mycon->profile);
+			if (myprof == NULL) myprof = config_find_profile(CONFIG_LOAD_GLOBAL, mycon->profile);
+
 			if (myprof != NULL)
 			{
 				if (myprof->method->method_num == EAP_TYPE_AKA)
@@ -2793,12 +2899,16 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	SET_FLAG(ctx->flags, FORCED_CONN);
 	SET_FLAG(ctx->flags, DHCP_RELEASE_RENEW);      // Force a release/renew on this auth.
-	ctx->conn = config_find_connection(conn_name);
+	ctx->conn = config_find_connection(CONFIG_LOAD_GLOBAL, conn_name);
 	if (ctx->conn == NULL)
 	{
-		debug_printf(DEBUG_IPC, "Couldn't find connection '%s'!\n", conn_name);
-		free(conn_name);
-		return ipc_callout_create_error(iface, "Request_Connection_Change", IPC_ERROR_INVALID_CONN_NAME, outnode);
+		ctx->conn = config_find_connection(CONFIG_LOAD_USER, conn_name);
+		if (ctx->conn == NULL)
+		{
+			debug_printf(DEBUG_IPC, "Couldn't find connection '%s'!\n", conn_name);
+			free(conn_name);
+			return ipc_callout_create_error(iface, "Request_Connection_Change", IPC_ERROR_INVALID_CONN_NAME, outnode);
+		}
 	}
 
 	if (ctx->intType == ETH_802_11_INT)
@@ -2825,7 +2935,11 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 	else
 	{
-		ctx->prof = config_find_profile(ctx->conn->profile);
+		ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL, ctx->conn->profile);
+		if (ctx->prof == NULL)
+		{
+			ctx->prof = config_find_profile(CONFIG_LOAD_USER, ctx->conn->profile);
+		}
 
 		// We only care that there is a profile if we are using wireless.  On wired, it is
 		// okay not to have one as that would be a case where we only want to set IP information.
@@ -3244,6 +3358,70 @@ get_ip_done:
 }
 
 /**
+ * \brief Count the number of profiles that are in the config_profiles struct.
+ *
+ * @param[in] cur   A pointer to the head of the profiles list that we want to count.
+ *
+ * \retval uint  The number of profiles that were counted.
+ **/
+unsigned int ipc_callout_helper_count_profiles(struct config_profiles *cur)
+{
+	unsigned int count = 0;
+
+	while (cur != NULL)
+	{
+		count++;
+		cur = cur->next;
+	}
+
+	return count;
+}
+
+/**
+ * \brief Build a list of profiles that are available based on the config_type value passed in.
+ *
+ * @param[in] config_type   One of the configuration types that we want to get the list from.
+ * @param[in/out] baseNode   The XML node that we want to build the list on.
+ *
+ * \retval XENONE on success, anything is a valid input to an ipc_callout_error() call.
+ **/
+int ipc_callout_helper_build_profile_list(uint8_t config_type, xmlNodePtr baseNode)
+{
+	struct config_profiles *cur = NULL;
+	char res[5];
+	xmlNodePtr t = NULL;
+	char *temp = NULL;
+
+	cur = config_get_profiles(config_type);
+	while (cur != NULL)
+	{
+		t = xmlNewChild(baseNode, NULL, (xmlChar *)"Profile", NULL);
+		if (t == NULL)
+		{
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
+		}
+
+		ipc_callout_convert_amp(cur->name, &temp);
+		if (xmlNewChild(t, NULL, (xmlChar *)"Profile_Name", (xmlChar *)temp) == NULL)
+		{
+			free(temp);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
+		}
+		free(temp);
+		
+		sprintf((char *)&res, "%d", config_type);
+		if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
+		{
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
+		}
+
+		cur = cur->next;
+	}
+
+	return XENONE;
+}
+
+/**
  *  \brief Got a request to enumerate the profiles that we know about.
  *
  *  @param[in] innode   A pointer to the node that contains the enumerate profiles
@@ -3259,8 +3437,10 @@ int ipc_callout_enum_profiles(xmlNodePtr innode, xmlNodePtr *outnode)
 	xmlNodePtr n = NULL, t = NULL;
 	unsigned int count;
 	char res[100];
-	struct config_profiles *profs = NULL, *cur = NULL;
 	char *temp = NULL;
+	uint8_t config_type = 0;
+	xmlChar *ttype = NULL;
+	int result = 0;
 
 	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
 		return IPC_FAILURE;
@@ -3269,21 +3449,38 @@ int ipc_callout_enum_profiles(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	debug_printf(DEBUG_IPC, "Got an IPC Enum profiles request!\n");
 
-	// If we got here, then we know this is a profiles request, so we really don't need any
-	// information from indoc.  We just need to build a response, and send it off.
 	n = xmlNewNode(NULL, (xmlChar *)"Profiles_List");
 	if (n == NULL) 
 	{
 		return ipc_callout_create_error(NULL, "Profiles_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
 	}
 
-	count = 0;
-
-	profs = cur = config_get_profiles();
-	while (cur != NULL)
+	t = ipc_callout_find_node(innode, "Enum_Profiles");
+	if (t == NULL)
 	{
-		count++;
-		cur = cur->next;
+		return ipc_callout_create_error(NULL, "Enum_Profiles", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	t = ipc_callout_find_node(t->children, "Config_Type");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "No <Config_Type> node found in the <Enum_Profiles> request!  Not sure what to do.\n");
+		return ipc_callout_create_error(NULL, "Enum_Profiles", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	ttype = xmlNodeGetContent(t);
+	config_type = atoi(ttype);
+	xmlFree(ttype);
+
+	count = 0;
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		count += ipc_callout_helper_count_profiles(config_get_profiles(CONFIG_LOAD_GLOBAL));
+	}
+
+	if ((config_type & CONFIG_LOAD_USER) == CONFIG_LOAD_USER)
+	{
+		count += ipc_callout_helper_count_profiles(config_get_profiles(CONFIG_LOAD_USER));
 	}
 
 	sprintf((char *)&res, "%d", count);
@@ -3293,30 +3490,92 @@ int ipc_callout_enum_profiles(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Profiles_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
 	}
 
-	cur = profs;
-	while (cur != NULL)
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
 	{
-		t = xmlNewChild(n, NULL, (xmlChar *)"Profile", NULL);
-		if (t == NULL)
-		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Profiles_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-		}
+		result = ipc_callout_helper_build_profile_list(CONFIG_LOAD_GLOBAL, n);
+		if (result != XENONE)
+			return ipc_callout_create_error(NULL, "Profiles_List", result, outnode);
+	}
 
-		ipc_callout_convert_amp(cur->name, &temp);
-		if (xmlNewChild(t, NULL, (xmlChar *)"Profile_Name", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(n);
-			free(temp);
-			return ipc_callout_create_error(NULL, "Profiles_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-		}
-		free(temp);
-		
-		cur = cur->next;
+	if ((config_type & CONFIG_LOAD_USER) == CONFIG_LOAD_USER)
+	{
+		result = ipc_callout_helper_build_profile_list(CONFIG_LOAD_USER, n);
+		if (result != XENONE)
+			return ipc_callout_create_error(NULL, "Profiles_List", result, outnode);
 	}
 
 	(*outnode) = n;
 	return IPC_SUCCESS;
+}
+
+/**
+ * \brief Count the number of trusted servers in our linked list.
+ *
+ * @param[in] cur   A pointer to a linked list of trusted server structures.
+ *
+ * \retval uint  The number of trusted servers in the list.
+ **/
+unsigned int ipc_callout_helper_count_trusted_servers(struct config_trusted_server *cur)
+{
+	unsigned int count = 0;
+
+	while (cur != NULL)
+	{
+		count++;
+		cur = cur->next;
+	}
+
+	return count;
+}
+
+/**
+ * \brief Build an XML list of trusted servers we know about.
+ *
+ * @param[in] config_type   Identifies which trusted server list we should be looking at. (System level, or user level.)
+ * @param[in] baseNode   The XML node pointer to build the list under.
+ *
+ * \retval XENONE on success, anything is an error code suitable for use in an ipc_callout_create_error().
+ **/
+int ipc_callout_helper_build_trusted_server_list(uint8_t config_type, xmlNodePtr baseNode)
+{
+	struct config_trusted_server *cur = NULL;
+	char res[5];
+	xmlNodePtr t = NULL;
+	char *temp = NULL;
+	struct config_trusted_servers *svrs = NULL;
+
+	svrs = config_get_trusted_servers(config_type);
+	
+	if (svrs == NULL) return XENONE;
+
+	cur = svrs->servers;
+
+	while (cur != NULL)
+	{
+		t = xmlNewChild(baseNode, NULL, (xmlChar *)"Server", NULL);
+		if (t == NULL)
+		{
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
+		}
+
+		ipc_callout_convert_amp(cur->name, &temp);
+		if (xmlNewChild(t, NULL, (xmlChar *)"Server_Name", (xmlChar *)temp) == NULL)
+		{
+			free(temp);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
+		}
+		free(temp);
+
+		sprintf((char *)&res, "%d", config_type);
+		if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
+		{
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
+		}
+		
+		cur = cur->next;
+	}
+
+	return XENONE;
 }
 
 /**
@@ -3337,7 +3596,10 @@ int ipc_callout_enum_trusted_servers(xmlNodePtr innode, xmlNodePtr *outnode)
 	char res[100];
 	struct config_trusted_server *cur = NULL;
 	struct config_trusted_servers *svrs = NULL;
+	uint8_t config_type = 0;
 	char *temp = NULL;
+	xmlChar *ttype = NULL;
+	int result = 0;
 
 	if (!xsup_assert((innode != NULL), "innode != NULL", FALSE))
 		return IPC_FAILURE;
@@ -3346,62 +3608,79 @@ int ipc_callout_enum_trusted_servers(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	debug_printf(DEBUG_IPC, "Got an IPC Enum trusted servers request!\n");
 
-	// If we got here, then we know this is a trusted servers request, so we really 
-	// don't need any information from indoc.  We just need to build a response, and 
-	// send it off.
 	n = xmlNewNode(NULL, (xmlChar *)"Trusted_Servers_List");
 	if (n == NULL) 
 	{
-		return ipc_callout_create_error(NULL, "Trusted_Servers_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		return ipc_callout_create_error(NULL, "Enum_Trusted_Servers", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
 	}
+
+	t = ipc_callout_find_node(innode, "Enum_Trusted_Servers");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Request didn't appear to be a valid Enum_Trusted_Servers request!\n");
+		xmlFreeNode(n);
+		return ipc_callout_create_error(NULL, "Enum_Trusted_Servers", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	t = ipc_callout_find_node(t->children, "Config_Type");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "No <Config_Type> node found in the <Get_Connections> request!  Not sure what to do.\n");
+		xmlFreeNode(n);
+		return ipc_callout_create_error(NULL, "Enum_Trusted_Servers", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	ttype = xmlNodeGetContent(t);
+	config_type = atoi(ttype);
+	xmlFree(ttype);
 
 	count = 0;
 
-	svrs = config_get_trusted_servers();
-	if (svrs == NULL)
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
 	{
-		cur = NULL;
-	}
-	else
-	{
-		cur = svrs->servers;
+		svrs = config_get_trusted_servers(CONFIG_LOAD_GLOBAL);
+		if (svrs != NULL) count += ipc_callout_helper_count_trusted_servers(svrs->servers);
 	}
 
-	while (cur != NULL)
+	if ((config_type & CONFIG_LOAD_USER) == CONFIG_LOAD_USER)
 	{
-		count++;
-		cur = cur->next;
+		svrs = config_get_trusted_servers(CONFIG_LOAD_USER);
+		if (svrs != NULL) count += ipc_callout_helper_count_trusted_servers(svrs->servers);
 	}
 
 	sprintf((char *)&res, "%d", count);
 	if (xmlNewChild(n, NULL, (xmlChar *)"Trusted_Servers_Count", (xmlChar *)res) == NULL)
 	{
 		xmlFreeNode(n);
-		return ipc_callout_create_error(NULL, "Trusted_Servers_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		return ipc_callout_create_error(NULL, "Enum_Trusted_Servers", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
 	}
 
-	if (svrs == NULL)
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
 	{
-		cur = NULL;
-	}
-	else
-	{
-		cur = svrs->servers;
-	}
-
-	while (cur != NULL)
-	{
-		ipc_callout_convert_amp(cur->name, &temp);
-		t = xmlNewChild(n, NULL, (xmlChar *)"Server_Name", (xmlChar *)temp);
-		if (t == NULL)
+		svrs = config_get_trusted_servers(CONFIG_LOAD_GLOBAL);
+		if (svrs != NULL)
 		{
-			xmlFreeNode(n);
-			free(temp);
-			return ipc_callout_create_error(NULL, "Trusted_Servers_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			result = ipc_callout_helper_build_trusted_server_list(CONFIG_LOAD_GLOBAL, n);
+			if (result != XENONE)
+			{
+				xmlFreeNode(n);
+				return ipc_callout_create_error(NULL, "Enum_Trusted_Servers", result, outnode);
+			}
 		}
-		free(temp);
-		
-		cur = cur->next;
+	}
+
+	if ((config_type & CONFIG_LOAD_USER) == CONFIG_LOAD_USER)
+	{
+		svrs = config_get_trusted_servers(CONFIG_LOAD_USER);
+		if (svrs != NULL)
+		{
+			result = ipc_callout_helper_build_trusted_server_list(CONFIG_LOAD_USER, n);
+			if (result != XENONE)
+			{
+				xmlFreeNode(n);
+				return ipc_callout_create_error(NULL, "Enum_Trusted_Servers", result, outnode);
+			}
+		}
 	}
 
 	(*outnode) = n;
@@ -3424,6 +3703,9 @@ int ipc_callout_write_config(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
 	char *filename = NULL;
+	xmlChar *temp = NULL;
+	uint8_t conf_type = 0;
+	char *temp_filename = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -3453,10 +3735,49 @@ int ipc_callout_write_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		filename = NULL;
 	}
 
-	if (xsupconfwrite_write_config(filename) != XSUPCONFWRITE_ERRNONE)
+	t = ipc_callout_find_node(n, "Config_Type");
+	if (t == NULL)
 	{
-		FREE(filename);
-		return ipc_callout_create_error(NULL, "Write_Config", IPC_ERROR_CANT_WRITE_CONFIG, outnode);
+		debug_printf(DEBUG_IPC, "Couldn't find the <Config_Type> node in the request!\n");
+		return ipc_callout_create_error(NULL, "Write_Config", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	temp = xmlNodeGetContent(t);
+	conf_type = atoi(temp);
+	xmlFree(temp);
+
+	if ((conf_type == CONFIG_LOAD_USER) && (filename == NULL))
+	{
+		// We need to determine the path to store the user's config.
+		temp_filename = platform_get_users_data_store_path();
+		if (temp_filename == NULL) return -1;
+
+		filename = Malloc(strlen(temp_filename)+50);
+		if (filename == NULL)
+		{
+			debug_printf(DEBUG_NORMAL, "Unable to create the path to store the current user's configuration!\n");
+			FREE(temp_filename);
+			return -1;
+		}
+
+		strcpy(filename, temp_filename);
+		strcat(filename, "\\xsupplicant.user.conf");
+		FREE(temp_filename);
+
+		if (xsupconfwrite_write_user_config(filename) != XSUPCONFWRITE_ERRNONE)
+		{
+			FREE(filename);
+			return ipc_callout_create_error(NULL, "Write_Config", IPC_ERROR_CANT_WRITE_CONFIG, outnode);
+		}
+	}
+	else
+	{
+		// Write the system level config.
+		if (xsupconfwrite_write_config(filename) != XSUPCONFWRITE_ERRNONE)
+		{
+			FREE(filename);
+			return ipc_callout_create_error(NULL, "Write_Config", IPC_ERROR_CANT_WRITE_CONFIG, outnode);
+		}
 	}
 
 	FREE(filename);
@@ -3530,6 +3851,9 @@ int ipc_callout_get_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	xmlNodePtr n = NULL, t = NULL;
 	char *profname = NULL;
 	struct config_profiles *profs = NULL;
+	uint8_t config_type = 0;
+	char temp[5];
+	xmlChar *content = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -3549,15 +3873,35 @@ int ipc_callout_get_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Get_Profile_Config", IPC_ERROR_CANT_LOCATE_NODE, outnode);
 	}
 
-	profname = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	profname = _strdup(content);
+	xmlFree(content);
 
-	if (profname == NULL)
+	if ((profname == NULL) || (strlen(profname) == 0))
 	{
 		debug_printf(DEBUG_IPC, "Couldn't determine the name of the profile we want to get!\n");
+		FREE(profname);
 		return ipc_callout_create_error(NULL, "Get_Profile_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	}
 
 	debug_printf(DEBUG_IPC, "Looking for profile '%s'.\n", profname);
+
+	t = ipc_callout_find_node(n->children, "Config_Type");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node from 'Get_Profile_Config'!\n");
+		FREE(profname);
+		return ipc_callout_create_error(NULL, "Get_Profile_Config", IPC_ERROR_CANT_LOCATE_NODE, outnode);
+	}
+
+	content = xmlNodeGetContent(t);
+	config_type = atoi(content);
+	xmlFree(content);
+
+	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
+	{
+		return ipc_callout_create_error(NULL, "Get_Profile_Config", IPC_ERROR_INVALID_CONFIG, outnode);
+	}
 
 	n = xmlNewNode(NULL, (xmlChar *)"Profile_Config");
 	if (n == NULL) 
@@ -3566,7 +3910,7 @@ int ipc_callout_get_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Get_Profile_Config", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
 	}
 
-	profs = config_get_profiles();
+	profs = config_get_profiles(config_type);
 
 	while ((profs != NULL) && (strcmp(profs->name, profname) != 0))
 	{
@@ -3576,17 +3920,19 @@ int ipc_callout_get_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	if (profs == NULL)
 	  {
 		  FREE(profname);
+		  xmlFreeNode(n);
 		  return ipc_callout_create_error(NULL, "Get_Profile_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	  }
 
 	if (strcmp(profs->name, profname) != 0)
 	{
 		FREE(profname);
+		xmlFreeNode(n);
 		return ipc_callout_create_error(NULL, "Get_Profile_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	}
 
 	// Write out ALL settings, so there is no confusion on the other end.
-	t = xsupconfwrite_profile_create_tree(profs, TRUE);
+	t = xsupconfwrite_profile_create_tree(profs, config_type, TRUE);
 	if (t == NULL) 
 	{
 		xmlFreeNode(n);
@@ -3622,6 +3968,9 @@ int ipc_callout_get_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	xmlNodePtr n = NULL, t = NULL;
 	char *connname = NULL;
 	struct config_connection *conns = NULL;
+	uint8_t config_type = 0;
+	char temp[5];
+	xmlChar *content = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -3641,15 +3990,35 @@ int ipc_callout_get_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Get_Connection_Config", IPC_ERROR_CANT_LOCATE_NODE, outnode);
 	}
 
-	connname = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	connname = _strdup(content);
+	xmlFree(content);
 
-	if (connname == NULL)
+	if ((connname == NULL) || (strlen(connname) == 0))
 	{
 		debug_printf(DEBUG_IPC, "Couldn't determine the name of the connection we want to get!\n");
+		FREE(connname);
 		return ipc_callout_create_error(NULL, "Get_Connection_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	}
 
 	debug_printf(DEBUG_IPC, "Looking for connection '%s'.\n", connname);
+
+	t = ipc_callout_find_node(n->children, "Config_Type");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node from 'Get_Connection_Config'!\n");
+		FREE(connname);
+		return ipc_callout_create_error(NULL, "Get_Connection_Config", IPC_ERROR_CANT_LOCATE_NODE, outnode);
+	}
+
+	content = xmlNodeGetContent(t);
+	config_type = atoi(content);
+	xmlFree(content);
+
+	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
+	{
+		return ipc_callout_create_error(NULL, "Get_Connection_Config", IPC_ERROR_INVALID_CONFIG, outnode);
+	}
 
 	n = xmlNewNode(NULL, (xmlChar *)"Connection_Config");
 	if (n == NULL)
@@ -3658,7 +4027,7 @@ int ipc_callout_get_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Get_Connection_Config", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
 	}
 
-	conns = config_get_connections();
+	conns = config_get_connections(config_type);
 
 	while ((conns != NULL) && (strcmp(conns->name, connname) != 0))
 	{
@@ -3668,17 +4037,19 @@ int ipc_callout_get_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	if (conns == NULL)
 	  {
 		  FREE(connname);
+		  xmlFreeNode(n);
 	    return ipc_callout_create_error(NULL, "Get_Connection_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	  }
 
 	if (strcmp(conns->name, connname) != 0)
 	{
 		FREE(connname);
+		xmlFreeNode(n);
 		return ipc_callout_create_error(NULL, "Get_Connection_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	}
 
 	// Write out ALL settings, so there is no confusion on the other end.
-	t = xsupconfwrite_connection_create_tree(conns, TRUE);
+	t = xsupconfwrite_connection_create_tree(conns, config_type, TRUE);
 	if (t == NULL) 
 	{
 		xmlFreeNode(n);
@@ -3715,6 +4086,9 @@ int ipc_callout_get_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 	char *tsname = NULL;
 	struct config_trusted_server *ts = NULL;
 	struct config_trusted_servers *tss = NULL;
+	uint8_t config_type = 0;
+	char temp[5];
+	xmlChar *content = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -3731,28 +4105,53 @@ int ipc_callout_get_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 	if (t == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't get 'Name' node from 'Get_Trusted_Server_Config'!\n");
-		return ipc_callout_create_error(NULL, "Get_Profile_Config", IPC_ERROR_CANT_LOCATE_NODE, outnode);
+		return ipc_callout_create_error(NULL, "Get_Trusted_Server_Config", IPC_ERROR_CANT_LOCATE_NODE, outnode);
 	}
 
-	tsname = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	tsname = _strdup(content);
+	xmlFree(content);
 
-	if (tsname == NULL)
+	if ((tsname == NULL) || (strlen(tsname) == 0))
 	{
 		debug_printf(DEBUG_IPC, "Couldn't determine the name of the trusted server we want to get!\n");
+		FREE(tsname);
 		return ipc_callout_create_error(NULL, "Get_Trusted_Server_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	}
 
 	debug_printf(DEBUG_IPC, "Looking for connection '%s'.\n", tsname);
 
+	t = ipc_callout_find_node(n->children, "Config_Type");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node from 'Get_Trusted_Server_Config'!\n");
+		FREE(tsname);
+		return ipc_callout_create_error(NULL, "Get_Trusted_Server_Config", IPC_ERROR_CANT_LOCATE_NODE, outnode);
+	}
+
+	content = xmlNodeGetContent(t);
+	config_type = atoi(content);
+	xmlFree(content);
+
+	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
+	{
+		return ipc_callout_create_error(NULL, "Get_Trusted_Server_Config", IPC_ERROR_INVALID_CONFIG, outnode);
+	}
+
 	n = xmlNewNode(NULL, (xmlChar *)"Trusted_Server_Config");
 	if (n == NULL) 
+	{
+		FREE(tsname);
 		return ipc_callout_create_error(NULL, "Get_Trusted_Server_Config", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
 
-	tss = config_get_trusted_servers();
+	tss = config_get_trusted_servers(config_type);
 
 	if (tss == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't locate a <Trusted_Servers> block!\n");
+		FREE(tsname);
+		xmlFreeNode(n);
 		return ipc_callout_create_error(NULL, "Get_Trusted_Server_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	}
 
@@ -3765,13 +4164,18 @@ int ipc_callout_get_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 
 	if (ts == NULL)
 	{
+		FREE(tsname);
+		xmlFreeNode(n);
 		return ipc_callout_create_error(NULL, "Get_Trusted_Server_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	}
 
 	if (strcmp(ts->name, tsname) != 0)
 	{
+		FREE(tsname);
+		xmlFreeNode(n);
 		return ipc_callout_create_error(NULL, "Get_Trusted_Server_Config", IPC_ERROR_CANT_GET_CONFIG, outnode);
 	}
+	FREE(tsname);
 
 	// Write out ALL settings, so there is no confusion on the other end.
 	t = xsupconfwrite_trusted_server_create_tree(ts, TRUE);
@@ -3898,10 +4302,11 @@ int ipc_callout_get_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
  *         ipc_callout_create_error() to create an error document to return
  *         to the IPC caller.
  **/
-int ipc_callout_get_delete_name(xmlNodePtr innode, char *cmdname, char *findtag, char **searchval)
+int ipc_callout_get_delete_name(xmlNodePtr innode, char *cmdname, char *findtag, char **searchval, uint8_t *config_type)
 {
   xmlNodePtr n = NULL, t = NULL;
-  char *resval;
+  char *resval = NULL;
+  xmlChar *content = NULL;
 
   if (innode == NULL) return IPC_ERROR_INVALID_NODE;
 
@@ -3920,16 +4325,31 @@ int ipc_callout_get_delete_name(xmlNodePtr innode, char *cmdname, char *findtag,
       return IPC_ERROR_CANT_LOCATE_NODE;
     }
 
-  resval = (char *)xmlNodeGetContent(t);
+  content = xmlNodeGetContent(t);
+  resval = _strdup(content);
+  xmlFree(content);
 
-  if (resval == NULL)
+  if ((resval == NULL) || (strlen(resval) == 0))
     {
       debug_printf(DEBUG_IPC, "Couldn't determine the name of the %s we want "
 		   "to delete!\n", findtag);
+	  FREE(resval);
       return IPC_ERROR_CANT_GET_CONFIG;
     }
 
   debug_printf(DEBUG_IPC, "Looking for '%s'\n", resval);
+
+  t = ipc_callout_find_node(n->children, "Config_Type");
+  if (t == NULL)
+  {
+	  FREE(resval);
+	  return IPC_ERROR_INVALID_NODE;
+  }
+
+  content = xmlNodeGetContent(t);
+  (*config_type) = (uint8_t)atoi((char *)content);
+  xmlFree(content);
+
   (*searchval) = resval;
 
   return IPC_SUCCESS;
@@ -3945,16 +4365,19 @@ int ipc_callout_get_delete_name(xmlNodePtr innode, char *cmdname, char *findtag,
  * @param[out] searchval   The value that the caller should be looking for.  The
  *                         caller is expected to free this memory when it is done
  *                         using it.
+ * @param[out] config_type   The type of configuration we want to look at.
+ * @param[out] force   Should we force the deletion of this item.
  *
  * \retval IPC_SUCCESS on success
  * \retval !IPC_SUCCESS on failure (this value should be fed in to 
  *         ipc_callout_create_error() to create an error document to return
  *         to the IPC caller.
  **/
-int ipc_callout_get_delete_name_and_force(xmlNodePtr innode, char *cmdname, char *findtag, char **searchval, int *force)
+int ipc_callout_get_delete_name_and_force(xmlNodePtr innode, char *cmdname, char *findtag, char **searchval, uint8_t *config_type, int *force)
 {
   xmlNodePtr n = NULL, t = NULL;
-  char *resval;
+  char *resval = NULL;
+  xmlChar *content = NULL;
 
   if (innode == NULL) return IPC_ERROR_INVALID_NODE;
 
@@ -3984,6 +4407,16 @@ int ipc_callout_get_delete_name_and_force(xmlNodePtr innode, char *cmdname, char
 
   debug_printf(DEBUG_IPC, "Looking for '%s'\n", resval);
   (*searchval) = resval;
+
+  t = ipc_callout_find_node(n->children, "Config_Type");
+  if (t == NULL)
+  {
+	  return IPC_ERROR_INVALID_NODE;
+  }
+
+  content = xmlNodeGetContent(t);
+  (*config_type) = (uint8_t)atoi((char *)content);
+  xmlFree(content);
 
   t = ipc_callout_find_node(n->children, "Force");
   if (t == NULL)
@@ -4060,9 +4493,12 @@ int ipc_callout_delete_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
   char *name = NULL;
   int retval;
   context *ctx = NULL;
+  xmlNodePtr t = NULL;
+  xmlChar *content = NULL;
+  uint8_t config_type = 0;
 
   retval = ipc_callout_get_delete_name(innode, "Delete_Connection_Config", 
-		"Name", &name);
+		"Name", &name, &config_type);
   if (retval != IPC_SUCCESS)
   {
 	  FREE(name);
@@ -4075,7 +4511,16 @@ int ipc_callout_delete_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 	  return ipc_callout_create_error(ctx->intName, "Delete_Connection_Config", IPC_ERROR_CANT_DEL_CONN_IN_USE, outnode);
   }
 
-  if (config_delete_connection(name) != XENONE)
+  if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+  {
+	  if (platform_user_is_admin() != TRUE)
+	  {
+		  // User can't delete this one.
+		  return ipc_callout_create_error(ctx->intName, "Delete_Connection_Config", IPC_ERROR_USER_NOT_ADMIN, outnode);
+	  }
+  }
+
+  if (config_delete_connection(config_type, name) != XENONE)
 	{
 	  debug_printf(DEBUG_NORMAL, "Request to delete a connection that "
 		       "was not found!\n");
@@ -4123,6 +4568,38 @@ int ipc_callout_is_profile_in_use(char *name)
 }
 
 /**
+ * \brief Determine if a profile is in use in a specific connection list.
+ *
+ * @param[in] config_type   Should we be looking in the system level, or user level config?
+ * @param[in] name   The name of the profile we are checking.
+ *
+ * \retval TRUE if the profile was found connected to a connection in the list.
+ * \retval FALSE if the profile was not found in the connection list.
+ **/
+int ipc_callout_helper_is_profile_in_use(uint8_t config_type, char *name)
+{
+  struct config_connection *cur = NULL;
+
+  if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL) 
+	  cur = conf_connections;
+  else
+	  cur = conf_user_connections;
+
+	while ((cur != NULL) && ((cur->profile == NULL) || (strcmp(cur->profile, name) != 0)))
+	{
+		cur = cur->next;
+	}
+
+	if (cur != NULL)
+	{
+		// We found something.
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+/**
  *  \brief Got a request to delete a profile that we know about.
  *
  *  @param[in] innode   A pointer to the node that contains the request to 
@@ -4139,10 +4616,11 @@ int ipc_callout_delete_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
   char *name = NULL;
   int retval = 0;
   int forced = 0;
-  struct config_connection *cur = NULL;
+
+  uint8_t config_type = 0;
 
   retval = ipc_callout_get_delete_name_and_force(innode, "Delete_Profile_Config", 
-		"Name", &name, &forced);
+		"Name", &name, &config_type, &forced);
   if (retval != IPC_SUCCESS)
   {
 	  free(name);
@@ -4151,23 +4629,27 @@ int ipc_callout_delete_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 
   if (forced == FALSE)
   {
-	// Verify that the profile isn't still in use.
-	cur = conf_connections;
-
-	while ((cur != NULL) && ((cur->profile == NULL) || (strcmp(cur->profile, name) != 0)))
-	{
-		cur = cur->next;
-	}
-
-	if (cur != NULL)
+	if ((ipc_callout_helper_is_profile_in_use(CONFIG_LOAD_GLOBAL, name) == TRUE) ||
+		(ipc_callout_helper_is_profile_in_use(CONFIG_LOAD_USER, name) == TRUE))
 	{
 		// We found something.
 		  free(name);
 		  return ipc_callout_create_error(NULL, "Delete_Profile_Config", IPC_ERROR_STILL_IN_USE, outnode);
+
 	}
   }
 
-  if (config_delete_profile(name) != XENONE)
+  if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+  {
+	  if (platform_user_is_admin() != TRUE)
+	  {
+		  // User can't delete this one.
+		  free(name);
+		  return ipc_callout_create_error(NULL, "Delete_Profile_Config", IPC_ERROR_USER_NOT_ADMIN, outnode);
+	  }
+  }
+
+  if (config_delete_profile(config_type, name) != XENONE)
 	{
 	  debug_printf(DEBUG_NORMAL, "Request to delete a profile that "
 		       "was not found!\n");
@@ -4196,10 +4678,11 @@ int ipc_callout_delete_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_delete_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
 {
   char *name = NULL;
-  int retval;
+  int retval = 0;
+  uint8_t config_type = 0;		// Ignored since interface configs can only be global.
 
   retval = ipc_callout_get_delete_name(innode, "Delete_Interface_Config", 
-		"Description", &name);
+		"Description", &name, &config_type);
   if (retval != IPC_SUCCESS)
   {
 	  return ipc_callout_create_error(NULL, "Delete_Interface_Config", retval, outnode);
@@ -4287,34 +4770,25 @@ int ipc_callout_is_trusted_server_in_use(char *name)
 }
 
 /**
- *  \brief Got a request to delete a trusted server that we know about.
+ * \brief Based on the config_type determine if the named trusted server is in use by
+ *        an existing profile.
  *
- *  @param[in] innode   A pointer to the node that contains the request to 
- *                      delete a trusted server from memory.
- *                      
- *  @param[out] outnode   The resulting XML node(s) from the delete trusted
- *                        server request.
+ * @param[in] config_type   One of CONFIG_LOAD_GLOBAL, or CONFIG_LOAD_USER.
+ * @param[in] name   The name of the trusted server we want to look for.
  *
- *  \retval IPC_SUCCESS   on success
- *  \retval IPC_FAILURE   on failure
+ * \retval TRUE if it is in use in this list.
+ * \retval FALSE if it isn't in use in this list.
  **/
-int ipc_callout_delete_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode)
+int ipc_callout_helper_is_trusted_server_in_use(uint8_t config_type, char *name)
 {
-  char *name = NULL;
-  char *tsname = NULL;
-  int retval = 0;
-  int done = FALSE;
   struct config_profiles *cur = NULL;
+  char *tsname = NULL;
+  int done = FALSE;
 
-  retval = ipc_callout_get_delete_name(innode, "Delete_Trusted_Server_Config", 
-		"Name", &name);
-  if (retval != IPC_SUCCESS)
-  {
-	  return ipc_callout_create_error(NULL, "Delete_Trusted_Server_Config", retval, outnode);
-  }
-
-  // Verify that the trusted server isn't still in use.
-  cur = conf_profiles;
+  if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	cur = conf_profiles;
+  else
+	  cur = conf_user_profiles;
 
   while ((cur != NULL) && (done == FALSE) && (name != NULL))
   {
@@ -4335,11 +4809,51 @@ int ipc_callout_delete_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outn
   if (cur != NULL)
   {
 	  // We found something.
-	  free(name);
-	  return ipc_callout_create_error(NULL, "Delete_Trusted_Server_Config", IPC_ERROR_STILL_IN_USE, outnode);
+	  return TRUE;
   }
 
-  if (config_delete_trusted_server(name) != XENONE)
+  return FALSE;
+}
+
+/**
+ *  \brief Got a request to delete a trusted server that we know about.
+ *
+ *  @param[in] innode   A pointer to the node that contains the request to 
+ *                      delete a trusted server from memory.
+ *                      
+ *  @param[out] outnode   The resulting XML node(s) from the delete trusted
+ *                        server request.
+ *
+ *  \retval IPC_SUCCESS   on success
+ *  \retval IPC_FAILURE   on failure
+ **/
+int ipc_callout_delete_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+  char *name = NULL;
+  int retval = 0;
+  uint8_t config_type = 0;
+
+  retval = ipc_callout_get_delete_name(innode, "Delete_Trusted_Server_Config", 
+		"Name", &name, &config_type);
+  if (retval != IPC_SUCCESS)
+  {
+	  return ipc_callout_create_error(NULL, "Delete_Trusted_Server_Config", retval, outnode);
+  }
+
+	if ((ipc_callout_helper_is_trusted_server_in_use(CONFIG_LOAD_GLOBAL, name) == TRUE) ||
+		(ipc_callout_helper_is_trusted_server_in_use(CONFIG_LOAD_USER, name) == TRUE))
+	{
+	  free(name);
+	  return ipc_callout_create_error(NULL, "Delete_Trusted_Server_Config", IPC_ERROR_STILL_IN_USE, outnode);
+	}
+
+	if (platform_user_is_admin() != TRUE)
+	{
+		free(name);
+		return ipc_callout_create_error(NULL, "Delete_Trusted_Server_Config", IPC_ERROR_USER_NOT_ADMIN, outnode);
+	}
+
+  if (config_delete_trusted_server(config_type, name) != XENONE)
 	{
 	  debug_printf(DEBUG_NORMAL, "Request to delete a trusted server that "
 		       "was not found!\n");
@@ -4388,7 +4902,7 @@ int ipc_callout_set_globals_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Globals_Config", IPC_ERROR_MALLOC, outnode);
 	}
 
-	xsupconfig_parse(n->children->children, globals, (void **)&newg);
+	xsupconfig_parse(n->children->children, globals, CONFIG_LOAD_GLOBAL, (void **)&newg);
 	if (newg == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse config global information!\n");
@@ -4440,6 +4954,8 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 	struct config_connection *newc = NULL;
 	struct config_connection *tempc = NULL;
 	xmlNodePtr n = NULL, t = NULL;
+	int config_type = 0;
+	xmlChar *temp = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -4460,7 +4976,7 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_MALLOC, outnode);
 	}
 
-	xsupconfig_parse(n->children->children, connection, (void **)&newc);
+	xsupconfig_parse(n->children->children, connection, CONFIG_LOAD_GLOBAL, (void **)&newc);
 	if (newc == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse connection config information!\n");
@@ -4480,22 +4996,60 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_NOT_ALLOWED, outnode);
 	}
 */
-
-	t = ipc_callout_find_node(n->children, "Connection");
-	if (t == NULL)
+	t = ipc_callout_find_node(n->children, "Config_Type");
+	if (t == NULL) 
 	{
-		debug_printf(DEBUG_IPC, "Couldn't locate <Connection> node to check OU!\n");
-		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_PARSING, outnode);
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node.\n");
+		return ipc_callout_create_error(NULL, "Config_Type", IPC_ERROR_INVALID_NODE, outnode);	
 	}
 
-	newc->ou = (char *)xmlGetProp(t, (xmlChar *)"OU");   // Should return NULL if it isn't there.
+	temp = xmlNodeGetContent(t);
+	config_type = atoi(temp);
+	xmlFree(temp);
+	debug_printf(DEBUG_IPC, "Setting connection for config type %d.\n", config_type);
+
+	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
+	{
+		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_INVALID_CONFIG, outnode);
+	}
+
+	if (config_type == CONFIG_LOAD_GLOBAL)
+	{
+		// Only administrative users can do this.
+		if (platform_user_is_admin() != TRUE)
+		{
+			debug_printf(DEBUG_NORMAL, "You cannot change the connection settings for this connection.  Only an administrative user can do this.\n");
+			return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_USER_NOT_ADMIN, outnode);
+		}
+	}
 
 	// XXX Band-aid to make the UI work correctly.  If the connection
 	// is in use we will only update the priority.  Updating everything
 	// could cause a crash.
 	if (ipc_callout_is_connection_in_use(newc->name) != TRUE)
 	{
-		if (add_change_config_connections(newc) != XENONE)
+		// Verify that if the connection exists it is in the configuration that the UI instructed us to update.
+		if (config_type == CONFIG_LOAD_GLOBAL)
+		{
+			// See if it exists in user space.
+			if (config_find_connection(CONFIG_LOAD_USER, newc->name) != NULL)
+			{
+				// The request asked us to create a connection in the wrong config.  Scream.
+				delete_config_single_connection(&newc);
+				return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_CONFIG_CONFLICT, outnode);
+			}
+		}
+		else
+		{
+			if (config_find_connection(CONFIG_LOAD_GLOBAL, newc->name) != NULL)
+			{
+				// The request asked us to create a connection in the wrong config.  Scream.
+				delete_config_single_connection(&newc);
+				return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_CONFIG_CONFLICT, outnode);
+			}
+		}
+
+		if (add_change_config_connections(config_type, newc) != XENONE)
 		{
 			debug_printf(DEBUG_NORMAL, "Couldn't change connection data!\n");
 			return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_CANT_CHANGE_CONFIG, outnode);
@@ -4503,7 +5057,7 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 	else
 	{
-		tempc = config_find_connection(newc->name);
+		tempc = config_find_connection(config_type, newc->name);
 		if (tempc != NULL)
 		{
 			tempc->priority = newc->priority;
@@ -4532,6 +5086,8 @@ int ipc_callout_set_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	struct config_profiles *newp = NULL;
 	xmlNodePtr n = NULL, t = NULL;
+	xmlChar *content = NULL;
+	uint8_t config_type = 0;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -4543,6 +5099,30 @@ int ipc_callout_set_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		debug_printf(DEBUG_IPC, "Couldn't get 'Set_Profile_Config' node.\n");
 		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_INVALID_NODE, outnode);	
 	}
+
+	t = ipc_callout_find_node(n->children, "Config_Type");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node.\n");
+		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	content = xmlNodeGetContent(t);
+	config_type = (uint8_t)atoi((char *)content);
+	xmlFree(content);
+
+	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
+	{
+		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_INVALID_CONFIG, outnode);
+	}
+
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		if (platform_user_is_admin() != TRUE)
+		{
+			return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_USER_NOT_ADMIN, outnode);
+		}
+	}
 	
 	// Set up the new ones.
 	newp = Malloc(sizeof(struct config_profiles));
@@ -4552,7 +5132,14 @@ int ipc_callout_set_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_MALLOC, outnode);
 	}
 
-	xsupconfig_parse(n->children->children, profile, (void **)&newp);
+	t = ipc_callout_find_node(n->children, "Profile");
+	if (t == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Profile' node.\n");
+		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_INVALID_NODE, outnode);	
+	}
+
+	xsupconfig_parse(t->children, profile, CONFIG_LOAD_GLOBAL, (void **)&newp);
 	if (newp == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse profile config information!\n");
@@ -4574,16 +5161,7 @@ int ipc_callout_set_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 	*/
 
-	t = ipc_callout_find_node(n->children, "Profile");
-	if (t == NULL)
-	{
-		debug_printf(DEBUG_IPC, "Couldn't locate <Profile> node to check OU!\n");
-		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_PARSING, outnode);
-	}
-
-	newp->ou = (char *)xmlGetProp(t, (xmlChar *)"OU");   // Should return NULL if it isn't there.
-
-	if (add_change_config_profiles(newp) != XENONE)
+	if (add_change_config_profiles(config_type, newp) != XENONE)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't change profile data!\n");
 		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_CANT_CHANGE_CONFIG, outnode);
@@ -4636,7 +5214,9 @@ void ipc_callout_reset_eap_cert_state()
 int ipc_callout_set_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	struct config_trusted_server *newts = NULL;
-	xmlNodePtr n = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	xmlChar *content = NULL;
+	uint8_t config_type = 0;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -4648,6 +5228,30 @@ int ipc_callout_set_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 		debug_printf(DEBUG_IPC, "Couldn't get 'Set_Trusted_Server_Config' node.\n");
 		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_INVALID_NODE, outnode);	
 	}
+
+	t = ipc_callout_find_node(n->children, "Config_Type");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node.\n");
+		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_INVALID_NODE, outnode);
+	}
+
+	content = xmlNodeGetContent(t);
+	config_type = (uint8_t)atoi((char *)content);
+	xmlFree(content);
+
+	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
+	{
+		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_INVALID_CONFIG, outnode);
+	}
+
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		if (platform_user_is_admin() != TRUE)
+		{
+			return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_USER_NOT_ADMIN, outnode);
+		}
+	}
 	
 	// Set up the new ones.
 	newts = Malloc(sizeof(struct config_trusted_server));
@@ -4657,7 +5261,14 @@ int ipc_callout_set_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_MALLOC, outnode);
 	}
 
-	xsupconfig_parse(n->children->children, trusted_server, (void **)&newts);
+	t = ipc_callout_find_node(n->children, "Trusted_Server");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't find trusted server config information!\n");
+		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_PARSING, outnode);
+	}
+
+	xsupconfig_parse(t->children, trusted_server, CONFIG_LOAD_GLOBAL, (void **)&newts);
 	if (newts == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse trusted server config information!\n");
@@ -4674,7 +5285,7 @@ int ipc_callout_set_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_NOT_ALLOWED, outnode);
 	}
 
-	if (add_change_config_trusted_server(newts) != XENONE)
+	if (add_change_config_trusted_server(config_type, newts) != XENONE)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't add/change trusted server data in memory!\n");
 		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_CANT_CHANGE_CONFIG, outnode);
@@ -4724,7 +5335,7 @@ int ipc_callout_set_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Interface_Config", IPC_ERROR_MALLOC, outnode);
 	}
 
-	xsupconfig_parse(n->children->children, interf, (void **)&newif);
+	xsupconfig_parse(n->children->children, interf, CONFIG_LOAD_GLOBAL, (void **)&newif);
 	if (newif == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse interface information!\n");
@@ -5979,79 +6590,57 @@ int ipc_callout_get_error_queue(xmlNodePtr innode, xmlNodePtr *outnode)
 }
 
 /**
- *  \brief Handle a request for connections defined in a configuration file for which there is a
- *         chance that the supplicant could use.
+ * \brief Enumerate connections that we might be able to connect to.
  *
- *  \param[in] innode   A pointer to the nodes that contain a request to determine all of 
- *                      the available connections.
+ * @param[in] config_type  One of CONFIG_LOAD_GLOBAL, or CONFIG_LOAD_USER.
+ * @param[in] baseNode   The XML node that we will build out connection list on.
+ * @param[out] total_count   The number of connections in our list.
  *
- *  \param[out] outnode   A pointer to the resulting nodes that contain various information
- *                        about the available connection.  (The connection name, the device
- *                        description for the interface that a connection is bound to, the 
- *                        SSID name (if it is wireless), and the priority value for the 
- *                        connection.)
- *
- *  \retval IPC_SUCCESS on success
- *  \retval IPC_FAILURE on failure
+ * \retval XENONE on success, any other result is suitable for use in an ipc_callout_create_error() call.
  **/
-int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode)
+int ipc_callout_helper_enum_possible_connections(uint8_t config_type, xmlNodePtr baseNode, int *total_count)
 {
-	xmlNodePtr n = NULL, t = NULL;
+	xmlNodePtr t = NULL;
 	struct config_connection *cur = NULL;
 	struct interfaces *liveint = NULL;
 	struct xsup_interfaces *confint = NULL;
-	unsigned int count, i;
+	unsigned int count = 0, i = 0;
 	char res[100];
 	char *temp = NULL;
 	int flags = 0;
 	context *ctx = NULL;
 
-	if (innode == NULL) return IPC_FAILURE;
-
-	debug_printf(DEBUG_IPC, "Got an IPC possible connections request!\n");
-
-	// If we got here, then we know this is a possible connections request, so we really don't need any
-	// information from indoc.  We just need to build a response, and send it off.
-
-	// If cur is NULL, it is okay.  This will result in us sending an empty set to the UI.
-	cur = config_get_connections();
-
-	n = xmlNewNode(NULL, (xmlChar *)"Possible_Connections");
-	if (n == NULL) 
-	{
-		return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-	}
-
-	count = 0;
-
-	cur = config_get_connections();
+	cur = config_get_connections(config_type);
 	while (cur != NULL)
 	{
 		// Determine if this connection should be displayed.
 		count++;
 
-		t = xmlNewChild(n, NULL, (xmlChar *)"Connection", NULL);
+		t = xmlNewChild(baseNode, NULL, (xmlChar *)"Connection", NULL);
 		if (t == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		ipc_callout_convert_amp(cur->name, &temp);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Connection_Name", (xmlChar *)temp) == NULL)
 		{
-			xmlFreeNode(n);
 			free(temp);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 		free(temp);
+
+		sprintf(res, "%d", config_type);
+		if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", res) == NULL)
+		{
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
+		}
 
 		ipc_callout_convert_amp(cur->ssid, &temp);
 		if (xmlNewChild(t, NULL, (xmlChar *)"SSID_Name", (xmlChar *)temp) == NULL)
 		{
-			xmlFreeNode(n);
 			free(temp);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 		free(temp);
 
@@ -6116,8 +6705,7 @@ int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode
 
 		if (cur == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_INVALID_REQUEST, outnode);
+			return IPC_ERROR_INVALID_REQUEST;
 		}
 
 		flags |= ipc_callout_auth_needs(cur);
@@ -6125,24 +6713,21 @@ int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode
 		sprintf((char *)&res, "%d", flags);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Flags", (xmlChar *)res) == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		ipc_callout_convert_amp(cur->device, &temp);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Device_Description", (xmlChar *)temp) == NULL)
 		{
-			xmlFreeNode(n);
 			free(temp);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 		free(temp);
 
 		sprintf((char *)&res, "%d", cur->priority);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Priority", (xmlChar *)res) == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		if (cur->association.association_type == ASSOC_AUTO)
@@ -6172,8 +6757,7 @@ int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode
 		sprintf((char *)&res, "%d", i);
 		if (xmlNewChild(t, NULL, (xmlChar *)"Encryption", (xmlChar *)res) == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		if (cur->association.auth_type == 0)
@@ -6202,12 +6786,70 @@ int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode
 
 		if (xmlNewChild(t, NULL, (xmlChar *)"Authentication", (xmlChar *)res) == NULL)
 		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+			return IPC_ERROR_CANT_ALLOCATE_NODE;
 		}
 
 		cur = cur->next;
 	}
+
+	(*total_count) = count;
+
+	return XENONE;
+}
+
+/**
+ *  \brief Handle a request for connections defined in a configuration file for which there is a
+ *         chance that the supplicant could use.
+ *
+ *  \param[in] innode   A pointer to the nodes that contain a request to determine all of 
+ *                      the available connections.
+ *
+ *  \param[out] outnode   A pointer to the resulting nodes that contain various information
+ *                        about the available connection.  (The connection name, the device
+ *                        description for the interface that a connection is bound to, the 
+ *                        SSID name (if it is wireless), and the priority value for the 
+ *                        connection.)
+ *
+ *  \retval IPC_SUCCESS on success
+ *  \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_enum_possible_connections(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	xmlNodePtr n = NULL;
+	char res[100];
+	unsigned int count = 0, i;
+	int result = 0;
+
+	if (innode == NULL) return IPC_FAILURE;
+
+	debug_printf(DEBUG_IPC, "Got an IPC possible connections request!\n");
+
+	// If we got here, then we know this is a possible connections request, so we really don't need any
+	// information from indoc.  We just need to build a response, and send it off.
+
+	n = xmlNewNode(NULL, (xmlChar *)"Possible_Connections");
+	if (n == NULL) 
+	{
+		return ipc_callout_create_error(NULL, "Get_Possible_Connections", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
+
+	count = 0;
+
+	result = ipc_callout_helper_enum_possible_connections(CONFIG_LOAD_GLOBAL, n, &i);
+	if (result != 0)
+	{
+		return ipc_callout_create_error(NULL, "Get_Possible_Connections", result, outnode);
+	}
+
+	count += i;
+
+	result = ipc_callout_helper_enum_possible_connections(CONFIG_LOAD_USER, n, &i);
+	if (result != 0)
+	{
+		return ipc_callout_create_error(NULL, "Get_Possible_Connections", result, outnode);
+	}
+
+	count += i;
 
 	sprintf((char *)&res, "%d", count);
 	if (xmlNewChild(n, NULL, (xmlChar *)"Number_Of_Connections", (xmlChar *)res) == NULL)
@@ -6302,6 +6944,8 @@ int ipc_callout_request_rename_connection(xmlNodePtr innode, xmlNodePtr *outnode
 	int done = FALSE;
 	struct config_connection *confcon = NULL;
 	xmlNodePtr n = NULL;
+	xmlChar *content = NULL;
+	uint8_t config_type = 0;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -6313,6 +6957,25 @@ int ipc_callout_request_rename_connection(xmlNodePtr innode, xmlNodePtr *outnode
 	}
 
 	n = n->children;
+
+	n = ipc_callout_find_node(n, "Config_Type");
+	if (n == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node!\n");
+		return ipc_callout_create_error(NULL, "Rename_Connection", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	content = xmlNodeGetContent(n);
+	config_type = (uint8_t)atoi((char *)content);
+	xmlFree(content);
+
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		if (platform_user_is_admin() != TRUE)
+		{
+			return ipc_callout_create_error(NULL, "Rename_Connection", IPC_ERROR_USER_NOT_ADMIN, outnode);
+		}
+	}
 
 	n = ipc_callout_find_node(n, "Old_Name");
 	if (n == NULL)
@@ -6334,7 +6997,28 @@ int ipc_callout_request_rename_connection(xmlNodePtr innode, xmlNodePtr *outnode
 
 	debug_printf(DEBUG_IPC, "Renaming connection '%s' to '%s'.\n", oldname, newname);
 
-	confcon = config_get_connections();
+	confcon = config_get_connections(config_type);
+
+	while (confcon != NULL)
+	{
+		if ((confcon != NULL) && (confcon->name != NULL) && (strcmp(newname, confcon->name) == 0))
+		{
+			// We already have something named this!
+			return ipc_callout_create_error(NULL, "Rename_Connection", IPC_ERROR_NAME_IN_USE, outnode);
+		}
+
+		confcon = confcon->next;
+	}
+
+	// Make sure a connection by the same name doesn't exist in the opposite config.
+	if (config_type == CONFIG_LOAD_GLOBAL)
+	{
+		confcon = config_get_connections(CONFIG_LOAD_USER);
+	}
+	else
+	{
+		confcon = config_get_connections(CONFIG_LOAD_GLOBAL);
+	}
 
 	while (confcon != NULL)
 	{
@@ -6375,7 +7059,7 @@ int ipc_callout_request_rename_connection(xmlNodePtr innode, xmlNodePtr *outnode
 	if (done == FALSE)   // The global value didn't get changed.
 	{
 		// Find the value and change it.
-		confcon = config_get_connections();
+		confcon = config_get_connections(config_type);
 
 		while (confcon != NULL)
 		{
@@ -6421,6 +7105,8 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	struct config_profiles *confprof = NULL;
 	struct config_connection *confcon = NULL;
 	xmlNodePtr n = NULL;
+	xmlChar *content = NULL;
+	uint8_t config_type = 0;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -6433,6 +7119,25 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	n = n->children;
 
+	n = ipc_callout_find_node(n, "Config_Type");
+	if (n == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node!\n");
+		return ipc_callout_create_error(NULL, "Rename_Profile", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	content = xmlNodeGetContent(n);
+	config_type = (uint8_t)atoi((char *)content);
+	xmlFree(content);
+
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		if (platform_user_is_admin() != TRUE)
+		{
+			return ipc_callout_create_error(NULL, "Rename_Profile", IPC_ERROR_USER_NOT_ADMIN, outnode);
+		}
+	}
+
 	n = ipc_callout_find_node(n, "Old_Name");
 	if (n == NULL)
 	{
@@ -6440,25 +7145,32 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Rename_Profile", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
-	oldname = (char *)xmlNodeGetContent(n);
+	content = xmlNodeGetContent(n);
+	oldname = _strdup(content);
+	xmlFree(content);
 
 	n = ipc_callout_find_node(n, "New_Name");
 	if (n == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't get 'New_Name' node!\n");
+		FREE(oldname);
 		return ipc_callout_create_error(NULL, "Rename_Profile", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
-	newname = (char *)xmlNodeGetContent(n);
+	content = xmlNodeGetContent(n);
+	newname = _strdup(content);
+	xmlFree(content);
 
 	debug_printf(DEBUG_IPC, "Renaming profile '%s' to '%s'.\n", oldname, newname);
 
-	confprof = config_get_profiles();
+	confprof = config_get_profiles(config_type);
 
 	while (confprof != NULL)
 	{
 		if ((confprof != NULL) && (confprof->name != NULL) && (strcmp(confprof->name, newname) == 0))
 		{
+			FREE(oldname);
+			FREE(newname);
 			return ipc_callout_create_error(NULL, "Rename_Profile", IPC_ERROR_NAME_IN_USE, outnode);
 		}
 
@@ -6492,7 +7204,7 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	if (done == FALSE)   // The global value didn't get changed.
 	{
 		// Find the value and change it.
-		confprof = config_get_profiles();
+		confprof = config_get_profiles(config_type);
 
 		while (confprof != NULL)
 		{
@@ -6507,7 +7219,23 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 		}
 	}
 
-	confcon = config_get_connections();
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		confcon = config_get_connections(CONFIG_LOAD_GLOBAL);
+
+		while (confcon != NULL)
+		{
+			if ((confcon->profile != NULL) && (strcmp(confcon->profile, oldname) == 0))
+			{
+				FREE(confcon->profile);
+				confcon->profile = _strdup(newname);
+			}
+
+			confcon = confcon->next;
+		}
+	}
+
+	confcon = config_get_connections(CONFIG_LOAD_USER);
 
 	while (confcon != NULL)
 	{
@@ -6520,6 +7248,9 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 		confcon = confcon->next;
 	}
 
+	FREE(oldname);
+	FREE(newname);
+
 	if (done == TRUE)
 	{
 		return ipc_callout_create_ack(NULL, "Rename_Profile", outnode);
@@ -6527,6 +7258,86 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	else
 	{
 		return ipc_callout_create_error(NULL, "Rename_Profile", IPC_ERROR_CANT_RENAME, outnode);
+	}
+}
+
+void ipc_callout_helper_trusted_server_renamed_check_profiles(struct config_profiles *confprof, char *oldname, char *newname)
+{
+	char *tsname = NULL;
+
+	while (confprof != NULL)
+	{
+		tsname = NULL;
+
+		// We should only switch on methods that actually use a trusted server.
+		// Others should be ignored, and a default should NOT be implemented!
+		switch (confprof->method->method_num)
+		{
+		case EAP_TYPE_TTLS:
+			if (confprof->method->method_data != NULL)
+				tsname = ((struct config_eap_ttls *)(confprof->method->method_data))->trusted_server;
+			break;
+
+		case EAP_TYPE_TLS:
+			if (confprof->method->method_data != NULL)
+				tsname = ((struct config_eap_tls *)(confprof->method->method_data))->trusted_server;
+			break;
+
+		case EAP_TYPE_PEAP:
+			if (confprof->method->method_data != NULL)
+				tsname = ((struct config_eap_peap *)(confprof->method->method_data))->trusted_server;
+			break;
+
+		case EAP_TYPE_FAST:
+			if (confprof->method->method_data != NULL)
+				tsname = ((struct config_eap_fast *)(confprof->method->method_data))->trusted_server;
+			break;
+		}
+
+		if (tsname != NULL)
+		{
+			if (strcmp(tsname, oldname) == 0)
+			{
+				// We should only switch on methods that actually use a trusted server.
+				// Others should be ignored, and a default should NOT be implemented!
+				switch (confprof->method->method_num)
+				{
+				case EAP_TYPE_TTLS:
+					if (confprof->method->method_data != NULL)
+					{
+						FREE(((struct config_eap_ttls *)(confprof->method->method_data))->trusted_server);
+						((struct config_eap_ttls *)(confprof->method->method_data))->trusted_server = _strdup(newname);
+					}
+					break;
+
+				case EAP_TYPE_TLS:
+					if (confprof->method->method_data != NULL)
+					{
+						FREE(((struct config_eap_tls *)(confprof->method->method_data))->trusted_server);
+						((struct config_eap_tls *)(confprof->method->method_data))->trusted_server = _strdup(newname);
+					}
+					break;
+
+				case EAP_TYPE_PEAP:
+					if (confprof->method->method_data != NULL)
+					{
+						FREE(((struct config_eap_peap *)(confprof->method->method_data))->trusted_server);
+						((struct config_eap_peap *)(confprof->method->method_data))->trusted_server = _strdup(newname);
+					}
+					break;
+
+				case EAP_TYPE_FAST:
+					if (confprof->method->method_data != NULL)
+					{
+						FREE(((struct config_eap_fast *)(confprof->method->method_data))->trusted_server);
+						((struct config_eap_fast *)(confprof->method->method_data))->trusted_server = _strdup(newname);
+					}
+					break;
+				}
+			}
+		}
+
+		confprof = confprof->next;
 	}
 }
 
@@ -6553,6 +7364,8 @@ int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *out
 	struct config_trusted_servers *conftss = NULL;
 	xmlNodePtr n = NULL;
 	char *tsname = NULL;
+	xmlChar *content = NULL;
+	uint8_t config_type = 0;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -6565,6 +7378,25 @@ int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *out
 
 	n = n->children;
 
+	n = ipc_callout_find_node(n, "Config_Type");
+	if (n == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node!\n");
+		return ipc_callout_create_error(NULL, "Rename_Trusted_Server", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	content = xmlNodeGetContent(n);
+	config_type = (uint8_t)atoi((char *)content);
+	xmlFree(content);
+
+	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
+	{
+		if (platform_user_is_admin() != TRUE)
+		{
+			return ipc_callout_create_error(NULL, "Rename_Trusted_Server", IPC_ERROR_USER_NOT_ADMIN, outnode);
+		}
+	}
+
 	n = ipc_callout_find_node(n, "Old_Name");
 	if (n == NULL)
 	{
@@ -6572,20 +7404,33 @@ int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *out
 		return ipc_callout_create_error(NULL, "Rename_Trusted_Server", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
-	oldname = (char *)xmlNodeGetContent(n);
+	content = xmlNodeGetContent(n);
+	oldname = _strdup(content);
+	xmlFree(content);
 
 	n = ipc_callout_find_node(n, "New_Name");
 	if (n == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't get 'New_Name' node!\n");
+		FREE(oldname);
 		return ipc_callout_create_error(NULL, "Rename_Trusted_Server", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
-	newname = (char *)xmlNodeGetContent(n);
+	content = xmlNodeGetContent(n);
+	newname = _strdup(content);
+	xmlFree(content);
 
 	debug_printf(DEBUG_IPC, "Renaming trusted server '%s' to '%s'.\n", oldname, newname);
 
-	conftss = config_get_trusted_servers();
+	conftss = config_get_trusted_servers(config_type);
+
+	if (conftss == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Requested non-existant server!\n");
+		FREE(newname);
+		FREE(oldname);
+		return ipc_callout_create_error(NULL, "Rename_Trusted_Server", IPC_ERROR_INVALID_TRUSTED_SVR, outnode);
+	}
 
 	confts = conftss->servers;
 
@@ -6593,6 +7438,8 @@ int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *out
 	{
 		if ((confts != NULL) && (confts->name != NULL) && (strcmp(confts->name, newname) == 0))
 		{
+			FREE(newname);
+			FREE(oldname);
 			return ipc_callout_create_error(NULL, "Rename_Trusted_Server", IPC_ERROR_NAME_IN_USE, outnode);
 		}
 
@@ -6618,71 +7465,21 @@ int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *out
 		if (done == TRUE)   // A server was renamed, so look for any profiles that use it.
 		{
 			// Find the value and change it.
-			confprof = config_get_profiles();
-
-			while (confprof != NULL)
+			if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL)
 			{
-				tsname = NULL;
+				confprof = config_get_profiles(CONFIG_LOAD_GLOBAL);
 
-				// We should only switch on methods that actually use a trusted server.
-				// Others should be ignored, and a default should NOT be implemented!
-				switch (confprof->method->method_num)
-				{
-				case EAP_TYPE_TTLS:
-					if (confprof->method->method_data != NULL)
-						tsname = ((struct config_eap_ttls *)(confprof->method->method_data))->trusted_server;
-					break;
-
-				case EAP_TYPE_TLS:
-					if (confprof->method->method_data != NULL)
-						tsname = ((struct config_eap_tls *)(confprof->method->method_data))->trusted_server;
-					break;
-
-				case EAP_TYPE_PEAP:
-					if (confprof->method->method_data != NULL)
-						tsname = ((struct config_eap_peap *)(confprof->method->method_data))->trusted_server;
-					break;
-				}
-
-				if (tsname != NULL)
-				{
-					if (strcmp(tsname, oldname) == 0)
-					{
-						// We should only switch on methods that actually use a trusted server.
-						// Others should be ignored, and a default should NOT be implemented!
-						switch (confprof->method->method_num)
-						{
-						case EAP_TYPE_TTLS:
-							if (confprof->method->method_data != NULL)
-							{
-								FREE(((struct config_eap_ttls *)(confprof->method->method_data))->trusted_server);
-								((struct config_eap_ttls *)(confprof->method->method_data))->trusted_server = _strdup(newname);
-							}
-							break;
-
-						case EAP_TYPE_TLS:
-							if (confprof->method->method_data != NULL)
-							{
-								FREE(((struct config_eap_tls *)(confprof->method->method_data))->trusted_server);
-								((struct config_eap_tls *)(confprof->method->method_data))->trusted_server = _strdup(newname);
-							}
-							break;
-
-						case EAP_TYPE_PEAP:
-							if (confprof->method->method_data != NULL)
-							{
-								FREE(((struct config_eap_peap *)(confprof->method->method_data))->trusted_server);
-								((struct config_eap_peap *)(confprof->method->method_data))->trusted_server = _strdup(newname);
-							}
-							break;
-						}
-					}
-				}
-
-				confprof = confprof->next;
+				ipc_callout_helper_trusted_server_renamed_check_profiles(confprof, oldname, newname);
 			}
+
+			confprof = config_get_profiles(CONFIG_LOAD_USER);
+
+			ipc_callout_helper_trusted_server_renamed_check_profiles(confprof, oldname, newname);
 		}
 	}
+
+	FREE(newname);
+	FREE(oldname);
 
 	if (done == TRUE)
 	{
@@ -7570,7 +8367,7 @@ int ipc_callout_get_are_administrator(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_enum_smartcard_readers(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 #ifndef EAP_SIM_ENABLE
-	// If we aren't build with SIM/AKA, then we return an error.
+	// If we aren't built with SIM/AKA, then we return an error.
 	return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers", IPC_ERROR_NOT_SUPPORTED, outnode);
 #else
 	char *readers = NULL;

@@ -1820,7 +1820,7 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 	conn_enum *pConn = NULL;
 	
 	// first, look for existing connection profile
-	retVal = xsupgui_request_enum_connections(&pConn);
+	retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
 	if (retVal == REQUEST_SUCCESS && pConn != NULL)
 	{
 		int i = 0;
@@ -1969,7 +1969,7 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 								Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
 								
 								ConnectionWizardData wizData;
-								bool success = wizData.initFromSupplicantProfiles(pNewConn,NULL,NULL);
+								bool success = wizData.initFromSupplicantProfiles(CONFIG_LOAD_USER, pNewConn,NULL,NULL);
 								if (success == true) {
 									m_pConnWizard->editDot1XInfo(wizData);
 									m_pConnWizard->show();
@@ -1995,16 +1995,18 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 					// set this connection as volatile
 					pNewConn->flags |= CONFIG_VOLATILE_CONN;
 				
-					retVal = xsupgui_request_set_connection_config(pNewConn);
+					retVal = xsupgui_request_set_connection_config(CONFIG_LOAD_USER, pNewConn);
 					
 					if (retVal == REQUEST_SUCCESS)
 					{
 						// save off the config since it changed
-						if (XSupWrapper::writeConfig() == false)
+						if ((XSupWrapper::writeConfig(CONFIG_LOAD_GLOBAL) == false) ||
+							(XSupWrapper::writeConfig(CONFIG_LOAD_USER) == false))
 						{
 							// error. what to do here?  For now, fail silently as it's non-fatal
 							// perhaps write to log?
 						}
+
 						char *adapterName = NULL;
 						
 						retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &adapterName);
@@ -2041,10 +2043,12 @@ void TrayApp::finishConnectionWizard(bool success, const QString &connName)
 {
 	if (success)
 	{
-		int retVal;
-		
-		config_connection *pConfig;
-		success = XSupWrapper::getConfigConnection(connName, &pConfig);
+		int retVal = 0;
+		config_connection *pConfig = NULL;
+
+		success = XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, connName, &pConfig);
+		if (success == false)  success = XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL, connName, &pConfig);
+
 		if (success == true && pConfig != NULL)
 		{
 			char *adapterName = NULL;

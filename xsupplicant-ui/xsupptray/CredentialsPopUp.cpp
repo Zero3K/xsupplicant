@@ -74,6 +74,7 @@ CredentialsPopUp::CredentialsPopUp(QString connName, QWidget *parent, Emitter *e
 	p_pass				= NULL;
 	m_pWEPCombo			= NULL;
 	m_pRememberCreds	= NULL;
+	conn_type			= 0;
 
 	if (m_pCredManager == NULL)
 		m_pCredManager = new CredentialsManager(e);
@@ -194,12 +195,24 @@ bool CredentialsPopUp::createPIN()
 		if (m_connName.isEmpty() == false)
 		{
 			config_connection *pConnection = NULL;
-			if (m_supplicant.getConfigConnection(m_connName, &pConnection, false) == true)
+			conn_type = CONFIG_LOAD_USER;
+			if (m_supplicant.getConfigConnection(conn_type, m_connName, &pConnection, false) == true)
 			{
 				if (pConnection != NULL && pConnection->ssid != NULL)
 					networkName = pConnection->ssid;
 				if (pConnection != NULL)
 					m_supplicant.freeConfigConnection(&pConnection);
+			}
+			else
+			{
+				conn_type = CONFIG_LOAD_GLOBAL;
+				if (m_supplicant.getConfigConnection(conn_type, m_connName, &pConnection, false) == true)
+				{
+					if (pConnection != NULL && pConnection->ssid != NULL)
+						networkName = pConnection->ssid;
+					if (pConnection != NULL)
+						m_supplicant.freeConfigConnection(&pConnection);
+				}
 			}
 		}
 
@@ -238,10 +251,36 @@ bool CredentialsPopUp::isPINType()
 	config_connection *conn_config = NULL;
 	config_profiles *prof_config = NULL;
 	bool result = false;
-
-	if (xsupgui_request_get_connection_config(m_connName.toAscii().data(), &conn_config) == REQUEST_SUCCESS)
+	int resval = 0;
+	
+	if (conn_type == 0)
 	{
-		if (xsupgui_request_get_profile_config(conn_config->profile, &prof_config) == REQUEST_SUCCESS)
+		conn_type = CONFIG_LOAD_USER;
+		resval = xsupgui_request_get_connection_config(conn_type, m_connName.toAscii().data(), &conn_config);
+		if (resval != REQUEST_SUCCESS)
+		{
+			conn_type = CONFIG_LOAD_GLOBAL;
+			resval = xsupgui_request_get_connection_config(conn_type, m_connName.toAscii().data(), &conn_config);
+			if (resval != REQUEST_SUCCESS)
+			{
+				conn_type = 0;
+			}
+		}
+	}
+	else
+	{
+		resval = xsupgui_request_get_connection_config(conn_type, m_connName.toAscii().data(), &conn_config);
+	}
+	
+	if (resval == REQUEST_SUCCESS)
+	{
+		resval = xsupgui_request_get_profile_config(CONFIG_LOAD_USER, conn_config->profile, &prof_config);
+		if (resval != REQUEST_SUCCESS)
+		{
+			resval = xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, conn_config->profile, &prof_config);
+		}
+
+		if (resval == REQUEST_SUCCESS)
 		{
 			if ((prof_config->method != NULL) && 
 				((prof_config->method->method_num == EAP_TYPE_SIM) || 
@@ -319,12 +358,24 @@ bool CredentialsPopUp::createWEP()
 		if (m_connName.isEmpty() == false)
 		{
 			config_connection *pConnection = NULL;
-			if (m_supplicant.getConfigConnection(m_connName, &pConnection, false) == true)
+			conn_type = CONFIG_LOAD_USER;
+			if (m_supplicant.getConfigConnection(conn_type, m_connName, &pConnection, false) == true)
 			{
 				if (pConnection != NULL && pConnection->ssid != NULL)
 					networkName = pConnection->ssid;
 				if (pConnection != NULL)
 					m_supplicant.freeConfigConnection(&pConnection);
+			}
+			else
+			{
+				conn_type = CONFIG_LOAD_GLOBAL;
+				if (m_supplicant.getConfigConnection(conn_type, m_connName, &pConnection, false) == true)
+				{
+					if (pConnection != NULL && pConnection->ssid != NULL)
+						networkName = pConnection->ssid;
+					if (pConnection != NULL)
+						m_supplicant.freeConfigConnection(&pConnection);
+				}
 			}
 		}
 
@@ -423,12 +474,24 @@ bool CredentialsPopUp::createUPW()
 		if (m_connName.isEmpty() == false)
 		{
 			config_connection *pConnection = NULL;
-			if (m_supplicant.getConfigConnection(m_connName, &pConnection, false) == true)
+			conn_type = CONFIG_LOAD_USER;
+			if (m_supplicant.getConfigConnection(conn_type, m_connName, &pConnection, false) == true)
 			{
 				if (pConnection != NULL && pConnection->ssid != NULL)
 					networkName = pConnection->ssid;
 				if (pConnection != NULL)
-					m_supplicant.freeConfigConnection(&pConnection);					
+					m_supplicant.freeConfigConnection(&pConnection);
+			}
+			else
+			{
+				conn_type = CONFIG_LOAD_GLOBAL;
+				if (m_supplicant.getConfigConnection(conn_type, m_connName, &pConnection, false) == true)
+				{
+					if (pConnection != NULL && pConnection->ssid != NULL)
+						networkName = pConnection->ssid;
+					if (pConnection != NULL)
+						m_supplicant.freeConfigConnection(&pConnection);
+				}
 			}
 		}
 
@@ -508,12 +571,24 @@ bool CredentialsPopUp::createPSK()
 		if (m_connName.isEmpty() == false)
 		{
 			config_connection *pConnection = NULL;
-			if (m_supplicant.getConfigConnection(m_connName, &pConnection, false) == true)
+			conn_type = CONFIG_LOAD_USER;
+			if (m_supplicant.getConfigConnection(conn_type, m_connName, &pConnection, false) == true)
 			{
 				if (pConnection != NULL && pConnection->ssid != NULL)
 					networkName = pConnection->ssid;
 				if (pConnection != NULL)
 					m_supplicant.freeConfigConnection(&pConnection);
+			}
+			else
+			{
+				conn_type = CONFIG_LOAD_GLOBAL;
+				if (m_supplicant.getConfigConnection(conn_type, m_connName, &pConnection, false) == true)
+				{
+					if (pConnection != NULL && pConnection->ssid != NULL)
+						networkName = pConnection->ssid;
+					if (pConnection != NULL)
+						m_supplicant.freeConfigConnection(&pConnection);
+				}
 			}
 		}
 
@@ -546,8 +621,12 @@ void CredentialsPopUp::slotDisconnectBtn()
 	config_connection *pConfig = NULL;
 	char *pdevName = NULL;
 	QString desc, dev;
+	bool result = false;
 
-	if (m_supplicant.getConfigConnection(m_connName, &pConfig, false) == false)
+	result = m_supplicant.getConfigConnection(CONFIG_LOAD_USER, m_connName, &pConfig, false);
+	if (result == false) m_supplicant.getConfigConnection(CONFIG_LOAD_GLOBAL, m_connName, &pConfig, false);
+
+	if (result == false)
 	{
 		QMessageBox::critical(this, tr("Error Disconnecting"), tr("There was an error getting the supplicant to disconnect the interface."));
 	}
@@ -602,7 +681,23 @@ void CredentialsPopUp::slotOkayBtn()
 			}
 			else
 			{
-				if (xsupgui_request_get_connection_config(m_connName.toAscii().data(), &cconf) != REQUEST_SUCCESS)
+				if (conn_type == 0)
+				{
+					conn_type = CONFIG_LOAD_USER;
+					result = xsupgui_request_get_connection_config(CONFIG_LOAD_USER, m_connName.toAscii().data(), &cconf);
+					if (result != REQUEST_SUCCESS) 
+					{
+						conn_type = CONFIG_LOAD_GLOBAL;
+						result = xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, m_connName.toAscii().data(), &cconf);
+						if (result != REQUEST_SUCCESS) conn_type = 0;
+					}
+				}
+				else
+				{
+					result = xsupgui_request_get_connection_config(conn_type, m_connName.toAscii().data(), &cconf);
+				}
+
+				if (result != REQUEST_SUCCESS)
 				{
 					QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
 				}
@@ -626,7 +721,7 @@ void CredentialsPopUp::slotOkayBtn()
 								// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
 								// if we connect successfully
 								if (m_pCredManager != NULL)
-									m_pCredManager->storeCredentials(m_connName, QString(), m_pPassword->text());							
+									m_pCredManager->storeCredentials(conn_type, m_connName, QString(), m_pPassword->text());							
 							}						
 						}
 						free(intName);
@@ -653,7 +748,23 @@ void CredentialsPopUp::slotOkayBtn()
 		}
 		else
 		{
-			if (xsupgui_request_get_connection_config(m_connName.toAscii().data(), &cconf) != REQUEST_SUCCESS)
+			if (conn_type == 0)
+			{
+				conn_type = CONFIG_LOAD_USER;
+				result = xsupgui_request_get_connection_config(CONFIG_LOAD_USER, m_connName.toAscii().data(), &cconf);
+				if (result != REQUEST_SUCCESS) 
+				{
+					conn_type = CONFIG_LOAD_GLOBAL;
+					result = xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, m_connName.toAscii().data(), &cconf);
+					if (result != REQUEST_SUCCESS) conn_type = 0;
+				}
+			}
+			else
+			{
+				result = xsupgui_request_get_connection_config(conn_type, m_connName.toAscii().data(), &cconf);
+			}
+
+			if (result != REQUEST_SUCCESS)
 			{
 				QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
 			}
@@ -676,7 +787,7 @@ void CredentialsPopUp::slotOkayBtn()
 							// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
 							// if we connect successfully
 							if (m_pCredManager != NULL)
-								m_pCredManager->storeCredentials(m_connName, QString(), m_pPassword->text());
+								m_pCredManager->storeCredentials(conn_type, m_connName, QString(), m_pPassword->text());
 						}					
 					}
 					free(intName);
@@ -743,7 +854,23 @@ void CredentialsPopUp::slotOkayBtn()
 		}
 		else
 		{
-			if (xsupgui_request_get_connection_config(m_connName.toAscii().data(), &cconf) != REQUEST_SUCCESS)
+			if (conn_type == 0)
+			{
+				conn_type = CONFIG_LOAD_USER;
+				result = xsupgui_request_get_connection_config(CONFIG_LOAD_USER, m_connName.toAscii().data(), &cconf);
+				if (result != REQUEST_SUCCESS) 
+				{
+					conn_type = CONFIG_LOAD_GLOBAL;
+					result = xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, m_connName.toAscii().data(), &cconf);
+					if (result != REQUEST_SUCCESS) conn_type = 0;
+				}
+			}
+			else
+			{
+				result = xsupgui_request_get_connection_config(conn_type, m_connName.toAscii().data(), &cconf);
+			}
+
+			if (result != REQUEST_SUCCESS)
 			{
 				QMessageBox::critical(this, tr("Error"), tr("Couldn't determine which interface the desired connection is bound to!"));
 			}
@@ -767,7 +894,7 @@ void CredentialsPopUp::slotOkayBtn()
 							// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
 							// if we connect successfully
 							if (m_pCredManager != NULL)
-								m_pCredManager->storeCredentials(m_connName, m_pUsername->text(), m_pPassword->text());						
+								m_pCredManager->storeCredentials(conn_type, m_connName, m_pUsername->text(), m_pPassword->text());						
 						}					
 					}
 					free(intName);

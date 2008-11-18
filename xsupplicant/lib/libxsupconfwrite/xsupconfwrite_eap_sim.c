@@ -51,7 +51,7 @@
  * \retval xmlNodePtr containing the SIM configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata, 
+xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata, uint8_t config_type,
 										     char write_all)
 {
 	xmlNodePtr simnode = NULL;
@@ -74,7 +74,7 @@ xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata,
 		if ((simdata->password != NULL) && (pwcrypt_funcs_available() == TRUE))
 		{
 			// Write the encrypted version.
-			if (pwcrypt_encrypt((uint8_t *)simdata->password, strlen(simdata->password), (uint8_t **)&temp, &ressize) != 0)
+			if (pwcrypt_encrypt(config_type, (uint8_t *)simdata->password, strlen(simdata->password), (uint8_t **)&temp, &ressize) != 0)
 			{
 				// Couldn't encrypt the data.  So write the cleartext version.
 				if (xsupconfwrite_common_newSibling(simnode, "Password", simdata->password) == NULL)

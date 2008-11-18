@@ -28,7 +28,7 @@
 #include "xsupconfig_defaults.h"
 #include "src/xsup_err.h"
 
-void *xsupconfig_parse_trusted_server(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_servers *myservers = NULL;
   struct config_trusted_server *myserver = NULL;
@@ -69,7 +69,7 @@ void *xsupconfig_parse_trusted_server(void **attr, xmlNodePtr node)
   return myserver;
 }
 
-void *xsupconfig_parse_trusted_server_name(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_name(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_server *myserver = NULL;
   struct config_trusted_server *check = NULL;
@@ -171,7 +171,7 @@ void *xsupconfig_parse_trusted_server_name(void **attr, xmlNodePtr node)
   return myserver;
 }
 
-void *xsupconfig_parse_trusted_server_type(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_server *myserver;
   char *value;
@@ -209,7 +209,7 @@ void *xsupconfig_parse_trusted_server_type(void **attr, xmlNodePtr node)
  *
  * \retval ptr to the active configuration structure that we are populating in memory.
  **/
-void *xsupconfig_parse_trusted_server_location(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_location(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_server *myserver = NULL;
   char *value = NULL;
@@ -239,7 +239,7 @@ void *xsupconfig_parse_trusted_server_location(void **attr, xmlNodePtr node)
   return myserver;
 }
 
-void *xsupconfig_parse_trusted_server_cn(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_cn(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_server *myserver;
   char *value;
@@ -265,7 +265,7 @@ void *xsupconfig_parse_trusted_server_cn(void **attr, xmlNodePtr node)
   return myserver;
 }
 
-void *xsupconfig_parse_trusted_server_ecn(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_ecn(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_server *myserver = NULL;
   uint8_t result = 0;
@@ -298,7 +298,7 @@ void *xsupconfig_parse_trusted_server_ecn(void **attr, xmlNodePtr node)
   return myserver;
 }
 
-void *xsupconfig_parse_volatile(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_volatile(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_server *myserver = NULL;
   uint8_t result = 0;

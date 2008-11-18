@@ -43,7 +43,7 @@ class ConfigWidgetEditTrustedServers : public ConfigWidgetBase
      Q_OBJECT
 
  public:
-	 ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, NavPanel *pPanel, QWidget *parent);
+	 ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, NavPanel *pPanel, unsigned char config_type, QWidget *parent);
 	 ~ConfigWidgetEditTrustedServers();
 
 	 bool attach();
@@ -95,6 +95,8 @@ private slots:
 	 bool m_bChangedData;
 	 bool m_bNewServer;
 	 bool m_bServerRenamed;
+
+	 unsigned char m_config_type;
 
 	 NavPanel *m_pNavPanel;
 

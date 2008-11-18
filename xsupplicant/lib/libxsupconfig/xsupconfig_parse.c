@@ -30,7 +30,7 @@
 #include "xsupconfig.h"
 #include "xsupconfig_common.h"
 
-extern struct config_data *config_info;
+//extern struct config_data *config_info;
 xmlNode *curnode = NULL;     // A pointer that will be used to determine the
                       // line number for a node in case we need it.
 
@@ -109,11 +109,11 @@ char xsupconfig_is_terminator(parser data)
  *  Recursively parse the XML data, and build our configuration structure 
  *  in memory.
  **/
-void xsupconfig_parse(xmlNode *node, parser val[], void **data)
+void xsupconfig_parse(xmlNode *node, parser val[], uint8_t parse_type, void **data)
 {
   xmlNode *cur_node = NULL;
-  int i;
-  char done;
+  int i = 0;
+  char done = 0;
   void *next_data = NULL;
 
   for (cur_node = node; cur_node; cur_node = cur_node->next) 
@@ -139,34 +139,36 @@ void xsupconfig_parse(xmlNode *node, parser val[], void **data)
 
 	  if (xsupconfig_is_terminator(val[i]) != TRUE)
 	    {
-	      if (val[i].process != NULL)
+			if ((val[i].process != NULL) && (val[i].config_allowed & parse_type))
 		{
 		      if (val[i].descend == TRUE)
 				{
-					next_data = (*val[i].process)(data, cur_node);
+					next_data = (*val[i].process)(data, parse_type, cur_node);
 				}
 				else
 				{
-					(*val[i].process)(data, cur_node);
+					(*val[i].process)(data, parse_type, cur_node);
 					next_data = (*data);
 				}
 		}
 
 	      if (val[i].descend == TRUE)
 		{
-		  xsupconfig_parse(cur_node->children, 
-				   (parser *)val[i].parsedata, &next_data);
+			if (val[i].config_allowed & parse_type)
+			{
+			  xsupconfig_parse(cur_node->children, 
+				   (parser *)val[i].parsedata, parse_type, &next_data);
+			}
 		}
 
-		if ((val[i].descend == FALSE) && (val[i].parsedata != NULL))
+		  if ((val[i].descend == FALSE) && (val[i].parsedata != NULL) && (val[i].config_allowed & parse_type))
 		{
-			xsupconfig_parse(cur_node, (parser *)val[i].parsedata, &next_data);
+			xsupconfig_parse(cur_node, (parser *)val[i].parsedata, parse_type, &next_data);
 		}
 
 	      if ((val[i].process == NULL) && (val[i].descend == FALSE))
 		{
-		  printf("Not sure what to do with node '%s'.\n",
-			 cur_node->name);
+		  printf("Not sure what to do with node '%s'.\n", cur_node->name);
 		  xsupconfig_common_log("Found node '%s' in the configuration file.  But not sure how to process it.", cur_node->name);
 		}
 	    }
@@ -180,7 +182,7 @@ void xsupconfig_parse(xmlNode *node, parser val[], void **data)
   if (data != NULL) (*data) = next_data;
 }
 
-void *xsupconfig_parse_global_and_network(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_global_and_network(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
   char *version = NULL;
@@ -197,7 +199,6 @@ void *xsupconfig_parse_global_and_network(void **attr, xmlNodePtr node)
 
   return NULL;
 }
-
 
 parser global_and_network[] = {
   {"Globals",  (struct conf_parse_struct *)&globals, TRUE, OPTION_GLOBAL_CONFIG_ONLY,
@@ -218,6 +219,22 @@ parser global_and_network[] = {
 
 parser baselevel[] = {
   {"XsupplicantConfig", (struct conf_parse_struct *)&global_and_network, TRUE, OPTION_ANY_CONFIG,
+   &xsupconfig_parse_global_and_network},
+  
+  {NULL, NULL, FALSE, 0, NULL}};
+
+parser user_global_and_network[] = {
+  {"Profiles", (struct conf_parse_struct *)&user_profiles, TRUE, OPTION_ANY_CONFIG,
+   &xsupconfig_parse_user_profiles}, 
+  {"Connections", (struct conf_parse_struct *)&user_connections, TRUE, OPTION_ANY_CONFIG,
+	xsupconfig_parse_user_connections}, 
+  {"Trusted_Servers", (struct conf_parse_struct *)&user_trusted_servers, TRUE, OPTION_ANY_CONFIG,
+  &xsupconfig_parse_user_trusted_servers},
+   
+  {NULL, NULL, FALSE, 0, NULL}};
+
+parser user_baselevel[] = {
+  {"XsupplicantConfig", (struct conf_parse_struct *)&user_global_and_network, TRUE, OPTION_ANY_CONFIG,
    &xsupconfig_parse_global_and_network},
   
   {NULL, NULL, FALSE, 0, NULL}};

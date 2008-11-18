@@ -80,7 +80,7 @@ multichoice debug_choices[] = {
 	{DEBUG_ALL, "ALL"},
 	{-1, NULL}};
 
-void *xsupconfig_parse_build_globals(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_build_globals(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
   printf("Building globals config.\n");
@@ -101,7 +101,7 @@ void *xsupconfig_parse_build_globals(void **attr, xmlNodePtr node)
   return conf_globals;
 }
 
-void *xsupconfig_parse_logpath(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_logpath(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   char *value = NULL;
@@ -127,7 +127,7 @@ void *xsupconfig_parse_logpath(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_friendly_warnings(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_friendly_warnings(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   uint8_t result;
@@ -164,7 +164,7 @@ void *xsupconfig_parse_friendly_warnings(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_log_facility(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_log_facility(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -190,7 +190,7 @@ void *xsupconfig_parse_log_facility(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_ipc_group(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_ipc_group(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -216,7 +216,7 @@ void *xsupconfig_parse_ipc_group(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_auth_period(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_auth_period(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -244,7 +244,7 @@ void *xsupconfig_parse_auth_period(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_held_period(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_held_period(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -272,7 +272,7 @@ void *xsupconfig_parse_held_period(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_idle_while(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_idle_while(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -300,7 +300,7 @@ void *xsupconfig_parse_idle_while(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_association(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_association(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   int result = 0;
@@ -339,7 +339,7 @@ void *xsupconfig_parse_association(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_destination(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_destination(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   int result = -1;
@@ -366,7 +366,7 @@ void *xsupconfig_parse_destination(void **attr, xmlNodePtr node)
 }
 
 
-void *xsupconfig_parse_stale_key_timeout(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_stale_key_timeout(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -394,7 +394,7 @@ void *xsupconfig_parse_stale_key_timeout(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_max_starts(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_max_starts(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -422,7 +422,7 @@ void *xsupconfig_parse_max_starts(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_allmulti(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_allmulti(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   uint8_t result;
@@ -458,7 +458,7 @@ void *xsupconfig_parse_allmulti(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_loglevel(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_loglevel(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_globals *myglobals;
 	char *value;
@@ -491,7 +491,7 @@ void *xsupconfig_parse_loglevel(void **attr, xmlNodePtr node)
 }
 
 
-void *xsupconfig_parse_roaming(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_roaming(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   int result;
@@ -530,7 +530,7 @@ void *xsupconfig_parse_roaming(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_passive_scanning(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_passive_scanning(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   uint8_t result;
@@ -566,7 +566,7 @@ void *xsupconfig_parse_passive_scanning(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_passive_timer(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_passive_timer(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -594,7 +594,7 @@ void *xsupconfig_parse_passive_timer(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_assoc_timeout(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_assoc_timeout(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -622,7 +622,7 @@ void *xsupconfig_parse_assoc_timeout(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_scan_timeout(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_scan_timeout(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   char *value;
@@ -650,7 +650,7 @@ void *xsupconfig_parse_scan_timeout(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_logs_to_keep(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_logs_to_keep(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   char *value = NULL;
@@ -679,7 +679,7 @@ void *xsupconfig_parse_logs_to_keep(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_log_size_to_roll(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_log_size_to_roll(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   char *value = NULL;
@@ -708,7 +708,7 @@ void *xsupconfig_parse_log_size_to_roll(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_pmksa_age_out(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_pmksa_age_out(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   char *value = NULL;
@@ -737,7 +737,7 @@ void *xsupconfig_parse_pmksa_age_out(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_pmksa_refresh_time(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_pmksa_refresh_time(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   char *value = NULL;
@@ -766,7 +766,7 @@ void *xsupconfig_parse_pmksa_refresh_time(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_use_eap_hints(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_use_eap_hints(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals;
   uint8_t result;
@@ -802,7 +802,7 @@ void *xsupconfig_parse_use_eap_hints(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_logging(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_logging(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   int result = LOGGING_FILE;                 // Default is log to a file.
@@ -828,7 +828,7 @@ void *xsupconfig_parse_logging(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_disconnect_at_logoff(void **attr, xmlNodePtr node)
+void *xsupconfig_disconnect_at_logoff(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   uint8_t result = 0;
@@ -864,7 +864,7 @@ void *xsupconfig_disconnect_at_logoff(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_detect_on_startup(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_detect_on_startup(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   uint8_t result = 0;
@@ -900,7 +900,7 @@ void *xsupconfig_parse_detect_on_startup(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_roll_logs(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_roll_logs(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   uint8_t result = 0;
@@ -936,7 +936,7 @@ void *xsupconfig_parse_roll_logs(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_wireless_only(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_wireless_only(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   uint8_t result;
@@ -972,7 +972,7 @@ void *xsupconfig_parse_wireless_only(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_control_ints(void **attr, xmlNodePtr node)
+void *xsupconfig_control_ints(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   uint8_t result = 0;
@@ -1008,7 +1008,7 @@ void *xsupconfig_control_ints(void **attr, xmlNodePtr node)
   return myglobals;
 }
 
-void *xsupconfig_parse_dead_connection_timeout(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_dead_connection_timeout(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
   char *value = NULL;

@@ -43,6 +43,7 @@
  *                         exact configuration block that we should delete.  So, if we wanted
  *                         to delete a <Managed_Network> block with an <OU> of foo, we would
  *                         set this value to foo.
+ * @param[in] config_type   The configuration type to use.  (One of CONFIG_LOAD_GLOBAL, or CONFIG_LOAD_USER.)
  *
  * @param[in] force   Should we force the deletion of the item.  (That is, delete it even if it is still
  *                    referenced somewhere else in the config.)  This parameter can take three different
@@ -53,7 +54,7 @@
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on error
  **/
-int xsupgui_request_delete_some_conf(char *deletefrom, char *searchtag, char *searchitem, int force)
+int xsupgui_request_delete_some_conf(char *deletefrom, char *searchtag, char *searchitem, uint8_t config_type, int force)
 {
   xmlDocPtr doc = NULL;
   xmlDocPtr retdoc = NULL;
@@ -91,6 +92,13 @@ int xsupgui_request_delete_some_conf(char *deletefrom, char *searchtag, char *se
       goto finish_delete_some_conf;
     }
   free(temp);
+
+  sprintf(tempstr, "%d", config_type);
+  if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)tempstr) == NULL)
+  {
+	  done = IPC_ERROR_CANT_CREATE_REQUEST;
+	  goto finish_delete_some_conf;
+  }
 
   if (force >= 0)
   {
@@ -476,7 +484,7 @@ int xsupgui_request_get_globals_config(config_globals **globals)
 	}
 
 	// Otherwise, we need to parse the data that is in the child node.
-	xsupconfig_parse(n->children, global_and_network, (void **)&newg);
+	xsupconfig_parse(n->children, global_and_network, OPTION_ANY_CONFIG, (void **)&newg);
 	if (newg == NULL)
 	{
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
@@ -495,6 +503,7 @@ finish_get_globals:
 /**
  * \brief Get the "<Profile>" block for a single named profile.
  *
+ * @param[in] config_type   Should we look in the system level, or user level config?
  * @param[in] prof_name   The name of the profile that we want to get the configuration
  *                        block for.
  * @param[out] prof_config   A pointer to a buffer that will return a text version 
@@ -504,7 +513,7 @@ finish_get_globals:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on failure
  **/
-int xsupgui_request_get_profile_config(char *prof_name, config_profiles **prof_config)
+int xsupgui_request_get_profile_config(uint8_t config_type, char *prof_name, config_profiles **prof_config)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -513,6 +522,7 @@ int xsupgui_request_get_profile_config(char *prof_name, config_profiles **prof_c
 	struct config_profiles *newp = NULL;
 	int err = 0;
 	char *temp = NULL;
+	char res[5];
 
 	if ((prof_name == NULL) || (prof_config == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -543,6 +553,14 @@ int xsupgui_request_get_profile_config(char *prof_name, config_profiles **prof_c
 		goto finish_get_profile;
 	}
 	free(temp);
+
+	sprintf((char *)&res, "%d", config_type);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		free(temp);
+		goto finish_get_profile;
+	}
 
 	err = xsupgui_request_send(doc, &retdoc);
 	if (err != REQUEST_SUCCESS)
@@ -588,7 +606,7 @@ int xsupgui_request_get_profile_config(char *prof_name, config_profiles **prof_c
 	}
 
 	// Otherwise, we need to parse the data that is in the child node.
-	xsupconfig_parse(n->children, profile, (void **)&newp);
+	xsupconfig_parse(n->children, profile, OPTION_ANY_CONFIG, (void **)&newp);
 	if (newp == NULL)
 	{
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
@@ -609,6 +627,7 @@ finish_get_profile:
  *
  * \note The caller is expected to free the memory returned by **conn_config.
  *
+ * @param[in] config_type   Should we look in the system level, or user level config?
  * @param[in] conn_name   The name of the connection that we want to get the 
  *                        configuration block for.
  * @param[out] conn_config   A pointer to a buffer that will return a text version
@@ -618,7 +637,7 @@ finish_get_profile:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on failure
  **/
-int xsupgui_request_get_connection_config(char *conn_name, config_connection **conn_config)
+int xsupgui_request_get_connection_config(uint8_t config_type, char *conn_name, config_connection **conn_config)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -627,6 +646,7 @@ int xsupgui_request_get_connection_config(char *conn_name, config_connection **c
 	struct config_connection *newc = NULL;
 	int err = 0;
 	char *temp = NULL;
+	char res[5];
 
 	if ((conn_name == NULL) || (conn_config == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -657,6 +677,14 @@ int xsupgui_request_get_connection_config(char *conn_name, config_connection **c
 		goto finish_get_connection;
 	}
 	free(temp);
+
+	sprintf((char *)&res, "%d", config_type);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		free(temp);
+		goto finish_get_connection;
+	}
 
 	err = xsupgui_request_send(doc, &retdoc);
 	if (err != REQUEST_SUCCESS)
@@ -702,7 +730,7 @@ int xsupgui_request_get_connection_config(char *conn_name, config_connection **c
 	}
 
 	// Otherwise, we need to parse the data that is in the child node.
-	xsupconfig_parse(n->children, connection, (void **)&newc);
+	xsupconfig_parse(n->children, connection, OPTION_ANY_CONFIG, (void **)&newc);
 	if (newc == NULL)
 	{
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
@@ -721,6 +749,7 @@ finish_get_connection:
 /**
  * \brief Get the "<Trusted_Server>" block for the single named interface.
  *
+ * @param[in] config_type   Should we look in the system level configuration, or user level?
  * @param[in] servname   The name of the server that we want to get the 
  *                       configuration block for.
  * @param[out] int_config   A pointer to a buffer that will return a text version
@@ -730,7 +759,7 @@ finish_get_connection:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on failure
  **/
-int xsupgui_request_get_trusted_server_config(char *servname, config_trusted_server **ts_config)
+int xsupgui_request_get_trusted_server_config(uint8_t config_type, char *servname, config_trusted_server **ts_config)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -738,6 +767,7 @@ int xsupgui_request_get_trusted_server_config(char *servname, config_trusted_ser
 	int done = REQUEST_SUCCESS;
 	void *temp = NULL, *temp2 = NULL;
 	int err = 0;
+	char res[5];
 	
 	if ((servname == NULL) || (ts_config == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -768,6 +798,14 @@ int xsupgui_request_get_trusted_server_config(char *servname, config_trusted_ser
 		goto finish_get_ts;
 	}
 	free(temp);
+
+	sprintf((char *)&res, "%d", config_type);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		free(temp);
+		goto finish_get_ts;
+	}
 
 	err = xsupgui_request_send(doc, &retdoc);
 	if (err != REQUEST_SUCCESS)
@@ -817,7 +855,7 @@ int xsupgui_request_get_trusted_server_config(char *servname, config_trusted_ser
 	temp2 = temp;
 
 	// Otherwise, we need to parse the data that is in the child node.
-	xsupconfig_parse(n->children, trusted_servers, &temp2);
+	xsupconfig_parse(n->children, trusted_servers, OPTION_ANY_CONFIG, &temp2);
 	if (temp2 == NULL)
 	{
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
@@ -936,7 +974,7 @@ int xsupgui_request_get_interface_config(char *intname, config_interfaces **int_
 	temp2 = temp;
 
 	// Otherwise, we need to parse the data that is in the child node.
-	xsupconfig_parse(n->children, devices, &temp2);
+	xsupconfig_parse(n->children, devices, OPTION_ANY_CONFIG, &temp2);
 	if (temp2 == NULL)
 	{
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
@@ -965,13 +1003,14 @@ finish_get_int:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on failure
  **/
-int xsupgui_request_set_connection_config(config_connection *conn_config)
+int xsupgui_request_set_connection_config(uint8_t config_type, config_connection *conn_config)
 {
   xmlDocPtr doc = NULL;
   xmlDocPtr retdoc = NULL;
   xmlNodePtr n = NULL, t = NULL;
   int done = REQUEST_SUCCESS;
   int err = 0;
+  char temp[5];
 
   if (conn_config == NULL) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -992,7 +1031,7 @@ int xsupgui_request_set_connection_config(config_connection *conn_config)
       goto finish_set_connection_config;
     }
 
-  t = xsupconfwrite_connection_create_tree(conn_config, TRUE);
+  t = xsupconfwrite_connection_create_tree(conn_config, config_type, TRUE);
   if (t == NULL)
   {
 	  done = IPC_ERROR_CANT_CREATE_REQUEST;
@@ -1004,6 +1043,13 @@ int xsupgui_request_set_connection_config(config_connection *conn_config)
 	  done = IPC_ERROR_CANT_ADD_NODE;
 	  goto finish_set_connection_config;
   }
+
+	sprintf((char *)&temp, "%d", config_type);
+	if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", (xmlChar *)&temp) == NULL)
+	{
+		done = IPC_ERROR_CANT_ADD_NODE;
+		goto finish_set_connection_config;
+	}
 
 	err = xsupgui_request_send(doc, &retdoc);
 	if (err != REQUEST_SUCCESS)

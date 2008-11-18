@@ -644,6 +644,7 @@ int logfile_setup()
         if (!logfile)
 		{
 			printf("Couldn't create log file '%s'!\n", tempstr);
+			FREE(tempstr);
 			return XEGENERROR;
 		}
 

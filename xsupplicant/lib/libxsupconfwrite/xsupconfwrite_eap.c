@@ -56,7 +56,7 @@
  * \retval xmlNodePtr containing the <EAP> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method, 
+xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method, uint8_t config_type, 
 										 char write_all)
 {
 	xmlNodePtr eapnode = NULL;
@@ -78,7 +78,7 @@ xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method,
 	switch (method->method_num)
 	{
 	case EAP_TYPE_MD5:
-		eapdata = xsupconfwrite_pwd_only_create_tree("MD5", method->method_data, write_all); 
+		eapdata = xsupconfwrite_pwd_only_create_tree("MD5", method->method_data, config_type, write_all); 
   	    break;
 
 	case EAP_TYPE_OTP:
@@ -90,33 +90,33 @@ xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method,
 		break;
 
 	case EAP_TYPE_GTC:
-		eapdata = xsupconfwrite_pwd_only_create_tree("GTC", method->method_data, write_all);
+		eapdata = xsupconfwrite_pwd_only_create_tree("GTC", method->method_data, config_type, write_all);
 		break;
 
 	case EAP_TYPE_TLS:
-		eapdata = xsupconfwrite_eap_tls_create_tree(method->method_data, write_all);
+		eapdata = xsupconfwrite_eap_tls_create_tree(method->method_data, config_type, write_all);
 		break;
 
 #ifdef ENABLE_LEAP
 	case EAP_TYPE_LEAP:
-		eapdata = xsupconfwrite_pwd_only_create_tree("LEAP", method->method_data, write_all);
+		eapdata = xsupconfwrite_pwd_only_create_tree("LEAP", method->method_data, config_type, write_all);
 		break;
 #endif  // ENABLE_LEAP
 
 	case EAP_TYPE_SIM:
-		eapdata = xsupconfwrite_eap_sim_create_tree(method->method_data, write_all);
+		eapdata = xsupconfwrite_eap_sim_create_tree(method->method_data, config_type, write_all);
 		break;
 
 	case EAP_TYPE_TTLS:
-		eapdata = xsupconfwrite_eap_ttls_create_tree(method->method_data, write_all);
+		eapdata = xsupconfwrite_eap_ttls_create_tree(method->method_data, config_type, write_all);
 		break;
 
 	case EAP_TYPE_AKA:
-		eapdata = xsupconfwrite_eap_aka_create_tree(method->method_data, write_all);
+		eapdata = xsupconfwrite_eap_aka_create_tree(method->method_data, config_type, write_all);
 		break;
 
 	case EAP_TYPE_PEAP:
-		eapdata = xsupconfwrite_eap_peap_create_tree(method->method_data, write_all);
+		eapdata = xsupconfwrite_eap_peap_create_tree(method->method_data, config_type, write_all);
 		break;
 
 	case EAP_TYPE_MSCHAPV2:
@@ -125,7 +125,7 @@ xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method,
 		// Don't write the config out if it is flagged volatile.
 		if (!TEST_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE))
 		{
-			eapdata = xsupconfwrite_eap_mschapv2_create_tree(method->method_data, write_all);
+			eapdata = xsupconfwrite_eap_mschapv2_create_tree(method->method_data, config_type, write_all);
 		}
 		break;
 
@@ -134,11 +134,11 @@ xmlNodePtr xsupconfwrite_eap_create_tree(struct config_eap_method *method,
 		break;
 
 	case EAP_TYPE_FAST:
-		eapdata = xsupconfwrite_eap_fast_create_tree(method->method_data, write_all);
+		eapdata = xsupconfwrite_eap_fast_create_tree(method->method_data, config_type, write_all);
 		break;
 
 	case EAP_TYPE_PSK:
-		eapdata = xsupconfwrite_pwd_only_create_tree("PSK", method->method_data, write_all); 
+		eapdata = xsupconfwrite_pwd_only_create_tree("PSK", method->method_data, config_type, write_all); 
   	    break;
 
 	default:

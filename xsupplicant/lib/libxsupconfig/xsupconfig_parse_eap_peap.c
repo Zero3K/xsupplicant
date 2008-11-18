@@ -28,7 +28,7 @@
 #include "xsupconfig_common.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_peap(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth = NULL;
 
@@ -67,7 +67,7 @@ void *xsupconfig_parse_eap_peap(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_peap_user_cert(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_user_cert(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap = NULL;
   char *value = NULL;
@@ -93,7 +93,7 @@ void *xsupconfig_parse_eap_peap_user_cert(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_crl_dir(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_crl_dir(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap = NULL;
   char *value = NULL;
@@ -119,7 +119,7 @@ void *xsupconfig_parse_eap_peap_crl_dir(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_user_key_file(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_user_key_file(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap = NULL;
   char *value = NULL;
@@ -145,7 +145,7 @@ void *xsupconfig_parse_eap_peap_user_key_file(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_user_key_pass(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_user_key_pass(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *peap = NULL;
   char *value = NULL;
@@ -171,7 +171,7 @@ void *xsupconfig_parse_eap_peap_user_key_pass(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_enc_user_key_pass(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_enc_user_key_pass(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *peap = NULL;
   char *value = NULL;
@@ -191,7 +191,7 @@ void *xsupconfig_parse_eap_peap_enc_user_key_pass(void **attr, xmlNodePtr node)
 		return peap;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&peap->user_key_pass, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&peap->user_key_pass, &size) != 0)
   {
 	  free(value);
 	  peap->user_key_pass = NULL;
@@ -203,7 +203,7 @@ void *xsupconfig_parse_eap_peap_enc_user_key_pass(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_session_resume(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_session_resume(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap;
   uint8_t result;
@@ -236,7 +236,7 @@ void *xsupconfig_parse_eap_peap_session_resume(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_cnexact(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_cnexact(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap;
   uint8_t result;
@@ -269,7 +269,7 @@ void *xsupconfig_parse_eap_peap_cnexact(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_proper_v1_keying(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_proper_v1_keying(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap;
   uint8_t result;
@@ -302,7 +302,7 @@ void *xsupconfig_parse_eap_peap_proper_v1_keying(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_peap_validate_cert(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_peap_validate_cert(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap = NULL;
   uint8_t result = 0;
@@ -335,7 +335,7 @@ void *xsupconfig_parse_peap_validate_cert(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_chunk_size(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_chunk_size(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap;
   char *value;
@@ -363,7 +363,7 @@ void *xsupconfig_parse_eap_peap_chunk_size(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_random_file(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_random_file(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap;
   char *value;
@@ -389,7 +389,7 @@ void *xsupconfig_parse_eap_peap_random_file(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_force_peap_version(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_force_peap_version(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_eap_peap *peap;
 	char *value;
@@ -417,7 +417,7 @@ void *xsupconfig_parse_force_peap_version(void **attr, xmlNodePtr node)
 	return peap;
 }
 
-void *xsupconfig_parse_eap_peap_innerid(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_innerid(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap;
   char *value;
@@ -443,7 +443,7 @@ void *xsupconfig_parse_eap_peap_innerid(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_peap_trusted_server(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_peap_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap;
   char *value;
@@ -469,7 +469,7 @@ void *xsupconfig_parse_peap_trusted_server(void **attr, xmlNodePtr node)
   return peap;
 }
 
-void *xsupconfig_parse_eap_peap_cncheck(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_peap_cncheck(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_peap *peap;
   char *value;

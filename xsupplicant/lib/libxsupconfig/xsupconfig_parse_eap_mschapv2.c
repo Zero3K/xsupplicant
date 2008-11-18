@@ -25,7 +25,7 @@
 #include "xsupconfig_parse_eap_mschapv2.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_mschapv2(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth = NULL;
 
@@ -61,7 +61,7 @@ void *xsupconfig_parse_eap_mschapv2(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_mschapv2_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_mschapv2 *mscv2 = NULL;
   char *value = NULL;
@@ -87,7 +87,7 @@ void *xsupconfig_parse_eap_mschapv2_password(void **attr, xmlNodePtr node)
   return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_enc_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_mschapv2 *mscv2 = NULL;
   char *value = NULL;
@@ -108,7 +108,7 @@ void *xsupconfig_parse_eap_mschapv2_enc_password(void **attr, xmlNodePtr node)
 		return mscv2;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&mscv2->password, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&mscv2->password, &size) != 0)
   {
 	  free(value);
 	  mscv2->password = NULL;
@@ -125,7 +125,7 @@ void *xsupconfig_parse_eap_mschapv2_enc_password(void **attr, xmlNodePtr node)
   return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_nt_pwd_hash(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_nt_pwd_hash(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_mschapv2 *mscv2 = NULL;
   char *value = NULL;
@@ -151,7 +151,7 @@ void *xsupconfig_parse_eap_mschapv2_nt_pwd_hash(void **attr, xmlNodePtr node)
   return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_ias_quirk(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_ias_quirk(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   char *value = NULL;
   struct config_eap_mschapv2 *mscv2 = NULL;
@@ -187,7 +187,7 @@ void *xsupconfig_parse_eap_mschapv2_ias_quirk(void **attr, xmlNodePtr node)
   return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_volatile(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_volatile(void **attr, unsigned char config_type, xmlNodePtr node)
 {
   char *value = NULL;
   struct config_eap_mschapv2 *mscv2 = NULL;

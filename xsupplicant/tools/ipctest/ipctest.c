@@ -229,13 +229,13 @@ void docerts_list(trusted_servers_enum *data)
  * \brief Request that we enumerate all of the trusted servers that are currently in the
  *        supplicant's memory.
  **/
-void docerts_enum()
+void docerts_enum_helper(uint8_t config_type)
 {
 	trusted_servers_enum *mydata = NULL;
 	int err = 0;
 
 	printf("Requesting a list of trusted servers..\n\n");
-	err = xsupgui_request_enum_trusted_servers(&mydata);
+	err = xsupgui_request_enum_trusted_servers(config_type, &mydata);
 
 	switch(err)
 	{
@@ -260,6 +260,16 @@ void docerts_enum()
 		//die();
 		break;
 	}
+}
+
+void docerts_enum()
+{
+	printf(" ----- System Level Trusted Servers ------\n");
+	docerts_enum_helper(CONFIG_LOAD_GLOBAL);
+	printf(" ----- User Level Trusted Servers -----\n");
+	docerts_enum_helper(CONFIG_LOAD_USER);
+	printf(" ----- All Trusted Servers -----\n");
+	docerts_enum_helper((CONFIG_LOAD_USER | CONFIG_LOAD_GLOBAL));
 }
 
 /**
@@ -407,13 +417,13 @@ void doprof_list(profile_enum *profs)
  * \brief Request that we enumerate all of the profiles that are currently in the
  *        supplicant's memory.
  **/
-void doprof_enum()
+void doprof_enum_helper(uint8_t config_type)
 {
 	profile_enum *mydata = NULL;
 	int err = 0;
 
 	printf("Requesting a list of profiles..\n\n");
-	err = xsupgui_request_enum_profiles(&mydata);
+	err = xsupgui_request_enum_profiles(config_type, &mydata);
 
 	switch(err)
 	{
@@ -439,6 +449,18 @@ void doprof_enum()
 	}
 
 	xsupgui_request_free_profile_enum(&mydata);
+}
+
+void doprof_enum()
+{
+	printf("  ----- Listing System Level Profiles -----\n");
+	doprof_enum_helper(CONFIG_LOAD_GLOBAL);
+
+	printf("  ----- Listing User Level Profiles -----\n");
+	doprof_enum_helper(CONFIG_LOAD_USER);
+
+	printf("  ----- Listing All Profiles -----\n");
+	doprof_enum_helper((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER));
 }
 
 /**
@@ -1254,13 +1276,13 @@ void doget_possible_connections()
  *  \brief  Request, and display, the connections that are currently in the supplicant's
  *          memory.
  **/
-void dogetconnections()
+void dogetconnections_help(uint8_t config_type)
 {
 	int retval = 0;
 	conn_enum *connections = NULL;
 
 	printf("Known connections : ");
-	retval = xsupgui_request_enum_connections(&connections);
+	retval = xsupgui_request_enum_connections(config_type, &connections);
 	switch (retval)
 	{
 	case REQUEST_TIMEOUT:
@@ -1285,6 +1307,18 @@ void dogetconnections()
 
 	xsupgui_request_free_conn_enum(&connections);
 	printf("\n");
+}
+
+void dogetconnections()
+{
+	printf("  ----- System Level Connections -----\n");
+	dogetconnections_help(CONFIG_LOAD_GLOBAL);
+
+	printf("  ----- User Level Connections -----\n");
+	dogetconnections_help(CONFIG_LOAD_USER);
+
+	printf("  ----- Combined Connections -----\n");
+	dogetconnections_help((CONFIG_LOAD_USER | CONFIG_LOAD_GLOBAL));
 }
 
 /**
@@ -1599,7 +1633,7 @@ void dowrite_conf(char *filename)
 {
 	printf("Writing configuration file....");
 
-	if (xsupgui_request_write_config(filename) != REQUEST_SUCCESS)
+	if (xsupgui_request_write_config(CONFIG_LOAD_GLOBAL, filename) != REQUEST_SUCCESS)
 	{
 		printf("Failed!\n");
 		die();
@@ -1643,7 +1677,7 @@ void doget_profile()
 
 	printf("Getting profile settings...");
 
-	if (xsupgui_request_get_profile_config("House_TTLS", &myprof) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, "House_TTLS", &myprof) != REQUEST_SUCCESS)
 	{
 		printf("Failed!\n");
 		die();
@@ -1664,7 +1698,7 @@ void doget_connection()
 
 	printf("Getting connection settings...");
 
-	if (xsupgui_request_get_connection_config("Home WPA 2 PSK Network", &mycon) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, "Home WPA 2 PSK Network", &mycon) != REQUEST_SUCCESS)
 	{
 		printf("Failed!\n");
 		die();
@@ -1687,7 +1721,7 @@ void doget_ts()
 
 	printf("Getting trusted server settings...");
 
-	if (xsupgui_request_get_trusted_server_config("Equifax Cert Test", &ts) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts) != REQUEST_SUCCESS)
 	{
 		printf("Failed!\n");
 		//die();
@@ -1728,7 +1762,7 @@ void doget_int()
  **/
 void del_profile()
 {
-  if (xsupgui_request_delete_profile_config("Beat me!", TRUE) != REQUEST_SUCCESS)
+  if (xsupgui_request_delete_profile_config(CONFIG_LOAD_GLOBAL, "Beat me!", TRUE) != REQUEST_SUCCESS)
     {
       printf("Couldn't delete 'Beat me!' from the profiles list!\n");
 	  die();
@@ -1745,7 +1779,7 @@ void del_profile()
  **/
 void del_connection()
 {
-  if (xsupgui_request_delete_connection_config("RSA Test") != REQUEST_SUCCESS)
+  if (xsupgui_request_delete_connection_config(CONFIG_LOAD_GLOBAL, "RSA Test") != REQUEST_SUCCESS)
     {
       printf("Couldn't delete 'RSA Test' from the connections list!\n");
 	  die();
@@ -1779,7 +1813,7 @@ void del_interface()
  **/
 void del_trusted_server()
 {
-  if (xsupgui_request_delete_trusted_server_config("Test Server 1", TRUE) != REQUEST_SUCCESS)
+  if (xsupgui_request_delete_trusted_server_config(CONFIG_LOAD_GLOBAL, "Test Server 1", TRUE) != REQUEST_SUCCESS)
     {
       printf("Couldn't delete 'Test Server 1' from the trusted servers list!\n");
 	  die();
@@ -1833,6 +1867,39 @@ void change_globals()
 	printf("Globals->flags = %x\n", globs->flags);
 }
 
+void create_conn()
+{
+	struct config_connection *conn = NULL;
+	int result = 0;
+
+	conn = (struct config_connection *)Malloc(sizeof(struct config_connection));
+	
+	conn->name = _strdup("Test User Connection");
+	conn->device = _strdup("Intel Wireless");
+	conn->profile = _strdup("Test Profile");
+
+	if ((result = xsupgui_request_set_connection_config(CONFIG_LOAD_USER, conn)) != REQUEST_SUCCESS)
+	{
+		printf("Couldn't set connection settings.  (Error : %d)\n", result);
+		die();
+		return;
+	}
+
+	printf("Wrote a user config to memory.\n");
+
+	printf("Writing user configuration file....");
+
+	if ((result = xsupgui_request_write_config(CONFIG_LOAD_USER, NULL)) != REQUEST_SUCCESS)
+	{
+		printf("Failed!  (Error : %d)\n", result);
+		die();
+	}
+	else
+	{
+		printf("Success.\n");
+	}
+}
+
 /**
  * \brief Change a value in the connection settings.
  **/
@@ -1841,7 +1908,7 @@ void change_conn()
 	struct config_connection *conn = NULL;
 	char *val = NULL;
 
-	if (xsupgui_request_get_connection_config("Ignition Test", &conn) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, "Ignition Test", &conn) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't get connection settings.\n");
 		die();
@@ -1852,14 +1919,14 @@ void change_conn()
 	free(conn->device);
 	conn->device = _strdup("some device");
 
-	if (xsupgui_request_set_connection_config(conn) != REQUEST_SUCCESS)
+	if (xsupgui_request_set_connection_config(CONFIG_LOAD_GLOBAL, conn) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't set connection settings.\n");
 		die();
 		return;
 	}
 
-	if (xsupgui_request_get_connection_config("Ignition Test", &conn)  != REQUEST_SUCCESS)
+	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, "Ignition Test", &conn)  != REQUEST_SUCCESS)
 	{
 		printf("Couldn't get connection settings the second time!\n");
 		die();
@@ -1877,7 +1944,7 @@ void change_prof()
 	struct config_profiles *prof = NULL;
 	char *val = NULL;
 
-	if (xsupgui_request_get_profile_config("House_TTLS", &prof) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, "House_TTLS", &prof) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't get profile settings.\n");
 		die();
@@ -1888,14 +1955,14 @@ void change_prof()
 	free(prof->identity);
 	prof->identity = _strdup("some id");
 
-	if (xsupgui_request_set_profile_config(prof) != REQUEST_SUCCESS)
+	if (xsupgui_request_set_profile_config(CONFIG_LOAD_GLOBAL, prof) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't set profile settings.\n");
 		die();
 		return;
 	}
 
-	if (xsupgui_request_get_profile_config("House_TTLS", &prof)  != REQUEST_SUCCESS)
+	if (xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, "House_TTLS", &prof)  != REQUEST_SUCCESS)
 	{
 		printf("Couldn't get profile settings the second time!\n");
 		die();
@@ -1913,7 +1980,7 @@ void change_ts()
 	struct config_trusted_server *ts = NULL;
 	char *val = NULL;
 
-	if (xsupgui_request_get_trusted_server_config("Equifax Cert Test", &ts) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't get trusted server settings.\n");
 		die();
@@ -1928,14 +1995,14 @@ void change_ts()
 	ts->location = realloc(ts->location, ts->num_locations*(sizeof(ts->location)));
 	ts->location[ts->num_locations-1] = _strdup("This won't work!  (But is an okay test. ;)");
 
-	if (xsupgui_request_set_trusted_server_config(ts) != REQUEST_SUCCESS)
+	if (xsupgui_request_set_trusted_server_config(CONFIG_LOAD_GLOBAL, ts) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't set trusted server settings.\n");
 		die();
 		return;
 	}
 
-	if (xsupgui_request_get_trusted_server_config("Equifax Cert Test", &ts)  != REQUEST_SUCCESS)
+	if (xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts)  != REQUEST_SUCCESS)
 	{
 		printf("Couldn't get trusted server settings the second time!\n");
 		die();
@@ -2133,7 +2200,7 @@ void getqueuederrors()
 
 void renameconnection(char *oldname, char *newname)
 {
-	if (xsupgui_request_rename_connection(oldname, newname) != REQUEST_SUCCESS)
+	if (xsupgui_request_rename_connection(CONFIG_LOAD_GLOBAL, oldname, newname) != REQUEST_SUCCESS)
 	{
 		printf("Failed to rename the connection!\n");
 		return;
@@ -2142,7 +2209,7 @@ void renameconnection(char *oldname, char *newname)
 
 void renameprofile(char *oldname, char *newname)
 {
-	if (xsupgui_request_rename_profile(oldname, newname) != REQUEST_SUCCESS)
+	if (xsupgui_request_rename_profile(CONFIG_LOAD_GLOBAL, oldname, newname) != REQUEST_SUCCESS)
 	{
 		printf("Failed to rename the profile!\n");
 		return;
@@ -2152,7 +2219,7 @@ void renameprofile(char *oldname, char *newname)
 void renametrusted_server(char *oldname, char *newname)
 {
 	int retval = 0;
-	retval = xsupgui_request_rename_trusted_server(oldname, newname);
+	retval = xsupgui_request_rename_trusted_server(CONFIG_LOAD_GLOBAL, oldname, newname);
 	if (retval != REQUEST_SUCCESS)
 	{
 		printf("Failed to rename the trusted server!  (Error : %d)\n", retval);
@@ -2331,8 +2398,9 @@ int main(int argc, char *argv[])
 #if 1
 	do_get_user_is_admin();
 	enum_sc_readers();
+	create_conn();
 	nt("Terminate Supplicant");
-	doterminate();
+	doterminate(); 
 
 	return 0;
 #endif

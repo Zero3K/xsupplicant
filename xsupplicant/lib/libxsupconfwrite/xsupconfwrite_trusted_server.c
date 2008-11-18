@@ -163,7 +163,7 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 
 	if ((write_all == TRUE) || (cts->exact_common_name != FALSE))
 	{
-		if (cts->exact_common_name != FALSE)
+		if (cts->exact_common_name == TRUE)
 		{
 			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Exact_Common_Name", (xmlChar *)"yes") == NULL)
 			{

@@ -42,6 +42,8 @@
 #include "xsupconfig.h"
 #include "src/xsup_err.h"
 
+#define MAX_EAPOL_VER		2
+
 multichoice crypto_choices[] = {
   { 1, "WEP40"},
   { 1, "wep40"},
@@ -67,9 +69,9 @@ multichoice assoc_choices[] = {
  *  information.  It should start at the top of the list of connections,
  *  find the last node in the list, and allocate memory for the new node.
  **/
-void *xsupconfig_parse_connection(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_connection *cur;
+	struct config_connection *cur = NULL;
 
 #ifdef PARSE_DEBUG
   printf("Parsing connection.\n");
@@ -98,15 +100,52 @@ void *xsupconfig_parse_connection(void **attr, xmlNodePtr node)
 	  cur = cur->next;
   }
 
-  cur->ou = (char *)xmlGetProp(node, (xmlChar *)"OU");   // Should return NULL if it isn't there.
+  return cur;
+}
+
+/**
+ *  This is called when the parser decides it is time to parse connection
+ *  information.  It should start at the top of the list of connections,
+ *  find the last node in the list, and allocate memory for the new node.
+ **/
+void *xsupconfig_parse_user_connection(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	struct config_connection *cur = NULL;
+
+#ifdef PARSE_DEBUG
+  printf("Parsing connection.\n");
+#endif
+
+  if (conf_user_connections == NULL)
+  {
+	  if (xsupconfig_defaults_create_connection(&conf_user_connections) != XENONE)
+	  {
+		  exit(2);
+	  }
+
+	  cur = conf_user_connections;
+  }
+  else
+  {
+	  cur = conf_user_connections;
+
+	  while (cur->next != NULL) cur = cur->next;
+
+	  if (xsupconfig_defaults_create_connection(&cur->next) != XENONE)
+	  {
+		  exit(2);
+	  }
+
+	  cur = cur->next;
+  }
 
   return cur;
 }
 
-void *xsupconfig_parse_connection_priority(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_priority(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *value;
+  struct config_connection *conn = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -137,10 +176,11 @@ void *xsupconfig_parse_connection_priority(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_connection_eapol_ver(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_eapol_ver(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *value;
+  struct config_connection *conn = NULL;
+  char *value = NULL;
+  uint8_t vval = 0;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -154,10 +194,22 @@ void *xsupconfig_parse_connection_eapol_ver(void **attr, xmlNodePtr node)
     {
 		xsupconfig_common_log("Value assigned to Force_EAPoL_Version at line %ld is not a number! "
 				"Using default.", xsupconfig_parse_get_line_num());
+		conn->force_eapol_ver = 0;    // Set it to the default.
     }
   else
     {
-      conn->force_eapol_ver = atoi(value);
+		vval = atoi(value);
+		if (vval > MAX_EAPOL_VER)
+		{
+			xsupconfig_common_log("Value assigned to Force_EAPoL_Version at line %ld is invalid! "
+					"Using default.", xsupconfig_parse_get_line_num());
+
+			conn->force_eapol_ver = 0;
+		}
+		else
+		{
+			conn->force_eapol_ver = atoi(value);
+		}
     }
 
   FREE(value);
@@ -165,7 +217,7 @@ void *xsupconfig_parse_connection_eapol_ver(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_connection_name(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_name(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
   struct config_connection *check = NULL;
@@ -173,8 +225,11 @@ void *xsupconfig_parse_connection_name(void **attr, xmlNodePtr node)
   char *original = NULL;
   char *newname = NULL;
   int done = 0, len = 0;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
   conn = (*attr);
 
@@ -262,12 +317,15 @@ void *xsupconfig_parse_connection_name(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_connection_profile(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_profile(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *value;
+  struct config_connection *conn = NULL;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
   conn = (*attr);
 
@@ -288,12 +346,15 @@ void *xsupconfig_parse_connection_profile(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_connection_ssid(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_ssid(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *value;
+  struct config_connection *conn = NULL;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
   conn = (*attr);
 
@@ -314,12 +375,15 @@ void *xsupconfig_parse_connection_ssid(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_connection_device(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_device(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *value;
+  struct config_connection *conn = NULL;
+  char *value = NULL;
+  xmlChar *content = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
 
   conn = (*attr);
 
@@ -340,11 +404,11 @@ void *xsupconfig_parse_connection_device(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_connection_mac_addr(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_mac_addr(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_connection *conn;
-  char *mystr;
-  char *value;
+  struct config_connection *conn = NULL;
+  char *mystr = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -376,7 +440,7 @@ void *xsupconfig_parse_connection_mac_addr(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_connection_hidden_ssid(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_hidden_ssid(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   char *value = NULL;
   struct config_connection *conn = NULL;
@@ -412,7 +476,7 @@ void *xsupconfig_parse_connection_hidden_ssid(void **attr, xmlNodePtr node)
   return conn;
 }
 
-void *xsupconfig_parse_connection_volatile(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connection_volatile(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   char *value = NULL;
   struct config_connection *conn = NULL;

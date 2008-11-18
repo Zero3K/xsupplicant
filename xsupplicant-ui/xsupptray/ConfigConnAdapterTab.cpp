@@ -88,7 +88,7 @@ void ConfigConnAdapterTab::populateProfiles()
 
 	pWirelessProfileLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboWirelessProfile");
 
-	if (m_pSupplicant->enumProfiles(&pProfiles, true) != true)
+	if (m_pSupplicant->enumProfiles((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pProfiles, true) != true)
 	{
 		QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to enumerate profiles."));
 		return;

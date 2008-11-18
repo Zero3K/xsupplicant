@@ -36,7 +36,7 @@
 #include "ConfigWidgetEditProfile.h"
 #include "Util.h"
 
-ConfigWidgetEditProfile::ConfigWidgetEditProfile(QWidget *pRealWidget, QString profName, XSupCalls *xsup, NavPanel *pPanel, UIPlugins *pPlugins, QWidget *parent) :
+ConfigWidgetEditProfile::ConfigWidgetEditProfile(QWidget *pRealWidget, QString profName, XSupCalls *xsup, NavPanel *pPanel, unsigned char config_type, UIPlugins *pPlugins, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalProfName(profName), m_pPlugins(pPlugins), m_pNavPanel(pPanel)
 {
 	m_pTabsWidget = NULL;
@@ -46,6 +46,8 @@ ConfigWidgetEditProfile::ConfigWidgetEditProfile(QWidget *pRealWidget, QString p
 	m_bChangedData = false;
 	m_bNewProfile = false;
 	m_bProfileRenamed = false;
+
+	m_config_type = config_type;
 }
 
 ConfigWidgetEditProfile::~ConfigWidgetEditProfile()
@@ -136,6 +138,7 @@ bool ConfigWidgetEditProfile::newItem()
 		// This is a new server configuration.
 		m_bNewProfile = true;
 		m_bChangedData = true;
+		m_config_type = CONFIG_LOAD_USER;
 
 		return true;
 }
@@ -186,7 +189,7 @@ void ConfigWidgetEditProfile::updateWindow()
 	    index = m_pEapType->findText("EAP-PEAP");
 		m_pEapType->setCurrentIndex(index);
 	}
-	else if (m_pSupplicant->getConfigProfile(m_originalProfName, &m_pProfile, true) == true)
+	else if (m_pSupplicant->getConfigProfile(m_config_type, m_originalProfName, &m_pProfile, true) == true)
 	{
 		m_lastProfName = m_originalProfName;
 
@@ -256,7 +259,9 @@ bool ConfigWidgetEditProfile::save()
 	}
 
 	temp = m_pProfNameEdit->text();
-	if ((m_originalProfName != m_lastProfName) && (m_pSupplicant->getConfigProfile(temp, &pNewProfile, false) == true))
+	if ((m_originalProfName != m_lastProfName) && 
+		((m_pSupplicant->getConfigProfile(CONFIG_LOAD_GLOBAL, temp, &pNewProfile, false) == true) ||
+		(m_pSupplicant->getConfigProfile(CONFIG_LOAD_USER, temp, &pNewProfile, false) == true)))
 	{
 		QMessageBox::critical(m_pRealWidget, tr("Profile Exists"), tr("The profile '%1' already exists in the configuration.  Please select a different name.").arg(m_pProfNameEdit->text()));
 		return false;
@@ -273,15 +278,15 @@ bool ConfigWidgetEditProfile::save()
 	if ((m_bProfileRenamed) && (QString(m_pProfile->name) != m_originalProfName))
 	{
 	  temp = m_pProfile->name;
-		if (m_pSupplicant->renameProfile(m_originalProfName, temp) == false)
+		if (m_pSupplicant->renameProfile(m_config_type, m_originalProfName, temp) == false)
 			return false;
 
 		m_bProfileRenamed = false;  // We are done.
 	}
 
-	if (m_pSupplicant->setConfigProfile(m_pProfile) == true)
+	if (m_pSupplicant->setConfigProfile(m_config_type, m_pProfile) == true)
 	{
-		if (m_pSupplicant->writeConfig() == true)
+		if (m_pSupplicant->writeConfig(m_config_type) == true)
 		{
 			m_originalProfName = m_lastProfName;
 			m_bChangedData = false;

@@ -38,7 +38,7 @@ eap_methods fast_p2_meths[] = {
 
 	{NULL, 0, NULL, NULL}};
 
-void *xsupconfig_parse_eap_fast_phase2_eap(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_phase2_eap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	xmlNodePtr t = NULL;
 	char *value = NULL;
@@ -76,8 +76,12 @@ void *xsupconfig_parse_eap_fast_phase2_eap(void **attr, xmlNodePtr node)
   }
 
   // Go ahead and parse the EAP data.
-  meth->init_method((void **)&fast->phase2, node->children);
-  xsupconfig_parse(node->children, meth->parsedata, &fast->phase2->method_data);
+  meth->init_method((void **)&fast->phase2, config_type, node->children);
+
+  // Using OPTION_ANY_CONFIG here is safe because we want to allow EAP methods in both configuration files
+  // if we ever end up in a situation where we want to limit EAP to one configuraiton or the other we will
+  // need to make larger changes.
+  xsupconfig_parse(node->children, meth->parsedata, config_type, &fast->phase2->method_data);
 
   return (*attr);
 }

@@ -449,7 +449,7 @@ void PreferredConnections::updateLists()
 		m_pConns = NULL;
 	}
 		
-	int retval = xsupgui_request_enum_connections(&m_pConns);
+	int retval = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &m_pConns);
 	
 	// if no connections then nothing to populate lists with
 	if (retval != REQUEST_SUCCESS || m_pConns == NULL)
@@ -464,7 +464,7 @@ void PreferredConnections::updateLists()
 			config_connection *pConn;
 			bool volatileConn = false;
 			
-			success = XSupWrapper::getConfigConnection(QString(m_pConns[i].name), &pConn);
+			success = XSupWrapper::getConfigConnection(m_pConns[i].config_type, QString(m_pConns[i].name), &pConn);
 			
 			if (success == true && pConn != NULL && (pConn->flags & CONFIG_VOLATILE_CONN) == CONFIG_VOLATILE_CONN)
 				volatileConn = true;

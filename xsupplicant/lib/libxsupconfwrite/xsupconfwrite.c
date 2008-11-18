@@ -114,9 +114,9 @@ xmlNodePtr xsupconfwrite_create_trusted_servers(struct config_trusted_servers *c
  * \retval xmlNodePtr pointing to a tree of nodes that contains the <Connections> piece
  *                    of a configuration file.
  **/
-xmlNodePtr xsupconfwrite_create_connections(struct config_connection *conf_connections, char write_to_disk)
+xmlNodePtr xsupconfwrite_create_connections(struct config_connection *conf_connections, uint8_t config_type, char write_to_disk)
 {
-	return xsupconfwrite_connections_create_tree(conf_connections, FALSE, write_to_disk);
+	return xsupconfwrite_connections_create_tree(conf_connections, config_type, FALSE, write_to_disk);
 }
 
 /**
@@ -129,14 +129,14 @@ xmlNodePtr xsupconfwrite_create_connections(struct config_connection *conf_conne
  * \retval xmlNodePtr pointing to a tree of nodes that contains the <Profiles> piece
  *                    of a configuration file.
  **/
-xmlNodePtr xsupconfwrite_create_profiles(struct config_profiles *conf_profiles, char write_to_disk)
+xmlNodePtr xsupconfwrite_create_profiles(struct config_profiles *conf_profiles, uint8_t config_type, char write_to_disk)
 {
-	return xsupconfwrite_profiles_create_tree(conf_profiles, FALSE, write_to_disk);
+	return xsupconfwrite_profiles_create_tree(conf_profiles, config_type, FALSE, write_to_disk);
 }
 
 
 /**
- * \brief This function writes the config information out to the config file.
+ * \brief This function writes the config information out to the system level config file.
  *
  * If destfile is set to NULL, then we will use the value that is stored
  * in the config_fname variable.  (Which should be the path to the config that we 
@@ -229,7 +229,7 @@ int xsupconfwrite_write_config(char *destfile)
 
   if (conf_connections != NULL)
   {
-	connections = xsupconfwrite_create_connections(conf_connections, TRUE);
+	connections = xsupconfwrite_create_connections(conf_connections, CONFIG_LOAD_GLOBAL, TRUE);
 	if (connections == NULL)
 	{
 #ifdef DEBUG
@@ -243,7 +243,7 @@ int xsupconfwrite_write_config(char *destfile)
 
   if (conf_profiles != NULL)
   {
-	profiles = xsupconfwrite_create_profiles(conf_profiles, TRUE);
+	profiles = xsupconfwrite_create_profiles(conf_profiles, CONFIG_LOAD_GLOBAL, TRUE);
 	if (profiles == NULL)
 	{
 #ifdef DEBUG
@@ -277,6 +277,119 @@ int xsupconfwrite_write_config(char *destfile)
   {
 	if (xmlSaveFormatFile(destfile, doc, 1) < 0) return XSUPCONFWRITE_FAILED;
   }
+
+  xmlFreeDoc(doc);
+
+  return XSUPCONFWRITE_ERRNONE;
+}
+
+/**
+ * \brief This function writes the config information out to the user level config file.
+ *
+ * @param[in] destfile   The full path and filename to store the user configuration information.
+ *
+ * \retval 0 on success
+ * \retval -1 on error.
+ **/
+int xsupconfwrite_write_user_config(char *destfile)
+{
+  xmlNodePtr globals = NULL;
+  xmlNodePtr devices = NULL;
+  xmlNodePtr trusted_servers = NULL;
+  xmlNodePtr connections = NULL;
+  xmlNodePtr profiles = NULL;
+  xmlNodePtr rootnode = NULL;
+  xmlDocPtr doc = NULL;
+  char tempstatic[26];
+
+#ifdef WINDOWS
+  SYSTEMTIME systime;
+#else
+  time_t systime;
+#endif // WINDOWS
+
+  if (destfile == NULL) return -1;
+
+  xmlKeepBlanksDefault(0);
+
+  doc = xmlNewDoc(BAD_CAST "1.0");
+  if (doc == NULL)
+  {
+	  return XSUPCONFWRITE_FAILED;
+  }
+
+  rootnode = xmlNewNode(NULL, BAD_CAST "XsupplicantConfig");
+  if (rootnode == NULL)
+  {
+	  xmlFreeDoc(doc);
+	  return XSUPCONFWRITE_FAILED;
+  }
+
+  xmlNewProp(rootnode, (xmlChar *)"version", (xmlChar *)"1.0");
+
+  memset(&tempstatic, 0x00, sizeof(tempstatic));
+
+#ifdef WINDOWS
+  GetLocalTime(&systime);
+
+  sprintf((char *)&tempstatic, "%d/%d/%d", systime.wMonth, systime.wDay, systime.wYear);
+#else
+  time(&systime);
+  
+  // ctime returns a 26-character string.  Size includes \0 char.
+  ctime_r(&systime, tempstatic);
+
+  // Cut off the \n added by ctime.
+  tempstatic[strlen(tempstatic) - 1] = '\0';
+#endif
+
+  xmlNewProp(rootnode, (xmlChar *)"generated_date", (xmlChar *)tempstatic);
+
+  xmlDocSetRootElement(doc, rootnode);
+
+  if (conf_user_connections != NULL)
+  {
+	connections = xsupconfwrite_create_connections(conf_user_connections, CONFIG_LOAD_USER, TRUE);
+	if (connections == NULL)
+	{
+#ifdef DEBUG
+	  printf("Error creating <Connections> block!\n");
+#endif
+	  xmlFreeDoc(doc);
+	  return XSUPCONFWRITE_FAILED;
+	}
+	xmlAddChild(rootnode, connections);
+  }
+
+  if (conf_user_profiles != NULL)
+  {
+	profiles = xsupconfwrite_create_profiles(conf_user_profiles, CONFIG_LOAD_USER, TRUE);
+	if (profiles == NULL)
+	{
+#ifdef DEBUG
+	  printf("Error creating <Profiles> block!\n");
+#endif
+	  xmlFreeDoc(doc);
+	  return XSUPCONFWRITE_FAILED;
+	}
+	xmlAddChild(rootnode, profiles);
+  }
+
+  if (conf_user_trusted_servers != NULL)
+  {
+	trusted_servers = xsupconfwrite_create_trusted_servers(conf_user_trusted_servers, TRUE);
+	if (trusted_servers == NULL)
+	{
+#ifdef DEBUG
+  	  printf("Error creating <Trusted_Servers> block!\n");
+#endif
+ 	  xmlFreeDoc(doc);
+	  return XSUPCONFWRITE_FAILED;
+	}
+	xmlAddChild(rootnode, trusted_servers);
+  }
+
+  if (xmlSaveFormatFile(destfile, doc, 1) < 0) return XSUPCONFWRITE_FAILED;
 
   xmlFreeDoc(doc);
 

@@ -25,7 +25,7 @@
 #include "xsupconfig_parse_eap_md5.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_psk(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_psk(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth = NULL;
 
@@ -61,7 +61,7 @@ void *xsupconfig_parse_eap_psk(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_psk_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_psk_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *psk = NULL;
   char *value = NULL;
@@ -87,7 +87,7 @@ void *xsupconfig_parse_eap_psk_password(void **attr, xmlNodePtr node)
   return psk;
 }
 
-void *xsupconfig_parse_eap_psk_enc_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_psk_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *psk = NULL;
   char *value = NULL;
@@ -107,7 +107,7 @@ void *xsupconfig_parse_eap_psk_enc_password(void **attr, xmlNodePtr node)
 		return psk;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&psk->password, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&psk->password, &size) != 0)
   {
 	  free(value);
 	  psk->password = NULL;

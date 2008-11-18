@@ -8,7 +8,7 @@
 #ifndef __XSUPCONFWRITE_EAP_AKA_H__
 #define __XSUPCONFWRITE_EAP_AKA_H__
 
-xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_sim *, char);
+xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_sim *, uint8_t config_type, char);
 
 #endif // __XSUPCONFWRITE_EAP_AKA_H__
 

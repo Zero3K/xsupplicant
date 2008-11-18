@@ -47,28 +47,28 @@ class XSupWrapper
 
 public:
 	static bool createNewConnection(const QString &suggName, config_connection **newConnection, bool forceName = false);
-	static bool getConfigConnection(const QString &connName, config_connection **pConfig);
+	static bool getConfigConnection(unsigned char config_type, const QString &connName, config_connection **pConfig);
 	static void freeConfigConnection(config_connection **p);
-	static bool deleteConnectionConfig(const QString &connName);
-	static bool writeConfig(void);
+	static bool deleteConnectionConfig(unsigned char config_type, const QString &connName);
+	static bool writeConfig(unsigned char config_type);
 	static QString getUniqueConnectionName(const QString &suggestedName);
 	static QString getUniqueProfileName(const QString &suggestedName);
 	static QString getUniqueServerName(const QString &suggestedName);
 	static bool createNewProfile(const QString &suggName, config_profiles **newProfile, bool forceName = false);
-	static bool getConfigProfile(const QString &profileName, config_profiles **pProfile);
+	static bool getConfigProfile(unsigned char config_type, const QString &profileName, config_profiles **pProfile);
 	static void freeConfigProfile(config_profiles **p);
 	static bool isDefaultWiredConnection(const QString &connName);
 	static bool createNewTrustedServer(const QString &suggName, config_trusted_server **newServer, bool forceName = false);
-	static bool getConfigServer(const QString &serverName, config_trusted_server **pServer);
+	static bool getConfigServer(unsigned char config_type, const QString &serverName, config_trusted_server **pServer);
 	static void freeConfigServer(config_trusted_server **p);
 	static bool isProfileInUse(const QString &profileName);
-	static bool getTrustedServerForProfile(const QString &profileName, config_trusted_server **pServer);
-	static bool deleteProfileConfig(const QString &profileName);
-	static bool deleteServerConfig(const QString &serverName);
+	static bool getTrustedServerForProfile(unsigned char config_type, const QString &profileName, config_trusted_server **pServer, unsigned char *inconfig);
+	static bool deleteProfileConfig(unsigned char config_type, const QString &profileName);
+	static bool deleteServerConfig(unsigned char config_type, const QString &serverName);
 	static bool isTrustedServerInUse(const QString &serverName);
 	static QStringList getWirelessInterfaceList(void);
-	static bool setProfileUsername(const QString &profileName, const QString &username);
-	static bool setProfilePassword(const QString &profileName, const QString &password);
+	static bool setProfileUsername(unsigned char config_type, const QString &profileName, const QString &username);
+	static bool setProfilePassword(unsigned char config_type, const QString &profileName, const QString &password);
 	static void getAndDisplayErrors(void);
 	static QVector<QString> getWirelessAdapters(void); // returns descriptions of wireless adapters in system
 	static QVector<QString> getWiredAdapters(void); // returns descriptions of wired adapters in system

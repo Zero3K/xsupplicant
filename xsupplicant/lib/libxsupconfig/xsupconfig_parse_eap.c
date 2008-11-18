@@ -83,7 +83,7 @@ eap_methods *xsupconfig_parse_eap_get_method(eap_methods *eaplist, char *method_
 	return &eaplist[i];
 }
 
-void *xsupconfig_parse_eap(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	xmlNodePtr t = NULL;
 	char *value = NULL;
@@ -123,8 +123,12 @@ void *xsupconfig_parse_eap(void **attr, xmlNodePtr node)
   free(value);
 
   // Go ahead and parse the EAP data.
-  meth->init_method((void **)&cur->method, node->children);
-  xsupconfig_parse(node->children, meth->parsedata, &cur->method->method_data);
+  meth->init_method((void **)&cur->method, config_type, node->children);
+
+  // Using OPTION_ANY_CONFIG here is safe because we want to allow EAP methods in both configuration files
+  // if we ever end up in a situation where we want to limit EAP to one configuraiton or the other we will
+  // need to make larger changes.
+  xsupconfig_parse(node->children, meth->parsedata, config_type, &cur->method->method_data);
 
   return (*attr);
 }

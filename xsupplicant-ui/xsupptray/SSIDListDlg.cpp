@@ -306,7 +306,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 	bool found = false;
 	conn_enum *pConn = NULL;
 	
-	retVal = xsupgui_request_enum_connections(&pConn);
+	retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
 	
 	if (retVal == REQUEST_SUCCESS && pConn != NULL)
 	{
@@ -416,7 +416,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 							Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
 							
 							ConnectionWizardData wizData;
-							bool success = wizData.initFromSupplicantProfiles(pNewConn,NULL,NULL);
+							bool success = wizData.initFromSupplicantProfiles(CONFIG_LOAD_USER, pNewConn,NULL,NULL);
 							if (success == true) {
 								m_pConnWizard->editDot1XInfo(wizData);
 								m_pConnWizard->show();
@@ -445,10 +445,12 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 				// set this connection as volatile
 				pNewConn->flags |= CONFIG_VOLATILE_CONN;
 				
-				if (xsupgui_request_set_connection_config(pNewConn) == REQUEST_SUCCESS)
+				// In general, we should store volatile things in the per user config so that they go away when the user does.
+				if (xsupgui_request_set_connection_config(CONFIG_LOAD_USER, pNewConn) == REQUEST_SUCCESS)
 				{
 					// save off the config since it changed
-					if (XSupWrapper::writeConfig() == false)
+					if ((XSupWrapper::writeConfig(CONFIG_LOAD_GLOBAL) == false) ||
+						(XSupWrapper::writeConfig(CONFIG_LOAD_USER) == false))
 					{
 						// error. what to do here?  For now, fail silently as it's non-fatal
 						// perhaps write to log?
@@ -496,7 +498,8 @@ void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName)
 			config_connection *pConn = NULL;
 			QString message;
 			
-			success = XSupWrapper::getConfigConnection(connName, &pConn);
+			success = XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, connName, &pConn);
+			if (success == false) success = XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL, connName, &pConn);
 			
 			if (success == true && pConn != NULL && pConn->ssid != NULL && QString(pConn->ssid).isEmpty() == false)
 				message = tr("An error occurred while connecting to the wireless network '%1'.").arg(QString(pConn->ssid));

@@ -459,7 +459,7 @@ bool ConfigWidgetEditAdvancedSettings::saveWiredConnectionDefault()
 	}
 	else
 	{
-		if (m_pSupplicant->getConfigConnection(m_connName, &m_pConn, true) == true)
+		if (m_pSupplicant->getConfigConnection(CONFIG_LOAD_GLOBAL, m_connName, &m_pConn, true) == true)
 		{
 			// We got the connection information, now figure out which interface it is using.
 			m_intDesc = m_pConn->device;
@@ -482,7 +482,7 @@ bool ConfigWidgetEditAdvancedSettings::saveWiredConnectionDefault()
 				else
 				{
 					m_profName = m_pConn->profile;
-					if (m_pSupplicant->getConfigProfile(m_profName, &m_pProf, true) == true)
+					if (m_pSupplicant->getConfigProfile(CONFIG_LOAD_GLOBAL, m_profName, &m_pProf, false) == true)
 					{
 						m_pSupplicant->getUserAndPasswordFromProfile(m_pProf, username, password);		
 
@@ -596,7 +596,7 @@ bool ConfigWidgetEditAdvancedSettings::save()
 
 	if (m_pSupplicant->setConfigGlobals(m_pGlobals) == true)
 	{
-		if (m_pSupplicant->writeConfig() == true)
+		if (m_pSupplicant->writeConfig(CONFIG_LOAD_GLOBAL) == true)
 		{
 			m_bChangedData = false;
 			emit signalSetSaveBtn(false);

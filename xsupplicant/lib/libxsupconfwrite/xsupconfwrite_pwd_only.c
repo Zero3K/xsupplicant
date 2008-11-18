@@ -7,9 +7,6 @@
  * \file xsupconfwrite_pwd_only.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_pwd_only.c,v 1.5 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>
@@ -54,7 +51,7 @@
  *         libxml2.
  **/
 xmlNodePtr xsupconfwrite_pwd_only_create_tree(char *tagname, 
-											  struct config_pwd_only *pwdonly, 
+											  struct config_pwd_only *pwdonly, uint8_t config_type,
 										      char write_all)
 {
 	xmlNodePtr pwdnode = NULL;
@@ -78,7 +75,7 @@ xmlNodePtr xsupconfwrite_pwd_only_create_tree(char *tagname,
 		if (pwcrypt_funcs_available() == TRUE)
 		{
 			// Write the encrypted version.
-			if (pwcrypt_encrypt((uint8_t *)pwdonly->password, strlen(pwdonly->password), (uint8_t **)&temp, &ressize) != 0)
+			if (pwcrypt_encrypt(config_type, (uint8_t *)pwdonly->password, strlen(pwdonly->password), (uint8_t **)&temp, &ressize) != 0)
 			{
 				// Couldn't encrypt the data.  So write the cleartext version.
 				xsupconfwrite_convert_amp(pwdonly->password, &temp);

@@ -27,7 +27,7 @@
 #include "xsupconfig_common.h"
 #include "xsupconfig.h"
 
-void *xsupconfig_parse_connections(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_connections(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
   printf("Parsing connections..\n");
@@ -37,9 +37,26 @@ void *xsupconfig_parse_connections(void **attr, xmlNodePtr node)
 
   return NULL;
 }
+
+void *xsupconfig_parse_user_connections(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+#ifdef PARSE_DEBUG
+  printf("Parsing connections..\n");
+#endif
+
+  conf_user_connections = NULL;
+
+  return NULL;
+}
   
 parser connections[] = {
   {"Connection", (struct conf_parse_struct *)&connection, TRUE, OPTION_ANY_CONFIG,
   xsupconfig_parse_connection},
+
+  {NULL, NULL, FALSE, 0, NULL}};
+
+parser user_connections[] = {
+  {"Connection", (struct conf_parse_struct *)&connection, TRUE, OPTION_ANY_CONFIG,
+  xsupconfig_parse_user_connection},
 
   {NULL, NULL, FALSE, 0, NULL}};

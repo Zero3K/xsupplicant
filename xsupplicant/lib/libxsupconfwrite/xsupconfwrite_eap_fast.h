@@ -8,6 +8,6 @@
 #ifndef __XSUPCONFWRITE_EAP_FAST_H__
 #define __XSUPCONFWRITE_EAP_FAST_H__
 
-xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *, char);
+xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *, uint8_t config_type, char);
 
 #endif // __XSUPCONFWRITE_EAP_FAST_H__

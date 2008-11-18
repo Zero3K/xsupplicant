@@ -15,6 +15,8 @@
 #include <wincrypt.h>
 
 #include "src/stdintwin.h"
+#include "src/platform/windows/win_impersonate.h"
+#include "lib/libxsupconfig/xsupconfig.h"
 
 /**
  * \brief Determine if this OS has password encryption/decryption functions
@@ -75,7 +77,7 @@ char *convert_hex_to_str(uint8_t *inhex, uint16_t insize)
  * \retval 0 on success
  * \retval -1 on failure
  **/
-int pwcrypt_encrypt(uint8_t *toencdata, uint16_t toenclen, uint8_t **encdata, uint16_t *enclen)
+int pwcrypt_encrypt(uint8_t config_type, uint8_t *toencdata, uint16_t toenclen, uint8_t **encdata, uint16_t *enclen)
 {
 	DATA_BLOB DataIn;
 	DATA_BLOB DataOut;
@@ -83,17 +85,40 @@ int pwcrypt_encrypt(uint8_t *toencdata, uint16_t toenclen, uint8_t **encdata, ui
 	DataIn.cbData = toenclen;
 	DataIn.pbData = toencdata;
 
-	if(CryptProtectData(&DataIn, L"Password String", NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
+	if (config_type == CONFIG_LOAD_GLOBAL)
 	{
-		(*encdata) = convert_hex_to_str(DataOut.pbData, DataOut.cbData);
-		(*enclen) = DataOut.cbData;
+		if(CryptProtectData(&DataIn, L"Password String", NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
+		{
+			(*encdata) = convert_hex_to_str(DataOut.pbData, DataOut.cbData);
+			(*enclen) = DataOut.cbData;
 
-		LocalFree(DataOut.pbData);
+			LocalFree(DataOut.pbData);
 
-		return 0;
+			return 0;
+		}
+
+		return -1;   // Encryption failed.
+	}
+	else
+	{
+		win_impersonate_desktop_user();
+
+		if(CryptProtectData(&DataIn, L"Password String", NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
+		{
+			(*encdata) = convert_hex_to_str(DataOut.pbData, DataOut.cbData);
+			(*enclen) = DataOut.cbData;
+
+			LocalFree(DataOut.pbData);
+		
+			win_impersonate_back_to_self();
+			return 0;
+		}
+
+		win_impersonate_back_to_self();
+		return -1;   // Encryption failed.
 	}
 
-	return -1;   // Encryption failed.
+	return -1;
 }
 
 char ctonibble1(char cnib)
@@ -170,7 +195,7 @@ void str2hex(char *instr, uint8_t **outstr, int *rsize)
  * \retval 0 on success
  * \retval -1 on failure
  **/
-int pwcrypt_decrypt(uint8_t *encdata, uint16_t enclen, uint8_t **decdata, uint16_t *declen)
+int pwcrypt_decrypt(uint8_t config_type, uint8_t *encdata, uint16_t enclen, uint8_t **decdata, uint16_t *declen)
 {
 	DATA_BLOB DataIn;
 	DATA_BLOB DataOut;
@@ -184,24 +209,55 @@ int pwcrypt_decrypt(uint8_t *encdata, uint16_t enclen, uint8_t **decdata, uint16
 	DataIn.cbData = size;
 	DataIn.pbData = data;
 
-	if (CryptUnprotectData(&DataIn, NULL, NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
+	if (config_type == CONFIG_LOAD_GLOBAL)
 	{
+		if (CryptUnprotectData(&DataIn, NULL, NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
+		{
+			free(data);
+
+			(*decdata) = malloc(DataOut.cbData+3);
+			if ((*decdata) == NULL) return -1;
+
+			memset((*decdata), 0x00, DataOut.cbData+3);
+			memcpy((*decdata), DataOut.pbData, DataOut.cbData);
+
+			(*declen) = strlen((*decdata));
+
+			LocalFree(DataOut.pbData);
+
+			return 0;
+		}
+
 		free(data);
+		return -1;
+	}
+	else
+	{
+		win_impersonate_desktop_user();
 
-		(*decdata) = malloc(DataOut.cbData+3);
-		if ((*decdata) == NULL) return -1;
+		if (CryptUnprotectData(&DataIn, NULL, NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
+		{
+			free(data);
 
-		memset((*decdata), 0x00, DataOut.cbData+3);
-		memcpy((*decdata), DataOut.pbData, DataOut.cbData);
+			(*decdata) = malloc(DataOut.cbData+3);
+			if ((*decdata) == NULL) return -1;
 
-		(*declen) = strlen((*decdata));
+			memset((*decdata), 0x00, DataOut.cbData+3);
+			memcpy((*decdata), DataOut.pbData, DataOut.cbData);
 
-		LocalFree(DataOut.pbData);
+			(*declen) = strlen((*decdata));
 
-		return 0;
+			LocalFree(DataOut.pbData);
+
+			win_impersonate_back_to_self();
+			return 0;
+		}
+
+		free(data);
+		win_impersonate_back_to_self();
+		return -1;
 	}
 
-	free(data);
 	return -1;
 }
 

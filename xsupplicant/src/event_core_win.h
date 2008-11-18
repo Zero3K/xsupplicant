@@ -56,6 +56,8 @@ void event_core_check_state();
 void event_core_user_logged_on();
 void event_core_user_logged_off();
 void event_core_win_do_user_logoff();
+void event_core_win_do_user_logon();
+void event_core_load_user_config();
 uint32_t event_core_register_imc_logon_callback(void *callback);
 uint32_t event_core_register_ui_connect_callback(void *callback);
 int event_core_lock();

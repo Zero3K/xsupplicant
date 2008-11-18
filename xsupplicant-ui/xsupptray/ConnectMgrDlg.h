@@ -71,7 +71,7 @@ private:
 	void populateWiredConnectionsCombo(void);
 	void updateWirelessAutoConnectState(void);
 	void updateWiredAutoConnectState(void);
-	void editConnection(const QString &);
+	void editConnection(int config_type, const QString &);
 	bool buildMenuBar(void);
 	
 private slots:

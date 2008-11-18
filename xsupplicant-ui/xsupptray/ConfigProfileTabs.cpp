@@ -2007,7 +2007,7 @@ void ConfigProfileTabs::populateTrustedServerList()
 
 	m_pTrustedServerCombo->addItem("  <None>  ");
 
-	if (m_pSupplicant->enumTrustedServers(&pServers, true) == true)
+	if (m_pSupplicant->enumTrustedServers((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pServers, true) == true)
 	{
 		while (pServers[i].name != NULL)
 		{

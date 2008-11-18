@@ -46,7 +46,7 @@
 #define IPC_ERROR_CANT_WRITE_CONFIG   322   // Couldn't write the configuration file!
 #define IPC_ERROR_INVALID_NODE        323   // Couldn't locate node %s!
 #define IPC_ERROR_CANT_GET_CONFIG     324   // Couldn't get requested configuration information!
-#define IPC_ERROR_INVALID_OU_NAME     325   // Couldn't locate the requested OU.
+#define IPC_ERROR_CONFIG_CONFLICT     325   // Attempted to create a connection/profile/trusted server in a configuration, when the other configuration already has one by the same name.
 #define IPC_ERROR_INVALID_TRUSTED_SVR 326   // Couldn't locate the requested trusted server.
 #define IPC_ERROR_PARSING             327   // Attempt to parse requested configuration block failed.
 #define IPC_ERROR_MALLOC              328   // Failed to allocate memory!
@@ -72,6 +72,9 @@
 #define IPC_ERROR_NOT_ALLOWED		  348   // The requested operation is not allowed while the supplicant is in its current state.
 #define IPC_ERROR_SSID_NOT_FOUND      349   // The requested SSID is not found in the scan cache.
 #define IPC_ERROR_REQUEST_FAILED	  350   // The operation requested failed.
+#define IPC_ERROR_CONFIG_NOT_DEFINED  351	// The type of configuration was not defined.
+#define IPC_ERROR_USER_NOT_ADMIN	  352	// The requested action can only be performed by an administrative user.
+#define IPC_ERROR_INVALID_CONFIG	  353   // The configuration type (i.e. system level or user level) was invalid.
 
 /**
  *  Result values.

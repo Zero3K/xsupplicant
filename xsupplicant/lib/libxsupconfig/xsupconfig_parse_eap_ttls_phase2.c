@@ -34,7 +34,7 @@ typedef struct {
 	char *name;
 	int type_num;
 	parser *parsedata;
-	void *(*init_method)(void **, xmlNodePtr);
+	void *(*init_method)(void **, uint8_t, xmlNodePtr);
 } ttls_phase2_methods;
 
 eap_methods ttls_eap_meths[] = {
@@ -65,7 +65,7 @@ ttls_phase2_methods *xsupconfig_parse_eap_ttls_phase2_get_method(int methnum)
 	return &ttls_p2_meths[i];
 }
 
-void *xsupconfig_parse_eap_ttls_phase2(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_phase2(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *cur = NULL;
   ttls_phase2_methods *meths = NULL;
@@ -92,15 +92,15 @@ void *xsupconfig_parse_eap_ttls_phase2(void **attr, xmlNodePtr node)
   {
 	if (meths->type_num != TTLS_PHASE2_EAP)
 	{
-		meths->init_method((void **)&cur, node->children);
+		meths->init_method((void **)&cur, config_type, node->children);
 		temp = cur->phase2_data;
-		xsupconfig_parse(node->children, meths->parsedata, &temp);
+		xsupconfig_parse(node->children, meths->parsedata, OPTION_ANY_CONFIG, &temp);
 		if (temp == NULL) FREE(cur->phase2_data);
 	}
 	else
 	{
 		// Process EAP.
-		meths->init_method((void **)&cur, node->children);
+		meths->init_method((void **)&cur, config_type, node->children);
 	}
   }
   else
@@ -111,7 +111,7 @@ void *xsupconfig_parse_eap_ttls_phase2(void **attr, xmlNodePtr node)
   return (*attr);
 }
 
-void *xsupconfig_parse_eap_ttls_phase2_eap(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_phase2_eap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	xmlNodePtr t;
 	char *value = NULL;
@@ -157,8 +157,8 @@ void *xsupconfig_parse_eap_ttls_phase2_eap(void **attr, xmlNodePtr node)
   if (meth->init_method != NULL)
   {
 	// Go ahead and parse the EAP data.
-	  meth->init_method(&ttls->phase2_data, t->children);
-	  xsupconfig_parse(t, meth->parsedata, &((struct config_eap_method *)(ttls->phase2_data))->method_data);
+	  meth->init_method(&ttls->phase2_data, config_type, t->children);
+	  xsupconfig_parse(t, meth->parsedata, config_type, &((struct config_eap_method *)(ttls->phase2_data))->method_data);
   }
   else
   {

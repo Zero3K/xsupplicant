@@ -49,7 +49,7 @@
  * \retval xmlNodePtr containing the EAP-MSCHAPv2 configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *chap2data, 
+xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *chap2data, uint8_t config_type,
 									   	          char write_all)
 {
 	xmlNodePtr chap2node = NULL;
@@ -72,7 +72,7 @@ xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *ch
 		if ((chap2data->password != NULL) && (pwcrypt_funcs_available() == TRUE))
 		{
 			// Write the encrypted version.
-			if (pwcrypt_encrypt((uint8_t *)chap2data->password, strlen(chap2data->password), (uint8_t **)&temp, &ressize) != 0)
+			if (pwcrypt_encrypt(config_type, (uint8_t *)chap2data->password, strlen(chap2data->password), (uint8_t **)&temp, &ressize) != 0)
 			{
 				// Couldn't encrypt the data.  So write the cleartext version.
 				xsupconfwrite_convert_amp(chap2data->password, &temp);

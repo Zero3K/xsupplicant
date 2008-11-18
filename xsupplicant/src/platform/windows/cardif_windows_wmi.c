@@ -1356,7 +1356,7 @@ wchar_t *cardif_windows_wmi_get_array_idx0(context *ctx, wchar_t *prop)
 		return NULL;
 	}
 
-	swprintf(adapt_select, L"SELECT * FROM Win32_NetworkAdapterConfiguration WHERE Index = %d", sockData->wmiIntIdx);
+	swprintf(adapt_select, 256, L"SELECT * FROM Win32_NetworkAdapterConfiguration WHERE Index = %d", sockData->wmiIntIdx);
 
     hr = IWbemServices_ExecQuery(wmiSvc,
         L"WQL", adapt_select,
@@ -3050,7 +3050,7 @@ int cardif_windows_wmi_get_dhcp_enabled(context *ctx, int *enstate)
 		return -1;
 	}
 
-	swprintf(adapt_select, L"SELECT * FROM Win32_NetworkAdapterConfiguration WHERE Index = %d", sockData->wmiIntIdx);
+	swprintf(adapt_select, 256, L"SELECT * FROM Win32_NetworkAdapterConfiguration WHERE Index = %d", sockData->wmiIntIdx);
 
     hr = IWbemServices_ExecQuery(wmiSvc,
         L"WQL", adapt_select,

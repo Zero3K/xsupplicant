@@ -8,7 +8,7 @@
 #ifndef __XSUPCONFWRITE_EAP_SIM_H__
 #define __XSUPCONFWRITE_EAP_SIM_H__
 
-xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *, char);
+xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *, uint8_t, char);
 
 #endif // __XSUPCONFWRITE_EAP_SIM_H__
 

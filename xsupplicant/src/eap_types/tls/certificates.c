@@ -360,7 +360,12 @@ int certificates_load_root(struct tls_vars *mytls_vars, char *trusted_servername
 	struct config_trusted_server *svr = NULL;
 	int i = 0;
 
-	svr = certificates_find_trusted_server(config_get_trusted_servers(), trusted_servername);
+	svr = certificates_find_trusted_server(config_get_trusted_servers(CONFIG_LOAD_GLOBAL), trusted_servername);
+	if (svr == NULL)
+	{
+		svr = certificates_find_trusted_server(config_get_trusted_servers(CONFIG_LOAD_USER), trusted_servername);
+	}
+
 	if (svr == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Couldn't locate the server '%s'!\n", trusted_servername);

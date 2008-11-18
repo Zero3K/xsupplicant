@@ -49,7 +49,7 @@
  * \retval xmlNodePtr containing the <Connections> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *cons, 
+xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *cons, uint8_t config_type,
 									 char write_all, char write_to_disk)
 {
 	xmlNodePtr consnode = NULL;
@@ -74,7 +74,7 @@ xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *cons,
 	{
 		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_CONN)) || (write_to_disk == FALSE))
 		{
-			connode = xsupconfwrite_connection_create_tree(cur, write_all);
+			connode = xsupconfwrite_connection_create_tree(cur, config_type, write_all);
 			if (connode == NULL)
 			{
 #ifdef WRITE_CONNECTIONS_CONFIG

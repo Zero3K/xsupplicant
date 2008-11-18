@@ -8,6 +8,6 @@
 #ifndef __XSUPCONFWRITE_EAP_PEAP_H__
 #define __XSUPCONFWRITE_EAP_PEAP_H__
 
-xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *, char);
+xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *, uint8_t, char);
 
 #endif // __XSUPCONFWRITE_EAP_PEAP_H__

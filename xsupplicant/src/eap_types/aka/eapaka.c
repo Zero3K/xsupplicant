@@ -570,7 +570,7 @@ void eapaka_do_notification(eap_type_data *eapdata, uint8_t *eappayload,
   tlr = (struct typelengthres *)&eappayload[packet_offset];
 
   memset(&error_str, 0x00, sizeof(error_str));
-  sprintf(&error_str, "%d", ntohs(tlr->reserved));
+  sprintf((char *)&error_str, "%d", ntohs(tlr->reserved));
 
   switch (ntohs(tlr->reserved))
   {

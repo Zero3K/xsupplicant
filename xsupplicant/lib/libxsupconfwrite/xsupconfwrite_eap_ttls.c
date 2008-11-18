@@ -7,9 +7,6 @@
  * \file xsupconfwrite_eap_ttls.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_eap_ttls.c,v 1.5 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>
@@ -53,7 +50,7 @@
  * \retval xmlNodePtr containing the TTLS configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *ttlsdata, 
+xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *ttlsdata, uint8_t config_type, 
 										      char write_all)
 {
 	xmlNodePtr ttlsnode = NULL;
@@ -130,7 +127,7 @@ xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *ttlsdata,
 		if ((ttlsdata->user_key_pass != NULL) && (pwcrypt_funcs_available() == TRUE))
 		{
 			// Write the encrypted version.
-			if (pwcrypt_encrypt((uint8_t *)ttlsdata->user_key_pass, strlen(ttlsdata->user_key_pass), (uint8_t **)&temp, &ressize) != 0)
+			if (pwcrypt_encrypt(config_type, (uint8_t *)ttlsdata->user_key_pass, strlen(ttlsdata->user_key_pass), (uint8_t **)&temp, &ressize) != 0)
 			{
 				// Couldn't encrypt the data.  So write the cleartext version.
 				xsupconfwrite_convert_amp(ttlsdata->user_key_pass, &temp);
@@ -350,7 +347,7 @@ xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *ttlsdata,
 				if ((ttlsdata->phase2_data != NULL) && (((struct config_pwd_only *)(ttlsdata->phase2_data))->password != NULL))
 				{
 					// Write the encrypted version.
-					if (pwcrypt_encrypt((uint8_t *)(((struct config_pwd_only *)(ttlsdata->phase2_data))->password), strlen(((struct config_pwd_only *)(ttlsdata->phase2_data))->password), (uint8_t **)&temp, &ressize) != 0)
+					if (pwcrypt_encrypt(config_type, (uint8_t *)(((struct config_pwd_only *)(ttlsdata->phase2_data))->password), strlen(((struct config_pwd_only *)(ttlsdata->phase2_data))->password), (uint8_t **)&temp, &ressize) != 0)
 					{
 						// Couldn't encrypt the data.  So write the cleartext version.
 						xsupconfwrite_convert_amp(((struct config_pwd_only *)(ttlsdata->phase2_data))->password, &temp);
@@ -400,7 +397,7 @@ xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *ttlsdata,
 		break;
 
 	case TTLS_PHASE2_EAP:
-		eapnode = xsupconfwrite_eap_create_tree(ttlsdata->phase2_data, write_all);
+		eapnode = xsupconfwrite_eap_create_tree(ttlsdata->phase2_data, config_type, write_all);
 		if (eapnode == NULL)
 		{
 #ifdef WRITE_EAP_TTLS_DEBUG

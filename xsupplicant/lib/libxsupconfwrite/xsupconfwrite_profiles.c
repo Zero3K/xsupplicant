@@ -244,7 +244,7 @@ xmlNodePtr xsupconfwrite_profile_compliance_create_tree(struct config_profiles *
  * \retval xmlNodePtr containing the <Profile> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, 
+xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, uint8_t config_type, 
 											 char write_all)
 {
 	xmlNodePtr profnode = NULL;
@@ -262,11 +262,6 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs,
 		printf("Couldn't allocate memory to store <Profile> block!\n");
 #endif
 		return NULL;
-	}
-
-	if (profs->ou != NULL)
-	{
-		xmlSetProp(profnode, (xmlChar *)"OU", (xmlChar *)profs->ou);
 	}
 
 	if ((write_all == TRUE) || (profs->name != NULL))
@@ -327,7 +322,7 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs,
 		}
 	}
 
-	eapnode = xsupconfwrite_eap_create_tree(profs->method, write_all);
+	eapnode = xsupconfwrite_eap_create_tree(profs->method, config_type, write_all);
 	if (eapnode == NULL)
 	{
 #ifdef WRITE_PROFILES_CONFIG
@@ -372,7 +367,7 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs,
  * \retval xmlNodePtr containing the <Profiles> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles *profs, 
+xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles *profs, uint8_t config_type,
 													 char write_all, char write_to_disk)
 {
 	xmlNodePtr profsnode = NULL;
@@ -397,7 +392,7 @@ xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles *profs,
 	{
 		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_PROFILE)) || (write_to_disk == FALSE))
 		{
-			profnode = xsupconfwrite_profile_create_tree(cur, write_all);
+			profnode = xsupconfwrite_profile_create_tree(cur, config_type, write_all);
 			if (profnode == NULL)
 			{
 #ifdef WRITE_PROFILES_CONFIG

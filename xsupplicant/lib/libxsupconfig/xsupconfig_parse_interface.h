@@ -1,10 +1,10 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.   (See LICENSE file for more info.)
  *
- * File: xsupconfig_parse_interface.h
+ * \file xsupconfig_parse_interface.h
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
  *******************************************************************/
 
@@ -13,6 +13,6 @@
 
 extern parser interf[];
 
-void *xsupconfig_parse_interface(void **, xmlNodePtr);
+void *xsupconfig_parse_interface(void **, uint8_t, xmlNodePtr);
 
 #endif // __XSUPCONFIG_PARSE_INTERFACE_H__

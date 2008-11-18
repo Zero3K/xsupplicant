@@ -726,6 +726,7 @@ request_set_conn:
 /**
  * \brief Request the connections available in the configuration file.
  *
+ * @param[in] config_type   Which configuration to enumerate.  (This is a bit value, and can be ORed.)
  * @param[out] connections   A structure that contains a list of connections, and information
  *                           about each one.
  *
@@ -734,7 +735,7 @@ request_set_conn:
  * \retval >299 on other error.
  *
  **/
-int xsupgui_request_enum_connections(conn_enum **connections)
+int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connections)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -743,6 +744,7 @@ int xsupgui_request_enum_connections(conn_enum **connections)
 	int done = REQUEST_SUCCESS;
 	int numints = 0, i = 0, err = 0;
 	conn_enum *myconns = NULL;
+	char tempnum[5];
 
 	if (connections == NULL) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -758,7 +760,14 @@ int xsupgui_request_enum_connections(conn_enum **connections)
 		goto finish_enum_connections;
 	}
 
-	if (xmlNewChild(n, NULL, (xmlChar *)"Get_Connections", NULL) == NULL)
+	if ((t = xmlNewChild(n, NULL, (xmlChar *)"Enum_Connections", NULL)) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_enum_connections;
+	}
+
+	sprintf((char *)&tempnum, "%d", config_type);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", tempnum) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_connections;
@@ -852,6 +861,18 @@ int xsupgui_request_enum_connections(conn_enum **connections)
 		}
 
 		myconns[i].name = (char *)xmlNodeGetContent(t);
+
+		t = xsupgui_request_find_node(n->children, "Config_Type");
+		if (t == NULL)
+		{
+			if (myconns != NULL) free(myconns);
+			done = IPC_ERROR_BAD_RESPONSE;
+			goto finish_enum_connections;
+		}
+
+		content = xmlNodeGetContent(t);
+		myconns[i].config_type = atoi(content);
+		xmlFree(content);
 
 		t = xsupgui_request_find_node(n->children, "SSID_Name");
 		if (t == NULL)

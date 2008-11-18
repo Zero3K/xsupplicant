@@ -850,13 +850,14 @@ cdone:
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error
  **/
-int xsupgui_request_rename_something(char *itemtype, char *oldname, char *newname)
+int xsupgui_request_rename_something(char *itemtype, uint8_t config_type, char *oldname, char *newname)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
 	xmlNodePtr n = NULL, t = NULL;
 	int done = 0, err = 0;
 	char *temp = NULL;
+	char res[5];
 
 	if ((itemtype == NULL) || (oldname == NULL) || (newname == NULL))
 		return IPC_ERROR_INVALID_PARAMETERS;
@@ -873,6 +874,13 @@ int xsupgui_request_rename_something(char *itemtype, char *oldname, char *newnam
 
 	t = xmlNewChild(n, NULL, (xmlChar *)itemtype, NULL);
 	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto cdone;
+	}
+
+	sprintf(res, "%d", config_type);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto cdone;
@@ -941,6 +949,7 @@ cdone:
 /**
  * \brief Request that we change the name of a connection.
  *
+ * @param[in] config_type   The type of configuration we want to look in for this name.
  * @param[in] oldname   The current name of the connection.
  * @param[in] newname   The name that we want the connection to be changed to.
  *
@@ -948,9 +957,9 @@ cdone:
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error
  **/
-int xsupgui_request_rename_connection(char *oldname, char *newname)
+int xsupgui_request_rename_connection(uint8_t config_type, char *oldname, char *newname)
 {
-	return xsupgui_request_rename_something("Rename_Connection", oldname, newname);
+	return xsupgui_request_rename_something("Rename_Connection", config_type, oldname, newname);
 }
 
 /**
@@ -963,9 +972,9 @@ int xsupgui_request_rename_connection(char *oldname, char *newname)
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error
  **/
-int xsupgui_request_rename_profile(char *oldname, char *newname)
+int xsupgui_request_rename_profile(uint8_t config_type, char *oldname, char *newname)
 {
-	return xsupgui_request_rename_something("Rename_Profile", oldname, newname);
+	return xsupgui_request_rename_something("Rename_Profile", config_type, oldname, newname);
 }
 
 /**
@@ -978,9 +987,9 @@ int xsupgui_request_rename_profile(char *oldname, char *newname)
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error
  **/
-int xsupgui_request_rename_trusted_server(char *oldname, char *newname)
+int xsupgui_request_rename_trusted_server(uint8_t config_type, char *oldname, char *newname)
 {
-	return xsupgui_request_rename_something("Rename_Trusted_Server", oldname, newname);
+	return xsupgui_request_rename_something("Rename_Trusted_Server", config_type, oldname, newname);
 }
 
 /**

@@ -7,9 +7,6 @@
  * \file xsupconfwrite_eap_tls.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_eap_tls.c,v 1.5 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>
@@ -52,7 +49,7 @@
  * \retval xmlNodePtr containing the TLS configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_tls_create_tree(struct config_eap_tls *tlsdata, 
+xmlNodePtr xsupconfwrite_eap_tls_create_tree(struct config_eap_tls *tlsdata, uint8_t config_type,
 										      char write_all)
 {
 	xmlNodePtr tlsnode = NULL;
@@ -128,7 +125,7 @@ xmlNodePtr xsupconfwrite_eap_tls_create_tree(struct config_eap_tls *tlsdata,
 		if ((tlsdata->user_key_pass != NULL) && (pwcrypt_funcs_available() == TRUE))
 		{
 			// Write the encrypted version.
-			if (pwcrypt_encrypt((uint8_t *)tlsdata->user_key_pass, strlen(tlsdata->user_key_pass), (uint8_t **)&temp, &ressize) != 0)
+			if (pwcrypt_encrypt(config_type, (uint8_t *)tlsdata->user_key_pass, strlen(tlsdata->user_key_pass), (uint8_t **)&temp, &ressize) != 0)
 			{
 				// Couldn't encrypt the data.  So write the cleartext version.
 				xsupconfwrite_convert_amp(tlsdata->user_key_pass, &temp);

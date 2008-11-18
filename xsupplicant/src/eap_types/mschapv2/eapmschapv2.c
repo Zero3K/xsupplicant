@@ -274,7 +274,7 @@ int eapmschapv2_init(eap_type_data *eapdata)
 		{
 			debug_printf(DEBUG_NORMAL, "No profile was bound to your inner EAP method!?  This shouldn't happen!\n");
 			eap_type_common_fail(eapdata);
-			return NULL;
+			return -1;
 		}
 
 		if (ctx->prof->temp_username != NULL)
@@ -290,7 +290,7 @@ int eapmschapv2_init(eap_type_data *eapdata)
 			// ACK!  We don't know a username to send!?
 			debug_printf(DEBUG_NORMAL, "Unable to determine a valid username to send to the server.  Aborting the authentication.\n");
 			eap_type_common_fail(eapdata);
-			return NULL;
+			return -1;
 		}
 	}
 

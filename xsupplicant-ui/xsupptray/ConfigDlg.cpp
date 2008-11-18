@@ -136,10 +136,10 @@ bool ConfigDlg::create()
 	if (m_supplicant.enumAndSortConnections(&m_pConns, true) == false)
 		m_pConns = NULL;
 
-	if (m_supplicant.enumProfiles(&m_pProfs, true) == false)
+	if (m_supplicant.enumProfiles((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &m_pProfs, true) == false)
 		m_pProfs = NULL;
 
-	if (m_supplicant.enumTrustedServers(&m_pTrustedServers, true) == false)
+	if (m_supplicant.enumTrustedServers((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &m_pTrustedServers, true) == false)
 		m_pTrustedServers = NULL;
 
 	m_pNavBox = qFindChild<QWidget*>(m_pRealForm, "backgroundTree");

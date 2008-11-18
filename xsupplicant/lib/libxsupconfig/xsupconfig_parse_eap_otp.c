@@ -24,7 +24,7 @@
 #include "xsupconfig_parse.h"
 #include "xsupconfig_parse_eap_otp.h"
 
-void *xsupconfig_parse_eap_otp(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_otp(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth;
 

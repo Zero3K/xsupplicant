@@ -251,6 +251,7 @@ void ConfigStackedWidget::changeWidget(int stackIdx, const QString &editItem, bo
 void ConfigStackedWidget::doConnectionsPanels(QString toEdit, bool isNew)
 {
 	QWidget *pRealWidget = NULL;
+	int i = 0;
 
 	if ((toEdit == "") && (isNew == false))
 	{
@@ -302,7 +303,10 @@ void ConfigStackedWidget::doConnectionsPanels(QString toEdit, bool isNew)
 		}
 		else
 		{
-			m_pActivePage = new ConfigWidgetEditConnection(pRealWidget, m_pEmitter, toEdit, m_pSupplicant, m_pNavPanel, this);
+			i = 0;
+			while (((*m_ppConnEnum)[i].name != NULL) && (strcmp((*m_ppConnEnum)[i].name, toEdit.toAscii().data()) != 0)) i++;
+
+			m_pActivePage = new ConfigWidgetEditConnection(pRealWidget, m_pEmitter, toEdit, m_pSupplicant, m_pNavPanel, (*m_ppConnEnum)[i].config_type, this);
 
 			if (isNew)
 			{
@@ -321,6 +325,7 @@ void ConfigStackedWidget::doProfilesPanels(QString toEdit, bool isNew)
 {
 	QTableWidget *pRealTable = NULL;
 	QWidget *pRealWidget = NULL;
+	int i = 0;
 
 	if ((toEdit == "") && (isNew == false))
 	{
@@ -371,7 +376,10 @@ void ConfigStackedWidget::doProfilesPanels(QString toEdit, bool isNew)
 		}
 		else
 		{
-			m_pActivePage = new ConfigWidgetEditProfile(pRealWidget, toEdit, m_pSupplicant, m_pNavPanel, m_pPlugins, this);
+			i = 0;
+			while (((*m_ppProfileEnum)[i].name != NULL) && (strcmp((*m_ppProfileEnum)[i].name, toEdit.toAscii().data()) != 0)) i++;
+
+			m_pActivePage = new ConfigWidgetEditProfile(pRealWidget, toEdit, m_pSupplicant, m_pNavPanel, (*m_ppProfileEnum)[i].config_type, m_pPlugins, this);
 
 			if (isNew)
 			{
@@ -556,6 +564,7 @@ void ConfigStackedWidget::doTrustedServersPanels(QString toEdit, bool isNew)
 {
 	QTableWidget *pRealTable = NULL;
 	QWidget *pRealWidget = NULL;
+	int i = 0;
 
 	if ((toEdit == "") && (isNew == false))
 	{
@@ -607,7 +616,10 @@ void ConfigStackedWidget::doTrustedServersPanels(QString toEdit, bool isNew)
 		}
 		else
 		{
-			m_pActivePage = new ConfigWidgetEditTrustedServers(pRealWidget, toEdit, m_pSupplicant, m_pNavPanel, this);
+			i = 0;
+			while (((*m_ppTrustedServersEnum)[i].name != NULL) && (strcmp((*m_ppTrustedServersEnum)[i].name, toEdit.toAscii().data()) != 0)) i++;
+
+			m_pActivePage = new ConfigWidgetEditTrustedServers(pRealWidget, toEdit, m_pSupplicant, m_pNavPanel, (*m_ppTrustedServersEnum)[i].config_type, this);
 
 			if (isNew)
 			{
@@ -642,7 +654,7 @@ void ConfigStackedWidget::refreshProfilesEnum()
 		m_pSupplicant->freeEnumProfile(m_ppProfileEnum);
 	}
 
-	if (m_pSupplicant->enumProfiles(m_ppProfileEnum, true) == false)
+	if (m_pSupplicant->enumProfiles((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), m_ppProfileEnum, true) == false)
 	{
 		m_ppProfileEnum = NULL;
 	}
@@ -655,7 +667,7 @@ void ConfigStackedWidget::refreshTrustedServersEnum()
 		m_pSupplicant->freeEnumTrustedServer(m_ppTrustedServersEnum);
 	}
 
-	if (m_pSupplicant->enumTrustedServers(m_ppTrustedServersEnum, true) == false)
+	if (m_pSupplicant->enumTrustedServers((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), m_ppTrustedServersEnum, true) == false)
 	{
 		m_ppTrustedServersEnum = NULL;
 	}

@@ -27,7 +27,7 @@
 
 #define TTLS_PHASE2_EAP  5
 
-void *xsupconfig_parse_ttls_eap_md5(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_ttls_eap_md5(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls = NULL;
   struct config_eap_method *eap, *cur = NULL;
@@ -88,7 +88,7 @@ void *xsupconfig_parse_ttls_eap_md5(void **attr, xmlNodePtr node)
   return eap->method_data;
 }
 
-void *xsupconfig_parse_eap_md5(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_md5(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth = NULL;
 
@@ -124,7 +124,7 @@ void *xsupconfig_parse_eap_md5(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_md5_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_md5_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *md5 = NULL;
   char *value = NULL;
@@ -150,7 +150,7 @@ void *xsupconfig_parse_eap_md5_password(void **attr, xmlNodePtr node)
   return md5;
 }
 
-void *xsupconfig_parse_eap_md5_enc_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_md5_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *md5 = NULL;
   char *value = NULL;
@@ -170,7 +170,7 @@ void *xsupconfig_parse_eap_md5_enc_password(void **attr, xmlNodePtr node)
 		return md5;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&md5->password, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&md5->password, &size) != 0)
   {
 	  free(value);
 	  md5->password = NULL;

@@ -236,8 +236,8 @@ struct config_eap_method
 };
 
 // flags relevant to config_connection
-#define CONFIG_NET_DEST_MAC     BIT(0)    // indicates the variable below is set and should be used
-#define CONFIG_NET_USE_OSC_TNC  BIT(1)    // indicates that we should, or shouldn't use TNC
+#define CONFIG_NET_DEST_MAC     BIT(0)    // indicates the destination MAC is set and should be used
+
 #define CONFIG_NET_IS_HIDDEN    BIT(2)    // indicates that the SSID is hidden.
 #define CONFIG_VOLATILE_CONN    BIT(3)    // the connection is volatile and shouldn't be saved.
 
@@ -286,7 +286,6 @@ struct config_association
 struct config_connection
 {
   char *name;
-  char *ou;
   uint8_t flags;
   uint8_t priority;
   char *ssid;
@@ -349,7 +348,6 @@ struct config_globals
 struct config_profiles {
 		char *name;
 		char *identity;
-		char *ou;
 		uint8_t flags;
 		uint32_t compliance;                   ///< A bit map of compliance enable/disable settings.  Look in tnc_compliance.h in the src/eap_types/tnc directory.
 

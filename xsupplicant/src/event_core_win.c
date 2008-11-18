@@ -40,6 +40,7 @@
 #include "eap_sm.h"
 #include "pmksa.h"
 #include "platform/windows/wlanapi_interface.h"
+#include "platform/platform.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -79,7 +80,7 @@ void (*imc_ui_connect_callback)() = NULL;
 context *active_ctx = NULL;
 int sleep_state = PWR_STATE_RUNNING;
 
-void global_deinit();      // In xsup_driver.c
+void global_deinit();      // In xsup_driver.c, there is no header we can include, so this prototype keeps the complier from complaining.
 
 HANDLE evtCoreMutex;
 
@@ -889,17 +890,7 @@ void event_core()
 
   if (userlogon == TRUE)
   {
-	  // Inform any IMCs that may need to know.
-	  debug_printf(DEBUG_EVENT_CORE, ">>* Processed user logged on flag.\n");
-	  if (imc_notify_callback != NULL) 
-	  {
-		  imc_notify_callback();
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_EVENT_CORE, ">>* Notify callback is NULL!\n");
-	  }
-	  userlogon = FALSE;   // Don't retrigger.
+	  event_core_win_do_user_logon();
   }
 
   time(&curtime); 
@@ -1440,6 +1431,57 @@ void event_core_user_logged_off()
 	userlogoff = TRUE;
 }
 
+void event_core_load_user_config()
+{
+	char *conf_path = NULL;
+	char *temp = NULL;
+
+	  temp = platform_get_users_data_store_path();
+	  if (temp != NULL)
+	  {
+		  conf_path = Malloc(strlen(temp)+50);
+		  if (conf_path != NULL)
+		  {
+			  strcpy(conf_path, temp);
+			  strcat(conf_path, "\\xsupplicant.user.conf");
+
+			  if (config_load_user_config(conf_path) != XENONE)
+			  {
+				  debug_printf(DEBUG_NORMAL, "Unable to load the user's configuration.  No user specific configuration settings will be available!\n");
+			  }
+			  else
+			  {
+				  debug_printf(DEBUG_NORMAL, "Loaded new user specific configuration.\n");
+			  }
+
+			  FREE(temp);
+			  FREE(conf_path);
+		  }
+		  else
+		  {
+			  FREE(temp);
+		  }
+	  }
+}
+
+void event_core_win_do_user_logon()
+{
+	  // Inform any IMCs that may need to know.
+	  debug_printf(DEBUG_EVENT_CORE, ">>* Processed user logged on flag.\n");
+	  if (imc_notify_callback != NULL) 
+	  {
+		  imc_notify_callback();
+	  }
+	  else
+	  {
+		  debug_printf(DEBUG_EVENT_CORE, ">>* Notify callback is NULL!\n");
+	  }
+
+	  event_core_load_user_config();
+
+	  userlogon = FALSE;   // Don't retrigger.
+}
+
 void event_core_win_do_user_logoff()
 {
 	struct config_globals *globals = NULL;
@@ -1506,6 +1548,26 @@ void event_core_win_do_user_logoff()
 						ctx->tnc_data = NULL;
 					}
 #endif
+				}
+			}
+		}
+	}
+	else
+	{
+		// If we didn't drop all connections, we need to at least drop
+		// the connections whose configurations are about to be deleted.
+		for (i= 0; i< num_event_slots; i++)
+		{
+			// Loop through each event slot, cancel the IO, flag the context.
+			if (events[i].ctx != NULL)
+			{
+				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
+				{
+					if (config_find_connection(CONFIG_LOAD_USER, events[i].ctx->conn->name) != NULL)
+					{
+						// Drop the connection.
+						context_disconnect(events[i].ctx);
+					}
 				}
 			}
 		}

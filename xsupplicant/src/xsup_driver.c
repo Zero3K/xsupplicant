@@ -225,7 +225,7 @@ void xsup_driver_init_config(char *config)
   config_path = _strdup(config);
 
   // Build up our config information.
-  switch(config_setup(config))
+  switch(config_system_setup(config))
     {
     case XECONFIGFILEFAIL:
     case XECONFIGPARSEFAIL:
@@ -243,12 +243,16 @@ void xsup_driver_init_config(char *config)
 		break;
 
     case XECONFIGALREADYLOADED:
-      printf("config_setup() was called, but a "
+      printf("config_system_setup() was called, but a "
 	     "configuration is already loaded.\n");
       break;
     }
 
   FREE(config_path);
+
+   // Also, attempt to load a user config for the case where we come up and a user is already logged in.
+  // This call should fail if no user is logged on yet.
+  event_core_load_user_config();
 
 #ifdef WINDOWS
   FREE(config);
@@ -442,7 +446,7 @@ void global_config_reload()
 	struct config_globals *globals = NULL;
 
   config_destroy();
-  config_setup(config_path);
+  config_system_setup(config_path);
 
   globals = config_get_globals();
   if (globals == NULL)
@@ -628,7 +632,6 @@ int main(int argc, char *argv[])
 #ifndef WINDOWS
 	  { PARAM_CLEAR_CTRL, "socket", "Remove existing control socket, if found", "s", 0 },
 #endif
-	  { PARAM_PROFILE, "profile", "Force the use of a different profile", "p", 1 },
 	  { PARAM_HELP, "help", "Display this help", "h", 0},
 	  { PARAM_CONNECTION, "connection", "Force the connection to use (not implemented yet)", "C", 1 }, 
 	  { 0, NULL, NULL, NULL, 0 }
@@ -818,11 +821,6 @@ int main(int argc, char *argv[])
 		case PARAM_CLEAR_CTRL:
 		  // Clear the IPC socket file, if it still exists.
 		  clear_ipc = TRUE;
-		  break;
-
-  		case PARAM_PROFILE:
-		  printf("Forcing the use of profile '%s'!\n", args);
-		  config_set_forced_profile(args);
 		  break;
 
 		case PARAM_HELP:

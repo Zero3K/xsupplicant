@@ -107,10 +107,10 @@ public:
 
 
   void displaySupplicantError(QString &numberString);
-  bool deleteConnectionConfig(QString &name);
+  bool deleteConnectionConfig(unsigned char config_type, QString &name);
   void deleteConfigEapMethod(config_eap_method **p);
-  bool deleteProfileConfig(QString &name);
-  bool deleteTrustedServerConfig(QString &name);
+  bool deleteProfileConfig(unsigned char config_type, QString &name);
+  bool deleteTrustedServerConfig(unsigned char config_type, QString &name);
   bool disconnectEventListener();
   void disconnectXSupplicant();
   bool disassociateWireless(QString &deviceName, QString &desc);
@@ -121,8 +121,8 @@ public:
   bool enumAndSortPossibleConnections(poss_conn_enum **pConn, bool b);
   bool enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDisplayError = true);
   bool enumLiveInterfaces(int_enum **mydata, bool bDisplayError = true);
-  bool enumProfiles(profile_enum **pProfiles, bool bDisplayError = true);
-  bool enumTrustedServers(trusted_servers_enum **pServers, bool bDisplayError = true);
+  bool enumProfiles(unsigned char config_type, profile_enum **pProfiles, bool bDisplayError = true);
+  bool enumTrustedServers(unsigned char config_type, trusted_servers_enum **pServers, bool bDisplayError = true);
 
   void getAndDisplayErrors();
   bool getLiveInterfaceData(QString &Name, QString &description, 
@@ -130,12 +130,15 @@ public:
   bool getCertInfo(QString &storetype, QString &location, cert_info **certInfo, bool bDisplayError);
   bool getConfigInterface(QString &interfaceName, config_interfaces **pInterfaceData, bool bDisplayError = true);
   bool getConfigGlobals(config_globals **myglobs, bool bDisplayError = true);
-  bool getConfigProfile(QString &profileName, config_profiles **pProfiles, bool bDisplayError = true);
-  bool getConfigTrustedServer(QString &server, config_trusted_server **pConfig, bool bDisplayError = true);
-  bool getConfigConnection(QString &connection, config_connection **pConfig, bool bDisplayError = true);
+  bool getConfigProfile(unsigned char config_type, QString &profileName, config_profiles **pProfiles, bool bDisplayError = true);
+  bool getConfigTrustedServer(unsigned char config_type, QString &server, config_trusted_server **pConfig, bool bDisplayError = true);
+  bool getConfigConnection(unsigned char config_type, QString &connection, config_connection **pConfig, bool bDisplayError = true);
   bool getUIEventString(int uiEvent, QString &desc);
   bool getConfigConnectionName(QString &deviceDescription, QString &m_deviceName, QString &connName, 
     bool bDisplayError = false);
+  unsigned char getConnectionType(QString connName);
+  unsigned char getProfileType(QString profName);
+  unsigned char getTSType(QString tsName);
 
   bool getAssociation(QString &deviceDesc, QString &deviceName, QString &value, bool bDisplayError);
   bool getAuthTime(QString &deviceName, long int &timeauthed, bool bDisplayError);
@@ -176,9 +179,9 @@ public:
   bool networkDisconnect(QString &deviceName, QString &deviceDescription, bool bWireless);
 
   bool pauseWireless(QString &device, QString &desc);
-  bool renameConnection(QString &oldName, QString &newName);
-  bool renameProfile(QString &oldName, QString &newName);
-  bool renameTrustedServer(QString &oldName, QString &newName);
+  bool renameConnection(unsigned char config_type, QString &oldName, QString &newName);
+  bool renameProfile(unsigned char config_type, QString &oldName, QString &newName);
+  bool renameTrustedServer(unsigned char config_type, QString &oldName, QString &newName);
 
   void mapPhysicalState(int state, QString &status);
   void map1XState(int state, QString &status);
@@ -189,12 +192,12 @@ public:
   void sendXStatus(Emitter &e);
   void sendPStatus(Emitter &e);
 
-  bool setConfigConnection(config_connection *pConfig);
+  bool setConfigConnection(unsigned char config_type, config_connection *pConfig);
   bool setConfigGlobals(config_globals *globals);
   bool setConfigInterface(config_interfaces *pConfig);
-  bool setConfigProfile(config_profiles *pProfile);
+  bool setConfigProfile(unsigned char config_type, config_profiles *pProfile);
   void setProfileUserNameAndPassword(char *pProfileName, const QString &userName, const QString &password);
-  bool setConfigTrustedServer(config_trusted_server *pConfig);
+  bool setConfigTrustedServer(unsigned char config_type, config_trusted_server *pConfig);
   bool setUserNameAndPassword(const QString &connectionName, const QString &userName, const QString &password, 
     int authType);
   void setUserNameIntoProfile(config_profiles *pProfile, const QString &userName);
@@ -229,7 +232,7 @@ public:
 
   int createTroubleTicket(char *filename, char *scratchdir, int overwrite);
 
-  bool writeConfig();
+  bool writeConfig(unsigned char config_type);
   
   static int CONNECTION_DEFAULT_PRIORITY;
   // These were static methods, but I've changed them all now to be member methods

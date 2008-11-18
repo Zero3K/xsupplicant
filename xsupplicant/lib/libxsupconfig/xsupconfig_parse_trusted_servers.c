@@ -27,7 +27,7 @@
 #include "xsupconfig_common.h"
 #include "xsupconfig.h"
 
-void *xsupconfig_parse_trusted_servers(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_trusted_servers(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
   printf("Building trusted servers config.\n");
@@ -46,8 +46,33 @@ void *xsupconfig_parse_trusted_servers(void **attr, xmlNodePtr node)
   return conf_trusted_servers;
 }
 
+void *xsupconfig_parse_user_trusted_servers(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+#ifdef PARSE_DEBUG
+  printf("Building trusted servers config.\n");
+#endif
+
+  conf_user_trusted_servers = malloc(sizeof(struct config_trusted_servers));
+  if (conf_user_trusted_servers == NULL)
+    {
+      printf("Couldn't allocate memory to store trusted servers configuration!"
+	     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
+      exit(1);
+    }
+
+  memset(conf_user_trusted_servers, 0x00, sizeof(struct config_trusted_servers));
+
+  return conf_user_trusted_servers;
+}
+
 
 parser trusted_servers[] = {
+  {"Trusted_Server", (struct conf_parse_struct *)&trusted_server, TRUE, OPTION_ANY_CONFIG, 
+	xsupconfig_parse_trusted_server},
+  
+  {NULL, NULL, FALSE, 0, NULL}};
+
+parser user_trusted_servers[] = {
   {"Trusted_Server", (struct conf_parse_struct *)&trusted_server, TRUE, OPTION_ANY_CONFIG, 
 	xsupconfig_parse_trusted_server},
   

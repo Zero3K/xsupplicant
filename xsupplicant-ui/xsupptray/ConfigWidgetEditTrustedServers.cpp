@@ -37,7 +37,7 @@
 #include "Util.h"
 #include "helpbrowser.h"
 
-ConfigWidgetEditTrustedServers::ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, NavPanel *pPanel, QWidget *parent) :
+ConfigWidgetEditTrustedServers::ConfigWidgetEditTrustedServers(QWidget *pRealWidget, QString serverName, XSupCalls *xsup, NavPanel *pPanel, unsigned char config_type, QWidget *parent) :
 	m_pRealWidget(pRealWidget), m_pParent(parent), m_pSupplicant(xsup), m_originalServername(serverName), m_pNavPanel(pPanel)
 {
 	m_pCNEdit = NULL;
@@ -59,6 +59,8 @@ ConfigWidgetEditTrustedServers::ConfigWidgetEditTrustedServers(QWidget *pRealWid
 	m_bChangedData = false;
 	m_bNewServer = false;
 	m_bServerRenamed = false;
+
+	m_config_type = config_type;
 }
 
 ConfigWidgetEditTrustedServers::~ConfigWidgetEditTrustedServers()
@@ -209,6 +211,7 @@ bool ConfigWidgetEditTrustedServers::newItem()
 		// This is a new server configuration.
 		m_bNewServer = true;
 		m_bChangedData = true;
+		m_config_type = CONFIG_LOAD_USER;
 
 		return true;
 }
@@ -225,7 +228,7 @@ void ConfigWidgetEditTrustedServers::updateWindow()
 
 	if (m_bNewServer)
 	{
-	  temp = "New Server";
+	    temp = "New Server";
 		if (m_pSupplicant->createNewTrustedServer(temp, &m_pTrustedServer) != true)
 		{
 			QMessageBox::critical(this, tr("New Trusted Server"), tr("There was an error attempting to create a new Trusted Server."));
@@ -248,7 +251,7 @@ void ConfigWidgetEditTrustedServers::updateWindow()
 		m_pCertStateLabel->clear();
 		m_pCertDeptLabel->clear();
 	}
-	else if (m_pSupplicant->getConfigTrustedServer(m_originalServername, &m_pTrustedServer, true) == true)
+	else if (m_pSupplicant->getConfigTrustedServer(m_config_type, m_originalServername, &m_pTrustedServer, true) == true)
 	{
 		m_lastServername = m_originalServername;
 
@@ -343,7 +346,9 @@ bool ConfigWidgetEditTrustedServers::save()
 	if (m_bNewServer)
 	{
 		temp_ptr = _strdup(m_pServerNameEdit->text().toAscii());
-		retval = xsupgui_request_get_trusted_server_config(temp_ptr, &pConfig);
+		retval = xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, temp_ptr, &pConfig);
+		if (retval != REQUEST_SUCCESS) retval = xsupgui_request_get_trusted_server_config(CONFIG_LOAD_USER, temp_ptr, &pConfig);
+
 		free(temp_ptr);
 		if ((retval == REQUEST_SUCCESS) && (pConfig != NULL))
 		{
@@ -400,16 +405,16 @@ bool ConfigWidgetEditTrustedServers::save()
 	if ((m_bServerRenamed) && (QString(m_pTrustedServer->name) != m_originalServername))
 	{
 	  temp = m_pTrustedServer->name;
-		if (m_pSupplicant->renameTrustedServer(m_originalServername, temp) == false)
+		if (m_pSupplicant->renameTrustedServer(m_config_type, m_originalServername, temp) == false)
 			return false;
 
 		m_originalServername = m_pTrustedServer->name;
 		m_bServerRenamed = false;
 	}
 
-	if (m_pSupplicant->setConfigTrustedServer(m_pTrustedServer) == true)
+	if (m_pSupplicant->setConfigTrustedServer(m_config_type, m_pTrustedServer) == true)
 	{
-		if (m_pSupplicant->writeConfig() == true)
+		if ((m_pSupplicant->writeConfig(CONFIG_LOAD_GLOBAL) == true) && (m_pSupplicant->writeConfig(CONFIG_LOAD_USER) == true))
 		{
 			m_bChangedData = false;
 			m_bNewServer = false;

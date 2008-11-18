@@ -51,7 +51,7 @@ char *forced_profile = NULL;
  *
  * \retval XENONE on success
  **/
-int config_setup(char *path_to_config)
+int config_system_setup(char *path_to_config)
 {
   xmlDocPtr doc = NULL;
   xmlNode *root_element = NULL;
@@ -73,10 +73,49 @@ int config_setup(char *path_to_config)
 
   root_element = xmlDocGetRootElement(doc);
 
-  xsupconfig_parse(root_element, baselevel, NULL);
+  xsupconfig_parse(root_element, baselevel, CONFIG_LOAD_GLOBAL, NULL);
 
   // set the file name
   config_fname = _strdup(path_to_config);
+
+  xmlFreeDoc(doc);
+  xmlCleanupParser();
+
+  return XENONE;
+}
+
+/**
+ * \brief Load a user configuration in to memory from the specified configuration file.
+ *
+ * @param[in] config_file   The full path to the user config file to load.
+ *
+ * \returns XENONE on success anything else is a failure.
+ **/
+int config_load_user_config(char *config_file)
+{
+  xmlDocPtr doc = NULL;
+  xmlNode *root_element = NULL;
+
+  TRACE 
+
+  doc = loadConfig(config_file);
+  if (doc == NULL)
+    {
+	  // DO NOT change this to xsupconfig_common_log(), since it will cause linker issues with libxsupgui!
+	  if (xsup_common_in_startup() != TRUE)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Couldn't load user configuration file '%s'!\n", config_file);
+	  }
+
+	  conf_user_connections = NULL;
+
+      return XECONFIGFILEFAIL;
+    }
+
+  root_element = xmlDocGetRootElement(doc);
+
+
+  xsupconfig_parse(root_element, user_baselevel, CONFIG_LOAD_USER, NULL);
 
   xmlFreeDoc(doc);
   xmlCleanupParser();
@@ -97,9 +136,12 @@ int config_setup(char *path_to_config)
  *          is *NOT* a copy of the connections structure, it is a pointer to the master
  *          configuration structure!  If you free it, bad stuff *WILL* happen.
  **/
-struct config_connection *config_get_connections()
+struct config_connection *config_get_connections(uint8_t conf_type)
 {
-	return conf_connections;
+	if (conf_type == CONFIG_LOAD_GLOBAL)
+		return conf_connections;
+	else
+		return conf_user_connections;
 }
 
 /**
@@ -115,9 +157,12 @@ struct config_connection *config_get_connections()
  *       is *NOT* a copy of the connections structure, it is a pointer to the master
  *       configuration structure!  If you free it, bad stuff *WILL* happen.
  **/
-struct config_trusted_servers *config_get_trusted_servers()
+struct config_trusted_servers *config_get_trusted_servers(uint8_t config_type)
 {
-	return conf_trusted_servers;
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		return conf_trusted_servers;
+	else
+		return conf_user_trusted_servers;
 }
 
 /**
@@ -132,9 +177,12 @@ struct config_trusted_servers *config_get_trusted_servers()
  *       is *NOT* a copy of the profiles structure, it is a pointer to the master
  *       profiles structure!  If you free it, bad stuff *WILL* happen.
  **/
-struct config_profiles *config_get_profiles()
+struct config_profiles *config_get_profiles(uint8_t config_type)
 {
-	return conf_profiles;
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		return conf_profiles;
+	else
+		return conf_user_profiles;
 }
 
 /**
@@ -211,8 +259,8 @@ void config_create_new_config()
  **/
 int config_change_ttls_pwd(struct config_eap_method *meth, char *password)
 {
-	struct config_eap_ttls *ttls;
-	void *ptr;
+	struct config_eap_ttls *ttls = NULL;
+	void *ptr = NULL;
 
 	ttls = (struct config_eap_ttls *)meth->method_data;
 	if (ttls == NULL) return -1;
@@ -262,7 +310,7 @@ int config_change_ttls_pwd(struct config_eap_method *meth, char *password)
  **/
 int config_change_pwd(struct config_eap_method *meth, char *password)
 {
-	void *ptr;
+	void *ptr = NULL;
 
 	if (password == NULL) return XENONE;   // Nothing to do.
 
@@ -342,32 +390,42 @@ int config_change_pwd(struct config_eap_method *meth, char *password)
  *
  *  \retval XENONE on success
  **/
+/*   XXX Not used!?
 int config_set_pwd_on_profile(char *prof_name, char *password)
 {
-	struct config_profiles *prof;
+	struct config_profiles *prof = NULL;
 
-	prof = config_find_profile(prof_name);
-	if (prof == NULL) return -1;
+	prof = config_find_profile(CONFIG_LOAD_GLOBAL, prof_name);
+	if (prof == NULL) 
+	{
+		prof = config_find_profile(CONFIG_LOAD_USER, prof_name);
+		if (prof == NULL) return -1;
+	}
 
 	return config_change_pwd(prof->method, password);
 }
+*/
 
 /**
  * \brief Locate a connection based on the SSID that is mapped to it.
  *
+ * @param[in] config_type   Indicates the configuration structure we should be looking at.
  * @param[in] ssidname   The SSID name that we are looking for.
  * @param[in] intDesc   The description of the interface that goes with the SSID.
  *
  * \retval ptr to the connection (if found), NULL if the connection isn't found.
  **/
-struct config_connection *config_find_connection_from_ssid_and_desc(char *ssidname, char *intDesc)
+struct config_connection *config_find_connection_from_ssid_and_desc(uint8_t config_type, char *ssidname, char *intDesc)
 {
     struct config_connection *cur = NULL;
 
     if (!ssidname) return NULL;
 
   // Start at the top of the list.
-  cur = conf_connections;
+  if (config_type == CONFIG_LOAD_GLOBAL)
+	cur = conf_connections;
+  else
+    cur = conf_user_connections;
 
   while (cur != NULL)
     {
@@ -402,7 +460,11 @@ uint8_t config_get_network_priority(char *matchname, char *intDesc)
       return 0xff;
 
   // Start at the top of the list.
-  cur = config_find_connection_from_ssid_and_desc(matchname, intDesc);
+  cur = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_GLOBAL, matchname, intDesc);
+  if (cur == NULL)
+  {
+	  cur = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_USER, matchname, intDesc);
+  }
 
   if (!cur) return 0xff;
 
@@ -410,41 +472,27 @@ uint8_t config_get_network_priority(char *matchname, char *intDesc)
 }
 
 /**
- *  \brief Set the forced profile value to be used later.
- *
- *  @param[in] profilename  The name of the profile to force
- *                          the supplicant to use.
- **/
-void config_set_forced_profile(char *profilename)
-{
-	TRACE
-
-  if (forced_profile != NULL) 
-    {
-      free(forced_profile);
-      forced_profile = NULL;
-    }
-
-  if (profilename != NULL)
-    {
-      forced_profile = _strdup(profilename);
-    }
-}
-
-/**
  * \brief Given a connection name, find the configuration information in memory.
  *
+ * @param[in] conf_type   Should we look in the global, or user config?
  * @param[in] matchname   The name of the connection to locate the configuration for.
  *
  * \retval ptr  A pointer to the connection information, or NULL on failure.
  **/
-struct config_connection *config_find_connection(char *matchname)
+struct config_connection *config_find_connection(uint8_t conf_type, char *matchname)
 {
-  struct config_connection *cur;
+  struct config_connection *cur = NULL;
 
   TRACE
 
-  cur = conf_connections;
+  if (conf_type == CONFIG_LOAD_GLOBAL)
+  {
+	cur = conf_connections;
+  }
+  else
+  {
+    cur = conf_user_connections;
+  }
 
   if ((matchname == NULL) && (forced_profile == NULL))
     {
@@ -477,7 +525,14 @@ struct config_connection *config_find_connection(char *matchname)
     }
   
   // Otherwise, look against the essid.
-  cur = conf_connections;
+  if (conf_type == CONFIG_LOAD_GLOBAL)
+  {
+	cur = conf_connections;
+  }
+  else
+  {
+	  cur = conf_user_connections;
+  }
 
   while (cur != NULL)
   {
@@ -508,7 +563,7 @@ struct config_connection *config_find_connection(char *matchname)
  **/
 int delete_config_single_profile(struct config_profiles **prof)
 {
-  struct config_profiles *cur;
+  struct config_profiles *cur = NULL;
 
   if (prof == NULL) return XEMALLOC;
 
@@ -528,7 +583,7 @@ int delete_config_single_profile(struct config_profiles **prof)
 }
 
 /** 
- * \brief Remove a profile from out linked list.
+ * \brief Remove a profile from our system level linked list.
  * 
  * @param[in] profname  The name of the profile that we want to remove from 
  *                      the list.
@@ -536,9 +591,9 @@ int delete_config_single_profile(struct config_profiles **prof)
  * \retval XENONE on success
  * \retval XENOTHING_TO_DO if the connection didn't exist.
  **/
-int config_delete_profile(char *profname)
+int config_delete_profile_global(char *profname)
 {
-  struct config_profiles *cur, *prev;
+  struct config_profiles *cur = NULL, *prev = NULL;
 
   TRACE
 
@@ -580,17 +635,88 @@ int config_delete_profile(char *profname)
   return XENOTHING_TO_DO;
 }
 
+/** 
+ * \brief Remove a profile from our user level linked list.
+ * 
+ * @param[in] profname  The name of the profile that we want to remove from 
+ *                      the list.
+ *
+ * \retval XENONE on success
+ * \retval XENOTHING_TO_DO if the connection didn't exist.
+ **/
+int config_delete_profile_user(char *profname)
+{
+  struct config_profiles *cur = NULL, *prev = NULL;
+
+  TRACE
+
+	if (profname == NULL) return XENOTHING_TO_DO;
+
+	if (conf_user_profiles == NULL) return XENOTHING_TO_DO;
+
+    if (strcmp(conf_user_profiles->name, profname) == 0)
+      {
+	// The first one is the one we want to remove.
+	cur = conf_user_profiles;
+	conf_user_profiles = cur->next;
+
+	// Then, delete everything in that network.
+	delete_config_single_profile(&cur);
+
+	return XENONE;
+      }
+
+  // Otherwise, it will be somewhere else.
+  cur = conf_user_profiles->next;
+  prev = conf_user_profiles;
+
+  while ((cur) && (strcmp(cur->name, profname) != 0))
+    {
+      cur = cur->next;
+      prev = prev->next;
+    }
+
+  if ((cur) && (strcmp(cur->name, profname) == 0))
+    {
+      // We found the network to delete.
+      prev->next = cur->next;
+
+      delete_config_single_profile(&cur);
+      return XENONE;
+    }
+
+  return XENOTHING_TO_DO;
+}
+
 /**
- * \brief Remove a connection from our linked list.
+ * \brief Delete a profile from memory.
+ *
+ * @param[in] config_type   The configuration structure that we should delete from.
+ * @param[in] profname		The profile name that we want to delete.
+ *
+ * \retval XENONE on success
+ * \retval XENOTHING_TO_DO if the profile wasn't found.
+ * \retval anything else is an error.
+ **/
+int config_delete_profile(uint8_t config_type, char *profname)
+{
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		return config_delete_profile_global(profname);
+	else
+		return config_delete_profile_user(profname);
+}
+
+/**
+ * \brief Remove a connection from our global config linked list.
  *
  * @param[in] netname  The name of the connection to remove from the list.
  *
  * \retval XENONE on success
  * \retval XENOTHING_TO_DO if the connection didn't exist.
  **/
-int config_delete_connection(char *netname)
+int config_delete_connection_global(char *netname)
 {
-  struct config_connection *cur, *prev;
+  struct config_connection *cur = NULL, *prev = NULL;
 
   TRACE
 
@@ -633,6 +759,75 @@ int config_delete_connection(char *netname)
 }
 
 /**
+ * \brief Remove a connection from our user config linked list.
+ *
+ * @param[in] netname  The name of the connection to remove from the list.
+ *
+ * \retval XENONE on success
+ * \retval XENOTHING_TO_DO if the connection didn't exist.
+ **/
+int config_delete_connection_user(char *netname)
+{
+  struct config_connection *cur = NULL, *prev = NULL;
+
+  TRACE
+
+  if (netname == NULL) return XENOTHING_TO_DO;
+
+  if (conf_user_connections == NULL) return XENOTHING_TO_DO;
+
+  if (strcmp(conf_user_connections->name, netname) == 0)
+    {
+      // The first one is the one we want to remove.
+      cur = conf_user_connections;
+      conf_user_connections = cur->next;
+
+      // Then, delete everything in that network.
+      delete_config_single_connection(&cur);
+
+      return XENONE;
+    }
+
+  // Otherwise, it will be somewhere else.
+  cur = conf_user_connections->next;
+  prev = conf_user_connections;
+
+  while ((cur) && (strcmp(cur->name, netname) != 0))
+    {
+      cur = cur->next;
+      prev = prev->next;
+    }
+
+  if ((cur) && (strcmp(cur->name, netname) == 0))
+    {
+      // We found the network to delete.
+      prev->next = cur->next;
+
+      delete_config_single_connection(&cur);
+      return XENONE;
+    }
+  
+  return XENOTHING_TO_DO;
+}
+
+/**
+ * \brief Based on the connection type we want to delete, delete it from the
+ *		  proper location in memory.
+ *
+ * @param[in] config_type	The configuration structure we want to delete from.
+ * @param[in] netname		The name of the connection configuration to delete.
+ *
+ * \retval XENONE on success, XENOTHING_TO_DO if the connection wasn't found, anything else is an error.
+ **/
+int config_delete_connection(uint8_t config_type, char *netname)
+{
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		return config_delete_connection_global(netname);
+	else
+		return config_delete_connection_user(netname);
+}
+
+/**
  * \brief Remove an interface from our linked list.
  *
  * @param[in] intdesc  The description of the interface to remove from the list.
@@ -642,7 +837,7 @@ int config_delete_connection(char *netname)
  **/
 int config_delete_interface(char *intdesc)
 {
-  struct xsup_interfaces *cur, *prev;
+  struct xsup_interfaces *cur = NULL, *prev = NULL;
 
   TRACE
 
@@ -686,16 +881,16 @@ int config_delete_interface(char *intdesc)
 }
 
 /**
- * \brief Remove a trusted server from our linked list.
+ * \brief Remove a trusted server from our system level linked list.
  *
  * @param[in] svrname  The name of the trusted server to remove from the list.
  *
  * \retval XENONE on success
  * \retval XENOTHING_TO_DO if the server didn't exist.
  **/
-int config_delete_trusted_server(char *svrname)
+int config_delete_trusted_server_global(char *svrname)
 {
-  struct config_trusted_server *cur, *prev;
+  struct config_trusted_server *cur = NULL, *prev = NULL;
 
   TRACE
 
@@ -740,6 +935,77 @@ int config_delete_trusted_server(char *svrname)
   return XENOTHING_TO_DO;
 }
 
+/**
+ * \brief Remove a trusted server from our user level linked list.
+ *
+ * @param[in] svrname  The name of the trusted server to remove from the list.
+ *
+ * \retval XENONE on success
+ * \retval XENOTHING_TO_DO if the server didn't exist.
+ **/
+int config_delete_trusted_server_user(char *svrname)
+{
+  struct config_trusted_server *cur = NULL, *prev = NULL;
+
+  TRACE
+
+  if (svrname == NULL) return XENOTHING_TO_DO;
+
+  if (conf_user_trusted_servers == NULL) return XENOTHING_TO_DO;
+
+  cur = conf_user_trusted_servers->servers;
+
+  if (cur == NULL) return XENOTHING_TO_DO;
+
+  if (strcmp(cur->name, svrname) == 0)
+    {
+      // The first one is the one we want to remove.
+	  conf_user_trusted_servers->servers = cur->next;
+
+      // Then, delete everything in that network.
+      delete_config_trusted_server(&cur);
+
+      return XENONE;
+    }
+
+  // Otherwise, it will be somewhere else.
+  prev = cur;
+  cur = cur->next;
+
+  while ((cur) && (strcmp(cur->name, svrname) != 0))
+    {
+      cur = cur->next;
+      prev = prev->next;
+    }
+
+  if ((cur) && (strcmp(cur->name, svrname) == 0))
+    {
+      // We found the one to delete.
+      prev->next = cur->next;
+
+      delete_config_trusted_server(&cur);
+      return XENONE;
+    }
+  
+  return XENOTHING_TO_DO;
+}
+
+/**
+ * \brief Remove a trusted server from our in memory configuration.
+ *
+ * @param[in] config_type   If this is a system level, or user level configuration entity.
+ * @param[in] svrname  The name of the trusted server to remove from the list.
+ *
+ * \retval XENONE on success
+ * \retval XENOTHING_TO_DO if the server didn't exist.
+ **/
+int config_delete_trusted_server(uint8_t config_type, char *svrname)
+{
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		return config_delete_trusted_server_global(svrname);
+	else
+		return config_delete_trusted_server_user(svrname);
+}
 
 /**
  * \brief Get a pointer to the config global information.  
@@ -947,9 +1213,9 @@ void config_destroy()
  *          master linked list of profiles.  Freeing it will cause
  *          bad things to happen!
  **/
-struct config_profiles *config_find_profile(char *profile_name)
+struct config_profiles *config_find_profile(uint8_t config_type, char *profile_name)
 {
-	struct config_profiles *cur;
+	struct config_profiles *cur = NULL;
 
 	// There was a request to find nothing, so return nothing.
 	if (profile_name == NULL) return NULL;
@@ -957,7 +1223,10 @@ struct config_profiles *config_find_profile(char *profile_name)
 	debug_printf(DEBUG_CONFIG_PARSE, "Looking for profile '%s'!\n",
 		profile_name);
 
-	cur = conf_profiles;
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		cur = conf_profiles;
+	else
+		cur = conf_user_profiles;
 
 	while ((cur != NULL) && (strcmp(cur->name, profile_name) != 0)) cur = cur->next;
 
@@ -1926,7 +2195,6 @@ void initialize_config_connections(struct config_connection **tmp_conn)
     {
       memset(*tmp_conn, 0, sizeof(struct config_connection));
       (*tmp_conn)->priority = DEFAULT_PRIORITY;
-      SET_FLAG((*tmp_conn)->flags, CONFIG_NET_USE_OSC_TNC);
     }
 }
 
@@ -2170,7 +2438,6 @@ void dump_config_connections(struct config_connection *conn)
   printf("+-+-+-+-+  Network Name: \"%s\" +-+-+-+-+\n", conn->name);
 
   printf("  SSID: \"%s\"\n", conn->ssid);
-  printf("  OU  : \"%s\"\n", conn->ou);
 
   if (TEST_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN))
   {
@@ -2180,15 +2447,6 @@ void dump_config_connections(struct config_connection *conn)
   {
 	  printf("  Hidden SSID : no\n");
   }
-
-  if (TEST_FLAG(conn->flags, CONFIG_NET_USE_OSC_TNC))
-    {
-      printf("  Use OSC TNC support : Yes\n");
-    } 
-  else
-    {
-      printf("  Use OSC TNC support : No\n");
-    }
 
   if (TEST_FLAG(conn->flags, CONFIG_NET_DEST_MAC))
     printf("  DEST MAC: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n",
@@ -2395,7 +2653,7 @@ void dump_config_globals(struct config_globals *globals)
 
 /**
  * \brief Delete all of the configuration structures that were populated by
- *        reading the configuration file.
+ *        reading configuration files.
  **/
 void delete_config_data()
 {
@@ -2408,11 +2666,20 @@ void delete_config_data()
   if (conf_profiles)
 	  delete_config_profiles(&conf_profiles);
 
+  if (conf_user_profiles)
+	  delete_config_profiles(&conf_user_profiles);
+
   if (conf_connections)
     delete_config_connections(&conf_connections);
 
+  if (conf_user_connections)
+	delete_config_connections(&conf_user_connections);
+
   if (conf_trusted_servers)
 	  delete_config_trusted_servers(&conf_trusted_servers);
+
+  if (conf_user_trusted_servers)
+	  delete_config_trusted_servers(&conf_user_trusted_servers);
 
   if (conf_devices)
 	  delete_config_devices(&conf_devices);
@@ -2496,7 +2763,6 @@ void dump_config_profiles(struct config_profiles *data)
 		printf("   ************ Profile *************\n");
 		printf("    Name     : %s\n", cur->name);
 		printf("    Identity : %s\n", cur->identity);
-		printf("    OU       : %s\n", cur->ou);
 		printf("    Compliance : %x\n", cur->compliance);
 		dump_config_eap_method(cur->method, 0);
 		printf("   **********************************\n");
@@ -2584,7 +2850,7 @@ void reset_config_globals(struct config_globals *newglobs)
 }
 
 /**
- * \brief Take a connection configuration structure and change it if it
+ * \brief Take a connection configuration structure for the global configurations and change it if it
  *        exists, or add it if it doesn't.
  *
  * @param[in] confconn   The connection data that we want to either change, or
@@ -2593,7 +2859,7 @@ void reset_config_globals(struct config_globals *newglobs)
  * \retval XENONE on success
  * \retval XEGENERROR on general failure
  **/
-int add_change_config_connections(struct config_connection *confconn)
+int add_change_config_connections_global(struct config_connection *confconn)
 {
 	struct config_connection *cur = NULL, *prev = NULL;
 
@@ -2641,6 +2907,85 @@ int add_change_config_connections(struct config_connection *confconn)
 }
 
 /**
+ * \brief Take a connection configuration structure for the user configurations and change it if it
+ *        exists, or add it if it doesn't.
+ *
+ * @param[in] confconn   The connection data that we want to either change, or
+ *                       add to the connection list.
+ *
+ * \retval XENONE on success
+ * \retval XEGENERROR on general failure
+ **/
+int add_change_config_connections_user(struct config_connection *confconn)
+{
+	struct config_connection *cur = NULL, *prev = NULL;
+
+	if (confconn == NULL) return XEGENERROR;
+
+	// If we don't have any connections currently in memory.
+	if (conf_user_connections == NULL)
+	{
+		conf_user_connections = confconn;
+
+		return XENONE;
+	}
+
+	if (strcmp(conf_user_connections->name, confconn->name) == 0)
+	{
+		// The first node is the one we are changing.
+		confconn->next = conf_user_connections->next;
+		delete_config_single_connection(&conf_user_connections);
+		conf_user_connections = confconn;
+		return XENONE;
+	}
+
+	cur = conf_user_connections->next;
+	prev = conf_user_connections;
+
+	while ((cur != NULL) && (strcmp(cur->name, confconn->name) != 0))
+	{
+		prev = cur;
+		cur = cur->next;
+	}
+
+	if (cur == NULL)
+	{
+		// It is an addition.
+		prev->next = confconn;
+		return XENONE;
+	}
+
+	// Otherwise, we need to replace the node that cur points to.
+	confconn->next = cur->next;
+	prev->next = confconn;
+	delete_config_single_connection(&cur);
+
+	return XENONE;
+}
+
+/**
+ * \brief Take a connection configuration structure and change it if it
+ *        exists, or add it if it doesn't.
+ *
+ * @param[in] confconn   The connection data that we want to either change, or
+ *                       add to the connection list.
+ *
+ * \retval XENONE on success
+ * \retval XEGENERROR on general failure
+ **/
+int add_change_config_connections(uint8_t conf_type, struct config_connection *confconn)
+{
+	if (conf_type == CONFIG_LOAD_GLOBAL)
+	{
+		return add_change_config_connections_global(confconn);
+	}
+	else
+	{
+		return add_change_config_connections_user(confconn);
+	}
+}
+
+/**
  * \brief Take a profile configuration structure and change it if it
  *        exists, or add it if it doesn't.
  *
@@ -2650,7 +2995,7 @@ int add_change_config_connections(struct config_connection *confconn)
  * \retval XENONE on success
  * \retval XEGENERROR on general failure
  **/
-int add_change_config_profiles(struct config_profiles *confprof)
+int add_change_config_profiles_global(struct config_profiles *confprof)
 {
 	struct config_profiles *cur = NULL, *prev = NULL;
 
@@ -2698,6 +3043,82 @@ int add_change_config_profiles(struct config_profiles *confprof)
 }
 
 /**
+ * \brief Take a profile configuration structure and change it if it
+ *        exists, or add it if it doesn't.
+ *
+ * @param[in] confprof   The profile data that we want to either change, or
+ *                       add to the profile list.
+ *
+ * \retval XENONE on success
+ * \retval XEGENERROR on general failure
+ **/
+int add_change_config_profiles_user(struct config_profiles *confprof)
+{
+	struct config_profiles *cur = NULL, *prev = NULL;
+
+	if (confprof == NULL) return XEGENERROR;
+
+	// If we don't have any profiles currently in memory.
+	if (conf_user_profiles == NULL)
+	{
+		conf_user_profiles = confprof;
+
+		return XENONE;
+	}
+
+	if (strcmp(conf_user_profiles->name, confprof->name) == 0)
+	{
+		// The first node is the one we are changing.
+		confprof->next = conf_user_profiles->next;
+		delete_config_single_profile(&conf_user_profiles);
+		conf_user_profiles = confprof;
+		return XENONE;
+	}
+
+	cur = conf_user_profiles->next;
+	prev = conf_user_profiles;
+
+	while ((cur != NULL) && (strcmp(cur->name, confprof->name) != 0))
+	{
+		prev = cur;
+		cur = cur->next;
+	}
+
+	if (cur == NULL)
+	{
+		// It is an addition.
+		prev->next = confprof;
+		return XENONE;
+	}
+
+	// Otherwise, we need to replace the node that cur points to.
+	confprof->next = cur->next;
+	prev->next = confprof;
+	delete_config_single_profile(&cur);
+
+	return XENONE;
+}
+
+/**
+ * \brief Take a profile configuration structure and change it if it
+ *        exists, or add it if it doesn't.
+ *
+ * @param[in] config_type   Which configuration structure we should be looking at.
+ * @param[in] confprof   The profile data that we want to either change, or
+ *                       add to the profile list.
+ *
+ * \retval XENONE on success
+ * \retval XEGENERROR on general failure
+ **/
+int add_change_config_profiles(uint8_t config_type, struct config_profiles *confprof)
+{
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		return add_change_config_profiles_global(confprof);
+	else
+		return add_change_config_profiles_user(confprof);
+}
+
+/**
  * \brief Take a trusted server configuration structure and change it if it
  *        exists, or add it if it doesn't.
  *
@@ -2708,7 +3129,7 @@ int add_change_config_profiles(struct config_profiles *confprof)
  * \retval XEMALLOC on memory allocation error
  * \retval XEGENERROR on general failure
  **/
-int add_change_config_trusted_server(struct config_trusted_server *confts)
+int add_change_config_trusted_server_global(struct config_trusted_server *confts)
 {
 	struct config_trusted_server *cur = NULL, *prev = NULL;
 
@@ -2765,6 +3186,96 @@ int add_change_config_trusted_server(struct config_trusted_server *confts)
 	delete_config_trusted_server(&cur);
 
 	return XENONE;
+}
+
+/**
+ * \brief Take a trusted server configuration structure and change it if it
+ *        exists, or add it if it doesn't.
+ *
+ * @param[in] confts   The trusted server data that we want to either change, or
+ *                     add to the trusted server list.
+ *
+ * \retval XENONE on success
+ * \retval XEMALLOC on memory allocation error
+ * \retval XEGENERROR on general failure
+ **/
+int add_change_config_trusted_server_user(struct config_trusted_server *confts)
+{
+	struct config_trusted_server *cur = NULL, *prev = NULL;
+
+	if (confts == NULL) return XEGENERROR;
+
+	if (conf_user_trusted_servers == NULL)
+	{
+		conf_user_trusted_servers = Malloc(sizeof(struct config_trusted_servers));
+		if (conf_user_trusted_servers == NULL)
+		{
+			debug_printf(DEBUG_CONFIG_PARSE, "Couldn't allocate memory to store trusted servers structure!\n");
+			return XEMALLOC;
+		}
+	}
+
+	// If we don't have any trusted servers currently in memory.
+	if (conf_user_trusted_servers->servers == NULL)
+	{
+		conf_user_trusted_servers->servers = confts;
+
+		return XENONE;
+	}
+
+	cur = conf_user_trusted_servers->servers;
+
+	if (strcmp(cur->name, confts->name) == 0)
+	{
+		// The first node is the one we are changing.
+		confts->next = cur->next;
+		delete_config_trusted_server(&cur);
+		conf_user_trusted_servers->servers = confts;
+		return XENONE;
+	}
+
+	cur = conf_user_trusted_servers->servers->next;
+	prev = conf_user_trusted_servers->servers;
+
+	while ((cur != NULL) && (strcmp(cur->name, confts->name) != 0))
+	{
+		prev = cur;
+		cur = cur->next;
+	}
+
+	if (cur == NULL)
+	{
+		// It is an addition.
+		prev->next = confts;
+		return XENONE;
+	}
+
+	// Otherwise, we need to replace the node that cur points to.
+	confts->next = cur->next;
+	prev->next = confts;
+	delete_config_trusted_server(&cur);
+
+	return XENONE;
+}
+
+/**
+ * \brief Take a trusted server configuration structure and change it if it
+ *        exists, or add it if it doesn't.
+ *
+ * @param[in] config_type   Let us know if we are saving to a system or user level config.
+ * @param[in] confts   The trusted server data that we want to either change, or
+ *                     add to the trusted server list.
+ *
+ * \retval XENONE on success
+ * \retval XEMALLOC on memory allocation error
+ * \retval XEGENERROR on general failure
+ **/
+int add_change_config_trusted_server(uint8_t config_type, struct config_trusted_server *confts)
+{
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		return add_change_config_trusted_server_global(confts);
+	else
+		return add_change_config_trusted_server_user(confts);
 }
 
 /**

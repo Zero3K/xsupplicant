@@ -79,6 +79,10 @@ xmlNodePtr xsupconfwrite_connection_ipdata(struct config_ip_data *ipdata,
 		case 1:
 			temp = _strdup("STATIC");
 			break;
+
+		case 2:
+			temp = _strdup("NONE");
+			break;
 		}
 
 		if (xmlNewChild(ipNode, NULL, (xmlChar *)"Type", (xmlChar *)temp) == NULL)
@@ -223,7 +227,7 @@ xmlNodePtr xsupconfwrite_connection_ipdata(struct config_ip_data *ipdata,
  * \retval xmlNodePtr containing the <Association> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_connection_association(struct config_association *assoc, 
+xmlNodePtr xsupconfwrite_connection_association(struct config_association *assoc, uint8_t config_type,
 												char write_all)
 {
 	xmlNodePtr assocNode = NULL;
@@ -317,6 +321,7 @@ xmlNodePtr xsupconfwrite_connection_association(struct config_association *assoc
 		}
 
 		free(temp);
+		temp = NULL;
 	}
 
 	// Don't check write_all here.  The absence of this tag means that it should
@@ -409,6 +414,10 @@ xmlNodePtr xsupconfwrite_connection_association(struct config_association *assoc
 		case CRYPT_WEP104:
 			temp = _strdup("wep104");
 			break;
+
+		default:
+			if (temp != NULL) free(temp);
+			temp = NULL;
 		}
 
 		if (xmlNewChild(assocNode, NULL, (xmlChar *)"Group_Key_Type", (xmlChar *)temp) == NULL)
@@ -418,11 +427,15 @@ xmlNodePtr xsupconfwrite_connection_association(struct config_association *assoc
 #endif
 			xmlFreeNode(assocNode);
 			free(temp);
+			temp = NULL;
 			return NULL;
 		}
 
-		free(temp);
-		temp = NULL;
+		if (temp != NULL)
+		{
+			free(temp);
+			temp = NULL;
+		}
 	}
 
 	// Don't check write_all here.  If psk isn't set, then we don't
@@ -432,7 +445,7 @@ xmlNodePtr xsupconfwrite_connection_association(struct config_association *assoc
 		if (pwcrypt_funcs_available() == TRUE)
 		{
 			// Write the encrypted version.
-			if (pwcrypt_encrypt((uint8_t *)assoc->psk, strlen(assoc->psk), (uint8_t **)&temp, &ressize) != 0)
+			if (pwcrypt_encrypt(config_type, (uint8_t *)assoc->psk, strlen(assoc->psk), (uint8_t **)&temp, &ressize) != 0)
 			{
 				// Couldn't encrypt the data.  So write the cleartext version.
 				if (xmlNewChild(assocNode, NULL, (xmlChar *)"PSK", (xmlChar *)assoc->psk) == NULL)
@@ -456,6 +469,7 @@ xmlNodePtr xsupconfwrite_connection_association(struct config_association *assoc
 					return NULL;
 				}
 				free(temp);
+				temp = NULL;
 			}
 		}
 		else
@@ -530,7 +544,7 @@ xmlNodePtr xsupconfwrite_connection_association(struct config_association *assoc
  * \retval xmlNodePtr containing the <Connection> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_connection_create_tree(struct config_connection *con, 
+xmlNodePtr xsupconfwrite_connection_create_tree(struct config_connection *con, uint8_t config_type,
 									 char write_all)
 {
 	xmlNodePtr connode = NULL;
@@ -549,11 +563,6 @@ xmlNodePtr xsupconfwrite_connection_create_tree(struct config_connection *con,
 		printf("Couldn't allocate memory to store <Connection> block!\n");
 #endif
 		return NULL;
-	}
-
-	if (con->ou != NULL)
-	{
-		xmlSetProp(connode, (xmlChar *)"OU", (xmlChar *)con->ou);
 	}
 
 	if ((write_all == TRUE) || (con->name != NULL))
@@ -721,7 +730,7 @@ xmlNodePtr xsupconfwrite_connection_create_tree(struct config_connection *con,
 		}
 	}
 
-	assocNode = xsupconfwrite_connection_association(&con->association, write_all);
+	assocNode = xsupconfwrite_connection_association(&con->association, config_type, write_all);
 	if (assocNode == NULL)
 	{
 #ifdef WRITE_CONNECTION_CONFIG

@@ -56,7 +56,7 @@ CredentialsManager::~CredentialsManager()
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnectionDisconnected(const QString &)), this, SLOT(connectionDisconnected(const QString&)));
 }
 
-void CredentialsManager::storeCredentials(const QString &connectionName, const QString &userName, const QString &password)
+void CredentialsManager::storeCredentials(unsigned char config_type, const QString &connectionName, const QString &userName, const QString &password)
 {	
 	// make sure there's only one entry per adapter (if there's already an entry for this adapter it's stale)
 	if (connectionName.isEmpty() == false)	
@@ -66,7 +66,7 @@ void CredentialsManager::storeCredentials(const QString &connectionName, const Q
 		config_connection *pConn;
 		
 		// get device for connection passed in
-		success = XSupWrapper::getConfigConnection(connectionName, &pConn);
+		success = XSupWrapper::getConfigConnection(config_type, connectionName, &pConn);
 		if (success == true && pConn != NULL)
 		{
 			intDesc = pConn->device;
@@ -78,7 +78,7 @@ void CredentialsManager::storeCredentials(const QString &connectionName, const Q
 			QVector<CredentialsManager::CredData>::iterator iter;
 			for (iter = m_credVector.begin(); iter != m_credVector.end(); iter++)
 			{
-				success = XSupWrapper::getConfigConnection(iter->m_connectionName, &pConn);
+				success = XSupWrapper::getConfigConnection(config_type, iter->m_connectionName, &pConn);
 				if (success == true && pConn != NULL)
 				{
 					if (intDesc.compare(pConn->device) == 0)
@@ -100,6 +100,8 @@ void CredentialsManager::storeCredentials(const QString &connectionName, const Q
 
 void CredentialsManager::handleStateChange(const QString &intName, int sm, int, int newstate, unsigned int)
 {		
+	unsigned char config_type = 0;
+
 	if (sm == IPC_STATEMACHINE_8021X && (newstate == AUTHENTICATED || newstate == S_FORCE_AUTH))
 	{	
 		char *connName;
@@ -109,8 +111,18 @@ void CredentialsManager::handleStateChange(const QString &intName, int sm, int, 
 		{
 			bool success;
 			config_connection *pConn = NULL;
-			
-			success = XSupWrapper::getConfigConnection(QString(connName), &pConn);
+	
+			config_type = CONFIG_LOAD_USER;
+			success = XSupWrapper::getConfigConnection(config_type, QString(connName), &pConn);
+			if (success != true)
+			{
+				config_type = CONFIG_LOAD_GLOBAL;
+				success = XSupWrapper::getConfigConnection(config_type, QString(connName), &pConn);
+				if (success != true)
+				{
+					config_type = 0;
+				}
+			}
 			
 			if (success == true && pConn != NULL)
 			{
@@ -127,8 +139,8 @@ void CredentialsManager::handleStateChange(const QString &intName, int sm, int, 
 							pConn->flags &= ~CONFIG_VOLATILE_CONN;					
 							if (pConn->association.auth_type == AUTH_EAP)
 							{
-								success = XSupWrapper::setProfileUsername(pConn->profile, iter->m_userName);
-								success = XSupWrapper::setProfilePassword(pConn->profile, iter->m_password) && success == true;
+								success = XSupWrapper::setProfileUsername(config_type, pConn->profile, iter->m_userName);
+								success = XSupWrapper::setProfilePassword(config_type, pConn->profile, iter->m_password) && success == true;
 								
 								// if we fail to write out configuration
 								errMsg = tr("Unable to save your credentials");				
@@ -149,13 +161,13 @@ void CredentialsManager::handleStateChange(const QString &intName, int sm, int, 
 							}
 							
 							// save off changes to config
-							if (success == true && xsupgui_request_set_connection_config(pConn) == REQUEST_SUCCESS)
+							if (success == true && xsupgui_request_set_connection_config(config_type, pConn) == REQUEST_SUCCESS)
 							{
 								// tell everyone we changed the config
 								m_pEmitter->sendConnConfigUpdate();
 													
 								// this may fail.  No need to prompt user if it does
-								XSupWrapper::writeConfig();	
+								XSupWrapper::writeConfig(config_type);	
 							}
 							else
 								QMessageBox::critical(NULL, tr("error"),errMsg);					
@@ -180,15 +192,26 @@ void CredentialsManager::handleStateChange(const QString &intName, int sm, int, 
 // network.  If so, store them permanently
 void CredentialsManager::pskSuccess(const QString &intName)
 {
-	char *connName;
+	char *connName = NULL;
 	int retval = xsupgui_request_get_conn_name_from_int(intName.toAscii().data(), &connName);
+	unsigned char config_type = 0;
 		
 	if (retval == REQUEST_SUCCESS && connName != NULL)
 	{
 		bool success;
 		config_connection *pConn = NULL;
 		
-		success = XSupWrapper::getConfigConnection(QString(connName), &pConn);
+		config_type = CONFIG_LOAD_USER;
+		success = XSupWrapper::getConfigConnection(config_type, QString(connName), &pConn);
+		if (success == false)
+		{
+			config_type = CONFIG_LOAD_GLOBAL;
+			success = XSupWrapper::getConfigConnection(config_type, QString(connName), &pConn);
+			if (success == false)
+			{
+				config_type = 0;
+			}
+		}
 		
 		if (success == true && pConn != NULL)
 		{
@@ -212,13 +235,13 @@ void CredentialsManager::pskSuccess(const QString &intName)
 						pConn->association.psk = _strdup(iter->m_password.toAscii().data());						
 						
 						// save off changes to config
-						if (xsupgui_request_set_connection_config(pConn) == REQUEST_SUCCESS)
+						if (xsupgui_request_set_connection_config(config_type, pConn) == REQUEST_SUCCESS)
 						{
 							// tell everyone we changed the config
 							m_pEmitter->sendConnConfigUpdate();
 												
 							// this may fail.  No need to prompt user if it does
-							XSupWrapper::writeConfig();	
+							XSupWrapper::writeConfig(config_type);	
 						}
 						else
 							QMessageBox::critical(NULL, tr("error"),tr("Unable to save your PSK password"));					
@@ -258,7 +281,9 @@ void CredentialsManager::connectionDisconnected(const QString &intName)
 				bool success;
 				config_connection *pConn;
 				
-				success = XSupWrapper::getConfigConnection(iter->m_connectionName, &pConn);
+				success = XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, iter->m_connectionName, &pConn);
+				if (success == false) success = XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL, iter->m_connectionName, &pConn);
+
 				if (success == true && pConn != NULL)
 				{
 					if (strcmp(pConn->device, intDesc) == 0)

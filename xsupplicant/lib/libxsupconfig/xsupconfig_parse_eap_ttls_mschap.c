@@ -26,7 +26,7 @@
 #include "xsupconfig_common.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_ttls_mschap(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_mschap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
 
@@ -53,7 +53,7 @@ void *xsupconfig_parse_eap_ttls_mschap(void **attr, xmlNodePtr node)
   return ttls->phase2_data;
 }
 
-void *xsupconfig_parse_eap_ttls_mschap_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_mschap_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *mschap;
   char *value;
@@ -79,7 +79,7 @@ void *xsupconfig_parse_eap_ttls_mschap_password(void **attr, xmlNodePtr node)
   return mschap;
 }
 
-void *xsupconfig_parse_eap_ttls_enc_mschap_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_enc_mschap_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *mschap = NULL;
   char *value = NULL;
@@ -99,7 +99,7 @@ void *xsupconfig_parse_eap_ttls_enc_mschap_password(void **attr, xmlNodePtr node
 		return mschap;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&mschap->password, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&mschap->password, &size) != 0)
   {
 	  free(value);
 	  mschap->password = NULL;

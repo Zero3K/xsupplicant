@@ -45,7 +45,7 @@ class ConfigWidgetEditProfile : public ConfigWidgetBase
      Q_OBJECT
 
  public:
-	 ConfigWidgetEditProfile(QWidget *pRealWidget, QString connName, XSupCalls *xsup, NavPanel *pPanel, UIPlugins *pPlugins, QWidget *parent);
+	 ConfigWidgetEditProfile(QWidget *pRealWidget, QString connName, XSupCalls *xsup, NavPanel *pPanel, unsigned char config_type, UIPlugins *pPlugins, QWidget *parent);
 	 ~ConfigWidgetEditProfile();
 
 	 bool attach();
@@ -86,6 +86,8 @@ signals:
 	 bool m_bChangedData;
 	 bool m_bNewProfile;
 	 bool m_bProfileRenamed;
+
+	 unsigned char m_config_type;
 
 	 config_profiles *m_pProfile;
 	 NavPanel *m_pNavPanel;

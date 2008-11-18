@@ -47,11 +47,15 @@ int xsupconfcheck_trusted_server(char *tsname, int log)
 	struct config_trusted_servers *tss = NULL;
 	struct config_trusted_server *ts = NULL;
 	
-	tss = config_get_trusted_servers();
+	tss = config_get_trusted_servers(CONFIG_LOAD_GLOBAL);
 	if (tss == NULL)
 	{
-		if (log == TRUE) error_prequeue_add("No trusted servers defined.");
-		return -1;
+		tss = config_get_trusted_servers(CONFIG_LOAD_USER);
+		if (tss == NULL)
+		{
+			if (log == TRUE) error_prequeue_add("No trusted servers defined.");
+			return -1;
+		}
 	}
 
 	ts = tss->servers;
@@ -87,11 +91,15 @@ int xsupconfcheck_check_profile(char *profname, int log)
 	struct config_profiles *myprof = NULL;
 	int retval = 0;
 
-	myprof = config_find_profile(profname);
+	myprof = config_find_profile(CONFIG_LOAD_GLOBAL, profname);
 	if (myprof == NULL)
 	{
-		if (log == TRUE) error_prequeue_add("Couldn't find requested profile!");
-		return -1;
+		myprof = config_find_profile(CONFIG_LOAD_USER, profname);
+		if (myprof == NULL)
+		{
+			if (log == TRUE) error_prequeue_add("Couldn't find requested profile!");
+			return -1;
+		}
 	}
 
 	retval = xsupconfcheck_profile_check(myprof, log);
@@ -156,11 +164,16 @@ int xsupconfcheck_check_connection(context *ctx, char *connname, int log)
 
 	if (connname == NULL) return -1;
 
-	conn = config_find_connection(connname);
+	conn = config_find_connection(CONFIG_LOAD_GLOBAL, connname);
 	if (conn == NULL) 
 	{
-		if (log == TRUE) error_prequeue_add("Couldn't find the connection in the configuration file!  (How did you get here!?)");
-		return -1;
+		// Didn't find it in the global configuration, look in the user config.
+		conn = config_find_connection(CONFIG_LOAD_USER, connname);
+		if (conn == NULL)
+		{
+			if (log == TRUE) error_prequeue_add("Couldn't find the connection in the configuration file!  (How did you get here!?)");
+			return -1;
+		}
 	}
 
 	return xsupconfcheck_conn_check(ctx, conn, log);

@@ -48,7 +48,7 @@ public:
 	
 public:
 	bool toSupplicantProfiles(config_connection **, config_profiles **, config_trusted_server **);
-	bool initFromSupplicantProfiles(config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer);	
+	bool initFromSupplicantProfiles(unsigned char config_type, config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer);	
 	
 private:
 	bool toProfileEAP_PEAPProtocol(config_profiles * const, config_trusted_server const * const);
@@ -142,6 +142,7 @@ public:
 	QStringList m_serverCerts;
 	bool m_verifyCommonName;
 	QStringList m_commonNames;
+	unsigned char m_config_type;
 	
 	// data for bookkeeping
 	bool m_hasProfile;

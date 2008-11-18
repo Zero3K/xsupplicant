@@ -27,7 +27,7 @@
 #include "xsupconfig_devices.h"
 #include "src/xsup_debug.h"
 
-void *xsupconfig_parse_devices(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_devices(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
   printf("Building devices config.\n");

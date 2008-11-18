@@ -308,7 +308,9 @@ void ConnectionInfoDlg::updateWirelessState(void)
 		if (retVal == REQUEST_SUCCESS && connName != NULL)
 		{
 			// get connection info so we can look at it when deciding 
-			bool success = XSupWrapper::getConfigConnection(QString(connName), &pConn);
+			bool success = XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, QString(connName), &pConn);
+			if (success == false) success = XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL, QString(connName), &pConn);
+
 			if (success == false && pConn != NULL)
 			{
 				XSupWrapper::freeConfigConnection(&pConn);

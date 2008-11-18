@@ -25,7 +25,7 @@
 #include "xsupconfig_parse_eap_fast.h"
 #include "xsupconfig_parse_eap_fast_phase2.h"
 
-void *xsupconfig_parse_eap_fast(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth;
 
@@ -64,7 +64,7 @@ void *xsupconfig_parse_eap_fast(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_fast_provision(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_provision(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL;
   uint8_t result = 0;
@@ -101,7 +101,7 @@ void *xsupconfig_parse_eap_fast_provision(void **attr, xmlNodePtr node)
   return fast;
 }
 
-void *xsupconfig_parse_eap_fast_pac_file(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_pac_file(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL; 
   char *value = NULL;
@@ -127,7 +127,7 @@ void *xsupconfig_parse_eap_fast_pac_file(void **attr, xmlNodePtr node)
   return fast;
 }
 
-void *xsupconfig_parse_eap_fast_innerid(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_innerid(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL;
   char *value = NULL;
@@ -153,7 +153,7 @@ void *xsupconfig_parse_eap_fast_innerid(void **attr, xmlNodePtr node)
   return fast;
 }
 
-void *xsupconfig_parse_eap_fast_chunk_size(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_chunk_size(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL;
   char *value = NULL;
@@ -181,7 +181,7 @@ void *xsupconfig_parse_eap_fast_chunk_size(void **attr, xmlNodePtr node)
   return fast;
 }
 
-void *xsupconfig_parse_eap_fast_allow_anon_provision(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_allow_anon_provision(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL;
   uint8_t result = 0;
@@ -218,7 +218,7 @@ void *xsupconfig_parse_eap_fast_allow_anon_provision(void **attr, xmlNodePtr nod
   return fast;
 }
 
-void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL;
   uint8_t result = 0;
@@ -255,7 +255,7 @@ void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr, xmlNodePtr nod
   return fast;
 }
 
-void *xsupconfig_parse_eap_fast_trusted_server(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL;
   char *value = NULL;
@@ -281,7 +281,7 @@ void *xsupconfig_parse_eap_fast_trusted_server(void **attr, xmlNodePtr node)
   return fast;
 }
 
-void *xsupconfig_parse_eap_fast_validate_cert(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_validate_cert(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_fast *fast = NULL;
   uint8_t result = 0;

@@ -205,8 +205,12 @@ int context_has_all_data(struct config_connection *cur)
 
 	if (cur == NULL) return FALSE;   // We can't use a NULL connection! ;)
 
-	prof = config_find_profile(cur->profile);
-	if (prof == NULL) return FALSE;
+	prof = config_find_profile(CONFIG_LOAD_GLOBAL, cur->profile);
+	if (prof == NULL) 
+	{
+		prof = config_find_profile(CONFIG_LOAD_USER, cur->profile);
+		if (prof == NULL) return FALSE;
+	}
 
 	if (prof->identity == NULL) return FALSE;
 
@@ -264,7 +268,8 @@ char config_build(context *ctx, char *network_name)
 		// Otherwise, bind to the default.
 	      debug_printf(DEBUG_CONFIG_PARSE, "Searching configuration information in "
 			   "memory!\n");
-		  result = config_find_connection(myint->default_connection);
+		  // Default networks can only be administratively defined, so don't search the user config.
+		  result = config_find_connection(CONFIG_LOAD_GLOBAL, myint->default_connection);
 
 		  // Only use a default connection if we are managing the interface.
 		  if ((result != NULL) && (!TEST_FLAG(myint->flags, CONFIG_INTERFACE_DONT_MANAGE)))
@@ -277,7 +282,8 @@ char config_build(context *ctx, char *network_name)
 					FREE(ctx->conn_name);
 					ctx->conn_name = _strdup(myint->default_connection);
 		
-					ctx->prof = config_find_profile(ctx->conn->profile);
+					// Only system level profiles can be configured as a default.
+					ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL, ctx->conn->profile);
 					return TRUE;
 				}
 				else
@@ -302,7 +308,12 @@ char config_build(context *ctx, char *network_name)
       // to see if it matches any friendly names.
       debug_printf(DEBUG_CONFIG_PARSE, "Searching configuration information in "
 		   "memory!\n");
-      result = config_find_connection(network_name);
+      result = config_find_connection(CONFIG_LOAD_GLOBAL, network_name);
+	  if (result == NULL)
+	  {
+		  // Search the user config.
+		  result = config_find_connection(CONFIG_LOAD_USER, network_name);
+	  }
 
       if (result != NULL) 
 	{
@@ -313,18 +324,31 @@ char config_build(context *ctx, char *network_name)
 			FREE(ctx->conn_name);
 			ctx->conn_name = _strdup(network_name);  // XXX This shouldn't be network name.  (Need to leave it broken for now.  Clean up later.)
 		
-			ctx->prof = config_find_profile(ctx->conn->profile);
+			ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL, ctx->conn->profile);
+			if (ctx->prof == NULL)
+			{
+				ctx->prof = config_find_profile(CONFIG_LOAD_USER, ctx->conn->profile);
+			}
 		}
 		else
 		{
-			result = config_find_connection_from_ssid_and_desc(network_name, ctx->desc);
+			result = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_GLOBAL, network_name, ctx->desc);
+			if (result == NULL)
+			{
+				result = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_USER, network_name, ctx->desc);
+			}
+
 			if (result != NULL)
 			{
 				ctx->conn = result;
 				FREE(ctx->conn_name);
 				ctx->conn_name = _strdup(network_name);  // XXX This shouldn't be network_name.  (Need to leave it broken for now.  Clean up later.)
 
-				ctx->prof = config_find_profile(ctx->conn->profile);
+				ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL, ctx->conn->profile);
+				if (ctx->prof == NULL)
+				{
+					ctx->prof = config_find_profile(CONFIG_LOAD_USER, ctx->conn->profile);
+				}
 			}
 		}
 

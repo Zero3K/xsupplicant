@@ -8,7 +8,7 @@
 #ifndef __XSUPCONFWRITE_CONNECTIONS_H__
 #define __XSUPCONFWRITE_CONNECTIONS_H__
 
-xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *, char, char);
+xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *, uint8_t, char, char);
 
 #endif // __XSUPCONFWRITE_CONNECTIONS_H__
 

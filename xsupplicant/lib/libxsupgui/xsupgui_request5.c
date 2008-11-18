@@ -39,13 +39,14 @@
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on failure
  **/
-int xsupgui_request_set_profile_config(config_profiles *prof_config)
+int xsupgui_request_set_profile_config(uint8_t config_type, config_profiles *prof_config)
 {
   xmlDocPtr doc = NULL;
   xmlDocPtr retdoc = NULL;
   xmlNodePtr n = NULL, t = NULL;
   int done = REQUEST_SUCCESS;
   int err = 0;
+  char res[5];
 
   if (prof_config == NULL) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -66,7 +67,14 @@ int xsupgui_request_set_profile_config(config_profiles *prof_config)
       goto finish_set_profile_config;
     }
 
-  t = xsupconfwrite_profile_create_tree(prof_config, TRUE);
+  sprintf(res, "%d", config_type);
+  if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", res) == NULL)
+  {
+	  done = IPC_ERROR_CANT_CREATE_REQUEST;
+	  goto finish_set_profile_config;
+  }
+
+  t = xsupconfwrite_profile_create_tree(prof_config, config_type, TRUE);
   if (t == NULL)
   {
 	  done = IPC_ERROR_CANT_CREATE_REQUEST;
@@ -255,21 +263,23 @@ finish_set_globals_config:
 /**
  * \brief Request a list of known trusted root CA (servers)
  *
+ * @param[in] config_type   One (or both) of CONFIG_LOAD_GLOBAL (for system level configs) or CONFIG_LOAD_USER (for user level configs)
  * @param[out] servers   A structure that contains the list of known root CA servers.
  *
  * \retval >299 on failure
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_enum_trusted_servers(trusted_servers_enum **servers)
+int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_enum **servers)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
-	xmlNodePtr n = NULL, t = NULL;
+	xmlNodePtr n = NULL, t = NULL, x = NULL;
 	xmlChar *content = NULL;
 	int done = REQUEST_SUCCESS;
 	int numsvrs = 0, i = 0, err = 0;
 	trusted_servers_enum *svrs = NULL;
+	char temp[5];
 
 	if (servers == NULL) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -285,7 +295,15 @@ int xsupgui_request_enum_trusted_servers(trusted_servers_enum **servers)
 		goto finish_enum_trusted_servers;
 	}
 
-	if (xmlNewChild(n, NULL, (xmlChar *)"Enum_Trusted_Servers", NULL) == NULL)
+	t = xmlNewChild(n, NULL, (xmlChar *)"Enum_Trusted_Servers", NULL);
+	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_enum_trusted_servers;
+	}
+
+	sprintf((char *)&temp, "%d", config_type);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", temp) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_trusted_servers;
@@ -346,7 +364,7 @@ int xsupgui_request_enum_trusted_servers(trusted_servers_enum **servers)
 	{
 		numsvrs = atoi((char *)content);
 
-		if (content != NULL) free(content);
+		if (content != NULL) xmlFree(content);
 	}
 	else
 	{
@@ -371,15 +389,35 @@ int xsupgui_request_enum_trusted_servers(trusted_servers_enum **servers)
 	n = n->children;
 	for (i=0; i <numsvrs; i++)
 	{
-		n = xsupgui_request_find_node(n, "Server_Name");
-		if (n == NULL) 
+		t = xsupgui_request_find_node(n, "Server");
+		if (t == NULL)
 		{
 			if (svrs != NULL) free(svrs);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_trusted_servers;
 		}
 
-		svrs[i].name = (char *)xmlNodeGetContent(n);
+		x = xsupgui_request_find_node(t->children, "Server_Name");
+		if (x == NULL) 
+		{
+			if (svrs != NULL) free(svrs);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish_enum_trusted_servers;
+		}
+
+		svrs[i].name = (char *)xmlNodeGetContent(x);
+
+		x = xsupgui_request_find_node(t->children, "Config_Type");
+		if (x == NULL)
+		{
+			if (svrs != NULL) free(svrs);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish_enum_trusted_servers;
+		}
+
+		content = xmlNodeGetContent(x);
+		svrs[i].config_type = atoi(content);
+		xmlFree(content);
 
 		n = n->next;
 	}
@@ -430,6 +468,8 @@ int xsupgui_request_free_trusted_servers_enum(trusted_servers_enum **servers)
  * \brief Request that the supplicant write the configuration it currently has in memory
  *        out to the disk.
  *
+ * @param[in] config_type   The type of configuration that we want to write.  (Currently either CONFIG_LOAD_GLOBAL,
+ *							or CONFIG_LOAD_USER.)
  * @param[in] filename   The filename that we wish to write the configuration to.  If this is NULL, then
  *                       the configuration file that the configuration was read from will be overwritten.
  *
@@ -437,13 +477,14 @@ int xsupgui_request_free_trusted_servers_enum(trusted_servers_enum **servers)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_write_config(char *filename)
+int xsupgui_request_write_config(uint8_t config_type, char *filename)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
 	xmlNodePtr n = NULL, t = NULL;
 	int done = REQUEST_SUCCESS;
 	int err = 0;
+	char temp[5];
 
 	doc = xsupgui_xml_common_build_msg();
 	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
@@ -465,6 +506,13 @@ int xsupgui_request_write_config(char *filename)
 	if (xmlNewChild(t, NULL, (xmlChar *)"Filename", (xmlChar *)filename) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_write_config;
+	}
+
+	sprintf((char *)&temp, "%d", config_type);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", temp) == NULL)
+	{
+		done = IPC_ERROR_CANT_ADD_NODE;
 		goto finish_write_config;
 	}
 
@@ -506,9 +554,9 @@ finish_write_config:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_delete_profile_config(char *prof_name, int force)
+int xsupgui_request_delete_profile_config(uint8_t config_type, char *prof_name, int force)
 {
-	return xsupgui_request_delete_some_conf("Delete_Profile_Config", "Name", prof_name, force);
+	return xsupgui_request_delete_some_conf("Delete_Profile_Config", "Name", prof_name, config_type, force);
 }
 
 /**
@@ -525,9 +573,9 @@ int xsupgui_request_delete_profile_config(char *prof_name, int force)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_delete_connection_config(char *conn_name)
+int xsupgui_request_delete_connection_config(uint8_t config_type, char *conn_name)
 {
-	return xsupgui_request_delete_some_conf("Delete_Connection_Config", "Name", conn_name, -1);
+	return xsupgui_request_delete_some_conf("Delete_Connection_Config", "Name", conn_name, config_type, -1);
 }
 
 /**
@@ -546,7 +594,7 @@ int xsupgui_request_delete_connection_config(char *conn_name)
  **/
 int xsupgui_request_delete_interface_config(char *intname)
 {
-	return xsupgui_request_delete_some_conf("Delete_Interface_Config", "Description", intname, -1);
+	return xsupgui_request_delete_some_conf("Delete_Interface_Config", "Description", intname, CONFIG_LOAD_GLOBAL, -1);
 }
 
 /**
@@ -565,13 +613,14 @@ int xsupgui_request_delete_interface_config(char *intname)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_set_trusted_server_config(config_trusted_server *tserver)
+int xsupgui_request_set_trusted_server_config(uint8_t config_type, config_trusted_server *tserver)
 {
   xmlDocPtr doc = NULL;
   xmlDocPtr retdoc = NULL;
   xmlNodePtr n = NULL, t = NULL;
   int done = REQUEST_SUCCESS;
   int err = 0;
+  char res[5];
 
   if (tserver == NULL) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -591,6 +640,13 @@ int xsupgui_request_set_trusted_server_config(config_trusted_server *tserver)
       done = IPC_ERROR_CANT_CREATE_REQUEST;
       goto finish_set_trusted_server_config;
     }
+
+  sprintf(res, "%d", config_type);
+  if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", res) == NULL)
+  {
+	  done = IPC_ERROR_CANT_CREATE_REQUEST;
+	  goto finish_set_trusted_server_config;
+  }
 
   t = xsupconfwrite_trusted_server_create_tree(tserver, TRUE);
   if (t == NULL)
@@ -734,9 +790,9 @@ int xsupgui_request_free_trusted_server_config(config_trusted_server **tserver)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_delete_trusted_server_config(char *servname, int force)
+int xsupgui_request_delete_trusted_server_config(uint8_t config_type, char *servname, int force)
 {
-	return xsupgui_request_delete_some_conf("Delete_Trusted_Server_Config", "Name", servname, force);
+	return xsupgui_request_delete_some_conf("Delete_Trusted_Server_Config", "Name", servname, config_type, force);
 }
 
 

@@ -24,7 +24,7 @@
 #include "xsupconfig_parse.h"
 #include "xsupconfig_parse_eap_tnc.h"
 
-void *xsupconfig_parse_eap_tnc(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tnc(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   struct config_eap_method *eap, *cur;
@@ -85,7 +85,7 @@ void *xsupconfig_parse_eap_tnc(void **attr, xmlNodePtr node)
   return eap->method_data;
 }
 
-void *xsupconfig_parse_eap_tnc_chunk_size(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_tnc_chunk_size(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tnc *tnc;
   char *value;

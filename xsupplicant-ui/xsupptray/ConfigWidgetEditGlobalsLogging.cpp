@@ -238,7 +238,7 @@ bool ConfigWidgetEditGlobalsLogging::save()
 
 	if (m_pSupplicant->setConfigGlobals(m_pGlobals) == true)
 	{
-		if (m_pSupplicant->writeConfig() == true)
+		if (m_pSupplicant->writeConfig(CONFIG_LOAD_GLOBAL) == true)
 		{
 			m_bSettingsChanged = false;
 			emit signalSetSaveBtn(false);

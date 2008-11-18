@@ -91,6 +91,7 @@ private:
 
 	char *p_user;
 	char *p_pass;
+	unsigned char conn_type;
 	
 	static CredentialsManager *m_pCredManager;
 };

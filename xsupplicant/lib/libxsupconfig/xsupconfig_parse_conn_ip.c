@@ -31,12 +31,12 @@ multichoice ip_type_choices[] = {
   { 2,   "NONE" },
   { -1, NULL}};
 
-void *xsupconfig_parse_conn_ip(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   return (*attr);
 }
 
-void *xsupconfig_parse_conn_ip_type(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
   int result = 0;
@@ -92,14 +92,17 @@ static int xsupconfig_parse_is_addr_valid(char *ipstr)
 	return TRUE;
 }
 
-void *xsupconfig_parse_conn_ip_addr(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_addr(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
+	xmlChar *content = NULL;
 	
 	conn = (*attr);
 
-	value = (char *)xmlNodeGetContent(node);
+	content = xmlNodeGetContent(node);
+	value = _strdup(content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
 	printf("IP Address is : %s\n", value);
@@ -127,14 +130,17 @@ void *xsupconfig_parse_conn_ip_addr(void **attr, xmlNodePtr node)
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_netmask(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_netmask(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
+	xmlChar *content = NULL;
 	
 	conn = (*attr);
 
-	value = (char *)xmlNodeGetContent(node);
+	content = xmlNodeGetContent(node);
+	value = _strdup(content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
 	printf("IP Netmask is : %s\n", value);
@@ -162,14 +168,17 @@ void *xsupconfig_parse_conn_ip_netmask(void **attr, xmlNodePtr node)
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_gateway(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_gateway(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
+	xmlChar *content = NULL;
 	
 	conn = (*attr);
 
-	value = (char *)xmlNodeGetContent(node);
+	content = xmlNodeGetContent(node);
+	value = _strdup(content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
 	printf("IP Gateway is : %s\n", value);
@@ -197,14 +206,17 @@ void *xsupconfig_parse_conn_ip_gateway(void **attr, xmlNodePtr node)
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_dns1(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_dns1(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
+	xmlChar *content = NULL;
 	
 	conn = (*attr);
 
-	value = (char *)xmlNodeGetContent(node);
+	content = xmlNodeGetContent(node);
+	value = _strdup(content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
 	printf("DNS1 Address is : %s\n", value);
@@ -232,14 +244,17 @@ void *xsupconfig_parse_conn_ip_dns1(void **attr, xmlNodePtr node)
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_dns2(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_dns2(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
+	xmlChar *content = NULL;
 	
 	conn = (*attr);
 
-	value = (char *)xmlNodeGetContent(node);
+	content = xmlNodeGetContent(node);
+	value = _strdup(content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
 	printf("DNS2 Address is : %s\n", value);
@@ -267,14 +282,17 @@ void *xsupconfig_parse_conn_ip_dns2(void **attr, xmlNodePtr node)
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_dns3(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_dns3(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
+	xmlChar *content = NULL;
 	
 	conn = (*attr);
 
-	value = (char *)xmlNodeGetContent(node);
+	content = xmlNodeGetContent(node);
+	value = _strdup(content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
 	printf("DNS3 Address is : %s\n", value);
@@ -302,14 +320,17 @@ void *xsupconfig_parse_conn_ip_dns3(void **attr, xmlNodePtr node)
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_search_domain(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_search_domain(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
+	xmlChar *content = NULL;
 	
 	conn = (*attr);
 
-	value = (char *)xmlNodeGetContent(node);
+	content = xmlNodeGetContent(node);
+	value = _strdup(content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
 	printf("Search Domain is : %s\n", value);
@@ -328,7 +349,7 @@ void *xsupconfig_parse_conn_ip_search_domain(void **attr, xmlNodePtr node)
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_renew_on_reauth(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_renew_on_reauth(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;

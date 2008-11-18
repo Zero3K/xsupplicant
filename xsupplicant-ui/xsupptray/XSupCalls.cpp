@@ -147,7 +147,20 @@ bool XSupCalls::createNewConnection(QString &name, config_connection **newConnec
   // If it does, add a _1 _2 etc., to the name until a unique name is found
   do
   {
-    bValue  = getConfigConnection(newName, &pConfig, false);
+    bValue  = getConfigConnection(CONFIG_LOAD_GLOBAL, newName, &pConfig, false);
+    if (bValue == true)
+    {
+      newName = QString ("%1_%2").arg(name).arg(i);
+      i++;
+    }
+
+	freeConfigConnection(&pConfig);   // Free the memory so it won't leak.
+	pConfig = NULL;
+  }while (bValue);
+
+  do
+  {
+    bValue  = getConfigConnection(CONFIG_LOAD_USER, newName, &pConfig, false);
     if (bValue == true)
     {
       newName = QString ("%1_%2").arg(name).arg(i);
@@ -197,7 +210,18 @@ bool XSupCalls::createNewTrustedServer(QString &name, config_trusted_server **pT
   // Need to make sure this trusted server does not already exist
   do
   {
-    bValue  = getConfigTrustedServer(newName, &pConfig, false);
+    bValue  = getConfigTrustedServer(CONFIG_LOAD_GLOBAL, newName, &pConfig, false);
+    if (bValue == true)
+    {
+      this->freeConfigTrustedServer(&pConfig);
+      newName = QString ("%1_%2").arg(name).arg(i);
+      i++;
+    }
+  }while (bValue);
+
+  do
+  {
+    bValue  = getConfigTrustedServer(CONFIG_LOAD_USER, newName, &pConfig, false);
     if (bValue == true)
     {
       this->freeConfigTrustedServer(&pConfig);
@@ -245,7 +269,18 @@ bool XSupCalls::createNewProfile(QString &name, config_profiles **m_pConfig)
   // Need to make sure this profile does not already exist
   do
   {
-    bValue  = getConfigProfile(newName, &pConfig, false);
+    bValue  = getConfigProfile(CONFIG_LOAD_GLOBAL, newName, &pConfig, false);
+    if (bValue == true)
+    {
+      freeConfigProfile(&pConfig);
+      newName = QString ("%1_%2").arg(name).arg(i);
+      i++;
+    }
+  }while (bValue);
+
+  do
+  {
+    bValue  = getConfigProfile(CONFIG_LOAD_USER, newName, &pConfig, false);
     if (bValue == true)
     {
       freeConfigProfile(&pConfig);
@@ -684,7 +719,7 @@ bool XSupCalls::enumAndSortConnections(conn_enum **pSortedConns, bool bDisplayMe
   conn_enum *pConn = NULL;
   int retval = 0;
 
-  retval = xsupgui_request_enum_connections(&pConn);
+  retval = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
   if ((retval != REQUEST_SUCCESS) || (pConn == NULL))
   {
     if (bDisplayMessage)
@@ -975,11 +1010,11 @@ bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, QString &deviceNam
   \param[out] pProfiles - a pointer to a pointer of profile_enums
   \return true/false
 */
-bool XSupCalls::enumProfiles(profile_enum **pProfiles, bool bDisplayError)
+bool XSupCalls::enumProfiles(unsigned char config_type, profile_enum **pProfiles, bool bDisplayError)
 {
   Q_ASSERT(pProfiles);
 
-  int retval = xsupgui_request_enum_profiles(pProfiles);
+  int retval = xsupgui_request_enum_profiles(config_type, pProfiles);
   if (retval == REQUEST_SUCCESS && *pProfiles)
   {
     return true;
@@ -989,7 +1024,7 @@ bool XSupCalls::enumProfiles(profile_enum **pProfiles, bool bDisplayError)
     if (bDisplayError)
     {
       QMessageBox::critical(NULL, tr("Get Profiles Error"), 
-        tr("Can't get profiles."));
+        tr("Unable to enumerate profiles."));
     }
 		return false;
 	}
@@ -1001,14 +1036,14 @@ bool XSupCalls::enumProfiles(profile_enum **pProfiles, bool bDisplayError)
   \param[out] pProfiles - a pointer to a pointer of profile_enums
   \return true/false
 */
-bool XSupCalls::getConfigProfile(QString &profileName, config_profiles **pConfig, bool bDisplayError)
+bool XSupCalls::getConfigProfile(unsigned char config_type, QString &profileName, config_profiles **pConfig, bool bDisplayError)
 {
   Q_ASSERT(pConfig);
   CharC pName(profileName);
 
   *pConfig = NULL;
 
-  int retval = xsupgui_request_get_profile_config(pName.charPtr(), pConfig);
+  int retval = xsupgui_request_get_profile_config(config_type, pName.charPtr(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
     return true;
@@ -1030,11 +1065,11 @@ bool XSupCalls::getConfigProfile(QString &profileName, config_profiles **pConfig
   \param[out] pServers - a pointer to a pointer of trusted_servers_enum
   \return true/false
 */
-bool XSupCalls::enumTrustedServers(trusted_servers_enum **pServers, bool bDisplayError)
+bool XSupCalls::enumTrustedServers(unsigned char config_type, trusted_servers_enum **pServers, bool bDisplayError)
 {
   Q_ASSERT(pServers);
 
-  int retval = xsupgui_request_enum_trusted_servers(pServers);
+  int retval = xsupgui_request_enum_trusted_servers(config_type, pServers);
   if (retval == REQUEST_SUCCESS && *pServers)
   {
     return true;
@@ -1113,7 +1148,7 @@ bool XSupCalls::getCertInfo(QString &storetype, QString &location, cert_info **c
   \param[out] pConfig - a pointer to the configuratio connection information
   \return true/false
 */
-bool XSupCalls::getConfigConnection(QString &connection, config_connection **pConfig, bool bDisplayError)
+bool XSupCalls::getConfigConnection(unsigned char config_type, QString &connection, config_connection **pConfig, bool bDisplayError)
 {
   Q_ASSERT(pConfig);
   CharC conn(connection);
@@ -1125,7 +1160,7 @@ bool XSupCalls::getConfigConnection(QString &connection, config_connection **pCo
     return false;
   }
 
-  int retval = xsupgui_request_get_connection_config(conn.charPtr(), pConfig);
+  int retval = xsupgui_request_get_connection_config(config_type, conn.charPtr(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
     return true;
@@ -1148,13 +1183,13 @@ bool XSupCalls::getConfigConnection(QString &connection, config_connection **pCo
   \param[out] pConfig - a pointer to the configuration server information
   \return true/false
 */
-bool XSupCalls::getConfigTrustedServer(QString &server, config_trusted_server **pConfig, bool bDisplayError)
+bool XSupCalls::getConfigTrustedServer(unsigned char config_type, QString &server, config_trusted_server **pConfig, bool bDisplayError)
 {
   Q_ASSERT(pConfig);
   CharC srvr(server);
   *pConfig = NULL;
 
-  int retval = xsupgui_request_get_trusted_server_config(srvr.charPtr(), pConfig);
+  int retval = xsupgui_request_get_trusted_server_config(config_type, srvr.charPtr(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
     return true;
@@ -1795,17 +1830,18 @@ bool XSupCalls::applyPriorities(conn_enum *pConns)
     while (pConns[i].name)
     {
       temp = pConns[i].name;
-      if (!getConfigConnection(temp, &pConfig))
+	  if (!getConfigConnection(pConns[i].config_type, temp, &pConfig))
       {
         continue; // no message necessary - already shown in above call
       }
       pConfig->priority = pConns[i].priority;
-      setConfigConnection(pConfig);
+	  setConfigConnection(pConns[i].config_type, pConfig);
       freeConfigConnection(&pConfig);
       i++;
     }
     // Now saves it to the configuration file
-    this->writeConfig();
+    this->writeConfig(CONFIG_LOAD_GLOBAL);
+	this->writeConfig(CONFIG_LOAD_USER);
   }
 
   return true;
@@ -1817,12 +1853,12 @@ bool XSupCalls::applyPriorities(conn_enum *pConns)
   \param[in] pConfig - the configuration to save
   \return true/false
 */
-bool XSupCalls::setConfigConnection(config_connection *pConfig)
+bool XSupCalls::setConfigConnection(unsigned char config_type, config_connection *pConfig)
 {
   Q_ASSERT(pConfig);
   bool bValue = false;
 
-  int retval = xsupgui_request_set_connection_config(pConfig);
+  int retval = xsupgui_request_set_connection_config(config_type, pConfig);
 
   if (retval == REQUEST_SUCCESS)
   {
@@ -1915,12 +1951,12 @@ void XSupCalls::getAndDisplayErrors()
   \param[in] pConfig - the configuration to save
   \return true/false
 */
-bool XSupCalls::setConfigTrustedServer(config_trusted_server *pConfig)
+bool XSupCalls::setConfigTrustedServer(unsigned char config_type, config_trusted_server *pConfig)
 {
   Q_ASSERT(pConfig);
   bool bValue = false;
 
-  int retval = xsupgui_request_set_trusted_server_config(pConfig);
+  int retval = xsupgui_request_set_trusted_server_config(config_type, pConfig);
   if (retval == REQUEST_SUCCESS)
   {
     bValue = true;
@@ -1940,12 +1976,12 @@ bool XSupCalls::setConfigTrustedServer(config_trusted_server *pConfig)
   \param[in] pConfig - the configuration to save
   \return true/false
 */
-bool XSupCalls::setConfigProfile(config_profiles *pConfig)
+bool XSupCalls::setConfigProfile(unsigned char config_type, config_profiles *pConfig)
 {
   Q_ASSERT(pConfig);
   bool bValue = false;
 
-  int retval = xsupgui_request_set_profile_config(pConfig);
+  int retval = xsupgui_request_set_profile_config(config_type, pConfig);
   if (retval == REQUEST_SUCCESS)
   {
     bValue = true;
@@ -2787,12 +2823,12 @@ bool XSupCalls::startWirelessScan(QString &deviceDescription)
   \param[in] bAsk - whether to ask if they want to attempt to disconnect
   \param[out] bDisconnect - if the user has selected to disconnect from this connection - caller needs to take action to disconnect
 */
-bool XSupCalls::deleteConnectionConfig(QString &name)
+bool XSupCalls::deleteConnectionConfig(unsigned char config_type, QString &name)
 {
-  int retval = xsupgui_request_delete_connection_config(name.toAscii().data());
+  int retval = xsupgui_request_delete_connection_config(config_type, name.toAscii().data());
   if (retval == REQUEST_SUCCESS)
   {
-    writeConfig();
+    writeConfig(config_type);
     return true;
   }
   else
@@ -2819,15 +2855,15 @@ bool XSupCalls::deleteConnectionConfig(QString &name)
   \brief Deletes a profile
   \param[in] p - the name of the object
 */
-bool XSupCalls::deleteProfileConfig(QString &name)
+bool XSupCalls::deleteProfileConfig(unsigned char config_type, QString &name)
 {  
   int retval = REQUEST_SUCCESS;
 
-  retval = xsupgui_request_delete_profile_config(name.toAscii().data(), 0);
+  retval = xsupgui_request_delete_profile_config(config_type, name.toAscii().data(), 0);
 
   if (retval == REQUEST_SUCCESS)
   {
-	  writeConfig();
+	  writeConfig(config_type);
 	  return true;
   }
 
@@ -2854,15 +2890,15 @@ bool XSupCalls::deleteProfileConfig(QString &name)
   \brief Delete a trusted server from the configuration file
   \param[in] p - the name of the object
 */
-bool XSupCalls::deleteTrustedServerConfig(QString &name)
+bool XSupCalls::deleteTrustedServerConfig(unsigned char config_type, QString &name)
 {
   CharC n(name);
   int retval = REQUEST_SUCCESS;
 
-  retval = xsupgui_request_delete_trusted_server_config(n.charPtr(), 0);
+  retval = xsupgui_request_delete_trusted_server_config(config_type, n.charPtr(), 0);
   if (retval == REQUEST_SUCCESS)
   {
-    return writeConfig(); // now save it to the configuration file
+    return writeConfig(config_type); // now save it to the configuration file
   }
   else if (retval == IPC_ERROR_STILL_IN_USE)
   {
@@ -3049,34 +3085,12 @@ void XSupCalls::freeConfigInterface(config_interfaces **p)
   \note if release - writes the file to the actual in-use file
   \todo Link up the help button here
 */
-bool XSupCalls::writeConfig()
+bool XSupCalls::writeConfig(unsigned char config_type)
 {
   int retval = 0;
-  QMessageBox::StandardButton b = QMessageBox::Yes;
-  QString tempFile = QString("%1/%2").arg(QApplication::applicationDirPath()).arg("testconfig.conf");
 
-  switch (b)
-  {
-    case QMessageBox::Cancel:
-      return false;
+  retval = xsupgui_request_write_config(config_type, NULL);
 
-    case QMessageBox::No:
-    {
-      tempFile = QString("%1/%2").arg(QApplication::applicationDirPath()).arg("testconfig.conf");
-      CharC n(tempFile);
-      retval = xsupgui_request_write_config(n.charPtr());
-      break;
-    }
-
-    case QMessageBox::Yes:
-    {
-      retval = xsupgui_request_write_config(NULL);
-      break;
-    }
-    
-  default:
-    return false;
-  }
   if (retval == REQUEST_SUCCESS)
   {
     return true;
@@ -3085,7 +3099,7 @@ bool XSupCalls::writeConfig()
   {
     QMessageBox::critical(NULL, tr("Write Configuration"), 
       tr("Can't write the supplicant configuration file.\n"));
-  return false;
+    return false;
   }
 }
 
@@ -3547,7 +3561,7 @@ bool XSupCalls::updateAdapters(bool bDisplayError)
     // If we found a new interface, make sure we save the config file.
     if (bAdded)
     {
-      writeConfig();
+      writeConfig(CONFIG_LOAD_GLOBAL);
     }
 
     freeEnumLiveInt(&liveInts);
@@ -3633,7 +3647,12 @@ bool XSupCalls::connectionDisconnect(QString &connectionName)
 
   // Need to get the connection configuration
   config_connection *pConnConfig = NULL;
-  getConfigConnection(connectionName, &pConnConfig, true);
+  getConfigConnection(CONFIG_LOAD_USER, connectionName, &pConnConfig, true);
+  if (!pConnConfig)
+  {
+	  getConfigConnection(CONFIG_LOAD_GLOBAL, connectionName, &pConnConfig);
+  }
+
   if (!pConnConfig)
   {
     return false; // this shouldn't ever happen
@@ -3674,9 +3693,9 @@ bool XSupCalls::connectionDisconnect(QString &connectionName)
    \param [in] newName
    \return true/false
 */
-bool XSupCalls::renameConnection(QString &oldName, QString &newName)
+bool XSupCalls::renameConnection(unsigned char config_type, QString &oldName, QString &newName)
 {
-  int retval = xsupgui_request_rename_connection(oldName.toAscii().data(), newName.toAscii().data());
+  int retval = xsupgui_request_rename_connection(config_type, oldName.toAscii().data(), newName.toAscii().data());
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("Can't Rename Connection"),
@@ -3693,9 +3712,9 @@ bool XSupCalls::renameConnection(QString &oldName, QString &newName)
    \param [in] newName
    \return true/false
 */
-bool XSupCalls::renameProfile(QString &oldName, QString &newName)
+bool XSupCalls::renameProfile(unsigned char config_type, QString &oldName, QString &newName)
 {
-  int retval = xsupgui_request_rename_profile(oldName.toAscii().data(), newName.toAscii().data());
+  int retval = xsupgui_request_rename_profile(config_type, oldName.toAscii().data(), newName.toAscii().data());
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("Can't Rename Profile"),
@@ -3711,9 +3730,9 @@ bool XSupCalls::renameProfile(QString &oldName, QString &newName)
    \param [in] newName
    \return true/false
 */
-bool XSupCalls::renameTrustedServer(QString &oldName, QString &newName)
+bool XSupCalls::renameTrustedServer(unsigned char config_type, QString &oldName, QString &newName)
 {
-  int retval = xsupgui_request_rename_trusted_server(oldName.toAscii().data(), newName.toAscii().data());
+  int retval = xsupgui_request_rename_trusted_server(config_type, oldName.toAscii().data(), newName.toAscii().data());
   if (retval != REQUEST_SUCCESS)
   {
     QMessageBox::critical(NULL, tr("Can't Rename Trusted Server"),
@@ -4205,17 +4224,23 @@ unsigned int XSupCalls::postureSettingsForConnectionID(unsigned int connID)
 	}
 	free(intname);
 
-	if (xsupgui_request_get_connection_config(conname, &config) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, conname, &config) != REQUEST_SUCCESS)
 	{
-		free(conname);
-		return 0;
+		if (xsupgui_request_get_connection_config(CONFIG_LOAD_USER, conname, &config) != REQUEST_SUCCESS)
+		{
+			free(conname);
+			return 0;
+		}
 	}
 	free(conname);
 
-	if (xsupgui_request_get_profile_config(config->profile, &profile) != REQUEST_SUCCESS)
+	if (xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, config->profile, &profile) != REQUEST_SUCCESS)
 	{
-		xsupgui_request_free_connection_config(&config);
-		return 0;
+		if (xsupgui_request_get_profile_config(CONFIG_LOAD_USER, config->profile, &profile) != REQUEST_SUCCESS)
+		{
+			xsupgui_request_free_connection_config(&config);
+			return 0;
+		}
 	}
 	xsupgui_request_free_connection_config(&config);
 
@@ -4225,4 +4250,68 @@ unsigned int XSupCalls::postureSettingsForConnectionID(unsigned int connID)
 
 	return settings;
 }
+
+unsigned char XSupCalls::getConnectionType(QString connName)
+{
+	config_connection *pConf = NULL;
+
+	if (connName == "") return 0;
+
+	if (getConfigConnection(CONFIG_LOAD_USER, connName, &pConf, false) == true)
+	{
+		freeConfigConnection(&pConf);
+		return CONFIG_LOAD_USER;
+	}
+
+	if (getConfigConnection(CONFIG_LOAD_GLOBAL, connName, &pConf, false) == true)
+	{
+		freeConfigConnection(&pConf);
+		return CONFIG_LOAD_GLOBAL;
+	}
+
+	return 0;
+}
+
+unsigned char XSupCalls::getProfileType(QString profName)
+{
+	config_profiles *pProf = NULL;
+
+	if (profName == "") return 0;
+
+	if (getConfigProfile(CONFIG_LOAD_USER, profName, &pProf, false) == true)
+	{
+		freeConfigProfile(&pProf);
+		return CONFIG_LOAD_USER;
+	}
+
+	if (getConfigProfile(CONFIG_LOAD_GLOBAL, profName, &pProf, false) == true)
+	{
+		freeConfigProfile(&pProf);
+		return CONFIG_LOAD_GLOBAL;
+	}
+
+	return 0;
+}
+
+unsigned char XSupCalls::getTSType(QString tsName)
+{
+	config_trusted_server *pTS = NULL;
+
+	if (tsName == "") return 0;
+
+	if (getConfigTrustedServer(CONFIG_LOAD_USER, tsName, &pTS, false) == true)
+	{
+		freeConfigTrustedServer(&pTS);
+		return CONFIG_LOAD_USER;
+	}
+
+	if (getConfigTrustedServer(CONFIG_LOAD_GLOBAL, tsName, &pTS, false) == true)
+	{
+		freeConfigTrustedServer(&pTS);
+		return CONFIG_LOAD_GLOBAL;
+	}
+
+	return 0;
+}
+
 

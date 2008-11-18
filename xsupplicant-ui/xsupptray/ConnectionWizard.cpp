@@ -374,13 +374,13 @@ bool ConnectionWizard::saveConnectionData(QString *pConnName)
 		
 		if (pServer != NULL)
 		{
-			retVal = xsupgui_request_set_trusted_server_config(pServer);
+			retVal = xsupgui_request_set_trusted_server_config(m_connData.m_config_type, pServer);
 			success = retVal == REQUEST_SUCCESS;
 		}
 		
 		if (pProfile != NULL)
 		{
-			if (xsupgui_request_set_profile_config(pProfile) == REQUEST_SUCCESS)
+			if (xsupgui_request_set_profile_config(m_connData.m_config_type, pProfile) == REQUEST_SUCCESS)
 				m_pEmitter->sendProfConfigUpdate();
 			else
 				success = false;
@@ -388,16 +388,17 @@ bool ConnectionWizard::saveConnectionData(QString *pConnName)
 		
 		// check if was edit and they changed name of connection).  If so, rename connection before saving
 		if (m_editMode == true && QString(pConfig->name) != m_originalConnName)
-			retVal = xsupgui_request_rename_connection(m_originalConnName.toAscii().data(), pConfig->name);
+			retVal = xsupgui_request_rename_connection(m_connData.m_config_type, m_originalConnName.toAscii().data(), pConfig->name);
 				
 		if (retVal == REQUEST_SUCCESS)
-			retVal = xsupgui_request_set_connection_config(pConfig);
+			retVal = xsupgui_request_set_connection_config(m_connData.m_config_type, pConfig);
 			
 		if (retVal == REQUEST_SUCCESS)
 		{
 			// tell everyone we changed the config
 			m_pEmitter->sendConnConfigUpdate();
-			XSupWrapper::writeConfig();
+			XSupWrapper::writeConfig(CONFIG_LOAD_GLOBAL);
+			XSupWrapper::writeConfig(CONFIG_LOAD_USER);
 		}
 		else
 			success = false;

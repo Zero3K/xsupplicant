@@ -70,7 +70,7 @@ bool XSupWrapper::createNewConnection(const QString &suggName, config_connection
 	return (pConfig != NULL);
 }
 
-bool XSupWrapper::getConfigConnection(const QString &connName, config_connection **pConfig)
+bool XSupWrapper::getConfigConnection(unsigned char config_type, const QString &connName, config_connection **pConfig)
 {
 	if (pConfig == NULL)
 		return false;
@@ -80,7 +80,7 @@ bool XSupWrapper::getConfigConnection(const QString &connName, config_connection
 	if (connName.isEmpty())
 		return false;
 
-	int retVal = xsupgui_request_get_connection_config(connName.toAscii().data(), pConfig);
+	int retVal = xsupgui_request_get_connection_config(config_type, connName.toAscii().data(), pConfig);
 	if (retVal != REQUEST_SUCCESS || *pConfig == NULL)
 	{
 		*pConfig = NULL;
@@ -96,16 +96,17 @@ void XSupWrapper::freeConfigConnection(config_connection **p)
 	 xsupgui_request_free_connection_config(p);
 }
 
-bool XSupWrapper::deleteConnectionConfig(const QString &connName)
+bool XSupWrapper::deleteConnectionConfig(unsigned char config_type, const QString &connName)
 {
-	int retVal = xsupgui_request_delete_connection_config(connName.toAscii().data());
+	int retVal = xsupgui_request_delete_connection_config(config_type, connName.toAscii().data());
 	return (retVal == REQUEST_SUCCESS);
 }
 
-bool XSupWrapper::writeConfig()
+bool XSupWrapper::writeConfig(unsigned char config_type)
 {
 	int retval = 0;
-	retval = xsupgui_request_write_config(NULL);
+
+	retval = xsupgui_request_write_config(config_type, NULL);
 
 	return (retval == REQUEST_SUCCESS);
 
@@ -138,7 +139,16 @@ QString XSupWrapper::getUniqueConnectionName(const QString &suggestedName)
 	}
 	newName = suggestedName;
   
-	while (getConfigConnection(newName, &pConfig) == true)
+	while (getConfigConnection(CONFIG_LOAD_GLOBAL, newName, &pConfig) == true)
+	{
+		newName = QString("%1_%2").arg(newNamePrefix).arg(i);
+		++i;
+
+		XSupWrapper::freeConfigConnection(&pConfig);
+		pConfig = NULL;
+	}
+
+	while (getConfigConnection(CONFIG_LOAD_USER, newName, &pConfig) == true)
 	{
 		newName = QString("%1_%2").arg(newNamePrefix).arg(i);
 		++i;
@@ -178,7 +188,16 @@ QString XSupWrapper::getUniqueServerName(const QString &suggestedName)
 	
 	newName = suggestedName;
 	
-	while (getConfigServer(newName, &pServer) == true)
+	while (getConfigServer(CONFIG_LOAD_GLOBAL, newName, &pServer) == true)
+	{
+		newName = QString ("%1_%2").arg(newNamePrefix).arg(i);
+		++i;
+
+		XSupWrapper::freeConfigServer(&pServer);
+		pServer = NULL;
+	}
+
+	while (getConfigServer(CONFIG_LOAD_USER, newName, &pServer) == true)
 	{
 		newName = QString ("%1_%2").arg(newNamePrefix).arg(i);
 		++i;
@@ -218,7 +237,16 @@ QString XSupWrapper::getUniqueProfileName(const QString &suggestedName)
 	
 	newName = suggestedName;
 	
-	while (getConfigProfile(newName, &pProfile) == true)
+	while (getConfigProfile(CONFIG_LOAD_GLOBAL, newName, &pProfile) == true)
+	{
+		newName = QString ("%1_%2").arg(newNamePrefix).arg(i);
+		++i;
+
+		freeConfigProfile(&pProfile);
+		pProfile = NULL;
+	}
+
+	while (getConfigProfile(CONFIG_LOAD_USER, newName, &pProfile) == true)
 	{
 		newName = QString ("%1_%2").arg(newNamePrefix).arg(i);
 		++i;
@@ -236,7 +264,7 @@ void XSupWrapper::freeConfigProfile(config_profiles **pProfile)
 	 xsupgui_request_free_profile_config(pProfile);
 }
 
-bool XSupWrapper::getConfigProfile(const QString &profileName, config_profiles **pProfile)
+bool XSupWrapper::getConfigProfile(unsigned char config_type, const QString &profileName, config_profiles **pProfile)
 {
 	if (pProfile == NULL)
 		return false;
@@ -246,7 +274,7 @@ bool XSupWrapper::getConfigProfile(const QString &profileName, config_profiles *
 	if (profileName.isEmpty())
 		return false;
 
-	int retVal = xsupgui_request_get_profile_config(profileName.toAscii().data(), pProfile);
+	int retVal = xsupgui_request_get_profile_config(config_type, profileName.toAscii().data(), pProfile);
 	if (retVal != REQUEST_SUCCESS || *pProfile == NULL)
 	{
 		*pProfile = NULL;
@@ -316,7 +344,11 @@ bool XSupWrapper::isDefaultWiredConnection(const QString &connName)
 				
 		// first, check if wired
 		config_connection *pConn;
-		success = XSupWrapper::getConfigConnection(connName,&pConn);
+		if ((success = XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL, connName,&pConn)) == false)
+		{
+			success = XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, connName,&pConn);
+		}
+
 		if (success == true)
 		{
 			// check if wired
@@ -360,7 +392,7 @@ void XSupWrapper::freeConfigServer(config_trusted_server **pServer)
 	 xsupgui_request_free_trusted_server_config(pServer);
 }
 
-bool XSupWrapper::getConfigServer(const QString &serverName, config_trusted_server **pServer)
+bool XSupWrapper::getConfigServer(unsigned char config_type, const QString &serverName, config_trusted_server **pServer)
 {
 	if (pServer == NULL)
 		return false;
@@ -370,7 +402,7 @@ bool XSupWrapper::getConfigServer(const QString &serverName, config_trusted_serv
 	if (serverName.isEmpty())
 		return false;
 
-	int retVal = xsupgui_request_get_trusted_server_config(serverName.toAscii().data(), pServer);
+	int retVal = xsupgui_request_get_trusted_server_config(config_type, serverName.toAscii().data(), pServer);
 	if (retVal != REQUEST_SUCCESS || *pServer == NULL)
 	{
 		*pServer = NULL;
@@ -387,14 +419,14 @@ bool XSupWrapper::isProfileInUse(const QString &profileName)
 	{
 		conn_enum * pConfig;
 		int retVal;
-		retVal = xsupgui_request_enum_connections(&pConfig);
+		retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConfig);
 		if (retVal == REQUEST_SUCCESS && pConfig != NULL)
 		{
 			int i=0;
 			while (pConfig[i].name != NULL)
 			{
 				config_connection *pConn;
-				retVal = xsupgui_request_get_connection_config(pConfig[i].name, &pConn);
+				retVal = xsupgui_request_get_connection_config(pConfig[i].config_type, pConfig[i].name, &pConn);
 				if (retVal == REQUEST_SUCCESS && pConn != NULL)
 				{
 					if (QString(pConn->profile) == profileName)
@@ -415,31 +447,31 @@ bool XSupWrapper::isProfileInUse(const QString &profileName)
 	return inUse;
 }
 
-bool XSupWrapper::deleteProfileConfig(const QString &profileName)
+bool XSupWrapper::deleteProfileConfig(unsigned char config_type, const QString &profileName)
 {
 	if (profileName.isEmpty() == false)
 	{
 		int retVal;
-		retVal = xsupgui_request_delete_profile_config(profileName.toAscii().data(), TRUE);
+		retVal = xsupgui_request_delete_profile_config(config_type, profileName.toAscii().data(), TRUE);
 		if (retVal == REQUEST_SUCCESS)
 			return true;
 	}
 	return false;
 }
 
-bool XSupWrapper::deleteServerConfig(const QString &serverName)
+bool XSupWrapper::deleteServerConfig(unsigned char config_type, const QString &serverName)
 {
 	if (serverName.isEmpty() == false)
 	{
 		int retVal;
-		retVal = xsupgui_request_delete_trusted_server_config(serverName.toAscii().data(), TRUE);
+		retVal = xsupgui_request_delete_trusted_server_config(config_type, serverName.toAscii().data(), TRUE);
 		if (retVal == REQUEST_SUCCESS)
 			return true;
 	}
 	return false;
 }
 
-bool XSupWrapper::getTrustedServerForProfile(const QString &profileName, config_trusted_server **pServer)
+bool XSupWrapper::getTrustedServerForProfile(unsigned char config_type, const QString &profileName, config_trusted_server **pServer, unsigned char *inconfig)
 {
 	bool success = false;
 	if (pServer == NULL)
@@ -447,7 +479,9 @@ bool XSupWrapper::getTrustedServerForProfile(const QString &profileName, config_
 
 	*pServer = NULL;
 	config_profiles *pProfile = NULL;
-	XSupWrapper::getConfigProfile(profileName, &pProfile);
+	(*inconfig) = 0;
+
+	XSupWrapper::getConfigProfile(config_type, profileName, &pProfile);
 	if (pProfile != NULL && pProfile->method != NULL)
 	{
 		config_eap_method *pMethod = pProfile->method;
@@ -461,9 +495,19 @@ bool XSupWrapper::getTrustedServerForProfile(const QString &profileName, config_
 				serverName = mypeap->trusted_server;
 				if (!serverName.isEmpty())
 				{
-					XSupWrapper::getConfigServer(serverName, pServer);
+					(*inconfig) = CONFIG_LOAD_GLOBAL;
+					XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
 					if (*pServer != NULL)
+					{
 						success = true;
+					}
+					else
+					{
+						(*inconfig) = CONFIG_LOAD_USER;
+						XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
+						if (*pServer != NULL)
+							success= true;
+					}
 				}
 			}
 		}
@@ -477,9 +521,19 @@ bool XSupWrapper::getTrustedServerForProfile(const QString &profileName, config_
 				serverName = myttls->trusted_server;
 				if (!serverName.isEmpty())
 				{
-					XSupWrapper::getConfigServer(serverName, pServer);
+					(*inconfig) = CONFIG_LOAD_GLOBAL;
+					XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
 					if (*pServer != NULL)
+					{
 						success = true;
+					}
+					else
+					{
+						(*inconfig) = CONFIG_LOAD_USER;
+						XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
+						if (*pServer != NULL)
+							success = true;
+					}
 				}
 			}
 		}
@@ -495,16 +549,17 @@ bool XSupWrapper::isTrustedServerInUse(const QString &serverName)
 {
 	bool inUse = false;
 	profile_enum *pProfile = NULL;
-	int retVal;
+	int retVal = 0;
+	unsigned char config_type = 0;
 	
-	retVal = xsupgui_request_enum_profiles(&pProfile);
+	retVal = xsupgui_request_enum_profiles((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pProfile);
 	if (retVal == REQUEST_SUCCESS && pProfile != NULL)
 	{
 		int i=0;
 		while (pProfile[i].name != NULL && inUse == false)
 		{
-			config_trusted_server *pServer;
-			XSupWrapper::getTrustedServerForProfile(QString(pProfile[i].name), &pServer);
+			config_trusted_server *pServer = NULL;
+			XSupWrapper::getTrustedServerForProfile(pProfile[i].config_type, QString(pProfile[i].name), &pServer, &config_type);
 			if (pServer != NULL)
 			{
 				if (QString(pServer->name) == serverName)
@@ -547,12 +602,12 @@ QStringList XSupWrapper::getWirelessInterfaceList(void)
 	return intList;
 }
 
-bool XSupWrapper::setProfileUsername(const QString &profileName, const QString &username)
+bool XSupWrapper::setProfileUsername(unsigned char config_type, const QString &profileName, const QString &username)
 {
 	bool success;
 	config_profiles *pProfile = NULL;
 	
-	success = XSupWrapper::getConfigProfile(profileName, &pProfile);
+	success = XSupWrapper::getConfigProfile(config_type, profileName, &pProfile);
 	
 	if (success == true && pProfile != NULL)
 	{
@@ -610,7 +665,7 @@ bool XSupWrapper::setProfileUsername(const QString &profileName, const QString &
 			success = false;
 			
 		if (success == true)
-			success = xsupgui_request_set_profile_config(pProfile) == REQUEST_SUCCESS;
+			success = xsupgui_request_set_profile_config(config_type, pProfile) == REQUEST_SUCCESS;
 	}
 	
 	if (pProfile != NULL)
@@ -619,12 +674,12 @@ bool XSupWrapper::setProfileUsername(const QString &profileName, const QString &
 	return success;
 }
 
-bool XSupWrapper::setProfilePassword(const QString &profileName, const QString &password)
+bool XSupWrapper::setProfilePassword(unsigned char config_type, const QString &profileName, const QString &password)
 {
 	bool success;
 	config_profiles *pProfile = NULL;
 	
-	success = XSupWrapper::getConfigProfile(profileName, &pProfile);
+	success = XSupWrapper::getConfigProfile(config_type, profileName, &pProfile);
 	
 	if (success == true && pProfile != NULL)
 	{
@@ -632,7 +687,7 @@ bool XSupWrapper::setProfilePassword(const QString &profileName, const QString &
 		success = retval == XENONE;
 
 		if (success == true)
-			success = xsupgui_request_set_profile_config(pProfile) == REQUEST_SUCCESS;				
+			success = xsupgui_request_set_profile_config(config_type, pProfile) == REQUEST_SUCCESS;				
 	}
 	
 	if (pProfile != NULL)
@@ -737,7 +792,7 @@ QVector<QString> XSupWrapper::getConnectionListForAdapter(const QString &adapter
 		conn_enum *pConn;
 		int retVal;
 		
-		retVal = xsupgui_request_enum_connections(&pConn);
+		retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
 		if (retVal == REQUEST_SUCCESS && pConn != NULL)
 		{
 			int i = 0;
@@ -747,7 +802,7 @@ QVector<QString> XSupWrapper::getConnectionListForAdapter(const QString &adapter
 				{
 					bool success;
 					config_connection *pConfig;
-					success = XSupWrapper::getConfigConnection(QString(pConn[i].name), &pConfig);
+					success = XSupWrapper::getConfigConnection(pConn[i].config_type, QString(pConn[i].name), &pConfig);
 					if (success == true && pConfig != NULL)
 					{
 						if ((pConfig->flags & CONFIG_VOLATILE_CONN) == 0)

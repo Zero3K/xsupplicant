@@ -44,7 +44,7 @@ class ConfigWidgetEditConnection : public ConfigWidgetBase
      Q_OBJECT
 
  public:
-	 ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, NavPanel *pPanel, QWidget *parent);
+	 ConfigWidgetEditConnection(QWidget *pRealWidget, Emitter *e, QString connName, XSupCalls *xsup, NavPanel *pPanel, unsigned char config_type, QWidget *parent);
 	 ~ConfigWidgetEditConnection();
 
 	 bool attach();
@@ -90,6 +90,7 @@ private slots:
 	 bool m_bChangedData;
 	 bool m_bNewConnection;
 	 bool m_bConnectionRenamed;
+	 unsigned char m_config_type;
 
 	 NavPanel *m_pNavPanel;
 

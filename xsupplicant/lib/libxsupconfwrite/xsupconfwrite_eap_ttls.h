@@ -8,6 +8,6 @@
 #ifndef __XSUPCONFWRITE_EAP_TTLS_H__
 #define __XSUPCONFWRITE_EAP_TTLS_H__
 
-xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *, char);
+xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *, uint8_t, char);
 
 #endif // __XSUPCONFWRITE_EAP_TTLS_H__

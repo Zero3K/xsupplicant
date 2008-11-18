@@ -40,7 +40,7 @@ multichoice inner_method[] = {
   { 5, "EAP"},
   { -1, NULL}};
 
-void *xsupconfig_parse_eap_ttls(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth = NULL;
 
@@ -79,7 +79,7 @@ void *xsupconfig_parse_eap_ttls(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_ttls_user_cert(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_user_cert(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   char *value;
@@ -105,7 +105,7 @@ void *xsupconfig_parse_eap_ttls_user_cert(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_crl_dir(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_crl_dir(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   char *value;
@@ -131,7 +131,7 @@ void *xsupconfig_parse_eap_ttls_crl_dir(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_user_key_file(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_user_key_file(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_tls *ttls;
   char *value;
@@ -157,7 +157,7 @@ void *xsupconfig_parse_eap_ttls_user_key_file(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_user_key_pass(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_user_key_pass(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   char *value;
@@ -183,7 +183,7 @@ void *xsupconfig_parse_eap_ttls_user_key_pass(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_enc_user_key_pass(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_enc_user_key_pass(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls = NULL;
   char *value = NULL;
@@ -203,7 +203,7 @@ void *xsupconfig_parse_eap_ttls_enc_user_key_pass(void **attr, xmlNodePtr node)
 		return ttls;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&ttls->user_key_pass, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&ttls->user_key_pass, &size) != 0)
   {
 	  free(value);
 	  ttls->user_key_pass = NULL;
@@ -215,7 +215,7 @@ void *xsupconfig_parse_eap_ttls_enc_user_key_pass(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_cnexact(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_cnexact(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   uint8_t result;
@@ -247,7 +247,7 @@ void *xsupconfig_parse_eap_ttls_cnexact(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_session_resume(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_session_resume(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   uint8_t result;
@@ -278,7 +278,7 @@ void *xsupconfig_parse_eap_ttls_session_resume(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_validate_cert(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_validate_cert(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls = NULL;
   uint8_t result = 0;
@@ -309,7 +309,7 @@ void *xsupconfig_parse_eap_ttls_validate_cert(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_chunk_size(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_chunk_size(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   char *value;
@@ -337,7 +337,7 @@ void *xsupconfig_parse_eap_ttls_chunk_size(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_cncheck(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_cncheck(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   char *value;
@@ -363,7 +363,7 @@ void *xsupconfig_parse_eap_ttls_cncheck(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_random_file(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_random_file(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   char *value;
@@ -389,7 +389,7 @@ void *xsupconfig_parse_eap_ttls_random_file(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_inner_id(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_inner_id(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   char *value;
@@ -415,7 +415,7 @@ void *xsupconfig_parse_eap_ttls_inner_id(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_trusted_server(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   char *value;
@@ -441,7 +441,7 @@ void *xsupconfig_parse_eap_ttls_trusted_server(void **attr, xmlNodePtr node)
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_inner_method(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_inner_method(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
   int8_t result;

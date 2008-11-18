@@ -25,9 +25,9 @@
 #include "xsupconfig_defaults.h"
 #include "xsupconfig_parse_eap.h"
 
-void *xsupconfig_parse_plugin(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_plugin(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_plugins *cur;
+	struct config_plugins *cur = NULL;
 
 #if PARSE_DEBUG
   printf("Parse a plugin..\n");
@@ -62,7 +62,7 @@ void *xsupconfig_parse_plugin(void **attr, xmlNodePtr node)
 }
 
 
-void *xsupconfig_parse_plugin_name(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_plugin_name(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_plugins *cur = NULL;
   struct config_plugins *check = NULL;
@@ -158,7 +158,7 @@ void *xsupconfig_parse_plugin_name(void **attr, xmlNodePtr node)
   return cur;
 }
 
-void *xsupconfig_parse_plugin_path(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_plugin_path(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_plugins *cur;
   char *value;

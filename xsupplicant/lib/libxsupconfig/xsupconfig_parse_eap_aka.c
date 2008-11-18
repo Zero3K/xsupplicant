@@ -25,7 +25,7 @@
 #include "xsupconfig_parse_eap_aka.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_aka(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth = NULL;
 
@@ -61,7 +61,7 @@ void *xsupconfig_parse_eap_aka(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_aka_username(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_username(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_aka *aka = NULL;
   char *value = NULL;
@@ -87,7 +87,7 @@ void *xsupconfig_parse_eap_aka_username(void **attr, xmlNodePtr node)
   return aka;
 }
 
-void *xsupconfig_parse_eap_aka_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_aka *aka = NULL;
   char *value = NULL;
@@ -113,7 +113,7 @@ void *xsupconfig_parse_eap_aka_password(void **attr, xmlNodePtr node)
   return aka;
 }
 
-void *xsupconfig_parse_eap_aka_enc_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_aka *aka = NULL;
   char *value = NULL;
@@ -133,7 +133,7 @@ void *xsupconfig_parse_eap_aka_enc_password(void **attr, xmlNodePtr node)
 		return aka;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&aka->password, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&aka->password, &size) != 0)
   {
 	  free(value);
 	  aka->password = NULL;
@@ -150,7 +150,7 @@ void *xsupconfig_parse_eap_aka_enc_password(void **attr, xmlNodePtr node)
   return aka;
 }
 
-void *xsupconfig_parse_eap_aka_reader(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_reader(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_aka *aka = NULL;
   char *value = NULL;
@@ -176,7 +176,7 @@ void *xsupconfig_parse_eap_aka_reader(void **attr, xmlNodePtr node)
   return aka;
 }
 
-void *xsupconfig_parse_eap_aka_auto_realm(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_auto_realm(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_aka *aka = NULL;
   uint8_t result = 0;

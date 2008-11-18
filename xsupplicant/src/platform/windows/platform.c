@@ -1,3 +1,13 @@
+/**
+ * Implementations of platform specific calls.
+ *
+ * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
+ *
+ * \file platform.c
+ *
+ * \author chris@open1x.org
+ **/
+
 #include <windows.h>
 #include <direct.h>
 #include <errno.h>
@@ -18,7 +28,7 @@ char *platform_get_users_data_store_path()
 	TCHAR szMyPath[MAX_PATH];
 	char *path = NULL;
 
-#ifndef _DEBUG
+#ifndef _DEBUG			// If we are running in debug it probably isn't as a service, so these calls will fail, and are also pointless.
 	if (win_impersonate_desktop_user() != IMPERSONATE_NO_ERROR)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to impersonate the desktop user.  Cannot return the path to the local common app data.\n");
@@ -143,6 +153,7 @@ int platform_user_is_admin()
 	HANDLE activeHandle = NULL;
 	int retval = FALSE;
 
+#ifndef _DEBUG
 	if (win_impersonate_desktop_user() == IMPERSONATE_NO_ERROR)
 	{
 		activeHandle = win_impersonate_get_impersonation_handle();
@@ -154,6 +165,9 @@ int platform_user_is_admin()
 
 		win_impersonate_back_to_self();
 	}
+#else
+	return TRUE;
+#endif  // _DEBUG
 
 	return retval;
 }

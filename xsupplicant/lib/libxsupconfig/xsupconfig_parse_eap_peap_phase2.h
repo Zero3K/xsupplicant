@@ -1,18 +1,18 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.   (See LICENSE file for more info.)
  *
- * File: xsupconfig_parse_eap_peap_phase2.h
+ * \file xsupconfig_parse_eap_peap_phase2.h
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef __XSUPCONFIG_PARSE_EAP_PEAP_PHASE2_H__
 #define __XSUPCONFIG_PARSE_EAP_PEAP_PHASE2_H__
 
 extern parser peap_phase2[];
 
-void *xsupconfig_parse_eap_peap_phase2(void **, xmlNodePtr);
+void *xsupconfig_parse_eap_peap_phase2(void **, uint8_t, xmlNodePtr);
 
 #endif // __XSUPCONFIG_PARSE_EAP_PEAP_PHASE2_H__

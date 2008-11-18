@@ -15,7 +15,7 @@
 
 extern parser leap[];
 
-void *xsupconfig_parse_leap(void **, xmlNodePtr);
+void *xsupconfig_parse_leap(void **, uint8_t, xmlNodePtr);
 
 #endif  // __XSUPCONFIG_PARSE_LEAP_H__
 

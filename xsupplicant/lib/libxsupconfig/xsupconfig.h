@@ -23,6 +23,13 @@
 #define FALSE         0
 #endif
 
+#define OPTION_GLOBAL_CONFIG_ONLY	BIT(0)
+#define OPTION_USER_CONFIG_ONLY		BIT(1)
+#define OPTION_ANY_CONFIG			(BIT(0) | BIT(1))
+
+#define CONFIG_LOAD_GLOBAL			OPTION_GLOBAL_CONFIG_ONLY
+#define CONFIG_LOAD_USER			OPTION_USER_CONFIG_ONLY
+
 #define SET_FLAG(var,flag)    (var |= flag)
 #define UNSET_FLAG(var,flag)  (var &= ~flag)
 #define TEST_FLAG(var,flag)   (var & flag)
@@ -107,36 +114,33 @@
 #define TTLS_PHASE2_MSCHAP    3
 #define TTLS_PHASE2_MSCHAPv2  4
 
-int config_setup(char *);
+int config_system_setup(char *);
+int config_load_user_config(char *);					
 void config_destroy();
-struct config_connection *config_find_config(char *);
-struct config_connection *config_get_connections();
-struct config_profiles *config_get_profiles();
-void config_set_forced_profile(char *);
-int config_delete_connection(char *);
-int config_delete_profile(char *);
-int config_delete_trusted_server(char *);
+struct config_connection *config_get_connections(uint8_t);
+struct config_profiles *config_get_profiles(uint8_t);
+int config_delete_connection(uint8_t, char *);
+int config_delete_profile(uint8_t, char *);
+int config_delete_trusted_server(uint8_t, char *);
 int config_delete_interface(char *);
 void config_create_new_config();
 void config_terminate();
 struct config_globals *config_get_globals();
 void reset_config_globals(struct config_globals *);
-int add_change_config_connections(struct config_connection *);
-int add_change_config_profiles(struct config_profiles *);
-int add_change_config_trusted_server(struct config_trusted_server *);
+int add_change_config_connections(uint8_t, struct config_connection *);
+int add_change_config_profiles(uint8_t, struct config_profiles *);
+int add_change_config_trusted_server(uint8_t, struct config_trusted_server *);
 int add_change_config_interface(struct xsup_interfaces *confif);
 struct xsup_interfaces *config_get_config_ints();
 struct xsup_interfaces *config_find_int(char *);
 uint8_t config_get_network_priority(char *, char *);
-struct config_connection *config_find_connection_from_ssid_and_desc(char *, char *);
+struct config_connection *config_find_connection_from_ssid_and_desc(uint8_t, char *, char *);
 uint8_t config_get_friendly_warnings();
 uint8_t config_get_idleWhile();
-struct config_connection *config_find_connection(char *);
-struct config_profiles *config_find_profile(char *);
+struct config_connection *config_find_connection(uint8_t, char *);
+struct config_profiles *config_find_profile(uint8_t, char *);
 char *config_get_pwd_from_profile(struct config_eap_method *);
-int config_parse();
-struct config_trusted_servers *config_get_trusted_servers();
-int config_set_pwd_on_conn(char *, char *);
+struct config_trusted_servers *config_get_trusted_servers(uint8_t);
 int config_set_new_globals(struct config_globals *);
 char *config_get_inner_user_from_profile(struct config_eap_method *);
 

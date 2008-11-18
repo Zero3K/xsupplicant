@@ -130,7 +130,8 @@ void ConnectionSelectDlg::okay(void)
 		bool reportError = false;
 		QString errMessage;
 				
-		success = XSupWrapper::getConfigConnection(m_pConnectionCombo->currentText(), &pConn);
+		success = XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, m_pConnectionCombo->currentText(), &pConn);
+		if (success == false) success = XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL, m_pConnectionCombo->currentText(), &pConn);
 		
 		if (success == true && pConn != NULL)
 		{

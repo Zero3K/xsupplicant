@@ -1,10 +1,10 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.   (See LICENSE file for more info.)
  *
- * File: xsupconfig_parse_eap_ttls_mschap.h
+ * \file xsupconfig_parse_eap_ttls_mschap.h
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
  *******************************************************************/
 
@@ -13,6 +13,6 @@
 
 extern parser eap_ttls_mschap[];
 
-void *xsupconfig_parse_eap_ttls_mschap(void **, xmlNodePtr);
+void *xsupconfig_parse_eap_ttls_mschap(void **, uint8_t, xmlNodePtr);
 
 #endif // __XSUPCONFIG_PARSE_EAP_TTLS_MSCHAP_H__

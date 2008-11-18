@@ -49,7 +49,7 @@
  * \retval xmlNodePtr containing the EAP-FAST configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
+xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, uint8_t config_type,
 									   	          char write_all)
 {
 	xmlNodePtr fastnode = NULL;
@@ -246,7 +246,7 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata,
 		return NULL;
 	}
 
-	eapnode = xsupconfwrite_eap_create_tree(fastdata->phase2, write_all);
+	eapnode = xsupconfwrite_eap_create_tree(fastdata->phase2, config_type, write_all);
 	if (eapnode == NULL)
 	{
 #ifdef WRITE_EAP_FAST_DEBUG

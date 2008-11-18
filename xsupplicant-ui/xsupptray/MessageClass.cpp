@@ -69,7 +69,6 @@ MessageS MessageClass::m_xSupCalls[] =
   IPC_ERROR_CANT_WRITE_CONFIG,    tr("Couldn't write the configuration file."),
   IPC_ERROR_INVALID_NODE,         tr("Couldn't locate node!"),
   IPC_ERROR_CANT_GET_CONFIG,      tr("Couldn't get requested configuration information!"),
-  IPC_ERROR_INVALID_OU_NAME,      tr("Couldn't locate the requested OU."),
   IPC_ERROR_INVALID_TRUSTED_SVR,  tr("Couldn't locate the requested trusted server."),
   IPC_ERROR_PARSING,              tr("Attempt to parse requested configuration block failed."),
   IPC_ERROR_MALLOC,               tr("Failed to allocate memory!"),

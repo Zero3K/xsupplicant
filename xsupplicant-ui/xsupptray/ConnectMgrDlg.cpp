@@ -416,7 +416,7 @@ void ConnectMgrDlg::enableDisableWirelessAutoConnect(int newState)
 			retVal = xsupgui_request_set_globals_config(pConfig);
 			
 			if (retVal == REQUEST_SUCCESS)
-				XSupWrapper::writeConfig();
+				XSupWrapper::writeConfig(CONFIG_LOAD_GLOBAL);
 		}
 		
 		if (pConfig != NULL)
@@ -538,7 +538,7 @@ void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
 					
 					// write out configuration
 					// no biggie if this fails
-					XSupWrapper::writeConfig();
+					XSupWrapper::writeConfig(CONFIG_LOAD_GLOBAL);
 				}
 			}
 			if (pInterface != NULL)
@@ -601,7 +601,7 @@ void ConnectMgrDlg::refreshConnectionList(void)
 	int retval = 0;
 	conn_enum *pConn;
 	
-	retval = xsupgui_request_enum_connections(&pConn);
+	retval = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
 	if (retval == REQUEST_SUCCESS && pConn)
 	{
 		if (m_pConnections != NULL)
@@ -666,7 +666,7 @@ void ConnectMgrDlg::populateConnectionsList(void)
 			// check if connection is volatile
 			bool bVolatile = false;
 			config_connection *pConfig;
-			int retVal = xsupgui_request_get_connection_config(m_pConnections[i].name, &pConfig);
+			int retVal = xsupgui_request_get_connection_config(m_pConnections[i].config_type, m_pConnections[i].name, &pConfig);
 			if (retVal == REQUEST_SUCCESS && pConfig != NULL)
 			{
 				if ((pConfig->flags & CONFIG_VOLATILE_CONN) != 0)
@@ -680,7 +680,7 @@ void ConnectMgrDlg::populateConnectionsList(void)
 			if (bVolatile == false)
 			{
 				QTableWidgetItem *nameItem=NULL;
-				nameItem = new QTableWidgetItem(m_pConnections[i].name, 0);
+				nameItem = new QTableWidgetItem(m_pConnections[i].name, QTableWidgetItem::UserType+m_pConnections[i].config_type);
 				if (nameItem != NULL)
 					m_pConnectionsTable->setItem(i, 0, nameItem);
 					
@@ -748,11 +748,13 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 			QString connName = nameItem->text();
 			config_connection *pConfig;
 			bool canDelete = true;
+			unsigned char my_config_type = (nameItem->type() - QTableWidgetItem::UserType);
 			
 			// first check if connection is in use
 			// if so, don't allow deleting	
 			bool success;
-			success = XSupWrapper::getConfigConnection(connName,&pConfig);
+
+			success = XSupWrapper::getConfigConnection(my_config_type, connName,&pConfig);
 			if (success == true && pConfig != NULL)
 			{
 				char *pDeviceName = NULL;
@@ -790,7 +792,7 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 					message = tr("Are you sure you want to delete the connection '%1'?").arg(connName);
 				
 				// check if wireless and is in preferred list?
-				bool result = XSupWrapper::getConfigConnection(connName, &pConfig);
+				bool result = XSupWrapper::getConfigConnection(my_config_type, connName, &pConfig);
 				if (result == true && pConfig != NULL)
 				{
 					if (pConfig->priority != DEFAULT_PRIORITY)
@@ -806,9 +808,17 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 				{
 					bool success;
 					config_profiles *pProfile;
-					success = XSupWrapper::getConfigProfile(QString(pConfig->profile), &pProfile);
+					unsigned char profile_type = CONFIG_LOAD_USER;
+					unsigned char ts_type;
+
+					success = XSupWrapper::getConfigProfile(CONFIG_LOAD_USER, QString(pConfig->profile), &pProfile);
+					if (success == false) 
+					{
+						success = XSupWrapper::getConfigProfile(CONFIG_LOAD_GLOBAL, QString(pConfig->profile), &pProfile);
+						profile_type = CONFIG_LOAD_GLOBAL;
+					}
 					
-					success = XSupWrapper::deleteConnectionConfig(connName);
+					success = XSupWrapper::deleteConnectionConfig(my_config_type, connName);
 					if (success == false)
 					{
 						QMessageBox::critical(m_pRealForm,tr("Error Deleting Connection"), tr("An error occurred when attempting to delete the connection '%1'.  If the connection is in use, please disconnect and try again.").arg(connName));
@@ -820,8 +830,8 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 						{
 							// if no other connections are using this profile, delete it
 							config_trusted_server *pServer;
-							XSupWrapper::getTrustedServerForProfile(QString(pProfile->name), &pServer);
-							success = XSupWrapper::deleteProfileConfig(QString(pProfile->name));
+							XSupWrapper::getTrustedServerForProfile(profile_type, QString(pProfile->name), &pServer, &ts_type);
+							success = XSupWrapper::deleteProfileConfig(profile_type, QString(pProfile->name));
 							
 							if (success == false)
 							{
@@ -831,7 +841,7 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 							{
 								// delete trusted server
 								if (pServer != NULL && XSupWrapper::isTrustedServerInUse(QString(pServer->name)) == false)
-									success = XSupWrapper::deleteServerConfig(QString(pServer->name));
+									success = XSupWrapper::deleteServerConfig(ts_type, QString(pServer->name));
 								else if (pServer != NULL)
 									QMessageBox::critical(m_pRealForm, tr("Error Deleting Trusted Server"), tr("The trused server '%1' cannot be deleted because it is being used by multiple profiles").arg(pServer->name));
 							}
@@ -844,7 +854,8 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 						}
 					
 						// save off the config since it changed
-						XSupWrapper::writeConfig();
+						XSupWrapper::writeConfig(CONFIG_LOAD_GLOBAL);
+						XSupWrapper::writeConfig(CONFIG_LOAD_USER);
 						
 						// tell everyone we changed the config
 						m_pEmitter->sendConnConfigUpdate();
@@ -918,9 +929,10 @@ void ConnectMgrDlg::handleDoubleClick(int row, int)
 		if (item != NULL)
 		{
 			QString connName;
-			
+			int config_type = (item->type() - QTableWidgetItem::UserType);		
 			connName = item->text();
-			this->editConnection(connName);
+	
+			this->editConnection(config_type, connName);
 		}
 	}
 }
@@ -988,12 +1000,12 @@ void ConnectMgrDlg::updateConnectionLists(void)
 	this->updateWiredAutoConnectState();
 }
 
-void ConnectMgrDlg::editConnection(const QString &connName)
+void ConnectMgrDlg::editConnection(int config_type, const QString &connName)
 {	
 	bool success;
 	config_connection *pConfig;
 	
-	success = XSupWrapper::getConfigConnection(connName,&pConfig);
+	success = XSupWrapper::getConfigConnection(config_type, connName,&pConfig);
 	if (success == true && pConfig != NULL)
 	{
 		bool editable = true;
@@ -1026,15 +1038,24 @@ void ConnectMgrDlg::editConnection(const QString &connName)
 		{
 			config_profiles *pProfile = NULL;
 			config_trusted_server *pServer = NULL;
+			unsigned char profile_type = CONFIG_LOAD_GLOBAL;
+			unsigned char ts_type = 0;
 			
 			if (pConfig->profile != NULL)
-				success = XSupWrapper::getConfigProfile(QString(pConfig->profile),&pProfile);
+			{
+				success = XSupWrapper::getConfigProfile(profile_type, QString(pConfig->profile),&pProfile);
+				if (success == false)
+				{
+					profile_type = CONFIG_LOAD_USER;
+					success = XSupWrapper::getConfigProfile(profile_type, QString(pConfig->profile), &pProfile);
+				}
+			}
 				
 			if (success == true && pProfile != NULL)
-				success = XSupWrapper::getTrustedServerForProfile(QString(pProfile->name),&pServer);
+				success = XSupWrapper::getTrustedServerForProfile(profile_type, QString(pProfile->name),&pServer, &ts_type);
 				
 			ConnectionWizardData wizData;
-			wizData.initFromSupplicantProfiles(pConfig,pProfile,pServer);
+			wizData.initFromSupplicantProfiles(config_type, pConfig,pProfile,pServer);
 			
 			if (pConfig != NULL)
 				XSupWrapper::freeConfigConnection(&pConfig);
@@ -1084,8 +1105,9 @@ void ConnectMgrDlg::editSelectedConnection(void)
 			{
 				QTableWidgetItem *nameItem = m_pConnectionsTable->item(selItem->row(), 0);
 				QString connName = nameItem->text();
+				int config_type = (nameItem->type() - QTableWidgetItem::UserType);
 				
-				this->editConnection(connName);
+				this->editConnection(config_type, connName);
 			}
 		}
 	}

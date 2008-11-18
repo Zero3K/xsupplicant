@@ -5,9 +5,6 @@
  * \file xsupconfig_common.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfig_common.c,v 1.4 2007/10/20 08:10:12 galimorerpg Exp $
- * $Date: 2007/10/20 08:10:12 $
  **/
 
 #include <stdio.h>
@@ -121,7 +118,7 @@ uint8_t xsupconfig_common_is_number(char *number)
  *
  * \retval attr  The same value that was passed in as attr.
  **/
-void *xsupcommon_do_nothing(void **attr, xmlNodePtr node)
+void *xsupcommon_do_nothing(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	return (*attr);
 }

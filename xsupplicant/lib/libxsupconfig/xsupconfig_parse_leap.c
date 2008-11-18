@@ -27,7 +27,7 @@
 #include "xsupconfig_parse_leap.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_leap(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_leap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_method *meth;
 
@@ -63,7 +63,7 @@ void *xsupconfig_parse_leap(void **attr, xmlNodePtr node)
   return meth->method_data;
 }
 
-void *xsupconfig_parse_leap_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_leap_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *leap = NULL;
   char *value = NULL;
@@ -89,7 +89,7 @@ void *xsupconfig_parse_leap_password(void **attr, xmlNodePtr node)
   return leap;
 }
 
-void *xsupconfig_parse_leap_enc_password(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_leap_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_pwd_only *leap = NULL;
   char *value = NULL;
@@ -109,7 +109,7 @@ void *xsupconfig_parse_leap_enc_password(void **attr, xmlNodePtr node)
 		return leap;
 	}
 
-  if (pwcrypt_decrypt((uint8_t *)value, strlen(value), (uint8_t **)&leap->password, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&leap->password, &size) != 0)
   {
 	  free(value);
 	  leap->password = NULL;

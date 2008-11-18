@@ -19,7 +19,7 @@ typedef struct multichoice_struct {
 uint8_t xsupconfig_common_yesno(char *);
 uint8_t xsupconfig_common_is_number(char *);
 void xsupconfig_common_upcase(char *strtoconvert);
-void *xsupcommon_do_nothing(void **, xmlNodePtr);
+void *xsupcommon_do_nothing(void **, uint8_t, xmlNodePtr);
 int xsupconfig_common_select_from_list(multichoice list_choices[], char *);
 struct config_eap_method *xsupconfig_alloc_method(struct config_eap_method *, 
 						  char *);

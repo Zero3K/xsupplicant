@@ -27,10 +27,10 @@
 #include "xsupconfig_devices.h"
 #include "src/xsup_err.h"
 
-void *xsupconfig_parse_interface(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_interface(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct xsup_devices *mydevs;
-  struct xsup_interfaces *ints;
+  struct xsup_devices *mydevs = NULL;
+  struct xsup_interfaces *ints = NULL;
 
   mydevs = (*attr);
 
@@ -67,7 +67,7 @@ void *xsupconfig_parse_interface(void **attr, xmlNodePtr node)
   return ints;
 }
 
-void *xsupconfig_parse_interface_description(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_interface_description(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct xsup_interfaces *myints = NULL;
   struct xsup_interfaces *check = NULL;
@@ -117,7 +117,7 @@ void *xsupconfig_parse_interface_description(void **attr, xmlNodePtr node)
   return myints;
 }
 
-void *xsupconfig_parse_interface_type(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_interface_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct xsup_interfaces *myints;
   char *value;
@@ -143,7 +143,7 @@ void *xsupconfig_parse_interface_type(void **attr, xmlNodePtr node)
   return myints;
 }
 
-void *xsupconfig_parse_interface_mac(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_interface_mac(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct xsup_interfaces *myints = NULL;
   struct xsup_interfaces *check = NULL;
@@ -222,10 +222,10 @@ void *xsupconfig_parse_interface_mac(void **attr, xmlNodePtr node)
  *
  * \retval ptr to the modified xsup_interfaces struct.
  **/
-void *xsupconfig_parse_default_connection(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_default_connection(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct xsup_interfaces *myints;
-  char *value;
+  struct xsup_interfaces *myints = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -256,7 +256,7 @@ void *xsupconfig_parse_default_connection(void **attr, xmlNodePtr node)
  *
  * \retval ptr to the modified xsup_interfaces struct.
  **/
-void *xsupconfig_parse_interface_is_wireless(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_interface_is_wireless(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct xsup_interfaces *myints = NULL;
   char *value = NULL;
@@ -300,7 +300,7 @@ void *xsupconfig_parse_interface_is_wireless(void **attr, xmlNodePtr node)
  *
  * \retval ptr to the modified xsup_interfaces struct.
  **/
-void *xsupconfig_parse_manage_interface(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_manage_interface(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct xsup_interfaces *myints = NULL;
   char *value = NULL;

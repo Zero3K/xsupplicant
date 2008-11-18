@@ -50,7 +50,7 @@
  * \retval xmlNodePtr containing the PEAP configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
+xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, uint8_t config_type,
 								 		      char write_all)
 {
 	xmlNodePtr peapnode = NULL;
@@ -125,7 +125,7 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata,
 		if ((peapdata->user_key_pass != NULL) && (pwcrypt_funcs_available() == TRUE))
 		{
 			// Write the encrypted version.
-			if (pwcrypt_encrypt((uint8_t *)peapdata->user_key_pass, strlen(peapdata->user_key_pass), (uint8_t **)&temp, &ressize) != 0)
+			if (pwcrypt_encrypt(config_type, (uint8_t *)peapdata->user_key_pass, strlen(peapdata->user_key_pass), (uint8_t **)&temp, &ressize) != 0)
 			{
 				// Couldn't encrypt the data.  So write the cleartext version.
 				xsupconfwrite_convert_amp(peapdata->user_key_pass, &temp);
@@ -322,7 +322,7 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata,
 		return NULL;
 	}
 
-	eapnode = xsupconfwrite_eap_create_tree(peapdata->phase2, write_all);
+	eapnode = xsupconfwrite_eap_create_tree(peapdata->phase2, config_type, write_all);
 	if (eapnode == NULL)
 	{
 #ifdef WRITE_EAP_PEAP_DEBUG

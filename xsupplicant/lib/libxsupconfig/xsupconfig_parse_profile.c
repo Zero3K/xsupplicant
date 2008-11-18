@@ -27,9 +27,9 @@
 #include "xsupconfig_parse_eap.h"
 #include "xsupconfig_parse_profile_compliance.h"
 
-void *xsupconfig_parse_profile(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_profiles *cur;
+	struct config_profiles *cur = NULL;
 
 #if PARSE_DEBUG
   printf("Parse a profile..\n");
@@ -60,19 +60,46 @@ void *xsupconfig_parse_profile(void **attr, xmlNodePtr node)
 		cur = cur->next;
 	}
 
-	cur->ou = (char *)xmlGetProp(node, (xmlChar *)"OU");  
+	return cur;
+}
 
-	if ((cur->ou != NULL) && (strlen(cur->ou) == 0))
+void *xsupconfig_parse_user_profile(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	struct config_profiles *cur = NULL;
+
+#if PARSE_DEBUG
+  printf("Parse a profile..\n");
+#endif
+
+	if (conf_user_profiles == NULL)
 	{
-		free(cur->ou);
-		cur->ou = NULL;
+		if (xsupconfig_defaults_create_profile(&conf_user_profiles) != 0)
+		{
+			printf("Couldn't allocate memory to store configuration profiles!\n");
+			return NULL;
+		}
+
+		cur = conf_user_profiles;
+	}
+	else
+	{
+		cur = conf_user_profiles;
+
+		while (cur->next != NULL) cur = cur->next;
+
+		if (xsupconfig_defaults_create_profile(&cur->next) != 0)
+		{
+			printf("Couldn't allocate memory to store additional configuration profiles!\n");
+			return NULL;
+		}
+
+		cur = cur->next;
 	}
 
 	return cur;
 }
 
-
-void *xsupconfig_parse_profile_name(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_name(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_profiles *cur = NULL;
   struct config_profiles *check = NULL;
@@ -168,7 +195,7 @@ void *xsupconfig_parse_profile_name(void **attr, xmlNodePtr node)
   return cur;
 }
 
-void *xsupconfig_parse_profile_identity(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_identity(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_profiles *cur;
   char *value;
@@ -194,7 +221,7 @@ void *xsupconfig_parse_profile_identity(void **attr, xmlNodePtr node)
   return cur;
 }
 
-void *xsupconfig_parse_profile_volatile(void **attr, xmlNodePtr node)
+void *xsupconfig_parse_profile_volatile(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   char *value = NULL;
   struct config_profiles *prof = NULL;

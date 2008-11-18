@@ -12,7 +12,9 @@
 #define __XSUPCONFIG_PARSE_TRUSTED_SERVERS_H__
 
 extern parser trusted_servers[];
+extern parser user_trusted_servers[];
 
-void *xsupconfig_parse_trusted_servers(void **, xmlNodePtr);
+void *xsupconfig_parse_trusted_servers(void **, uint8_t, xmlNodePtr);
+void *xsupconfig_parse_user_trusted_servers(void **, uint8_t, xmlNodePtr);
 
 #endif // __XSUPCONFIG_PARSE_TRUSTED_SERVERS_H__
