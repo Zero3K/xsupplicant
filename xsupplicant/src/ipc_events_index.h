@@ -65,6 +65,8 @@
 #define IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS				   52  ///< Invalid PIN.  At least one more attempt remains.
 #define IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED				   53  ///< Invalid PIN.  Your card is now blocked.
 #define IPC_EVENT_ERROR_3G_NOT_SUPPORTED					   54  ///< Inserted SIM doesn't support 3G mode.
+#define IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR					   55  ///< An unknown SIM error occurred.
+#define IPC_EVENT_ERROR_SIM_NOTIFICATION					   56  ///< A SIM notification was generated, the number is provided in the parameter field.
 
 // Windows Specific Error Events 
 #define IPC_EVENT_ERROR_FAILED_TO_BIND                         1000 ///< Failed to bind interface %s to device handle.

@@ -7,9 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * \todo Add IPC error message signaling.
- * \todo Add support for PIN reprompting.
- *
  **/
 
 /*******************************************************************
@@ -58,10 +55,12 @@
 #endif
 
 /**
+ *  \brief Ask the SIM card what our IMSI is so that it can be used for our username
+ *			during the authentication.
  *
- *  Ask the SIM card what our IMSI is so that it can be used for our username
- *  during the authentication.
+ *	@param[in] ctx   The context for the interface that wants to know the AKA IMSI.
  *
+ * \retval XENONE on success, anything else is an error.
  **/
 int eapaka_get_username(context *ctx)
 {
@@ -99,11 +98,11 @@ int eapaka_get_username(context *ctx)
       return XESIMGENERR;
     }
 
-  // Wait for up to 10 seconds for the smartcard to become ready.
-  // XXX This needs to be fixed!  It blocks, and it shouldn't!
-  if (sm_handler_wait_card_ready(&hdl, 10) != 0)
+  // Wait for the smartcard to become ready.
+  if (sm_handler_wait_card_ready(&hdl, 1) != 0)
     {
-      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 10 seconds!\n");
+      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
       return XESIMGENERR;
     }
 
@@ -147,6 +146,7 @@ int eapaka_get_username(context *ctx)
 
   default:
 	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR, NULL);
 	  context_disconnect(ctx);
 	  return FALSE;
 	  break;
@@ -202,6 +202,13 @@ int eapaka_get_username(context *ctx)
 
 /**
  * \brief Determine in a PIN is needed.
+ *
+ * @param[in] ctx   The context for the interface that we want to see if a PIN is required on.
+ * @param[in] userdata   The EAP-AKA configuration that will (or already may be) bound to the context.
+ *
+ * \retval TRUE if a PIN is required
+ * \retval FALSE if a PIN is NOT required
+ * \retval XE* if an error occurred.
  **/
 int eapaka_is_pin_needed(context *ctx, struct config_eap_aka *userdata)
 {
@@ -220,6 +227,7 @@ int eapaka_is_pin_needed(context *ctx, struct config_eap_aka *userdata)
   if (sm_handler_init_ctx(&sctx) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't initialize smart card context!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
       return XESIMGENERR;
     }
 
@@ -227,14 +235,14 @@ int eapaka_is_pin_needed(context *ctx, struct config_eap_aka *userdata)
   if (sm_handler_card_connect(&sctx, &hdl, userdata->reader) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
       return XESIMGENERR;
     }
 
-  // Wait for up to 10 seconds for the smartcard to become ready.
-  // XXX This needs to be fixed!  It blocks, and it shouldn't!
-  if (sm_handler_wait_card_ready(&hdl, 10) != 0)
+  if (sm_handler_wait_card_ready(&hdl, 1) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 10 seconds!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
       return XESIMGENERR;
     }
 
@@ -258,11 +266,10 @@ int eapaka_is_pin_needed(context *ctx, struct config_eap_aka *userdata)
 }
 
 
-/*************************************************************************
+/**
+ *  \brief Allocate temporary memory, and determine if the card reader is attached.
  *
- *  Allocate temporary memory, and determine if the card reader is attached.
- *
- *************************************************************************/
+ **/
 int eapaka_setup(eap_type_data *eapdata)
 {
   struct aka_eaptypedata *mydata = NULL;
@@ -310,6 +317,7 @@ int eapaka_setup(eap_type_data *eapdata)
   if (sm_handler_init_ctx(&mydata->scntx) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't initialize smart card context!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
       return XESIMGENERR;
     }
 
@@ -317,25 +325,16 @@ int eapaka_setup(eap_type_data *eapdata)
   if (sm_handler_card_connect(&mydata->scntx, &mydata->shdl, userdata->reader) != 0)
     {
       debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
       return XESIMGENERR;
     }
 
-  // Wait for up to 20 seconds for the smartcard to become ready.
-  if (sm_handler_wait_card_ready(&mydata->shdl, 20) != 0)
+  if (sm_handler_wait_card_ready(&mydata->shdl, 1) != 0)
     {
-      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 20 seconds!\n");
+      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
       return XESIMGENERR;
     }
-
-  /*
-  if ((userdata->password == NULL) && (ctx->prof->temp_password == NULL))
-    {
-      debug_printf(DEBUG_NORMAL, "No PIN available.\n");
-	  ipc_events_error(ctx, IPC_EVENT_ERROR_NO_PIN, NULL);
-	  context_disconnect(ctx);
-      return FALSE;
-    }
-*/
 
   if (ctx->prof->temp_password != NULL)
   {
@@ -376,6 +375,7 @@ int eapaka_setup(eap_type_data *eapdata)
 
   default:
 	  if (ctx->prof->temp_password != NULL) FREE(ctx->prof->temp_password);  // So we don't attempt to reuse bad credentials.
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR, NULL);
 	  context_disconnect(ctx);
 	  return FALSE;
 	  break;
@@ -424,11 +424,10 @@ int eapaka_setup(eap_type_data *eapdata)
   return XENONE;
 }
 
-/************************************************************************
+/**
+ * \brief Determine if we are ready to do EAP-AKA.
  *
- *  Determine if we are ready to do EAP-AKA.
- *
- ************************************************************************/
+ **/
 void eapaka_check(eap_type_data *eapdata)
 {
   struct config_eap_aka *akaconf = NULL;
@@ -445,10 +444,20 @@ void eapaka_check(eap_type_data *eapdata)
     }
 
   ctx = event_core_get_active_ctx();
-
   akaconf = eapdata->eap_conf_data;
 
-  // A PIN may not be needed, so don't check for it.
+  // A PIN may not be needed, so see if we have one, if we don't then see if it is needed.
+  if ((akaconf->password == NULL) && (ctx->prof->temp_password == NULL))
+  {
+	  if (eapaka_is_pin_needed(ctx, akaconf) == TRUE)
+	  {
+		  debug_printf(DEBUG_NORMAL, "No PIN available for EAP-AKA.\n");
+		  ipc_events_error(ctx, IPC_EVENT_ERROR_NO_PIN, NULL);
+		  eap_type_common_fail(eapdata);
+		  context_disconnect(ctx);
+		  return;
+	  }
+  }
 
   if (eapdata->methodState == INIT)
   {
@@ -460,14 +469,13 @@ void eapaka_check(eap_type_data *eapdata)
   }
 }
 
-/************************************************************************
- *
- * Process an EAP-AKA identity message.
+/**
+ * \brief Process an EAP-AKA identity message.
  *
  *  The value passed in to eappayload should be the first byte following
  *  the challenge/response identifier.
  *
- ************************************************************************/
+ **/
 void eapaka_do_identity(eap_type_data *eapdata, uint8_t *eappayload, 
 			 uint16_t size)
 {
@@ -533,6 +541,7 @@ void eapaka_do_notification(eap_type_data *eapdata, uint8_t *eappayload,
   struct config_eap_aka *akaconf = NULL;
   struct typelengthres *tlr = NULL;
   context *ctx = NULL;
+  char error_str[10];
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -560,16 +569,20 @@ void eapaka_do_notification(eap_type_data *eapdata, uint8_t *eappayload,
   packet_offset += 3;  // To get past the 2 reserved bytes and outer type.
   tlr = (struct typelengthres *)&eappayload[packet_offset];
 
-  // XXX TODO : Send error messages to the UI to be displayed to the user.
+  memset(&error_str, 0x00, sizeof(error_str));
+  sprintf(&error_str, "%d", ntohs(tlr->reserved));
+
   switch (ntohs(tlr->reserved))
   {
   case GENERAL_FAILURE_POST_AUTH:
 	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] General failure after authentication.\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_NOTIFICATION, error_str);
 	  eap_type_common_fail(eapdata);
 	  break;
 
   case GENERAL_FAILURE_PRE_AUTH: 
 	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] General failure.\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_NOTIFICATION, error_str);
 	  eap_type_common_fail(eapdata);
 	  break;
 
@@ -580,16 +593,19 @@ void eapaka_do_notification(eap_type_data *eapdata, uint8_t *eappayload,
 
   case USER_DENIED:
 	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] User has been temporarily denied access to the requested service.\n");
+  	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_NOTIFICATION, error_str);
 	  eap_type_common_fail(eapdata);
 	  break;
 	  
   case USER_NO_SUBSCRIPTION:
 	  debug_printf(DEBUG_NORMAL, "[EAP-AKA] User has not subscribed to the requested service.\n");
+  	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_NOTIFICATION, error_str);
 	  eap_type_common_fail(eapdata);
 	  break;
 	  
   default:
 	  debug_printf(DEBUG_NORMAL, "Unknown AKA notification value (%d).  Assuming failure.\n", ntohs(tlr->reserved));
+  	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_NOTIFICATION, error_str);
 	  eap_type_common_fail(eapdata);
 	  break;
   }
@@ -599,8 +615,7 @@ void eapaka_do_notification(eap_type_data *eapdata, uint8_t *eappayload,
 }
 
 /**
- *
- * Process an EAP-AKA challenge message.
+ * \brief Process an EAP-AKA challenge message.
  *
  *  The value passed in to eappayload should be the first byte following
  *  the challenge/response identifier.
@@ -699,8 +714,7 @@ void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload,
 }
 
 /**
- *
- * Process an AKA request.
+ * \brief Process an AKA request.
  *
  **/
 void eapaka_process(eap_type_data *eapdata)
@@ -791,11 +805,10 @@ void eapaka_process(eap_type_data *eapdata)
   eapdata->methodState = MAY_CONT;
 }
 
-/************************************************************************
+/**
+ * \brief Build an AKA response.
  *
- * Build an AKA response.
- *
- ************************************************************************/
+ **/
 uint8_t *eapaka_buildResp(eap_type_data *eapdata)
 {
   uint16_t reslen = 0, reallen = 0;
@@ -943,11 +956,10 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
   return data;
 }
 
-/************************************************************************
+/**
+ * \brief Determine if there is keying material available.
  *
- * Determine if there is keying material available.
- *
- ************************************************************************/
+ **/
 uint8_t eapaka_isKeyAvailable(eap_type_data *eapdata)
 {
   struct aka_eaptypedata *akadata = NULL;
@@ -966,11 +978,10 @@ uint8_t eapaka_isKeyAvailable(eap_type_data *eapdata)
   return FALSE;
 }
 
-/************************************************************************
+/**
+ * \brief Return the keying material.
  *
- * Return the keying material.
- *
- ************************************************************************/
+ **/
 uint8_t *eapaka_getKey(eap_type_data *eapdata)
 {
   struct aka_eaptypedata *akadata = NULL;
@@ -998,11 +1009,10 @@ uint8_t *eapaka_getKey(eap_type_data *eapdata)
   return keydata;
 }
 
-/************************************************************************
+/**
+ * \brief Clean up any resources we used.
  *
- * Clean up any resources we used.
- *
- ************************************************************************/
+ **/
 void eapaka_deinit(eap_type_data *eapdata)
 {
   struct aka_eaptypedata *mydata = NULL;

@@ -438,17 +438,7 @@ bool WizardPageStaticIP::validate(void)
 			return false;
 		}	
 	}
-	
-	if (m_pGateway != NULL)
-	{
-		if ((m_pGateway->hasAcceptableInput() == false) 
-			|| (Util::isGWinSubnet(m_pIPAddress->text(), m_pNetmask->text(), m_pGateway->text()) == false))
-		{
-			QMessageBox::warning(m_pRealForm, tr("Invalid Gateway Address"), tr("Please provide a valid Gateway address"));
-			return false;
-		}		
-	}
-	
+		
 	if (m_pPrimaryDNS != NULL)
 	{
 		if ((m_pPrimaryDNS->hasAcceptableInput() == false) || (Util::isIPAddrValid(m_pPrimaryDNS->text()) == false))

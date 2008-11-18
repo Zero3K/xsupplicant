@@ -208,22 +208,13 @@ bool ConfigConnNetTab::save()
 
 		m_pConn->ip.netmask = _strdup(m_pNetmaskEdit->text().toAscii());
 
-		if (m_pGWEdit->text() == "")
+		if (m_pGWEdit->text() != "")
 		{
-			QMessageBox::critical(this, tr("Configuration Error"), tr("Please enter a valid gateway address in the space provided."));
-			return false;
-		}
-
-		if (Util::isIPAddrValid(m_pGWEdit->text()) == false) 
-		{
-			QMessageBox::critical(this, tr("Configuration Error"), tr("Please enter a valid gateway address in the space provided."));
-			return false;
-		}
-
-		if (Util::isGWinSubnet(m_pIPAddrEdit->text(), m_pNetmaskEdit->text(), m_pGWEdit->text()) == false)
-		{
-			QMessageBox::critical(this, tr("Configuration Error"), tr("The provided gateway is not a member of the same subnet as the IP address."));
-			return false;
+			if (Util::isGWinSubnet(m_pIPAddrEdit->text(), m_pNetmaskEdit->text(), m_pGWEdit->text()) == false)
+			{
+				QMessageBox::critical(this, tr("Configuration Error"), tr("The provided gateway is not a member of the same subnet as the IP address."));
+				return false;
+			}
 		}
 
 		if (m_pConn->ip.gateway != NULL)
@@ -232,7 +223,7 @@ bool ConfigConnNetTab::save()
 			m_pConn->ip.gateway = NULL;
 		}
 
-		m_pConn->ip.gateway = _strdup(m_pGWEdit->text().toAscii());
+		if (m_pGWEdit->text() != "") m_pConn->ip.gateway = _strdup(m_pGWEdit->text().toAscii());
 	}
 
 	return true;

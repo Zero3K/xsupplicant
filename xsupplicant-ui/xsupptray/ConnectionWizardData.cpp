@@ -731,10 +731,10 @@ bool ConnectionWizardData::toConnectionData(config_connection **retConnection, c
 		{
 			pConn->ip.type = CONFIG_IP_USE_STATIC;
 			pConn->ip.ipaddr = _strdup(m_IPAddress.toAscii().data());
-			pConn->ip.gateway = _strdup(m_gateway.toAscii().data());
+			if (m_gateway != "") pConn->ip.gateway = _strdup(m_gateway.toAscii().data());
 			pConn->ip.netmask = _strdup(m_netmask.toAscii().data());
 			pConn->ip.dns1 = _strdup(m_primaryDNS.toAscii().data());
-			pConn->ip.dns2 = _strdup(m_secondaryDNS.toAscii().data());
+			if (m_secondaryDNS != "") pConn->ip.dns2 = _strdup(m_secondaryDNS.toAscii().data());
 		}
 		else
 		{
