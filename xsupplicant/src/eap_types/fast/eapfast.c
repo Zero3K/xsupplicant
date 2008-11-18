@@ -8,8 +8,6 @@
  * \author chris@open1x.org
  *
  * \todo Add IPC error message signaling.
- * \todo Add support for temporary username/password pairs.
- * \todo Add support for password reprompting.
  *
  **/
 

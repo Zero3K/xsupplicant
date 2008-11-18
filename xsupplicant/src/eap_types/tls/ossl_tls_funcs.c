@@ -483,6 +483,7 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 	    }
   }
 #endif
+
   // Set this to SSL_VERIFY_NONE if we don't want to do anything with a failed
   // verification.
 
@@ -532,16 +533,6 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 				     tempdata, 1500);
   if (ressize <= 0)
   {
-#if 0
-	  if (BIO_should_retry(mytls_vars->ssl_out) == TRUE)
-	  {
-		  printf("Should retry.\n");
-	  }
-	  else
-	  {
-		  printf("********************************************************Failure! (%d)\n", ressize);
-	  }
-#endif
     FREE(tempdata);
 	return XEGENERROR;
   }
