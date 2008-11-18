@@ -1330,6 +1330,9 @@ void WizardPageFASTInnerProtocol::init(const ConnectionWizardData &data)
 			
 	if (m_pOuterID != NULL)
 		m_pOuterID->setText(m_curData.m_outerIdentity);
+
+	if (m_curData.m_anonymousProvisioning)
+		m_pAnonymousProvision->setChecked(true);
 		
 	if (m_pValidateCert != NULL)
 		m_pValidateCert->setChecked(m_curData.m_validateCert);
