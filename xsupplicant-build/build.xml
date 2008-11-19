@@ -171,11 +171,14 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
 
     <antcall target="${open1x.publish.type}"/>
 
+    <!-- Copy the xsupplicant_service.exe file to Z: so the test machine can pick it up -->
+    <copy file="${open1x.build.path}\xsupplicant\vs2005\build-release\XSupplicant_service.exe" todir="Z:" overwrite="yes"/>
+
     <antcall target="E-Mail"/>
     
 </target>
 
-<target name="ftp">
+<target name="ftp" unless="open1x.publish.ftp.disabled">
     
     <ftp server="${open1x.publish.server}"
         remotedir="${open1x.publish.path}"
@@ -192,7 +195,7 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
     
 </target>
 
-<target name="scp">
+<target name="scp" unless="open1x.publish.scp.disabled">
     
     <scp todir="${open1x.publish.username}:${open1x.publish.password}@${open1x.publish.server}:${open1x.publish.path}" trust="yes">
       <fileset dir="${open1x.installer.path}">
