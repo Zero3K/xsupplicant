@@ -44,9 +44,6 @@ To build from a different branch use -Dopen1x.svn.branch="path" (i.e. trunk or b
     <!-- These will be overridden by -D flags -->
     <property name="open1x.version.major" value="2"/>
     <property name="open1x.version.minor" value="1"/>
-    <property name="open1x.version.patch" value="private"/>
-    <property name="open1x.version" value="${open1x.version.major}.${open1x.version.minor}.${open1x.version.patch}"/>
-
 
     <fail unless="open1x.property.file">
         A property file check hasn't been created for the OS you are running this script on.
@@ -66,6 +63,8 @@ To build from a different branch use -Dopen1x.svn.branch="path" (i.e. trunk or b
         <equals arg1="${open1x.build.type}" arg2="private"/>
       </or>
     </condition>
+
+    <property name="open1x.version" value="${open1x.version.major}.${open1x.version.minor}.${open1x.version.patch}"/>
 
     <property name="open1x.build.name" value="SeaAnt"/>
 
@@ -259,7 +258,7 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
 <target name="E-Mail" unless="open1x.email.disabled">
 
     <mail mailhost="${open1x.email.host}" 
-        subject="OpenSEA ${open1x.build.name} (${open1x.build.type}) ${open1x.version.major}.${open1x.version.minor} revision ${revision.max}"
+        subject="OpenSEA ${open1x.build.name} (${open1x.build.type}) ${open1x.version.major}.${open1x.version.minor}.${open1x.version.patch} revision ${revision.max}"
         user="${open1x.email.username}" 
         password="${open1x.email.password}" 
         ssl="${open1x.email.ssl}" 
@@ -268,10 +267,13 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
         bcclist="${open1x.email.recipients}">
 
       <message>
-XSupplicant (${open1x.build.type}) build version ${open1x.version.major}.${open1x.version.minor} revision ${revision.max} was successfully built.
+XSupplicant (${open1x.build.type}) build version ${open1x.version.major}.${open1x.version.minor}.${open1x.version.patch} revision ${revision.max} was successfully built.
 
-Installer: http://www.open1x.org/build/${open1x.build.type}/${open1x.installer.file}
-SHA1 Hash: http://www.open1x.org/build/${open1x.build.type}/${open1x.installer.file}.asc
+Installer: 
+http://www.open1x.org/build/${open1x.build.type}/${open1x.installer.file}
+
+SHA1 Hash: 
+http://www.open1x.org/build/${open1x.build.type}/${open1x.installer.file}.asc
       </message>
     
     </mail>
