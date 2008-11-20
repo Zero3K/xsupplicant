@@ -12,7 +12,7 @@ schtasks /Create /SC DAILY /TN SeaAnt-Nightly /TR "C:\ant\bin\ant.bat -f C:\Open
 
 To run a release build:
 
-C:\ant\bin\ant.bat -f C:\OpenSEA\build.xml -Dopen1x.major=2 -Dopen1x.minor=1 -Dopen1x.patch=6 -Dopen1x.build.type=release -Dopen1x.publish.username='your ftp username' -Dopen1x.publish.password='your ftp password'
+C:\ant\bin\ant.bat -f C:\OpenSEA\build.xml -Dopen1x.version.major=2 -Dopen1x.version.minor=1 -Dopen1x.version.patch=6 -Dopen1x.build.type=release -Dopen1x.publish.username='your ftp username' -Dopen1x.publish.password='your ftp password'
 
 To build from a specific SVN revision use -Dopen1x.build.revision=# (Default is HEAD)
 
@@ -36,9 +36,17 @@ To build from a different branch use -Dopen1x.svn.branch="path" (i.e. trunk or b
 
 <target name="init">
 
-    <condition property="open1x.property.file" value="windows.build.properties">
+    <condition property="open1x.property.file" value="${basedir}\windows.build.properties">
         <os family="windows"/>
     </condition>
+
+    <!-- Try to set some sane defaults.-->
+    <!-- These will be overridden by -D flags -->
+    <property name="open1x.version.major" value="2"/>
+    <property name="open1x.version.minor" value="1"/>
+    <property name="open1x.version.patch" value="private"/>
+    <property name="open1x.version" value="${open1x.version.major}.${open1x.version.minor}.${open1x.version.patch}"/>
+
 
     <fail unless="open1x.property.file">
         A property file check hasn't been created for the OS you are running this script on.
@@ -48,11 +56,54 @@ To build from a different branch use -Dopen1x.svn.branch="path" (i.e. trunk or b
 
     <record name="${basedir}\${open1x.build.name}.txt" action="start" loglevel="verbose"/>
 
+    <!-- 
+	Set the patch to "nightly" or "private"
+	if this is a nightly or private build.
+    -->
+    <condition property="open1x.version.patch" value="${open1x.build.type}">
+      <or>
+        <equals arg1="${open1x.build.type}" arg2="nightly"/>
+        <equals arg1="${open1x.build.type}" arg2="private"/>
+      </or>
+    </condition>
+
+    <property name="open1x.build.name" value="SeaAnt"/>
+
+    <property name="open1x.svn.username" value=""/>
+    <property name="open1x.svn.password" value=""/>
+    <property name="open1x.svn.revision" value="HEAD"/>
+    <property name="open1x.svn.repository" value="https://open1x.svn.sourceforge.net/svnroot/open1x"/>
+    <property name="open1x.svn.branch" value="trunk"/>
+
+    <condition property="open1x.build.path" value="C:\OpenSEA\${open1x.build.name}">
+        <os family="windows"/>
+    </condition>
+
+    <condition property="open1x.build.script.path" value="${open1x.build.path}\xsupplicant-build\windows\scripts">
+      <os family="windows"/>
+    </condition>
+
+    <condition property="open1x.build.script" value="build_open1x.bat">
+      <os family="windows"/>
+    </condition>
+
+    <condition property="open1x.installer.path" value="${open1x.build.path}\xsupplicant-build\windows\installer">
+      <os family="windows"/>
+    </condition>
+
+    <condition property="open1x.installer.prefix" value="xsupplicant-setup-v">
+      <os family="windows"/>
+    </condition>
+
+    <condition property="open1x.installer.postfix" value="exe">
+      <os family="windows"/>
+    </condition>
+
     <!-- Skip the SVN portion of the build if the build type is a private build -->
     <condition property="open1x.svn.disabled">
         <equals arg1="private" arg2="${open1x.build.type}"/>
     </condition>
-    
+
 </target>
 
 <target name="Checkout" unless="open1x.svn.disabled">
@@ -115,7 +166,6 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
     
     <move file="${open1x.build.path}\xsupplicant-ui\xsupptray\buildnum-ant.h" toFile="${open1x.build.path}\xsupplicant-ui\xsupptray\buildnum.h"/>
     <move file="${open1x.build.path}\xsupplicant-ui\xsupptray\version-ant.h" toFile="${open1x.build.path}\xsupplicant-ui\xsupptray\version.h"/>
-    
 
 </target>
 
@@ -163,7 +213,7 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
       <arg value="${open1x.installer.path}\xsupinstall.nsi"/>
     </exec>
         
-    <checksum file="${open1x.installer.path}\${open1x.installer.file}" todir="${open1x.installer.path}" algorithm="SHA" forceOverwrite="yes" fileext="asc"/>
+    <checksum file="${open1x.installer.path}\${open1x.installer.file}" todir="${open1x.installer.path}" algorithm="SHA" forceOverwrite="yes" fileext=".asc"/>
     
 </target>
 
@@ -200,7 +250,7 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
     <scp todir="${open1x.publish.username}:${open1x.publish.password}@${open1x.publish.server}:${open1x.publish.path}" trust="yes">
       <fileset dir="${open1x.installer.path}">
         <include name="${open1x.installer.file}"/>
-        <include name="${open1x.checksum.file}.asc"/>
+        <include name="${open1x.installer.file}.asc"/>
       </fileset>
     </scp>
 
@@ -209,7 +259,7 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
 <target name="E-Mail" unless="open1x.email.disabled">
 
     <mail mailhost="${open1x.email.host}" 
-        subject="OpenSEA ${open1x.build.name} (${open1x.build.type}) Build Status (${open1x.build.status})" 
+        subject="OpenSEA ${open1x.build.name} (${open1x.build.type}) ${open1x.version.major}.${open1x.version.minor} revision ${revision.max}"
         user="${open1x.email.username}" 
         password="${open1x.email.password}" 
         ssl="${open1x.email.ssl}" 
@@ -218,7 +268,10 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
         bcclist="${open1x.email.recipients}">
 
       <message>
-A attempt of a ${open1x.build.type} build of ${open1x.build.name} (${open1x.version} revision ${revision.max}) was a ${open1x.build.status}.
+XSupplicant (${open1x.build.type}) build version ${open1x.version.major}.${open1x.version.minor} revision ${revision.max} was successfully built.
+
+Installer: http://www.open1x.org/build/${open1x.build.type}/${open1x.installer.file}
+SHA1 Hash: http://www.open1x.org/build/${open1x.build.type}/${open1x.installer.file}.asc
       </message>
     
     </mail>
