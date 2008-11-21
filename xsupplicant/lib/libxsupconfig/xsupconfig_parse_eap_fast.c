@@ -27,7 +27,7 @@
 
 void *xsupconfig_parse_eap_fast(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_method *meth;
+  struct config_eap_method *meth = NULL;
 
   meth = (*attr);
 

@@ -55,6 +55,8 @@ protected:
 	bool checkEAPGTCConfig();
 	bool checkEAPOTPConfig();
 	bool checkEAPTLSConfig();
+	bool checkEAPFASTConfig();
+	bool checkEAPPEAPConfig();
 
 	// EAP-MD5 helper functions
 	struct config_eap_method *createEAPMD5Test();
@@ -90,6 +92,16 @@ protected:
 	struct config_eap_method *createEAPTLSTest();
 	bool checkEAPTLSTest(struct config_eap_method *eaptls);
 	bool freeEAPTLSTest(struct config_eap_method **eaptls);
+
+	// EAP-FAST helper functions
+	struct config_eap_method *createEAPFASTTest();
+	bool checkEAPFASTTest(struct config_eap_method *eapfast);
+	bool freeEAPFASTTest(struct config_eap_method **eapfast);
+
+	// EAP-PEAP helper functions
+	struct config_eap_method *createEAPPEAPTest();
+	bool checkEAPPEAPTest(struct config_eap_method *eappeap);
+	bool freeEAPPEAPTest(struct config_eap_method **eappeap);
 
 private:
 	bool foundInEnum(profile_enum *profenum, char *tofind);

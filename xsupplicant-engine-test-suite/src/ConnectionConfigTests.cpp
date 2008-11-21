@@ -2251,6 +2251,7 @@ bool ConnectionConfigTests::checkWEPKeyRange()
 		return false;
 	}
 
+	read_back_config->association.txkey = 0;
 	read_back_config->association.keys[0] = _strdup("1111111111");
 
 	if (xsupgui_request_set_connection_config(CONFIG_LOAD_GLOBAL, read_back_config) != REQUEST_SUCCESS)
@@ -2286,6 +2287,7 @@ bool ConnectionConfigTests::checkWEPKeyRange()
 			read_back_config->association.keys[i] = NULL;
 		}
 
+		read_back_config->association.txkey = i;
 		read_back_config->association.keys[i] = _strdup("3333322222");
 
 		if (xsupgui_request_set_connection_config(CONFIG_LOAD_GLOBAL, read_back_config) != REQUEST_SUCCESS)

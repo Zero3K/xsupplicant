@@ -134,7 +134,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib"
-				AdditionalLibraryDirectories="..\..\..\xsupplicant\vs2005\build-debug"
+				AdditionalLibraryDirectories="..\..\..\xsupplicant\vs2005\build-release"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

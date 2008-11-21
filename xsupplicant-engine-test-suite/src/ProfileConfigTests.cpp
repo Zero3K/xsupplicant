@@ -66,6 +66,10 @@ bool ProfileConfigTests::executeTest()
 
 	runInnerTest("1 checkEAPOTPConfig()", checkEAPOTPConfig());
 
+	runInnerTest("1 checkEAPTLSConfig()", checkEAPTLSConfig());
+
+	runInnerTest("1 checkEAPFASTConfig()", checkEAPFASTConfig());
+
 //	runInnerTest("1 checkSystemSwitchToVolatile()", checkSystemSwitchToVolatile());
 
 //	runInnerTest("1 checkUserSwitchToVolatile()", checkUserSwitchToVolatile());
@@ -2075,4 +2079,530 @@ bool ProfileConfigTests::freeEAPTLSTest(struct config_eap_method **eaptls)
 	return true;
 }
 
+bool ProfileConfigTests::checkEAPFASTConfig()
+{
+	struct config_profiles *prof = NULL;
+	int result = 0;
+
+	if ((result = xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, SYSTEM_CONF_NAME, &prof)) != REQUEST_SUCCESS)
+	{
+		innerError("Unable to read the system configuration test profile. (Error : " + Util::itos(result) + ")\n");
+		return false;
+	}
+
+	// Clear the data that is already there.
+	delete_config_eap_method(&prof->method);
+
+	prof->method = createEAPFASTTest();
+	if (prof->method == NULL) return false;		// should have already screamed.
+
+	if ((result = xsupgui_request_set_profile_config(CONFIG_LOAD_GLOBAL, prof)) != REQUEST_SUCCESS)
+	{
+		innerError("Unable to write config to engine.  (Error : " + Util::itos(result) + ")\n");
+		return false;
+	}
+
+	if (xsupgui_request_free_profile_config(&prof) != 0)
+	{
+		innerError("Unable to free profile configuration memory!\n");
+		return false;
+	}
+
+	if ((result = xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, SYSTEM_CONF_NAME, &prof)) != REQUEST_SUCCESS)
+	{
+		innerError("Unable to read back the profile.  (Error : " + Util::itos(result) + ")\n");
+		return false;
+	}
+
+	if (checkEAPFASTTest(prof->method) == false) return false;	// The check should have screamed.
+
+	if (freeEAPFASTTest(&prof->method) == false) return false;  // The check should have screamed.
+	return true;
+}
+
+struct config_eap_method *ProfileConfigTests::createEAPFASTTest()
+{
+	struct config_eap_method *eapdata = NULL;
+	struct config_eap_fast *fastdata = NULL;
+
+	eapdata = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+	if (eapdata == NULL)
+	{
+		innerError("Couldn't allocate memory to store EAP configuration structure.\n");
+		return NULL;
+	}
+
+	eapdata->method_num = EAP_TYPE_FAST;
+	eapdata->next = NULL;
+
+	eapdata->method_data = malloc(sizeof(struct config_eap_fast));
+	if (eapdata->method_data == NULL)
+	{
+		innerError("Couldn't allocate memory to store EAP-FAST configuration structure.\n");
+		free(eapdata);
+		return NULL;
+	}
+
+	fastdata = (struct config_eap_fast *)eapdata->method_data;
+
+	fastdata->chunk_size = 1069;
+	fastdata->innerid = _strdup("my inner id test");
+	fastdata->pac_location = _strdup("my_pac_path\\is\\here");
+	fastdata->phase2 = NULL;
+	fastdata->provision_flags = 0xff;
+	fastdata->trusted_server = _strdup("my trusted server string");
+	fastdata->validate_cert = FALSE;
+
+	return eapdata;
+}
+
+bool ProfileConfigTests::checkEAPFASTTest(struct config_eap_method *eapfast)
+{
+	struct config_eap_fast *fastdata = NULL;
+
+	if (eapfast->method_num != EAP_TYPE_FAST)
+	{
+		innerError("EAP type wasn't set to FAST!\n");
+		return false;
+	}
+
+	if (eapfast->method_data == NULL)
+	{
+		innerError("No EAP-FAST configuration data was found in memory!\n");
+		return false;
+	}
+
+	fastdata = (config_eap_fast *)eapfast->method_data;
+
+	if (fastdata->chunk_size != 1069)
+	{
+		innerError("TLS chunk size didn't match!\n");
+		return false;
+	}
+
+	if (fastdata->innerid == NULL)
+	{
+		innerError("Inner id isn't defined!\n");
+		return false;
+	}
+
+	if (strcmp(fastdata->innerid, "my inner id test") != 0)
+	{
+		innerError("Invalid inner id returned!\n");
+		return false;
+	}
+
+	if (fastdata->pac_location == NULL)
+	{
+		innerError("PAC location isn't defined!\n");
+		return false;
+	}
+
+	if (strcmp(fastdata->pac_location, "my_pac_path\\is\\here") != 0)
+	{
+		innerError("PAC location path didn't match!\n");
+		return false;
+	}
+
+	if (fastdata->trusted_server == NULL)
+	{
+		innerError("Trusted server wasn't set!\n");
+		return false;
+	}
+
+	if (strcmp(fastdata->trusted_server, "my trusted server string") != 0)
+	{
+		innerError("Trusted server name didn't match!\n");
+		return false;
+	}
+
+	if (fastdata->validate_cert != FALSE)
+	{
+		innerError("Validate cert setting didn't match!\n");
+		return false;
+	}
+
+	if (fastdata->provision_flags != 7)
+	{
+		innerError("Invalid provision flags were returned!\n");
+		return false;
+	}
+
+	return true;
+}
+
+bool ProfileConfigTests::freeEAPFASTTest(struct config_eap_method **eapfast)
+{
+	struct config_eap_method *eapdata = NULL;
+	struct config_eap_fast *fastdata = NULL;
+	bool retval = true;
+
+	eapdata = (*eapfast);
+
+	if (eapdata == NULL) 
+	{
+		innerError("Invalid FAST data passed in to free!\n");
+		return false;
+	}
+
+	if (eapdata->method_data == NULL)
+	{
+		innerError("Invalid method_Data passed in to free!\n");
+		return false;
+	}
+
+	fastdata = (struct config_eap_fast *)eapdata->method_data;
+
+	if (fastdata->innerid == NULL)
+	{
+		innerError("No inner id to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(fastdata->innerid);
+	}
+
+	if (fastdata->pac_location == NULL)
+	{
+		innerError("No pac_location to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(fastdata->pac_location);
+	}
+
+	if (fastdata->trusted_server == NULL)
+	{
+		innerError("No trusted server to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(fastdata->trusted_server);
+	}
+
+	free(eapdata->method_data);
+	free(eapdata);
+	(*eapfast) = NULL;
+
+	return true;
+}
+
+bool ProfileConfigTests::checkEAPPEAPConfig()
+{
+	struct config_profiles *prof = NULL;
+	int result = 0;
+
+	if ((result = xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, SYSTEM_CONF_NAME, &prof)) != REQUEST_SUCCESS)
+	{
+		innerError("Unable to read the system configuration test profile. (Error : " + Util::itos(result) + ")\n");
+		return false;
+	}
+
+	// Clear the data that is already there.
+	delete_config_eap_method(&prof->method);
+
+	prof->method = createEAPPEAPTest();
+	if (prof->method == NULL) return false;		// should have already screamed.
+
+	if ((result = xsupgui_request_set_profile_config(CONFIG_LOAD_GLOBAL, prof)) != REQUEST_SUCCESS)
+	{
+		innerError("Unable to write config to engine.  (Error : " + Util::itos(result) + ")\n");
+		return false;
+	}
+
+	if (xsupgui_request_free_profile_config(&prof) != 0)
+	{
+		innerError("Unable to free profile configuration memory!\n");
+		return false;
+	}
+
+	if ((result = xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, SYSTEM_CONF_NAME, &prof)) != REQUEST_SUCCESS)
+	{
+		innerError("Unable to read back the profile.  (Error : " + Util::itos(result) + ")\n");
+		return false;
+	}
+
+	if (checkEAPPEAPTest(prof->method) == false) return false;	// The check should have screamed.
+
+	if (freeEAPPEAPTest(&prof->method) == false) return false;  // The check should have screamed.
+	return true;
+}
+
+struct config_eap_method *ProfileConfigTests::createEAPPEAPTest()
+{
+	struct config_eap_method *eapdata = NULL;
+	struct config_eap_peap *peapdata = NULL;
+
+	eapdata = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+	if (eapdata == NULL)
+	{
+		innerError("Couldn't allocate memory to store EAP configuration structure.\n");
+		return NULL;
+	}
+
+	eapdata->method_num = EAP_TYPE_PEAP;
+	eapdata->next = NULL;
+
+	eapdata->method_data = malloc(sizeof(struct config_eap_peap));
+	if (eapdata->method_data == NULL)
+	{
+		innerError("Couldn't allocate memory to store EAP-PEAP configuration structure.\n");
+		free(eapdata);
+		return NULL;
+	}
+
+	peapdata = (struct config_eap_peap *)eapdata->method_data;
+
+	peapdata->chunk_size = 1069;
+	peapdata->crl_dir = _strdup("my_test_crl\\dir");
+	peapdata->random_file = _strdup("mytest_random.fil");
+	peapdata->session_resume = RES_YES;
+	peapdata->trusted_server = _strdup("My Trusted Server Test");
+	peapdata->user_cert = _strdup("my_user_cert_path");
+	peapdata->user_key = _strdup("my_user_key_path");
+	peapdata->user_key_pass = _strdup("my user key password");
+	peapdata->proper_peapv1 = TRUE;
+	peapdata->force_peap_version = 2;
+	peapdata->identity = _strdup("my inner id");
+	peapdata->validate_cert = FALSE;
+
+	return eapdata;
+}
+
+bool ProfileConfigTests::checkEAPPEAPTest(struct config_eap_method *eappeap)
+{
+	struct config_eap_peap *peapdata = NULL;
+
+	if (eappeap->method_num != EAP_TYPE_PEAP)
+	{
+		innerError("EAP type wasn't set to PEAP!\n");
+		return false;
+	}
+
+	if (eappeap->method_data == NULL)
+	{
+		innerError("No EAP-PEAP configuration data was found in memory!\n");
+		return false;
+	}
+
+	peapdata = (config_eap_peap *)eappeap->method_data;
+
+	if (peapdata->chunk_size != 1069)
+	{
+		innerError("TLS chunk size didn't match!\n");
+		return false;
+	}
+
+	if (peapdata->crl_dir == NULL)
+	{
+		innerError("CRL dir isn't defined!\n");
+		return false;
+	}
+
+	if (strcmp(peapdata->crl_dir, "my_test_crl\\dir") != 0)
+	{
+		innerError("CRL dir path didn't match!\n");
+		return false;
+	}
+
+	if (peapdata->random_file == NULL)
+	{
+		innerError("Random file isn't defined!\n");
+		return false;
+	}
+
+	if (strcmp(peapdata->random_file, "mytest_random.fil") != 0)
+	{
+		innerError("Random file didn't match!\n");
+		return false;
+	}
+
+	if (peapdata->session_resume != RES_YES)
+	{
+		innerError("Session resume didn't match!\n");
+		return false;
+	}
+
+	if (peapdata->trusted_server == NULL)
+	{
+		innerError("Trusted server wasn't set!\n");
+		return false;
+	}
+
+	if (strcmp(peapdata->trusted_server, "My Trusted Server Test") != 0)
+	{
+		innerError("Trusted server name didn't match!\n");
+		return false;
+	}
+
+	if (peapdata->user_cert == NULL)
+	{
+		innerError("User certificate wasn't set!\n");
+		return false;
+	}
+
+	if (strcmp(peapdata->user_cert, "my_user_cert_path") != 0)
+	{
+		innerError("User certificate information was invalid.\n");
+		return false;
+	}
+
+	if (peapdata->user_key == NULL)
+	{
+		innerError("User key wasn't set!\n");
+		return false;
+	}
+
+	if (strcmp(peapdata->user_key, "my_user_key_path") != 0)
+	{
+		innerError("User key path was invalid!\n");
+		return false;
+	}
+
+	if (peapdata->user_key_pass == NULL)
+	{
+		innerError("User key pass wasn't set!\n");
+		return false;
+	}
+
+	if (strcmp(peapdata->user_key_pass, "my user key password") != 0)
+	{
+		innerError("User key pass didn't match!\n");
+		return false;
+	}
+
+	if (peapdata->proper_peapv1 != TRUE)
+	{
+		innerError("Proper PEAPv1 keying value was incorrect!\n");
+		return false;
+	}
+
+	if (peapdata->force_peap_version != 2)
+	{
+		innerError("Force PEAP version wasn't 2!\n");
+		return false;
+	}
+
+	if (peapdata->identity == NULL)
+	{
+		innerError("No inner identity set!\n");
+		return false;
+	}
+	
+	if (strcmp(peapdata->identity, "my inner id") != 0)
+	{
+		innerError("Inner ID wasn't valid!\n");
+		return false;
+	}
+
+	if (peapdata->validate_cert != FALSE)
+	{
+		innerError("Validate cert wasn't FALSE!\n");
+		return false;
+	}
+
+	return true;
+}
+
+bool ProfileConfigTests::freeEAPPEAPTest(struct config_eap_method **eappeap)
+{
+	struct config_eap_method *eapdata = NULL;
+	struct config_eap_peap *peapdata = NULL;
+	bool retval = true;
+
+	eapdata = (*eappeap);
+
+	if (eapdata == NULL) 
+	{
+		innerError("Invalid PEAP data passed in to free!\n");
+		return false;
+	}
+
+	if (eapdata->method_data == NULL)
+	{
+		innerError("Invalid method_Data passed in to free!\n");
+		return false;
+	}
+
+	peapdata = (struct config_eap_peap *)eapdata->method_data;
+
+	if (peapdata->crl_dir == NULL)
+	{
+		innerError("No crl_dir to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(peapdata->crl_dir);
+	}
+
+	if (peapdata->random_file == NULL)
+	{
+		innerError("No random file to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(peapdata->random_file);
+	}
+
+	if (peapdata->trusted_server == NULL)
+	{
+		innerError("No trusted server to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(peapdata->trusted_server);
+	}
+
+	if (peapdata->user_cert == NULL)
+	{
+		innerError("No user cert to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(peapdata->user_cert);
+	}
+
+	if (peapdata->user_key == NULL)
+	{
+		innerError("No user key to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(peapdata->user_key);
+	}
+
+	if (peapdata->user_key_pass == NULL)
+	{
+		innerError("No user key pass!\n");
+		retval = false;
+	}
+	else
+	{
+		free(peapdata->user_key_pass);
+	}
+
+	if (peapdata->identity == NULL)
+	{
+		innerError("No identify to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(peapdata->identity);
+	}
+	
+	free(eapdata->method_data);
+	free(eapdata);
+	(*eappeap) = NULL;
+
+	return true;
+}
 
