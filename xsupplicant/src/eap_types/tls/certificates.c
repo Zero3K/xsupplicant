@@ -95,6 +95,7 @@ int certificates_windows_add_cert_to_ossl_mem_store(struct tls_vars *mytls_vars,
 	if ((mytls_vars == NULL) || (mytls_vars->ctx == NULL))
 	{
 		debug_printf(DEBUG_NORMAL, "No SSL context available.  Unable to load your certificates.\n");
+		X509_free(wincert);
 		return -1;
 	}
 
@@ -113,10 +114,13 @@ int certificates_windows_add_cert_to_ossl_mem_store(struct tls_vars *mytls_vars,
 			{
 				debug_printf(DEBUG_NORMAL, "Failed to add certificate to the OpenSSL store!\n");
 				debug_printf(DEBUG_AUTHTYPES, "OpenSSL error is : %s\n", ERR_error_string(err, NULL));
+				X509_free(wincert);
 				return -1;
 			}
 		}
 	}
+
+	X509_free(wincert);
 
 	return 0;
 }
@@ -344,7 +348,82 @@ int certificates_windows_load_root_certs(struct tls_vars *mytls_vars, char *loca
 
 	return certificates_windows_build_ossl_mem_chain(mytls_vars, mycert);
 }
+
+/**
+ * \brief Load a Windows user certificate in to OpenSSL.
+ *
+ * @param[in] user_cert   The thumbprint of the user certificate we are looking for.
+ *
+ * \retval XENONE on success
+ **/
+int certificates_windows_load_user_cert(struct tls_vars *mytls_vars, char *location)
+{
+	PCCERT_CONTEXT mycert = NULL;
+
+	if (mytls_vars == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "mytls_vars was NULL in %s() at %d!\n", __FUNCTION__, __LINE__);
+		return -1;
+	}
+
+	if (location == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Attempt to load a root certificate that doesn't have a location set!?\n");
+		return -1;
+	}
+
+	mycert = win_cert_handler_get_from_user_store("WINDOWS", location);
+	if (mycert == NULL)
+	{ 
+		debug_printf(DEBUG_NORMAL, "Couldn't locate the certificate!\n");
+		return -1;
+	}
+	else
+	{
+		debug_printf(DEBUG_AUTHTYPES, "Located the user certificate for '%s'!\n", location);
+	}
+
+	return win_cert_handler_load_user_cert(mytls_vars, mycert);
+}
+
 #endif
+
+/**
+ * \brief Attempt to load the user certificate in to OpenSSL.
+ * 
+ * @param[in] mytls_vars   The TLS context information for this session.
+ * @param[in] store_type   The store type the certificate is found in.
+ * @param[in] user_cert   The location of the user cert.
+ * @param[in] user_key   The location of the user key.
+ * @param[in] password   The password for the user key.
+ *
+ * \retval XENONE on success
+ **/
+int certificates_load_user(struct tls_vars *mytls_vars, char *store_type, char *user_cert,
+						   char *user_key, char *password)
+{
+	if ((mytls_vars == NULL) || (store_type == NULL) || (user_cert == NULL)) return -1;
+
+	if (strcmp(store_type, "WINDOWS") == 0)
+	{
+#ifndef WINDOWS
+		return -1;
+#else
+		return certificates_windows_load_user_cert(mytls_vars, user_cert);
+#endif  // WINDOWS
+	}
+	else if (strcmp(store_type, "FILE") == 0)
+	{
+		return tls_funcs_load_user_cert(mytls_vars, user_cert, user_key, password);
+	}
+	else
+	{
+		// Unknown store type!
+		return -1;
+	}
+
+	return XENONE;
+}
 
 /**
  * \brief Attempt to load the certificate(s) for the trusted server in to OpenSSL.
@@ -359,6 +438,8 @@ int certificates_load_root(struct tls_vars *mytls_vars, char *trusted_servername
 {
 	struct config_trusted_server *svr = NULL;
 	int i = 0;
+
+	if ((trusted_servername == NULL) || (mytls_vars == NULL)) return -1;
 
 	svr = certificates_find_trusted_server(config_get_trusted_servers(CONFIG_LOAD_GLOBAL), trusted_servername);
 	if (svr == NULL)

@@ -943,6 +943,315 @@ finish:
 }
 
 /**
+ * \brief Return an array of user certificates.
+ *
+ * @param[in,out] certs   An array of user certificates.  The final element in the 
+ *                        array will be NULL.
+ *
+ * \retval REQUEST_FAILURE the request to the supplicant failed
+ * \retval REQUEST_TIMEOUT the request timed out
+ * \retval REQUEST_SUCCESS the request succeeded
+ **/
+int xsupgui_request_enum_user_certs(cert_enum **certs)
+{
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL, b = NULL;
+	int done = REQUEST_SUCCESS;
+	int err = 0;
+	int i = 0;
+	int numcerts = 0;
+	char *value = NULL;
+	cert_enum *cert = NULL;
+
+	if (certs == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+
+	(*certs) = NULL;
+
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL)
+	{
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto finish;
+	}
+
+	t = xmlNewChild(n, NULL, (xmlChar *)"Enum_User_Certs", NULL);
+	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish;
+	}
+
+	err = xsupgui_request_send(doc, &retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		done = err;
+		goto finish;
+	}
+
+	// Otherwise, parse it and see if we got what we wanted.
+
+	// Check if we got errors.
+	err = xsupgui_request_check_exceptions(retdoc);
+	if (err != 0) 
+	{
+		done = err;
+		goto finish;
+	}
+
+	n = xmlDocGetRootElement(retdoc);
+	if (n == NULL)
+	{
+		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
+		goto finish;
+	}
+
+	n = xsupgui_request_find_node(n->children, "User_Certs_Enum");
+	if (n == NULL)
+	{
+		done = IPC_ERROR_BAD_RESPONSE;
+		goto finish;
+	}
+
+	// If we get here, then we know that the document passed the
+	// validation tests imposed.  So, we need to see if we got the result 
+	// we wanted.
+	n = xsupgui_request_find_node(n->children, "Number_Of_Certs");
+	if (n == NULL)
+	{
+		done = IPC_ERROR_BAD_RESPONSE_DATA;
+		goto finish;
+	}
+
+	value = (char *)xmlNodeGetContent(n);
+
+	if ((value == NULL) || (strlen(value) == 0))
+	{
+		done = IPC_ERROR_BAD_RESPONSE_DATA;
+		goto finish;
+	}
+
+	numcerts = atoi(value);
+
+	cert = (cert_enum *)Malloc((sizeof(cert_enum) * (numcerts+1)));
+	if (cert == NULL)
+	{
+		done = IPC_ERROR_CANT_ALLOCATE_MEMORY;
+		goto finish;
+	}
+
+	n = xsupgui_request_find_node(n, "Certificates");
+	if (n == NULL)
+	{
+		free(cert);
+		done = IPC_ERROR_BAD_RESPONSE_DATA;
+		goto finish;
+	}
+
+	n = n->children;
+
+	for (i = 0; i < numcerts; i++)
+	{
+		t = xsupgui_request_find_node(n, "Certificate");
+		if (t == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		t = t->children;
+
+		b = xsupgui_request_find_node(t, "Store_Type");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].storetype = NULL;   // Which shouldn't EVER happen!
+		}
+		else
+		{
+			cert[i].storetype = value;
+		}
+
+		b = xsupgui_request_find_node(t, "Name");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].certname = NULL;
+		}
+		else
+		{
+			cert[i].certname = value;
+		}
+
+		b = xsupgui_request_find_node(t, "Friendly_Name");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].friendlyname = NULL;
+		}
+		else
+		{
+			cert[i].friendlyname = value;
+		}
+
+		b = xsupgui_request_find_node(t, "Issuer");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].issuer = NULL;
+		}
+		else
+		{
+			cert[i].issuer = value;
+		}
+
+		b = xsupgui_request_find_node(t, "CommonName");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].commonname = NULL;
+		}
+		else
+		{
+			cert[i].commonname = value;
+		}
+
+		b = xsupgui_request_find_node(t, "Location");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].location = NULL;
+		}
+		else
+		{
+			cert[i].location = value;
+		}
+
+		b = xsupgui_request_find_node(t, "Month");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].month = 0;
+		}
+		else
+		{
+			cert[i].month = atoi(value);
+		}
+		xmlFree(value);
+
+		b = xsupgui_request_find_node(t, "Day");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].day = 0;
+		}
+		else
+		{
+			cert[i].day = atoi(value);
+		}
+		xmlFree(value);
+
+		b = xsupgui_request_find_node(t, "Year");
+		if (b == NULL)
+		{
+			free(cert);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish;
+		}
+
+		value = (char *)xmlNodeGetContent(b);
+
+		if ((value == NULL) || (strlen(value) == 0))
+		{
+			cert[i].year = 0;
+		}
+		else
+		{
+			cert[i].year = atoi(value);
+		}
+		xmlFree(value);
+
+		n = n->next;
+	}
+
+	(*certs) = cert;
+
+finish:
+	xmlFreeDoc(doc);
+	xmlFreeDoc(retdoc);
+
+	return done;
+}
+
+/**
  * \brief Free the memory that was allocated to store the certificate enumeration.
  *
  * @param[in] numcas   The number of CAs that are represented in the enumeration.

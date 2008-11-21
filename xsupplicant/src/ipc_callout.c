@@ -173,6 +173,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_Is_Trusted_Server_In_Use", ipc_callout_get_is_trusted_server_in_use},
 	{"Get_Are_Administrator", ipc_callout_get_are_administrator},
 	{"Enum_Smartcard_Readers", ipc_callout_enum_smartcard_readers},
+	{"Enum_User_Certs", ipc_callout_enum_user_certs},
 	{NULL, NULL}
 };
 
@@ -8416,3 +8417,218 @@ int ipc_callout_enum_smartcard_readers(xmlNodePtr innode, xmlNodePtr *outnode)
 #endif
 }
 
+/**
+ * \brief Catch an IPC request to enumerate the user's certificates.
+ *
+ * \param[in] innode  The root of the XML tree that contains the information we
+ *                    are interested in.
+ * \param[out] outnode   The root of the XML tree that contains the return information
+ *                       used to let the IPC caller know the status of the request.
+ *
+ * \retval IPC_SUCCESS on success
+ * \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	xmlNodePtr n = NULL, t = NULL, b = NULL;
+	char value[100];
+	int numcas = 0;
+	int i = 0;
+	char *temp = NULL;
+	cert_enum *casa = NULL;
+
+	if (innode == NULL) return IPC_FAILURE;
+
+	debug_printf(DEBUG_IPC, "Got an IPC enumerate user certs request!\n");
+
+	n = xmlNewNode(NULL, (xmlChar *)"User_Certs_Enum");
+	if (n == NULL) 
+	{
+		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
+
+	debug_printf(DEBUG_IPC, "Getting number of available certificates.\n");
+	numcas = cert_handler_num_user_certs();
+	if (numcas < 0)
+	{
+		xmlFreeNode(n);
+		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CERT_STORE_ERROR, outnode);
+	}
+
+	debug_printf(DEBUG_IPC, "Getting list of available certificates.\n");
+	if (cert_handler_enum_user_certs(&numcas, &casa) < 0)
+	{
+		xmlFreeNode(n);
+		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CERT_STORE_ERROR, outnode);
+	}
+
+	if (casa == NULL)
+	{
+		xmlFreeNode(n);
+		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CERT_STORE_ERROR, outnode);
+	}
+
+	sprintf((char *)&value, "%d", numcas);
+	t = xmlNewChild(n, NULL, (xmlChar *)"Number_Of_Certs", (xmlChar *)value);
+	if (t == NULL)
+	{
+		xmlFreeNode(n);
+		cert_handler_free_cert_enum(numcas, &casa);
+		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
+
+	t = xmlNewChild(n, NULL, (xmlChar *)"Certificates", NULL);
+	if (t == NULL)
+	{
+		xmlFreeNode(n);
+		cert_handler_free_cert_enum(numcas, &casa);
+		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+	}
+
+	for (i = 0; i < numcas; i++)
+	{
+		b = xmlNewChild(t, NULL, (xmlChar *)"Certificate", NULL);
+		if (b == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		if (ipc_callout_convert_amp(casa[i].storetype, &temp) != IPC_SUCCESS)
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't convert string!\n");
+			xmlFreeNode(n);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		if (xmlNewChild(b, NULL, (xmlChar *)"Store_Type", (xmlChar *)temp) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+		FREE(temp);
+
+		if (ipc_callout_convert_amp(casa[i].certname, &temp) != IPC_SUCCESS)
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't convert string!\n");
+			xmlFreeNode(n);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		if (xmlNewChild(b, NULL, (xmlChar *)"Name", (xmlChar *)temp) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+		FREE(temp);
+
+		if (ipc_callout_convert_amp(casa[i].friendlyname, &temp) != IPC_SUCCESS)
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't convert string!\n");
+			xmlFreeNode(n);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		if (xmlNewChild(b, NULL, (xmlChar *)"Friendly_Name", (xmlChar *)temp) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+		FREE(temp);
+
+		if (ipc_callout_convert_amp(casa[i].issuer, &temp) != IPC_SUCCESS)
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't convert string!\n");
+			xmlFreeNode(n);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		if (xmlNewChild(b, NULL, (xmlChar *)"Issuer", (xmlChar *)temp) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+		FREE(temp);
+
+		if (ipc_callout_convert_amp(casa[i].commonname, &temp) != IPC_SUCCESS)
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't convert string!\n");
+			xmlFreeNode(n);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		if (xmlNewChild(b, NULL, (xmlChar *)"CommonName", (xmlChar *)temp) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+		FREE(temp);
+
+		if (ipc_callout_convert_amp(casa[i].location, &temp) != IPC_SUCCESS)
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't convert string!\n");
+			xmlFreeNode(n);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		if (xmlNewChild(b, NULL, (xmlChar *)"Location", (xmlChar *)temp) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+		FREE(temp);
+
+		sprintf((char *)&value, "%d", casa[i].month);
+		if (xmlNewChild(b, NULL, (xmlChar *)"Month", (xmlChar *)value) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		sprintf((char *)&value, "%d", casa[i].day);
+		if (xmlNewChild(b, NULL, (xmlChar *)"Day", (xmlChar *)value) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
+		sprintf((char *)&value, "%d", casa[i].year);
+		if (xmlNewChild(b, NULL, (xmlChar *)"Year", (xmlChar *)value) == NULL)
+		{
+			xmlFreeNode(n);
+			FREE(temp);
+			cert_handler_free_cert_enum(numcas, &casa);
+			return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+	}
+
+	cert_handler_free_cert_enum(numcas, &casa);
+
+	(*outnode) = n;
+
+	return IPC_SUCCESS;
+}

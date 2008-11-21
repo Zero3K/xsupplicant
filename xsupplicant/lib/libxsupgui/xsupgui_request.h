@@ -10,7 +10,7 @@
  * This code is released under both the GPL version 2 and BSD licenses.
  * Either license may be used.  The respective licenses are found below.
  *
- * Copyright (C) 2006-2007 Chris Hessing
+ * Copyright (C) 2006-2008 Chris Hessing
  * All Rights Reserved
  *
  * --- GPL Version 2 License ---
@@ -500,6 +500,7 @@ int xsupgui_request_enum_ssids(char *device, ssid_info_enum **ssids);
 int xsupgui_request_wireless_scan(char *, uint8_t);
 int xsupgui_request_version_string(char **);
 int xsupgui_request_enum_root_ca_certs(cert_enum **);
+int xsupgui_request_enum_user_certs(cert_enum **);
 int xsupgui_request_ca_certificate_info(char *, char *, cert_info **);
 int xsupgui_request_answer_tnc_ui_request(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 int xsupgui_request_get_os_specific_int_data(char *, char **, char **, int *);

@@ -2121,6 +2121,37 @@ void getrootcacerts()
 	xsupgui_request_free_cert_enum(&casa);
 }
 
+void getusercerts()
+{
+	cert_enum *casa;
+	int i = 0;
+
+	if (xsupgui_request_enum_user_certs(&casa) != REQUEST_SUCCESS)
+	{
+		printf("Failed to get user certificates.\n");
+		die();
+	}
+	else
+	{
+		printf("Certs found :\n"); 
+		while (casa[i].certname != NULL)
+		{
+			printf("Certificate : %s\n", casa[i].certname);
+			printf("\tStore Type    : %s\n", casa[i].storetype);
+			printf("\tFriendly Name : %s\n", casa[i].friendlyname);
+			printf("\tIssuer        : %s\n", casa[i].issuer);
+			printf("\tExpires       : %d/%d/%d\n", casa[i].month, casa[i].day, casa[i].year);
+			printf("\tCommon Name   : %s\n", casa[i].commonname);
+			printf("\tLocation      : %s\n", casa[i].location);
+			printf("\n");
+			i++;
+		}
+	}
+	printf("\n");
+
+	xsupgui_request_free_cert_enum(&casa);
+}
+
 void getrootcainfo()
 {
 	cert_info *cinfo = NULL;
@@ -2396,9 +2427,10 @@ int main(int argc, char *argv[])
 #endif
 
 #if 1
-	do_get_user_is_admin();
-	enum_sc_readers();
-	create_conn();
+//	do_get_user_is_admin();
+//	enum_sc_readers();
+//	create_conn();
+	getusercerts();
 	nt("Terminate Supplicant");
 	doterminate(); 
 

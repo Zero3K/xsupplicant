@@ -9,6 +9,7 @@
 
 extern "C" {
 #include "xsupgui.h"
+#include "xsupgui_request.h"
 }
 
 using namespace std;
@@ -23,6 +24,7 @@ bool IPCConnectTest::setupTest()
 	int result = 0;
 	int i = 0;
 	bool connected = true;
+	char *verstring = NULL;
 
 	for (i = 0; i<30; i++)
 	{
@@ -50,6 +52,16 @@ bool IPCConnectTest::setupTest()
 	{
 		all_tests_success = false;
 		return false;
+	}
+
+	result = xsupgui_request_version_string(&verstring);
+	if (result == REQUEST_SUCCESS)
+	{
+		cout << "Connected to " << string(verstring) << ".\n";
+	}
+	else
+	{
+		cout << "Unable to determine the version!\n";
 	}
 
 	return true;

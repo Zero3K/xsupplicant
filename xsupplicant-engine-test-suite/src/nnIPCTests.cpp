@@ -23,6 +23,8 @@ bool nnIPCTests::executeTest()
 
 	runInnerTest("checkCertificates()", checkCertificates());
 
+	runInnerTest("checkUserCertificates()", checkUserCertificates());
+
 	runInnerTest("checkCreateTT()", checkCreateTT());
 
 	runInnerTest("enumSmartCardReaders()", enumSmartCardReaders());
@@ -158,6 +160,26 @@ bool nnIPCTests::checkVersionString()
 	free(verString);
 
 	return true;
+}
+
+bool nnIPCTests::checkUserCertificates()
+{
+	cert_enum *certEnum = NULL;	
+	int i = 0;
+
+	if (xsupgui_request_enum_user_certs(&certEnum) != REQUEST_SUCCESS)
+	{
+		innerError("Unable to enumerate certificates.\n");
+
+		if (certEnum != NULL)
+		{
+			innerError("AND the resulting enumeration pointer wasn't NULL!\n");
+		}
+
+		return false;
+	}
+
+	xsupgui_request_free_cert_enum(&certEnum);
 }
 
 bool nnIPCTests::checkCertificates()

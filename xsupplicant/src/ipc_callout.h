@@ -125,7 +125,6 @@ xmlDocPtr ipc_callout_build_doc();
 int ipc_callout_ping(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_enum_live_interfaces(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_enum_eap_methods(xmlNodePtr, xmlNodePtr *);
-// ipc_callout_enum_sc_readers() is not implemented yet!
 int ipc_callout_reload_config(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_terminate(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_1x_state(xmlNodePtr, xmlNodePtr *);
@@ -204,5 +203,6 @@ int ipc_callout_get_frequency(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_dhcp_release_renew(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_are_administrator(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_enum_smartcard_readers(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_enum_user_certs(xmlNodePtr, xmlNodePtr *);
 
 #endif  // _IPC_CALLOUT_H_

@@ -33,6 +33,12 @@ struct tls_vars {
   gnutls_certificate_credentials_t creds;
 #endif
 
+#ifdef WINDOWS
+  void *hcProv;
+  uint32_t pdwKeyspec;
+  uint32_t pfCallerFreeProv;
+#endif // WINDOWS
+
   int resume;                // Should we attempt to resume this connection?
   int resuming;              // Are we in the process of resuming?
 

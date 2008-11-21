@@ -224,6 +224,18 @@ xmlNodePtr xsupconfwrite_eap_tls_create_tree(struct config_eap_tls *tlsdata, uin
 		}
 	}
 
+	if ((write_all == TRUE) || (tlsdata->store_type != NULL))
+	{
+		if (xsupconfwrite_common_newSibling(tlsnode, "Store_Type", tlsdata->store_type) == NULL)
+		{
+#ifdef WRITE_EAP_TLS_DEBUG
+			printf("Couldn't create <Store_Type> node for TLS!\n");
+#endif
+			xmlFreeNode(tlsnode);
+			return NULL;
+		}
+	}
+
 	// XXX The OpenSC stuff isn't implemented for now because it will probably
 	// change.
 	return tlsnode;

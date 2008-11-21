@@ -396,6 +396,35 @@ void *xsupconfig_parse_eap_tls_key_id(void **attr, uint8_t config_type, xmlNodeP
   return tls;
 }
 
+void *xsupconfig_parse_eap_tls_store_type(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+  struct config_eap_tls *tls = NULL;
+  char *value = NULL;
+  xmlChar *content = NULL;
+
+  content = xmlNodeGetContent(node);
+  value = _strdup(content);
+  xmlFree(content);
+
+#ifdef PARSE_DEBUG
+  printf("Store Type : %s\n", value);
+#endif
+
+  tls = (*attr);
+
+  if ((value == NULL) || (strlen(value) == 0))
+  {
+	tls->store_type = NULL;
+	if (value != NULL) free(value);
+  }
+  else
+  {
+	  tls->store_type = value;
+  }
+
+  return tls;
+}
+
 parser eap_tls[] = {
   {"User_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_user_cert},
   {"CRL_Directory", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_crl_dir},
@@ -409,6 +438,7 @@ parser eap_tls[] = {
   {"OpenSC_Lib_Path", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_opensc_path},
   {"Key_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_key_id},
   {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_trusted_server},
+  {"Store_Type", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_tls_store_type},
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
   // Add Certificate_ID and Root_Certificate_ID if they are ever implemented.

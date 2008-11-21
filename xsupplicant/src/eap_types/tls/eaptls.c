@@ -143,8 +143,7 @@ int eaptls_init(eap_type_data *eapdata)
 	  password = _strdup(ctx->prof->temp_password);
   }
 
-  if ((retVal = tls_funcs_load_user_cert(mytls_vars, userdata->user_cert, 
-					 userdata->user_key, password))!=XENONE)
+	if (certificates_load_user(mytls_vars, userdata->store_type, userdata->user_cert, userdata->user_key, password) != XENONE)
     {
       debug_printf(DEBUG_NORMAL, "Error loading user certificate!\n");
       eap_type_common_fail(eapdata);

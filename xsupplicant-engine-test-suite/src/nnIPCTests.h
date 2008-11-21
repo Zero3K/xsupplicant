@@ -34,6 +34,7 @@ protected:
 	bool checkVersionString();
 	bool checkCertificates();
 	bool checkCreateTT();
+	bool checkUserCertificates();
 	bool enumSmartCardReaders();
 };
 

@@ -2100,6 +2100,9 @@ void tls_funcs_deinit(struct tls_vars *mytls_vars)
   queue_destroy(&mytls_vars->tlsinqueue);
   queue_destroy(&mytls_vars->tlsoutqueue);
 
+#ifdef WINDOWS
+#endif
+
   //  BIOs are freed by the SSL_free call below.  Do not try to free them any other
   //  way, or you will segfault!
   if (mytls_vars->ssl != NULL)

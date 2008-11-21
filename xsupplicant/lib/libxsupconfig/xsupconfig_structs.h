@@ -92,6 +92,7 @@ struct config_eap_tls
   char *trusted_server;			///< The name of a trusted server block that should be used to verify the server's certificate.
 								//	   the name should be used to resolve the config_trusted_server block that contains
 								//	   the data needed to validate the server certificate.
+  char *store_type;				///< The type of cert store we need to look in for the certificate information.
   struct smartcard sc;			///< Stores information needed to read a certificate from a smart card.
 
 };
