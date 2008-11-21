@@ -1117,10 +1117,10 @@ bool ProfileConfigTests::checkEAPMSCHAPv2Test(struct config_eap_method *eapmscv2
 		innerError("EAP-MSCHAPv2 NT hash didn't match!\n");
 		return false;
 	}
-
+ 
 	if (mscv2data->flags != (FLAGS_EAP_MSCHAPV2_VOLATILE | FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
 	{
-		innerError("Flags were invalid!\n");
+		innerError("Flags were invalid!  (Expected : " + Util::itos((FLAGS_EAP_MSCHAPV2_VOLATILE | FLAGS_EAP_MSCHAPV2_IAS_QUIRK)) + "  Got : " + Util::itos(mscv2data->flags) + ")\n");
 		return false;
 	}
 
@@ -1245,7 +1245,6 @@ struct config_eap_method *ProfileConfigTests::createEAPAKATest()
 	akadata->password = _strdup("12345678");
 	akadata->auto_realm = 1;
 	akadata->reader = _strdup("Invalid Reader Name");
-	akadata->username = _strdup("Shouldn't be used!");
 
 	return eapdata;
 }
@@ -1277,18 +1276,6 @@ bool ProfileConfigTests::checkEAPAKATest(struct config_eap_method *eapaka)
 	if (strcmp(akadata->password, "12345678") != 0)
 	{
 		innerError("EAP-AKA password didn't match!\n");
-		return false;
-	}
-
-	if (akadata->username == NULL)
-	{
-		innerError("No EAP-AKA username was found!\n");
-		return false;
-	}
-
-	if (strcmp(akadata->username, "Shouldn't be used!") != 0)
-	{
-		innerError("EAP-AKA username didn't match!\n");
 		return false;
 	}
 
@@ -1343,16 +1330,6 @@ bool ProfileConfigTests::freeEAPAKATest(struct config_eap_method **eapaka)
 	else
 	{
 		free(akadata->password);
-	}
-
-	if (akadata->username == NULL)
-	{
-		innerError("No username to free!\n");
-		retval = false;
-	}
-	else
-	{
-		free(akadata->username);
 	}
 
 	free(eapdata->method_data);
@@ -1431,7 +1408,6 @@ struct config_eap_method *ProfileConfigTests::createEAPSIMTest()
 	simdata->password = _strdup("12345678");
 	simdata->auto_realm = 1;
 	simdata->reader = _strdup("Invalid Reader Name");
-	simdata->username = _strdup("Shouldn't be used!");
 
 	return eapdata;
 }
@@ -1463,18 +1439,6 @@ bool ProfileConfigTests::checkEAPSIMTest(struct config_eap_method *eapsim)
 	if (strcmp(simdata->password, "12345678") != 0)
 	{
 		innerError("EAP-SIM password didn't match!\n");
-		return false;
-	}
-
-	if (simdata->username == NULL)
-	{
-		innerError("No EAP-SIM username was found!\n");
-		return false;
-	}
-
-	if (strcmp(simdata->username, "Shouldn't be used!") != 0)
-	{
-		innerError("EAP-SIM username didn't match!\n");
 		return false;
 	}
 
@@ -1529,16 +1493,6 @@ bool ProfileConfigTests::freeEAPSIMTest(struct config_eap_method **eapsim)
 	else
 	{
 		free(simdata->password);
-	}
-
-	if (simdata->username == NULL)
-	{
-		innerError("No username to free!\n");
-		retval = false;
-	}
-	else
-	{
-		free(simdata->username);
 	}
 
 	free(eapdata->method_data);
@@ -1891,6 +1845,7 @@ struct config_eap_method *ProfileConfigTests::createEAPTLSTest()
 	tlsdata = (struct config_eap_tls *)eapdata->method_data;
 
 	tlsdata->chunk_size = 1069;
+	tlsdata->store_type = _strdup("WINDOWS");
 	tlsdata->crl_dir = _strdup("my_test_crl\\dir");
 	tlsdata->random_file = _strdup("mytest_random.fil");
 	tlsdata->session_resume = RES_YES;
@@ -1925,6 +1880,18 @@ bool ProfileConfigTests::checkEAPTLSTest(struct config_eap_method *eaptls)
 	if (tlsdata->chunk_size != 1069)
 	{
 		innerError("TLS chunk size didn't match!\n");
+		return false;
+	}
+
+	if (tlsdata->store_type == NULL)
+	{
+		innerError("TLS store type isn't defined!\n");
+		return false;
+	}
+
+	if (strcmp(tlsdata->store_type, "WINDOWS") != 0)
+	{
+		innerError("Invalid store type returned!\n");
 		return false;
 	}
 
@@ -2030,6 +1997,16 @@ bool ProfileConfigTests::freeEAPTLSTest(struct config_eap_method **eaptls)
 	}
 
 	tlsdata = (struct config_eap_tls *)eapdata->method_data;
+
+	if (tlsdata->store_type == NULL)
+	{
+		innerError("No Store_type to free!\n");
+		retval = false;
+	}
+	else
+	{
+		free(tlsdata->store_type);
+	}
 
 	if (tlsdata->crl_dir == NULL)
 	{

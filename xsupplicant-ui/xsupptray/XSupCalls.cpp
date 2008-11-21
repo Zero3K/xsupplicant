@@ -3913,14 +3913,8 @@ int XSupCalls::config_get_user(struct config_eap_method *meth, char **pUser)
 	case EAP_TYPE_GTC:
 	case EAP_TYPE_TLS:
 	case EAP_TYPE_MSCHAPV2:
-		break;
-
 	case EAP_TYPE_SIM:
-    *pUser = Util::myNullStrdup(((struct config_eap_sim *)(meth->method_data))->username);
-		break;
-
 	case EAP_TYPE_AKA:
-    *pUser = Util::myNullStrdup(((struct config_eap_aka *)(meth->method_data))->username);
 		break;
 
 	case EAP_TYPE_PEAP:
@@ -4056,16 +4050,8 @@ int XSupCalls::config_set_user(struct config_eap_method *meth, char *pUser)
 	case EAP_TYPE_GTC:
 	case EAP_TYPE_TLS:
 	case EAP_TYPE_MSCHAPV2:
-		break;
-
 	case EAP_TYPE_SIM:
-    Util::myFree(&((struct config_eap_sim *)(meth->method_data))->username);
-    ((struct config_eap_sim *)(meth->method_data))->username = Util::myNullStrdup(pUser);
-		break;
-
 	case EAP_TYPE_AKA:
-    Util::myFree(&((struct config_eap_aka *)(meth->method_data))->username);
-    ((struct config_eap_aka *)(meth->method_data))->username = Util::myNullStrdup(pUser);
 		break;
 
 	case EAP_TYPE_PEAP:

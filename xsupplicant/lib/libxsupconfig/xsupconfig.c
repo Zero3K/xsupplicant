@@ -1890,7 +1890,6 @@ void delete_config_eap_sim(struct config_eap_sim **tmp_sim)
   if (*tmp_sim == NULL)
     return;
 
-  FREE_STRING((*tmp_sim)->username);
   FREE_STRING((*tmp_sim)->password);
   FREE_STRING((*tmp_sim)->reader);
 
@@ -1915,13 +1914,11 @@ void dump_config_eap_sim(struct config_eap_sim *sim, int level)
     return;
   if (level == 0) {
     printf("\t---------------eap-sim--------------\n");
-    printf("\t  SIM User: \"%s\"\n", sim->username);
     printf("\t  SIM Pass: \"%s\"\n", sim->password);
     printf("\t  SIM Auto Realm: %s\n", sim->auto_realm ? "yes" : "no");  
     printf("\t------------------------------------\n");
   } else {
     printf("\t\t^ ^ ^  eap-sim  ^ ^ ^\n");
-    printf("\t\t  SIM User: \"%s\"\n", sim->username);
     printf("\t\t  SIM Pass: \"%s\"\n", sim->password);
     printf("\t\t  SIM Auto Realm: %s\n", sim->auto_realm ? "yes" : "no");  
     printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
@@ -1944,7 +1941,6 @@ void delete_config_eap_aka(struct config_eap_aka **tmp_aka)
   if (*tmp_aka == NULL)
     return;
 
-  FREE_STRING((*tmp_aka)->username);
   FREE_STRING((*tmp_aka)->password);
   FREE_STRING((*tmp_aka)->reader);
 
@@ -1968,13 +1964,11 @@ void dump_config_eap_aka(struct config_eap_aka *aka, int level)
     return;
   if (level == 0) {
     printf("\t---------------eap-aka--------------\n");
-    printf("\t  AKA User: \"%s\"\n", aka->username);
     printf("\t  AKA Pass: \"%s\"\n", aka->password);
     printf("\t  AKA Auto Realm: %s\n", aka->auto_realm ? "yes" : "no");  
     printf("\t------------------------------------\n");
   } else {
     printf("\t\t^ ^ ^  eap-aka  ^ ^ ^\n");
-    printf("\t\t  AKA User: \"%s\"\n", aka->username);
     printf("\t\t  AKA Pass: \"%s\"\n", aka->password);
     printf("\t\t  AKA Auto Realm: %s\n", aka->auto_realm ? "yes" : "no");  
     printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");

@@ -385,15 +385,6 @@ uint8_t eapsim_init(eap_type_data *eapdata)
 
   eapdata->credsSent = TRUE;   // We have attempted to use our PIN at this point, if it didn't work, fail the auth.
 
-  if (userdata->username == NULL)
-    {
-      userdata->username = imsi;
-    }
-  else
-    {
-      FREE(imsi);
-    }
-
   eap_type_common_init_eap_data(eapdata);
 
   return TRUE;
@@ -450,14 +441,7 @@ void eapsim_do_start(eap_type_data *eapdata)
       return;
     }
 
-  if (simconf->username == NULL)
-    {
-      username = eapdata->ident;
-    }
-  else
-    {
-      username = simconf->username;
-    }
+  username = eapdata->ident;
 
   retval = sim_build_start(simdata, simdata->response_data, &outptr);
   if (retval != XENONE)
@@ -578,14 +562,7 @@ void eapsim_do_challenge(eap_type_data *eapdata)
       return;
     }
 
-  if (simconf->username == NULL)
-    {
-      username = eapdata->ident;
-    }
-  else
-    {
-      username = simconf->username;
-    }
+  username = eapdata->ident;
 
   offset = sizeof(struct eap_header)+3;
 

@@ -180,6 +180,8 @@ bool nnIPCTests::checkUserCertificates()
 	}
 
 	xsupgui_request_free_cert_enum(&certEnum);
+
+	return true;
 }
 
 bool nnIPCTests::checkCertificates()

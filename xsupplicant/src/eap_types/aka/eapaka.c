@@ -384,41 +384,6 @@ int eapaka_setup(eap_type_data *eapdata)
 
   eapdata->credsSent = TRUE;
 
-  if (userdata->username == NULL)
-    {
-		userdata->username = Malloc(50);
-		if (userdata->username == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to allocate memory to store IMSI!\n");
-			eap_type_common_fail(eapdata);
-			return FALSE;
-		}
-
-		username = userdata->username;
-		username[0] = '0';   // AKA uses 0 to identify it as opposed to EAP-SIM.
-		Strncpy(&username[1], 49, imsi, strlen(imsi)+1);
-		FREE(imsi);
-
-		if (userdata->auto_realm == TRUE)
-		{
-			memset(&realm, 0x00, 25);
-			_snprintf((char *)&realm, 25, "@mnc%c%c%c.mcc%c%c%c.owlan.org",
-				username[4], username[5], username[6], username[1], username[2],
-				username[3]);
-
-			debug_printf(DEBUG_AUTHTYPES, "Realm Portion : %s\n",realm);
-			if (Strcat(username, 50, realm) != 0)
-			{
-				fprintf(stderr, "Refusing to overflow the string!\n");
-				return XEMALLOC;
-			}
-		}
-    } else {
-#ifndef RADIATOR_TEST
-      FREE(imsi);
-#endif
-    }
-
   eap_type_common_init_eap_data(eapdata);
 
   return XENONE;
@@ -686,7 +651,7 @@ void eapaka_do_challenge(eap_type_data *eapdata, uint8_t *eappayload,
 
 	case AT_MAC:
 	  retval = aka_do_at_mac(eapdata, aka, eappayload, size,
-				 &packet_offset, akaconf->username);
+				&packet_offset, eapdata->ident);
 	  if (retval == XEAKASYNCFAIL)
 	    {
 	      debug_printf(DEBUG_AUTHTYPES, "Sync failure..  Doing sync "

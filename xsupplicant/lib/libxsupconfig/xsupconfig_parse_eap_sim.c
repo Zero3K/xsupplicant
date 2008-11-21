@@ -61,32 +61,6 @@ void *xsupconfig_parse_eap_sim(void **attr, uint8_t config_type, xmlNodePtr node
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_sim_username(void **attr, uint8_t config_type, xmlNodePtr node)
-{
-  struct config_eap_sim *sim = NULL;
-  char *value = NULL;
-
-  value = (char *)xmlNodeGetContent(node);
-
-  sim = (*attr);
-
-#ifdef PARSE_DEBUG
-  printf("Username for EAP-SIM  is '%s'!\n", value);
-#endif
-
-	if ((value == NULL) || (strlen(value) == 0))
-	{
-		free(value);
-		sim->username = NULL;
-	}
-	else
-	{
-		sim->username = value;
-	}
-
-  return sim;
-}
-
 void *xsupconfig_parse_eap_sim_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_sim *sim;
@@ -213,7 +187,6 @@ void *xsupconfig_parse_eap_sim_auto_realm(void **attr, uint8_t config_type, xmlN
 }
 
 parser eap_sim[] = {
-  {"Username", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_sim_username},
   {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_sim_password},
   {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_sim_enc_password},
   {"Auto_Realm", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_sim_auto_realm},

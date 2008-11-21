@@ -61,32 +61,6 @@ void *xsupconfig_parse_eap_aka(void **attr, uint8_t config_type, xmlNodePtr node
   return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_aka_username(void **attr, uint8_t config_type, xmlNodePtr node)
-{
-  struct config_eap_aka *aka = NULL;
-  char *value = NULL;
-
-  aka = (*attr);
-
-  value = (char *)xmlNodeGetContent(node);
-
-#ifdef PARSE_DEBUG
-  printf("Username for EAP-AKA is '%s'!\n", value);
-#endif
-
-	if ((value == NULL) || (strlen(value) == 0))
-	{
-		free(value);
-		aka->username = NULL;
-	}
-	else
-	{
-		aka->username = value;
-	}
-
-  return aka;
-}
-
 void *xsupconfig_parse_eap_aka_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_aka *aka = NULL;
@@ -209,7 +183,6 @@ void *xsupconfig_parse_eap_aka_auto_realm(void **attr, uint8_t config_type, xmlN
 }
 
 parser eap_aka[] = {
-  {"Username", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_username},
   {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_password},
   {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_enc_password},
   {"Auto_Realm", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_auto_realm},

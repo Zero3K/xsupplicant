@@ -214,7 +214,6 @@ struct config_eap_peap
 
 struct config_eap_sim
 {
-  char *username;
   char *password;
   char *reader;
   int auto_realm;
@@ -222,7 +221,6 @@ struct config_eap_sim
 
 struct config_eap_aka
 {
-  char *username;
   char *password;
   char *reader;
   int auto_realm;
