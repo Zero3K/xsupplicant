@@ -70,9 +70,9 @@ int xsupconfcheck_profile_eap_tls(struct config_eap_tls *tls, config_profiles *p
 		retval = -1;
 	}
 
-	if (tls->user_key == NULL)
+	if (tls->store_type == NULL)
 	{
-		if (log == TRUE) error_prequeue_add("A user key file must be specified to use EAP-TLS.");
+		if (log == TRUE) error_prequeue_add("A store type for your certificate must be specified to use EAP-TLS.");
 		retval = -1;
 	}
 
@@ -82,11 +82,19 @@ int xsupconfcheck_profile_eap_tls(struct config_eap_tls *tls, config_profiles *p
 		retval = -1;
 	}
 
+#ifndef WINDOWS
+	if (tls->user_key == NULL)
+	{
+		if (log == TRUE) error_prequeue_add("A user key file must be specified to use EAP-TLS.");
+		retval = -1;
+	}
+
 	if ((tls->user_key_pass == NULL) && (prof->temp_password == NULL))
 	{
 		if (log == TRUE) error_prequeue_add("A user key password must be specified to use EAP-TLS.");
 		retval = PROFILE_NEED_UPW;
 	}
+#endif
 
 	return retval;
 }

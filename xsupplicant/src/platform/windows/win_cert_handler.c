@@ -1008,7 +1008,7 @@ int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars, PCCERT_CONTEXT 
 	ERR_clear_error();
 
 	// Then, load the private key.
-	if (CryptAcquireCertificatePrivateKey(mycert, CRYPT_ACQUIRE_COMPARE_KEY_FLAG, NULL, mytls_vars->hcProv, 
+	if (CryptAcquireCertificatePrivateKey(mycert, CRYPT_ACQUIRE_COMPARE_KEY_FLAG, NULL, &mytls_vars->hcProv, 
 		&mytls_vars->pdwKeyspec, &mytls_vars->pfCallerFreeProv) == FALSE)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to load the user private key data!\n");
@@ -1042,7 +1042,15 @@ int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars, PCCERT_CONTEXT 
 		return -1;
 	}
 
-	if (!SSL_use_certificate(mytls_vars->ssl, wincert))
+	if (mytls_vars->ctx == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "No SSL context established!\n");
+		X509_free(wincert);
+		RSA_free(rsa);
+		return -1;
+	}
+
+	if (!SSL_CTX_use_certificate(mytls_vars->ctx, wincert))
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to use selected user certificate!\n");
 		X509_free(wincert);
@@ -1063,7 +1071,7 @@ int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars, PCCERT_CONTEXT 
 		return -1;
 	}
 
-	if (!SSL_use_RSAPrivateKey(mytls_vars->ssl, rsa))
+	if (!SSL_CTX_use_RSAPrivateKey(mytls_vars->ctx, rsa))
 	{
 		RSA_free(rsa);
 		debug_printf(DEBUG_NORMAL, "Couldn't set the OpenSSL RSA Private Key method!\n");

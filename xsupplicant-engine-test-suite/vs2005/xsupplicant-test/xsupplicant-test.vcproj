@@ -60,7 +60,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxsupconfig.lib"
-				AdditionalLibraryDirectories="&quot;E:\SEAAnt-multi-config\xsupplicant\vs2005\build-debug&quot;"
+				AdditionalLibraryDirectories="..\..\..\xsupplicant\vs2005\build-debug"
 				IgnoreDefaultLibraryNames="msvcrt"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
@@ -134,7 +134,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib"
-				AdditionalLibraryDirectories="&quot;E:\SEAAnt-multi-config\xsupplicant\vs2005\build-release&quot;"
+				AdditionalLibraryDirectories="..\..\..\xsupplicant\vs2005\build-debug"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"

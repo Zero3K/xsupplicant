@@ -88,10 +88,10 @@ int eaptls_init(eap_type_data *eapdata)
   mytls_vars->resume = userdata->session_resume;
   mytls_vars->verify_cert = TRUE;
 
-  mytls_vars->sessionkeyconst = (uint8_t *)Malloc(TLS_SESSION_KEY_CONST_SIZE);
+  mytls_vars->sessionkeyconst = (uint8_t *)Malloc(TLS_SESSION_KEY_CONST_SIZE+1);
   if (mytls_vars->sessionkeyconst == NULL) return XEMALLOC;
 
-  if (Strncpy((char *)mytls_vars->sessionkeyconst, TLS_SESSION_KEY_CONST_SIZE, 
+  if (Strncpy((char *)mytls_vars->sessionkeyconst, TLS_SESSION_KEY_CONST_SIZE+1, 
 	  TLS_SESSION_KEY_CONST, TLS_SESSION_KEY_CONST_SIZE) != 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Attempt to overflow destination string in %s() at %d!\n",
@@ -127,6 +127,7 @@ int eaptls_init(eap_type_data *eapdata)
 	  return XEGENERROR;
 	}
 
+#ifndef WINDOWS				// Windows doesn't need a password?
 	if (ctx->prof->temp_password == NULL)
     {
 		if (userdata->user_key_pass == NULL)
@@ -142,6 +143,10 @@ int eaptls_init(eap_type_data *eapdata)
   {
 	  password = _strdup(ctx->prof->temp_password);
   }
+#endif
+
+  mytls_vars->certs_loaded &= ~ROOT_CERTS_LOADED;
+  mytls_vars->handshake_done = FALSE;
 
 	if (certificates_load_user(mytls_vars, userdata->store_type, userdata->user_cert, userdata->user_key, password) != XENONE)
     {
@@ -236,19 +241,20 @@ void eaptls_check(eap_type_data *eapdata)
 
   tlsconf = (struct config_eap_tls *)eapdata->eap_conf_data;
 
+#ifndef WINDOWS
   if (tlsconf->user_key_pass == NULL)
     {
       debug_printf(DEBUG_NORMAL, "No password available for TLS certificate!\n");
       eap_type_common_fail(eapdata);
       return;
     }
+#endif
 }
 
-/**************************************************************************
+/**
+ * \brief Process a TLS request.
  *
- * Process a TLS request.
- *
- **************************************************************************/
+ **/
 void eaptls_process(eap_type_data *eapdata)
 {
   struct tls_vars *mytls_vars = NULL;
@@ -448,9 +454,7 @@ uint8_t eaptls_isKeyAvailable(eap_type_data *eapdata)
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return FALSE;
 
-  if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL",
-		   FALSE))
-    return FALSE;
+  if (eapdata->eap_data == NULL) return FALSE;
 
   mytls_vars = (struct tls_vars *)eapdata->eap_data;
 
