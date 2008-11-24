@@ -887,7 +887,6 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 	HCRYPTHASH hash;
 	DWORD hash_size, len, i;
 	unsigned char *buf = NULL;
-	HCRYPTPROV *hcProv = NULL;
 
 	// Verify that we have all of the information we need to sign data.
 	if (mytls_vars == NULL) 
@@ -908,11 +907,9 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 		return 0;
 	}
 
-	hcProv = (HCRYPTPROV *)mytls_vars->hcProv;
-
-	if (!CryptCreateHash((*hcProv), CALG_SSL3_SHAMD5, 0, 0, &hash)) 
+	if (!CryptCreateHash(mytls_vars->hcProv, CALG_SSL3_SHAMD5, 0, 0, &hash)) 
 	{
-		debug_printf(DEBUG_NORMAL, "CryptCreateHash() failed!\n");
+		debug_printf(DEBUG_NORMAL, "CryptCreateHash() failed! (Error %d)\n", GetLastError());
 		return 0;
 	}
 
@@ -966,17 +963,13 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 static int finish(RSA *rsa)
 {
 	struct tls_vars *mytls_vars = (struct tls_vars *)rsa->meth->app_data;
-	HCRYPTPROV *hcProv = NULL;
 
 	if (mytls_vars == NULL) return 0;
 
-	if ((mytls_vars->hcProv != NULL) && (mytls_vars->pfCallerFreeProv == TRUE))
+	if (mytls_vars->pfCallerFreeProv == TRUE)
 	{
-		hcProv = (HCRYPTPROV *)mytls_vars->hcProv;
-
 		// We need to free the CSP.
-		CryptReleaseContext((*hcProv), 0);
-		mytls_vars->hcProv = NULL;
+		CryptReleaseContext(mytls_vars->hcProv, 0);
 	}
 
 	FREE((char *)rsa->meth);
@@ -1079,6 +1072,13 @@ int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars, PCCERT_CONTEXT 
 	}
 
 	RSA_free(rsa);
+
+  if (!SSL_CTX_check_private_key(mytls_vars->ctx))
+    {
+      debug_printf(DEBUG_NORMAL, "Private key isn't valid!\n");
+     // tls_funcs_process_error();
+      return -1; XETLSCERTLOAD;
+    }
 
 	return 0;
 }

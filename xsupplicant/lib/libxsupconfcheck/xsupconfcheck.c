@@ -35,6 +35,34 @@
 #endif
 
 /**
+ * \brief In the config specified by config_type, attempt to locate the 
+ *			certificate that we want to use.
+ *
+ * @param[in] config_type   The configuration that we want to look in for our
+ *								certificate.
+ *
+ * @param[in] tsname   The trusted server name that we are looking for.
+ *
+ * \retval NULL if the cert isn't found.
+ **/
+struct config_trusted_server *xsupconfcheck_find_trusted_server(uint8_t config_type, char *tsname)
+{
+	struct config_trusted_servers *tss = NULL;
+	struct config_trusted_server *ts = NULL;
+	
+	tss = config_get_trusted_servers(config_type);
+	if (tss == NULL)
+		return NULL;
+
+	ts = tss->servers;
+
+	while ((ts != NULL) && (strcmp(ts->name, tsname) != 0))
+		ts = ts->next;
+
+	return ts;
+}
+
+/**
  * \brief Validate the configuration for a "<Trusted_Server>" in the configuration file.
  *
  * @param[in] tsname   The name of the trusted server that we want to validate.
@@ -44,29 +72,17 @@
  **/
 int xsupconfcheck_trusted_server(char *tsname, int log)
 {
-	struct config_trusted_servers *tss = NULL;
 	struct config_trusted_server *ts = NULL;
-	
-	tss = config_get_trusted_servers(CONFIG_LOAD_GLOBAL);
-	if (tss == NULL)
-	{
-		tss = config_get_trusted_servers(CONFIG_LOAD_USER);
-		if (tss == NULL)
-		{
-			if (log == TRUE) error_prequeue_add("No trusted servers defined.");
-			return -1;
-		}
-	}
 
-	ts = tss->servers;
-
-	while ((ts != NULL) && (strcmp(ts->name, tsname) != 0))
-		ts = ts->next;
-
+	ts = xsupconfcheck_find_trusted_server(CONFIG_LOAD_USER, tsname);
 	if (ts == NULL)
 	{
-		if (log == TRUE) error_prequeue_add("Couldn't find the trusted server requested.");
-		return -1;
+		ts = xsupconfcheck_find_trusted_server(CONFIG_LOAD_GLOBAL, tsname);
+		if (ts == NULL)
+		{
+			if (log == TRUE) error_prequeue_add("Couldn't find the trusted server requested.");
+			return -1;
+		}
 	}
 
 	if (xsupconfcheck_ts_check(ts, log) != 0)

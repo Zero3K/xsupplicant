@@ -3,6 +3,7 @@
 
 #include "RunTests.h"
 #include "NonNetworkClasses.h"
+#include "AuthTest.h"
 #include "Util.h"
 
 RunTests::RunTests()
@@ -40,6 +41,7 @@ void RunTests::buildNonNetworkTests()
 
 void RunTests::buildNetworkTests()
 {
+	//networkTests.push_back(new AuthTest());
 }
 
 void RunTests::executeNonNetworkTests()

@@ -127,7 +127,6 @@ int eaptls_init(eap_type_data *eapdata)
 	  return XEGENERROR;
 	}
 
-#ifndef WINDOWS				// Windows doesn't need a password?
 	if (ctx->prof->temp_password == NULL)
     {
 		if (userdata->user_key_pass == NULL)
@@ -143,7 +142,6 @@ int eaptls_init(eap_type_data *eapdata)
   {
 	  password = _strdup(ctx->prof->temp_password);
   }
-#endif
 
   mytls_vars->certs_loaded &= ~ROOT_CERTS_LOADED;
   mytls_vars->handshake_done = FALSE;

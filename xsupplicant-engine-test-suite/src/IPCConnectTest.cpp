@@ -34,6 +34,10 @@ bool IPCConnectTest::setupTest()
 			innerError("Unable to establish IPC connection with the supplicant engine!\n");
 			connected = false;
 		}
+		else if (result == IPC_ERROR_EVT_ALREADY_CONNECTED)
+		{
+			innerError("Connection was already established.");
+		}
 		else
 		{
 			connected = true;

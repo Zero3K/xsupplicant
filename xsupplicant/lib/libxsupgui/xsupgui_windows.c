@@ -4,9 +4,6 @@
  * \file xsupgui_windows.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupgui_windows.c,v 1.3 2007/10/17 07:00:46 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:46 $
  **/
 #ifdef WINDOWS
 

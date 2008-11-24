@@ -34,7 +34,7 @@ struct tls_vars {
 #endif
 
 #ifdef WINDOWS
-  unsigned long *hcProv;
+  unsigned long hcProv;
   uint32_t pdwKeyspec;
   uint32_t pfCallerFreeProv;
 #endif // WINDOWS

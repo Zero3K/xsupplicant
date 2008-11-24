@@ -1363,6 +1363,7 @@ int tls_funcs_load_user_cert(struct tls_vars *mytls_vars,
   if (!xsup_assert((password != NULL), "password != NULL", FALSE))
     return XEMALLOC;
 
+  debug_printf(DEBUG_NORMAL, "Load a cert from a file!\n");
   SSL_CTX_set_default_passwd_cb_userdata(mytls_vars->ctx, password);
   SSL_CTX_set_default_passwd_cb(mytls_vars->ctx, return_password);
 
