@@ -49,6 +49,7 @@ ConnectionWizard::ConnectionWizard(QWidget *parent, QWidget *parentWindow, Emitt
 {
 	for (int i=0; i<ConnectionWizard::pageLastPage; i++)
 		m_wizardPages[i] = NULL;
+
 	m_currentPage = pageNoPage;
 	m_dot1Xmode = false;
 	m_editMode = false;
@@ -517,7 +518,7 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 			break;
 			
 		case pageDot1XInnerProtocol:
-			if ((m_connData.m_authenticatedProvisioning == true) && (m_connData.m_validateCert == true))
+			if (m_connData.m_validateCert == true)
 				nextPage = ConnectionWizard::pageDot1XCert;
 			else
 			{

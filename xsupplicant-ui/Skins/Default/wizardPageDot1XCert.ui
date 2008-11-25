@@ -412,6 +412,12 @@
               <property name="horizontalScrollBarPolicy" >
                <enum>Qt::ScrollBarAlwaysOff</enum>
               </property>
+              <property name="selectionMode" >
+               <enum>QAbstractItemView::SingleSelection</enum>
+              </property>
+              <property name="selectionBehavior" >
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
               <property name="sortingEnabled" >
                <bool>true</bool>
               </property>
@@ -419,7 +425,7 @@
                <number>5</number>
               </property>
               <property name="columnCount" >
-               <number>2</number>
+               <number>4</number>
               </property>
               <row/>
               <row/>
@@ -428,12 +434,22 @@
               <row/>
               <column>
                <property name="text" >
-                <string/>
+                <string> </string>
                </property>
               </column>
               <column>
                <property name="text" >
                 <string>Name</string>
+               </property>
+              </column>
+              <column>
+               <property name="text" >
+                <string>Issued By</string>
+               </property>
+              </column>
+              <column>
+               <property name="text" >
+                <string>Expires</string>
                </property>
               </column>
              </widget>

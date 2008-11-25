@@ -333,6 +333,61 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 	return success;	
 }
 
+bool ConnectionWizardData::toProfileEAP_TLSProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
+{
+	bool success = true;
+	if (pProfile == NULL)
+		return false;
+		
+	if (m_eapProtocol == ConnectionWizardData::eap_tls) {
+		this->toProfileOuterIdentity(pProfile);
+	
+		if (pProfile->method == NULL)
+		{
+			pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+			if (pProfile->method == NULL)
+				success = false;
+			else
+			{	
+				memset(pProfile->method, 0x00, sizeof(config_eap_method));
+				pProfile->method->method_num = EAP_TYPE_TLS;
+
+				pProfile->method->method_data = malloc(sizeof(config_eap_tls));
+				if (pProfile->method->method_data == NULL)
+					success = false;
+				else
+				{
+					config_eap_tls *mytls;
+					mytls = (config_eap_tls *)pProfile->method->method_data;					
+					memset(mytls, 0x00, sizeof(config_eap_tls));
+										
+					// server cert
+					if (pServer != NULL)
+					{
+						mytls->trusted_server = _strdup(pServer->name);
+					}
+					else
+					{
+						// We don't allow users to not verify the server cert with TLS, so return an error.
+						success = false;
+					}
+
+					// Now, add the TLS user cert to the config.
+				}
+			}
+		}
+		else
+		{
+			// unexpected
+			success = false;
+		}
+	}
+	else
+		success = false;
+		
+	return success;	
+}
+
 bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pProfile, config_trusted_server const * const pServer)
 {
 	bool success = true;

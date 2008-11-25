@@ -1490,6 +1490,14 @@ bool WizardPageDot1XCert::create(void)
 				
 				QCheckBox *pCheckBox = new QCheckBox();
 				m_pCertTable->setCellWidget(i,0,pCheckBox);
+
+				QTableWidgetItem *issuedToItem = new QTableWidgetItem(QString(m_pCertArray[i].certname));
+				m_pCertTable->setItem(i,2,issuedToItem);
+
+				QDate d(m_pCertArray[i].year, m_pCertArray[i].month, m_pCertArray[i].day);
+				QTableWidgetItem *dateItem = new QTableWidgetItem(d.toString("MM/dd/yyyy")); // need to change this for appropriate locales
+				m_pCertTable->setItem(i,3,dateItem);
+
 				++i;
 			}
 		}
@@ -1578,7 +1586,7 @@ void WizardPageDot1XCert::updateCertTipStrip(int row, int col)
 {
 	if (m_pCertTable != NULL)
 	{
-		if (col == 1)
+		if (col != 0)
 		{
 			QTableWidgetItem *item = m_pCertTable->item(row,1);
 			if (item != NULL)

@@ -52,6 +52,7 @@ public:
 	
 private:
 	bool toProfileEAP_PEAPProtocol(config_profiles * const, config_trusted_server const * const);
+	bool toProfileEAP_TLSProtocol(config_profiles * const, config_trusted_server const * const);
 	bool toProfileEAP_MD5Protocol(config_profiles * const);
 	bool toProfileEAP_AKAProtocol(config_profiles * const);
 	bool toProfileEAP_SIMProtocol(config_profiles * const);
@@ -113,6 +114,7 @@ public:
 	typedef enum {
 		eap_peap,
 		eap_ttls,
+		eap_tls,
 		eap_aka,
 		eap_sim,
 		eap_fast,
@@ -140,6 +142,7 @@ public:
 	Dot1XInnerProtocol m_innerTTLSProtocol;
 	Dot1XInnerProtocol m_innerFASTProtocol;
 	QStringList m_serverCerts;
+	QString m_userCert;
 	bool m_verifyCommonName;
 	QStringList m_commonNames;
 	unsigned char m_config_type;
