@@ -440,11 +440,10 @@ uint8_t *eaptls_getKey(eap_type_data *eapdata)
   return keydata;
 }
 
-/********************************************************************
+/**
+ * \brief Determine if we have keying data available.
  *
- * Determine if we have keying data available.
- *
- ********************************************************************/
+ **/
 uint8_t eaptls_isKeyAvailable(eap_type_data *eapdata)
 {
   struct tls_vars *mytls_vars = NULL;
@@ -477,7 +476,7 @@ uint8_t eaptls_isKeyAvailable(eap_type_data *eapdata)
  ********************************************************************/
 void eaptls_deinit(eap_type_data *eapdata)
 {
-  struct tls_vars *mytls_vars;
+  struct tls_vars *mytls_vars = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;

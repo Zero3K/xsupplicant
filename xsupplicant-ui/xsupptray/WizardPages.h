@@ -309,6 +309,27 @@ private:
 	int m_numCerts;
 };
 
+class WizardPageDot1XUserCert : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageDot1XUserCert(QWidget *parent, QWidget *parentWidget);
+	virtual ~WizardPageDot1XUserCert();
+	virtual bool create(void);
+	virtual void init(const ConnectionWizardData &data);
+	virtual QString getHeaderString(void) { return tr("802.1X User Certificate"); };
+	virtual bool validate(void);
+	virtual const ConnectionWizardData &wizardData(void);
+private slots:
+	void handleCertTableClick(int, int);
+	void updateCertTipStrip(int,int);
+private:
+	QTableWidget *m_pCertTable;
+	cert_enum *m_pCertArray; 
+	int m_numCerts;
+};
+
 class WizardPageAdapter : public WizardPage
 {
 	Q_OBJECT

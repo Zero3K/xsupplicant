@@ -204,6 +204,9 @@ bool ConnectionWizard::loadPages(void)
 				case ConnectionWizard::pageDot1XCert:
 					newPage = new WizardPageDot1XCert(this, m_pStackedWidget);
 					break;									
+				case ConnectionWizard::pageDot1XUserCert:
+					newPage = new WizardPageDot1XUserCert(this, m_pStackedWidget);
+					break;
 				case ConnectionWizard::pageSCReader:
 					newPage = new WizardPageSCReader(this, m_pStackedWidget);
 					break;
@@ -513,6 +516,10 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 			{
 				nextPage = ConnectionWizard::pageSCReader;
 			}
+			else if (m_connData.m_eapProtocol == ConnectionWizardData::eap_tls)
+			{
+				nextPage = ConnectionWizard::pageDot1XUserCert;
+			}
 			else
 				nextPage = ConnectionWizard::pageDot1XInnerProtocol;
 			break;
@@ -548,6 +555,10 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 				nextPage = ConnectionWizard::pageIPOptions;
 			break;
 			
+		case pageDot1XUserCert:
+			nextPage = ConnectionWizard::pageDot1XCert;
+			break;
+
 		case pageFinishPage:
 			nextPage = pageNoPage;
 			break;

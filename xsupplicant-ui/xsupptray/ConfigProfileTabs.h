@@ -52,7 +52,8 @@ class ConfigProfileTabs : public TabWidgetBase
 	 void discard();
 	 void showHelp();
 	 void hideProtSettingsTab();
-	 void showAllTabs();
+	 void showUserCertTab();
+	 void showPEAPTTLSTabs();
 	 void showSIMTabs();
 	 void showFASTTabs();
 
@@ -84,6 +85,7 @@ private slots:
 	 enum {
 		 PROTOCOL_SETTINGS_TAB,
 		 USER_CREDENTIALS_TAB,
+		 USER_CERTIFICATE_TAB,
 		 EAP_FAST_TAB,
 		 SIM_AKA_TAB
 	 };
@@ -97,6 +99,7 @@ private slots:
 	 bool saveEAPFASTData();
 	 bool saveEAPSIMData();
 	 bool saveEAPAKAData();
+	 bool saveEAPTLSData();
 	 bool checkPwdSettings();
 	 int eaptypeFromString(QString);
 	 void setIdentity();
@@ -109,6 +112,7 @@ private slots:
 	 void populatePEAPData();
 	 void populateFASTData();
 	 void populateTTLSData();
+	 void populateEAPTLSData();
 	 void freeTTLSInner(struct config_eap_ttls *ttlsdata);
 	 bool saveEAPGTCInner(struct config_eap_method **mymeth);
 	 bool saveEAPMSCHAPv2Inner(struct config_eap_method **mymeth);
@@ -139,6 +143,7 @@ private slots:
 	 QCheckBox *m_pFASTAllowProvision;
 	 QCheckBox *m_pFASTAuthProvision;
 	 QCheckBox *m_pFASTAnonProvision;
+	 QTableWidget *m_pUserCertTable;
 
 	 XSupCalls *m_pSupplicant;
 

@@ -340,7 +340,7 @@ bool ConnectionWizardData::toProfileEAP_TLSProtocol(config_profiles * const pPro
 		return false;
 		
 	if (m_eapProtocol == ConnectionWizardData::eap_tls) {
-		this->toProfileOuterIdentity(pProfile);
+		// We don't want to set the outer username here because it is the only username.  (So we want to prompt.)
 	
 		if (pProfile->method == NULL)
 		{
@@ -373,6 +373,17 @@ bool ConnectionWizardData::toProfileEAP_TLSProtocol(config_profiles * const pPro
 					}
 
 					// Now, add the TLS user cert to the config.
+					if (m_userCert == "")
+					{
+						// This isn't allowed.
+						success = false;
+					}
+					else
+					{
+						mytls->user_cert = _strdup(m_userCert.toAscii());
+
+						mytls->store_type = _strdup("WINDOWS");
+					}
 				}
 			}
 		}
@@ -677,6 +688,9 @@ bool ConnectionWizardData::toProfileData(config_profiles **retProfile, config_tr
 				case ConnectionWizardData::eap_md5:
 					success = this->toProfileEAP_MD5Protocol(pProfile);
 					break;
+				case ConnectionWizardData::eap_tls:
+					success = this->toProfileEAP_TLSProtocol(pProfile, pServer);
+					break;
 				default:
 					pProfile->method = NULL;
 			}
@@ -818,8 +832,9 @@ bool ConnectionWizardData::toServerData(config_trusted_server **retServer)
 		|| m_wirelessAssocMode == ConnectionWizardData::assoc_WPA2_ENT)))
 	{
 		// only if eap-peap and eap-ttls and validate server cert is true
-		if ((m_eapProtocol == ConnectionWizardData::eap_peap || m_eapProtocol == ConnectionWizardData::eap_ttls
-			|| m_eapProtocol == ConnectionWizardData::eap_fast) && m_validateCert == true)
+		if ((m_eapProtocol == ConnectionWizardData::eap_tls) || 
+			((m_eapProtocol == ConnectionWizardData::eap_peap || m_eapProtocol == ConnectionWizardData::eap_ttls
+			|| m_eapProtocol == ConnectionWizardData::eap_fast) && m_validateCert == true))
 		{
 			success = XSupWrapper::createNewTrustedServer(m_serverName,&pServer, (m_newConnection == false && m_hasServer == true));
 			if (success && pServer != NULL)
@@ -1071,6 +1086,16 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 						m_validateCert = true;
 					else
 						m_validateCert = false;			
+				}				
+			}
+			else if (pEAPMethod->method_num == EAP_TYPE_TLS)
+			{
+				m_eapProtocol = ConnectionWizardData::eap_tls;
+				if (pEAPMethod->method_data != NULL)
+				{
+					config_eap_tls *pTLSData = (config_eap_tls *)pEAPMethod->method_data;
+
+					m_userCert = pTLSData->user_cert;
 				}				
 			}
 			else if (pEAPMethod->method_num == EAP_TYPE_FAST)

@@ -945,15 +945,18 @@ void ConnectMgrDlg::createNewConnection(void)
 		m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
 		if (m_pConnWizard != NULL)
 		{
+			m_pRealForm->setCursor(Qt::WaitCursor);
 			if (m_pConnWizard->create() == true)
 			{
 				Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
 				Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
 				m_pConnWizard->init();
+				m_pRealForm->setCursor(Qt::ArrowCursor);
 				m_pConnWizard->show();
 			}
 			else
 			{
+				m_pRealForm->setCursor(Qt::ArrowCursor);
 				QMessageBox::critical(m_pRealForm, tr("Error"),tr("An error occurred when attempting to launch the Connection Wizard"));
 				delete m_pConnWizard;
 				m_pConnWizard = NULL;
@@ -964,7 +967,9 @@ void ConnectMgrDlg::createNewConnection(void)
 	}
 	else
 	{
+		m_pRealForm->setCursor(Qt::WaitCursor);
 		m_pConnWizard->init();
+		m_pRealForm->setCursor(Qt::ArrowCursor);
 		m_pConnWizard->show();
 	}
 }

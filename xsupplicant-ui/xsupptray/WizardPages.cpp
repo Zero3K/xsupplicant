@@ -1019,6 +1019,7 @@ bool WizardPageDot1XProtocol::create(void)
 		m_pProtocol->clear();
 		m_pProtocol->addItem(tr("EAP-PEAP"));
 		m_pProtocol->addItem(tr("EAP-TTLS"));
+		m_pProtocol->addItem(tr("EAP-TLS"));
 		m_pProtocol->addItem(tr("EAP-FAST"));
 		m_pProtocol->addItem(tr("EAP-AKA"));
 		m_pProtocol->addItem(tr("EAP-SIM"));
@@ -1037,6 +1038,7 @@ void WizardPageDot1XProtocol::init(const ConnectionWizardData &data)
 		m_pProtocol->clear();
 		m_pProtocol->addItem(tr("EAP-PEAP"));
 		m_pProtocol->addItem(tr("EAP-TTLS"));
+		m_pProtocol->addItem(tr("EAP-TLS"));
 		m_pProtocol->addItem(tr("EAP-FAST"));
 		m_pProtocol->addItem(tr("EAP-AKA"));
 		m_pProtocol->addItem(tr("EAP-SIM"));
@@ -1053,17 +1055,20 @@ void WizardPageDot1XProtocol::init(const ConnectionWizardData &data)
 			case ConnectionWizardData::eap_ttls:
 				m_pProtocol->setCurrentIndex(1);
 				break;
-			case ConnectionWizardData::eap_fast:
+			case ConnectionWizardData::eap_tls:
 				m_pProtocol->setCurrentIndex(2);
 				break;
-			case ConnectionWizardData::eap_aka:
+			case ConnectionWizardData::eap_fast:
 				m_pProtocol->setCurrentIndex(3);
 				break;
-			case ConnectionWizardData::eap_sim:
+			case ConnectionWizardData::eap_aka:
 				m_pProtocol->setCurrentIndex(4);
 				break;
-			case ConnectionWizardData::eap_md5:
+			case ConnectionWizardData::eap_sim:
 				m_pProtocol->setCurrentIndex(5);
+				break;
+			case ConnectionWizardData::eap_md5:
+				m_pProtocol->setCurrentIndex(6);
 				break;
 			default:
 				m_pProtocol->setCurrentIndex(0);
@@ -1087,18 +1092,22 @@ const ConnectionWizardData &WizardPageDot1XProtocol::wizardData(void)
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_ttls;
 				break;
 			case 2:
+				// EAP-TLS
+				m_curData.m_eapProtocol = ConnectionWizardData::eap_tls;
+				break;
+			case 3:
 				// EAP-FAST
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_fast;
 				break;
-			case 3:
+			case 4:
 				// EAP-AKA
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_aka;
 				break;
-			case 4:
+			case 5:
 				// EAP-SIM
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_sim;
 				break;
-			case 5:
+			case 6:
 				// EAP-MD5
 				m_curData.m_eapProtocol = ConnectionWizardData::eap_md5;
 				break;
@@ -1917,6 +1926,212 @@ const ConnectionWizardData &WizardPageSCReader::wizardData(void)
 	{
 		m_curData.m_autoRealm = m_pAutoRealm->isChecked();
 	}
+
+	return m_curData;
+}
+
+WizardPageDot1XUserCert::WizardPageDot1XUserCert(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+	m_pCertArray = NULL;
+}
+
+WizardPageDot1XUserCert::~WizardPageDot1XUserCert()
+{
+	if (m_pCertArray != NULL)
+		xsupgui_request_free_cert_enum(&m_pCertArray);
+	if (m_pCertTable != NULL) {
+		Util::myDisconnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
+		Util::myDisconnect(m_pCertTable, SIGNAL(cellEntered(int,int)), this, SLOT(updateCertTipStrip(int,int)));
+	}
+		
+}
+
+bool WizardPageDot1XUserCert::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageDot1XUserCert.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// cache off pointers to UI objects	
+	m_pCertTable = qFindChild<QTableWidget*>(m_pRealForm, "tableCertList");
+		
+	// dynamically populate text
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("Choose a user certificate to use :"));	
+			
+	if (m_pCertTable != NULL) {
+		Util::myConnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
+		Util::myConnect(m_pCertTable, SIGNAL(cellEntered(int,int)), this, SLOT(updateCertTipStrip(int,int)));
+	}
+			
+	if (m_pCertTable != NULL)
+	{
+		// min # of rows to show...assume form was properly set up
+		int minRows = m_pCertTable->rowCount();
+		
+		// disallow user from sizing columns
+		m_pCertTable->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
+		
+		// friendly name
+		m_pCertTable->horizontalHeaderItem(0)->setText(tr("Name"));
+		m_pCertTable->horizontalHeader()->setResizeMode(0,QHeaderView::Stretch);
+		
+		// issued to
+		m_pCertTable->horizontalHeaderItem(1)->setText(tr("Issued To"));
+		m_pCertTable->horizontalHeader()->setResizeMode(1,QHeaderView::Stretch);
+
+		// expires
+		m_pCertTable->horizontalHeaderItem(2)->setText(tr("Expires"));
+		m_pCertTable->horizontalHeader()->setResizeMode(2,QHeaderView::Stretch);
+		
+		// don't draw header any differently when row is selected
+		m_pCertTable->horizontalHeader()->setHighlightSections(false);
+		m_pCertTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+		
+		// make sure we get all mouse events
+		m_pCertTable->setMouseTracking(true);
+		
+		m_pCertTable->verticalHeader()->hide();
+		m_pCertTable->setRowCount(0);
+		
+		int retVal;
+		int i=0;
+		
+		// turn off sorting while table is populated
+		bool sortable = m_pCertTable->isSortingEnabled();
+		m_pCertTable->setSortingEnabled(false);
+		
+		retVal = xsupgui_request_enum_user_certs(&m_pCertArray);
+		if (retVal == REQUEST_SUCCESS && m_pCertArray != NULL)
+		{
+			while (m_pCertArray[i].certname != NULL)
+			{
+				m_pCertTable->insertRow(i);
+				m_pCertTable->setRowHeight(i,20);
+				
+				// use item type as index into original array
+				QTableWidgetItem *item = new QTableWidgetItem(QString(m_pCertArray[i].friendlyname), i+1000);
+				m_pCertTable->setItem(i,0,item);
+				
+				QTableWidgetItem *issuedToItem = new QTableWidgetItem(QString(m_pCertArray[i].certname));
+				m_pCertTable->setItem(i,1,issuedToItem);
+
+				QDate d(m_pCertArray[i].year, m_pCertArray[i].month, m_pCertArray[i].day);
+				QTableWidgetItem *dateItem = new QTableWidgetItem(d.toString("MM/dd/yyyy")); // need to change this for appropriate locales
+				m_pCertTable->setItem(i,2,dateItem);
+
+				++i;
+			}
+		}
+		for (;i<minRows;i++)
+		{
+			m_pCertTable->insertRow(i);
+			m_pCertTable->setRowHeight(i,20);
+		}
+		
+		// restore sorting behavior and sort by name
+		if (sortable == true)
+		{
+			m_pCertTable->setSortingEnabled(true);
+			m_pCertTable->sortByColumn(1, Qt::AscendingOrder);
+		}	
+	}
+		
+	return true;
+}
+
+void WizardPageDot1XUserCert::init(const ConnectionWizardData &data)
+{
+	m_curData = data;
+		
+	// highlight the selected cert
+	if (m_pCertTable != NULL)
+	{
+		int nRows = m_pCertTable->rowCount();
+		m_numCerts = 0;
+		
+		while (m_pCertArray[m_numCerts].certname != NULL)
+			++m_numCerts;
+			
+		for (int i=0; i<nRows; i++)
+		{
+			QTableWidgetItem *item = m_pCertTable->item(i,1);
+			if (item != NULL)
+			{
+				int index = item->type() - 1000;
+					
+				if (m_pCertArray != NULL && index > 0 && index < m_numCerts && m_curData.m_userCert == QString(m_pCertArray[index].location))
+				{
+					m_pCertTable->setCurrentItem(item);
+					break;	// No need to continue, only one can be selected.
+				}
+			}
+		}	
+	}
+}
+
+void WizardPageDot1XUserCert::handleCertTableClick(int, int)
+{
+/*
+	// if user clicks on name of server, toggle checkbox
+	if (m_pCertTable != NULL && col == 1)
+	{
+		QWidget *widget = m_pCertTable->cellWidget(row,0);
+		if (widget != NULL)
+			((QCheckBox*)widget)->toggle();
+	}
+*/
+}
+
+void WizardPageDot1XUserCert::updateCertTipStrip(int row, int col)
+{
+	if (m_pCertTable != NULL)
+	{
+		if (col != 0)
+		{
+			QTableWidgetItem *item = m_pCertTable->item(row,1);
+			if (item != NULL)
+			{
+				int index = item->type() - 1000;
+				
+				if (m_pCertArray != NULL && index > 0 && index < m_numCerts)
+				{
+					QString dateStr;
+					QString tipText;
+					
+					QDate d(m_pCertArray[index].year, m_pCertArray[index].month, m_pCertArray[index].day);
+					dateStr = d.toString("MM/dd/yyyy"); // need to change this for appropriate locales
+					tipText = tr("<p style='white-space:pre'><font size='-1'><b>Issued To:</b> %1<br><b>Issued By:</b> %2<br><b>Friendly Name:</b> %3<br><b>Expires:</b> %4</font></p>").arg(m_pCertArray[index].certname).arg(m_pCertArray[index].issuer).arg(m_pCertArray[index].friendlyname).arg(dateStr);
+					m_pCertTable->setToolTip(tipText);
+				}
+			}
+		}
+		else
+			m_pCertTable->setToolTip(QString(""));
+	}
+}
+
+bool WizardPageDot1XUserCert::validate(void)
+{
+	// check that a cert is selected - We check for 3 items selected because
+	// we are selecting by row, so all of the items in a single row get selected.
+	if (m_pCertTable->selectedItems().count() != 3)
+	{
+		QMessageBox::warning(m_pRealForm, tr("No Certificate Selected"), tr("Please select a user certificate to use."));
+		return false;
+	}
+
+	return true;
+}
+
+const ConnectionWizardData &WizardPageDot1XUserCert::wizardData()
+{
+	QTableWidgetItem *item = NULL;
+
+	item = m_pCertTable->selectedItems().at(0);	// There should only be one selected.
+	m_curData.m_userCert = QString(m_pCertArray[item->type() - 1000].location);
 
 	return m_curData;
 }

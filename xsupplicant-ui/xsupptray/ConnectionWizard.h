@@ -75,6 +75,7 @@ public:
 		pageDot1XProtocol,
 		pageDot1XInnerProtocol,
 		pageDot1XCert,
+		pageDot1XUserCert,
 		pageSCReader,
 		pageFastInnerProtocol,
 		pageFinishPage,

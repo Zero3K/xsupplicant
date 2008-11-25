@@ -825,6 +825,68 @@ bool ConfigProfileTabs::saveEAPFASTData()
 	return true;
 }
 
+bool ConfigProfileTabs::saveEAPTLSData()
+{
+	struct config_eap_tls *mytls = NULL;
+
+	if (m_pProfile->method == NULL)
+	{
+		m_pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));
+		if (m_pProfile->method == NULL)
+		{
+			QMessageBox::critical(this, tr("Memory Allocation Error"), tr("Unable to allocate memory needed to save this profile."));
+			return false;
+		}
+
+		memset(m_pProfile->method, 0x00, sizeof(struct config_eap_method));
+		m_pProfile->method->method_num = EAP_TYPE_TLS;
+	}
+
+	if (m_pProfile->method->method_data == NULL)
+	{
+		m_pProfile->method->method_data = malloc(sizeof(struct config_eap_tls));
+		if (m_pProfile->method->method_data == NULL)
+		{
+			QMessageBox::critical(this, tr("Memory Allocation Error"), tr("Unable to allocate memory needed to save this profile."));
+			return false;
+		}
+
+		memset(m_pProfile->method->method_data, 0x00, sizeof(struct config_eap_tls));
+
+		mytls = (struct config_eap_tls *)m_pProfile->method->method_data;
+	}
+	else
+	{
+		mytls = (struct config_eap_tls *)m_pProfile->method->method_data;
+	}
+
+	mytls->store_type = _strdup("WINDOWS");
+
+	if (m_pUserCertTable->selectedItems().count() == 0)
+	{
+		QMessageBox::critical(this, tr("User Certificate"), tr("No user certificate selected!"));
+		return false;
+	}
+
+	if (mytls->trusted_server != NULL)
+	{
+		free(mytls->trusted_server);
+		mytls->trusted_server = NULL;
+	}
+
+	if (m_pTrustedServerCombo->currentIndex() > 0)
+	{
+		mytls->trusted_server = _strdup(m_pTrustedServerCombo->currentText().toAscii());
+	}
+	else
+	{
+		QMessageBox::critical(this, tr("Trusted Server"), tr("No trusted server selected!"));
+		return false;
+	}
+
+	return true;
+}
+
 bool ConfigProfileTabs::saveEAPPEAPData()
 {
 	struct config_eap_peap *mypeap = NULL;
@@ -1139,6 +1201,12 @@ bool ConfigProfileTabs::attach()
 		 return false;
 	 }
 
+	 m_pUserCertTable = qFindChild<QTableWidget*>(m_pRealWidget, "certificateSelection");
+	 if (m_pUserCertTable == NULL)
+	 {
+		 QMessageBox::critical(this, tr("Form Design Error"), tr("Unable to locate the QTableWidget called 'certificateSelection'."));
+		 return false;
+	 }
 
 	 m_pTSLabel = qFindChild<QLabel*>(m_pRealWidget, "labelComboProfilesTrustedServers");
 
@@ -1210,7 +1278,7 @@ void ConfigProfileTabs::detach()
 
 void ConfigProfileTabs::populateOnePhase()
 {
-	char *password;
+	char *password = NULL;
 
 	hideProtSettingsTab();  // We won't edit that one with this EAP method.
 
@@ -1220,6 +1288,12 @@ void ConfigProfileTabs::populateOnePhase()
 	{
 		m_EAPTypeInUse = "EAP-MD5";
 		password = ((struct config_pwd_only *)(m_pProfile->method->method_data))->password;
+		m_pPassword->setText(QString(password));
+	}
+	else if (m_pProfile->method->method_num == EAP_TYPE_TLS)
+	{
+		m_EAPTypeInUse = "EAP-TLS";
+		password = ((struct config_eap_tls *)(m_pProfile->method->method_data))->user_key_pass;
 		m_pPassword->setText(QString(password));
 	}
 	else
@@ -1688,7 +1762,7 @@ void ConfigProfileTabs::populateTTLSData()
 
 void ConfigProfileTabs::populateTwoPhase()
 {
-	showAllTabs();
+	showPEAPTTLSTabs();
 	populateTrustedServerList();
 
 #ifdef WINDOWS
@@ -1955,10 +2029,16 @@ void ConfigProfileTabs::hideProtSettingsTab()
 	m_pProfileTabs->setTabEnabled(PROTOCOL_SETTINGS_TAB, false);
 }
 
-void ConfigProfileTabs::showAllTabs()
+void ConfigProfileTabs::showUserCertTab()
+{
+	m_pProfileTabs->setTabEnabled(USER_CERTIFICATE_TAB, true);
+}
+
+void ConfigProfileTabs::showPEAPTTLSTabs()
 {
 	m_pProfileTabs->setTabEnabled(PROTOCOL_SETTINGS_TAB, true);
 	m_pProfileTabs->setTabEnabled(USER_CREDENTIALS_TAB, true);
+	m_pProfileTabs->setTabEnabled(USER_CERTIFICATE_TAB, false);
 	m_pProfileTabs->setTabEnabled(EAP_FAST_TAB, false);
 	m_pProfileTabs->setTabEnabled(SIM_AKA_TAB, false);
 }
@@ -2106,16 +2186,23 @@ void ConfigProfileTabs::setPhase1EAPType(QString newEAPtype)
 		// Hide the first tab.
 		hideProtSettingsTab();
 	}
+	else if (newEAPtype == "EAP-TLS")
+	{
+		// We want almost the same tabs used in TTLS and PEAP so call that first, then enable the user cert tab.
+		showPEAPTTLSTabs();
+		showUserCertTab();
+		populateEAPTLSData();
+	}
 	else if (newEAPtype == "EAP-PEAP")
 	{
 		// Show all tabs.
-		showAllTabs();
+		showPEAPTTLSTabs();
 		setPeapPhase2Types();
 	}
 	else if (newEAPtype == "EAP-TTLS")
 	{
 		// Show all tabs.
-		showAllTabs();
+		showPEAPTTLSTabs();
 		setTtlsPhase2Types();
 	}
 	else if (newEAPtype == "EAP-FAST")
@@ -2150,6 +2237,7 @@ int ConfigProfileTabs::eaptypeFromString(QString eapName)
 	if (eapName == "EAP-FAST") return EAP_TYPE_FAST;
 	if (eapName == "EAP-SIM") return EAP_TYPE_SIM;
 	if (eapName == "EAP-AKA") return EAP_TYPE_AKA;
+	if (eapName == "EAP-TLS") return EAP_TYPE_TLS;
 
 	return -1;  // We don't know what to return.
 }
@@ -2192,6 +2280,48 @@ void ConfigProfileTabs::setLabelValid(QLabel *toEditLabel)
 
 	toEditLabel->setToolTip("");  // Clear the tool tip.
 	m_pTrustedServerCombo->setToolTip("");
+}
+
+void ConfigProfileTabs::populateEAPTLSData()
+{
+	cert_enum *pCerts = NULL;
+	QTableWidgetItem *item = NULL;
+	int i = 0;
+
+	if (xsupgui_request_enum_user_certs(&pCerts) != REQUEST_SUCCESS)
+	{
+		QMessageBox::critical(this, tr("User Certificates"), tr("Unable to acquire a list of user certificates!"));
+		return;
+	}
+
+	m_pUserCertTable->clearContents();
+	m_pUserCertTable->setRowCount(0);
+
+	m_pUserCertTable->setColumnHidden(3, false);  // Need to unhide it to use it.
+
+	while (pCerts[i].certname != NULL)
+	{
+		m_pUserCertTable->insertRow(i);
+
+		item = new QTableWidgetItem(pCerts[i].friendlyname);
+		m_pUserCertTable->setItem(i, 0, item);
+
+		item = new QTableWidgetItem(pCerts[i].certname);
+		m_pUserCertTable->setItem(i, 1, item);
+
+		QDate d(pCerts[i].year, pCerts[i].month, pCerts[i].day);
+		item = new QTableWidgetItem(d.toString("MM/dd/yyyy")); // need to change this for appropriate locales
+		m_pUserCertTable->setItem(i, 2, item);
+
+		item = new QTableWidgetItem(pCerts[i].location);
+		m_pUserCertTable->setItem(i, 3, item);
+
+		i++;
+	}
+
+	m_pUserCertTable->setColumnHidden(3, true);  
+
+	xsupgui_request_free_cert_enum(&pCerts);
 }
 
 void ConfigProfileTabs::slotDifferentServerSelected(int selectedItem)
