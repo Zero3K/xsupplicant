@@ -52,7 +52,7 @@ class ConfigProfileTabs : public TabWidgetBase
 	 void discard();
 	 void showHelp();
 	 void hideProtSettingsTab();
-	 void showUserCertTab();
+	 void showTLSTabs();
 	 void showPEAPTTLSTabs();
 	 void showSIMTabs();
 	 void showFASTTabs();
@@ -85,7 +85,7 @@ private slots:
 	 enum {
 		 PROTOCOL_SETTINGS_TAB,
 		 USER_CREDENTIALS_TAB,
-		 USER_CERTIFICATE_TAB,
+		 TLS_CERTIFICATES_TAB,
 		 EAP_FAST_TAB,
 		 SIM_AKA_TAB
 	 };
@@ -144,6 +144,7 @@ private slots:
 	 QCheckBox *m_pFASTAuthProvision;
 	 QCheckBox *m_pFASTAnonProvision;
 	 QTableWidget *m_pUserCertTable;
+	 QComboBox *m_pTLSTrustedServer;
 
 	 XSupCalls *m_pSupplicant;
 
