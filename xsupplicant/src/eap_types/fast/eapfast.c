@@ -853,6 +853,10 @@ void eapfast_process(eap_type_data *eapdata)
 				  debug_printf(DEBUG_AUTHTYPES, "Couldn't locate a PAC. "
 					       "We will provision one.\n");
 
+				  // Make sure our old PAC isn't still hanging around.
+				  mytls_vars->pac = NULL;
+				  mytls_vars->pac_length = 0;
+
 				  // We don't have a PAC, are we allowed to provision one?
 				  if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_ALLOWED))
 				  {
@@ -928,6 +932,9 @@ void eapfast_process(eap_type_data *eapdata)
 				return;
 		  }
 
+		  // Clear out our TLS state.
+		  tls_funcs_deinit(mytls_vars);
+
 		  txStart(ctx);
 		  eapdata->methodState = DONE;
 		  return;
@@ -935,7 +942,7 @@ void eapfast_process(eap_type_data *eapdata)
 
 	  if (mytls_vars->handshake_done == TRUE)
 	  {
-		  debug_printf(DEBUG_NORMAL, "Handshake done, checking for additional data.\n");
+		  debug_printf(DEBUG_AUTHTYPES, "Handshake done, checking for additional data.\n");
 
 		  if (tls_funcs_get_embedded_appdata(mytls_vars, &temp, &resout) != 0)
 		  {

@@ -126,9 +126,7 @@ xmlNodePtr eapfast_xml_find_pac(xmlDocPtr doc, char *aid)
       if (done == FALSE) cur_node = cur_node->next;
     }
 
-  if (cur_node != NULL) return cur_node;
-
-  return NULL;
+  return cur_node;
 }
 
 /****************************************************************
