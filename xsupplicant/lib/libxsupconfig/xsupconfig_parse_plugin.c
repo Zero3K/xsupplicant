@@ -160,8 +160,8 @@ void *xsupconfig_parse_plugin_name(void **attr, uint8_t config_type, xmlNodePtr 
 
 void *xsupconfig_parse_plugin_path(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_plugins *cur;
-  char *value;
+  struct config_plugins *cur = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -173,12 +173,13 @@ void *xsupconfig_parse_plugin_path(void **attr, uint8_t config_type, xmlNodePtr 
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		cur->path = NULL;
 	}
 	else
 	{
-		cur->path = value;
+		cur->path = _strdup(value);
+		xmlFree(value);
 	}
 
   return cur;

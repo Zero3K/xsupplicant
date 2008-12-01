@@ -1,5 +1,5 @@
 /**
- * Implementation for converting variables that make up the <Connections> section
+ * Implementation for converting variables that make up the <Profiles> section
  * to the libxml2 format that can be written to disk, or manipulated in other ways.
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)

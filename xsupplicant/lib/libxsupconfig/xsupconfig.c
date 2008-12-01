@@ -1022,6 +1022,21 @@ struct config_globals *config_get_globals()
 }
 
 /**
+ *  \brief Get a pointer to the information about the plugins that we loaded
+ *         from the configuration file.
+ *
+ *  \retval ptr   Pointer to the structure that contains the interfaces
+ *                that were defined in the <Interface> section of the
+ *                <Device> block.
+ *
+ *  \warning This pointer should *NEVER* be freed by any callers, or things will break!
+ **/
+struct config_plugins *config_get_plugins()
+{
+	return conf_plugins;
+}
+
+/**
  *  \brief Get a pointer to the information about the interfaces that we loaded
  *         from the configuration file.
  *

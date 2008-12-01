@@ -90,6 +90,21 @@ xmlNodePtr xsupconfwrite_create_devices(struct xsup_devices *conf_devices)
 }
 
 /**
+ * \brief Make the calls needed to create an XML node set that contains the <Plugins> 
+ *        variable information.
+ *
+ * @param[in] conf_plugins
+ * 
+ * \retval NULL on failure
+ * \retval xmlNodePtr pointing to a tree of nodes that contains the <Plugins> piece
+ *                    of a configuration file.
+ **/
+xmlNodePtr xsupconfwrite_create_plugins(struct conf_plugins *conf_plugins)
+{
+	return xsupconfwrite_plugins_create_tree(conf_plugins, FALSE);
+}
+
+/**
  * \brief Make the calls needed to create an XML node set that contains the <Trusted_Servers> 
  *        variable information.
  *
@@ -152,6 +167,7 @@ int xsupconfwrite_write_config(char *destfile)
   xmlNodePtr trusted_servers = NULL;
   xmlNodePtr connections = NULL;
   xmlNodePtr profiles = NULL;
+  xmlNodePtr plugins = NULL;
   xmlNodePtr rootnode = NULL;
   xmlDocPtr doc = NULL;
   char tempstatic[26];
@@ -225,6 +241,20 @@ int xsupconfwrite_write_config(char *destfile)
 	  return XSUPCONFWRITE_FAILED;
 	}
 	xmlAddChild(rootnode, devices);
+  }
+
+  if (conf_plugins != NULL)
+  {
+	  plugins = xsupconfwrite_create_plugins(conf_plugins);
+	  if (plugins == NULL)
+	  {
+#ifdef DEBUG
+		  printf("Error creating <Plugins> block!\n");
+#endif
+		  xmlFreeDoc(doc);
+		  return XSUPCONFWRITE_FAILED;
+	  }
+	  xmlAddChild(rootnode, plugins);
   }
 
   if (conf_connections != NULL)

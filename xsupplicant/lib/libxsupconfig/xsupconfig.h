@@ -126,6 +126,7 @@ int config_delete_interface(char *);
 void config_create_new_config();
 void config_terminate();
 struct config_globals *config_get_globals();
+struct config_plugins *config_get_plugins();
 void reset_config_globals(struct config_globals *);
 int add_change_config_connections(uint8_t, struct config_connection *);
 int add_change_config_profiles(uint8_t, struct config_profiles *);

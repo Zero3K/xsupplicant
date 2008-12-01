@@ -2469,6 +2469,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\lib\libxsupconfwrite\xsupconfwrite_plugins.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\lib\libxsupconfwrite\xsupconfwrite_profiles.c"
 				>
 			</File>
@@ -2556,6 +2560,10 @@
 			</File>
 			<File
 				RelativePath="..\..\lib\libxsupconfwrite\xsupconfwrite_interface.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\lib\libxsupconfwrite\xsupconfwrite_plugins.h"
 				>
 			</File>
 			<File

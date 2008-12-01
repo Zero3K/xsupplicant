@@ -2937,6 +2937,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\eap_types\sim\sim_reader_plugin_hook.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\eap_types\sim\simd11.c"
 				>
 			</File>
@@ -3408,6 +3412,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\eap_types\sim\sim.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\eap_types\sim\sim_reader_plugin_hook.h"
 				>
 			</File>
 			<File

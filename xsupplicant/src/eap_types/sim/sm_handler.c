@@ -85,6 +85,7 @@
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
 #include "sm_handler.h"
+#include "sim_reader_plugin_hook.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -372,6 +373,12 @@ char *sm_handler_get_readers(SCARDCONTEXT *card_ctx)
       print_sc_error(ret);
       return NULL;
     }
+
+  if (sim_reader_plugin_hook_available() == TRUE)
+  {
+	  // Give our SIM reader plugin the chance to modify our list.
+	  sim_reader_plugin_update_reader_list(&readername);
+  }
 
   return readername;
 }
@@ -847,6 +854,13 @@ int sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
   unsigned char buf[512], buf2[512], buf3[8];
   int i;
 
+  if ((sim_reader_plugin_hook_available() == TRUE) &&
+	  ((sim_reader_plugin_gs_supported() & SUPPORT_2G_SIM) == SUPPORT_2G_SIM))
+  {
+	  // Process it through our plugin.
+	  return sim_reader_plugin_hook_get_2g_imsi(card_hdl, reader_mode, pin, imsi);
+  }
+
   if (!card_hdl)
     {
       debug_printf(DEBUG_NORMAL, "Invalid card handle passed to "
@@ -1220,6 +1234,13 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
   int i,l,q, foundaid=0, pinretries=0;
   unsigned char threeG[2] = { 0x10, 0x02 };
   struct t_efdir *t = NULL;
+
+  if ((sim_reader_plugin_hook_available() == TRUE) &&
+	  ((sim_reader_plugin_gs_supported() & SUPPORT_3G_SIM) == SUPPORT_3G_SIM))
+  {
+	  // Process it through our plugin.
+	  return sim_reader_plugin_hook_get_3g_imsi(card_hdl, reader_mode, pin, imsi);
+  }
 
   if (!card_hdl)
     {
