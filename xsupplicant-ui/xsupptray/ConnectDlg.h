@@ -74,7 +74,8 @@ private:
 	void connectWirelessConnection(void);
 	void connectWiredConnection(void);
 	void updateElapsedTime(void);
-	bool buildMenuBar(void);	
+	bool buildMenuBar(void);
+	void updateTimer();
 	
 private slots:
 	void showSSIDList(void);
@@ -153,6 +154,7 @@ private:
 	QTimer m_signalTimer;
 	QTime  m_time;
 	unsigned int m_days;
+	unsigned long secsElapsed;
 	
 	QPixmap m_signalIcons[5];
 	QVector<QString> m_wirelessAdapters;

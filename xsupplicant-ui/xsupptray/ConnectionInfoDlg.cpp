@@ -37,11 +37,12 @@
 #include "Util.h"
 #include "XSupWrapper.h"
 
-ConnectionInfoDlg::ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e)
+ConnectionInfoDlg::ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, QTime *parentTime)
 	:QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow), m_pEmitter(e)
 {
 	m_wirelessAdapter = false;
 	m_days = 0;
+	m_time = parentTime;
 }
 
 ConnectionInfoDlg::~ConnectionInfoDlg()
@@ -54,16 +55,13 @@ ConnectionInfoDlg::~ConnectionInfoDlg()
 		
 	if (m_pRenewIPButton != NULL)
 		Util::myDisconnect(m_pRenewIPButton, SIGNAL(clicked()), this, SLOT(renewIP()));
-
-	Util::myDisconnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
 	
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));	
 		
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalIPAddressSet()), this, SLOT(updateIPAddress()));
-	
-	m_strengthTimer.stop();
-	m_timer.stop();	
+
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
 
 	if (m_pRealForm != NULL)
 		delete m_pRealForm;
@@ -166,10 +164,8 @@ bool ConnectionInfoDlg::initUI(void)
 		
 	if (m_pRenewIPButton != NULL)
 		Util::myConnect(m_pRenewIPButton, SIGNAL(clicked()), this, SLOT(renewIP()));
-		
-	Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
-	
-	Util::myConnect(&m_strengthTimer, SIGNAL(timeout()), this, SLOT(updateWirelessSignalStrength()));
+			
+	Util::myConnect(m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
 		
 	Util::myConnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
@@ -236,7 +232,6 @@ void ConnectionInfoDlg::renewIP(void)
 void ConnectionInfoDlg::setAdapter(const QString &adapterDesc)
 {
 	m_curAdapter = adapterDesc;
-	m_strengthTimer.stop();
 	
 	if (m_curAdapter.isEmpty())
 		this->clearUI();
@@ -347,7 +342,6 @@ void ConnectionInfoDlg::updateWirelessState(void)
 							
 		if (status == Util::status_idle)
 		{
-			m_strengthTimer.stop();
 			if (m_pSSIDLabel != NULL)
 				m_pSSIDLabel->setText("");			
 			if (m_pSignalIcon != NULL)
@@ -472,7 +466,6 @@ void ConnectionInfoDlg::updateWirelessState(void)
 					m_pEncryptionLabel->setText(tr("<Unknown>"));
 			}
 			
-			m_strengthTimer.start(3000);
 			this->updateWirelessSignalStrength();
 			this->updateIPAddress();
 		}
@@ -554,38 +547,13 @@ void ConnectionInfoDlg::updateWiredState(void)
 void ConnectionInfoDlg::stopAndClearTimer(void)
 {
 	m_days = 0;
-	m_timer.stop();
-	m_time.setHMS(0, 0, 0);
+	m_time->setHMS(0, 0, 0);
 	this->showTime();
-}
-
-void ConnectionInfoDlg::updateElapsedTime(void)
-{
-	long int seconds = 0;
-	
-	if (xsupgui_request_get_seconds_authenticated(m_curAdapterName.toAscii().data(), &seconds) == REQUEST_SUCCESS)
-	{
-		int hours = 0;
-		int minutes = 0;
-		long int tempTime = seconds;
-    
-		// Get days, hours, minutes and seconds the hard way - for now
-		m_days = (unsigned int)(tempTime / (60*60*24));
-		tempTime = tempTime % (60*60*24);
-		hours = (int) (tempTime / (60*60));
-		tempTime = tempTime % (60*60);
-		minutes = (int) tempTime / 60;
-		seconds = tempTime % 60;
-
-		m_time.setHMS(hours, minutes, seconds);
-	}
 }
 
 void ConnectionInfoDlg::startConnectedTimer(void)
 {
-	this->updateElapsedTime();
 	this->showTime();
-	m_timer.start(500);
 }
 
 void ConnectionInfoDlg::showTime(void)
@@ -593,9 +561,9 @@ void ConnectionInfoDlg::showTime(void)
 	QString timeString;
 
 	if (m_days > 0)
-		timeString = QString("%1d, %2").arg(m_days).arg(m_time.toString(Qt::TextDate));
+		timeString = QString("%1d, %2").arg(m_days).arg(m_time->toString(Qt::TextDate));
 	else
-		timeString = QString("%1").arg(m_time.toString(Qt::TextDate));
+		timeString = QString("%1").arg(m_time->toString(Qt::TextDate));
 
 	if (m_pTimerLabel != NULL)
 		m_pTimerLabel->setText(timeString);
@@ -603,7 +571,7 @@ void ConnectionInfoDlg::showTime(void)
 
 void ConnectionInfoDlg::timerUpdate(void)
 {
-	this->updateElapsedTime();
+//	this->updateElapsedTime();
 	this->showTime();
 }
 
@@ -691,3 +659,29 @@ void ConnectionInfoDlg::updateWirelessSignalStrength(void)
 			m_pSignalIcon->setPixmap(m_signalIcons[0]);
 	}
 }
+
+void ConnectionInfoDlg::slotSignalUpdate(const QString &intName, int sigStrength)
+{
+	if (intName == m_curAdapterName)
+	{
+		if (m_pSignalLabel != NULL)
+			m_pSignalLabel->setText(QString("%1%").arg(sigStrength));
+
+		if (m_pSignalIcon != NULL)
+		{
+			if (sigStrength <= 11)
+				m_pSignalIcon->setPixmap(m_signalIcons[0]);
+			else if (sigStrength <= 37)
+				m_pSignalIcon->setPixmap(m_signalIcons[1]);
+			else if (sigStrength <= 62)
+				m_pSignalIcon->setPixmap(m_signalIcons[2]);
+			else if (sigStrength <= 88)
+				m_pSignalIcon->setPixmap(m_signalIcons[3]);
+			else
+				m_pSignalIcon->setPixmap(m_signalIcons[4]);
+				
+			m_pSignalIcon->setToolTip(tr("Signal Strength: %1%").arg(sigStrength));	
+		}			
+	}
+}
+

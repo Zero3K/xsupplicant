@@ -1209,8 +1209,31 @@ void ConnectDlg::updateWiredState(void)
 
 void ConnectDlg::timerUpdate(void)
 {
-	this->updateElapsedTime();
+//	this->updateElapsedTime();
+	secsElapsed++;
+	updateTimer();
 	this->showTime();
+	if (m_pConnInfo != NULL) m_pConnInfo->showTime();		// Update the info dialog at the same interval.
+}
+
+void ConnectDlg::updateTimer()
+{
+	long int tempTime = secsElapsed;
+	long int seconds = 0;
+	int hours = 0;
+	int minutes = 0;
+
+	secsElapsed = tempTime;
+    
+	// Get days, hours, minutes and seconds the hard way - for now
+	m_days = (unsigned int)(tempTime / (60*60*24));
+	tempTime = tempTime % (60*60*24);
+	hours = (int) (tempTime / (60*60));
+	tempTime = tempTime % (60*60);
+	minutes = (int) tempTime / 60;
+	seconds = tempTime % 60;
+
+	m_time.setHMS(hours, minutes, seconds);
 }
 
 void ConnectDlg::updateElapsedTime()
@@ -1218,19 +1241,9 @@ void ConnectDlg::updateElapsedTime()
 	long int seconds = 0;
 	if (xsupgui_request_get_seconds_authenticated(m_timerAdapterName.toAscii().data(), &seconds) == REQUEST_SUCCESS)
 	{
-		long int tempTime = seconds;
-		int hours = 0;
-		int minutes = 0;
-    
-		// Get days, hours, minutes and seconds the hard way - for now
-		m_days = (unsigned int)(tempTime / (60*60*24));
-		tempTime = tempTime % (60*60*24);
-		hours = (int) (tempTime / (60*60));
-		tempTime = tempTime % (60*60);
-		minutes = (int) tempTime / 60;
-		seconds = tempTime % 60;
+		secsElapsed = seconds;
 
-		m_time.setHMS(hours, minutes, seconds);
+		updateTimer();
 	}
 }
 
@@ -1241,7 +1254,7 @@ void ConnectDlg::startConnectedTimer(const QString &adapterName)
 	this->updateElapsedTime();
 	this->showTime();
 	
-	m_timer.start(500);
+	m_timer.start(1000);
 }
 
 void ConnectDlg::showTime()
@@ -1314,7 +1327,7 @@ void ConnectDlg::showWirelessConnectionInfo(void)
 {
 	if (m_pConnInfo == NULL)
 	{
-		m_pConnInfo= new ConnectionInfoDlg(this, m_pRealForm, m_pEmitter);
+		m_pConnInfo= new ConnectionInfoDlg(this, m_pRealForm, m_pEmitter, &m_time);
 		if (m_pConnInfo != NULL && m_pConnInfo->create() != false)
 		{
 			m_pConnInfo->setAdapter(m_currentWirelessAdapterDesc);
@@ -1334,7 +1347,7 @@ void ConnectDlg::showWiredConnectionInfo(void)
 {
 	if (m_pConnInfo == NULL)
 	{
-		m_pConnInfo= new ConnectionInfoDlg(this, m_pRealForm, m_pEmitter);
+		m_pConnInfo= new ConnectionInfoDlg(this, m_pRealForm, m_pEmitter, &m_time);
 		if (m_pConnInfo != NULL && m_pConnInfo->create() != false)
 		{
 			m_pConnInfo->setAdapter(m_currentWiredAdapterDesc);

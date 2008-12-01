@@ -47,15 +47,15 @@ class ConnectionInfoDlg : public QWidget
 	Q_OBJECT
 
 public:
-	ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e);
+	ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, QTime *parentTime);
 	~ConnectionInfoDlg();
 	bool create(void);
 	void show(void);
 	void setAdapter(const QString &adapterDesc);
+	void showTime(void);
 	
 private:
 	bool initUI(void);
-	void showTime(void);
 	void startConnectedTimer(void);
 	void stopAndClearTimer(void);
 	void updateWirelessState(void);
@@ -70,7 +70,8 @@ private slots:
 	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
 	void updateIPAddress(void);
 	void updateWirelessSignalStrength(void);
-	
+	void slotSignalUpdate(const QString &intName, int sigStrength);
+
 private:
 	QWidget *m_pParent;
 	QWidget *m_pRealForm;
@@ -94,9 +95,7 @@ private:
 	QString m_curAdapter; // description of current adapter
 	QString m_curAdapterName;
 	bool m_wirelessAdapter;
-	QTimer m_timer;
-	QTimer m_strengthTimer;
-	QTime  m_time;
+	QTime  *m_time;
 	unsigned int m_days;
 	
 	QPixmap m_signalIcons[5];
