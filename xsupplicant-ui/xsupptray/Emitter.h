@@ -59,7 +59,7 @@ signals:
   void signalStateMessage(const QString &s);
   void signalStateMessageToScreen(int machineType, int state, const QString &statusStr);
   void signalUIMessage(const QString &s);
-  void signalSignalStrength(int s);
+  void signalSignalStrength(const QString &intf, int s);
   void signalRequestPasswordMessage(const QString &connName, const QString &eapMethod, const QString &challengeString);
   void signalTNCUIMessage(int oui, int notification);
   void signalTNCUIRequestMessage(int imc, int connID, int oui, int request);
@@ -127,7 +127,7 @@ public:
   void sendScanComplete(const QString &s); 
   void sendConnConfigUpdate();
   void sendProfConfigUpdate();
-  void sendSignalStrength(int);
+  void sendSignalStrength(const QString &, int);
   void sendRequestPassword(const QString &connname, const QString &eapmethod, const QString &chalstr);
   void sendTNCUIEvent(int oui, int notification);
   void sendTNCUIRequestEvent(int imc, int connID, int oui, int request);

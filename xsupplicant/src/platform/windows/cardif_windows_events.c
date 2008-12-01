@@ -632,7 +632,7 @@ void cardif_windows_int_event_link_quality(context *ctx, uint8_t *eventdata, DWO
 	PNDISPROT_INDICATE_STATUS pStat = NULL;
 	PDOT11_LINK_QUALITY_PARAMETERS pParams = NULL;
 	PDOT11_LINK_QUALITY_ENTRY pEntry = NULL;
-	uint16_t i;
+	uint16_t i = 0;
 	char temp[10];
 	wireless_ctx *wctx = NULL;
 

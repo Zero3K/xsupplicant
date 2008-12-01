@@ -105,7 +105,7 @@ ConnectDlg::~ConnectDlg()
 		Util::myConnect(m_pWiredConnectionInfo, SIGNAL(clicked()), this, SLOT(showWiredConnectionInfo()));			
 
 	Util::myDisconnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
-	Util::myDisconnect(&m_signalTimer, SIGNAL(timeout()), this, SLOT(updateWirelessSignalStrength()));
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
 
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceInserted(char *)), this, SLOT(interfaceInserted(char *)));
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalInterfaceRemoved(char *)), this, SLOT(interfaceRemoved(char *)));		
@@ -266,7 +266,7 @@ bool ConnectDlg::initUI(void)
 	Util::myConnect(m_pEmitter, SIGNAL(signalPSKSuccess(const QString &)), this, SLOT(pskSuccess(const QString &)));
 	
 	Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
-	Util::myConnect(&m_signalTimer, SIGNAL(timeout()), this, SLOT(updateWirelessSignalStrength()));
+	Util::myConnect(m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
 	
 	
 	// set initial state of UI - mainly setting the active tab
@@ -1479,6 +1479,30 @@ void ConnectDlg::menuHelp(void)
 {
 	HelpWindow::showPage("xsupphelp.html", "xsuploginmain");
 }
+
 void ConnectDlg::pskSuccess(const QString &)
 {
 }
+
+void ConnectDlg::slotSignalUpdate(const QString &intName, int sigStrength)
+{
+	if (intName == m_currentWirelessAdapterName)
+	{
+		if (m_pWirelessSignalIcon != NULL)
+		{
+			if (sigStrength <= 11)
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[0]);
+			else if (sigStrength <= 37)
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[1]);
+			else if (sigStrength <= 62)
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[2]);
+			else if (sigStrength <= 88)
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[3]);
+			else
+				m_pWirelessSignalIcon->setPixmap(m_signalIcons[4]);
+				
+			m_pWirelessSignalIcon->setToolTip(tr("Signal Strength: %1%").arg(sigStrength));	
+		}			
+	}
+}
+

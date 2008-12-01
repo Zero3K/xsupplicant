@@ -340,9 +340,9 @@ void Emitter::sendTNCUIConnectionStatusRequest(unsigned int connID)
   \brief emit's a signal that the signal strength has changed
   \return Nothing
 */
-void Emitter::sendSignalStrength(int s)
+void Emitter::sendSignalStrength(const QString &intf, int s)
 {
-  emit signalSignalStrength(s);
+  emit signalSignalStrength(intf, s);
 }
 
 //! sendInterfaceInsertedMessage()

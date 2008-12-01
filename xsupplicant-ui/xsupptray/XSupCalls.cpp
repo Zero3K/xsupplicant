@@ -2296,7 +2296,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
   int ccode = 0;
   int ecode = 0;
   bool bCode = true;
-  int sm, oldstate, newstate;
+  int sm = 0, oldstate = 0, newstate = 0;
   unsigned int tncconnectionid = 0xFFFFFFFF;
   QString temp;
 
@@ -2432,7 +2432,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 
             case IPC_EVENT_SIGNAL_STRENGTH:
 		      sspercent = atoi(value);
-  		      e.sendSignalStrength(sspercent);
+  		      e.sendSignalStrength(QString(interfaces), sspercent);
               break;
 
             case IPC_EVENT_INTERFACE_INSERTED:

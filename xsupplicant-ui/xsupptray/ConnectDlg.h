@@ -104,6 +104,7 @@ private slots:
 	void menuViewLog(void);
 	void menuHelp(void);
 	void menuAbout(void);
+	void slotSignalUpdate(const QString &, int);
 		
 private:
 	Emitter *m_pEmitter;
