@@ -821,21 +821,75 @@ void ConnectDlg::cleanupConnectionWizard(void)
 
 void ConnectDlg::connectWirelessConnection(void)
 {
+	int result = 0;
+
 	// If the connection is already the active one, then ignore it.
 	if (!XSupWrapper::isConnectionActive(m_currentWirelessAdapterName, m_pWirelessConnectionList->currentText(), true))
 	{
-		if (!XSupWrapper::connectToConnection(m_currentWirelessAdapterName, m_pWirelessConnectionList->currentText()))
-			QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection."));
+		if ((result = XSupWrapper::connectToConnection(m_currentWirelessAdapterName, m_pWirelessConnectionList->currentText())) != REQUEST_SUCCESS)
+		{
+			switch (result)
+			{
+			case IPC_ERROR_INTERFACE_NOT_FOUND:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The requested interface is no longer available."));
+				break;
+
+			case IPC_ERROR_INVALID_CONN_NAME:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The connection name requested is invalid."));
+				break;
+
+			case IPC_ERROR_SSID_NOT_FOUND:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The requested wireless network was not found."));
+				break;
+
+			case IPC_ERROR_INVALID_PROF_NAME:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The connection you are attempting to connect to is missing a profile."));
+				break;
+
+			case IPC_ERROR_INVALID_CONTEXT:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The context for this connection is missing or corrupt."));
+				break;
+
+			default:
+				QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection.  Error : %1").arg(result));
+				break;
+			}
+		}
 	}
 }
 
 void ConnectDlg::connectWiredConnection(void)
 {
+	int result = 0;
+
 	// If the connection is already the active one, then ignore it.
 	if (!XSupWrapper::isConnectionActive(m_currentWiredAdapterName, m_pWiredConnectionList->currentText(), false))
 	{
-		if (!XSupWrapper::connectToConnection(m_currentWiredAdapterName, m_pWiredConnectionList->currentText()))
-			QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wired connection."));
+		if ((result = XSupWrapper::connectToConnection(m_currentWiredAdapterName, m_pWiredConnectionList->currentText())) != REQUEST_SUCCESS)
+		{
+			switch (result)
+			{
+			case IPC_ERROR_INTERFACE_NOT_FOUND:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The requested interface is no longer available."));
+				break;
+
+			case IPC_ERROR_INVALID_CONN_NAME:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The connection name requested is invalid."));
+				break;
+
+			case IPC_ERROR_INVALID_PROF_NAME:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The connection you are attempting to connect to is missing a profile."));
+				break;
+
+			case IPC_ERROR_INVALID_CONTEXT:
+				QMessageBox::critical(this, tr("Connection Error"), tr("The context for this connection is missing or corrupt."));
+				break;
+
+			default:
+				QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection.  Error : %1").arg(result));
+				break;
+			}
+		}
 	}
 }
 

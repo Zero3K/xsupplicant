@@ -776,9 +776,34 @@ void CredentialsPopUp::slotOkayBtn()
 				}
 				else
 				{
-					if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
+					if ((result = xsupgui_request_set_connection(intName, m_connName.toAscii().data())) != REQUEST_SUCCESS)
 					{
-						QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
+						switch (result)
+						{
+						case IPC_ERROR_INTERFACE_NOT_FOUND:
+							QMessageBox::critical(this, tr("Connection Error"), tr("The requested interface is no longer available."));
+							break;
+
+						case IPC_ERROR_INVALID_CONN_NAME:
+							QMessageBox::critical(this, tr("Connection Error"), tr("The connection name requested is invalid."));
+							break;
+
+						case IPC_ERROR_SSID_NOT_FOUND:
+							QMessageBox::critical(this, tr("Connection Error"), tr("The requested wireless network was not found."));
+							break;
+
+						case IPC_ERROR_INVALID_PROF_NAME:
+							QMessageBox::critical(this, tr("Connection Error"), tr("The connection you are attempting to connect to is missing a profile."));
+							break;
+
+						case IPC_ERROR_INVALID_CONTEXT:
+							QMessageBox::critical(this, tr("Connection Error"), tr("The context for this connection is missing or corrupt."));
+							break;
+
+						default:
+							QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection.  Error : %1").arg(result));
+							break;
+						}
 					}
 					else
 					{

@@ -891,19 +891,16 @@ bool XSupWrapper::isConnectionActive(const QString &interfaceName, const QString
  * \retval true if the connection attempt should succeed.
  * \retval false if the connection attempt failed.
  **/
-bool XSupWrapper::connectToConnection(const QString &interfaceName, const QString &connectionName)
+int XSupWrapper::connectToConnection(const QString &interfaceName, const QString &connectionName)
 {
-	bool success = false;
+	int retval = -1;
 
 	if (interfaceName.isEmpty() == false)
 	{
-		int retval = 0;
 		retval = xsupgui_request_set_connection(interfaceName.toAscii().data(), connectionName.toAscii().data());
-		if (retval == REQUEST_SUCCESS)
-			success = true;
-		else if (retval == IPC_ERROR_NEW_ERRORS_IN_QUEUE)
+		if (retval == IPC_ERROR_NEW_ERRORS_IN_QUEUE)
 			XSupWrapper::getAndDisplayErrors();
 	}
 		
-	return success;
+	return retval;
 }
