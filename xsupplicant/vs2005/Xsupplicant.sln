@@ -47,6 +47,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libxsupconfcheck", "libxsup
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libcrashdump", "libcrashdump\libcrashdump.vcproj", "{73F5C2CC-0889-4FA2-89EE-797A83BBAF0D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libxsupplugins", "libxsupplugins\libxsupplugins.vcproj", "{44332625-BE4F-4AB0-9485-82209045733B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug as Service with TNC|Pocket PC 2003 (ARMV4) = Debug as Service with TNC|Pocket PC 2003 (ARMV4)
@@ -811,6 +813,38 @@ Global
 		{73F5C2CC-0889-4FA2-89EE-797A83BBAF0D}.Release|Smartphone 2003 (ARMV4).ActiveCfg = Release|Win32
 		{73F5C2CC-0889-4FA2-89EE-797A83BBAF0D}.Release|Win32.ActiveCfg = Release|Win32
 		{73F5C2CC-0889-4FA2-89EE-797A83BBAF0D}.Release|Win32.Build.0 = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug as Service with TNC|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug as Service with TNC|Smartphone 2003 (ARMV4).ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug as Service with TNC|Win32.ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug as Service with TNC|Win32.Build.0 = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug With TNC|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug With TNC|Smartphone 2003 (ARMV4).ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug With TNC|Win32.ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug With TNC|Win32.Build.0 = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug, TNC, Experimental|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug, TNC, Experimental|Smartphone 2003 (ARMV4).ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug, TNC, Experimental|Win32.ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug, TNC, Experimental|Win32.Build.0 = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug|Smartphone 2003 (ARMV4).ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Debug|Win32.Build.0 = Debug|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Rel. as Service, TNC, Experimental|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Rel. as Service, TNC, Experimental|Smartphone 2003 (ARMV4).ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Rel. as Service, TNC, Experimental|Win32.ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Rel. as Service, TNC, Experimental|Win32.Build.0 = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release as Service with TNC|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release as Service with TNC|Smartphone 2003 (ARMV4).ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release as Service with TNC|Win32.ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release as Service with TNC|Win32.Build.0 = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release with TNC|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release with TNC|Smartphone 2003 (ARMV4).ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release with TNC|Win32.ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release with TNC|Win32.Build.0 = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release|Smartphone 2003 (ARMV4).ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release|Win32.ActiveCfg = Release|Win32
+		{44332625-BE4F-4AB0-9485-82209045733B}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

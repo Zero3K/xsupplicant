@@ -16,10 +16,12 @@
 int sim_reader_plugin_hook_available();
 void sim_reader_plugin_update_reader_list(char **readername);
 int sim_reader_plugin_gs_supported();
-int sim_reader_plugin_is_my_reader(char *);
+int sim_reader_plugin_init_ctx(SCARDCONTEXT *card_ctx);
+int sim_reader_plugin_deinit_ctx(SCARDHANDLE *card_hdl, SCARDCONTEXT *card_ctx);
 int sim_reader_plugin_hook_get_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char **imsi);
 int sim_reader_plugin_hook_get_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char **imsi);
 int sim_reader_plugin_hook_3g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode);
+int sim_reader_plugin_hook_2g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode);
 long sim_reader_plugin_hook_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *card_hdl, char *cardreader);
 int sim_reader_plugin_hook_card_disconnect(SCARDHANDLE *card_hdl);
 

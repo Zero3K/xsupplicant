@@ -9,28 +9,17 @@
  *
  **/
 
+#ifdef WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef WIN32
-#include <windows.h>
-#include <stdintwin.h>
-#ifdef _DLL
-#define DLLMAGIC __declspec(dllexport)
+#include "plugin_includes.h"
 
-//typedef strdup _strdup;
-
-#else
-#define DLLMAGIC __declspec(dllimport)
-#endif 	// _DLL
-#endif // WIN32
-
-#ifndef WIN32  // Non-Windows platforms need a stub
-#include <stdint.h>
-#define DLLMAGIC 
-#endif //WIN32
-
+#include <xsupplugin_types.h>
 
 // 1MB of buffer.
 //#define MAX_BUFFER 1048576
@@ -75,7 +64,7 @@ void add_to_buffer(char *msg);
 void trim_buffer_to_size(unsigned long bufferSize);
 
 // Supplicant entrypoint
-void DLLMAGIC initialize()
+uint32_t DLLMAGIC initialize()
 {
 	// These are already initialized by the defines above.  If you init them here, you
 	// will lose the log message indicating that birddog has been loaded, and leak some memory.
@@ -88,6 +77,8 @@ void DLLMAGIC initialize()
 	growMutex = CreateMutex(NULL, 0, NULL);
 	trimMutex = CreateMutex(NULL, 0, NULL);
 #endif // WIN32
+
+	return PLUGIN_TYPE_LOGGING;
 }
 
 // Supplicant entrypoint
@@ -206,7 +197,7 @@ int DLLMAGIC plugin_hook_trouble_ticket_dump_file(char *file)
 #ifdef WIN32
 		if(WaitForSingleObject(trimMutex, INFINITE) != WAIT_OBJECT_0) {
 			// If we can't acquire the trim mutex, bail out.
-			return;
+			return -1;
 		}
 #endif // WIN32
 
@@ -229,7 +220,7 @@ int DLLMAGIC plugin_hook_trouble_ticket_dump_file(char *file)
 #ifdef WIN32
 					if(WaitForSingleObject(growMutex, INFINITE) != WAIT_OBJECT_0) {
 						// If we can't acquire the grow mutex, bail out.
-						return;
+						return -1;
 					}
 #endif // WIN32
 

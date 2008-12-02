@@ -401,7 +401,7 @@ struct config_plugins {
   struct config_plugins *next;
   char *name;
   char *path;
-  uint8_t type;				// Populated when the plugin is loaded, to speed searching for the plugin type.
+  uint32_t plugin_type;				// Populated when the plugin is loaded, to speed searching for the plugin type.
   void *handle;
 };
 

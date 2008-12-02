@@ -5,9 +5,6 @@
  * \file stdintwin.h
  *
  * \author chris@open1x.org
- *
- * $Id: stdintwin.h,v 1.2 2007/09/24 02:12:26 galimorerpg Exp $
- * $Date: 2007/09/24 02:12:26 $
  */
 #ifndef __STDINTWIN_H__
 #define __STDINTWIN_H__

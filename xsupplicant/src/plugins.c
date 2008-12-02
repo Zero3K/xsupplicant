@@ -25,17 +25,14 @@
 #include "libxsupconfig/xsupconfig_structs.h"
 #include "libxsupconfig/xsupconfig_vars.h"
 #include "platform/plugin_handler.h"
-
-
-
-struct config_plugins *conf_plugins = NULL;
+#include "libxsupplugins/xsupplugin_types.h"
 
 // Returns the # of plugins loaded
 uint8_t load_plugins()
 {  
 #ifdef WINDOWS
-  struct config_plugins *plugin = (struct config_plugins *)calloc(1, sizeof(struct config_plugins));
-  void (*initialize)()          = NULL;
+  struct config_plugins *plugin = NULL;
+  uint32_t (*initialize)()          = NULL;
   uint8_t plugins_loaded        = 0;
 
   // XXX Temporary for excalibur_ga
@@ -67,21 +64,7 @@ uint8_t load_plugins()
 	// = szModulePath;*/
 #endif // WINDOWS
 
-  conf_plugins = plugin;
-  
-  // Add BirdDog to the list of plugins to load
-  conf_plugins->name = strdup("BirdDog");
-  conf_plugins->path = calloc(1, sizeof(cwd) + 256);
-  strcat(conf_plugins->path, cwd);
-  strcat(conf_plugins->path, "Modules\\BirdDog.dll");
-
-  // Add PostureDiagnose to the list of plugins to load
-  conf_plugins->next = (struct config_plugins *)calloc(1, sizeof(struct config_plugins));
-  conf_plugins->next->name = strdup("PostureDiagnose");
-  conf_plugins->next->path = calloc(1, sizeof(cwd) + 256);
-  strcat(conf_plugins->next->path, cwd);
-  strcat(conf_plugins->next->path, "Modules\\PostureDiagnose.dll");
-
+  // XXX Below needs to be configurable!
   // Add the PostureDiagnoseLog.log file to the list of things to be collected by troubleticket/crash reporter.
   diagnose_logfile_size = (strlen(cwd) * 2) + (strlen("Modules\\IMCs\\OESEngine\\PostureDiagnoseLog.log") * 2) + 16;
   diagnose_logfile = calloc(1, diagnose_logfile_size);
@@ -110,6 +93,8 @@ uint8_t load_plugins()
   #warning Need to implement crash dump file handling for this platform.
 #endif // WINDOWS
 
+  plugin = conf_plugins;
+
   while(plugin != NULL)
     {
       debug_printf(DEBUG_NORMAL, "Loading Plugin '%s' from '%s'.\n", plugin->name, plugin->path);
@@ -122,7 +107,7 @@ uint8_t load_plugins()
 
 	  if(initialize != NULL)
 	    {
-	      (*initialize)();
+	      plugin->plugin_type = (*initialize)();
 	      plugins_loaded++;
 	    }
 	  else 
@@ -213,7 +198,8 @@ void log_hook_full_debug(char *msg)
       while(plugin != NULL)
 	{
 
-	  if(plugin->handle != NULL) 
+		// Only try to get an entrypoint if the plugin claims to be of the type we a looking for.
+	  if((plugin->handle != NULL) && ((plugin->plugin_type & PLUGIN_TYPE_LOGGING) == PLUGIN_TYPE_LOGGING))
 	    {
 	      hook = (void *)platform_plugin_entrypoint(plugin, "log_hook_full_debug");
 	      

@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\src"
+				AdditionalIncludeDirectories="..\..\..\src;..\..\..\lib\libxsupplugins"
 				PreprocessorDefinitions="WIN32;WINDOWS;_DLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -113,7 +113,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\src"
+				AdditionalIncludeDirectories="..\..\..\src;..\..\..\lib\libxsupplugins"
 				PreprocessorDefinitions="WIN32;WINDOWS;_DLL"
 				RuntimeLibrary="2"
 				WarningLevel="3"
@@ -181,6 +181,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\plugin_includes.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\..\src\stdintwin.h"
 				>

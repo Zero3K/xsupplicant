@@ -5,7 +5,7 @@
  *
  * \author galimorerpg@cvs.sourceforge.net
  *
- *******************************************************************/
+ **/
 #include <windows.h>
 #include "../plugin_handler.h"
 #include "xsupconfig_structs.h"
