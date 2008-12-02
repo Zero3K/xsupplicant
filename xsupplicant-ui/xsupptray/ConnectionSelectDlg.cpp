@@ -148,7 +148,7 @@ void ConnectionSelectDlg::okay(void)
 			if (retVal != REQUEST_SUCCESS)
 				reportError = true;
 				
-			errMessage = tr("An error occurred while connecting to the network '%1'.").arg(QString(pConn->ssid));
+			errMessage = tr("An error occurred while connecting to the network '%1'. (Error : %2)").arg(QString(pConn->ssid).arg(retVal));
 				
 			if (adapterName != NULL)
 				free(adapterName);				

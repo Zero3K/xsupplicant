@@ -628,7 +628,7 @@ void CredentialsPopUp::slotDisconnectBtn()
 
 	if (result == false)
 	{
-		QMessageBox::critical(this, tr("Error Disconnecting"), tr("There was an error getting the supplicant to disconnect the interface."));
+		QMessageBox::critical(this, tr("Error Disconnecting"), tr("Unable to locate the configuration information for the connection '%1'.").arg(m_connName));
 	}
 	else
 	{

@@ -1824,6 +1824,7 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 	if (retVal == REQUEST_SUCCESS && pConn != NULL)
 	{
 		int i = 0;
+		int idx = 0;
 		QStringList connList;
 		while (pConn[i].name != NULL)
 		{
@@ -1831,34 +1832,38 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 			{
 				found = true;
 				connList.append(pConn[i].name);
+				idx = i;
 			} 
 			i++;
 		}
 		
-		if (connList.count() == 1)
+		if (found)
 		{
-			// if only one connection for this network and adapter, connect to it
-			char *adapterName= NULL;
-			
-			retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &adapterName);
-			
-			if (retVal == REQUEST_SUCCESS && adapterName != NULL)
-				retVal = xsupgui_request_set_connection(adapterName, pConn[i].name);
-
-			if (retVal != REQUEST_SUCCESS || adapterName == NULL)
+			if (connList.count() == 1)
 			{
-				QString message = tr("An error occurred while connecting to the network '%1'.").arg(networkName);
-				QMessageBox::critical(NULL,tr("Error Connecting to Network"),message);
-			}
+				// if only one connection for this network and adapter, connect to it
+				char *adapterName = NULL;
+			
+				retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &adapterName);
+			
+				if (retVal == REQUEST_SUCCESS && adapterName != NULL)
+					retVal = xsupgui_request_set_connection(adapterName, pConn[idx].name);
+
+				if (retVal != REQUEST_SUCCESS || adapterName == NULL)
+				{
+					QString message = tr("An error occurred while connecting to the network '%1'.  (Error : %2)").arg(networkName).arg(retVal);
+					QMessageBox::critical(NULL,tr("Error Connecting to Network"),message);
+				}
 				
-			if (adapterName != NULL)
-				free(adapterName);
+				if (adapterName != NULL)
+					free(adapterName);
+			}
+			else if (connList.count() > 1)
+			{
+				// must prompt user to tell us which connection to use
+				this->promptConnectionSelection(connList);
+			}	
 		}
-		else if (connList.count() > 1)
-		{
-			// must prompt user to tell us which connection to use
-			this->promptConnectionSelection(connList);
-		}	
 	}
 	
 	xsupgui_request_free_conn_enum(&pConn);
@@ -2015,7 +2020,7 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 							
 						if (retVal != REQUEST_SUCCESS || adapterName == NULL)
 						{
-							QString message = tr("An error occurred while connecting to the network '%1'.").arg(networkName);
+							QString message = tr("An error occurred while connecting to the network '%1'.  (Error : %2)").arg(networkName).arg(retVal);
 							QMessageBox::critical(this,tr("Error Connecting to Network"),message);				
 						}
 						xsupgui_request_free_str(&adapterName);
@@ -2057,10 +2062,10 @@ void TrayApp::finishConnectionWizard(bool success, const QString &connName)
 			{
 				retVal = xsupgui_request_set_connection(adapterName, connName.toAscii().data());
 				if (retVal != REQUEST_SUCCESS)
-					QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'.").arg(QString(pConfig->ssid)));
+					QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'. (Error : %2)").arg(QString(pConfig->ssid)).arg(retVal));
 			}
 			else
-				QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'.").arg(QString(pConfig->ssid)));
+				QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'.  (Error : %2)").arg(QString(pConfig->ssid)).arg(retVal));
 			XSupWrapper::freeConfigConnection(&pConfig);		
 		}
 	}		
