@@ -100,6 +100,48 @@ xmlNodePtr xsupconfwrite_plugin_create_tree(struct config_plugins *plugs, uint8_
 		free(temp);
 	}
 
+	if ((write_all == TRUE) || (plugs->path != NULL))
+	{
+		xsupconfwrite_convert_amp(plugs->path, &temp);
+		if (xmlNewChild(plugnode, NULL, (xmlChar *)"Description", (xmlChar *)temp) == NULL)
+		{
+#ifdef WRITE_PLUGINS_CONFIG
+			printf("Couldn't allocate memory to store <Description> node!\n");
+#endif
+			xmlFreeNode(plugnode);
+			free(temp);
+			return NULL;
+		}
+
+		free(temp);
+	}
+
+	if ((write_all == TRUE) || (plugs->enabled == FALSE))
+	{
+		switch (plugs->enabled)
+		{
+		case FALSE:
+			temp = _strdup("no");  // Default setting.
+			break;
+
+		default:
+		case TRUE:
+			temp = _strdup("yes");
+			break;
+		}
+
+		if (xsupconfwrite_common_newSibling(plugnode, "Enabled", temp) == NULL)
+		{
+#ifdef WRITE_EAP_PEAP_DEBUG
+			printf("Couldn't create <Enabled> node for PEAP!\n");
+#endif
+			xmlFreeNode(plugnode);
+			free(temp);
+			return NULL;
+		}
+
+		free(temp);
+	}
 
 	return plugnode;
 }

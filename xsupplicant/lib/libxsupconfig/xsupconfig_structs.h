@@ -401,6 +401,8 @@ struct config_plugins {
   struct config_plugins *next;
   char *name;
   char *path;
+  uint8_t enabled;					// True if it is enabled, false if not.
+  char *description;				// The description of this plugin.
   uint32_t plugin_type;				// Populated when the plugin is loaded, to speed searching for the plugin type.
   void *handle;
 };

@@ -165,5 +165,7 @@ int xsupconfig_defaults_create_plugin(config_plugins **newplugin)
 
   memset((*newplugin), 0x00, sizeof(struct config_plugins));
 
+  (*newplugin)->enabled = TRUE;
+
   return DEFAULTS_SUCCESS;
 }

@@ -185,7 +185,69 @@ void *xsupconfig_parse_plugin_path(void **attr, uint8_t config_type, xmlNodePtr 
   return cur;
 }
 
+void *xsupconfig_parse_plugin_enabled(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+  struct config_plugins *cur = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+ 
+  value = (char *)xmlNodeGetContent(node);
+
+  cur = (*attr);
+
+#ifdef PARSE_DEBUG
+  printf("Plugin Enabled : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result > 1)
+    {
+      xsupconfig_common_log("Invalid value was passed for 'Enabled'!  Will use the "
+	     "default value of yes.  (Config line %ld)\n",
+	     xsupconfig_parse_get_line_num());
+      cur->enabled = TRUE;
+    }
+  else
+    {
+      cur->enabled = result;
+    }
+  
+  xmlFree(value);
+
+  return cur;
+}
+
+void *xsupconfig_parse_plugin_desc(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+  struct config_plugins *cur = NULL;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Description = %s\n", value);
+#endif
+
+  cur = (*attr);
+
+	if ((value == NULL) || (strlen(value) == 0))
+	{
+		xmlFree(value);
+		cur->description = NULL;
+	}
+	else
+	{
+		cur->description = _strdup(value);
+		xmlFree(value);
+	}
+
+  return cur;
+}
+
 parser plugin[] = {
 	{"Name", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin_name},
 	{"Path", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin_path},
+	{"Enabled", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin_enabled},
+	{"Description", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin_desc},
 	{NULL, NULL, FALSE, 0, NULL}};

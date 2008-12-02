@@ -76,10 +76,10 @@ void sim_reader_plugin_update_reader_list(char **readername)
  *
  * \retval int containing the flags defined by SUPPORT_xG_SIM in sim_reader_plugin_hook.h.
  **/
-int sim_reader_plugin_gs_supported(char *readername)
+int sim_reader_plugin_gs_supported(SCARDHANDLE *card_hdl)
 {
 	struct config_plugins *cur = NULL;
-	int (*hook)(char *readername);
+	int (*hook)(void *card_hdl);
 	int support = 0;
 
 	cur = config_get_plugins();
@@ -92,7 +92,7 @@ int sim_reader_plugin_gs_supported(char *readername)
 	      
           if(hook != NULL)
 		  {
-		    support = (*hook)(readername);
+		    support = (*hook)(card_hdl);
 			if (support > 0) return support;
 		  }
 	    }
@@ -389,11 +389,29 @@ int sim_reader_plugin_hook_do_2g_auth(SCARDHANDLE *card_hdl, char reader_mode,
  **/
 int sim_reader_plugin_init_ctx(SCARDCONTEXT *card_ctx)
 {
-	//typedef ULONG_PTR SCARDCONTEXT;
+	//In PC/SC SCARDCONTEXT is defined as "typedef ULONG_PTR SCARDCONTEXT", we will set it
+	// to -1 to identify that we are using a plugin.
+	(*card_ctx) = malloc(sizeof(unsigned long));
+	if ((*card_ctx) == NULL) return -1;
+
+	(*card_ctx) = -1;  // Will set this to all 0xffs.
+	
+	return 0;
 }
 
 int sim_reader_plugin_deinit_ctx(SCARDHANDLE *card_hdl, SCARDCONTEXT *card_ctx)
 {
+	free((*card_hdl));
+	(*card_hdl) = NULL;
+
+	return sim_reader_plugin_hook_card_disconnect(card_hdl);
 }
 
+int sim_reader_plugin_ctx_is_plugin(void **card_ctx)
+{
+	if (card_ctx == NULL) return FALSE;
+	if ((*card_ctx) == -1) return TRUE;
+
+	return FALSE;
+}
 

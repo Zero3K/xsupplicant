@@ -17,7 +17,7 @@
 #define XSUPPLUGIN_SIM_INTERFACE_TYPE_H_
 
 void sim_hook_update_reader_list(char **readerlist);
-int sim_hook_reader_gs_supported(char *readername);
+int sim_hook_reader_gs_supported(void *card_hdl);
 int sim_hook_get_2g_imsi(void *cardhdl, char reader_mode, char *pin, char **imsi);
 int sim_hook_get_3g_imsi(void *cardhdl, char reader_mode, char *pin, char **imsi);
 int sim_hook_2g_pin_needed(void *card_hdl, char reader_mode);

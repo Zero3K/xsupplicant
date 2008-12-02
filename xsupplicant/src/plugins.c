@@ -95,31 +95,38 @@ uint8_t load_plugins()
 
   plugin = conf_plugins;
 
-  while(plugin != NULL)
+  while (plugin != NULL)
     {
-      debug_printf(DEBUG_NORMAL, "Loading Plugin '%s' from '%s'.\n", plugin->name, plugin->path);
+		if (plugin->enabled == FALSE)
+		{
+			debug_printf(DEBUG_NORMAL, "Skipped loading plugin '%s'.\n", plugin->name);
+		}
+		else
+		{
+			debug_printf(DEBUG_NORMAL, "Loading Plugin '%s' from '%s'.\n", plugin->name, plugin->path);
 
-      if(platform_plugin_load(plugin) == PLUGIN_LOAD_SUCCESS)
-	{
-	  debug_printf(DEBUG_NORMAL, "Loaded plugin '%s' at 0x%x\n", plugin->name, plugin->handle);
+			if(platform_plugin_load(plugin) == PLUGIN_LOAD_SUCCESS)
+			{
+				debug_printf(DEBUG_NORMAL, "Loaded plugin '%s' at 0x%x\n", plugin->name, plugin->handle);
 
-	  initialize = platform_plugin_entrypoint(plugin, "initialize");
+				initialize = platform_plugin_entrypoint(plugin, "initialize");
 
-	  if(initialize != NULL)
-	    {
-	      plugin->plugin_type = (*initialize)();
-	      plugins_loaded++;
-	    }
-	  else 
-	    {
-	      debug_printf(DEBUG_PLUGINS, "Error initializing plugin '%s' : %s", plugin->name, platform_plugin_error(plugin));
-	      platform_plugin_unload(plugin);
-	    }
-	}
-      else
-	{
-	  debug_printf(DEBUG_PLUGINS, "Plugin '%s' failed to load from '%s'.\n", plugin->name, plugin->path);
-	}
+				if (initialize != NULL)
+				{
+					plugin->plugin_type = (*initialize)();
+					plugins_loaded++;
+				}
+				else 
+				{
+					debug_printf(DEBUG_PLUGINS, "Error initializing plugin '%s' : %s", plugin->name, platform_plugin_error(plugin));
+					platform_plugin_unload(plugin);
+				}
+			}
+			else
+			{
+				debug_printf(DEBUG_PLUGINS, "Plugin '%s' failed to load from '%s'.\n", plugin->name, plugin->path);
+			}
+		}
 
       plugin = plugin->next;
     }

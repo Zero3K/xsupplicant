@@ -205,9 +205,9 @@ void *xsupconfig_parse_eap_peap_enc_user_key_pass(void **attr, uint8_t config_ty
 
 void *xsupconfig_parse_eap_peap_session_resume(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_peap *peap;
-  uint8_t result;
-  char *value;
+  struct config_eap_peap *peap = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
  
   value = (char *)xmlNodeGetContent(node);
 

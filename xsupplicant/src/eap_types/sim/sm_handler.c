@@ -387,8 +387,16 @@ long sm_handler_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *card_hdl,
 			     char *cardreader)
 {
   long ret, activeprotocol;
+  int result;
 
   debug_printf(DEBUG_AUTHTYPES, "Using reader : %s\n", cardreader);
+
+  if (sim_reader_plugin_hook_available() == TRUE)
+  {
+	  // Process it through our plugin.
+	  result = sim_reader_plugin_hook_card_connect(card_ctx, card_hdl, cardreader);
+	  if (result >= 0) return result;
+  }
 
   while (1)
     {
@@ -855,7 +863,7 @@ int sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
   int i;
 
   if ((sim_reader_plugin_hook_available() == TRUE) &&
-	  ((sim_reader_plugin_gs_supported() & SUPPORT_2G_SIM) == SUPPORT_2G_SIM))
+	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_2G_SIM) == SUPPORT_2G_SIM))
   {
 	  // Process it through our plugin.
 	  return sim_reader_plugin_hook_get_2g_imsi(card_hdl, reader_mode, pin, imsi);
@@ -1100,6 +1108,13 @@ int sm_handler_3g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode)
       return SM_HANDLER_ERROR_INVALID_CARD_CTX;
     }
 
+  if ((sim_reader_plugin_hook_available() == TRUE) &&
+	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_3G_SIM) == SUPPORT_3G_SIM))
+  {
+	  // Process it through our plugin.
+	  return sim_reader_plugin_hook_3g_pin_needed(card_hdl, reader_mode);
+  }
+
   // Select the USIM master file.
   if (cardio(card_hdl, SELECT_MF_USIM, reader_mode, MODE3G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
     {
@@ -1236,7 +1251,7 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
   struct t_efdir *t = NULL;
 
   if ((sim_reader_plugin_hook_available() == TRUE) &&
-	  ((sim_reader_plugin_gs_supported() & SUPPORT_3G_SIM) == SUPPORT_3G_SIM))
+	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_3G_SIM) == SUPPORT_3G_SIM))
   {
 	  // Process it through our plugin.
 	  return sim_reader_plugin_hook_get_3g_imsi(card_hdl, reader_mode, pin, imsi);
@@ -1419,6 +1434,14 @@ int sm_handler_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
 int sm_handler_card_disconnect(SCARDHANDLE *card_hdl)
 {
   long ret = 0;
+  int result = 0;
+
+  if (sim_reader_plugin_hook_available() == TRUE) 
+  {
+	  // Process it through our plugin.
+	  result = sim_reader_plugin_hook_card_disconnect(card_hdl);
+	  if (result >= 0) return result;
+  }
 
   if (card_hdl)
     {
@@ -1438,7 +1461,14 @@ int sm_handler_card_disconnect(SCARDHANDLE *card_hdl)
 
 int sm_handler_close_sc(SCARDHANDLE *card_hdl, SCARDCONTEXT *card_ctx)
 {
-  long ret;
+  long ret = 0;
+
+  if ((sim_reader_plugin_hook_available() == TRUE) && (card_ctx != NULL) && 
+	  (sim_reader_plugin_ctx_is_plugin(card_ctx) == TRUE))
+  {
+	  // This is a plug-in context, call it to clean up.
+	  return sim_reader_plugin_deinit_ctx(card_hdl, card_ctx);
+  }
 
   if (card_hdl)
     {
