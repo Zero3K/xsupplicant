@@ -319,6 +319,10 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 				retval = CONNECTION_NEED_UPW;
 				break;
 
+			case PROFILE_NEED_PIN:
+				retval = CONNECTION_NEED_PIN;
+				break;
+
 			case 0:
 				break;
 

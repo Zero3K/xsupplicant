@@ -417,7 +417,7 @@ long sm_handler_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *card_hdl,
 #endif
 	} else {
 	  debug_printf(DEBUG_NORMAL, "Error attempting to connect to the "
-		       "smart card!  ");
+		       "smart card!  \n");
 	  print_sc_error(ret);
 	  return -1;
 	  break;
@@ -432,8 +432,16 @@ int sm_handler_wait_card_ready(SCARDHANDLE *card_hdl, int waittime)
   BYTE  pbAtr[MAX_ATR_SIZE];
   int loopcnt, ret;
   LPSTR mszReaders;
+  int result = 0;
 
   loopcnt = 0;
+
+  if (sim_reader_plugin_hook_available() == TRUE)
+  {
+	  // Process it through our plugin.
+	  result = sim_reader_plugin_hook_wait_card_ready(card_hdl, waittime);
+	  if (result >= 0) return result;
+  }
 
   while (1)
     {
@@ -1363,6 +1371,13 @@ int sm_handler_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
 {
   unsigned char cmd[MAXBUFF], buf[MAXBUFF], sw1, sw2, *s;
   DWORD len;
+
+  if ((sim_reader_plugin_hook_available() == TRUE) &&
+	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_3G_SIM) == SUPPORT_3G_SIM))
+  {
+	  // Process it through our plugin.
+	  return sim_reader_plugin_hook_do_3g_auth(card_hdl, reader_mode, Rand, autn, c_auts, res_len, c_sres, c_ck, c_ik, c_kc);
+  }
 
   if (Strncpy(cmd, sizeof(cmd), "008800812210", 13) != 0)
     {

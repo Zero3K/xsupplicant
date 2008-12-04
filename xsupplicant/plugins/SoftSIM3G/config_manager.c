@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
+#include <shlobj.h>
 
 #include "config_manager.h"
 
@@ -24,19 +26,112 @@ struct aka_config {
 
 struct aka_config *myconfig = NULL;
 
+void process_line(char *line)
+{
+	char *key = NULL, *value = NULL;
+	int i = 0;
+
+	if (myconfig == NULL) 
+	{
+		printf("myconfig is NULL!\n");
+		return;
+	}
+
+	if (line[0] == '#') return;
+
+	key = line;
+	while ((i < strlen(line)) && (line[i] != '=')) i++;
+
+	line[i] = 0x00;
+
+	value = (char *)&line[i+1];
+
+	if (_stricmp("imsi", key) == 0)
+	{
+		// It is an imsi.
+		myconfig->imsi = _strdup(value);
+	}
+	else if (_stricmp("k", key) == 0)
+	{
+		// It is a K
+		myconfig->k = _strdup(value);
+	}
+	else if (_stricmp("sqn", key) == 0)
+	{
+		myconfig->sqn = _strdup(value);
+	}
+	else if (_stricmp("amf", key) == 0)
+	{
+		myconfig->amf = _strdup(value);
+	}
+	else if (_stricmp("oc", key) == 0)
+	{
+		myconfig->oc = _strdup(value);
+	}
+}
+
 int load_config_from_path(char *path)
 {
+	FILE *fp = NULL;
+	char line[1000];
+
+	fp = fopen(path, "r");
+	if (fp == NULL) return -1;
+
+	while (fscanf(fp, "%s", &line) != EOF)
+	{
+		process_line(line);
+	}
+
+	fclose(fp);
 }
 
 int write_config_to_path(char *path)
 {
+	FILE *fp = NULL;
+
+	fp = fopen(path, "r");
+	if (fp == NULL) return -1;
+
+	fprintf(fp, "IMSI=%s", myconfig->imsi);
+	fprintf(fp, "K=%s", myconfig->k);
+	fprintf(fp, "AMF=%s", myconfig->amf);
+	fprintf(fp, "OC=%s", myconfig->oc);
+	fprintf(fp, "SQN=%s", myconfig->sqn);
+
+	fclose(fp);
 }
 
 int load_sim_config()
 {
+#ifdef WIN32
+	TCHAR szMyPath[MAX_PATH];
+	char *path = NULL;
+#endif
+
 	if (myconfig != NULL) free_sim_config();
 
+	myconfig = malloc(sizeof(struct aka_config));
+	if (myconfig == NULL) return -1;
+
+	memset(myconfig, 0x00, sizeof(struct aka_config));
+
 #ifdef WIN32
+	if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szMyPath)))
+	  {
+		  printf("Couldn't determine the path to the local common app data.\n");
+		  return NULL;
+	  }
+
+	path = malloc(strlen(szMyPath)+strlen("usim.txt")+3);
+	if (path == NULL) return -1;
+
+	memset(path, 0x00, strlen(szMyPath)+strlen("usim.txt")+3);
+
+	strcpy(path, szMyPath);
+	strcat(path, "\\usim.txt");
+
+	return load_config_from_path(path);
 #else
 #warning Implement config paths for your OS!
 	return -1;
@@ -75,7 +170,11 @@ int get_k(char **k)
 
 int get_sqn(char **sqn)
 {
-	if (myconfig == NULL) return -1;
+	if (myconfig == NULL) 
+	{
+		load_sim_config();
+		if (myconfig == NULL) return -1;
+	}
 
 	if (myconfig->sqn == NULL) 
 	{
@@ -139,14 +238,18 @@ int set_sqn(char *sqn)
 
 int free_sim_config()
 {
-	free(myconfig->amf);
-	free(myconfig->imsi);
-	free(myconfig->k);
-	free(myconfig->oc);
-	free(myconfig->sqn);
+	if (myconfig == NULL) return 0;
+
+	if (myconfig->amf != NULL) free(myconfig->amf);
+	if (myconfig->imsi != NULL) free(myconfig->imsi);
+	if (myconfig->k != NULL) free(myconfig->k);
+	if (myconfig->oc != NULL) free(myconfig->oc);
+	if (myconfig->sqn != NULL) free(myconfig->sqn);
 
 	free(myconfig);
 	myconfig = NULL;
+
+	return 0;
 }
 
 

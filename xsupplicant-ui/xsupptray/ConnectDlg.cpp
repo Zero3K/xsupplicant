@@ -850,6 +850,10 @@ void ConnectDlg::connectWirelessConnection(void)
 				QMessageBox::critical(this, tr("Connection Error"), tr("The context for this connection is missing or corrupt."));
 				break;
 
+			case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
+				getAndDisplayErrors();
+				break;
+
 			default:
 				QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection.  Error : %1").arg(result));
 				break;
@@ -885,12 +889,53 @@ void ConnectDlg::connectWiredConnection(void)
 				QMessageBox::critical(this, tr("Connection Error"), tr("The context for this connection is missing or corrupt."));
 				break;
 
+			case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
+				getAndDisplayErrors();
+				break;
+
 			default:
-				QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection.  Error : %1").arg(result));
+				QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a connection.  Error : %1").arg(result));
 				break;
 			}
 		}
 	}
+}
+
+void ConnectDlg::getAndDisplayErrors()
+{
+  int i = 0;
+  QString errors;
+  error_messages *msgs = NULL;
+
+  int retval = xsupgui_request_get_error_msgs(&msgs);
+  if (retval == REQUEST_SUCCESS)
+  {
+    if (msgs && msgs[0].errmsgs)
+    {
+      // If we have at least one message, display it here
+      while (msgs[i].errmsgs != NULL)
+      {
+        errors += QString ("- %1\n").arg(msgs[i].errmsgs);
+        i++;
+      }
+
+      QMessageBox::critical(this, tr("XSupplicant Error Summary"),
+        tr("The following errors were returned from XSupplicant while starting up or attempting to connect.\n%1")
+        .arg(errors));
+    }
+	else
+	{
+		QMessageBox::critical(this, tr("XSupplicant Error"),
+			tr("The supplicant service indicated there were queued errors, but didn't return any when asked!"));
+	}
+  }
+  else
+  {
+    QMessageBox::critical(this, tr("Get Error Message error"),
+      tr("An error occurred while checking for errors from the XSupplicant."));
+  }
+
+  xsupgui_request_free_error_msgs(&msgs);
 }
 
 void ConnectDlg::disconnectWirelessConnection(void)
@@ -908,14 +953,16 @@ void ConnectDlg::disconnectWirelessConnection(void)
 
 void ConnectDlg::disconnectWiredConnection(void)
 {
-	if (xsupgui_request_disconnect_connection(m_currentWiredAdapterName.toAscii().data()) == REQUEST_SUCCESS)
+	int retval = 0;
+
+	if ((retval = xsupgui_request_disconnect_connection(m_currentWiredAdapterName.toAscii().data())) == REQUEST_SUCCESS)
 	{
 		stopAndClearTimer();	
 	}
 	else
 	{
 		QMessageBox::critical(NULL, tr("Disconnect Wired"),
-			tr("An error occurred while disconnecting device '%1'.\n").arg(m_currentWiredAdapterDesc));		
+			tr("An error occurred while disconnecting device '%1'.  (Error : %2)\n").arg(m_currentWiredAdapterDesc).arg(retval));		
 	}	
 }
 

@@ -8130,7 +8130,7 @@ int ipc_callout_disconnect_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		return IPC_FAILURE;
 
 	ctx = ipc_callout_get_context_from_int(innode);
-	if ((ctx == NULL) || (ctx->conn == NULL) || (ctx->conn->name == NULL))
+	if (ctx == NULL)
 	{
 		debug_printf(DEBUG_VERBOSE, "Unable to locate context for IPC request.\n");
 		return ipc_callout_create_error(NULL, "Disconnect_Connection", IPC_ERROR_INVALID_CONTEXT, outnode);

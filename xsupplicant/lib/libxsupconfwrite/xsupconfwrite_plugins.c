@@ -100,9 +100,9 @@ xmlNodePtr xsupconfwrite_plugin_create_tree(struct config_plugins *plugs, uint8_
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (plugs->path != NULL))
+	if ((write_all == TRUE) || (plugs->description != NULL))
 	{
-		xsupconfwrite_convert_amp(plugs->path, &temp);
+		xsupconfwrite_convert_amp(plugs->description, &temp);
 		if (xmlNewChild(plugnode, NULL, (xmlChar *)"Description", (xmlChar *)temp) == NULL)
 		{
 #ifdef WRITE_PLUGINS_CONFIG

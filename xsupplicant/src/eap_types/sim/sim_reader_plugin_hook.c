@@ -275,7 +275,11 @@ long sim_reader_plugin_hook_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *ca
           if(hook != NULL)
 		  {
 		    result = (*hook)(card_ctx, card_hdl, cardreader);
-			if (result >= 0) return result;
+			if (result >= 0) 
+			{
+				sim_reader_plugin_init_ctx(card_ctx);		// Do this here, so that we clean up the old context and aquire one for the plugin.
+				return result;
+			}
 		  }
 	    }
 
@@ -320,7 +324,7 @@ int sim_reader_plugin_hook_card_disconnect(SCARDHANDLE *card_hdl)
 }
 
 // return -2 on sync failure. -1 for all other errors.
-int sim_reader_plugin_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode, 
+int sim_reader_plugin_hook_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode, 
 			  unsigned char *Rand, unsigned char *autn, 
 			  unsigned char *c_auts, char *res_len, 
 			  unsigned char *c_sres, unsigned char *c_ck, 
@@ -343,7 +347,7 @@ int sim_reader_plugin_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
           if(hook != NULL)
 		  {
 		    result = (*hook)(card_hdl, reader_mode, Rand, autn, c_auts, res_len, c_sres, c_ck, c_ik, c_kc);
-			if (result >= 0) return result;
+			if (result != -3) return result;
 		  }
 	    }
 
@@ -389,20 +393,27 @@ int sim_reader_plugin_hook_do_2g_auth(SCARDHANDLE *card_hdl, char reader_mode,
  **/
 int sim_reader_plugin_init_ctx(SCARDCONTEXT *card_ctx)
 {
+	printf("%s()\n", __FUNCTION__);
+
+	// Release our old context if we have one.
+	SCardReleaseContext(*card_ctx);
+
 	//In PC/SC SCARDCONTEXT is defined as "typedef ULONG_PTR SCARDCONTEXT", we will set it
 	// to -1 to identify that we are using a plugin.
+	/*
 	(*card_ctx) = malloc(sizeof(unsigned long));
 	if ((*card_ctx) == NULL) return -1;
 
 	(*card_ctx) = -1;  // Will set this to all 0xffs.
-	
+	*/
+	(*card_ctx) = -1;
 	return 0;
 }
 
 int sim_reader_plugin_deinit_ctx(SCARDHANDLE *card_hdl, SCARDCONTEXT *card_ctx)
 {
-	free((*card_hdl));
-	(*card_hdl) = NULL;
+//	free((*card_ctx));
+	(*card_ctx) = 0;
 
 	return sim_reader_plugin_hook_card_disconnect(card_hdl);
 }
@@ -415,3 +426,29 @@ int sim_reader_plugin_ctx_is_plugin(void **card_ctx)
 	return FALSE;
 }
 
+int sim_reader_plugin_hook_wait_card_ready(SCARDHANDLE *card_hdl, int waittime)
+{
+	struct config_plugins *cur = NULL;
+	int (*hook)(void *card_hdl, int waittime);
+	int result = 0;
+
+	cur = config_get_plugins();
+	
+	while (cur != NULL)
+	{
+		if((cur->handle != NULL) && ((cur->plugin_type & PLUGIN_TYPE_SIM_INTERFACE) == PLUGIN_TYPE_SIM_INTERFACE))
+	    {
+	      hook = (void *)platform_plugin_entrypoint(cur, "sim_hook_wait_card_ready");
+	      
+          if(hook != NULL)
+		  {
+		    result = (*hook)(card_hdl, waittime);
+			if (result >= 0) return result;
+		  }
+	    }
+
+		cur = cur->next;
+	}
+
+	return -1;
+}

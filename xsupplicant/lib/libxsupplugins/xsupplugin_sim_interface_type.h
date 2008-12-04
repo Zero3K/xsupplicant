@@ -16,20 +16,21 @@
 #ifndef XSUPPLUGIN_SIM_INTERFACE_TYPE_H_
 #define XSUPPLUGIN_SIM_INTERFACE_TYPE_H_
 
-void sim_hook_update_reader_list(char **readerlist);
-int sim_hook_reader_gs_supported(void *card_hdl);
-int sim_hook_get_2g_imsi(void *cardhdl, char reader_mode, char *pin, char **imsi);
-int sim_hook_get_3g_imsi(void *cardhdl, char reader_mode, char *pin, char **imsi);
-int sim_hook_2g_pin_needed(void *card_hdl, char reader_mode);
-int sim_hook_3g_pin_needed(void *card_hdl, char reader_mode);
-int sim_hook_card_connect(void *card_ctx, void *card_hdl, char *cardreader);
-int sim_hook_card_disconnect(void *card_hdl);
+void sim_hook_update_reader_list(char **readerlist);		// MANDATORY
+int sim_hook_reader_gs_supported(void *card_hdl);			// MANDATORY
+int sim_hook_get_2g_imsi(void *cardhdl, char reader_mode, char *pin, char **imsi);  // OPTIONAL
+int sim_hook_get_3g_imsi(void *cardhdl, char reader_mode, char *pin, char **imsi);	// OPTIONAL
+int sim_hook_2g_pin_needed(void *card_hdl, char reader_mode);		// OPTIONAL
+int sim_hook_3g_pin_needed(void *card_hdl, char reader_mode);		// OPTIONAL
+int sim_hook_card_connect(void *card_ctx, void *card_hdl, char *cardreader);	// MANDATORY
+int sim_hook_card_disconnect(void *card_hdl);									// MANDATORY
+int sim_hook_wait_card_ready(SCARDHANDLE *card_hdl, int waittime);				// MANDATORY
 
 int sim_hook_do_3g_auth(void *card_hdl, char reader_mode, unsigned char *Rand, unsigned char *autn,
 		unsigned char *c_auts, char *res_len, unsigned char *c_sres, unsigned char *c_ck,
-		unsigned char *c_ik, unsigned char *c_kc);
+		unsigned char *c_ik, unsigned char *c_kc);								// OPTIONAL
 
 int sim_hook_do_2g_auth(void *card_hdl, char reader_mode, unsigned char *challenge, unsigned char *response,
-		unsigned char *ckey);
+		unsigned char *ckey);													// OPTIONAL
 
 #endif // XSUPPLUGIN_SIM_INTERFACE_TYPE_H_

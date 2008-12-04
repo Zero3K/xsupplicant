@@ -932,7 +932,9 @@ void ConnectMgrDlg::handleDoubleClick(int row, int)
 			int config_type = (item->type() - QTableWidgetItem::UserType);		
 			connName = item->text();
 	
+			m_pRealForm->setCursor(Qt::WaitCursor);
 			this->editConnection(config_type, connName);
+			m_pRealForm->setCursor(Qt::ArrowCursor);
 		}
 	}
 }

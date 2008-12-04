@@ -170,6 +170,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\SoftSIM3G\aes.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\SoftSIM3G\aes_wrap.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\SoftSIM3G\config_manager.c"
 				>
 			</File>
@@ -182,7 +190,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\SoftSIM3G\rijndael.c"
+				RelativePath="..\..\SoftSIM3G\sim.c"
 				>
 			</File>
 		</Filter>
@@ -192,11 +200,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\..\SoftSIM3G\aes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\SoftSIM3G\aes_wrap.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\SoftSIM3G\config_manager.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\SoftSIM3G\milenage.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\SoftSIM3G\sim.h"
 				>
 			</File>
 		</Filter>

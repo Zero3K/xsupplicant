@@ -76,6 +76,7 @@ private:
 	void updateElapsedTime(void);
 	bool buildMenuBar(void);
 	void updateTimer();
+	void getAndDisplayErrors();
 	
 private slots:
 	void showSSIDList(void);
@@ -138,7 +139,7 @@ private:
 	SSIDListDlg *m_pSSIDListDlg;
 	ConnectionWizard *m_pConnWizard;
 	ConnectionInfoDlg *m_pConnInfo;
-	
+
 	// cached state information
 	QString	m_currentWirelessAdapterDesc;
 	QString m_currentWirelessAdapterName;

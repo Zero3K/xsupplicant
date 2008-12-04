@@ -800,8 +800,12 @@ void CredentialsPopUp::slotOkayBtn()
 							QMessageBox::critical(this, tr("Connection Error"), tr("The context for this connection is missing or corrupt."));
 							break;
 
+						case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
+							m_supplicant.getAndDisplayErrors();
+							break;
+
 						default:
-							QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a wireless connection.  Error : %1").arg(result));
+							QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a connection.  Error : %1").arg(result));
 							break;
 						}
 					}

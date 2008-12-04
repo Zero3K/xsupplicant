@@ -25,6 +25,7 @@ int sim_reader_plugin_hook_3g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode
 int sim_reader_plugin_hook_2g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode);
 long sim_reader_plugin_hook_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *card_hdl, char *cardreader);
 int sim_reader_plugin_hook_card_disconnect(SCARDHANDLE *card_hdl);
+int sim_reader_plugin_hook_wait_card_ready(SCARDHANDLE *card_hdl, int waittime);
 
 int sim_reader_plugin_hook_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode, 
 			  unsigned char *Rand, unsigned char *autn, 
