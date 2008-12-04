@@ -6,6 +6,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XSupplicantUI", "xsupptray\
 		Integration = True
 	EndGlobalSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "softsim_ui_plugin", "softsim_ui_plugin\softsim_ui_plugin.vcproj", "{9C795771-EC38-485D-B81E-442D5EC70C85}"
+	GlobalSection(Qt) = preSolution
+		Integration = True
+	EndGlobalSection
+EndProject
 Global
 	GlobalSection(Qt) = preSolution
 		Integration = True
@@ -19,6 +24,10 @@ Global
 		{13FDE0DA-1B16-3ACC-9642-B07CD020C66E}.Debug|Win32.Build.0 = Debug|Win32
 		{13FDE0DA-1B16-3ACC-9642-B07CD020C66E}.Release|Win32.ActiveCfg = Release|Win32
 		{13FDE0DA-1B16-3ACC-9642-B07CD020C66E}.Release|Win32.Build.0 = Release|Win32
+		{9C795771-EC38-485D-B81E-442D5EC70C85}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9C795771-EC38-485D-B81E-442D5EC70C85}.Debug|Win32.Build.0 = Debug|Win32
+		{9C795771-EC38-485D-B81E-442D5EC70C85}.Release|Win32.ActiveCfg = Release|Win32
+		{9C795771-EC38-485D-B81E-442D5EC70C85}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

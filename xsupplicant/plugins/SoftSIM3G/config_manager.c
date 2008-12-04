@@ -84,22 +84,26 @@ int load_config_from_path(char *path)
 	}
 
 	fclose(fp);
+
+	return 0;
 }
 
 int write_config_to_path(char *path)
 {
 	FILE *fp = NULL;
 
-	fp = fopen(path, "r");
+	fp = fopen(path, "w");
 	if (fp == NULL) return -1;
 
-	fprintf(fp, "IMSI=%s", myconfig->imsi);
-	fprintf(fp, "K=%s", myconfig->k);
-	fprintf(fp, "AMF=%s", myconfig->amf);
-	fprintf(fp, "OC=%s", myconfig->oc);
-	fprintf(fp, "SQN=%s", myconfig->sqn);
+	fprintf(fp, "IMSI=%s\n", myconfig->imsi);
+	fprintf(fp, "K=%s\n", myconfig->k);
+	fprintf(fp, "AMF=%s\n", myconfig->amf);
+	fprintf(fp, "OC=%s\n", myconfig->oc);
+	fprintf(fp, "SQN=%s\n", myconfig->sqn);
 
 	fclose(fp);
+
+	return 0;
 }
 
 int load_sim_config()
@@ -219,6 +223,29 @@ int get_oc(char **oc)
 
 int write_sim_config()
 {
+#ifdef WIN32
+	TCHAR szMyPath[MAX_PATH];
+	char *path = NULL;
+
+	if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szMyPath)))
+	  {
+		  printf("Couldn't determine the path to the local common app data.\n");
+		  return NULL;
+	  }
+
+	path = malloc(strlen(szMyPath)+strlen("usim.txt")+3);
+	if (path == NULL) return -1;
+
+	memset(path, 0x00, strlen(szMyPath)+strlen("usim.txt")+3);
+
+	strcpy(path, szMyPath);
+	strcat(path, "\\usim.txt");
+
+	return write_config_to_path(path);
+#else
+#warning Implement config paths for your OS!
+	return -1;
+#endif
 }
 
 int set_sqn(char *sqn)

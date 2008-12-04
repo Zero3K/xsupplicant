@@ -105,12 +105,12 @@ static int milenage_f2345(const u8 *opc, const u8 *k, const u8 *_rand,
 	for (i = 0; i < 16; i++)
 		tmp1[i] = _rand[i] ^ opc[i];
 
-	sim_dump_data("TEMP = E_K(RAND XOR OP_C) : ", tmp1, 16);
+//	sim_dump_data("TEMP = E_K(RAND XOR OP_C) : ", tmp1, 16);
 
 	if (aes_128_encrypt_block(k, tmp1, tmp2))
 		return -1;
 
-	sim_dump_data("Encrypted : ", tmp2, 16);
+//	sim_dump_data("Encrypted : ", tmp2, 16);
 
 	/* OUT2 = E_K(rot(TEMP XOR OP_C, r2) XOR c2) XOR OP_C */
 	/* OUT3 = E_K(rot(TEMP XOR OP_C, r3) XOR c3) XOR OP_C */
@@ -290,43 +290,26 @@ int milenage_check(const u8 *opc, const u8 *k, const u8 *sqn, const u8 *_rand,
 	u8 mac_a[8], ak[6], rx_sqn[6];
 	const u8 *amf;
 
-	//wpa_hexdump(MSG_DEBUG, "Milenage: AUTN", autn, 16);
-	//wpa_hexdump(MSG_DEBUG, "Milenage: RAND", _rand, 16);
-
-	sim_dump_data("Inner OPC :", opc, 16);
-	sim_dump_data("Inner Ki  :", k, 16);
-	sim_dump_data("Inner SQN :", sqn, 6);
-	sim_dump_data("Inner Rand:", _rand, 16);
-	sim_dump_data("Inner Autn:", autn, 16);
 	if (milenage_f2345(opc, k, _rand, res, ck, ik, ak, NULL))
 		return -1;
 
-	sim_dump_data("Inner IK  :", ik, 16);
-	sim_dump_data("Inner CK  :", ck, 16);
-	sim_dump_data("Inner RES :", res, 16);
-	sim_dump_data("Inner AK  :", ak, 6);
-
 	*res_len = 8;
-	//wpa_hexdump_key(MSG_DEBUG, "Milenage: RES", res, *res_len);
-	//wpa_hexdump_key(MSG_DEBUG, "Milenage: CK", ck, 16);
-	//wpa_hexdump_key(MSG_DEBUG, "Milenage: IK", ik, 16);
-	//wpa_hexdump_key(MSG_DEBUG, "Milenage: AK", ak, 6);
 
 	/* AUTN = (SQN ^ AK) || AMF || MAC */
 	for (i = 0; i < 6; i++)
 		rx_sqn[i] = autn[i] ^ ak[i];
-	//wpa_hexdump(MSG_DEBUG, "Milenage: SQN", rx_sqn, 6);
 
 	if (memcmp(rx_sqn, sqn, 6) <= 0) {
 		u8 auts_amf[2] = { 0x00, 0x00 }; /* TS 33.102 v7.0.0, 6.3.3 */
 		if (milenage_f2345(opc, k, _rand, NULL, NULL, NULL, NULL, ak))
 			return -1;
-		//wpa_hexdump_key(MSG_DEBUG, "Milenage: AK*", ak, 6);
+
 		for (i = 0; i < 6; i++)
 			auts[i] = sqn[i] ^ ak[i];
+
 		if (milenage_f1(opc, k, _rand, sqn, auts_amf, NULL, auts + 6))
 			return -1;
-		//wpa_hexdump(MSG_DEBUG, "Milenage: AUTS", auts, 14);
+
 		return -2;
 	}
 

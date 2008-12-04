@@ -94,17 +94,49 @@ void sim_dump_data(char *tag, unsigned char *data, int datalen)
 	printf("\n");
 }
 
+void sim_inc_sqn(unsigned char *sqn)
+{
+	int i = 0;
+	int plus_one = 1;
+	int next = 0;
+
+	for (i = 6; i >= 0; i--)
+	{
+		if (sqn[i] == 0xff) 
+			next = 1;
+		else
+			next = 0;
+
+		if (plus_one == 1) sqn[i]++;
+
+		plus_one = next;
+	}
+}
+
+char *hex2str(unsigned char *data, int len)
+{
+	char *temp = NULL;
+	int i = 0;
+	char conv[5];
+
+	temp = (char *)malloc((len + 1) * 2);
+	if (temp == NULL) return NULL;
+
+	memset(temp, 0x00, ((len + 1) * 2));
+
+	for (i = 0; i < len; i++)
+	{
+		sprintf(&conv, "%02X", data[i]);
+		strcat(temp, conv);
+	}
+
+	return temp;
+}
+
 int sim_do_3g_auth(unsigned char *Rand, unsigned char *autn, unsigned char *c_auts, unsigned char *res_len, unsigned char *c_sres, unsigned char *c_ck, unsigned char *c_ik, unsigned char *c_kc)
 {
 	unsigned char *seqn = NULL, *k = NULL, *amf = NULL, *op_c = NULL;
 	char *temp;
-	int ind = 0;
-	unsigned char r_ak[6];
-	uint64_t lseq = 32;  /* our sequence number counter */
-	uint8_t mac_a[8],mac_s[8];
-	uint8_t dsqn[6];
-	int i = 0;
-	uint8_t auts_amf[2] = { 0x00, 0x00 }; /* TS 33.102 v7.0.0, 6.3.3 */
 	int retval = 0;
 
 	// Get SQN and convert it to binary.
@@ -116,15 +148,6 @@ int sim_do_3g_auth(unsigned char *Rand, unsigned char *autn, unsigned char *c_au
 	process_hex(temp, strlen(temp), seqn);
 	free(temp);
 
-	/*
-    comp_sqn(seqn, &lseq, ind);
-    
-    ind++;			
-    if (ind & ~0x1f) {		/* wraparound? *//*
-      lseq++;
-      ind = 0;
-    }
-*/
 	// need key (in binary) and amf (also binary)
 	if (get_k(&temp) != 0) 
 	{
@@ -179,49 +202,17 @@ int sim_do_3g_auth(unsigned char *Rand, unsigned char *autn, unsigned char *c_au
 
 	process_hex(temp, strlen(temp), op_c);
 	free(temp);
-/*
-    f1(k, Rand, op_c, seqn, amf, mac_a);
 
-    //f2345( k, Rand, res, c_ck, c_ik, c_ak);
-    f2345( k, Rand, op_c, c_sres, c_ck, c_ik, c_kc);
-    f1star( k, Rand, op_c, seqn, amf, mac_s);
-
-	printf("Sqn = ");
-	for (i=0; i < 6; i++)
-	{
-		dsqn[i] = (autn[i] ^ c_kc[i]);
-		printf("%02X ", dsqn[i]);
-	}
-	printf("\n");
-
-	if (memcmp(dsqn, seqn, 6) != 0)
-	{
-		printf("Sync failure!\n");
-	    f5star( k, Rand, op_c, r_ak);
-
-		for (i = 0; i < 6; i++)
-			c_auts[i] = seqn[i] ^ r_ak[i];
-		memcpy((c_auts+6), &mac_s[0], 8);
-		return -2;
-	}
-
-    f5star( k, Rand, op_c, r_ak);
-
-//    comp_autn(seqn, ak, amf , mac_a, autn);
-    comp_autn(seqn, c_kc, amf , mac_a, autn);
-
-	(*res_len) = 8;
-*/
-	sim_dump_data("OP_c : ", op_c, 16);
-	sim_dump_data("K    : ", k, 16);
-	sim_dump_data("SQN  : ", seqn, 6);
-	sim_dump_data("Rand : ", Rand, 16);
-	sim_dump_data("AUTN : ", autn, 16);
 	retval = milenage_check(op_c, k, seqn, Rand, autn, c_ik, c_ck, c_sres, res_len, c_auts);
-	sim_dump_data("RES : ", c_sres, 8);
-	sim_dump_data("IK  : ", c_ik, 16);
-	sim_dump_data("CK  : ", c_ck, 16);
-	sim_dump_data("AUTS: ", c_auts, 14);
+
+	sim_inc_sqn(seqn);
+
+	temp = hex2str(seqn, 6);
+	if (temp != NULL)
+	{
+		set_sqn(temp);
+		write_sim_config();
+	}
 
 	free(seqn);
 	free(k);
