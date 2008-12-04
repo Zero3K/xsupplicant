@@ -185,10 +185,6 @@
 				RelativePath="..\..\plugin_includes.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\..\src\stdintwin.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -196,6 +192,10 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
+		<File
+			RelativePath="..\..\..\src\stdintwin.h"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

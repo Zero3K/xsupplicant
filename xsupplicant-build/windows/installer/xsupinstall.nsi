@@ -30,6 +30,7 @@
 
 !ifndef QTDIR
 	!define QTDIR C:\Qt\qt-win-opensource-src-4.3.5
+;	!define QTDIR c:\qt\4.3.4
 !endif
 
 !ifndef SRCDIR
@@ -90,6 +91,7 @@ InstallDirRegKey HKLM "Software\XSupplicant" "Install_Dir"
 ; Pages
 
   !insertmacro MUI_PAGE_LICENSE ${SOFTWARE_LICENSE_FILE}
+  !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
 
@@ -100,6 +102,8 @@ InstallDirRegKey HKLM "Software\XSupplicant" "Install_Dir"
 ; Languages
 
   !insertmacro MUI_LANGUAGE "English"
+
+InstType  "Standard"
 
 ;-----------------------
 ; Functions
@@ -267,7 +271,8 @@ FunctionEnd   ; CheckWinVer
 ;-----------------------
 ; Installer Sections
 
-Section "XSupplicant (required)"
+Section "XSupplicant (required)" XSupplicant
+SectionIn 1 2 RO
 
 	Call CheckWinVer
 
@@ -502,6 +507,30 @@ noreboot:
 
 SectionEnd
 
+Section "3G Soft SIM" SoftSIM
+     DetailPrint "Installing 3G SoftSIM Plugins..."
+
+     SetOutPath $INSTDIR\Modules
+
+     File "${SRCDIR}\xsupplicant\plugins\vs2005\release\SoftSIM3G.dll"
+
+     SetOutPath $INSTDIR
+     File "${SRCDIR}\xsupplicant-ui\release\softsim_ui_plugin.exe"
+
+     SetShellVarContext All
+     CreateShortCut "$SMPROGRAMS\${TARGET}\3G Soft SIM Manager.lnk" $INSTDIR\softsim_ui_plugin.exe
+
+SectionEnd
+
+
+LangString DESC_SoftSIM ${LANG_ENGLISH} "Install the optional 3G USIM software emulator."
+LangString DESC_XSupplicant ${LANG_ENGLISH} "Install the core XSupplicant programs."
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SoftSIM} $(DESC_SoftSIM)
+  !insertmacro MUI_DESCRIPTION_TEXT ${XSupplicant} $(DESC_XSupplicant)
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
 Section "Uninstall"
 
 	Call un.CheckAdmin
@@ -540,6 +569,7 @@ remove_program_files:
         Delete $INSTDIR\open1x.inf
         Delete $INSTDIR\open1x.sys
 	Delete $INSTDIR\uninstall.exe
+	Delete $INSTDIR\softsim_ui_plugin.exe
 	;Delete $INSTDIR\msvcr80.dll
 
         Delete $INSTDIR\Skins\Default\AboutWindow.ui
@@ -641,6 +671,7 @@ remove_program_files:
         Delete $INSTDIR\Skins\Default\icons\wired.png
         Delete $INSTDIR\Skins\Default\icons\wireless.png
 
+	Delete $INSTDIR\Modules\SoftSIM3G.dll
 
 	SetOutPath $INSTDIR
 
