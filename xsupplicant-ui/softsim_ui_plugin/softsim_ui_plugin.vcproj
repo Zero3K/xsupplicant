@@ -181,6 +181,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
 				RelativePath=".\softsim_ui_plugin.h"
 				>
 				<FileConfiguration
@@ -246,6 +250,10 @@
 			ParseFiles="false"
 			>
 			<File
+				RelativePath=".\Resources\simcard.png"
+				>
+			</File>
+			<File
 				RelativePath=".\softsim_ui_plugin.qrc"
 				>
 				<FileConfiguration
@@ -253,10 +261,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description=""
-						CommandLine=""
-						AdditionalDependencies=""
-						Outputs=""
+						Description="Rcc&apos;ing softsim_ui_plugin.qrc..."
+						CommandLine="&quot;$(QTDIR)\bin\rcc.exe&quot; -name &quot;softsim_ui_plugin&quot; -no-compress &quot;.\softsim_ui_plugin.qrc&quot; -o .\GeneratedFiles\qrc_softsim_ui_plugin.cpp&#x0D;&#x0A;"
+						AdditionalDependencies=".\softsim_ui_plugin.qrc;.\Resources\simcard.png"
+						Outputs=".\GeneratedFiles\qrc_softsim_ui_plugin.cpp"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -264,10 +272,10 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description=""
-						CommandLine=""
-						AdditionalDependencies=""
-						Outputs=""
+						Description="Rcc&apos;ing softsim_ui_plugin.qrc..."
+						CommandLine="&quot;$(QTDIR)\bin\rcc.exe&quot; -name &quot;softsim_ui_plugin&quot; -no-compress &quot;.\softsim_ui_plugin.qrc&quot; -o .\GeneratedFiles\qrc_softsim_ui_plugin.cpp&#x0D;&#x0A;"
+						AdditionalDependencies=".\softsim_ui_plugin.qrc;.\Resources\simcard.png"
+						Outputs=".\GeneratedFiles\qrc_softsim_ui_plugin.cpp"
 					/>
 				</FileConfiguration>
 			</File>
@@ -317,10 +325,22 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\GeneratedFiles\qrc_softsim_ui_plugin.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\GeneratedFiles\ui_softsim_ui_plugin.h"
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\resource.rc"
+			>
+		</File>
+		<File
+			RelativePath=".\simcard.ico"
+			>
+		</File>
 	</Files>
 	<Globals>
 		<Global

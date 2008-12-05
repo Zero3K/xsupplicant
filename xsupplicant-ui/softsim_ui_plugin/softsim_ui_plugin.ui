@@ -12,6 +12,9 @@
   <property name="windowTitle" >
    <string>3G Soft SIM Configuration</string>
   </property>
+  <property name="windowIcon" >
+   <iconset resource="softsim_ui_plugin.qrc" >:/softsim_ui_plugin/Resources/simcard.png</iconset>
+  </property>
   <layout class="QVBoxLayout" >
    <item>
     <layout class="QGridLayout" >
@@ -97,6 +100,8 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
- <resources/>
+ <resources>
+  <include location="softsim_ui_plugin.qrc" />
+ </resources>
  <connections/>
 </ui>
