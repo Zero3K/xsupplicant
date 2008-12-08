@@ -582,6 +582,33 @@ int delete_config_single_profile(struct config_profiles **prof)
   return XENONE;
 }
 
+/**
+ * \brief Free a single plugin.
+ *
+ * @param[in] plug   A pointer to the plugin that we want to free.
+ *
+ * \retval XENONE on success
+ * \retval XEMALLOC on failure
+ **/
+int delete_config_single_plugin(struct config_plugins **plug)
+{
+  struct config_plugins *cur = NULL;
+
+  if (plug == NULL) return XEMALLOC;
+
+  if ((*plug) == NULL) return XEMALLOC;
+
+  cur = (*plug);
+
+  FREE_STRING(cur->name);
+  FREE_STRING(cur->path);
+  FREE_STRING(cur->description);
+
+  free((*plug));
+
+  return XENONE;
+}
+
 /** 
  * \brief Remove a profile from our system level linked list.
  * 
@@ -2968,6 +2995,63 @@ int add_change_config_connections_user(struct config_connection *confconn)
 	confconn->next = cur->next;
 	prev->next = confconn;
 	delete_config_single_connection(&cur);
+
+	return XENONE;
+}
+
+/**
+ * \brief Take a plugin configuration structure and change it if it
+ *        exists, or add it if it doesn't.
+ *
+ * @param[in] confplug   The plugin data that we want to either change, or
+ *                       add to the profile list.
+ *
+ * \retval XENONE on success
+ * \retval XEGENERROR on general failure
+ **/
+int add_change_config_plugins(struct config_plugins *confplug)
+{
+	struct config_plugins *cur = NULL, *prev = NULL;
+
+	if (confplug == NULL) return XEGENERROR;
+
+	// If we don't have any plugins currently in memory.
+	if (conf_plugins == NULL)
+	{
+		conf_plugins = confplug;
+
+		return XENONE;
+	}
+
+	if (strcmp(conf_plugins->name, confplug->name) == 0)
+	{
+		// The first node is the one we are changing.
+		confplug->next = conf_plugins->next;
+		delete_config_single_plugin(&conf_plugins);
+		conf_plugins = confplug;
+		return XENONE;
+	}
+
+	cur = conf_plugins->next;
+	prev = conf_plugins;
+
+	while ((cur != NULL) && (strcmp(cur->name, confplug->name) != 0))
+	{
+		prev = cur;
+		cur = cur->next;
+	}
+
+	if (cur == NULL)
+	{
+		// It is an addition.
+		prev->next = confplug;
+		return XENONE;
+	}
+
+	// Otherwise, we need to replace the node that cur points to.
+	confplug->next = cur->next;
+	prev->next = confplug;
+	delete_config_single_plugin(&cur);
 
 	return XENONE;
 }

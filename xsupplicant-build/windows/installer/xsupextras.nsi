@@ -172,6 +172,9 @@ Function InstallOpenSEAPlugins
 
      File "${SRCDIR}\xsupplicant\plugins\vs2005\release\BirdDog.dll"
 
+     DetailPrint "Adding BirdDog to the configuration file..."
+     nsExec::Exec '$INSTDIR\xsupplicant_plugin_installer -n "BirdDog" -p "BirdDog.dll" -d "BirdDog monitors all log data and writes it to a log file when a trouble ticket is created."'
+
 FunctionEnd ;InstallOpenSEAPlugins
 
 ;---------------------------------------

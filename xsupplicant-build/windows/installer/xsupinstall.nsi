@@ -293,6 +293,7 @@ SectionIn 1 2 RO
 	File "${QTDIR}\bin\QtCore4.dll"
 	File "${QTDIR}\bin\QtGui4.dll"
         File "${QTDIR}\bin\QtXml4.dll"
+	File "${SRCDIR}\xsupplicant_plugin_installer\release\xsupplicant_plugin_installer.exe"
 
         Call ExtrasPreInstall
 
@@ -519,6 +520,9 @@ Section "3G Soft SIM" SoftSIM
 
      SetShellVarContext All
      CreateShortCut "$SMPROGRAMS\${TARGET}\3G Soft SIM Manager.lnk" $INSTDIR\softsim_ui_plugin.exe
+
+     DetailPrint "Adding 3G Soft SIM to the configuration file..."
+     nsExec::Exec '$INSTDIR\xsupplicant_plugin_installer -n "3G Soft SIM" -p "SoftSIM3G.dll" -d "Provides a software emulated 3G USIM card for use in testing EAP-AKA."'
 
 SectionEnd
 

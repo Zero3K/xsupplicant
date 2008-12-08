@@ -83,6 +83,7 @@ set OPEN1X_ENGINE_PLUGINS=%OPEN1X_BUILD_ROOT%\xsupplicant\plugins\vs2005
 set OPEN1X_GUI=%OPEN1X_BUILD_ROOT%\xsupplicant-ui
 set OPEN1X_GUI_PLUGINS=%OPEN1X_GUI%\plugins
 set OPEN1X_PROTINSTALL=%OPEN1X_VENDOR_ROOT%\ProtInstall
+set OPEN1X_PLUGINSTALL=%OPEN1X_BUILD_ROOT%\xsupplicant_plugin_installer
 
 rem ---- OEM ----
 
@@ -176,6 +177,19 @@ rem ----------------------------------------------
 
 rem set BUILD_PROJECT="Open1X Protocol Installer"
 vcbuild /time "%OPEN1X_PROTINSTALL%\ProtInstall.sln" "%BUILD_TYPE%|Win32" %BUILD_FLAGS%
+
+set BUILD_ERROR=%ERRORLEVEL%
+
+if NOT [%BUILD_ERROR%]==[0] goto FAIL
+
+set BUILD_STATUS=PASS
+
+echo %BUILD_PROJECT% Status: %BUILD_STATUS%
+
+rem ----------------------------------------------
+
+rem set BUILD_PROJECT="Open1X Engine Plugin Installer"
+vcbuild /time "%OPEN1X_PLUGINSTALL%\xsupplicant_plugin_installer.sln" "%BUILD_TYPE%|Win32" %BUILD_FLAGS%
 
 set BUILD_ERROR=%ERRORLEVEL%
 

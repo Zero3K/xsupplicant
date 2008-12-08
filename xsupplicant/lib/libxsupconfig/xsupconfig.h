@@ -132,6 +132,7 @@ int add_change_config_connections(uint8_t, struct config_connection *);
 int add_change_config_profiles(uint8_t, struct config_profiles *);
 int add_change_config_trusted_server(uint8_t, struct config_trusted_server *);
 int add_change_config_interface(struct xsup_interfaces *confif);
+int add_change_config_plugins(struct config_plugins *confplug);
 struct xsup_interfaces *config_get_config_ints();
 struct xsup_interfaces *config_find_int(char *);
 uint8_t config_get_network_priority(char *, char *);

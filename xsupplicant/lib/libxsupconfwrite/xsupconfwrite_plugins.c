@@ -130,7 +130,7 @@ xmlNodePtr xsupconfwrite_plugin_create_tree(struct config_plugins *plugs, uint8_
 			break;
 		}
 
-		if (xsupconfwrite_common_newSibling(plugnode, "Enabled", temp) == NULL)
+		if (xmlNewChild(plugnode, NULL, (xmlChar *)"Enabled", (xmlChar *)temp) == NULL)
 		{
 #ifdef WRITE_EAP_PEAP_DEBUG
 			printf("Couldn't create <Enabled> node for PEAP!\n");

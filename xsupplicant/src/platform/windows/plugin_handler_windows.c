@@ -39,6 +39,8 @@ void *platform_plugin_entrypoint(struct config_plugins *plugin, char *function_n
 
 uint8_t platform_plugin_load(struct config_plugins *plugin)
 {
+	char *full_path = NULL;
+
   if(plugin == NULL)
     return PLUGIN_NOT_ALLOCATED;
 
@@ -47,9 +49,22 @@ uint8_t platform_plugin_load(struct config_plugins *plugin)
       debug_printf(DEBUG_PLUGINS, "Uninitialized or already loaded plugin!\n");
       return PLUGIN_ALREADY_INITIALIZED;
     }
+
+  if ((strstr(plugin->path, "\\") != NULL) || (strstr(plugin->path, "..") != NULL))
+  {
+	  debug_printf(DEBUG_NORMAL, "Plugin '%s' attempted to load via a relative path.  Not loading!\n", plugin->name);
+	  return PLUGIN_LOAD_FAILURE;
+  }
+
+  full_path = Malloc(strlen(plugin->path)+100);
+  if (full_path == NULL) return PLUGIN_LOAD_FAILURE;
   
-  plugin->handle = LoadLibrary(plugin->path);
-  
+  sprintf(full_path, "Modules\\%s", plugin->path);
+  debug_printf(DEBUG_PLUGINS, "Attempting to load '%s'.\n", full_path);
+
+  plugin->handle = LoadLibrary(full_path);
+  free(full_path);
+
   if(plugin->handle == NULL)
     {
       debug_printf(DEBUG_PLUGINS, "Error loading plugin '%s': %s\n", plugin->name, platform_plugin_error(plugin));
