@@ -1120,7 +1120,8 @@ int sm_handler_3g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode)
 	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_3G_SIM) == SUPPORT_3G_SIM))
   {
 	  // Process it through our plugin.
-	  return sim_reader_plugin_hook_3g_pin_needed(card_hdl, reader_mode);
+	  result = sim_reader_plugin_hook_3g_pin_needed(card_hdl, reader_mode);
+	  if (result >= 0) return result;
   }
 
   // Select the USIM master file.
@@ -1257,12 +1258,14 @@ int sm_handler_3g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
   int i,l,q, foundaid=0, pinretries=0;
   unsigned char threeG[2] = { 0x10, 0x02 };
   struct t_efdir *t = NULL;
+  int retval = 0;
 
   if ((sim_reader_plugin_hook_available() == TRUE) &&
 	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_3G_SIM) == SUPPORT_3G_SIM))
   {
 	  // Process it through our plugin.
-	  return sim_reader_plugin_hook_get_3g_imsi(card_hdl, reader_mode, pin, imsi);
+	  retval = sim_reader_plugin_hook_get_3g_imsi(card_hdl, reader_mode, pin, imsi);
+	  if (retval >= 0) return retval;
   }
 
   if (!card_hdl)
@@ -1371,12 +1374,14 @@ int sm_handler_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
 {
   unsigned char cmd[MAXBUFF], buf[MAXBUFF], sw1, sw2, *s;
   DWORD len;
+  int result = 0;
 
   if ((sim_reader_plugin_hook_available() == TRUE) &&
 	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_3G_SIM) == SUPPORT_3G_SIM))
   {
 	  // Process it through our plugin.
-	  return sim_reader_plugin_hook_do_3g_auth(card_hdl, reader_mode, Rand, autn, c_auts, res_len, c_sres, c_ck, c_ik, c_kc);
+	  result = sim_reader_plugin_hook_do_3g_auth(card_hdl, reader_mode, Rand, autn, c_auts, res_len, c_sres, c_ck, c_ik, c_kc);
+	  if (result >= 0) return result;
   }
 
   if (Strncpy(cmd, sizeof(cmd), "008800812210", 13) != 0)

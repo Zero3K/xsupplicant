@@ -412,7 +412,6 @@ int sim_reader_plugin_init_ctx(SCARDCONTEXT *card_ctx)
 
 int sim_reader_plugin_deinit_ctx(SCARDHANDLE *card_hdl, SCARDCONTEXT *card_ctx)
 {
-//	free((*card_ctx));
 	(*card_ctx) = 0;
 
 	return sim_reader_plugin_hook_card_disconnect(card_hdl);

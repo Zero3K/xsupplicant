@@ -779,6 +779,14 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_3G_NOT_SUPPORTED_STR, value);
 		break;
 
+	case IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR_STR, value);
+		break;
+
+	case IPC_EVENT_ERROR_SIM_NOTIFICATION:
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SIM_NOTIFICATION_STR, value);
+		break;
+
 	default:
 		xsupgui_events_build_error(errstr, "Unknown error event!", NULL);
 		break;

@@ -66,7 +66,8 @@ void DLLMAGIC sim_hook_update_reader_list(char **readerlist)
 
 	memcpy(&newReaderList[strlen(READER_NAME)+1], (*readerlist), listsize);
 
-	free((*readerlist));
+	pReader = (*readerlist);
+	free(pReader);
 
 	(*readerlist) = newReaderList;
 }

@@ -117,17 +117,26 @@ ConnectDlg::~ConnectDlg()
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalPSKSuccess(const QString &)), this, SLOT(pskSuccess(const QString &)));
 		
 	if (m_pSSIDListDlg != NULL)
+	{
 		delete m_pSSIDListDlg;
+		m_pSSIDListDlg = NULL;
+	}
 		
 	if (m_pConnInfo != NULL)
+	{
 		delete m_pConnInfo;
+		m_pConnInfo = NULL;
+	}
 		
 	this->cleanupConnectionWizard();
 	
 	// !!! should clean up menu bar slots/signals here to be thorough
 		
 	if (m_pRealForm != NULL) 
+	{
 		delete m_pRealForm;	
+		m_pRealForm = NULL;
+	}
 }
 
 bool ConnectDlg::create(void)

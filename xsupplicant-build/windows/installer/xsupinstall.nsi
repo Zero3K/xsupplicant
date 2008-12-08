@@ -574,6 +574,8 @@ remove_program_files:
         Delete $INSTDIR\open1x.sys
 	Delete $INSTDIR\uninstall.exe
 	Delete $INSTDIR\softsim_ui_plugin.exe
+	Delete $INSTDIR\xsupplicant_plugin_installer.exe
+
 	;Delete $INSTDIR\msvcr80.dll
 
         Delete $INSTDIR\Skins\Default\AboutWindow.ui
