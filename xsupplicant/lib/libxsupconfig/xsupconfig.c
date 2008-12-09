@@ -1703,7 +1703,6 @@ void delete_config_eap_ttls(struct config_eap_ttls **tmp_ttls)
   FREE_STRING((*tmp_ttls)->user_key);
   FREE_STRING((*tmp_ttls)->user_key_pass);
   FREE_STRING((*tmp_ttls)->random_file);  
-  FREE_STRING((*tmp_ttls)->cncheck);
   FREE_STRING((*tmp_ttls)->trusted_server);
   FREE_STRING((*tmp_ttls)->inner_id);
   if ((*tmp_ttls)->phase2_data) 
@@ -1732,8 +1731,6 @@ void dump_config_eap_ttls(struct config_eap_ttls *ttls)
   printf("\t  TTLS Key Pass: \"%s\"\n", ttls->user_key_pass);
   printf("\t  TTLS Chunk Size: %d\n", ttls->chunk_size);
   printf("\t  TTLS Random Source: \"%s\"\n", ttls->random_file);
-  printf("\t  TTLS CN to Check : \"%s\"\n", ttls->cncheck);
-  printf("\t  TTLS Exact CN Match : %s\n", ttls->cnexact ? "yes" : "no"); 
   printf("\t  TTLS Session Resumption: ");
   switch (ttls->session_resume)
     {
@@ -1866,7 +1863,6 @@ void delete_config_eap_peap(struct config_eap_peap **tmp_peap)
   FREE_STRING((*tmp_peap)->user_key)
   FREE_STRING((*tmp_peap)->user_key_pass);
   FREE_STRING((*tmp_peap)->random_file);
-  FREE_STRING((*tmp_peap)->cncheck);
   FREE_STRING((*tmp_peap)->trusted_server);
   if ((*tmp_peap)->phase2)
     delete_config_eap_method(&(*tmp_peap)->phase2);
@@ -1894,8 +1890,6 @@ void dump_config_eap_peap(struct config_eap_peap *peap)
   printf("\t  PEAP Key Pass: \"%s\"\n", peap->user_key_pass);
   printf("\t  PEAP Chunk Size: %d\n", peap->chunk_size);
   printf("\t  PEAP Random Source: \"%s\"\n", peap->random_file);
-  printf("\t  PEAP CN to Check : \"%s\"\n", peap->cncheck);
-  printf("\t  PEAP Exact CN Match : %s\n", peap->cnexact ? "yes" : "no");  
   printf("\t  PEAP Session Resumption: ");
   switch (peap->session_resume)
     {

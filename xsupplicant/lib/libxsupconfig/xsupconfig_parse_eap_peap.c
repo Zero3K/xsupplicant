@@ -82,13 +82,13 @@ void *xsupconfig_parse_eap_peap_user_cert(void **attr, uint8_t config_type, xmlN
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		peap->user_cert = NULL;
 	}
 	else
 	{
-		peap->user_cert = value;
+		peap->user_cert = _strdup(value);
 	}
+	xmlFree(value);
 
   return peap;
 }
@@ -108,13 +108,13 @@ void *xsupconfig_parse_eap_peap_crl_dir(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		peap->crl_dir = NULL;
 	}
 	else
 	{
-		peap->crl_dir = value;
+		peap->crl_dir = _strdup(value);
 	}
+	xmlFree(value);
 
   return peap;
 }
@@ -134,13 +134,13 @@ void *xsupconfig_parse_eap_peap_user_key_file(void **attr, uint8_t config_type, 
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		peap->user_key = NULL;
 	}
 	else
 	{
-		peap->user_key = value;
+		peap->user_key = _strdup(value);
 	}
+	xmlFree(value);
 
   return peap;
 }
@@ -160,13 +160,13 @@ void *xsupconfig_parse_eap_peap_user_key_pass(void **attr, uint8_t config_type, 
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		peap->user_key_pass = NULL;
 	}
 	else
 	{
 		peap->user_key_pass = value;
 	}
+	xmlFree(value);
 
   return peap;
 }
@@ -187,18 +187,60 @@ void *xsupconfig_parse_eap_peap_enc_user_key_pass(void **attr, uint8_t config_ty
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		return peap;
 	}
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&peap->user_key_pass, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  peap->user_key_pass = NULL;
 	  return peap;
   }
 
-  free(value);
+  xmlFree(value);
+
+  return peap;
+}
+
+void *xsupconfig_parse_eap_peap_machine_auth(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+  struct config_eap_peap *peap = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+ 
+	if (!(config_type & OPTION_GLOBAL_CONFIG_ONLY))
+	{
+		printf("Attempted to use a global config option in a user config!  Ignoring!\n");
+		return (*attr);
+	}
+
+  value = (char *)xmlNodeGetContent(node);
+
+  peap = (*attr);
+
+#ifdef PARSE_DEBUG
+  printf("Machine Authentication : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(peap->flags, FLAGS_PEAP_MACHINE_AUTH);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(peap->flags, FLAGS_PEAP_MACHINE_AUTH);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for <Machine_Authentication_Mode> at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(peap->flags, FLAGS_PEAP_MACHINE_AUTH);
+    }
+  
+  xmlFree(value);
 
   return peap;
 }
@@ -231,49 +273,16 @@ void *xsupconfig_parse_eap_peap_session_resume(void **attr, uint8_t config_type,
       peap->session_resume = result;
     }
   
-  FREE(value);
-
-  return peap;
-}
-
-void *xsupconfig_parse_eap_peap_cnexact(void **attr, uint8_t config_type, xmlNodePtr node)
-{
-  struct config_eap_peap *peap;
-  uint8_t result;
-  char *value;
-
-  value = (char *)xmlNodeGetContent(node);
-
-  peap = (*attr);
-
-#ifdef PARSE_DEBUG
-  printf("PEAP Exact CN Match : %s\n", value);
-#endif
-
-  result = xsupconfig_common_yesno(value);
-
-  if (result > 1)
-    {
-      xsupconfig_common_log("Invalid value was passed for 'Exact_Common_Name'!  Will use the "
-             "default value of no.  (Config line %ld)\n",
-	     xsupconfig_parse_get_line_num());
-      peap->cnexact = FALSE;
-    }
-  else
-    {
-      peap->cnexact = result;
-    }
-
-  FREE(value);
+  xmlFree(value);
 
   return peap;
 }
 
 void *xsupconfig_parse_eap_peap_proper_v1_keying(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_peap *peap;
-  uint8_t result;
-  char *value;
+  struct config_eap_peap *peap = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -297,7 +306,7 @@ void *xsupconfig_parse_eap_peap_proper_v1_keying(void **attr, uint8_t config_typ
       peap->proper_peapv1 = result;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return peap;
 }
@@ -330,15 +339,15 @@ void *xsupconfig_parse_peap_validate_cert(void **attr, uint8_t config_type, xmlN
       peap->validate_cert = result;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return peap;
 }
 
 void *xsupconfig_parse_eap_peap_chunk_size(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_peap *peap;
-  char *value;
+  struct config_eap_peap *peap = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
   
@@ -358,15 +367,15 @@ void *xsupconfig_parse_eap_peap_chunk_size(void **attr, uint8_t config_type, xml
       peap->chunk_size = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return peap;
 }
 
 void *xsupconfig_parse_eap_peap_random_file(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_peap *peap;
-  char *value;
+  struct config_eap_peap *peap = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -378,21 +387,21 @@ void *xsupconfig_parse_eap_peap_random_file(void **attr, uint8_t config_type, xm
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		peap->random_file = NULL;
 	}
 	else
 	{
-		peap->random_file = value;
+		peap->random_file = _strdup(value);
 	}
+	xmlFree(value);
 
   return peap;
 }
 
 void *xsupconfig_parse_force_peap_version(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_eap_peap *peap;
-	char *value;
+	struct config_eap_peap *peap = NULL;
+	char *value = NULL;
 
 	value = (char *)xmlNodeGetContent(node);
 
@@ -412,15 +421,15 @@ void *xsupconfig_parse_force_peap_version(void **attr, uint8_t config_type, xmlN
 		peap->force_peap_version = atoi(value);
 	}
 
-	FREE(value);
+	xmlFree(value);
 
 	return peap;
 }
 
 void *xsupconfig_parse_eap_peap_innerid(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_peap *peap;
-  char *value;
+  struct config_eap_peap *peap = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -432,21 +441,21 @@ void *xsupconfig_parse_eap_peap_innerid(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		peap->identity = NULL;
 	}
 	else
 	{
-		peap->identity = value;
+		peap->identity = _strdup(value);
 	}
+	xmlFree(value);
 
   return peap;
 }
 
 void *xsupconfig_parse_peap_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_peap *peap;
-  char *value;
+  struct config_eap_peap *peap = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -458,39 +467,13 @@ void *xsupconfig_parse_peap_trusted_server(void **attr, uint8_t config_type, xml
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		peap->trusted_server = NULL;
 	}
 	else
 	{
-		peap->trusted_server = value;
+		peap->trusted_server = _strdup(value);
 	}
-
-  return peap;
-}
-
-void *xsupconfig_parse_eap_peap_cncheck(void **attr, uint8_t config_type, xmlNodePtr node)
-{
-  struct config_eap_peap *peap;
-  char *value;
-
-  value = (char *)xmlNodeGetContent(node);
-
-  peap = (*attr);
-
-#ifdef PARSE_DEBUG
-  printf("PEAP Common Name : %s\n", value);
-#endif
-
-	if ((value == NULL) || (strlen(value) == 0))
-	{
-		free(value);
-		peap->cncheck = NULL;
-	}
-	else
-	{
-		peap->cncheck = value;
-	}
+	xmlFree(value);
 
   return peap;
 }
@@ -504,10 +487,8 @@ parser eap_peap[] = {
   {"Session_Resume", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_session_resume},
   {"Chunk_Size", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_chunk_size},
   {"Random_File", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_random_file},
-  {"Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_cncheck},
-  {"Exact_Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_cnexact},
-  {"Proper_PEAP_V1_Keying", NULL, FALSE, OPTION_ANY_CONFIG, 
-   &xsupconfig_parse_eap_peap_proper_v1_keying},
+  {"Machine_Authentication_Mode", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_eap_peap_machine_auth},
+  {"Proper_PEAP_V1_Keying", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_proper_v1_keying},
   {"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_innerid},
   {"Force_PEAP_Version", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_force_peap_version},
   {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_peap_trusted_server},

@@ -33,6 +33,7 @@
 #include "xsupconfwrite_trusted_servers.h"
 #include "xsupconfwrite_connections.h"
 #include "xsupconfwrite_profiles.h"
+#include "xsupconfwrite_plugins.h"
 #include "xsupconfwrite.h"
 
 #ifdef USE_EFENCE
@@ -99,7 +100,7 @@ xmlNodePtr xsupconfwrite_create_devices(struct xsup_devices *conf_devices)
  * \retval xmlNodePtr pointing to a tree of nodes that contains the <Plugins> piece
  *                    of a configuration file.
  **/
-xmlNodePtr xsupconfwrite_create_plugins(struct conf_plugins *conf_plugins)
+xmlNodePtr xsupconfwrite_create_plugins(struct config_plugins *conf_plugins)
 {
 	return xsupconfwrite_plugins_create_tree(conf_plugins, FALSE);
 }

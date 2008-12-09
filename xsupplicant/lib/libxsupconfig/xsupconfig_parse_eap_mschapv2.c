@@ -76,13 +76,14 @@ void *xsupconfig_parse_eap_mschapv2_password(void **attr, uint8_t config_type, x
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		mscv2->password = NULL;
 	}
 	else
 	{
-		mscv2->password = value;
+		mscv2->password = _strdup(value);
 	}
+
+	xmlFree(value);
 
   return mscv2;
 }
@@ -120,7 +121,49 @@ void *xsupconfig_parse_eap_mschapv2_enc_password(void **attr, uint8_t config_typ
 	  FREE(mscv2->password);
   }
 
-  free(value);
+  xmlFree(value);
+
+  return mscv2;
+}
+
+void *xsupconfig_parse_eap_mschapv2_machine_auth(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	struct config_eap_mschapv2 *mscv2 = NULL;
+	char *value = NULL;
+	uint8_t result = 0;
+
+	if (!(config_type & OPTION_GLOBAL_CONFIG_ONLY))
+	{
+		printf("Attempted to use a global config option in a user config!  Ignoring!\n");
+		return (*attr);
+	}
+
+	mscv2 = (*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Use machine authentication : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for <Machine_Authentication_Mode> at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
+    }
+
+  xmlFree(value);
 
   return mscv2;
 }
@@ -140,13 +183,14 @@ void *xsupconfig_parse_eap_mschapv2_nt_pwd_hash(void **attr, uint8_t config_type
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
 		mscv2->nthash = NULL;
 	}
 	else
 	{
-		mscv2->nthash = value;
+		mscv2->nthash = _strdup(value);
 	}
+
+	xmlFree(value);
 
   return mscv2;
 }
@@ -182,7 +226,7 @@ void *xsupconfig_parse_eap_mschapv2_ias_quirk(void **attr, uint8_t config_type, 
       UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return mscv2;
 }
@@ -218,7 +262,7 @@ void *xsupconfig_parse_eap_mschapv2_volatile(void **attr, unsigned char config_t
       UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return mscv2;
 }
@@ -226,8 +270,8 @@ void *xsupconfig_parse_eap_mschapv2_volatile(void **attr, unsigned char config_t
 parser eap_mschapv2[] = {
   {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_password},
   {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_enc_password},
-  {"NT_Password_Hash", NULL, FALSE, OPTION_ANY_CONFIG,
-   &xsupconfig_parse_eap_mschapv2_nt_pwd_hash},
+  {"NT_Password_Hash", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_nt_pwd_hash},
+  {"Machine_Authentication_Mode", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_eap_mschapv2_machine_auth},
   {"IAS_Quirk", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_ias_quirk},
   {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_volatile},
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},

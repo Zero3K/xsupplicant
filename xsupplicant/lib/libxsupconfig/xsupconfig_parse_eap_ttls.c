@@ -215,38 +215,6 @@ void *xsupconfig_parse_eap_ttls_enc_user_key_pass(void **attr, uint8_t config_ty
   return ttls;
 }
 
-void *xsupconfig_parse_eap_ttls_cnexact(void **attr, uint8_t config_type, xmlNodePtr node)
-{
-  struct config_eap_ttls *ttls;
-  uint8_t result;
-  char *value;
-
-  ttls = (*attr);
-
-  value = (char *)xmlNodeGetContent(node);
-
-#ifdef PARSE_DEBUG
-  printf("TTLS Exact Common Name Check : %s\n", value);
-#endif
-
-  result = xsupconfig_common_yesno(value);
-
-  if (result > 1)
-    {
-      xsupconfig_common_log("Invalid value was passed for 'Exact_Common_Name'!  Will use the "
-             "default value of no.  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      ttls->cnexact = FALSE;
-    }
-  else
-    {
-      ttls->cnexact = result;
-    }
-
-  FREE(value);
-
-  return ttls;
-}
-
 void *xsupconfig_parse_eap_ttls_session_resume(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls;
@@ -333,32 +301,6 @@ void *xsupconfig_parse_eap_ttls_chunk_size(void **attr, uint8_t config_type, xml
     }
 
   FREE(value);
-
-  return ttls;
-}
-
-void *xsupconfig_parse_eap_ttls_cncheck(void **attr, uint8_t config_type, xmlNodePtr node)
-{
-  struct config_eap_ttls *ttls;
-  char *value;
-
-  ttls = (*attr);
-
-  value = (char *)xmlNodeGetContent(node);
-
-#ifdef PARSE_DEBUG
-  printf("TTLS Common Name : %s\n", value);
-#endif
-
-	if ((value == NULL) || (strlen(value) == 0))
-	{
-		free(value);
-		ttls->cncheck = NULL;
-	}
-	else
-	{
-		ttls->cncheck = value;
-	}
 
   return ttls;
 }
@@ -484,8 +426,6 @@ parser eap_ttls[] = {
   {"Chunk_Size", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_chunk_size},
   {"Random_File", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_random_file},
   {"Inner_Method", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_inner_method},
-  {"Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_cncheck},
-  {"Exact_Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_cnexact},
   {"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_inner_id},
   {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_trusted_server},
   {"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_validate_cert},

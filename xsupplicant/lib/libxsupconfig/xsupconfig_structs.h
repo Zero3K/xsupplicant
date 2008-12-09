@@ -159,9 +159,6 @@ struct config_eap_ttls
   int  chunk_size;					///< The size of the TLS fragments that should be sent.
   char *random_file;				///< The path to a file of random data used to seed OpenSSL.  (Not used with Windows.)
 
-  char *cncheck;                   // XXX Remove these!  They are part of trusted server now.
-  int  cnexact;
-
   char *inner_id;					///< The username to use inside the TTLS tunnel.
   char *trusted_server;				///< The name of the <Trusted_Server> block to be used to validate the server certificate.
   uint8_t validate_cert;			///< A TRUE/FALSE value that indicates if we should validate the server certificate or not.
@@ -174,6 +171,7 @@ struct config_eap_ttls
 #define FLAGS_EAP_MSCHAPV2_VOLATILE		BIT(0)   ///< This instance of the MSCHAPv2 configuration shouldn't be written to the config file.  (Mainly used with EAP-FAST for anonymous provisioning.)
 #define FLAGS_EAP_MSCHAPV2_IAS_QUIRK	BIT(1)   ///< A TRUE/FALSE value to deal with a strange quirk with some IAS configurations.  (This is generally not used.)
 #define FLAGS_EAP_MSCHAPV2_FAST_PROVISION  BIT(2)   ///< Is the purpose of this configuraion only for EAP-FAST provisioning?  (This option shouldn't be parsed in the parser, or written.)
+#define FLAGS_EAP_MSCHAPV2_MACHINE_AUTH  BIT(3)		///< Should MS-CHAPv2 operate in machine authentication mode?
 
 // Configuration information that is needed to authenticate using EAP-MSCHAPv2.
 //  NOTE: This structure can show up as both an inner method to tunneled methods, or an outer method on it's own.
@@ -190,6 +188,9 @@ struct config_eap_mschapv2
 // the random_file item, because the TLS routines will type cast the data to
 // a config_eap_tls structure for processing.  This makes the code easier to deal with,
 // but has the side effect that the developer needs to be a bit more careful.
+
+#define FLAGS_PEAP_MACHINE_AUTH		BIT(0)			///< Should PEAP use machine authentication?
+
 struct config_eap_peap
 {
   char * user_cert;
@@ -200,14 +201,13 @@ struct config_eap_peap
   int  chunk_size;
   char *random_file;
 
-  char *cncheck;          // XXX Remove this.  It is part of trusted server now.
   char proper_peapv1;
-  int cnexact;            // XXX Remove this.  It is part of trusted server now.
 
   char *identity; // phase2 identity
   uint8_t force_peap_version;
   char *trusted_server;
   uint8_t validate_cert;
+  uint8_t flags;
 
   struct config_eap_method *phase2; 
 };

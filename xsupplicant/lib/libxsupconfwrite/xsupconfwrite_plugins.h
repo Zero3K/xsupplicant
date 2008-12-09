@@ -8,7 +8,7 @@
 #ifndef __XSUPCONFIGWRITE_PLUGINS_H__
 #define __XSUPCONFIGWRITE_PLUGINS_H__
 
-xmlNodePtr xsupconfwrite_plugins_create_tree(struct config_globals *, char );
+xmlNodePtr xsupconfwrite_plugins_create_tree(struct config_plugins *, char );
 
 #endif // __XSUPCONFIGWRITE_GLOBALS_H__
 
