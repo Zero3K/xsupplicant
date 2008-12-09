@@ -804,6 +804,8 @@ cardio(SCARDHANDLE *card_hdl, char *cmd, long reader_protocol, char mode2g,
 	    if (sm_check_response(outbuff[p], outbuff[p+1]) != 0)
 	      {
 		debug_printf(DEBUG_NORMAL, "Sim Card Response : %2.2X %2.2X (unknown response)\n", outbuff[p], outbuff[p+1]);
+		debug_printf(DEBUG_AUTHTYPES, "Full response : (%d)\n", (*olen));
+		debug_hex_dump(DEBUG_AUTHTYPES, outbuff, (*olen));
 	      }
 	  } else {
 	    debug_printf(DEBUG_NORMAL,"\n");
@@ -1121,7 +1123,7 @@ int sm_handler_3g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode)
   {
 	  // Process it through our plugin.
 	  result = sim_reader_plugin_hook_3g_pin_needed(card_hdl, reader_mode);
-	  if (result >= 0) return result;
+	  if (result >= -1) return result;
   }
 
   // Select the USIM master file.

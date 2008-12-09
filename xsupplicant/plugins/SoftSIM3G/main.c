@@ -72,7 +72,7 @@ void DLLMAGIC sim_hook_update_reader_list(char **readerlist)
 	(*readerlist) = newReaderList;
 }
 
-int DLLMAGIC sim_hook_reader_gs_supported(void *card_hdl)
+int DLLMAGIC sim_hook_reader_gs_supported(void **card_hdl)
 {
 	printf("%s()\n", __FUNCTION__);
 	return SUPPORT_3G_SIM;
@@ -84,18 +84,21 @@ int DLLMAGIC sim_hook_get_3g_imsi(void *cardhdl, char reader_mode, char *pin, ch
 	return get_imsi(imsi);
 }
 
-int DLLMAGIC sim_hook_3g_pin_needed(void *card_hdl, char reader_mode)
+int DLLMAGIC sim_hook_3g_pin_needed(void **card_hdl, char reader_mode)
 {
 	printf("%s()\n", __FUNCTION__);
+	if ((*card_hdl) != 1) return -2;
+
 	return -1;			//  No PIN needed right now.
 }
 
-int DLLMAGIC sim_hook_card_connect(void *card_ctx, void *card_hdl, char *cardreader)
+int DLLMAGIC sim_hook_card_connect(void *card_ctx, void **card_hdl, char *cardreader)
 {
 	printf("%s()\n", __FUNCTION__);
 	if (strcmp(cardreader, READER_NAME) != 0) return -1;		// Not for us. ;)
 
-	(unsigned long)card_hdl = 1;
+	//(unsigned long *)card_hdl = 1;
+	(*card_hdl) = 1;
 	return load_sim_config();
 }
 
@@ -115,7 +118,13 @@ int DLLMAGIC sim_hook_do_3g_auth(void *card_hdl, char reader_mode, unsigned char
 	return sim_do_3g_auth(Rand, autn, c_auts, res_len, c_sres, c_ck, c_ik, c_kc);
 }
 
-int DLLMAGIC sim_hook_wait_card_ready(SCARDHANDLE *card_hdl, int waittime)
+int DLLMAGIC sim_hook_wait_card_ready(void **card_hdl, int waittime)
 {
+	if ((*card_hdl) != 1) 
+	{
+		printf("Not a Soft SIM!\n");
+		return -1;
+	}
+
 	return 0;
 }

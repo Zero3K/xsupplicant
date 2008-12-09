@@ -203,14 +203,14 @@ int sim_reader_plugin_hook_3g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode
           if(hook != NULL)
 		  {
 		    result = (*hook)(card_hdl, reader_mode);
-			if (result >= 0) return result;
+			if (result >= -1) return result;
 		  }
 	    }
 
 		cur = cur->next;
 	}
 
-	return -1;
+	return -3;
 }
 
 /**
