@@ -14,6 +14,7 @@
 #include <shlobj.h>
 
 #include "../../xsup_debug.h"
+#include "../../xsup_err.h"
 #include "win_impersonate.h"
 
 HANDLE active_token = NULL;
@@ -86,4 +87,154 @@ void win_impersonate_back_to_self()
 	CloseHandle(active_token);
 	active_token = NULL;
 }
+
+/**
+ * \brief Get the machine name for this machine.
+ *
+ * \retval NULL on error, otherwise the machine name.
+ **/
+char *win_impersonate_get_machine_name()
+{
+	char *machineName = NULL;
+	DWORD mlen = 255;
+
+	machineName = Malloc(mlen);
+	if (machineName == NULL) return NULL;
+
+	if (GetComputerNameExA(ComputerNamePhysicalDnsFullyQualified, machineName, &mlen))
+	{
+		return machineName;
+	}
+	else
+	{
+		return NULL;
+	}
+
+	return NULL;
+}
+
+/**
+ * \brief Read the machine's key from the registry.
+ *
+ * @param[out] key   A pointer to a pointer containing the encrypted data from the registry.
+ * @param[out] length  A pointer to a uint16_t that will return the length of the encrypted data.
+ *
+ * \retval XENONE on success, anything else is a failure.
+ **/
+int win_impersonate_get_encrypted_key(uint8_t **key, uint16_t *length)
+{
+	LONG result = 0;
+	char *fullpath = "SECURITY\\Policy\\Secrets\\$MACHINE.ACC\\CurrVal";
+	HKEY phk;
+	uint8_t *buffer = NULL;
+	DWORD size = 1024;
+
+	result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, fullpath, 0, KEY_READ, &phk);
+	if (result != ERROR_SUCCESS)
+	{
+		debug_printf(DEBUG_NORMAL, "Failed to open the registry key for the domain secret!\n");
+		return -1;
+	}
+
+	buffer = Malloc(size);
+	if (buffer == NULL) 
+	{
+		RegCloseKey(phk);
+		return -1;
+	}
+
+	result = RegQueryValueEx(phk, NULL, NULL, NULL, (LPBYTE)buffer, &size);
+	if (result != ERROR_SUCCESS)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to read the machine's domain secret blob.\n");
+		RegCloseKey(phk);
+		return -1;
+	}
+	
+	RegCloseKey(phk);
+
+	(*key) = buffer;
+	(*length) = size;
+
+	return XENONE;
+}
+
+/**
+ * \brief Decrypt the machine's domain password with the machine's key.
+ *
+ * @param[in] encData   The encrypted version of the domain password.
+ * @param[in] encLen   The length of the encrypted data.
+ * @param[out] password   The cleartext version of the password.
+ * @param[out] length   The length of the cleartext version of the password.
+ *
+ * \retval XENONE on success.  Anything is a failure.
+ **/
+int win_impersonate_decrypt_blob(uint8_t *encData, uint16_t encLen, uint8_t **password, uint16_t *length)
+{
+	DATA_BLOB DataIn;
+	DATA_BLOB DataOut;
+	uint8_t *buffer = NULL;
+
+	DataIn.cbData = encLen;
+	DataIn.pbData = encData;
+
+	if (CryptUnprotectData(&DataIn, NULL, NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
+	{
+		buffer = Malloc(DataOut.cbData+5);
+		if (buffer == NULL) return -1;
+
+		memcpy(buffer, DataOut.pbData, DataOut.cbData);
+
+		(*length) = DataOut.cbData;
+		(*password) = buffer;
+
+		LocalFree(DataOut.pbData);
+
+		return XENONE;
+	}
+
+	return -1;
+}
+
+/**
+ * \brief Get the machine's domain password from the registry and decrypt it.
+ *
+ * \note This only works when the suppicant is running as a service because normal user accounts (even admins)
+ *			don't have rights to read the necessary portion of the registry!
+ *
+ * \retval XENONE on success.
+ **/
+int win_impersonate_get_machine_password(uint8_t **password, uint16_t *length)
+{
+	uint8_t *encData = NULL;
+	uint16_t encLen = 0;
+	int result = 0;
+
+	if ((result = win_impersonate_get_encrypted_key(&encData, &encLen)) != XENONE)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to obtain encrypted domain key!\n");
+		return result;
+	}
+
+#ifdef UNSAFE_DUMPS
+	debug_printf(DEBUG_AUTHTYPES, "Encrypted key (%d) :\n", encLen);
+	debug_hex_dump(DEBUG_AUTHTYPES, encData, encLen);
+#endif
+
+	if ((result = win_impersonate_decrypt_blob(encData, encLen, password, length)) != XENONE)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to decrypt the domain key!\n");
+		return result;
+	}
+
+#ifdef UNSAFE_DUMPS
+	debug_printf(DEBUG_AUTHTYPES, "Decrypted key (%d) :\n", (*length));
+	debug_hex_dump(DEBUG_AUTHTYPES, (*password), (*length));
+#endif
+
+	FREE(encData);
+
+	return XENONE;
+}
+
 

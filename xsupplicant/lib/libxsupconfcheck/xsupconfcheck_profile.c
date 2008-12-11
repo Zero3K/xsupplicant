@@ -330,7 +330,7 @@ int xsupconfcheck_profile_eap_mschapv2(struct config_eap_mschapv2 *mscv2, config
 		return -1;
 	}
 
-	if ((mscv2->nthash == NULL) && (mscv2->password == NULL) && (prof->temp_password == NULL))
+	if ((mscv2->nthash == NULL) && (mscv2->password == NULL) && (prof->temp_password == NULL) && (!TEST_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH)))
 	{
 		retval = PROFILE_NEED_UPW;
 	}
@@ -572,14 +572,27 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method *myeap, config_prof
 int xsupconfcheck_profile_check(struct config_profiles *myprof, int log)
 {
 	int retval = 0;
+	struct config_eap_peap *peapdata = NULL;
 
 	// Verify that we have a valid identity set.
 	if ((myprof->identity == NULL) && (myprof->temp_username == NULL))
 	{
 		if ((myprof->method->method_num != EAP_TYPE_SIM) && (myprof->method->method_num != EAP_TYPE_AKA))
 		{
-			if (log == TRUE) error_prequeue_add("Profile is missing a valid username.");
-			retval = PROFILE_NEED_UPW;
+			if (myprof->method->method_num == EAP_TYPE_PEAP)
+			{
+				peapdata = (struct config_eap_peap *)myprof->method->method_data;
+				if (!TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH))
+				{
+					if (log == TRUE) error_prequeue_add("Profile is missing a valid username.");
+					retval = PROFILE_NEED_UPW;
+				}
+			}
+			else
+			{
+				if (log == TRUE) error_prequeue_add("Profile is missing a valid username.");
+				retval = PROFILE_NEED_UPW;
+			}
 		}
 	}
 

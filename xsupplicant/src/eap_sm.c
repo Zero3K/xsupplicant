@@ -1432,7 +1432,10 @@ void eap_sm_process_hints(eap_sm *sm)
  **/
 void eap_sm_prepopulate_id(eap_sm *sm)
 {
-	context *ctx;
+	context *ctx = NULL;
+#ifdef WINDOWS
+	struct config_eap_peap *peapdata = NULL;
+#endif
 
   if (!xsup_assert((sm != NULL), "sm != NULL", FALSE))
     return;
@@ -1459,6 +1462,24 @@ void eap_sm_prepopulate_id(eap_sm *sm)
   if (!xsup_assert((ctx->prof != NULL),
                    "ctx->prof != NULL", FALSE))
     return;
+
+#ifdef WINDOWS
+  // If we are using PEAP, then we may need to get the machine name if using machine authentication.
+  if (sm->curMethods->method_num == EAP_TYPE_PEAP)
+  {
+	  peapdata = (struct config_eap_peap *)sm->curMethods->method_data;
+
+	  // Only get the machine name if the machine auth flag is enabled.  If it is, then
+	  // we want to ignore all other available usernames.  So, our get_machineauth_name()
+	  // call should FREE() any usernames in the config in addition to providing our
+	  // machine name in the proper format.
+	  if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH))
+	  {
+	      eappeap_get_machineauth_name(ctx);
+		  if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) sm->ident = strdup(ctx->prof->temp_username);
+	  }
+  }
+#endif
 
 #ifdef EAP_SIM_ENABLE
   // If we have SIM enabled, there is no username, and the primary EAP method

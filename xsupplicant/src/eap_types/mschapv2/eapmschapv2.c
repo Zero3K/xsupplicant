@@ -247,22 +247,25 @@ int eapmschapv2_init(eap_type_data *eapdata)
       return XEGENERROR;
 	}
 
-	if (ctx->prof->temp_password == NULL)
-	 {
-		if (eapconf->password == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
-			eap_type_common_fail(eapdata);
-			return XEGENERROR;
-		}
-		else
-		{
-			mscv2data->password = _strdup(eapconf->password);
-		}
-    }
-  else
+	if (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
 	{
-		mscv2data->password = _strdup(ctx->prof->temp_password);
+		if (ctx->prof->temp_password == NULL)
+		 {
+			if (eapconf->password == NULL)
+			{
+				debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
+				eap_type_common_fail(eapdata);
+				return XEGENERROR;
+			}
+			else
+			{
+				mscv2data->password = _strdup(eapconf->password);
+			}
+	    }
+	  else
+		{
+			mscv2data->password = _strdup(ctx->prof->temp_password);
+		}
 	}
 
 	if (eapdata->ident == NULL)
@@ -362,7 +365,8 @@ void eapmschapv2_check(eap_type_data *eapdata)
 
   // If we are running in EAP-FAST provisioning mode, it is okay if we don't have a password, we
   // will prompt for one.
-  if ((eapconf->password == NULL) && (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_FAST_PROVISION)))
+  if ((eapconf->password == NULL) && (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_FAST_PROVISION)) &&
+	  (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH)))
     {
 		ctx = event_core_get_active_ctx();
 		if (ctx == NULL)
@@ -425,6 +429,10 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
   struct config_eap_mschapv2 *eapconf = NULL;
   char *username = NULL;
   char *ident = NULL;
+
+#ifdef WINDOWS
+  uint16_t length;
+#endif
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return EAP_FAIL;
@@ -534,7 +542,25 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
       GenerateNTResponse((char *)myvars->AuthenticatorChallenge,
 			 (char *)myvars->PeerChallenge, username, 
 			 eapconf->nthash, (char *)myvars->NtResponse, 1);
-    } else {
+    } 
+  else if (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
+  {
+#ifdef WINDOWS
+	  if (win_impersonate_get_machine_password(&myvars->password, &length) != XENONE)
+	  {
+		  debug_printf(DEBUG_NORMAL, "Unable to get machine password!\n");
+		  eap_type_common_fail(eapdata);
+		  return EAP_FAIL;
+	  }
+#endif // WINDOWS
+
+	  // Doing a machine auth.
+      GenerateNTResponse((char *)myvars->AuthenticatorChallenge,
+			 (char *)myvars->PeerChallenge, username, 
+			 myvars->password, (char *)myvars->NtResponse, 2);
+  }
+  else
+  {
     GenerateNTResponse((char *)myvars->AuthenticatorChallenge,
 		       (char *)myvars->PeerChallenge, username,
 		       myvars->password, (char *)myvars->NtResponse, 0);
@@ -602,7 +628,17 @@ uint8_t eapmschapv2_success(eap_type_data *eapdata)
 				 (char *)myvars->AuthenticatorChallenge,
 				 eapdata->ident, 
 				 (char *)&success->MsgField[2], &respOk, 1);
-    } else {
+    } 
+  else if (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
+  {
+	  CheckAuthenticatorResponse(myvars->password,
+				 (char *)myvars->NtResponse, 
+				 (char *)myvars->PeerChallenge,
+				 (char *)myvars->AuthenticatorChallenge,
+				 eapdata->ident, 
+				 (char *)&success->MsgField[2], &respOk, 2);
+  }
+  else {
       CheckAuthenticatorResponse(myvars->password,
 				 (char *)myvars->NtResponse, 
 				 (char *)myvars->PeerChallenge,
@@ -962,7 +998,8 @@ void eapmschapv2_process(eap_type_data *eapdata)
 		  return;
 	  }
 
-	  if ((eapconf->password == NULL) && (ctx->prof->temp_password == NULL))
+	  if ((eapconf->password == NULL) && (ctx->prof->temp_password == NULL) &&
+		  (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH)))
 	  {
 	      debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2! (Trying to request one.)\n");
 		  if (ipc_events_request_eap_upwd("EAP-MSCHAPv2", "Please enter your password.") != IPC_SUCCESS)

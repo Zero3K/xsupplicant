@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  * EAP PEAP Function header
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
@@ -7,7 +7,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _EAPPEAP_H_
 #define _EAPPEAP_H_
@@ -36,5 +36,6 @@ uint8_t *eappeap_buildResp(eap_type_data *);
 uint8_t eappeap_isKeyAvailable(eap_type_data *);
 uint8_t *eappeap_getKey(eap_type_data *);
 void eappeap_deinit(eap_type_data *);
+void eappeap_get_machineauth_name(context *ctx);
 
 #endif

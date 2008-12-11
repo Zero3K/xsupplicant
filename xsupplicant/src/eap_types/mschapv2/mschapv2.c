@@ -88,7 +88,7 @@ char *to_unicode(char *non_uni)
   return retUni;
 }
 
-void NtPasswordHash(char *Password, char *PasswordHash)
+void NtPasswordHash(char *Password, char *PasswordHash, int tounicode)
 {
   EVP_MD_CTX cntx;
   char retVal[20];
@@ -102,14 +102,24 @@ void NtPasswordHash(char *Password, char *PasswordHash)
     return;
 
   memset(retVal, 0x00, 20);
-  uniPassword = to_unicode(Password);
-  len = (strlen(Password))*2;
+
+  if (tounicode == 1)
+  {
+	  uniPassword = to_unicode(Password);
+	  len = (strlen(Password))*2;
+  }
+  else
+  {
+	  uniPassword = Password;
+	  len = wcslen((wchar_t *)uniPassword)*2;
+  }
 
   EVP_DigestInit(&cntx, EVP_md4());
   EVP_DigestUpdate(&cntx, uniPassword, len);
   EVP_DigestFinal(&cntx, (uint8_t *)&retVal, (unsigned int *)&i);
   memcpy(PasswordHash, &retVal, 16);
-  FREE(uniPassword);
+
+  if (tounicode == 1) FREE(uniPassword);
 }
 
 void HashNtPasswordHash(char *PasswordHash, char *PasswordHashHash)
@@ -210,7 +220,7 @@ void process_hex(char *instr, int size, char *outstr)
 void GenerateAuthenticatorResponse(char *Password, char *NTResponse,
 				   char *PeerChallenge, 
 				   char *AuthenticatorChallenge, char *UserName,
-				   char *AuthenticatorResponse, int nthash)
+				   char *AuthenticatorResponse, int mode)
 {
   char PasswordHash[16];
   char PasswordHashHash[16];
@@ -252,10 +262,15 @@ void GenerateAuthenticatorResponse(char *Password, char *NTResponse,
 		   "AuthenticatorResponse != NULL", FALSE))
     return;
 
-  if (nthash == 0)
+  if (mode == 0)
     {
-      NtPasswordHash(Password, (char *)&PasswordHash);
-    } else {
+      NtPasswordHash(Password, (char *)&PasswordHash, 0);
+    } 
+  else if (mode == 2)
+  {
+	  NtPasswordHash(Password, (char *)&PasswordHash, 1);
+  }
+	else {
       process_hex(Password, strlen(Password), (char *)&PasswordHash);
     }
 
@@ -284,7 +299,7 @@ void CheckAuthenticatorResponse(char *Password, char *NtResponse,
 				char *PeerChallenge, 
 				char *AuthenticatorChallenge, char *UserName,
 				char *ReceivedResponse, int *ResponseOK,
-				int nthash)
+				int mode)
 {
   char MyResponse[20], procResp[20];
   char *stripped;
@@ -314,7 +329,7 @@ void CheckAuthenticatorResponse(char *Password, char *NtResponse,
 
   GenerateAuthenticatorResponse(Password, NtResponse, PeerChallenge,
 				AuthenticatorChallenge, UserName, 
-				(char *)&MyResponse, nthash);
+				(char *)&MyResponse, mode);
 
   while ((i < strlen(ReceivedResponse)) && (ReceivedResponse[i] != 0x20))
     i++;
@@ -366,7 +381,7 @@ void ChallengeResponse(char *Challenge, char *PasswordHash, char *Response)
 }
 
 void NtChallengeResponse(char *Challenge, char *Password, char *Response, 
-			 int nthash)
+			 int mode)
 {
   char password_hash[16];
 
@@ -379,18 +394,24 @@ void NtChallengeResponse(char *Challenge, char *Password, char *Response,
   if (!xsup_assert((Response != NULL), "Response != NULL", FALSE))
     return;
 
-  if (nthash == 0)
+  if (mode == 0)
     {
-      NtPasswordHash(Password, (char *)&password_hash);
-    } else {
+      NtPasswordHash(Password, (char *)&password_hash, 0);
+    } 
+  else if (mode == 2)
+  {
+	  NtPasswordHash(Password, (char *)&password_hash, 1);
+  }
+  else {
       process_hex(Password, strlen(Password), (char *)&password_hash);
     }
+
   ChallengeResponse(Challenge, (char *)&password_hash, Response);
 }
 
 void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
 			char *UserName, char *Password, char *Response, 
-			int nthash)
+			int mode)
 {
   char Challenge[8], PasswordHash[16];
 
@@ -419,10 +440,16 @@ void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
   debug_printf(DEBUG_AUTHTYPES, "Challenge : ");
   debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) Challenge, 8);
 
-  if (nthash == 0)
+  if (mode == 0)
     {
-      NtPasswordHash(Password, (char *)&PasswordHash);
-    } else {
+      NtPasswordHash(Password, (char *)&PasswordHash, 1);
+    } 
+  else if (mode == 2)
+  {
+	  NtPasswordHash(Password, (char *)&PasswordHash, 0);
+  }
+  else
+  {
       process_hex(Password, strlen(Password), (char *)&PasswordHash);
     }
 

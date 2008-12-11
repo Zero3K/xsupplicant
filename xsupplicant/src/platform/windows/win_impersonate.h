@@ -22,5 +22,8 @@ void win_impersonate_back_to_self();
 HANDLE win_impersonate_get_impersonation_handle();
 char *get_users_data_store_path();
 char *get_machine_data_store_path();
+char *win_impersonate_get_domain_name();
+char *win_impersonate_get_machine_name();
+int win_impersonate_get_machine_password(uint8_t **password, uint16_t *length);
 
 #endif  // __WIN_IMPERSONATE_H__

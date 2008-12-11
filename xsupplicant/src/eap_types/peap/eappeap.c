@@ -37,6 +37,7 @@
 
 #ifdef WINDOWS
 #include "../../event_core_win.h"
+#include "../../platform/windows/win_impersonate.h"
 #endif
 
 #ifdef USE_EFENCE
@@ -612,3 +613,45 @@ void eappeap_deinit(eap_type_data *eapdata)
   debug_printf(DEBUG_AUTHTYPES, "(EAP-PEAP) Cleaned up.\n");
 }
 
+/**
+ * \brief Create the "username" used for machine authentication.  For Windows,
+ *			this is the machine name in "<Domain>\<Machine Name>" format.
+ *
+ * @param[in/out] ctx   The context for the interface that we need to generate the
+ *							machine username on.
+ **/
+void eappeap_get_machineauth_name(context *ctx)
+{
+#ifdef WINDOWS
+	char *machineName = NULL;
+	char *result = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
+	machineName = win_impersonate_get_machine_name();
+	if (machineName == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to determine the machine's name.  Machine authentication failed.\n");
+		return;
+	}
+
+	result = Malloc(strlen(machineName)+10);
+	if (result == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to allocate memory needed to create the machine's username!\n");
+		FREE(machineName);
+		return;
+	}
+
+	sprintf(result, "host/%s", machineName); //, domainName); //, machineName);
+
+	FREE(machineName);
+
+	// Make sure the user isn't allowed to override the machine name via the config file.
+	if (ctx->prof->identity != NULL)  FREE(ctx->prof->identity);	
+
+	ctx->prof->temp_username = result;
+#else
+#warning Machine authentication is not available for your platform!
+#endif
+}
