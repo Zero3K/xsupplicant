@@ -351,28 +351,34 @@ char *sm_handler_get_readers(SCARDCONTEXT *card_ctx)
   ret = SCardListReaders(*card_ctx, NULL, NULL, &readerstrlen);
   if (ret != SCARD_S_SUCCESS)
     {
-      debug_printf(DEBUG_NORMAL, "Error requesting list of smart card "
-		   "readers! ");
-      print_sc_error(ret);
-      return NULL;
+		  if (sim_reader_plugin_hook_available() != TRUE)
+		  {
+		      debug_printf(DEBUG_NORMAL, "Error requesting list of smart card "
+				   "readers!\n");
+		      print_sc_error(ret);
+		      return NULL;
+		  }
     }
 
-  readername = (char *)Malloc(readerstrlen+1);
-  if (readername == NULL) 
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for reader name! "
-		   "(%s:%d)\n", __FUNCTION__, __LINE__);
-      return NULL;
-    }
+  if (readerstrlen > 0)
+  {
+	  readername = (char *)Malloc(readerstrlen+1);
+	  if (readername == NULL) 
+	    {
+	      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for reader name! "
+			   "(%s:%d)\n", __FUNCTION__, __LINE__);
+	      return NULL;
+	    }
 
-  ret = SCardListReaders(*card_ctx, NULL, readername, &readerstrlen);
-  if (ret != SCARD_S_SUCCESS)
-    {
-      debug_printf(DEBUG_NORMAL, "Error requesting list of smart card "
-		   "readers! ");
-      print_sc_error(ret);
-      return NULL;
-    }
+	  ret = SCardListReaders(*card_ctx, NULL, readername, &readerstrlen);
+	  if (ret != SCARD_S_SUCCESS)
+	    {
+	      debug_printf(DEBUG_NORMAL, "Error requesting list of smart card "
+			   "readers!\n");
+	      print_sc_error(ret);
+	      return NULL;
+	    }
+  }
 
   if (sim_reader_plugin_hook_available() == TRUE)
   {

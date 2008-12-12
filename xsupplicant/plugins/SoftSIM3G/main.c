@@ -51,12 +51,15 @@ void DLLMAGIC sim_hook_update_reader_list(char **readerlist)
 
 	pReader = (*readerlist);
 
-	while ( '\0' != (*pReader))
+	if (pReader != NULL)
 	{
-		listsize = strlen(pReader)+1;
-		pReader += listsize;
+		while ( '\0' != (*pReader))
+		{
+			listsize = strlen(pReader)+1;
+			pReader += listsize;
+		}
+		listsize++;  // Pick up the last NULL character.
 	}
-	listsize++;  // Pick up the last NULL character.
 
 	newReaderList = malloc(listsize+strlen(READER_NAME)+2);
 	if (newReaderList == NULL) return;   // Can't add ours. :-(
@@ -97,7 +100,6 @@ int DLLMAGIC sim_hook_card_connect(void *card_ctx, void **card_hdl, char *cardre
 	printf("%s()\n", __FUNCTION__);
 	if (strcmp(cardreader, READER_NAME) != 0) return -1;		// Not for us. ;)
 
-	//(unsigned long *)card_hdl = 1;
 	(*card_hdl) = 1;
 	return load_sim_config();
 }
