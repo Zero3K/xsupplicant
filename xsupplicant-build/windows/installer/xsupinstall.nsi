@@ -29,8 +29,8 @@
 !define PROTOCOL_DRIVER_REV     4     ; If the protocol driver is updated, this needs to be incremented to get it upgraded on user's systems.
 
 !ifndef QTDIR
-	!define QTDIR C:\Qt\qt-win-opensource-src-4.3.5
-;	!define QTDIR c:\qt\4.3.4
+;	!define QTDIR C:\Qt\qt-win-opensource-src-4.3.5
+	!define QTDIR c:\qt\4.3.4
 !endif
 
 !ifndef SRCDIR
@@ -473,21 +473,6 @@ finish_service_install:
         CreateShortCut "$SMPROGRAMS\${TARGET}\XSupplicant.lnk" $INSTDIR\XSupplicantUI.exe "-l"
 	CreateShortCut "$SMPROGRAMS\${TARGET}\Check for other supplicants.lnk" $INSTDIR\checksuppsapp.exe
 
-	; If we need to reboot, then don't start stuff it would be bad.
-	IfRebootFlag dont_start_app
-
-        nsExec::Exec '"$WINDIR\system32\net.exe" start open1x'
-
-	; Start the supplicant service.
-        SetOutPath $INSTDIR
-	DetailPrint "Starting XSupplicant"
-        nsExec::Exec '"$WINDIR\system32\net.exe" start XSupplicant'
-
-	; Start the supplicant UI.
-	DetailPrint "Starting the XSupplicant UI"
-        Exec '"$INSTDIR\XSupplicantUI.exe"'
-
-dont_start_app:
         DeleteRegValue HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "UpgradeFlags"
 	WriteRegStr  HKLM SOFTWARE\XSupplicant "Install_Dir" "$INSTDIR"
 	WriteRegStr  HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "DisplayName" "XSupplicant"
@@ -499,12 +484,6 @@ dont_start_app:
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "NoRepair" 1
 	WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\XSupplicant" "ProtocolRev" ${PROTOCOL_DRIVER_REV}
         WriteUninstaller "uninstall.exe"    
-
-	IfRebootFlag 0 noreboot
-		MessageBox MB_YESNO "A reboot is required to finish the installation.  Do you wish to reboot now?" IDNO noreboot
-			Reboot
-
-noreboot:
 
 SectionEnd
 
@@ -526,6 +505,32 @@ Section "3G Soft SIM" SoftSIM
 
 SectionEnd
 
+
+Section "-Start XSupplicant"
+	SectionIn 1 2 RO
+
+	; If we need to reboot, then don't start stuff it would be bad.
+	IfRebootFlag dont_start_app
+
+        nsExec::Exec '"$WINDIR\system32\net.exe" start open1x'
+
+	; Start the supplicant service.
+        SetOutPath $INSTDIR
+	DetailPrint "Starting XSupplicant"
+        nsExec::Exec '"$WINDIR\system32\net.exe" start XSupplicant'
+
+	; Start the supplicant UI.
+	DetailPrint "Starting the XSupplicant UI"
+        Exec '"$INSTDIR\XSupplicantUI.exe"'
+
+dont_start_app:
+	IfRebootFlag 0 noreboot
+		MessageBox MB_YESNO "A reboot is required to finish the installation.  Do you wish to reboot now?" IDNO noreboot
+			Reboot
+
+noreboot:
+
+SectionEnd   
 
 LangString DESC_SoftSIM ${LANG_ENGLISH} "Install the optional 3G USIM software emulator."
 LangString DESC_XSupplicant ${LANG_ENGLISH} "Install the core XSupplicant programs."

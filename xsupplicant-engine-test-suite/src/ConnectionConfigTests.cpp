@@ -268,7 +268,12 @@ bool ConnectionConfigTests::configsMatch(config_connection *original, config_con
 		success = false;
 	}
 
-	if (strcmp(original->association.psk, testval->association.psk) != 0)
+	if ((original->association.psk != NULL) && (testval->association.psk == NULL))
+	{
+		innerError("Connection Config match failed because read back PSK was NULL when it shouldn't have been!\n");
+		success = false;
+	}
+	else if (strcmp(original->association.psk, testval->association.psk) != 0)
 	{
 		innerError("Connection Config match failed because WPA(2)-PSKs didn't match!\n");
 		success = false;

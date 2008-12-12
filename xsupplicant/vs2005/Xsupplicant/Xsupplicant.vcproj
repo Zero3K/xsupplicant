@@ -2873,6 +2873,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\platform\windows\lsa_calls.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\eap_types\md5\md5.c"
 				>
 			</File>
@@ -3348,6 +3352,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\key_statemachine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\platform\windows\lsa_calls.h"
 				>
 			</File>
 			<File

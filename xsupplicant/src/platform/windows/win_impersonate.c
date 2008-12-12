@@ -15,6 +15,7 @@
 
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
+#include "lsa_calls.h"
 #include "win_impersonate.h"
 
 HANDLE active_token = NULL;
@@ -160,43 +161,6 @@ int win_impersonate_get_encrypted_key(uint8_t **key, uint16_t *length)
 }
 
 /**
- * \brief Decrypt the machine's domain password with the machine's key.
- *
- * @param[in] encData   The encrypted version of the domain password.
- * @param[in] encLen   The length of the encrypted data.
- * @param[out] password   The cleartext version of the password.
- * @param[out] length   The length of the cleartext version of the password.
- *
- * \retval XENONE on success.  Anything is a failure.
- **/
-int win_impersonate_decrypt_blob(uint8_t *encData, uint16_t encLen, uint8_t **password, uint16_t *length)
-{
-	DATA_BLOB DataIn;
-	DATA_BLOB DataOut;
-	uint8_t *buffer = NULL;
-
-	DataIn.cbData = encLen;
-	DataIn.pbData = encData;
-
-	if (CryptUnprotectData(&DataIn, NULL, NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
-	{
-		buffer = Malloc(DataOut.cbData+5);
-		if (buffer == NULL) return -1;
-
-		memcpy(buffer, DataOut.pbData, DataOut.cbData);
-
-		(*length) = DataOut.cbData;
-		(*password) = buffer;
-
-		LocalFree(DataOut.pbData);
-
-		return XENONE;
-	}
-
-	return -1;
-}
-
-/**
  * \brief Get the machine's domain password from the registry and decrypt it.
  *
  * \note This only works when the suppicant is running as a service because normal user accounts (even admins)
@@ -221,11 +185,15 @@ int win_impersonate_get_machine_password(uint8_t **password, uint16_t *length)
 	debug_hex_dump(DEBUG_AUTHTYPES, encData, encLen);
 #endif
 
-	if ((result = win_impersonate_decrypt_blob(encData, encLen, password, length)) != XENONE)
+	if (lsa_calls_init() != 0) return -1;
+
+	if ((result = lsa_calls_decrypt_secret(encData, encLen, password, length)) != XENONE)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to decrypt the domain key!\n");
+		lsa_calls_deinit();
 		return result;
 	}
+	lsa_calls_deinit();
 
 #ifdef UNSAFE_DUMPS
 	debug_printf(DEBUG_AUTHTYPES, "Decrypted key (%d) :\n", (*length));
