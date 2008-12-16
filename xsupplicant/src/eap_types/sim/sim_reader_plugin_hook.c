@@ -18,6 +18,7 @@
 #include "../../lib/libxsupconfig/xsupconfig.h"
 #include "../../lib/libxsupconfig/xsupconfig_structs.h"
 #include "libxsupplugins/xsupplugin_types.h"
+#include "../../xsup_debug.h"
 
 #include "sim_reader_plugin_hook.h"
 
@@ -275,6 +276,7 @@ long sim_reader_plugin_hook_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *ca
           if(hook != NULL)
 		  {
 		    result = (*hook)(card_ctx, card_hdl, cardreader);
+			debug_printf(DEBUG_AUTHTYPES, "Connect returned - %d\n", result);
 			if (result >= 0) 
 			{
 				sim_reader_plugin_init_ctx(card_ctx);		// Do this here, so that we clean up the old context and aquire one for the plugin.

@@ -111,7 +111,7 @@ void NtPasswordHash(char *Password, char *PasswordHash, int tounicode)
   else
   {
 	  uniPassword = Password;
-	  len = wcslen((wchar_t *)uniPassword)*2;
+	  len = (wcslen((wchar_t *)uniPassword)*2)+2;
   }
 
   EVP_DigestInit(&cntx, EVP_md4());
@@ -414,6 +414,8 @@ void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
 			int mode)
 {
   char Challenge[8], PasswordHash[16];
+  char *temp = NULL;
+  char *temp2 = NULL;
 
   if (!xsup_assert((AuthenticatorChallenge != NULL),
 		   "AuthenticatorChallenge != NULL", FALSE))

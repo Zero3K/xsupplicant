@@ -429,6 +429,8 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
   struct config_eap_mschapv2 *eapconf = NULL;
   char *username = NULL;
   char *ident = NULL;
+  char *temp = NULL;
+  int i = 0;
 
 #ifdef WINDOWS
   uint16_t length;
@@ -923,8 +925,11 @@ uint8_t eapmschapv2_failure(eap_type_data *eapdata)
       break;
     }
 
-  debug_printf(DEBUG_NORMAL, "Server provided text description of the error : "
-	       "%s\n", err_text);
+  if (err_text != NULL)
+  {
+	  debug_printf(DEBUG_NORMAL, "Server provided text description of the error : "
+		       "%s\n", err_text);
+  }
 
   return EAP_FAIL;
 }
@@ -1103,6 +1108,8 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
   uint16_t respsize = 0;
   uint8_t eapid = 0;
   struct eap_header *eap_header = NULL;
+  char *username = NULL;
+  char *temp = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return NULL;
@@ -1129,8 +1136,17 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
 	  return NULL;
   }
 
+  eapmschapv2_strip_backslash(eapdata->ident, &username);
+
+  if (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
+  {
+	  // Strip off the domain so we only send the machine name.
+	  temp = strstr(username, ".");
+	  temp[0] = 0x00;   // NULL it out.
+  }
+
   // 54 bytes is the length of the response, including MS-CHAPv2 header.
-  respsize = 54+strlen(eapdata->ident)+sizeof(struct eap_header);
+  respsize = 54+strlen(username)+sizeof(struct eap_header);
   resp = Malloc(respsize);
   if (resp == NULL)
     {
@@ -1156,7 +1172,7 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
   response = (struct mschapv2_response *)&resp[sizeof(struct eap_header)];
   response->OpCode = MS_CHAPV2_RESPONSE;
   response->MS_CHAPv2_ID = myvars->MS_CHAPv2_ID;
-  response->MS_Length = htons(54+strlen(eapdata->ident));
+  response->MS_Length = htons(54+strlen(username));
   response->Value_Size = 49;
   if (eap_fast_mode == TRUE)
     {
@@ -1173,8 +1189,12 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
   debug_hex_printf(DEBUG_AUTHTYPES, response->NT_Response, 24);
 
   response->Flags = 0;
-  memcpy(&resp[sizeof(struct eap_header)+54], eapdata->ident, 
+
+
+/*  memcpy(&resp[sizeof(struct eap_header)+54], eapdata->ident, 
 	 strlen(eapdata->ident));
+	 */
+  memcpy(&resp[sizeof(struct eap_header)+54], username, strlen(username));
 
   return resp;
 }

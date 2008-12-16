@@ -99,7 +99,7 @@ int softsim_ui_plugin::load_sim_config()
 	TCHAR szMyPath[MAX_PATH];
 	char *path = NULL;
 
-	if (FAILED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, (LPSTR)&szMyPath)))
+	if (FAILED(SHGetFolderPathA(NULL, CSIDL_COMMON_APPDATA, NULL, 0, (LPSTR)&szMyPath)))
 	  {
 		  printf("Couldn't determine the path to the local common app data.\n");
 		  return NULL;

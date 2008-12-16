@@ -401,6 +401,7 @@ long sm_handler_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *card_hdl,
   {
 	  // Process it through our plugin.
 	  result = sim_reader_plugin_hook_card_connect(card_ctx, card_hdl, cardreader);
+	  debug_printf(DEBUG_NORMAL, "%s() plugin returns - %d\n", __FUNCTION__, result);
 	  if (result >= 0) return result;
   }
 

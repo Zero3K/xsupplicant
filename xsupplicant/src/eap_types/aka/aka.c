@@ -86,10 +86,10 @@ int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t *dataoffs,
     return XEMALLOC;
 
   debug_printf(DEBUG_AUTHTYPES, "Got an AT_RAND.\n");
-  typelenres = (struct typelengthres *)&dataoffs[*packet_offset];
+  typelenres = (struct typelengthres *)&dataoffs[(*packet_offset)];
   *packet_offset+=4;
   
-  memcpy(mydata->random_num, &dataoffs[*packet_offset], 16);
+  memcpy(&mydata->random_num[0], &dataoffs[(*packet_offset)], 16);
   debug_printf(DEBUG_AUTHTYPES, "Random = ");
   debug_hex_printf(DEBUG_AUTHTYPES, mydata->random_num, 16);
   *packet_offset+=16;

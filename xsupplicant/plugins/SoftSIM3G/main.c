@@ -98,7 +98,8 @@ int DLLMAGIC sim_hook_3g_pin_needed(void **card_hdl, char reader_mode)
 int DLLMAGIC sim_hook_card_connect(void *card_ctx, void **card_hdl, char *cardreader)
 {
 	printf("%s()\n", __FUNCTION__);
-	if (strcmp(cardreader, READER_NAME) != 0) return -1;		// Not for us. ;)
+
+	if (strcmp(cardreader, READER_NAME) != 0) return -3;		// Not for us. ;)
 
 	(*card_hdl) = 1;
 	return load_sim_config();

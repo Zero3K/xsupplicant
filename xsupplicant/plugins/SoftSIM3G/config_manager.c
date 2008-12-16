@@ -76,7 +76,7 @@ int load_config_from_path(char *path)
 	char line[1000];
 
 	fp = fopen(path, "r");
-	if (fp == NULL) return -1;
+	if (fp == NULL) return -30;
 
 	while (fscanf(fp, "%s", &line) != EOF)
 	{
@@ -116,19 +116,19 @@ int load_sim_config()
 	if (myconfig != NULL) free_sim_config();
 
 	myconfig = malloc(sizeof(struct aka_config));
-	if (myconfig == NULL) return -1;
+	if (myconfig == NULL) return -10;
 
 	memset(myconfig, 0x00, sizeof(struct aka_config));
 
 #ifdef WIN32
-	if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szMyPath)))
+	if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
 	  {
 		  printf("Couldn't determine the path to the local common app data.\n");
 		  return NULL;
 	  }
 
 	path = malloc(strlen(szMyPath)+strlen("usim.txt")+3);
-	if (path == NULL) return -1;
+	if (path == NULL) return -20;
 
 	memset(path, 0x00, strlen(szMyPath)+strlen("usim.txt")+3);
 

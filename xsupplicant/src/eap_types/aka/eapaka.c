@@ -167,7 +167,7 @@ int eapaka_get_username(context *ctx)
   username = ctx->prof->temp_username;
 
   username[0] = '0';  // An AKA IMSI should always start with a 0.
-  if (Strncpy(&username[1], 50, imsi, 18) != 0)
+  if (Strncpy(&username[1], 49, imsi, 18) != 0)
   {
 	  debug_printf(DEBUG_NORMAL, "Attempted to overflow buffer in %s() at %d!\n",
 		  __FUNCTION__, __LINE__);

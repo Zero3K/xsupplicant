@@ -11,7 +11,7 @@
 #define _LSA_CALLS_H_
 
 int lsa_calls_init();
-int lsa_calls_decrypt_secret(uint8_t *inData, uint16_t inLen, uint8_t **outData, uint16_t *outLen);
+int lsa_calls_decrypt_secret(uint8_t **outData, uint16_t *outLen);
 void lsa_calls_deinit();
 
 #endif  // _LSA_CALLS_H_
