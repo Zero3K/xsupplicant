@@ -643,7 +643,7 @@ void eappeap_get_machineauth_name(context *ctx)
 		return;
 	}
 
-	sprintf(result, "host/%s", machineName); //, domainName); //, machineName);
+	sprintf(result, "host/%s", machineName);
 
 	FREE(machineName);
 

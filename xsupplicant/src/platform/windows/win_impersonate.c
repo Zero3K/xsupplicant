@@ -98,6 +98,7 @@ char *win_impersonate_get_machine_name()
 {
 	char *machineName = NULL;
 	DWORD mlen = 255;
+	int i = 0;
 
 	machineName = Malloc(mlen);
 	if (machineName == NULL) return NULL;

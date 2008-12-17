@@ -624,7 +624,7 @@ void CredentialsPopUp::slotDisconnectBtn()
 	bool result = false;
 
 	result = m_supplicant.getConfigConnection(CONFIG_LOAD_USER, m_connName, &pConfig, false);
-	if (result == false) m_supplicant.getConfigConnection(CONFIG_LOAD_GLOBAL, m_connName, &pConfig, false);
+	if (result == false) result = m_supplicant.getConfigConnection(CONFIG_LOAD_GLOBAL, m_connName, &pConfig, false);
 
 	if (result == false)
 	{

@@ -429,8 +429,6 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
   struct config_eap_mschapv2 *eapconf = NULL;
   char *username = NULL;
   char *ident = NULL;
-  char *temp = NULL;
-  int i = 0;
 
 #ifdef WINDOWS
   uint16_t length;
@@ -520,7 +518,7 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
 
 	  return EAP_FAIL;
 	}
-      
+  
       RAND_bytes((uint8_t *) myvars->PeerChallenge, 16);
     }
 
@@ -1137,13 +1135,6 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
   }
 
   eapmschapv2_strip_backslash(eapdata->ident, &username);
-
-  if (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
-  {
-	  // Strip off the domain so we only send the machine name.
-	  temp = strstr(username, ".");
-	  temp[0] = 0x00;   // NULL it out.
-  }
 
   // 54 bytes is the length of the response, including MS-CHAPv2 header.
   respsize = 54+strlen(username)+sizeof(struct eap_header);

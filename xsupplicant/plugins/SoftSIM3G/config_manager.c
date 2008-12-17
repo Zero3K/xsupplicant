@@ -227,7 +227,7 @@ int write_sim_config()
 	TCHAR szMyPath[MAX_PATH];
 	char *path = NULL;
 
-	if (FAILED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, szMyPath)))
+	if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
 	  {
 		  printf("Couldn't determine the path to the local common app data.\n");
 		  return NULL;

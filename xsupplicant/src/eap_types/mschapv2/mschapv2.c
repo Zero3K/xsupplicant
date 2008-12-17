@@ -111,7 +111,7 @@ void NtPasswordHash(char *Password, char *PasswordHash, int tounicode)
   else
   {
 	  uniPassword = Password;
-	  len = (wcslen((wchar_t *)uniPassword)*2)+2;
+	  len = (wcslen((wchar_t *)uniPassword)*2);
   }
 
   EVP_DigestInit(&cntx, EVP_md4());
@@ -416,6 +416,7 @@ void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
   char Challenge[8], PasswordHash[16];
   char *temp = NULL;
   char *temp2 = NULL;
+  int i = 0;
 
   if (!xsup_assert((AuthenticatorChallenge != NULL),
 		   "AuthenticatorChallenge != NULL", FALSE))
@@ -432,12 +433,13 @@ void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
 
   if (!xsup_assert((Response != NULL), "Response != NULL", FALSE))
     return;
-  
+
   ChallengeHash(PeerChallenge, AuthenticatorChallenge, UserName, (char *)&Challenge);
+
   debug_printf(DEBUG_AUTHTYPES, "PeerChallenge : ");
-  debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) PeerChallenge, 8);
+  debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) PeerChallenge, 16);
   debug_printf(DEBUG_AUTHTYPES, "AuthenticatorChallenge : ");
-  debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) AuthenticatorChallenge, 8);
+  debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) AuthenticatorChallenge, 16);
   debug_printf(DEBUG_AUTHTYPES, "Username : %s\n",UserName);
   debug_printf(DEBUG_AUTHTYPES, "Challenge : ");
   debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) Challenge, 8);
@@ -448,6 +450,7 @@ void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
     } 
   else if (mode == 2)
   {
+	  debug_printf(DEBUG_AUTHTYPES, "Password : %ws\n", Password);
 	  NtPasswordHash(Password, (char *)&PasswordHash, 0);
   }
   else

@@ -250,20 +250,20 @@ int aka_do_at_mac(eap_type_data *eapdata,
 
   FREE(mk);
   
-  memcpy(mydata->K_encr, keydata, 16);
+  memcpy(&mydata->K_encr[0], &keydata[0], 16);
   debug_printf(DEBUG_AUTHTYPES, "K_encr = ");
   debug_hex_printf(DEBUG_AUTHTYPES, mydata->K_encr, 16);
   
-  memcpy(mydata->K_aut, (char *)&keydata[16], 16);
+  memcpy(&mydata->K_aut[0], (char *)&keydata[16], 16);
   debug_printf(DEBUG_AUTHTYPES, "K_aut = ");
   debug_hex_printf(DEBUG_AUTHTYPES, mydata->K_aut, 16);
   
-  memcpy(mydata->msk, (char *)&keydata[32], 64);
+  memcpy(&mydata->msk[0], (char *)&keydata[32], 64);
   debug_printf(DEBUG_AUTHTYPES, "MSK = ");
   debug_hex_printf(DEBUG_AUTHTYPES, mydata->msk, 64);
   mydata->keyingMaterial = mydata->msk;
   
-  memcpy(mydata->emsk, (char *)&keydata[96], 64);
+  memcpy(&mydata->emsk[0], (char *)&keydata[96], 64);
   debug_printf(DEBUG_AUTHTYPES, "EMSK = ");
   debug_hex_printf(DEBUG_AUTHTYPES, mydata->emsk, 64);
   
