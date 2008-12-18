@@ -106,12 +106,13 @@ void *xsupconfig_parse_interface_description(void **attr, uint8_t config_type, x
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		myints->description = NULL;
 	}
 	else
 	{
-		myints->description = value;
+		myints->description = _strdup(value);
+		xmlFree(value);
 	}
 
   return myints;
@@ -119,8 +120,8 @@ void *xsupconfig_parse_interface_description(void **attr, uint8_t config_type, x
 
 void *xsupconfig_parse_interface_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct xsup_interfaces *myints;
-  char *value;
+  struct xsup_interfaces *myints = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -132,12 +133,13 @@ void *xsupconfig_parse_interface_type(void **attr, uint8_t config_type, xmlNodeP
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		myints->driver_type = NULL;
 	}
 	else
 	{
-		myints->driver_type = value;
+		myints->driver_type = _strdup(value);
+		xmlFree(value);
 	}
 
   return myints;
@@ -209,7 +211,7 @@ void *xsupconfig_parse_interface_mac(void **attr, uint8_t config_type, xmlNodePt
 	 myints->mac[3], myints->mac[4], myints->mac[5]);
 #endif
 
-  FREE(value);
+  xmlFree(value);
 
   return myints;
 }
@@ -237,12 +239,13 @@ void *xsupconfig_parse_default_connection(void **attr, uint8_t config_type, xmlN
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		myints->default_connection = NULL;
 	}
 	else
 	{
-		myints->default_connection = value;
+		myints->default_connection = _strdup(value);
+		xmlFree(value);
 	}
 
   return myints;
@@ -287,7 +290,7 @@ void *xsupconfig_parse_interface_is_wireless(void **attr, uint8_t config_type, x
       UNSET_FLAG(myints->flags, CONFIG_INTERFACE_IS_WIRELESS);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myints;
 }
@@ -331,7 +334,7 @@ void *xsupconfig_parse_manage_interface(void **attr, uint8_t config_type, xmlNod
       UNSET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myints;
 }

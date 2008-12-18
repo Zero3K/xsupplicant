@@ -79,6 +79,10 @@ void *xsupconfig_parse_trusted_server_name(void **attr, uint8_t config_type, xml
   int done = 0, len = 0;
 
   value = (char *)xmlNodeGetContent(node);
+  original = _strdup(value);
+  xmlFree(value);
+  value = original;
+  original = NULL;
 
   myserver = (*attr);
 
@@ -173,8 +177,8 @@ void *xsupconfig_parse_trusted_server_name(void **attr, uint8_t config_type, xml
 
 void *xsupconfig_parse_trusted_server_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_trusted_server *myserver;
-  char *value;
+  struct config_trusted_server *myserver = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -186,12 +190,13 @@ void *xsupconfig_parse_trusted_server_type(void **attr, uint8_t config_type, xml
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		myserver->store_type = NULL;
 	}
 	else
 	{
-		myserver->store_type = value;
+		myserver->store_type = _strdup(value);
+		xmlFree(value);
 	}
 
   return myserver;
@@ -227,13 +232,14 @@ void *xsupconfig_parse_trusted_server_location(void **attr, uint8_t config_type,
 		// Since we can have more than one location in a trusted server, we should just free the
 		// "value" variable.  If we set myserver->location to NULL, then we would end up leaking memory
 		// and making a big mess.  ;)
-		free(value);
+		xmlFree(value);
 	}
 	else
 	{
 		myserver->num_locations++;
 		myserver->location = realloc(myserver->location, myserver->num_locations*(sizeof(myserver->location)));
-		myserver->location[myserver->num_locations-1] = value;
+		myserver->location[myserver->num_locations-1] = _strdup(value);
+		xmlFree(value);
 	}
 
   return myserver;
@@ -241,8 +247,8 @@ void *xsupconfig_parse_trusted_server_location(void **attr, uint8_t config_type,
 
 void *xsupconfig_parse_trusted_server_cn(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_trusted_server *myserver;
-  char *value;
+  struct config_trusted_server *myserver = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -254,12 +260,13 @@ void *xsupconfig_parse_trusted_server_cn(void **attr, uint8_t config_type, xmlNo
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		myserver->common_name = NULL;
 	}
 	else
 	{
-		myserver->common_name = value;
+		myserver->common_name = _strdup(value);
+		xmlFree(value);
 	}
 
   return myserver;
@@ -293,7 +300,7 @@ void *xsupconfig_parse_trusted_server_ecn(void **attr, uint8_t config_type, xmlN
 		myserver->exact_common_name = result;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myserver;
 }
@@ -333,7 +340,7 @@ void *xsupconfig_parse_volatile(void **attr, uint8_t config_type, xmlNodePtr nod
 		}
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myserver;
 }

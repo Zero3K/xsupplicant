@@ -51,7 +51,7 @@ void xsupconfig_devices_init()
  **/
 void xsupconfig_devices_clear_interfaces(struct xsup_interfaces *ints)
 {
-	struct xsup_interfaces *cur, *next;
+	struct xsup_interfaces *cur = NULL, *next = NULL;
 
 	debug_printf(DEBUG_DEINIT, "Clearing out interfaces from devices structure.\n");
 
@@ -108,8 +108,8 @@ void xsupconfig_devices_deinit(struct xsup_devices **xsup_devs)
  **/
 void xsupconfig_devices_dump_interfaces(struct xsup_interfaces *data)
 {
-	struct xsup_interfaces *cur;
-	uint8_t i;
+	struct xsup_interfaces *cur = NULL;
+	uint8_t i = 0;
 
 	cur = data;
 

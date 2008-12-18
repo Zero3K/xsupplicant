@@ -76,12 +76,13 @@ void *xsupconfig_parse_eap_psk_password(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		psk->password = NULL;
 	}
 	else
 	{
-		psk->password = value;
+		psk->password = _strdup(value);
+		xmlFree(value);
 	}
 
   return psk;
@@ -103,13 +104,13 @@ void *xsupconfig_parse_eap_psk_enc_password(void **attr, uint8_t config_type, xm
 
   	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		return psk;
 	}
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&psk->password, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  psk->password = NULL;
 	  return psk;
   }
@@ -119,7 +120,7 @@ void *xsupconfig_parse_eap_psk_enc_password(void **attr, uint8_t config_type, xm
 	  FREE(psk->password);
   }
 
-  free(value);
+  xmlFree(value);
 
   return psk;
 }

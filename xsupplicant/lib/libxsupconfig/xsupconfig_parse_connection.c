@@ -171,7 +171,7 @@ void *xsupconfig_parse_connection_priority(void **attr, uint8_t config_type, xml
       conn->priority = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }
@@ -212,7 +212,7 @@ void *xsupconfig_parse_connection_eapol_ver(void **attr, uint8_t config_type, xm
 		}
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }
@@ -435,7 +435,7 @@ void *xsupconfig_parse_connection_mac_addr(void **attr, uint8_t config_type, xml
 #endif
 
   SET_FLAG(conn->flags, CONFIG_NET_DEST_MAC);
-  free(value);
+  xmlFree(value);
 
   return conn;
 }
@@ -471,7 +471,7 @@ void *xsupconfig_parse_connection_hidden_ssid(void **attr, uint8_t config_type, 
       UNSET_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }
@@ -507,7 +507,7 @@ void *xsupconfig_parse_connection_volatile(void **attr, uint8_t config_type, xml
       UNSET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }

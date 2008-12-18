@@ -65,7 +65,7 @@ void *xsupconfig_parse_eap_peap_phase2_eap(void **attr, uint8_t config_type, xml
   peap = (*attr);
 
   meth = xsupconfig_parse_eap_get_method((eap_methods *)&peap_p2_meths, value);
-  free(value);
+  xmlFree(value);
 
   if (meth->name == NULL)
   {

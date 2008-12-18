@@ -30,7 +30,7 @@
 void *xsupconfig_parse_ttls_eap_md5(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_ttls *ttls = NULL;
-  struct config_eap_method *eap, *cur = NULL;
+  struct config_eap_method *eap = NULL, *cur = NULL;
 
   ttls = (*attr);
   
@@ -139,12 +139,13 @@ void *xsupconfig_parse_eap_md5_password(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		md5->password = NULL;
 	}
 	else
 	{
-		md5->password = value;
+		md5->password = _strdup(value);
+		xmlFree(value);
 	}
 
   return md5;
@@ -166,13 +167,13 @@ void *xsupconfig_parse_eap_md5_enc_password(void **attr, uint8_t config_type, xm
 
   	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		return md5;
 	}
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&md5->password, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  md5->password = NULL;
 	  return md5;
   }
@@ -182,7 +183,7 @@ void *xsupconfig_parse_eap_md5_enc_password(void **attr, uint8_t config_type, xm
 	  FREE(md5->password);
   }
 
-  free(value);
+  xmlFree(value);
 
   return md5;
 }

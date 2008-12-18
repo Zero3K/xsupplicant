@@ -76,12 +76,13 @@ void *xsupconfig_parse_eap_tls_user_cert(void **attr, uint8_t config_type, xmlNo
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->user_cert = NULL;
 	}
 	else
 	{
-		tls->user_cert = value;
+		tls->user_cert = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;
@@ -102,12 +103,13 @@ void *xsupconfig_parse_eap_tls_crl_dir(void **attr, uint8_t config_type, xmlNode
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->crl_dir = NULL;
 	}
 	else
 	{
-		tls->crl_dir = value;
+		tls->crl_dir = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;
@@ -128,12 +130,13 @@ void *xsupconfig_parse_eap_tls_user_key_file(void **attr, uint8_t config_type, x
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->user_key = NULL;
 	}
 	else
 	{
-		tls->user_key = value;
+		tls->user_key = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;
@@ -154,12 +157,13 @@ void *xsupconfig_parse_eap_tls_user_key_pass(void **attr, uint8_t config_type, x
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->user_key_pass = NULL;
 	}
 	else
 	{
-		tls->user_key_pass = value;
+		tls->user_key_pass = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;
@@ -181,13 +185,13 @@ void *xsupconfig_parse_eap_tls_enc_user_key_pass(void **attr, uint8_t config_typ
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		return tls;
 	}
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&tls->user_key_pass, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  tls->user_key_pass = NULL;
 	  return tls;
   }
@@ -197,7 +201,7 @@ void *xsupconfig_parse_eap_tls_enc_user_key_pass(void **attr, uint8_t config_typ
 	  FREE(tls->user_key_pass);
   }
 
-  free(value);
+  xmlFree(value);
 
   return tls;
 }
@@ -233,7 +237,7 @@ void *xsupconfig_parse_eap_tls_session_resume(void **attr, uint8_t config_type, 
       tls->session_resume = FALSE;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return tls;
 }
@@ -261,7 +265,7 @@ void *xsupconfig_parse_eap_tls_chunk_size(void **attr, uint8_t config_type, xmlN
       tls->chunk_size = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return tls;
 }
@@ -281,12 +285,13 @@ void *xsupconfig_parse_eap_tls_random_file(void **attr, uint8_t config_type, xml
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->random_file = NULL;
 	}
 	else
 	{
-		tls->random_file = value;
+		tls->random_file = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;
@@ -307,12 +312,13 @@ void *xsupconfig_parse_eap_tls_engine_id(void **attr, uint8_t config_type, xmlNo
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->sc.engine_id = NULL;
 	}
 	else
 	{
-		tls->sc.engine_id = value;
+		tls->sc.engine_id = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;
@@ -333,12 +339,13 @@ void *xsupconfig_parse_eap_tls_trusted_server(void **attr, uint8_t config_type, 
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->trusted_server = NULL;
 	}
 	else
 	{
-		tls->trusted_server = value;
+		tls->trusted_server = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;
@@ -359,12 +366,13 @@ void *xsupconfig_parse_eap_tls_opensc_path(void **attr, uint8_t config_type, xml
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->sc.opensc_so_path = NULL;
 	}
 	else
 	{
-		tls->sc.opensc_so_path = value;
+		tls->sc.opensc_so_path = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;
@@ -385,12 +393,13 @@ void *xsupconfig_parse_eap_tls_key_id(void **attr, uint8_t config_type, xmlNodeP
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		tls->sc.key_id = NULL;
 	}
 	else
 	{
-		tls->sc.key_id = value;
+		tls->sc.key_id = _strdup(value);
+		xmlFree(value);
 	}
 
   return tls;

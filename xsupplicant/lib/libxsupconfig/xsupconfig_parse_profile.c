@@ -109,6 +109,10 @@ void *xsupconfig_parse_profile_name(void **attr, uint8_t config_type, xmlNodePtr
   int done = 0, len = 0;
 
   value = (char *)xmlNodeGetContent(node);
+  original = _strdup(value);
+  xmlFree(value);
+  value = original;
+  original = NULL;
 
 #ifdef PARSE_DEBUG
   printf("Name = %s\n", value);
@@ -197,8 +201,8 @@ void *xsupconfig_parse_profile_name(void **attr, uint8_t config_type, xmlNodePtr
 
 void *xsupconfig_parse_profile_identity(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_profiles *cur;
-  char *value;
+  struct config_profiles *cur = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -210,12 +214,13 @@ void *xsupconfig_parse_profile_identity(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		cur->identity = NULL;
 	}
 	else
 	{
-		cur->identity = value;
+		cur->identity = _strdup(value);
+		xmlFree(value);
 	}
 
   return cur;
@@ -252,7 +257,7 @@ void *xsupconfig_parse_profile_volatile(void **attr, uint8_t config_type, xmlNod
       UNSET_FLAG(prof->flags, CONFIG_VOLATILE_PROFILE);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return prof;
 }

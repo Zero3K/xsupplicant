@@ -72,6 +72,10 @@ void *xsupconfig_parse_plugin_name(void **attr, uint8_t config_type, xmlNodePtr 
   int done = 0, len = 0;
 
   value = (char *)xmlNodeGetContent(node);
+  original = _strdup(value);
+  xmlFree(value);
+  value = original;
+  original = NULL;
 
 #ifdef PARSE_DEBUG
   printf("Name = %s\n", value);

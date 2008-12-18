@@ -116,12 +116,13 @@ void *xsupconfig_parse_logpath(void **attr, uint8_t config_type, xmlNodePtr node
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		myglobals->logpath = NULL;
 	}
 	else
 	{
-		myglobals->logpath = value;
+		myglobals->logpath = _strdup(value);
+		xmlFree(value);
 	}
 
   return myglobals;
@@ -129,9 +130,9 @@ void *xsupconfig_parse_logpath(void **attr, uint8_t config_type, xmlNodePtr node
 
 void *xsupconfig_parse_friendly_warnings(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  uint8_t result;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -159,15 +160,15 @@ void *xsupconfig_parse_friendly_warnings(void **attr, uint8_t config_type, xmlNo
       UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_log_facility(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -179,12 +180,13 @@ void *xsupconfig_parse_log_facility(void **attr, uint8_t config_type, xmlNodePtr
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		myglobals->log_facility = NULL;
 	}
 	else
 	{
-		myglobals->log_facility = value;
+		myglobals->log_facility = _strdup(value);
+		xmlFree(value);
 	}
 
   return myglobals;
@@ -192,8 +194,8 @@ void *xsupconfig_parse_log_facility(void **attr, uint8_t config_type, xmlNodePtr
 
 void *xsupconfig_parse_ipc_group(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -205,12 +207,13 @@ void *xsupconfig_parse_ipc_group(void **attr, uint8_t config_type, xmlNodePtr no
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		myglobals->ipc_group_name = NULL;
 	}
 	else
 	{
-		myglobals->ipc_group_name = value;
+		myglobals->ipc_group_name = _strdup(value);
+		xmlFree(value);
 	}
 
   return myglobals;
@@ -218,8 +221,8 @@ void *xsupconfig_parse_ipc_group(void **attr, uint8_t config_type, xmlNodePtr no
 
 void *xsupconfig_parse_auth_period(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -239,15 +242,15 @@ void *xsupconfig_parse_auth_period(void **attr, uint8_t config_type, xmlNodePtr 
       myglobals->auth_period = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_held_period(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -267,15 +270,15 @@ void *xsupconfig_parse_held_period(void **attr, uint8_t config_type, xmlNodePtr 
       myglobals->held_period = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_idle_while(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -295,7 +298,7 @@ void *xsupconfig_parse_idle_while(void **attr, uint8_t config_type, xmlNodePtr n
       myglobals->idleWhile_timeout = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -334,7 +337,7 @@ void *xsupconfig_parse_association(void **attr, uint8_t config_type, xmlNodePtr 
       SET_FLAG(myglobals->flags, CONFIG_GLOBALS_ASSOC_AUTO);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -360,7 +363,7 @@ void *xsupconfig_parse_destination(void **attr, uint8_t config_type, xmlNodePtr 
       myglobals->destination = result;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -368,8 +371,8 @@ void *xsupconfig_parse_destination(void **attr, uint8_t config_type, xmlNodePtr 
 
 void *xsupconfig_parse_stale_key_timeout(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -389,15 +392,15 @@ void *xsupconfig_parse_stale_key_timeout(void **attr, uint8_t config_type, xmlNo
       myglobals->stale_key_timeout = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_max_starts(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -417,16 +420,16 @@ void *xsupconfig_parse_max_starts(void **attr, uint8_t config_type, xmlNodePtr n
       myglobals->max_starts = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_allmulti(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  uint8_t result;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -453,16 +456,16 @@ void *xsupconfig_parse_allmulti(void **attr, uint8_t config_type, xmlNodePtr nod
       SET_FLAG(myglobals->flags, CONFIG_GLOBALS_ALLMULTI);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_loglevel(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_globals *myglobals;
-	char *value;
-	int result;
+	struct config_globals *myglobals = NULL;
+	char *value = NULL;
+	int result = NULL;
 
 	value = (char *)xmlNodeGetContent(node);
 
@@ -485,7 +488,7 @@ void *xsupconfig_parse_loglevel(void **attr, uint8_t config_type, xmlNodePtr nod
 		myglobals->loglevel |= result;
 	}
 
-	FREE(value);
+	xmlFree(value);
 
 	return myglobals;
 }
@@ -493,9 +496,9 @@ void *xsupconfig_parse_loglevel(void **attr, uint8_t config_type, xmlNodePtr nod
 
 void *xsupconfig_parse_roaming(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  int result;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  int result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -525,16 +528,16 @@ void *xsupconfig_parse_roaming(void **attr, uint8_t config_type, xmlNodePtr node
       SET_FLAG(myglobals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_passive_scanning(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  uint8_t result;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -561,15 +564,15 @@ void *xsupconfig_parse_passive_scanning(void **attr, uint8_t config_type, xmlNod
       SET_FLAG(myglobals->flags, CONFIG_GLOBALS_PASSIVE_SCAN);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_passive_timer(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -589,15 +592,15 @@ void *xsupconfig_parse_passive_timer(void **attr, uint8_t config_type, xmlNodePt
       myglobals->passive_timeout = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_assoc_timeout(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -617,15 +620,15 @@ void *xsupconfig_parse_assoc_timeout(void **attr, uint8_t config_type, xmlNodePt
       myglobals->assoc_timeout = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_scan_timeout(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -645,7 +648,7 @@ void *xsupconfig_parse_scan_timeout(void **attr, uint8_t config_type, xmlNodePtr
       myglobals->active_timeout = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -674,7 +677,7 @@ void *xsupconfig_parse_logs_to_keep(void **attr, uint8_t config_type, xmlNodePtr
       myglobals->logs_to_keep = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -703,7 +706,7 @@ void *xsupconfig_parse_log_size_to_roll(void **attr, uint8_t config_type, xmlNod
       myglobals->size_to_roll = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -732,7 +735,7 @@ void *xsupconfig_parse_pmksa_age_out(void **attr, uint8_t config_type, xmlNodePt
 		myglobals->pmksa_age_out = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -761,16 +764,16 @@ void *xsupconfig_parse_pmksa_refresh_time(void **attr, uint8_t config_type, xmlN
 		myglobals->pmksa_cache_check = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
 
 void *xsupconfig_parse_use_eap_hints(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_globals *myglobals;
-  uint8_t result;
-  char *value;
+  struct config_globals *myglobals = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -797,7 +800,7 @@ void *xsupconfig_parse_use_eap_hints(void **attr, uint8_t config_type, xmlNodePt
       UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_EAP_HINTS);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -823,7 +826,7 @@ void *xsupconfig_parse_logging(void **attr, uint8_t config_type, xmlNodePtr node
       myglobals->logtype = result;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -859,7 +862,7 @@ void *xsupconfig_disconnect_at_logoff(void **attr, uint8_t config_type, xmlNodeP
       SET_FLAG(myglobals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -895,7 +898,7 @@ void *xsupconfig_parse_detect_on_startup(void **attr, uint8_t config_type, xmlNo
       SET_FLAG(myglobals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -931,7 +934,7 @@ void *xsupconfig_parse_roll_logs(void **attr, uint8_t config_type, xmlNodePtr no
       SET_FLAG(myglobals->flags, CONFIG_GLOBALS_ROLL_LOGS);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -967,7 +970,7 @@ void *xsupconfig_parse_wireless_only(void **attr, uint8_t config_type, xmlNodePt
       UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_WIRELESS_ONLY);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -1003,7 +1006,7 @@ void *xsupconfig_control_ints(void **attr, uint8_t config_type, xmlNodePtr node)
       UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }
@@ -1032,7 +1035,7 @@ void *xsupconfig_parse_dead_connection_timeout(void **attr, uint8_t config_type,
 		myglobals->dead_connection_timeout = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return myglobals;
 }

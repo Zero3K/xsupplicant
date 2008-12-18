@@ -96,7 +96,7 @@ void *xsupconfig_parse_eap_fast_provision(void **attr, uint8_t config_type, xmlN
 		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return fast;
 }
@@ -116,12 +116,13 @@ void *xsupconfig_parse_eap_fast_pac_file(void **attr, uint8_t config_type, xmlNo
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		fast->pac_location = NULL;
 	}
 	else
 	{
-	    fast->pac_location = value;
+	    fast->pac_location = _strdup(value);
+		xmlFree(value);
 	}
 
   return fast;
@@ -142,12 +143,13 @@ void *xsupconfig_parse_eap_fast_innerid(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		fast->innerid = NULL;
 	}
 	else
 	{
-		fast->innerid = value;
+		fast->innerid = _strdup(value);
+		xmlFree(value);
 	}
 
   return fast;
@@ -176,7 +178,7 @@ void *xsupconfig_parse_eap_fast_chunk_size(void **attr, uint8_t config_type, xml
       fast->chunk_size = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return fast;
 }
@@ -213,7 +215,7 @@ void *xsupconfig_parse_eap_fast_allow_anon_provision(void **attr, uint8_t config
 		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return fast;
 }
@@ -250,7 +252,7 @@ void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr, uint8_t config
 		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return fast;
 }
@@ -270,12 +272,13 @@ void *xsupconfig_parse_eap_fast_trusted_server(void **attr, uint8_t config_type,
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		fast->trusted_server = NULL;
 	}
 	else
 	{
-		fast->trusted_server = value;
+		fast->trusted_server = _strdup(value);
+		xmlFree(value);
 	}
 
   return fast;
@@ -309,7 +312,7 @@ void *xsupconfig_parse_eap_fast_validate_cert(void **attr, uint8_t config_type, 
       fast->validate_cert = result;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return fast;
 }

@@ -76,12 +76,13 @@ void *xsupconfig_parse_eap_aka_password(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		aka->password = NULL;
 	}
 	else
 	{
-		aka->password = value;
+		aka->password = _strdup(value);
+		xmlFree(value);
 	}
 
   return aka;
@@ -103,13 +104,13 @@ void *xsupconfig_parse_eap_aka_enc_password(void **attr, uint8_t config_type, xm
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		return aka;
 	}
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&aka->password, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  aka->password = NULL;
 	  return aka;
   }
@@ -119,7 +120,7 @@ void *xsupconfig_parse_eap_aka_enc_password(void **attr, uint8_t config_type, xm
 	  FREE(aka->password);
   }
 
-  free(value);
+  xmlFree(value);
 
   return aka;
 }
@@ -139,12 +140,13 @@ void *xsupconfig_parse_eap_aka_reader(void **attr, uint8_t config_type, xmlNodeP
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		aka->reader = NULL;
 	}
 	else
 	{
-		aka->reader = value;
+		aka->reader = _strdup(value);
+		xmlFree(value);
 	}
 
   return aka;
@@ -177,7 +179,7 @@ void *xsupconfig_parse_eap_aka_auto_realm(void **attr, uint8_t config_type, xmlN
       aka->auto_realm = result;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return aka;
 }

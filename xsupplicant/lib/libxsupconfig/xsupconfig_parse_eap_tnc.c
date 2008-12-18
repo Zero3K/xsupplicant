@@ -26,8 +26,8 @@
 
 void *xsupconfig_parse_eap_tnc(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_ttls *ttls;
-  struct config_eap_method *eap, *cur;
+  struct config_eap_ttls *ttls = NULL;
+  struct config_eap_method *eap = NULL, *cur = NULL;
 
   ttls = (*attr);
 
@@ -87,8 +87,8 @@ void *xsupconfig_parse_eap_tnc(void **attr, uint8_t config_type, xmlNodePtr node
 
 void *xsupconfig_parse_eap_tnc_chunk_size(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_tnc *tnc;
-  char *value;
+  struct config_eap_tnc *tnc = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -108,7 +108,7 @@ void *xsupconfig_parse_eap_tnc_chunk_size(void **attr, uint8_t config_type, xmlN
       tnc->frag_size = atoi(value);
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return tnc;
 }

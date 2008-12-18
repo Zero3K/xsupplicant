@@ -116,11 +116,11 @@ void *xsupconfig_parse_eap(void **attr, uint8_t config_type, xmlNodePtr node)
   {
 	  xsupconfig_common_log("Invalid EAP method '%s' requested at line %ld.\n", value,
 		  xsupconfig_parse_get_line_num());
-	  free(value);
+	  xmlFree(value);
 	  return NULL;
   }
 
-  free(value);
+  xmlFree(value);
 
   // Go ahead and parse the EAP data.
   meth->init_method((void **)&cur->method, config_type, node->children);

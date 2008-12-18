@@ -64,11 +64,32 @@ multichoice enc_types[] = {
 	{ CRYPT_WEP104,  "wep104"},
 	{ -1, NULL}};
 
+/**
+ * \brief Called by the parser engine when an <Association> block is found in a <Connection>.
+ *		this can be used to force configuration settings if needed, or to set specific defaults.
+ *
+ * @param[in] attr  A blob that points to a config_connection structure.
+ * @param[in] config_type   The type of configuration parsing that is requested.
+ * @param[in] node   The XML node that contains the data we are after.
+ *
+ * \retval (void*)  A pointer to the newly modified config_connection structure.
+ **/
 void *xsupconfig_parse_conn_association(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   return (*attr);
 }
 
+/**
+ * \brief Called by the parser engine when a <Type> tag is found in the <Association> block.
+ *		It reads the wireless association type from a string, and populates the appropriate
+ *		variable(s) in the config_connection structure.
+ *
+ * @param[in] attr  A blob that points to a config_connection structure.
+ * @param[in] config_type   The type of configuration parsing that is requested.
+ * @param[in] node   The XML node that contains the data we are after.
+ *
+ * \retval (void*)  A pointer to the newly modified config_connection structure.
+ **/
 void *xsupconfig_parse_conn_association_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
@@ -109,11 +130,22 @@ void *xsupconfig_parse_conn_association_type(void **attr, uint8_t config_type, x
 	  conn->association.association_type = 0;
   }
   
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }
 
+/**
+ * \brief Called by the parser engine when an <Authentication> tag is found in a <Association> block.
+ *			It populates the authentication (in the 802.11 sense) type that should be used on this
+ *			connection.
+ *
+ * @param[in] attr  A blob that points to a config_connection structure.
+ * @param[in] config_type   The type of configuration parsing that is requested.
+ * @param[in] node   The XML node that contains the data we are after.
+ *
+ * \retval (void*)  A pointer to the newly modified config_connection structure.
+ **/
 void *xsupconfig_parse_conn_authentication_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
@@ -153,11 +185,21 @@ void *xsupconfig_parse_conn_authentication_type(void **attr, uint8_t config_type
 	  conn->association.auth_type = 0;
   }
   
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }
 
+/**
+ * \brief Called by the parser engine when an <Group_Key_Type> tag is found in a <Association> block.
+ *			It populates the type of group key that should be used.
+ *
+ * @param[in] attr  A blob that points to a config_connection structure.
+ * @param[in] config_type   The type of configuration parsing that is requested.
+ * @param[in] node   The XML node that contains the data we are after.
+ *
+ * \retval (void*)  A pointer to the newly modified config_connection structure.
+ **/
 void *xsupconfig_parse_conn_group_key_type(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
@@ -265,7 +307,7 @@ void *xsupconfig_parse_conn_pairwise_key_type(void **attr, uint8_t config_type, 
 	  break;
   }
   
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }
@@ -311,7 +353,7 @@ void *xsupconfig_parse_conn_tx_key(void **attr, uint8_t config_type, xmlNodePtr 
 		}
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }

@@ -164,7 +164,7 @@ void *xsupconfig_parse_eap_peap_user_key_pass(void **attr, uint8_t config_type, 
 	}
 	else
 	{
-		peap->user_key_pass = value;
+		peap->user_key_pass = _strdup(value);
 	}
 	xmlFree(value);
 

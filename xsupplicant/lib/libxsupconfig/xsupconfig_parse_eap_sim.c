@@ -63,8 +63,8 @@ void *xsupconfig_parse_eap_sim(void **attr, uint8_t config_type, xmlNodePtr node
 
 void *xsupconfig_parse_eap_sim_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_sim *sim;
-  char *value;
+  struct config_eap_sim *sim = NULL;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -76,12 +76,13 @@ void *xsupconfig_parse_eap_sim_password(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		sim->password = NULL;
 	}
 	else
 	{
-		sim->password = value;
+		sim->password = _strdup(value);
+		xmlFree(value);
 	}
 
   return sim;
@@ -103,13 +104,13 @@ void *xsupconfig_parse_eap_sim_enc_password(void **attr, uint8_t config_type, xm
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		return sim;
 	}
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&sim->password, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  sim->password = NULL;
 	  return sim;
   }
@@ -119,7 +120,7 @@ void *xsupconfig_parse_eap_sim_enc_password(void **attr, uint8_t config_type, xm
 	  FREE(sim->password);
   }
 
-  free(value);
+  xmlFree(value);
 
   return sim;
 }
@@ -139,12 +140,13 @@ void *xsupconfig_parse_eap_sim_reader(void **attr, uint8_t config_type, xmlNodeP
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		sim->reader = NULL;
 	}
 	else
 	{
-		sim->reader = value;
+		sim->reader = _strdup(value);
+		xmlFree(value);
 	}
 
   return sim;
@@ -152,9 +154,9 @@ void *xsupconfig_parse_eap_sim_reader(void **attr, uint8_t config_type, xmlNodeP
 
 void *xsupconfig_parse_eap_sim_auto_realm(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_sim *sim;
-  uint8_t result;
-  char *value;
+  struct config_eap_sim *sim = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
 
   value = (char *)xmlNodeGetContent(node);
 
@@ -181,7 +183,7 @@ void *xsupconfig_parse_eap_sim_auto_realm(void **attr, uint8_t config_type, xmlN
       sim->auto_realm = FALSE;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return sim;
 }

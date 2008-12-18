@@ -113,7 +113,7 @@ void *xsupconfig_parse_eap_ttls_phase2(void **attr, uint8_t config_type, xmlNode
 
 void *xsupconfig_parse_eap_ttls_phase2_eap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	xmlNodePtr t;
+	xmlNodePtr t = NULL;
 	char *value = NULL;
 	struct config_eap_ttls *ttls = NULL;
 	eap_methods *meth = NULL;
@@ -146,7 +146,7 @@ void *xsupconfig_parse_eap_ttls_phase2_eap(void **attr, uint8_t config_type, xml
 
   meth = xsupconfig_parse_eap_get_method((eap_methods *)&ttls_eap_meths, value);
 
-  FREE(value);
+  xmlFree(value);
 
   if (meth->name == NULL)
   {

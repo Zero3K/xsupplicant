@@ -67,12 +67,13 @@ void *xsupconfig_parse_eap_ttls_chap_password(void **attr, uint8_t config_type, 
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		chap->password = NULL;
 	}
 	else
 	{
-		chap->password = value;
+		chap->password = _strdup(value);
+		xmlFree(value);
 	}
 
   return chap;
@@ -94,13 +95,13 @@ void *xsupconfig_parse_eap_ttls_enc_chap_password(void **attr, uint8_t config_ty
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		return chap;
 	}
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&chap->password, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  chap->password = NULL;
 	  return chap;
   }
@@ -110,7 +111,7 @@ void *xsupconfig_parse_eap_ttls_enc_chap_password(void **attr, uint8_t config_ty
 	  FREE(chap->password);
   }
 
-  free(value);
+  xmlFree(value);
 
   return chap;
 }

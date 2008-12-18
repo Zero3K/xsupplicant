@@ -87,12 +87,12 @@ int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t *dataoffs,
 
   debug_printf(DEBUG_AUTHTYPES, "Got an AT_RAND.\n");
   typelenres = (struct typelengthres *)&dataoffs[(*packet_offset)];
-  *packet_offset+=4;
+  (*packet_offset)+=4;
   
   memcpy(&mydata->random_num[0], &dataoffs[(*packet_offset)], 16);
   debug_printf(DEBUG_AUTHTYPES, "Random = ");
   debug_hex_printf(DEBUG_AUTHTYPES, mydata->random_num, 16);
-  *packet_offset+=16;
+  (*packet_offset)+=16;
 
   return XENONE;
 }
@@ -146,8 +146,8 @@ int aka_do_at_mac(eap_type_data *eapdata,
 {
   int saved_offset, i, value16, x;
   unsigned char reslen = 0;
-  unsigned char auts[16], sres[16], ck[16], *keydata, mac_val[16];
-  unsigned char mac_calc[20], ik[16], *mk, kc[16], *tohash, *framecpy;
+  unsigned char auts[16], sres[16], ck[16], *keydata = NULL, mac_val[16];
+  unsigned char mac_calc[20], ik[16], *mk = NULL, kc[16], *tohash = NULL, *framecpy = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return XEMALLOC;
@@ -246,24 +246,24 @@ int aka_do_at_mac(eap_type_data *eapdata,
     }
   
   // Next, put the mk in to the fips prng.
-  fips186_2_prng(mk, 20, NULL, 0, (char *)&keydata[0], 160);
+  fips186_2_prng(mk, 20, NULL, 0, keydata, 160);
 
   FREE(mk);
   
   memcpy(&mydata->K_encr[0], &keydata[0], 16);
   debug_printf(DEBUG_AUTHTYPES, "K_encr = ");
-  debug_hex_printf(DEBUG_AUTHTYPES, mydata->K_encr, 16);
+  debug_hex_printf(DEBUG_AUTHTYPES, &mydata->K_encr[0], 16);
   
-  memcpy(&mydata->K_aut[0], (char *)&keydata[16], 16);
+  memcpy(&mydata->K_aut[0], (uint8_t *)&keydata[16], 16);
   debug_printf(DEBUG_AUTHTYPES, "K_aut = ");
-  debug_hex_printf(DEBUG_AUTHTYPES, mydata->K_aut, 16);
+  debug_hex_printf(DEBUG_AUTHTYPES, &mydata->K_aut[0], 16);
   
-  memcpy(&mydata->msk[0], (char *)&keydata[32], 64);
+  memcpy(&mydata->msk[0], (uint8_t *)&keydata[32], 64);
   debug_printf(DEBUG_AUTHTYPES, "MSK = ");
-  debug_hex_printf(DEBUG_AUTHTYPES, mydata->msk, 64);
-  mydata->keyingMaterial = mydata->msk;
+  debug_hex_printf(DEBUG_AUTHTYPES, &mydata->msk[0], 64);
+  mydata->keyingMaterial = &mydata->msk[0];
   
-  memcpy(&mydata->emsk[0], (char *)&keydata[96], 64);
+  memcpy(&mydata->emsk[0], (uint8_t *)&keydata[96], 64);
   debug_printf(DEBUG_AUTHTYPES, "EMSK = ");
   debug_hex_printf(DEBUG_AUTHTYPES, mydata->emsk, 64);
   

@@ -65,7 +65,7 @@ void *xsupconfig_parse_conn_ip_type(void **attr, uint8_t config_type, xmlNodePtr
 	  conn->ip.type = result;
   }
   
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }
@@ -380,7 +380,7 @@ void *xsupconfig_parse_conn_ip_renew_on_reauth(void **attr, uint8_t config_type,
 		conn->ip.renew_on_reauth = FALSE;
     }
 
-  FREE(value);
+  xmlFree(value);
 
   return conn;
 }

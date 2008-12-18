@@ -29,7 +29,7 @@
 
 void *xsupconfig_parse_leap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_method *meth;
+  struct config_eap_method *meth = NULL;
 
   meth = (*attr);
 
@@ -78,12 +78,13 @@ void *xsupconfig_parse_leap_password(void **attr, uint8_t config_type, xmlNodePt
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		leap->password = NULL;
 	}
 	else
 	{
-		leap->password = value;
+		leap->password = _strdup(value);
+		xmlFree(value);
 	}
 
   return leap;
@@ -105,18 +106,18 @@ void *xsupconfig_parse_leap_enc_password(void **attr, uint8_t config_type, xmlNo
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		return leap;
 	}
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&leap->password, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  leap->password = NULL;
 	  return leap;
   }
 
-  free(value);
+  xmlFree(value);
 
   return leap;
 }

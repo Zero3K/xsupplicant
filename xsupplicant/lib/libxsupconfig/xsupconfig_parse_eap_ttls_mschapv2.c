@@ -28,7 +28,7 @@
 
 void *xsupconfig_parse_eap_ttls_mschapv2(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_ttls *ttls;
+  struct config_eap_ttls *ttls = NULL;
 
   ttls = (*attr);
 
@@ -55,8 +55,8 @@ void *xsupconfig_parse_eap_ttls_mschapv2(void **attr, uint8_t config_type, xmlNo
 
 void *xsupconfig_parse_eap_ttls_mschapv2_password(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_pwd_only *mschapv2;
-  char *value;
+  struct config_pwd_only *mschapv2 = NULL;
+  char *value = NULL;
 
   mschapv2 = (*attr);
 
@@ -68,12 +68,13 @@ void *xsupconfig_parse_eap_ttls_mschapv2_password(void **attr, uint8_t config_ty
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		mschapv2->password = NULL;
 	}
 	else
 	{
-		mschapv2->password = value;
+		mschapv2->password = _strdup(value);
+		xmlFree(value);
 	}
 
   return mschapv2;
@@ -95,7 +96,7 @@ void *xsupconfig_parse_eap_ttls_enc_mschapv2_password(void **attr, uint8_t confi
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&mschapv2->password, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  mschapv2->password = NULL;
 	  return mschapv2;
   }
@@ -105,7 +106,7 @@ void *xsupconfig_parse_eap_ttls_enc_mschapv2_password(void **attr, uint8_t confi
 	  FREE(mschapv2->password);
   }
 
-  free(value);
+  xmlFree(value);
 
   return mschapv2;
 }

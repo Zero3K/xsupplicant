@@ -109,12 +109,13 @@ void *xsupconfig_parse_eap_gtc_password(void **attr, uint8_t config_type, xmlNod
 
 	if ((value == NULL) || (strlen(value) == 0))
 	{
-		free(value);
+		xmlFree(value);
 		gtc->password = NULL;
 	}
 	else
 	{
-		gtc->password = value;
+		gtc->password = _strdup(value);
+		xmlFree(value);
 	}
 
   return gtc;
@@ -136,7 +137,7 @@ void *xsupconfig_parse_eap_gtc_enc_password(void **attr, uint8_t config_type, xm
 
   if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&gtc->password, &size) != 0)
   {
-	  free(value);
+	  xmlFree(value);
 	  gtc->password = NULL;
 	  return gtc;
   }
@@ -146,7 +147,7 @@ void *xsupconfig_parse_eap_gtc_enc_password(void **attr, uint8_t config_type, xm
 	  FREE(gtc->password);
   }
 
-  free(value);
+  xmlFree(value);
 
   return gtc;
 }
