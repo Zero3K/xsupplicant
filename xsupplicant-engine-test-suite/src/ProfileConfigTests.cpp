@@ -1074,11 +1074,13 @@ struct config_eap_method *ProfileConfigTests::createEAPMSCHAPv2Test()
 
 	mscv2data->password = _strdup("mytestpassword");
 
-	mscv2data->flags = (FLAGS_EAP_MSCHAPV2_VOLATILE | FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
+	mscv2data->flags = 0xff;
 	mscv2data->nthash = _strdup("000102030405060708090a0b0c0d0e0f");
 
 	return eapdata;
 }
+
+#define ALL_MSCHAPV2_FLAGS    (FLAGS_EAP_MSCHAPV2_VOLATILE | FLAGS_EAP_MSCHAPV2_IAS_QUIRK | FLAGS_EAP_MSCHAPV2_MACHINE_AUTH)
 
 bool ProfileConfigTests::checkEAPMSCHAPv2Test(struct config_eap_method *eapmscv2)
 {
@@ -1122,7 +1124,7 @@ bool ProfileConfigTests::checkEAPMSCHAPv2Test(struct config_eap_method *eapmscv2
 		return false;
 	}
  
-	if (mscv2data->flags != (FLAGS_EAP_MSCHAPV2_VOLATILE | FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
+	if (mscv2data->flags != ALL_MSCHAPV2_FLAGS)
 	{
 		innerError("Flags were invalid!  (Expected : " + Util::itos((FLAGS_EAP_MSCHAPV2_VOLATILE | FLAGS_EAP_MSCHAPV2_IAS_QUIRK)) + "  Got : " + Util::itos(mscv2data->flags) + ")\n");
 		return false;
@@ -2368,9 +2370,12 @@ struct config_eap_method *ProfileConfigTests::createEAPPEAPTest()
 	peapdata->force_peap_version = 2;
 	peapdata->identity = _strdup("my inner id");
 	peapdata->validate_cert = FALSE;
+	peapdata->flags = 0xff;							// If we make this larger, we need to update.
 
 	return eapdata;
 }
+
+#define ALL_PEAP_FLAGS   (FLAGS_PEAP_MACHINE_AUTH)   // Add more as needed. ;)
 
 bool ProfileConfigTests::checkEAPPEAPTest(struct config_eap_method *eappeap)
 {
@@ -2501,6 +2506,12 @@ bool ProfileConfigTests::checkEAPPEAPTest(struct config_eap_method *eappeap)
 	if (peapdata->validate_cert != FALSE)
 	{
 		innerError("Validate cert wasn't FALSE!\n");
+		return false;
+	}
+
+	if (peapdata->flags != ALL_PEAP_FLAGS)
+	{
+		innerError("Flags are invalid.");
 		return false;
 	}
 

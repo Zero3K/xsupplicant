@@ -1607,6 +1607,41 @@ int ipc_callout_get_signal_strength_percent(xmlNodePtr innode, xmlNodePtr *outno
 }
 
 /**
+ * \brief Determine if this connection needs administrative rights to be used.  Right now, it checks
+ *			to see if machine authentication is enabled.  If it is, then the connection won't show up
+ *			for normal users.
+ *
+ * @param[in] cur   A pointer to the connection structure we want to check.
+ *
+ * \retval TRUE if admin is needed
+ * \retval FALSE if admin is NOT needed.
+ **/
+unsigned int ipc_callout_helper_connection_needs_admin(struct config_connection *cur)
+{
+	struct config_profiles *prof = NULL;
+	struct config_eap_peap *peap = NULL;
+
+	prof = config_find_profile(CONFIG_LOAD_USER, cur->profile);
+	if (prof == NULL) prof = config_find_profile(CONFIG_LOAD_GLOBAL, cur->profile);
+
+	if (prof == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Couldn't find the profile used by connection '%s'!\n", cur->name);
+		return FALSE;
+	}
+
+	if (prof->method == NULL) return FALSE;
+
+	if (prof->method->method_num != EAP_TYPE_PEAP) return FALSE;		// We only do machine auth with PEAP right now.
+
+	peap = prof->method->method_data;
+
+	if (TEST_FLAG(peap->flags, FLAGS_PEAP_MACHINE_AUTH)) return TRUE;
+
+	return FALSE;
+}
+
+/**
  * \brief Count the number of connections found in a config_connection list.
  *
  * @param[in] cur   A pointer to the list that contains a connection information.
@@ -1616,10 +1651,27 @@ int ipc_callout_get_signal_strength_percent(xmlNodePtr innode, xmlNodePtr *outno
 unsigned int ipc_callout_helper_count_connections(struct config_connection *cur)
 {
 	unsigned int count = 0;
+	int are_admin = 0;
+	int needs_admin = 0;
+
+	are_admin = platform_user_is_admin();
 
 	while (cur != NULL)
 	{
-		count++;
+		needs_admin = ipc_callout_helper_connection_needs_admin(cur);
+		if ((are_admin == FALSE) && (needs_admin == FALSE))
+		{
+			count++;
+		}
+		else if (are_admin == TRUE)
+		{
+			count++;
+		}
+		else
+		{
+			debug_printf(DEBUG_NORMAL, "Skipping '%s'.  are_admin = %d   needs_admin = %d\n", cur->name, are_admin, needs_admin);
+		}
+
 		cur = cur->next;
 	}
 
@@ -1641,10 +1693,20 @@ int ipc_callout_helper_build_connection_list(uint8_t config_type, xmlNodePtr bas
 	char *temp = NULL;
 	char res[100];
 	int i = 0;
+	int are_admin = 0;
+
+	are_admin = platform_user_is_admin();
 
 	cur = config_get_connections(config_type);
 	while (cur != NULL)
 	{
+		// If we need to be admin, and aren't, skip this one.
+		if ((are_admin == FALSE) && (ipc_callout_helper_connection_needs_admin(cur) == TRUE))
+		{
+			cur = cur->next;
+			continue;
+		}
+
 		t = xmlNewChild(baseNode, NULL, (xmlChar *)"Connection", NULL);
 		if (t == NULL)
 		{
