@@ -146,8 +146,9 @@ int aka_do_at_mac(eap_type_data *eapdata,
 {
   int saved_offset, i, value16, x;
   unsigned char reslen = 0;
-  unsigned char auts[16], sres[16], ck[16], *keydata = NULL, mac_val[16];
-  unsigned char mac_calc[20], ik[16], *mk = NULL, kc[16], *tohash = NULL, *framecpy = NULL;
+  unsigned char auts[16], sres[16], ck[16], mac_val[16];
+  unsigned char mac_calc[20], ik[16], kc[16];
+  unsigned char *mk = NULL, *keydata = NULL, *tohash = NULL, *framecpy = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return XEMALLOC;
@@ -192,7 +193,7 @@ int aka_do_at_mac(eap_type_data *eapdata,
  
   debug_printf(DEBUG_AUTHTYPES, "SRES (%d) = ", reslen);
   debug_hex_printf(DEBUG_AUTHTYPES, sres, reslen);
-  memcpy(mydata->res, sres, reslen);
+  memcpy((uint8_t *)&mydata->res[0], sres, reslen);
   mydata->reslen = reslen;
   debug_printf(DEBUG_AUTHTYPES, "CK = ");
   debug_hex_printf(DEBUG_AUTHTYPES, ck, 16);
@@ -213,16 +214,8 @@ int aka_do_at_mac(eap_type_data *eapdata,
 	  return XEMALLOC;
   }
 
-  memcpy((char *)&tohash[strlen(username)], (char *)&ik, 16);
-  memcpy((char *)&tohash[strlen(username)+16], (char *)&ck, 16);
-
-  printf("To hash (%s) : ", username);
-
-  for (x=0;x < (strlen(username)+32); x++)
-    {
-      printf("%02X ", tohash[x]);
-    }
-  printf("\n");
+  memcpy((char *)&tohash[strlen(username)], (char *)&ik[0], 16);
+  memcpy((char *)&tohash[strlen(username)+16], (char *)&ck[0], 16);
 
   mk = do_sha1((char *)&tohash[0], (strlen(username)+32));
 
@@ -260,8 +253,8 @@ int aka_do_at_mac(eap_type_data *eapdata,
   
   memcpy(&mydata->msk[0], (uint8_t *)&keydata[32], 64);
   debug_printf(DEBUG_AUTHTYPES, "MSK = ");
-  debug_hex_printf(DEBUG_AUTHTYPES, &mydata->msk[0], 64);
-  mydata->keyingMaterial = &mydata->msk[0];
+  debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *)&mydata->msk[0], 64);
+  mydata->keyingMaterial = (uint8_t *)&mydata->msk[0];
   
   memcpy(&mydata->emsk[0], (uint8_t *)&keydata[96], 64);
   debug_printf(DEBUG_AUTHTYPES, "EMSK = ");

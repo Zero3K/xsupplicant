@@ -136,7 +136,7 @@ char *hex2str(unsigned char *data, int len)
 int sim_do_3g_auth(unsigned char *Rand, unsigned char *autn, unsigned char *c_auts, unsigned char *res_len, unsigned char *c_sres, unsigned char *c_ck, unsigned char *c_ik, unsigned char *c_kc)
 {
 	unsigned char *seqn = NULL, *k = NULL, *amf = NULL, *op_c = NULL;
-	char *temp;
+	char *temp = NULL;
 	int retval = 0;
 
 	// Get SQN and convert it to binary.

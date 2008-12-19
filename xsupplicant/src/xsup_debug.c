@@ -920,7 +920,7 @@ static char to_hex_char(int val)
  */
 void debug_hex_printf(uint32_t level, uint8_t *hextodump, int size)
 {
-  int i;
+  int i = 0;
   int len = 0;
   char *logstr = NULL;
   
@@ -930,8 +930,6 @@ void debug_hex_printf(uint32_t level, uint8_t *hextodump, int size)
 		printf("Couldn't allocate memory to store temporary logging string!\n");
 		return;
 	}
-
-	memset(logstr, 0x00, ((size * 3)+2));
 
 #ifdef DEBUG_LOG_PLUGINS
    // This gives us a bit of a performance increase in the case where we're not doing full debug

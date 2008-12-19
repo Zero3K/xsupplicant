@@ -333,7 +333,7 @@ int sim_reader_plugin_hook_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
 			  unsigned char *c_ik, unsigned char *c_kc)
 {
 	struct config_plugins *cur = NULL;
-	int (*hook)(void *card_hdl, char reader_mode, unsigned char *Rand, unsigned char *autn,
+	int (*hook)(void **card_hdl, char reader_mode, unsigned char *Rand, unsigned char *autn,
 		unsigned char *c_auts, char *res_len, unsigned char *c_sres, unsigned char *c_ck,
 		unsigned char *c_ik, unsigned char *c_kc);
 	int result = 0;

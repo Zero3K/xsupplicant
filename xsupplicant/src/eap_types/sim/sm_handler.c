@@ -401,7 +401,7 @@ long sm_handler_card_connect(SCARDCONTEXT *card_ctx, SCARDHANDLE *card_hdl,
   {
 	  // Process it through our plugin.
 	  result = sim_reader_plugin_hook_card_connect(card_ctx, card_hdl, cardreader);
-	  debug_printf(DEBUG_NORMAL, "%s() plugin returns - %d\n", __FUNCTION__, result);
+	  debug_printf(DEBUG_AUTHTYPES, "%s() plugin returns - %d\n", __FUNCTION__, result);
 	  if (result >= 0) return result;
   }
 
@@ -1381,7 +1381,7 @@ int sm_handler_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
 			  unsigned char *c_sres, unsigned char *c_ck, 
 			  unsigned char *c_ik, unsigned char *c_kc)
 {
-  unsigned char cmd[MAXBUFF], buf[MAXBUFF], sw1, sw2, *s;
+  unsigned char cmd[MAXBUFF], buf[MAXBUFF], sw1, sw2, *s = NULL;
   DWORD len;
   int result = 0;
 

@@ -113,11 +113,14 @@ int DLLMAGIC sim_hook_card_disconnect(void *card_hdl)
 	return 0;
 }
 
-int DLLMAGIC sim_hook_do_3g_auth(void *card_hdl, char reader_mode, unsigned char *Rand, unsigned char *autn,
+int DLLMAGIC sim_hook_do_3g_auth(void **card_hdl, char reader_mode, unsigned char *Rand, unsigned char *autn,
 		unsigned char *c_auts, char *res_len, unsigned char *c_sres, unsigned char *c_ck,
 		unsigned char *c_ik, unsigned char *c_kc)
 {
 	printf("%s()\n", __FUNCTION__);
+
+	// Reject if it isn't for us.
+	if ((*card_hdl) != 1) return -1;
 	return sim_do_3g_auth(Rand, autn, c_auts, res_len, c_sres, c_ck, c_ik, c_kc);
 }
 
