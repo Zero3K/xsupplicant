@@ -1667,10 +1667,6 @@ unsigned int ipc_callout_helper_count_connections(struct config_connection *cur)
 		{
 			count++;
 		}
-		else
-		{
-			debug_printf(DEBUG_NORMAL, "Skipping '%s'.  are_admin = %d   needs_admin = %d\n", cur->name, are_admin, needs_admin);
-		}
 
 		cur = cur->next;
 	}
