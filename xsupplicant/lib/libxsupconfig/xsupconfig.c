@@ -429,7 +429,7 @@ struct config_connection *config_find_connection_from_ssid_and_desc(uint8_t conf
 
   while (cur != NULL)
     {
-		if (cur->ssid != NULL)
+		if ((cur->ssid != NULL) && (cur->device != NULL))
 		{
 			if ((strcmp(cur->ssid, ssidname) == 0) &&
 				(strcmp(cur->device, intDesc) == 0)) break;

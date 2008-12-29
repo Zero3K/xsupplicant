@@ -29,7 +29,7 @@ struct aka_config *myconfig = NULL;
 void process_line(char *line)
 {
 	char *key = NULL, *value = NULL;
-	int i = 0;
+	unsigned int i = 0;
 
 	if (myconfig == NULL) 
 	{

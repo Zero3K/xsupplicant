@@ -7,6 +7,8 @@
  * \author chris@open1x.org
  */
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <windows.h>
 #include <stdio.h>
 
@@ -126,7 +128,7 @@ char *hex2str(unsigned char *data, int len)
 
 	for (i = 0; i < len; i++)
 	{
-		sprintf(&conv, "%02X", data[i]);
+		sprintf((char *)&conv, "%02X", data[i]);
 		strcat(temp, conv);
 	}
 
@@ -138,6 +140,7 @@ int sim_do_3g_auth(unsigned char *Rand, unsigned char *autn, unsigned char *c_au
 	unsigned char *seqn = NULL, *k = NULL, *amf = NULL, *op_c = NULL;
 	char *temp = NULL;
 	int retval = 0;
+	size_t my_res_len = 0;
 
 	// Get SQN and convert it to binary.
 	if (get_sqn(&temp) != 0) return -1;
@@ -203,7 +206,9 @@ int sim_do_3g_auth(unsigned char *Rand, unsigned char *autn, unsigned char *c_au
 	process_hex(temp, strlen(temp), op_c);
 	free(temp);
 
-	retval = milenage_check(op_c, k, seqn, Rand, autn, c_ik, c_ck, c_sres, res_len, c_auts);
+	retval = milenage_check(op_c, k, seqn, Rand, autn, c_ik, c_ck, c_sres, &my_res_len, c_auts);
+
+	(*res_len) = my_res_len;
 
 	sim_inc_sqn(seqn);
 

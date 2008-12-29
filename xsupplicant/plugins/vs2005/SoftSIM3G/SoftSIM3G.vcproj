@@ -112,6 +112,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				AdditionalIncludeDirectories="..\..\..\src;..\..\..\lib\libxsupplugins"
 				PreprocessorDefinitions="WIN32;WINDOWS"
 				RuntimeLibrary="2"
