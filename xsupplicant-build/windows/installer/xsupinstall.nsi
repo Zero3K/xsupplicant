@@ -488,7 +488,7 @@ finish_service_install:
 SectionEnd
 
 Section "3G Soft SIM" SoftSIM
-     DetailPrint "Installing 3G SoftSIM Plugins..."
+     DetailPrint "Installing 3G SoftSIM Plugin..."
 
      SetOutPath $INSTDIR\Modules
 
@@ -502,6 +502,21 @@ Section "3G Soft SIM" SoftSIM
 
      DetailPrint "Adding 3G Soft SIM to the configuration file..."
      nsExec::Exec '$INSTDIR\xsupplicant_plugin_installer -n "3G Soft SIM" -p "SoftSIM3G.dll" -d "Provides a software emulated 3G USIM card for use in testing EAP-AKA."'
+
+SectionEnd
+
+Section "2G Soft SIM" SoftSIM2
+     DetailPrint "Installing 2G SoftSIM Plugin..."
+
+     SetOutPath $INSTDIR\Modules
+
+     File "${SRCDIR}\xsupplicant\plugins\vs2005\release\SoftSIM2G.dll"
+
+     SetOutPath $INSTDIR
+     File "${SRCDIR}\xsupplicant-ui\release\softsim_ui_plugin.exe"
+
+     DetailPrint "Adding 2G Soft SIM to the configuration file..."
+     nsExec::Exec '$INSTDIR\xsupplicant_plugin_installer -n "2G Soft SIM" -p "SoftSIM2G.dll" -d "Provides a software emulated 2G SIM card for use in testing EAP-SIM."'
 
 SectionEnd
 
@@ -683,6 +698,7 @@ remove_program_files:
         Delete $INSTDIR\Skins\Default\icons\wireless.png
 
 	Delete $INSTDIR\Modules\SoftSIM3G.dll
+	Delete $INSTDIR\Movules\SoftSIM2G.dll
 
 	SetOutPath $INSTDIR
 
