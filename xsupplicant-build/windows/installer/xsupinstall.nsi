@@ -549,10 +549,12 @@ SectionEnd
 
 LangString DESC_SoftSIM ${LANG_ENGLISH} "Install the optional 3G USIM software emulator."
 LangString DESC_XSupplicant ${LANG_ENGLISH} "Install the core XSupplicant programs."
+LangString DESC_SoftSIM2G ${LANG_ENGLISH} "Install the option 2G SIM software emulator."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SoftSIM} $(DESC_SoftSIM)
   !insertmacro MUI_DESCRIPTION_TEXT ${XSupplicant} $(DESC_XSupplicant)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SoftSIM2G} $(DESC_SoftSIM2G)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Section "Uninstall"
