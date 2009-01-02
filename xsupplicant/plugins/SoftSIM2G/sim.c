@@ -117,6 +117,7 @@ void sim_split_line(char *line_in, char *imsi, char *kc, char *sres, char *rand)
 
 	// Everything left should be the RAND.
 	strcpy(rand, prev);
+	rand[strlen(rand)] = 0x00;  // Strip the \n.
 }
 
 int sim_get_imsi(char **imsi)
@@ -177,7 +178,7 @@ int sim_do_2g_auth(unsigned char *challenge, unsigned char *response, unsigned c
 			sim_split_line(line, (char *)&imsi, (char *)&kc, (char *)&sres, (char *)&rand);
 
 			// See if this is the line we want.
-			if (strcmp(rand, challenge_str) == 0)
+			if (strncmp(rand, challenge_str, strlen(challenge_str)) == 0)
 			{
 				found = 1;
 				break;

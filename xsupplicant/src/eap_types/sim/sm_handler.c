@@ -878,12 +878,14 @@ int sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char 
   long len;
   unsigned char buf[512], buf2[512], buf3[8];
   int i;
+  int result;
 
   if ((sim_reader_plugin_hook_available() == TRUE) &&
 	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_2G_SIM) == SUPPORT_2G_SIM))
   {
 	  // Process it through our plugin.
-	  return sim_reader_plugin_hook_get_2g_imsi(card_hdl, reader_mode, pin, imsi);
+	  result = sim_reader_plugin_hook_get_2g_imsi(card_hdl, reader_mode, pin, imsi);
+	  if (result >= -1) return result;
   }
 
   if (!card_hdl)
@@ -995,6 +997,7 @@ int sm_handler_do_2g_auth(SCARDHANDLE *card_hdl, char reader_mode,
   unsigned char buf[MAXBUFF], buff2[MAXBUFF], buff3[MAXBUFF];
   int i;
   DWORD len;
+  int result = 0;
 
   if ((!challenge) || (!response) || (!ckey))
     {
@@ -1002,6 +1005,14 @@ int sm_handler_do_2g_auth(SCARDHANDLE *card_hdl, char reader_mode,
 		   "sm_handler_do_2g_auth!\n");
       return -1;
     }
+
+  if ((sim_reader_plugin_hook_available() == TRUE) &&
+	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_2G_SIM) == SUPPORT_2G_SIM))
+  {
+	  // Process it through our plugin.
+	  result = sim_reader_plugin_hook_do_2g_auth(card_hdl, reader_mode, challenge, response, ckey);
+	  if (result >= 0) return result;
+  }
 
   xsup_common_strcpy(buff2, MAXBUFF, RUN_GSM);
   memset(&buff3, 0x00, MAXBUFF);
