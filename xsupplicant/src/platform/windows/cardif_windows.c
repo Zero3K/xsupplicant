@@ -806,50 +806,6 @@ void cardif_windows_fixup_config(char *confdesc, char *windesc)
 
 	FREE(confints->description);
 	confints->description = _strdup(windesc);  // Set the new interface name.  If a write configuration request is made, this *WILL* get written to the config!!
-
-	// First, do the global config.
-	confcon = config_get_connections(CONFIG_LOAD_GLOBAL);
-	if (confcon == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "There are no connections defined to update.\n");
-		FREE(myconfdesc);
-		return;
-	}
-
-	while (confcon != NULL)
-	{
-		if (strcmp(confcon->device, myconfdesc) == 0)
-		{
-			// We need to rewrite this.
-			FREE(confcon->device);
-			confcon->device = _strdup(windesc);
-		}
-
-		confcon = confcon->next;
-	}
-
-	// Then, do the user config.
-	confcon = config_get_connections(CONFIG_LOAD_USER);
-	if (confcon == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "There are no connections defined to update.\n");
-		FREE(myconfdesc);
-		return;
-	}
-
-	while (confcon != NULL)
-	{
-		if (strcmp(confcon->device, myconfdesc) == 0)
-		{
-			// We need to rewrite this.
-			FREE(confcon->device);
-			confcon->device = _strdup(windesc);
-		}
-
-		confcon = confcon->next;
-	}
-
-	FREE(myconfdesc);
 }
 
 /**

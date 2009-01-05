@@ -258,27 +258,39 @@ void ConfigConnAdaptTabWireless::clearFields()
 void ConfigConnAdaptTabWireless::populateSSIDs()
 {
 	ssid_info_enum *pSSIDs = NULL;
+	int_enum *retints = NULL;
 	int i = 0;
+	int x = 0;
 
 	m_pBroadcastCombo->clear();
 
-	// If the interface isn't live, we should get an error, and skip the population of the SSIDs.
-	if (m_pSupplicant->getBroadcastSSIDs(m_AdapterName, &pSSIDs))
+	if (xsupgui_request_enum_live_ints(&retints) == REQUEST_SUCCESS)
 	{
-		// List them.
-		while (pSSIDs[i].ssidname != NULL)
+		while (retints[x].desc != NULL)
 		{
-			if ((pSSIDs[i].ssidname != NULL) && (strlen(pSSIDs[i].ssidname) > 0))
+			// If the interface isn't live, we should get an error, and skip the population of the SSIDs.
+			if ((retints[x].is_wireless == TRUE) && (m_pSupplicant->getBroadcastSSIDs(QString(retints[x].desc), &pSSIDs)))
 			{
-				if (m_pBroadcastCombo->findText(QString(pSSIDs[i].ssidname)) < 0)
-				{
-					m_pBroadcastCombo->addItem(QString(pSSIDs[i].ssidname), QVariant(pSSIDs[i].abil));	
-				}
-			}
-			i++;
-		}
+				i = 0;
 
-		m_pSupplicant->freeEnumSSID(&pSSIDs);
+				// List them.
+				while (pSSIDs[i].ssidname != NULL)
+				{
+					if ((pSSIDs[i].ssidname != NULL) && (strlen(pSSIDs[i].ssidname) > 0))
+					{
+						if (m_pBroadcastCombo->findText(QString(pSSIDs[i].ssidname)) < 0)
+						{
+							m_pBroadcastCombo->addItem(QString(pSSIDs[i].ssidname), QVariant(pSSIDs[i].abil));	
+						}
+					}
+					i++;
+				}
+
+				m_pSupplicant->freeEnumSSID(&pSSIDs);
+			}
+
+			x++;
+		}
 	}
 }
 

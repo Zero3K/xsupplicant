@@ -735,6 +735,8 @@ void ConnectMgrDlg::handleConnectionListSelectionChange(void)
 
 void ConnectMgrDlg::deleteSelectedConnection(void)
 {
+	int inuse = 0;
+
 	QList<QTableWidgetItem*> selectedItems;
 	
 	selectedItems = m_pConnectionsTable->selectedItems();
@@ -752,33 +754,18 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 			
 			// first check if connection is in use
 			// if so, don't allow deleting	
-			bool success;
 
-			success = XSupWrapper::getConfigConnection(my_config_type, connName,&pConfig);
-			if (success == true && pConfig != NULL)
+			if (xsupgui_request_get_is_connection_in_use(connName.toAscii().data(), &inuse) == REQUEST_SUCCESS)
 			{
-				char *pDeviceName = NULL;
-				int retVal;
-					
-				retVal = xsupgui_request_get_devname(pConfig->device, &pDeviceName);
-				if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+				if (inuse == 0) 
 				{
-					char *pConnName = NULL;
-					retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &pConnName);
-					if (retVal == REQUEST_SUCCESS && pConnName != NULL)
-					{
-						if (QString(pConnName) == connName)
-						{
-							QMessageBox::warning(m_pRealForm, tr("Connection In Use"), tr("The connection '%1' cannot be deleted because it is currently in use.  Please disconnect from the network before deleting the connection.").arg(connName));
-							canDelete = false;
-						}
-					}
-					if (pConnName != NULL)
-						free(pConnName);
-				}	
-				
-				if (pDeviceName != NULL)
-					free(pDeviceName);
+					canDelete = true;
+				}
+				else
+				{
+					QMessageBox::warning(m_pRealForm, tr("Connection In Use"), tr("The connection '%1' cannot be deleted because it is currently in use.  Please disconnect from the network before deleting the connection.").arg(connName));
+					canDelete = false;
+				}
 			}
 			
 			if (canDelete == true)
@@ -944,14 +931,14 @@ void ConnectMgrDlg::createNewConnection(void)
 	if (m_pConnWizard == NULL)
 	{
 		// create the wizard if it doesn't already exist
-		m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
+		m_pConnWizard = new ConnectionWizard(QString(""), this, m_pRealForm, m_pEmitter);
 		if (m_pConnWizard != NULL)
 		{
 			m_pRealForm->setCursor(Qt::WaitCursor);
 			if (m_pConnWizard->create() == true)
 			{
 				Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-				Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
+				Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &, const QString &)));			
 				m_pConnWizard->init();
 				m_pRealForm->setCursor(Qt::ArrowCursor);
 				m_pConnWizard->show();
@@ -976,7 +963,7 @@ void ConnectMgrDlg::createNewConnection(void)
 	}
 }
 
-void ConnectMgrDlg::finishConnectionWizard(bool success, const QString &)
+void ConnectMgrDlg::finishConnectionWizard(bool success, const QString &, const QString &)
 {
 	if (success == false)
 		QMessageBox::critical(m_pRealForm,tr("Error saving connection data"), tr("An error occurred while saving the configuration data you provided."));
@@ -988,7 +975,7 @@ void ConnectMgrDlg::cleanupConnectionWizard(void)
 	if (m_pConnWizard != NULL)
 	{
 		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));				
+		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &, const QString &)));				
 		delete m_pConnWizard;
 		m_pConnWizard = NULL;
 	}
@@ -1010,37 +997,29 @@ void ConnectMgrDlg::updateConnectionLists(void)
 void ConnectMgrDlg::editConnection(int config_type, const QString &connName)
 {	
 	bool success;
+	int inuse;
 	config_connection *pConfig;
 	
 	success = XSupWrapper::getConfigConnection(config_type, connName,&pConfig);
 	if (success == true && pConfig != NULL)
 	{
 		bool editable = true;
-		char *pDeviceName = NULL;
-		int retVal;
 		
 		// first check if connection is in use
-		// if so, don't allow editing				
-		retVal = xsupgui_request_get_devname(pConfig->device, &pDeviceName);
-		if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+		// if so, don't allow editing	
+		if (xsupgui_request_get_is_connection_in_use(connName.toAscii().data(), &inuse) == REQUEST_SUCCESS)
 		{
-			char *pConnName = NULL;
-			retVal = xsupgui_request_get_conn_name_from_int(pDeviceName, &pConnName);
-			if (retVal == REQUEST_SUCCESS && pConnName != NULL)
+			if (inuse == 0) 
 			{
-				if (QString(pConnName) == connName)
-				{
-					QMessageBox::warning(m_pRealForm, tr("Connection In Use"), tr("The connection '%1' cannot be edited because it is currently in use.  Please disconnect from the network before editing the connection.").arg(connName));
-					editable = false;
-				}
+				editable = true;
 			}
-			if (pConnName != NULL)
-				free(pConnName);
-		}	
-		
-		if (pDeviceName != NULL)
-			free(pDeviceName);			
-		
+			else
+			{
+				QMessageBox::warning(m_pRealForm, tr("Connection In Use"), tr("The connection '%1' cannot be edited because it is currently in use.  Please disconnect from the network before editing the connection.").arg(connName));
+				editable = false;
+			}
+		}
+				
 		if (editable == true)
 		{
 			config_profiles *pProfile = NULL;
@@ -1074,13 +1053,13 @@ void ConnectMgrDlg::editConnection(int config_type, const QString &connName)
 			if (m_pConnWizard == NULL)
 			{
 				// create the wizard if it doesn't already exist
-				m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
+				m_pConnWizard = new ConnectionWizard(QString(""), this, m_pRealForm, m_pEmitter);
 				if (m_pConnWizard != NULL)
 				{
 					if (m_pConnWizard->create() == true)
 					{
 						Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-						Util::myConnect(m_pConnWizard, SIGNAL(finished(bool,const QString &)), this, SLOT(finishConnectionWizard(bool,const QString &)));			
+						Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &, const QString &)));			
 						m_pConnWizard->edit(wizData);
 						m_pConnWizard->show();
 					}

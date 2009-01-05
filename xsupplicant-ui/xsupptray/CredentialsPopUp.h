@@ -50,7 +50,7 @@ class CredentialsPopUp : public QWidget
 	Q_OBJECT
 
 public:
-	CredentialsPopUp(QString connName, QWidget *parent, Emitter *e);
+	CredentialsPopUp(QString connName, QString deviceName, QWidget *parent, Emitter *e);
 	~CredentialsPopUp();
 	bool create();
 	void updateData();
@@ -84,6 +84,7 @@ private:
 	QLineEdit *m_pPassword;
 	QLabel *m_pDialogMsg;
 	QString m_connName;
+	QString m_deviceName;
 	QCheckBox *m_pRememberCreds;
 	QComboBox *m_pWEPCombo;
 	bool m_doingPsk;

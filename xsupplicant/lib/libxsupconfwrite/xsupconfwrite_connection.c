@@ -630,22 +630,6 @@ xmlNodePtr xsupconfwrite_connection_create_tree(struct config_connection *con, u
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (con->device != NULL))
-	{
-		xsupconfwrite_convert_amp(con->device, &temp);
-		if (xmlNewChild(connode, NULL, (xmlChar *)"Interface", (xmlChar *)con->device) == NULL)
-		{
-#ifdef WRITE_CONNECTION_CONFIG
-			printf("Couldn't allocate memory to store <Interface> node!\n");
-#endif
-			xmlFreeNode(connode);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
-	}
-
 	// Don't check write_all here, because if the MAC address is all 0s, we don't
 	// want to write it.
 	if (memcmp(con->dest_mac, "\x00\x00\x00\x00\x00\x00", 6) != 0)

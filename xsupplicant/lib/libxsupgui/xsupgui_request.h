@@ -255,8 +255,6 @@ typedef struct {
 	char *name;
 	char *ssid;
 	uint8_t config_type;		  ///< Which configuration did this entry come from.
-	char *dev_desc;               // Device description.  You need to feed this in to 
-								  // xsupgui_request_get_devname() to get the OS level device
 	char encryption;              ///< Can be one of the CONNECTION_ENC_*.
 	int priority;
 	int auth_type;                ///< Will be one of the AUTH_* values above.
@@ -278,8 +276,6 @@ typedef struct {
 	char *ssid;
 	int   flags;                  ///< Flags for this connection as defined by POSS_CONN_* above.
 								  ///<  *NOTE* : This will be set to 1 if the SSID is found in the SSID cache for the interface this connection is bound to.  It is possible, though unlikely, that the SSID may be seen by another interface.  In that case, this will still show 0!
-	char *dev_desc;               // Device description.  You need to feed this in to 
-								  // xsupgui_request_get_devname() to get the OS level device
 	char encryption;              ///< Can be one of the CONNECTION_ENC_*.
 	int priority;
 	int auth_type;                ///< Will be one of the AUTH_* values above.
@@ -508,7 +504,6 @@ int xsupgui_request_get_ssid(char *device, char **ssid);
 int xsupgui_request_get_bssid(char *device, char **bssid);
 int xsupgui_request_get_conn_name_from_int(char *intname, char **connname);
 int xsupgui_request_get_error_msgs(error_messages **);
-int xsupgui_request_enum_possible_connections(poss_conn_enum **connections);
 int xsupgui_request_unbind_connection(char *device);
 int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir, int overwrite);
 int xsupgui_request_get_interface_capabilities(char *device, int *capabilities);

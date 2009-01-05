@@ -577,7 +577,7 @@ void ConnectDlg::populateWirelessConnectionList(void)
 		m_pWirelessConnectionList->clear();
 		
 		QVector<QString> connVector;
-		connVector = XSupWrapper::getConnectionListForAdapter(m_currentWirelessAdapterDesc);
+		connVector = XSupWrapper::getConnectionListForAdapter(true);
 		for (int i=0; i<connVector.size(); i++)
 			m_pWirelessConnectionList->addItem(connVector.at(i));
 				
@@ -650,7 +650,7 @@ void ConnectDlg::populateWiredConnectionList(void)
 		m_pWiredConnectionList->clear();
 		
 		QVector<QString> connVector;
-		connVector = XSupWrapper::getConnectionListForAdapter(m_currentWiredAdapterDesc);
+		connVector = XSupWrapper::getConnectionListForAdapter(false);
 
 		for (int i=0; i<connVector.size(); i++)
 			m_pWiredConnectionList->addItem(connVector.at(i));
@@ -784,7 +784,7 @@ void ConnectDlg::launchConnectionWizard(void)
 	if (m_pConnWizard == NULL)
 	{
 		// create the wizard if it doesn't already exist
-		m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
+		m_pConnWizard = new ConnectionWizard(QString(""), this, m_pRealForm, m_pEmitter);
 		if (m_pConnWizard != NULL)
 		{
 			if (m_pConnWizard->create() == true)

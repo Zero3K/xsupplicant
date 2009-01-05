@@ -42,8 +42,6 @@ ConnectionWizardData::ConnectionWizardData()
 	// default to wired connection
 	m_wireless = false;
 	
-	m_adapterDesc = "";
-	
 	// get distinct name
 	m_connectionName = XSupWrapper::getUniqueConnectionName(QWidget::tr("New Connection"));
 	
@@ -735,7 +733,6 @@ bool ConnectionWizardData::toConnectionData(config_connection **retConnection, c
 	{
 		pConn->priority = DEFAULT_PRIORITY;
 		pConn->profile = NULL;
-		pConn->device = _strdup(m_adapterDesc.toAscii().data());
 		if (m_wireless == true)
 		{
 			pConn->ssid = _strdup(m_networkName.toAscii().data());
@@ -935,7 +932,6 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 	
 	// first fill out all connection info	
 	m_wireless = pConfig->ssid != NULL && QString(pConfig->ssid).isEmpty() == false;
-	m_adapterDesc = pConfig->device;
 	m_connectionName = pConfig->name;
 	m_config_type = config_type;
 	

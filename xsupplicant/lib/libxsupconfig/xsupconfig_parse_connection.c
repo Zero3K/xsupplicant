@@ -375,35 +375,6 @@ void *xsupconfig_parse_connection_ssid(void **attr, uint8_t config_type, xmlNode
   return conn;
 }
 
-void *xsupconfig_parse_connection_device(void **attr, uint8_t config_type, xmlNodePtr node)
-{
-  struct config_connection *conn = NULL;
-  char *value = NULL;
-  xmlChar *content = NULL;
-
-  content = xmlNodeGetContent(node);
-  value = _strdup(content);
-  xmlFree(content);
-
-  conn = (*attr);
-
-#ifdef PARSE_DEBUG
-  printf("Device is %s\n", value);
-#endif
-
-	if ((value == NULL) || (strlen(value) == 0))
-	{
-		free(value);
-		conn->device = NULL;
-	}
-	else
-	{
-		conn->device = value;
-	}
-
-  return conn;
-}
-
 void *xsupconfig_parse_connection_mac_addr(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_connection *conn = NULL;
@@ -519,7 +490,6 @@ parser connection[] = {
   {"Force_EAPoL_Version", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_eapol_ver},
   {"SSID", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_ssid},
   {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_volatile},
-  {"Interface", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_device},
   {"Association", (struct conf_parse_struct *)&conn_association, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_association},
   {"Destination_MAC", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_mac_addr},
   {"Hidden_SSID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_hidden_ssid},

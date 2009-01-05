@@ -429,10 +429,9 @@ struct config_connection *config_find_connection_from_ssid_and_desc(uint8_t conf
 
   while (cur != NULL)
     {
-		if ((cur->ssid != NULL) && (cur->device != NULL))
+		if (cur->ssid != NULL)
 		{
-			if ((strcmp(cur->ssid, ssidname) == 0) &&
-				(strcmp(cur->device, intDesc) == 0)) break;
+			if (strcmp(cur->ssid, ssidname) == 0) break;
 		}
 
       cur = cur->next;
@@ -2169,7 +2168,6 @@ void delete_config_single_connection(struct config_connection **tmp_conn)
   FREE_STRING((*tmp_conn)->name);
   FREE_STRING((*tmp_conn)->ssid);
   FREE_STRING((*tmp_conn)->profile);
-  FREE_STRING((*tmp_conn)->device);
 
   delete_config_ip_data((*tmp_conn));
   delete_config_association((*tmp_conn));
@@ -2484,7 +2482,6 @@ void dump_config_connections(struct config_connection *conn)
 	   conn->dest_mac[3], conn->dest_mac[4], conn->dest_mac[5]);
 
   printf("  Priority  : %d\n", conn->priority);
-  printf("  Device    : %s\n", conn->device);
   printf("  Profile   : %s\n", conn->profile);
   printf("  EAPoL Ver : %d\n", conn->force_eapol_ver);
 

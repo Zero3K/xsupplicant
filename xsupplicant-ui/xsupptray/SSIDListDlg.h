@@ -67,7 +67,7 @@ private:
 private:
 	bool initUI(void);
 	void connectToNetwork(const WirelessNetworkInfo &);
-	void promptConnectionSelection(const QStringList &connList);	
+	void promptConnectionSelection(const QStringList &connList, QString adapterDesc);	
 	
 private slots:
 	void slotShowHelp(void);
@@ -78,7 +78,7 @@ private slots:
 	void handleSSIDListDoubleClick(const WirelessNetworkInfo &);
 	void connectToSelectedNetwork(void);
 	void cleanupConnectionWizard(void);
-	void finishConnectionWizard(bool, const QString &);
+	void finishConnectionWizard(bool, const QString &, const QString &);
 	void cleanupConnSelDialog(void);
 	void refreshScanTimeout(void);
 

@@ -330,26 +330,6 @@ private:
 	int m_numCerts;
 };
 
-class WizardPageAdapter : public WizardPage
-{
-	Q_OBJECT
-	
-public:
-	WizardPageAdapter(QWidget *parent, QWidget *parentWidget);
-	~WizardPageAdapter();
-	virtual bool create(void);
-	virtual void init(const ConnectionWizardData &data);
-	virtual QString getHeaderString(void) { return tr("Network Adapter"); };
-	virtual bool validate(void) { return true; };
-	virtual const ConnectionWizardData &wizardData(void);
-private slots:
-	void handleAdapterChange(int);	
-private:
-	QComboBox *m_pAdapterCombo;
-	QLabel *m_pMsgLabel;
-	QVector<QString> m_adapterVector;
-};
-
 class WizardPageSCReader : public WizardPage
 {
 	Q_OBJECT

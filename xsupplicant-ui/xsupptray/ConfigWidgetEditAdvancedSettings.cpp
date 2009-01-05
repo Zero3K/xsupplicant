@@ -461,9 +461,8 @@ bool ConfigWidgetEditAdvancedSettings::saveWiredConnectionDefault()
 	{
 		if (m_pSupplicant->getConfigConnection(CONFIG_LOAD_GLOBAL, m_connName, &m_pConn, true) == true)
 		{
-			// We got the connection information, now figure out which interface it is using.
-			m_intDesc = m_pConn->device;
-			if (m_pSupplicant->getConfigInterface(m_intDesc, &m_pInt, true) == true)
+			// We got the connection information, now make sure it isn't a wireless connection.
+			if (m_pConn->ssid == NULL)
 			{
 				if (m_pInt->default_connection != NULL)
 				{

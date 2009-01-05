@@ -46,26 +46,12 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 	char *errmsg = NULL;
 	int retval = 0;
 	wireless_ctx *wctx = NULL;
-	struct interfaces *liveint = NULL;
 
 	// By nature of the fact that we got this far, we know we have a connection
 	// name.  So don't bother checking that. ;)
 
-	if (xsupconfcheck_check_interface(conn->device, log) != 0)
-	{
-		// No need to throw an error message here.  If the above call failed, it will have already filled the queue.
-		retval = -1;
-	}
-
-	liveint = xsupconfcheck_common_is_live_int(conn->device);
-	if (liveint == NULL)
-	{
-		if (log == TRUE) error_prequeue_add("Connection is attempting to use an interface that isn't currently available.");
-		return -1;
-	}
-
 	// If the interface is wireless, then we need to check association and SSID settings.
-	if (liveint->is_wireless == TRUE)
+	if (ctx->intType == ETH_802_11_INT)
 	{
 		// Make sure we have an SSID
 		if (conn->ssid == NULL)

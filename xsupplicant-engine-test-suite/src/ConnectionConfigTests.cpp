@@ -174,7 +174,6 @@ config_connection *ConnectionConfigTests::createValidNonDefaultConfig(char *name
 	config->association.psk_hex = _strdup("1234567890123456789012345678901234567890123456789012345678901234");
 	config->association.txkey = 3;
 	memcpy(config->dest_mac, "\xab\xcd\xef\xfe\xdc\xba", 6);
-	config->device = _strdup("Some unknown wireless device");
 	config->flags = (CONFIG_NET_DEST_MAC | CONFIG_NET_IS_HIDDEN);   // Don't set 0xff here or the connection gets flagged as volatile! ;)
 	config->force_eapol_ver = 1;
 	config->ip.dns1 = _strdup("1.1.1.1");
@@ -294,12 +293,6 @@ bool ConnectionConfigTests::configsMatch(config_connection *original, config_con
 	if (memcmp(original->dest_mac, testval->dest_mac, 6) != 0)
 	{
 		innerError("Connection Config match failed because destination MACs didn't match!\n");
-		success = false;
-	}
-
-	if (strcmp(original->device, testval->device) != 0)
-	{
-		innerError("Connection Config match failed because bound devices don't match!\n");
 		success = false;
 	}
 

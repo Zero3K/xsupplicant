@@ -89,7 +89,6 @@ public:
   XSupCalls(QWidget *parent);
   virtual ~XSupCalls(void);
   bool checkSupplicantVersion(QString &numberString);
-  bool connectionDisconnect(QString &connectionName);
   bool connectEventListener(bool bDisplayMessage);
   bool connectToSupplicant();
 
@@ -118,7 +117,6 @@ public:
 
   bool enumCertificates(cert_enum **pCertificates, bool bDisplayError = true);
   bool enumAndSortConnections(conn_enum **pConn, bool b);
-  bool enumAndSortPossibleConnections(poss_conn_enum **pConn, bool b);
   bool enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDisplayError = true);
   bool enumLiveInterfaces(int_enum **mydata, bool bDisplayError = true);
   bool enumProfiles(unsigned char config_type, profile_enum **pProfiles, bool bDisplayError = true);
@@ -176,7 +174,7 @@ public:
   static bool isOnlyInstance(char *executableName);
   bool isServerUsedInProfile(config_profiles *pProfile, QString &server);
 
-  bool networkDisconnect(QString &deviceName, QString &deviceDescription, bool bWireless);
+  bool networkDisconnect(QString &deviceName, bool bWireless);
 
   bool pauseWireless(QString &device, QString &desc);
   bool renameConnection(unsigned char config_type, QString &oldName, QString &newName);

@@ -884,16 +884,6 @@ int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connection
 
 		myconns[i].ssid = (char *)xmlNodeGetContent(t);
 
-		t = xsupgui_request_find_node(n->children, "Device_Description");
-		if (t == NULL)
-		{
-			if (myconns != NULL) free(myconns);
-			done = IPC_ERROR_BAD_RESPONSE;
-			goto finish_enum_connections;
-		}
-
-		myconns[i].dev_desc = (char *)xmlNodeGetContent(t);
-
 		t = xsupgui_request_find_node(n->children, "Priority");
 		if (t == NULL)
 		{

@@ -83,7 +83,7 @@ private slots:
 	void createNewConnection(void);
 	void editSelectedConnection(void);
 	void cleanupConnectionWizard(void);
-	void finishConnectionWizard(bool, const QString &);
+	void finishConnectionWizard(bool, const QString &, const QString &);
 	void enableDisableWirelessAutoConnect(int);
 	void enableDisableWiredAutoConnect(int);
 	void setWiredAutoConnection(const QString &connectionName);

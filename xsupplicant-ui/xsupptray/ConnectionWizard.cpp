@@ -41,9 +41,10 @@
 #include "Util.h"
 #include "XSupWrapper.h"
 
-ConnectionWizard::ConnectionWizard(QWidget *parent, QWidget *parentWindow, Emitter *e)
+ConnectionWizard::ConnectionWizard(QString adaptName, QWidget *parent, QWidget *parentWindow, Emitter *e)
 	: QWidget(parent),
 	m_pParent(parent),
+	m_adapterName(adaptName),
 	m_pParentWindow(parentWindow),
 	m_pEmitter(e)
 {
@@ -170,9 +171,6 @@ bool ConnectionWizard::loadPages(void)
 			switch (i) {
 				case ConnectionWizard::pageNetworkType:
 					newPage = new WizardPageNetworkType(this, m_pStackedWidget);
-					break;
-				case ConnectionWizard::pageAdapter:
-					newPage = new WizardPageAdapter(this, m_pStackedWidget);
 					break;
 				case ConnectionWizard::pageWiredSecurity:
 					newPage = new WizardPageWiredSecurity(this, m_pStackedWidget);
@@ -356,7 +354,7 @@ void ConnectionWizard::finishWizard(void)
 	QString connName;
 	
 	success = this->saveConnectionData(&connName);
-	emit finished(success, connName);
+	emit finished(success, connName, m_adapterName);
 }
 
 bool ConnectionWizard::saveConnectionData(QString *pConnName)
@@ -437,27 +435,14 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 		case ConnectionWizard::pageNetworkType:
 			if (m_connData.m_wireless == true)
 			{
-				if (XSupWrapper::getWirelessAdapters().size() > 1)
-					nextPage = ConnectionWizard::pageAdapter;
-				else
-					nextPage = ConnectionWizard::pageWirelessNetwork;
+				nextPage = ConnectionWizard::pageWirelessNetwork;
 			}
 			else
 			{
-				if (XSupWrapper::getWiredAdapters().size() > 1)
-					nextPage = ConnectionWizard::pageAdapter;
-				else
-					nextPage =  ConnectionWizard::pageWiredSecurity;
+				nextPage =  ConnectionWizard::pageWiredSecurity;
 			}
 			break;
-			
-		case ConnectionWizard::pageAdapter:
-			if (m_connData.m_wireless == true)
-				nextPage = ConnectionWizard::pageWirelessNetwork;
-			else
-				nextPage =  ConnectionWizard::pageWiredSecurity;
-			break;			
-			
+						
 		case pageWiredSecurity:
 			if (m_connData.m_wiredSecurity == true)
 				nextPage = ConnectionWizard::pageDot1XProtocol;

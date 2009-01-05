@@ -101,12 +101,12 @@ signals:
   void signalInterfaceControl(bool);
   void signalTroubleTicketDone();
   void signalTroubleTicketError();
-  void signalRequestUPW(const QString &);
+  void signalRequestUPW(const QString &, const QString &);
   void signalPostConnectTimeout(const QString &);
   void signalConnectionDisconnected(const QString &);
   void signalPSKSuccess(const QString &);
   void signalNewInterfaceInserted();
-  void signalBadCreds(const QString &);
+  void signalBadCreds(const QString &, const QString &);
   void signalNetworkConnectDisconnect();
   void signalPSKTimeout(const QString &);
   void signalConnectionUnbound(const QString &);
@@ -162,11 +162,11 @@ public:
   void sendInterfaceControl(bool);
   void sendTroubleTicketDone();
   void sendTroubleTicketError();
-  void sendRequestUPW(const QString &);
+  void sendRequestUPW(const QString &, const QString &);
   void sendPostConnectTimeout(const QString &);
   void sendConnectionDisconnected(const QString &);
   void sendPSKSuccess(const QString &);
-  void sendBadCreds(const QString &);
+  void sendBadCreds(const QString &, const QString &);
   void sendNewInterfaceInserted();
   void sendNetworkConnectDisconnect();
   void sendPSKTimeout(QString);

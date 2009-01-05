@@ -70,7 +70,6 @@ private slots:
 	 void updateWindow();
 	 void populateProfiles();
 	 void setupWireless();
-	 bool saveAdapter();
 	 bool saveWired();
 	 void setLabelInvalid(QLabel *);
 	 void setLabelValid(QLabel *);

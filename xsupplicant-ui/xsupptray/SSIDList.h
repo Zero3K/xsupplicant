@@ -86,11 +86,13 @@ public:
 	SSIDList(QWidget *parent, QTableWidget *tableWidget, int minRowCount=0);
 	~SSIDList();
 	void refreshList(const QString &adapterName);
+	void refreshCompleteList();
 	void hideColumn(SSIDListCol colIndex);
 	void showColumn(SSIDListCol colIndex);
 	bool selectNetwork(const QString &networkName);
 	static QList<WirelessNetworkInfo> getNetworkInfo(QString adapterName);
-	
+	static QList<WirelessNetworkInfo> getCompleteNetworkInfo();	
+
 signals:
 	void ssidSelectionChange(const WirelessNetworkInfo &);
 	void ssidDoubleClick(const WirelessNetworkInfo &);

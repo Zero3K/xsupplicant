@@ -69,7 +69,6 @@ public:
 	
 	// general settings
 	bool m_wireless;
-	QString m_adapterDesc;
 	QString m_connectionName;
 	QString m_serverName;
 	QString m_profileName;	

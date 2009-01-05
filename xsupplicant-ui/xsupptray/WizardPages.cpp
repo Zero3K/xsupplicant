@@ -171,6 +171,8 @@ const ConnectionWizardData &WizardPageNetworkType::wizardData(void)
 	int retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
 	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
 	{
+		// XXX ????
+		/*
 		int i=0;
 		while (pInterfaceList[i].desc != NULL)
 		{
@@ -185,7 +187,8 @@ const ConnectionWizardData &WizardPageNetworkType::wizardData(void)
 				break;				
 			}
 			++i;
-		}			
+		}		
+		*/
 	}
 	else
 	{
@@ -638,7 +641,7 @@ void WizardPageWirelessNetwork::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
 	if (m_pSSIDList != NULL) {
-		m_pSSIDList->refreshList(m_curData.m_adapterDesc);
+		m_pSSIDList->refreshCompleteList();
 		
 		// ensure something's selected
 		if (m_pTableWidget != NULL)
@@ -1716,99 +1719,6 @@ const ConnectionWizardData &WizardPageDot1XCert::wizardData()
 	return m_curData;
 }
 
-WizardPageAdapter::WizardPageAdapter(QWidget *parent, QWidget *parentWidget)
-	:WizardPage(parent,parentWidget)
-{
-}
-
-WizardPageAdapter::~WizardPageAdapter()
-{
-	if (m_pAdapterCombo != NULL)
-		Util::myDisconnect(m_pAdapterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(handleAdapterChange(int)));	
-}
-
-bool WizardPageAdapter::create(void)
-{
-	m_pRealForm = FormLoader::buildform("wizardPageAdapter.ui", m_pParentWidget);
-	if (m_pRealForm == NULL)
-		return false;
-	
-	// cache off pointers to objects	
-	m_pAdapterCombo = qFindChild<QComboBox*>(m_pRealForm, "comboBoxAdapter");
-	m_pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");	
-		
-	// dynamically populate text
-	if (m_pMsgLabel != NULL)
-		m_pMsgLabel->setText(tr("Select the network adapter you would like to use for this connection:"));	
-
-	QLabel *pAdapterLabel = qFindChild<QLabel*>(m_pRealForm, "labelAdapter");
-	if (pAdapterLabel != NULL)
-		pAdapterLabel->setText(tr("Adapter:"));
-		
-	// set up event handling
-	if (m_pAdapterCombo != NULL)
-		Util::myConnect(m_pAdapterCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(handleAdapterChange(int)));	
-		
-	// other initializations	
-	if (m_pAdapterCombo != NULL)
-		m_pAdapterCombo->clear();
-		
-	return true;
-}
-
-void WizardPageAdapter::init(const ConnectionWizardData &data)
-{
-	QString adapterType;
-	
-	m_curData = data;
-	
-	// clear out our list of adapters;
-	if (m_curData.m_wireless == true)
-	{
-		adapterType = tr("wireless");
-		m_adapterVector = XSupWrapper::getWirelessAdapters();
-	}
-	else
-	{
-		adapterType = tr("wired");
-		m_adapterVector = XSupWrapper::getWiredAdapters();
-	}
-		
-	if (m_pAdapterCombo != NULL)
-	{
-		m_pAdapterCombo->clear();	
-		
-		for (int i=0;i<m_adapterVector.size(); i++)
-			m_pAdapterCombo->addItem(Util::removePacketSchedulerFromName(m_adapterVector.at(i)));
-			
-		int index = m_pAdapterCombo->findText(Util::removePacketSchedulerFromName(m_curData.m_adapterDesc));
-		if (index == -1)
-			index = 0;
-		m_pAdapterCombo->setCurrentIndex(index);
-		this->handleAdapterChange(index);	
-	}	
-	
-	// update our msg label to reflect type of network
-	if (m_pMsgLabel != NULL)
-		m_pMsgLabel->setText(tr("Select the %1 network adapter you would like to use for this connection:").arg(adapterType));			
-}
-
-const ConnectionWizardData &WizardPageAdapter::wizardData(void)
-{
-	if (m_pAdapterCombo != NULL)
-		m_curData.m_adapterDesc = m_adapterVector.at(m_pAdapterCombo->currentIndex());
-	return m_curData;
-}
-
-void WizardPageAdapter::handleAdapterChange(int index)
-{
-	if (m_pAdapterCombo != NULL)
-	{
-		// make sure we're not out of range to avoid an exception
-		if (index >= 0 && index < m_adapterVector.size())
-			m_pAdapterCombo->setToolTip(m_adapterVector.at(index));
-	}
-}
 
 WizardPageSCReader::WizardPageSCReader(QWidget *parent, QWidget *parentWidget)
 	:WizardPage(parent,parentWidget)

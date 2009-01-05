@@ -121,9 +121,9 @@ TrayApp::~TrayApp()
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalSupWarningEvent(const QString &)), this, SLOT(slotSupWarning(const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));
-		Util::myDisconnect(m_pEmitter, SIGNAL(signalRequestUPW(const QString &)), this, SLOT(slotRequestUPW(const QString &)));
-		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadPSK(const QString &)), this, SLOT(handleBadPSK(const QString &intName)));
-		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadPCreds(const QString &)), this, SLOT(handleBadCreds(const QString &intName)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalRequestUPW(const QString &, const QString &)), this, SLOT(slotRequestUPW(const QString &, const QString &)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadPSK(const QString &)), this, SLOT(handleBadPSK(const QString &)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadCreds(const QString &, const QString &)), this, SLOT(handleBadCreds(const QString &, const QString &)));
 
 		delete m_pEmitter;
 		m_pEmitter = NULL;
@@ -660,7 +660,7 @@ void TrayApp::connectGlobalTrayIconSignals()
 		Util::myConnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(const QString &)), this, SLOT(slotConnectionTimeout(const QString &)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updatePopupMenuAfterScan(const QString &)));
 		Util::myConnect(m_pEmitter, SIGNAL(signalBadPSK(const QString &)), this, SLOT(handleBadPSK(const QString &)));
-		Util::myConnect(m_pEmitter, SIGNAL(signalBadCreds(const QString &)), this, SLOT(handleBadCreds(const QString &)));
+		Util::myConnect(m_pEmitter, SIGNAL(signalBadCreds(const QString &, const QString &)), this, SLOT(handleBadCreds(const QString &, const QString &)));
 	}
 }
 
@@ -842,7 +842,7 @@ bool TrayApp::postConnectActions()
   Util::myConnect(m_pEmitter, SIGNAL(signalSupWarningEvent(const QString &)), this, SLOT(slotSupWarning(const QString &)));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));  
-  Util::myConnect(m_pEmitter, SIGNAL(signalRequestUPW(const QString &)), this, SLOT(slotRequestUPW(const QString &)));
+  Util::myConnect(m_pEmitter, SIGNAL(signalRequestUPW(const QString &, const QString &)), this, SLOT(slotRequestUPW(const QString &, const QString &)));
 
   updateIntControlCheck();
   setGlobalTrayIconState();
@@ -1362,12 +1362,12 @@ void TrayApp::slotExit()
   this->m_app.exit(0);
 }
 
-void TrayApp::slotRequestUPW(const QString &connName)
+void TrayApp::slotRequestUPW(const QString &intName, const QString &connName)
 {
 	// Only do something if it isn't already showing.
 	if (m_pCreds == NULL)
 	{
-		m_pCreds = new CredentialsPopUp(connName, this, m_pEmitter);
+		m_pCreds = new CredentialsPopUp(connName, intName, this, m_pEmitter);
 		if (m_pCreds == NULL)
 		{
 			QMessageBox::critical(this, tr("Error"), tr("There was an error creating the credentials pop up."));
@@ -1828,7 +1828,7 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 		QStringList connList;
 		while (pConn[i].name != NULL)
 		{
-			if (QString(pConn[i].ssid) == networkName && QString(pConn[i].dev_desc) == adapterDesc)
+			if (QString(pConn[i].ssid) == networkName)
 			{
 				found = true;
 				connList.append(pConn[i].name);
@@ -1861,7 +1861,7 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 			else if (connList.count() > 1)
 			{
 				// must prompt user to tell us which connection to use
-				this->promptConnectionSelection(connList);
+				this->promptConnectionSelection(connList, adapterDesc);
 			}	
 		}
 	}
@@ -1953,7 +1953,6 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 					pNewConn->association.auth_type = AUTH_NONE;
 				}		
 
-				pNewConn->device = _strdup(adapterDesc.toAscii().data());
 				pNewConn->ip.type = CONFIG_IP_USE_DHCP;
 				pNewConn->ip.renew_on_reauth = FALSE;
 				
@@ -1966,12 +1965,12 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 					{
 						if (m_pConnWizard == NULL)
 						{
-							m_pConnWizard = new ConnectionWizard(this, this, m_pEmitter);
+							m_pConnWizard = new ConnectionWizard(adapterDesc, this, this, m_pEmitter);
 							if (m_pConnWizard != NULL && m_pConnWizard->create() != false)
 							{
 								// register for cancelled and finished events
 								Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cancelConnectionWizard()));
-								Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
+								Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &, const QString &)));
 								
 								ConnectionWizardData wizData;
 								bool success = wizData.initFromSupplicantProfiles(CONFIG_LOAD_USER, pNewConn,NULL,NULL);
@@ -2044,7 +2043,7 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 	}
 }
 
-void TrayApp::finishConnectionWizard(bool success, const QString &connName)
+void TrayApp::finishConnectionWizard(bool success, const QString &connName, const QString &adaptName)
 {
 	if (success)
 	{
@@ -2056,17 +2055,9 @@ void TrayApp::finishConnectionWizard(bool success, const QString &connName)
 
 		if (success == true && pConfig != NULL)
 		{
-			char *adapterName = NULL;
-			retVal = xsupgui_request_get_devname(pConfig->device, &adapterName);
-			if (retVal == REQUEST_SUCCESS && adapterName != NULL)			
-			{
-				retVal = xsupgui_request_set_connection(adapterName, connName.toAscii().data());
-				if (retVal != REQUEST_SUCCESS)
-					QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'. (Error : %2)").arg(QString(pConfig->ssid)).arg(retVal));
-			}
-			else
-				QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'.  (Error : %2)").arg(QString(pConfig->ssid)).arg(retVal));
-			XSupWrapper::freeConfigConnection(&pConfig);		
+			retVal = xsupgui_request_set_connection(adaptName.toAscii().data(), connName.toAscii().data());
+			if (retVal != REQUEST_SUCCESS)
+				QMessageBox::critical(this,tr("Error Connecting to Network"),tr("An error occurred while connecting to the wireless network '%1'. (Error : %2)").arg(QString(pConfig->ssid)).arg(retVal));
 		}
 	}		
 	this->cleanupConnectionWizard();
@@ -2090,7 +2081,7 @@ void TrayApp::cleanupConnectionWizard(void)
 	if (m_pConnWizard != NULL)
 	{
 		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cancelConnectionWizard()));
-		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
+		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &, const QString &)));
 	
 		delete m_pConnWizard;
 		m_pConnWizard = NULL;
@@ -2131,26 +2122,36 @@ void TrayApp::handleBadPSK(const QString &intName)
 	
 	// re-prompt if we have the information necessary
 	if (retval == REQUEST_SUCCESS && pConnName != NULL)
-		this->slotRequestUPW(QString(pConnName));
+		this->slotRequestUPW(intName, QString(pConnName));
 		
 	if (pConnName != NULL)
 		free(pConnName);
 }
 
 // if we fail on 802.1X authentication, alert user and reprompt for creds
-void TrayApp::handleBadCreds(const QString &connName)
+void TrayApp::handleBadCreds(const QString &intName, const QString &connName)
 {
-	// re-prompt for credentials
-	this->slotRequestUPW(connName);
+	char *adaptName = NULL;
+
+	if (xsupgui_request_get_devdesc(intName.toAscii().data(), &adaptName) == REQUEST_SUCCESS)
+	{
+		// re-prompt for credentials
+		this->slotRequestUPW(adaptName, connName);
+		free(adaptName);
+	}
+	else
+	{
+		QMessageBox::critical(this, tr("Request Failed"), tr("Unable to translate an adapter name to an adapter description when the 802.1X authentication failed!"));
+	}
 }
 
-void TrayApp::promptConnectionSelection(const QStringList &connList)
+void TrayApp::promptConnectionSelection(const QStringList &connList, QString adapterDesc)
 {
 	// if this exists something went wrong, so just throw it out and start over
 	if (m_pConnSelDlg != NULL)
 		delete m_pConnSelDlg;
 		
-	m_pConnSelDlg = new ConnectionSelectDlg(this, NULL, connList);
+	m_pConnSelDlg = new ConnectionSelectDlg(this, NULL, connList, adapterDesc);
 	if (m_pConnSelDlg != NULL)
 	{
 		if (m_pConnSelDlg->create() == true)

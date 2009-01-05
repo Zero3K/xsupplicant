@@ -37,8 +37,8 @@
 #include "ConnectionSelectDlg.h"
 #include "XSupWrapper.h"
 
-ConnectionSelectDlg::ConnectionSelectDlg(QWidget *parent, QWidget *parentWindow, const QStringList &connections)
-	:QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow), m_connectionList(connections)
+ConnectionSelectDlg::ConnectionSelectDlg(QWidget *parent, QWidget *parentWindow, const QStringList &connections, QString adapterToUse)
+	:QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow), m_connectionList(connections), m_adapterToUse(adapterToUse)
 {
 }
 
@@ -138,7 +138,8 @@ void ConnectionSelectDlg::okay(void)
 			int retVal;
 			char *adapterName= NULL;
 			
-			retVal = xsupgui_request_get_devname(pConn->device, &adapterName);
+			// Convert the adapter description to the real name.
+			retVal = xsupgui_request_get_devname(m_adapterToUse.toAscii().data(), &adapterName);
 			
 			if (retVal == REQUEST_SUCCESS && adapterName != NULL)
 				retVal = xsupgui_request_set_connection(adapterName, pConn->name);

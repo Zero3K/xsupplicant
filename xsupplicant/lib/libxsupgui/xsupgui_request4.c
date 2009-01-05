@@ -305,7 +305,6 @@ int xsupgui_request_free_conn_enum(conn_enum **data)
 
 	while (cenum[i].name != NULL)
 	{
-		if (cenum[i].dev_desc != NULL) free(cenum[i].dev_desc);
 		if (cenum[i].name != NULL) free(cenum[i].name);
 		if (cenum[i].ssid != NULL) free(cenum[i].ssid);
 		i++;

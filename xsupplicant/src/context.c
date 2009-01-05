@@ -317,8 +317,7 @@ char config_build(context *ctx, char *network_name)
 
       if (result != NULL) 
 	{
-		if ((result->device != NULL) && (ctx->desc != NULL) && 
-			(strcmp(ctx->desc, result->device) == 0))
+		if (ctx->desc != NULL) 
 		{
 			ctx->conn = result;
 			FREE(ctx->conn_name);

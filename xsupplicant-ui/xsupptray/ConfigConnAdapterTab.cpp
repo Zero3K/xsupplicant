@@ -235,56 +235,20 @@ bool ConfigConnAdapterTab::attach()
 
 void ConfigConnAdapterTab::updateWindow()
 {
-  int i = 0;
   int iswireless = 2; 
-  int_config_enum *pConfigInterfaces = NULL;
 
-  m_pAdapterSelection->clear();
-
-  if ((m_pSupplicant->enumConfigInterfaces(&pConfigInterfaces, true)) && (pConfigInterfaces))
-	{
-		i = 0;
-		while (pConfigInterfaces[i].desc != NULL)
-		{
-			if ((m_pConn != NULL) && (QString(pConfigInterfaces[i].desc) != QString(m_pConn->device)))
-			{
-				m_pAdapterSelection->addItem(pConfigInterfaces[i].desc, QVariant(pConfigInterfaces[i].is_wireless));
-			}
-			else if (m_pConn != NULL)
-			{
-				// This is the adapter we are using.
-				m_pAdapterSelection->addItem(pConfigInterfaces[i].desc, QVariant(pConfigInterfaces[i].is_wireless));
-				iswireless = pConfigInterfaces[i].is_wireless;
-			}
-
-			i++;
-		}
-	}
-
-  if ((m_pConn != NULL) && (m_pConn->device != NULL))
+  if (m_pConn->ssid == NULL)
   {
-	  i = m_pAdapterSelection->findText(m_pConn->device);
+	  // This is a wired configuration.
+	  m_pAdapterSelection->setCurrentIndex(1);
+	  iswireless = 0;
   }
   else
   {
-	  i = -1;
+	  // This is a wireless configuration.
+	  m_pAdapterSelection->setCurrentIndex(0);
+	  iswireless = 1;
   }
-
-  if (i < 0) i = 0;   // Make sure to pick the first one in the list, rather than make it blank.
-
-  m_pAdapterSelection->setCurrentIndex(i);
-
-	if (iswireless == 2)  // This is probably a new connection.
-	{
-		if (pConfigInterfaces[0].is_wireless == TRUE)
-		{
-			iswireless = TRUE;
-		}
-		else
-		{
-			iswireless = FALSE;
-		}
-	}
 
 	if (iswireless == TRUE)
 	{
@@ -295,8 +259,6 @@ void ConfigConnAdapterTab::updateWindow()
 	{
 		m_pWidgetStack->setCurrentIndex(WIRED_PAGE);
 	}
-
-	m_pSupplicant->freeEnumStaticInt(&pConfigInterfaces);
 }
 
 void ConfigConnAdapterTab::setupWireless()
@@ -327,8 +289,7 @@ void ConfigConnAdapterTab::adapterChanged(int newAdapt)
 
 	emit signalDataChanged();
 
-	qv = m_pAdapterSelection->itemData(newAdapt);
-	if (qv.toInt() == TRUE)
+	if (newAdapt == 0)
 	{
 		// It is a wireless interface.
 		m_pWidgetStack->setCurrentIndex(WIRELESS_PAGE);
@@ -339,25 +300,6 @@ void ConfigConnAdapterTab::adapterChanged(int newAdapt)
 		// It is a wired interface.
 		m_pWidgetStack->setCurrentIndex(WIRED_PAGE);
 	}
-}
-
-bool ConfigConnAdapterTab::saveAdapter()
-{
-	if (m_pConn->device != NULL)
-	{
-		free(m_pConn->device);
-		m_pConn->device = NULL;
-	}
-
-	if (m_pAdapterSelection->currentText() == "")  // err.. invalid..  (Should be impossible.. but..)
-	{
-		QMessageBox::critical(this, tr("Configuration Error"), tr("Please select a valid adapter from the drop down box."));
-		return false;
-	}
-
-	m_pConn->device = _strdup(m_pAdapterSelection->currentText().toAscii());
-
-	return true;
 }
 
 bool ConfigConnAdapterTab::saveWired()
@@ -373,8 +315,6 @@ bool ConfigConnAdapterTab::saveWired()
 	{
 		m_pConn->profile = _strdup(m_pWiredProfile->currentText().toAscii());
 	}
-
-	if (saveAdapter() == false) return false;
 
 	// Now, make sure everything else is cleaned out.
 	m_pSupplicant->freeConfigAssociation(&m_pConn->association);
@@ -401,8 +341,6 @@ bool ConfigConnAdapterTab::save()
 			QMessageBox::critical(this, tr("Programming Error"), tr("Somehow you managed to get the wireless widget to show without having the wireless object created.  Please report this!"));
 			return false;
 		}
-
-		if (saveAdapter() == false) return false;
 
 		return m_pWirelessTab->save();
 	}

@@ -48,7 +48,7 @@ class ConnectionWizard : public QWidget
 	Q_OBJECT
 	
 public:
-	ConnectionWizard(QWidget *parent, QWidget *parentWindow, Emitter *e);
+	ConnectionWizard(QString adaptName, QWidget *parent, QWidget *parentWindow, Emitter *e);
 	~ConnectionWizard(void);
 	bool create(void);
 	
@@ -66,7 +66,6 @@ public:
 	typedef enum {
 		pageNoPage=-1,
 		pageNetworkType=0,
-		pageAdapter,
 		pageWiredSecurity,
 		pageWirelessNetwork,
 		pageWirelessInfo,
@@ -84,7 +83,7 @@ public:
 	
 signals:
 	void cancelled(void);
-	void finished(bool, const QString &); // whether successful, and the name of connection created
+	void finished(bool, const QString &, const QString &); // whether successful, the name of connection created, and the interface that should be used (if provided)
 	
 private:
 	bool initUI(void);
@@ -120,5 +119,6 @@ private:
 	QString m_originalConnName;
 	QString m_originalProfileName;
 	QString m_originalServerName;
+	QString m_adapterName;
 };
 #endif

@@ -289,7 +289,6 @@ struct config_connection
   uint8_t priority;
   char *ssid;
   char *profile;
-  char *device;
   struct config_association association;
   struct config_ip_data ip;                        ///< The IP address settings to use on this connection.
   uint8_t  dest_mac[CONFIG_MAC_LEN];

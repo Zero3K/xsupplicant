@@ -136,7 +136,7 @@ int add_change_config_plugins(struct config_plugins *confplug);
 struct xsup_interfaces *config_get_config_ints();
 struct xsup_interfaces *config_find_int(char *);
 uint8_t config_get_network_priority(char *, char *);
-struct config_connection *config_find_connection_from_ssid_and_desc(uint8_t, char *, char *);
+struct config_connection *config_find_connection_from_ssid(uint8_t, char *, char *);
 uint8_t config_get_friendly_warnings();
 uint8_t config_get_idleWhile();
 struct config_connection *config_find_connection(uint8_t, char *);

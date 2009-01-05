@@ -47,7 +47,7 @@ public:
 
 	CredentialsManager(Emitter *e);
 	~CredentialsManager();
-	void storeCredentials(unsigned char config_type, const QString &connectionName, const QString &userName, const QString &password);
+	void storeCredentials(unsigned char config_type, const QString &connectionName, const QString &adaptDesc, const QString &userName, const QString &password);
 
 private slots:
 	void handleStateChange(const QString &intName, int sm, int, int newstate, unsigned int);
@@ -60,10 +60,11 @@ private:
 	{
 	public:
 		CredData() {};
-		CredData(const QString &connectionName, const QString &userName, const QString &password)
-			: m_connectionName(connectionName), m_userName(userName), m_password(password) {};
+		CredData(const QString &connectionName, const QString &adapterDesc, const QString &userName, const QString &password)
+			: m_connectionName(connectionName), m_adapterDesc(adapterDesc), m_userName(userName), m_password(password) {};
 	public:
 		QString m_connectionName;
+		QString m_adapterDesc;
 		QString m_userName;
 		QString m_password;
 	};

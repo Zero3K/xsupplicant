@@ -59,9 +59,9 @@ CredentialsManager *CredentialsPopUp::m_pCredManager = NULL;
   \param[in] parent
   \return nothing
 */
-CredentialsPopUp::CredentialsPopUp(QString connName, QWidget *parent, Emitter *e)
+CredentialsPopUp::CredentialsPopUp(QString connName, QString deviceName, QWidget *parent, Emitter *e)
      : QWidget(parent),
-     m_connName(connName), m_supplicant(this),
+     m_connName(connName), m_deviceName(deviceName), m_supplicant(this),
      m_pEmitter(e)
 {
 	m_pRealForm        = NULL;
@@ -398,7 +398,7 @@ bool CredentialsPopUp::createWEP()
 	// set up event handling	
 		
 	// If the user hits the "X" button in the title bar, close us out gracefully.
-	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SLOT(slotDisconnectBtn()));
 	
 	if (m_pButtonBox != NULL)
 	{
@@ -618,34 +618,7 @@ bool CredentialsPopUp::createPSK()
 
 void CredentialsPopUp::slotDisconnectBtn()
 {
-	config_connection *pConfig = NULL;
-	char *pdevName = NULL;
-	QString desc, dev;
-	bool result = false;
-
-	result = m_supplicant.getConfigConnection(CONFIG_LOAD_USER, m_connName, &pConfig, false);
-	if (result == false) result = m_supplicant.getConfigConnection(CONFIG_LOAD_GLOBAL, m_connName, &pConfig, false);
-
-	if (result == false)
-	{
-		QMessageBox::critical(this, tr("Error Disconnecting"), tr("Unable to locate the configuration information for the connection '%1'.").arg(m_connName));
-	}
-	else
-	{
-		if (xsupgui_request_get_devname(pConfig->device, &pdevName) != XENONE)
-		{
-			QMessageBox::critical(this, tr("Error Disconnecting"), tr("Unable to locate information for the connection '%1'.").arg(m_connName));
-		}
-		else
-		{
-			desc = pConfig->device;
-			dev = pdevName;
-			m_supplicant.networkDisconnect(dev, desc, true);
-			free(pdevName);
-		}
-
-		m_supplicant.freeConfigConnection(&pConfig);
-	}
+	m_supplicant.networkDisconnect(m_deviceName, true);
 
 	emit close();
 }
@@ -653,7 +626,6 @@ void CredentialsPopUp::slotDisconnectBtn()
 void CredentialsPopUp::slotOkayBtn()
 {
 	config_connection *cconf = NULL;
-	char *intName = NULL;
 	int result = 0;
 
 	if (m_doingWEP == true)
@@ -703,32 +675,24 @@ void CredentialsPopUp::slotOkayBtn()
 				}
 				else
 				{		
-					if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
+					if (xsupgui_request_set_connection(m_deviceName.toAscii().data(), m_connName.toAscii().data()) != REQUEST_SUCCESS)
 					{
-						QMessageBox::critical(this, tr("Error"), tr("Couldn't determine the interface the desired connection is bound to!"));
+						QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
 					}
 					else
 					{
-						if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
+						// if "remember credentials" is checked, make sure this isn't marked as volatile
+						if (m_pRememberCreds->checkState() == Qt::Checked)
 						{
-							QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
-						}
-						else
-						{
-							// if "remember credentials" is checked, make sure this isn't marked as volatile
-							if (m_pRememberCreds->checkState() == Qt::Checked)
-							{
-								// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
-								// if we connect successfully
-								if (m_pCredManager != NULL)
-									m_pCredManager->storeCredentials(conn_type, m_connName, QString(), m_pPassword->text());							
-							}						
-						}
-						free(intName);
+							// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
+							// if we connect successfully
+							if (m_pCredManager != NULL)
+								m_pCredManager->storeCredentials(conn_type, m_connName, m_deviceName, QString(), m_pPassword->text());							
+						}						
 					}
-
-					xsupgui_request_free_connection_config(&cconf);
 				}
+
+				xsupgui_request_free_connection_config(&cconf);
 			}		
 		}
 	}
@@ -770,56 +734,48 @@ void CredentialsPopUp::slotOkayBtn()
 			}
 			else
 			{		
-				if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
+				if ((result = xsupgui_request_set_connection(m_deviceName.toAscii().data(), m_connName.toAscii().data())) != REQUEST_SUCCESS)
 				{
-					QMessageBox::critical(this, tr("Error"), tr("Couldn't determine the interface the desired connection is bound to!"));
+					switch (result)
+					{
+					case IPC_ERROR_INTERFACE_NOT_FOUND:
+						QMessageBox::critical(this, tr("Connection Error"), tr("The requested interface is no longer available."));
+						break;
+
+					case IPC_ERROR_INVALID_CONN_NAME:
+						QMessageBox::critical(this, tr("Connection Error"), tr("The connection name requested is invalid."));
+						break;
+
+					case IPC_ERROR_SSID_NOT_FOUND:
+						QMessageBox::critical(this, tr("Connection Error"), tr("The requested wireless network was not found."));
+						break;
+
+					case IPC_ERROR_INVALID_PROF_NAME:
+						QMessageBox::critical(this, tr("Connection Error"), tr("The connection you are attempting to connect to is missing a profile."));
+						break;
+
+					case IPC_ERROR_INVALID_CONTEXT:
+						QMessageBox::critical(this, tr("Connection Error"), tr("The context for this connection is missing or corrupt."));
+						break;
+
+					case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
+						m_supplicant.getAndDisplayErrors();
+						break;
+
+					default:
+						QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a connection.  Error : %1").arg(result));
+						break;
+					}
 				}
 				else
 				{
-					if ((result = xsupgui_request_set_connection(intName, m_connName.toAscii().data())) != REQUEST_SUCCESS)
+					if (m_pRememberCreds->checkState() == Qt::Checked)
 					{
-						switch (result)
-						{
-						case IPC_ERROR_INTERFACE_NOT_FOUND:
-							QMessageBox::critical(this, tr("Connection Error"), tr("The requested interface is no longer available."));
-							break;
-
-						case IPC_ERROR_INVALID_CONN_NAME:
-							QMessageBox::critical(this, tr("Connection Error"), tr("The connection name requested is invalid."));
-							break;
-
-						case IPC_ERROR_SSID_NOT_FOUND:
-							QMessageBox::critical(this, tr("Connection Error"), tr("The requested wireless network was not found."));
-							break;
-
-						case IPC_ERROR_INVALID_PROF_NAME:
-							QMessageBox::critical(this, tr("Connection Error"), tr("The connection you are attempting to connect to is missing a profile."));
-							break;
-
-						case IPC_ERROR_INVALID_CONTEXT:
-							QMessageBox::critical(this, tr("Connection Error"), tr("The context for this connection is missing or corrupt."));
-							break;
-
-						case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
-							m_supplicant.getAndDisplayErrors();
-							break;
-
-						default:
-							QMessageBox::critical(this, tr("Connection Error"), tr("Unable to establish a connection.  Error : %1").arg(result));
-							break;
-						}
-					}
-					else
-					{
-						if (m_pRememberCreds->checkState() == Qt::Checked)
-						{
-							// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
-							// if we connect successfully
-							if (m_pCredManager != NULL)
-								m_pCredManager->storeCredentials(conn_type, m_connName, QString(), m_pPassword->text());
-						}					
-					}
-					free(intName);
+						// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
+						// if we connect successfully
+						if (m_pCredManager != NULL)
+							m_pCredManager->storeCredentials(conn_type, m_connName, m_deviceName, QString(), m_pPassword->text());
+					}					
 				}
 
 				xsupgui_request_free_connection_config(&cconf);
@@ -905,32 +861,24 @@ void CredentialsPopUp::slotOkayBtn()
 			}
 			else
 			{									
-				if (xsupgui_request_get_devname(cconf->device, &intName) != REQUEST_SUCCESS)
+				if (xsupgui_request_set_connection(m_deviceName.toAscii().data(), m_connName.toAscii().data()) != REQUEST_SUCCESS)
 				{
-					QMessageBox::critical(this, tr("Error"), tr("Couldn't determine the interface the desired connection is bound to!"));
+					QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
 				}
 				else
 				{
-					if (xsupgui_request_set_connection(intName, m_connName.toAscii().data()) != REQUEST_SUCCESS)
+					// if "remember credentials" is checked, make sure this isn't marked as volatile
+					if ((m_pRememberCreds != NULL) && (m_pRememberCreds->checkState() == Qt::Checked))
 					{
-						QMessageBox::critical(this, tr("Error"), tr("Couldn't set connection!\n"));
-					}
-					else
-					{
-						// if "remember credentials" is checked, make sure this isn't marked as volatile
-						if ((m_pRememberCreds != NULL) && (m_pRememberCreds->checkState() == Qt::Checked))
-						{
-							// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
-							// if we connect successfully
-							if (m_pCredManager != NULL)
-								m_pCredManager->storeCredentials(conn_type, m_connName, m_pUsername->text(), m_pPassword->text());						
-						}					
-					}
-					free(intName);
+						// if "remember credentials" is checked, pass credentials to Credentials Manager to store off
+						// if we connect successfully
+						if (m_pCredManager != NULL)
+							m_pCredManager->storeCredentials(conn_type, m_connName, m_deviceName, m_pUsername->text(), m_pPassword->text());						
+					}					
 				}
-
-				xsupgui_request_free_connection_config(&cconf);
 			}
+
+			xsupgui_request_free_connection_config(&cconf);
 		}
 	}
 

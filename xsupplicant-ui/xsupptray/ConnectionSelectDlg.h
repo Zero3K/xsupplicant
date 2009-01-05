@@ -43,7 +43,7 @@ class ConnectionSelectDlg : public QWidget
 	Q_OBJECT
 	
 public:
-	ConnectionSelectDlg(QWidget *parent, QWidget *parentWindow, const QStringList &connections);
+	ConnectionSelectDlg(QWidget *parent, QWidget *parentWindow, const QStringList &connections, QString adapterToUse);
 	~ConnectionSelectDlg();
 	void show(void);
 	bool create(void);
@@ -68,6 +68,7 @@ private:
 	QDialogButtonBox *m_pButtonBox;
 	
 	QStringList m_connectionList;
+	QString m_adapterToUse;
 }; 
 
 #endif

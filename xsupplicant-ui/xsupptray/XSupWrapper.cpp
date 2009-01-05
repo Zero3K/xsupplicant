@@ -784,46 +784,57 @@ QVector<QString> XSupWrapper::getWiredAdapters(void)
 	return adapterVec;
 } 
 
-QVector<QString> XSupWrapper::getConnectionListForAdapter(const QString &adapterDesc)
+QVector<QString> XSupWrapper::getConnectionListForAdapter(bool isWireless)
 {
 	QVector<QString> retVector;
-	if (adapterDesc.isEmpty() == false)
+	int wantWireless = 0;
+	int configIsWireless = 0;
+
+	if (isWireless)
+		wantWireless = 1;
+	else
+		wantWireless = 0;
+
+	conn_enum *pConn;
+	int retVal;
+		
+	retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
+	if (retVal == REQUEST_SUCCESS && pConn != NULL)
 	{
-		conn_enum *pConn;
-		int retVal;
-		
-		retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
-		if (retVal == REQUEST_SUCCESS && pConn != NULL)
+		int i = 0;
+		while (pConn[i].name != NULL)
 		{
-			int i = 0;
-			while (pConn[i].name != NULL)
+			if (pConn[i].ssid == NULL)
+				configIsWireless = FALSE;
+			else
+				configIsWireless = TRUE;
+
+			if (wantWireless == configIsWireless)
 			{
-				if (pConn[i].dev_desc == adapterDesc)
+				bool success;
+				config_connection *pConfig;
+				success = XSupWrapper::getConfigConnection(pConn[i].config_type, QString(pConn[i].name), &pConfig);
+				if (success == true && pConfig != NULL)
 				{
-					bool success;
-					config_connection *pConfig;
-					success = XSupWrapper::getConfigConnection(pConn[i].config_type, QString(pConn[i].name), &pConfig);
-					if (success == true && pConfig != NULL)
-					{
-						if ((pConfig->flags & CONFIG_VOLATILE_CONN) == 0)
-							retVector.append(QString(pConn[i].name));
-						
-					}
-					else
+					if ((pConfig->flags & CONFIG_VOLATILE_CONN) == 0)
 						retVector.append(QString(pConn[i].name));
-						
-					if (pConfig != NULL)
-						XSupWrapper::freeConfigConnection(&pConfig);
+					
 				}
-				++i;
+				else
+					retVector.append(QString(pConn[i].name));
+					
+				if (pConfig != NULL)
+					XSupWrapper::freeConfigConnection(&pConfig);
 			}
+			++i;
 		}
-		
-		if (pConn != NULL)
-			xsupgui_request_free_conn_enum(&pConn);
-		
-		std::sort(retVector.begin(), retVector.end());
 	}
+	
+	if (pConn != NULL)
+		xsupgui_request_free_conn_enum(&pConn);
+		
+	std::sort(retVector.begin(), retVector.end());
+
 	return retVector;
 }
 

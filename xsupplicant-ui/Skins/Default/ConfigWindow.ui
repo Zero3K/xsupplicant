@@ -912,7 +912,7 @@
            <number>0</number>
           </property>
           <property name="currentIndex" >
-           <number>6</number>
+           <number>9</number>
           </property>
           <widget class="QWidget" name="widgetStackConnectionsTablePage" >
            <widget class="QFrame" name="backgroundHeaderConnectionsTable" >
@@ -3139,7 +3139,7 @@
                 <rect>
                  <x>10</x>
                  <y>10</y>
-                 <width>50</width>
+                 <width>90</width>
                  <height>18</height>
                 </rect>
                </property>
@@ -3151,7 +3151,7 @@
                </property>
                <property name="maximumSize" >
                 <size>
-                 <width>50</width>
+                 <width>90</width>
                  <height>18</height>
                 </size>
                </property>
@@ -3196,7 +3196,7 @@
                 <number>0</number>
                </property>
                <property name="text" >
-                <string>Adapter:</string>
+                <string>Connection Type:</string>
                </property>
                <property name="indent" >
                 <number>0</number>
@@ -5424,15 +5424,15 @@
               <widget class="QComboBox" name="dataComboAdapters" >
                <property name="geometry" >
                 <rect>
-                 <x>65</x>
+                 <x>105</x>
                  <y>7</y>
-                 <width>460</width>
+                 <width>420</width>
                  <height>25</height>
                 </rect>
                </property>
                <property name="minimumSize" >
                 <size>
-                 <width>460</width>
+                 <width>420</width>
                  <height>25</height>
                 </size>
                </property>
@@ -5445,6 +5445,16 @@
                <property name="maxCount" >
                 <number>255</number>
                </property>
+               <item>
+                <property name="text" >
+                 <string>Wireless</string>
+                </property>
+               </item>
+               <item>
+                <property name="text" >
+                 <string>Wired</string>
+                </property>
+               </item>
               </widget>
              </widget>
             </widget>

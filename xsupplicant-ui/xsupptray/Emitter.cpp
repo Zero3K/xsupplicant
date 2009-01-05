@@ -80,9 +80,9 @@ void Emitter::sendBadPSK(const QString &intName)
 	emit signalBadPSK(intName);
 }
 
-void Emitter::sendBadCreds(const QString &connName)
+void Emitter::sendBadCreds(const QString &intName, const QString &connName)
 {
-	emit signalBadCreds(connName);
+	emit signalBadCreds(intName, connName);
 }
 
 //! sendIPAddressSet
@@ -470,9 +470,9 @@ void Emitter::sendTroubleTicketError()
 	emit signalTroubleTicketError();
 }
 
-void Emitter::sendRequestUPW(const QString &connName)
+void Emitter::sendRequestUPW(const QString &interfaces, const QString &connName)
 {
-	emit signalRequestUPW(connName);
+	emit signalRequestUPW(interfaces, connName);
 }
 
 void Emitter::sendPostConnectTimeout(const QString &devName)

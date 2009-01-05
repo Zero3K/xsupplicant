@@ -314,7 +314,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 		QStringList connList;
 		while (pConn[i].name != NULL)
 		{
-			if (QString(pConn[i].ssid) == netInfo.m_name && QString(pConn[i].dev_desc) == m_curAdapter)
+			if (QString(pConn[i].ssid) == netInfo.m_name)
 			{
 				found = true;
 				connList.append(pConn[i].name);
@@ -346,7 +346,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 		else if (connList.count() > 1)
 		{
 			// must prompt user to tell us which connection to use
-			this->promptConnectionSelection(connList);
+			this->promptConnectionSelection(connList, m_curAdapter);
 		}	
 	}
 	
@@ -396,7 +396,6 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 					runWizard= true;
 					break;
 			}
-			pNewConn->device = _strdup(m_curAdapter.toAscii().data());
 			pNewConn->ip.type = CONFIG_IP_USE_DHCP;
 			pNewConn->ip.renew_on_reauth = FALSE;
 			
@@ -408,12 +407,12 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 				{
 					if (m_pConnWizard == NULL)
 					{
-						m_pConnWizard = new ConnectionWizard(this, m_pRealForm, m_pEmitter);
+						m_pConnWizard = new ConnectionWizard(QString(""), this, m_pRealForm, m_pEmitter);
 						if (m_pConnWizard != NULL && m_pConnWizard->create() != false)
 						{
 							// register for cancelled and finished events
 							Util::myConnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-							Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
+							Util::myConnect(m_pConnWizard, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &, const QString &)));
 							
 							ConnectionWizardData wizData;
 							bool success = wizData.initFromSupplicantProfiles(CONFIG_LOAD_USER, pNewConn,NULL,NULL);
@@ -482,7 +481,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 	}
 }
 
-void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName)
+void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName, const QString &adaptName)
 {
 	if (success == true)
 	{
@@ -524,20 +523,20 @@ void SSIDListDlg::cleanupConnectionWizard(void)
 	if (m_pConnWizard != NULL)
 	{
 		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this, SLOT(cleanupConnectionWizard()));
-		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &)));
+		Util::myDisconnect(m_pConnWizard, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishConnectionWizard(bool, const QString &, const QString &)));
 	
 		delete m_pConnWizard;
 		m_pConnWizard = NULL;
 	}
 }
 
-void SSIDListDlg::promptConnectionSelection(const QStringList &connList)
+void SSIDListDlg::promptConnectionSelection(const QStringList &connList, QString adapterDesc)
 {
 	// if this exists something went wrong, so just throw it out and start over
 	if (m_pConnSelDlg != NULL)
 		delete m_pConnSelDlg;
 		
-	m_pConnSelDlg = new ConnectionSelectDlg(this, m_pRealForm, connList);
+	m_pConnSelDlg = new ConnectionSelectDlg(this, m_pRealForm, connList, adapterDesc);
 	if (m_pConnSelDlg != NULL)
 	{
 		if (m_pConnSelDlg->create() == true)

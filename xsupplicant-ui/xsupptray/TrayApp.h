@@ -124,17 +124,17 @@ private slots:
 	void slotControlInterfacesDone(bool);
 	void slotCreateTroubleticketDone();
 	void slotCreateTroubleticketError();
-	void slotRequestUPW(const QString &connName);
+	void slotRequestUPW(const QString &intName, const QString &connName);
 	void slotCleanupUPW();
 	void slotConnectionTimeout(const QString &devName);
 	void showBasicConfig(void);
 	void showAdvancedConfig(void);	
 	void buildPopupMenu(void);
 	void cancelConnectionWizard(void);
-	void finishConnectionWizard(bool, const QString &);
+	void finishConnectionWizard(bool, const QString &, const QString &);
 	void updatePopupMenuAfterScan(const QString &);
 	void handleBadPSK(const QString &);
-	void handleBadCreds(const QString &);
+	void handleBadCreds(const QString &, const QString &);
 	void cleanupConnSelDialog(void);
 	
 private:
@@ -157,7 +157,7 @@ private:
 	void setTrayMenuBasedOnControl();
 	void closeChildren();
 	void cleanupConnectionWizard(void);
-	void promptConnectionSelection(const QStringList &connList);	
+	void promptConnectionSelection(const QStringList &connList, QString adapterDesc);	
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();

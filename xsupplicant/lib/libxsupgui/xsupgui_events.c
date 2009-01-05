@@ -364,6 +364,7 @@ done:
  *        caller.
  *
  * @param[in,out] conn_name   The connection that is requesting this information.
+ * @param[in,out] intName   The OS specific name of the interface we want to get this info for.
  * @param[in,out] eapmethod   A string that identifies the EAP method that is requesting
  *                            the authentication method.
  * @param[in,out] chalstr    The challenge string to display to the user.
@@ -372,7 +373,7 @@ done:
  * \retval   0 unknown  (all data should be considered invalid)
  * \retval  >=1 success
  **/
-int xsupgui_events_get_passwd_challenge(char **conn_name, char **eapmethod, char **chalstr)
+int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char **eapmethod, char **chalstr)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL;
@@ -381,7 +382,6 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **eapmethod, char
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
 	{
-//		xsupgui_free_event_doc();
 		return -1;
 	}
 
@@ -409,6 +409,15 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **eapmethod, char
 	}
 
 	(*conn_name) = (char *)xmlNodeGetContent(t);
+
+	t = xsupgui_request_find_node(t, "Interface_Name");
+	if (t == NULL)
+	{
+		retval = -1;
+		goto done;
+	}
+
+	(*intName) = (char *)xmlNodeGetContent(t);
 
 	t = xsupgui_request_find_node(t, "EAP_Method");
 	if (t == NULL)

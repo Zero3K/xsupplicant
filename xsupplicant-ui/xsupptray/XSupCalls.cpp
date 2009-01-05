@@ -739,39 +739,6 @@ bool XSupCalls::enumAndSortConnections(conn_enum **pSortedConns, bool bDisplayMe
   return bValue;
 }
 
-//! enumAndSortPossibleConnections
-/*!
-  \brief Get the list of "possible" connections from the configuration file
-  \param[out] pConn - the list of connections
-  \param[in] bDisplayMessage - whether to display the error messages
-
-  \return true/false
-*/
-bool XSupCalls::enumAndSortPossibleConnections(poss_conn_enum **pSortedConn, bool bDisplayMessage)
-{
-  bool bValue = true;
-  Q_ASSERT(pSortedConn);
-  poss_conn_enum *pConn = NULL;
-  int retval = 0;
-
-  retval = xsupgui_request_enum_possible_connections(&pConn);
-  if (retval == REQUEST_SUCCESS && pConn)
-  {
-    sortPossibleConnections(pConn, pSortedConn);
-  }
-  else
-  {
-    if (bDisplayMessage)
-    {
-      QMessageBox::critical(NULL, tr("Get Connections Error"), 
-        tr("Can't get connections."));
-    }
-		bValue = false;
-	}
-  this->freeEnumPossibleConnections(&pConn);
-  return bValue;
-}
-
 //! sortPossibleConnections
 /*!
    \brief Sorts the connections by NAME
@@ -836,7 +803,6 @@ void XSupCalls::sortPossibleConnections(poss_conn_enum *pConns, poss_conn_enum *
     index = connList.at(i);
     // Now copy the data into the new structure except for strings
     pSConns[i].auth_type = pConns[index].auth_type;
-    pSConns[i].dev_desc = Util::myNullStrdup(pConns[index].dev_desc);
     pSConns[i].encryption = pConns[index].encryption;
     pSConns[i].flags = pConns[index].flags;
     pSConns[i].name = Util::myNullStrdup(pConns[index].name);
@@ -926,7 +892,6 @@ void XSupCalls::sortConnections(conn_enum *pConns, conn_enum **pSortedConns)
     memcpy(&pSConns[i], &pConns[index], sizeof(conn_enum));
     pSConns[i].name = Util::myNullStrdup(pConns[index].name);
     pSConns[i].ssid = Util::myNullStrdup(pConns[index].ssid);
-    pSConns[i].dev_desc = Util::myNullStrdup(pConns[index].dev_desc);
   }
 #ifdef _DEBUG
   // Debug code
@@ -940,10 +905,8 @@ void XSupCalls::sortConnections(conn_enum *pConns, conn_enum **pSortedConns)
   {
     newNames.append(pSConns[i].name);
     newSsids.append(pSConns[i].ssid);
-    newDesc.append(pSConns[i].dev_desc);
     oldNames.append(pConns[i].name);
     oldSsids.append(pConns[i].ssid);
-    oldDesc.append(pConns[i].dev_desc);
   }
 //  QMessageBox::information(NULL, "Sort By Priority", tr("Before names %1\nssids %2\ndescr %3\nAfter names %4\nssids %5\ndescr %6")
   //    .arg(oldNames).arg(oldSsids).arg(oldDesc).arg(newNames).arg(newSsids).arg(newDesc));
@@ -2387,7 +2350,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
         if (ccode == 0)
         {
           e.sendRequestPassword(QString(connname), QString(eapmethod), QString(chalstr));
-			    free(connname);
+			free(connname);
   		    free(eapmethod);
 	  	    free(chalstr);
         }
@@ -2479,7 +2442,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 
 			case IPC_EVENT_UI_NEED_UPW:
 				temp = value;
-				e.sendRequestUPW(temp);
+				e.sendRequestUPW(interfaces, temp);
 				break;
 
 			case IPC_EVENT_UI_POST_CONNECT_TIMEOUT:
@@ -2499,7 +2462,7 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 			
 			case IPC_EVENT_8021X_FAILED:
 				temp = value;
-				e.sendBadCreds(temp);
+				e.sendBadCreds(interfaces, temp);
 				break;
 
 			case IPC_EVENT_PSK_TIMEOUT:
@@ -3606,12 +3569,10 @@ bool XSupCalls::isLiveInterface(const int_enum *pLiveInts, const char *pConfigIn
    \param [in] bWireless - true or false
    \return true/false
 */
-bool XSupCalls::networkDisconnect(QString &deviceName, QString &deviceDescription, bool)
+bool XSupCalls::networkDisconnect(QString &deviceName, bool)
 {
   bool bValue = true;
   CharC d(deviceName);
-
-  deviceDescription = deviceDescription;	// Silence the compiler.
 
   if (xsupgui_request_disconnect_connection((char *)deviceName.data()) == REQUEST_SUCCESS)
   {
@@ -3630,60 +3591,6 @@ bool XSupCalls::networkDisconnect(QString &deviceName, QString &deviceDescriptio
   }
 
   return bValue;
-}
-
-//! connectionDisconnect
-/*!
-   \brief If the connection is being used by the supplicant, disconnect it
-   \param [in] connectionName
-   \return true/false
-*/
-bool XSupCalls::connectionDisconnect(QString &connectionName)
-{
-  QString usedConnection;
-  QString deviceDescription;
-  QString deviceName;
-  bool bWireless = false;
-
-  // Need to get the connection configuration
-  config_connection *pConnConfig = NULL;
-  getConfigConnection(CONFIG_LOAD_USER, connectionName, &pConnConfig, true);
-  if (!pConnConfig)
-  {
-	  getConfigConnection(CONFIG_LOAD_GLOBAL, connectionName, &pConnConfig);
-  }
-
-  if (!pConnConfig)
-  {
-    return false; // this shouldn't ever happen
-  } 
-
-  deviceDescription = pConnConfig->device;
-
-  // Get the readable device description 
-  getDeviceName(deviceDescription, deviceName);
-
-  // See if the connection is being used
-  // If it is (which it should be since we are making this call)
-  // Then call networkDisconnect on the device, if it is being used
-  if (getConfigConnectionName(deviceDescription, 
-                              deviceName,  
-                              usedConnection))
-  {
-    if (usedConnection == connectionName)
-    {
-      if (pConnConfig->ssid && *pConnConfig->ssid)
-      {
-        bWireless = true;
-      }
-      return networkDisconnect(deviceName, deviceDescription, bWireless);
-    }
-    else
-    {
-      return true; // not being used - nothing to disconnects
-    }
-  }
-  return false;
 }
 
 //! renameConnection

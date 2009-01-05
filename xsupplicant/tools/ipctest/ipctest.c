@@ -1121,7 +1121,6 @@ void show_poss_conns(poss_conn_enum *conn)
 		printf("\tPriority : %d\n", conn[i].priority);
 		printf("\tSSID: %s\n", conn[i].ssid);
 		printf("\tFlags : %04X\n", conn[i].flags);
-		printf("\tDevice: %s\n", conn[i].dev_desc);
 		printf("\tAuth  : %d\n", conn[i].auth_type);
 		printf("\tEncryption Enabled : ");
 		switch(conn[i].encryption)
@@ -1138,33 +1137,6 @@ void show_poss_conns(poss_conn_enum *conn)
 			// Allow this to fall through to the default case.
 		default:
 			printf("Unknown\n");
-			break;
-		}
-		printf("\tDevice Name : ");
-
-		retval = xsupgui_request_get_devname(conn[i].dev_desc, &devname);
-		switch(retval)
-		{
-		case REQUEST_TIMEOUT:
-			printf("timed out.\n");
-			if (devname != NULL) free(devname);
-			die();
-			break;
-
-		case REQUEST_FAILURE:
-			printf("Error!\n");
-			if (devname != NULL) free(devname);
-			die();
-			break;
-
-		case REQUEST_SUCCESS:
-			printf("%s\n", devname);
-			free(devname);
-			break;
-
-		default:
-			printf("Error %d.\n", retval);
-//			die();
 			break;
 		}
 
@@ -1186,7 +1158,6 @@ void show_conns(conn_enum *conn)
 		printf("Connection : %s\n", conn[i].name);
 		printf("\tPriority : %d\n", conn[i].priority);
 		printf("\tSSID: %s\n", conn[i].ssid);
-		printf("\tDevice: %s\n", conn[i].dev_desc);
 		printf("\tEncryption Enabled : ");
 		switch(conn[i].encryption)
 		{
@@ -1204,72 +1175,9 @@ void show_conns(conn_enum *conn)
 			printf("Unknown\n");
 			break;
 		}
-		printf("\tDevice Name : ");
-
-		retval = xsupgui_request_get_devname(conn[i].dev_desc, &devname);
-		switch(retval)
-		{
-		case REQUEST_TIMEOUT:
-			printf("timed out.\n");
-			if (devname != NULL) free(devname);
-			die();
-			break;
-
-		case REQUEST_FAILURE:
-			printf("Error!\n");
-			if (devname != NULL) free(devname);
-			die();
-			break;
-
-		case REQUEST_SUCCESS:
-			printf("%s\n", devname);
-			free(devname);
-			break;
-
-		default:
-			printf("Error %d.\n", retval);
-			die();
-			break;
-		}
 
 		i++;
 	}
-}
-
-/**
- *  \brief  Request, and display, the connections that the supplicant might be able to connect to.
- **/
-void doget_possible_connections()
-{
-	int retval = 0;
-	poss_conn_enum *connections = NULL;
-
-	printf("Possible connections : ");
-	retval = xsupgui_request_enum_possible_connections(&connections);
-	switch (retval)
-	{
-	case REQUEST_TIMEOUT:
-		printf("timed out.\n");
-		die();
-		break;
-
-	case REQUEST_FAILURE:
-		printf("Error!\n");
-		die();
-		break;
-
-	case REQUEST_SUCCESS:
-		show_poss_conns(connections);
-		break;
-
-	default:
-		printf("Got error %d.\n", retval);
-		die();
-		break;
-	}
-
-	xsupgui_request_free_poss_conn_enum(&connections);
-	printf("\n");
 }
 
 /**
@@ -1707,7 +1615,6 @@ void doget_connection()
 
 	printf("Success...\n\n");
 
-	printf("Device = %s\n", mycon->device);
 	xsupgui_request_free_connection_config(&mycon);
 }
 
@@ -1875,7 +1782,6 @@ void create_conn()
 	conn = (struct config_connection *)Malloc(sizeof(struct config_connection));
 	
 	conn->name = _strdup("Test User Connection");
-	conn->device = _strdup("Intel Wireless");
 	conn->profile = _strdup("Test Profile");
 
 	if ((result = xsupgui_request_set_connection_config(CONFIG_LOAD_USER, conn)) != REQUEST_SUCCESS)
@@ -1915,10 +1821,6 @@ void change_conn()
 		return;
 	}
 
-	val = conn->device;
-	free(conn->device);
-	conn->device = _strdup("some device");
-
 	if (xsupgui_request_set_connection_config(CONFIG_LOAD_GLOBAL, conn) != REQUEST_SUCCESS)
 	{
 		printf("Couldn't set connection settings.\n");
@@ -1932,8 +1834,6 @@ void change_conn()
 		die();
 		return;
 	}
-
-	printf("Device is now set to '%s'.\n", conn->device);
 }
 
 /**

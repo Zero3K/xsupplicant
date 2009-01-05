@@ -56,46 +56,30 @@ CredentialsManager::~CredentialsManager()
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnectionDisconnected(const QString &)), this, SLOT(connectionDisconnected(const QString&)));
 }
 
-void CredentialsManager::storeCredentials(unsigned char config_type, const QString &connectionName, const QString &userName, const QString &password)
+void CredentialsManager::storeCredentials(unsigned char config_type, const QString &connectionName, const QString &adaptDesc, const QString &userName, const QString &password)
 {	
 	// make sure there's only one entry per adapter (if there's already an entry for this adapter it's stale)
 	if (connectionName.isEmpty() == false)	
 	{
 		QString intDesc;
-		bool success;
-		config_connection *pConn;
 		
 		// get device for connection passed in
-		success = XSupWrapper::getConfigConnection(config_type, connectionName, &pConn);
-		if (success == true && pConn != NULL)
-		{
-			intDesc = pConn->device;
-			if (pConn != NULL)
-				XSupWrapper::freeConfigConnection(&pConn);
+			intDesc = adaptDesc;
 	
 			// look at each entry we have stored off, and compare the device with the one for the connection
 			// passed in. If a match, delete the old entry
 			QVector<CredentialsManager::CredData>::iterator iter;
 			for (iter = m_credVector.begin(); iter != m_credVector.end(); iter++)
 			{
-				success = XSupWrapper::getConfigConnection(config_type, iter->m_connectionName, &pConn);
-				if (success == true && pConn != NULL)
+				if (intDesc.compare((*iter).m_adapterDesc) == 0)
 				{
-					if (intDesc.compare(pConn->device) == 0)
-					{
-						m_credVector.erase(iter);
-						break;
-					}
+					m_credVector.erase(iter);
+					break;
 				}
-				if (pConn != NULL)
-					XSupWrapper::freeConfigConnection(&pConn);
 			}
-		}
-		if (pConn != NULL)
-			XSupWrapper::freeConfigConnection(&pConn);
 	}
 	
-	m_credVector.push_back(CredentialsManager::CredData(connectionName, userName, password));
+	m_credVector.push_back(CredentialsManager::CredData(connectionName, adaptDesc, userName, password));
 }
 
 void CredentialsManager::handleStateChange(const QString &intName, int sm, int, int newstate, unsigned int)
@@ -278,27 +262,16 @@ void CredentialsManager::connectionDisconnected(const QString &intName)
 			QVector<CredentialsManager::CredData>::iterator iter;
 			for (iter = m_credVector.begin(); iter != m_credVector.end(); iter++)
 			{
-				bool success;
-				config_connection *pConn;
-				
-				success = XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, iter->m_connectionName, &pConn);
-				if (success == false) success = XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL, iter->m_connectionName, &pConn);
-
-				if (success == true && pConn != NULL)
+				if (intDesc == (*iter).m_adapterDesc)
 				{
-					if (strcmp(pConn->device, intDesc) == 0)
-					{
-						m_credVector.erase(iter);
-						if (pConn != NULL)
-							XSupWrapper::freeConfigConnection(&pConn);						
-						break;
-					}
+					m_credVector.erase(iter);
+					break;
 				}
-				if (pConn != NULL)
-					XSupWrapper::freeConfigConnection(&pConn);
 			}
 		}
+
 		if (intDesc != NULL)
 			free(intDesc);
 	}
 }
+

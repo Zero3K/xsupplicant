@@ -301,6 +301,140 @@ void SSIDList::refreshList(const QString &adapterName)
 	m_pTableWidget->sortItems(SSIDList::COL_SIGNAL, Qt::DescendingOrder);
 }
 
+void SSIDList::refreshCompleteList()
+{
+	m_curNetworks = SSIDList::getCompleteNetworkInfo();
+	
+	// name says it all.  make assoc mode only one value (best), rather than bitfield.
+	// temporary until we have better UI solution
+	this->tempAssocModeHack();	
+	
+	// clear table before re-populating
+	m_pTableWidget->clearContents();
+	
+	// make sure we have enough rows in the table
+	int nNetworks = m_curNetworks.size();
+	m_pTableWidget->setRowCount(std::max<int>(this->m_minRowCount, nNetworks));
+	m_pTableWidget->setSortingEnabled(false);
+	
+	if (!m_curNetworks.empty())
+	{					
+		for (int i=0; i<m_curNetworks.size(); i++)
+		{
+			QTableWidgetItem *nameItem=NULL;
+			
+			// use the custom item type to store index into our cached array of networks
+			// so that we can index back into the array even after table's been sorted
+			nameItem = new QTableWidgetItem(m_curNetworks.at(i).m_name, 1000+i);
+			if (nameItem != NULL)
+				m_pTableWidget->setItem(i, SSIDList::COL_NAME, nameItem);	
+			
+			int strength = m_curNetworks.at(i).m_signalStrength;
+			QString signalText = "";
+			signalText.setNum(strength);
+			signalText.append(tr("%"));
+			
+			QTableWidgetItem *signalItem = NULL;
+			signalItem = new QTableWidgetItem(signalText,1000+i);
+			
+			if (signalItem != NULL)
+			{
+				if (strength <= 11)
+					signalItem->setIcon(m_signalIcons[0]);
+				else if (strength <= 37)
+					signalItem->setIcon(m_signalIcons[1]);
+				else if (strength <= 62)
+					signalItem->setIcon(m_signalIcons[2]);
+				else if (strength <= 88)
+					signalItem->setIcon(m_signalIcons[3]);
+				else
+					signalItem->setIcon(m_signalIcons[4]);
+				
+				m_pTableWidget->setItem(i,SSIDList::COL_SIGNAL,signalItem);
+			}
+			
+			QString securityText = "";
+			switch (m_curNetworks.at(i).m_assoc_modes)
+			{
+				case WirelessNetworkInfo::SECURITY_NONE:
+					securityText = tr("None");
+					break;
+				case WirelessNetworkInfo::SECURITY_STATIC_WEP:
+					securityText = tr("WEP");
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA_PSK:
+					securityText = tr("WPA-Personal");
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE:
+					securityText = tr("WPA-Enterprise");
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA2_PSK:
+					securityText = tr("WPA2-Personal");
+					break;
+				case WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE:
+					securityText = tr("WPA2-Enterprise");
+					break;
+				default:
+					break;
+			}	
+			
+			QTableWidgetItem *securityItem = NULL;
+			securityItem = new QTableWidgetItem(securityText,1000+i);
+			if (securityItem != NULL)
+				m_pTableWidget->setItem(i,SSIDList::COL_SECURITY,securityItem);
+			
+			// if none of modes a,b,g,n supported, nothing to show here	
+			if (m_curNetworks.at(i).m_modes != 0)
+			{
+				// build filename for icon image to load into table
+				unsigned char modes = m_curNetworks.at(i).m_modes;
+				
+				QString labelFileName = "802_11_";
+				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_A) != 0)
+					labelFileName.append("a");
+				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_B) != 0)
+					labelFileName.append("b");
+				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_G) != 0)
+					labelFileName.append("g");
+				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_N) != 0)
+					labelFileName.append("n");	
+				labelFileName.append(".png");
+
+				QMap<QString, QPixmap>::const_iterator iter;
+				
+				// look for pixmap in cache first before loading from disk
+				iter = m_pixmapMap.constFind(labelFileName);
+				if (iter == m_pixmapMap.constEnd())
+				{
+					QPixmap *p;
+					p = FormLoader::loadicon(labelFileName);
+					if (p != NULL)
+					{
+						m_pixmapMap.insert(labelFileName, *p);
+						iter = m_pixmapMap.constFind(labelFileName);
+						delete p;
+					}
+				}
+
+				// if image was successfully loaded or found in cache, use it in table
+				if (iter != m_pixmapMap.constEnd())
+				{
+					QLabel *tmpLabel;
+					tmpLabel = new QLabel();
+					if (tmpLabel != NULL)
+					{
+						tmpLabel->setPixmap(*iter);
+						tmpLabel->setAlignment(Qt::AlignCenter);
+						m_pTableWidget->setCellWidget(i, SSIDList::COL_802_11, tmpLabel);
+					}
+				}																	
+			}
+		}
+	}
+	m_pTableWidget->setSortingEnabled(true);
+	m_pTableWidget->sortItems(SSIDList::COL_SIGNAL, Qt::DescendingOrder);
+}
+
 QList<WirelessNetworkInfo> SSIDList::getNetworkInfo(QString adapterName)
 {
 	QList<WirelessNetworkInfo> networkList;
@@ -388,6 +522,101 @@ QList<WirelessNetworkInfo> SSIDList::getNetworkInfo(QString adapterName)
 				{
 					// problem or no SSIDs for this adapter
 				}
+				
+				if (pSSIDList != NULL)
+					xsupgui_request_free_ssid_enum(&pSSIDList);
+			}
+			
+			++i;
+		}
+	}
+	else
+	{
+		// bad things man
+	}
+	
+	if (pInterfaceList != NULL)
+		xsupgui_request_free_int_enum(&pInterfaceList);
+		
+	return networkList;
+}
+
+QList<WirelessNetworkInfo> SSIDList::getCompleteNetworkInfo()
+{
+	QList<WirelessNetworkInfo> networkList;
+	
+	int_enum *pInterfaceList = NULL;
+	QHash<QString, WirelessNetworkInfo> networkHashTable;
+	int retVal;	
+	
+	retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
+	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+	{
+		int i = 0;
+		while (pInterfaceList[i].desc != NULL)
+		{
+			ssid_info_enum *pSSIDList = NULL;
+			retVal = xsupgui_request_enum_ssids(pInterfaceList[i].name,&pSSIDList);
+			if (retVal == REQUEST_SUCCESS && pSSIDList != NULL)
+			{
+				int j = 0;
+				while (pSSIDList[j].ssidname != NULL)
+				{
+					// if not empty ssid (this represents a non-broadcast SSID)
+					if (QString(pSSIDList[j].ssidname).isEmpty() == false)
+					{
+						WirelessNetworkInfo networkInfo;
+						networkInfo.m_name = pSSIDList[j].ssidname;
+						networkInfo.m_signalStrength = int(pSSIDList[j].percentage);
+						networkInfo.m_assoc_modes = 0;
+						
+						unsigned int abilities = pSSIDList[j].abil;
+						if ((abilities & ABILITY_ENC) != 0)
+						{
+							if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0)
+								networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_STATIC_WEP;
+							if ((abilities & ABILITY_RSN_DOT1X) != 0)
+								networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_WPA2_ENTERPRISE;
+							if ((abilities & ABILITY_WPA_DOT1X) != 0)
+								networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_WPA_ENTERPRISE;
+							if ((abilities & ABILITY_RSN_PSK) != 0)
+								networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_WPA2_PSK;
+							if ((abilities & ABILITY_WPA_PSK) != 0)
+								networkInfo.m_assoc_modes |= WirelessNetworkInfo::SECURITY_WPA_PSK;									
+						}
+						else
+							networkInfo.m_assoc_modes = WirelessNetworkInfo::SECURITY_NONE;
+						
+						if ((abilities & ABILITY_DOT11_A) != 0)
+							networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_A;
+						if ((abilities & ABILITY_DOT11_B) != 0)
+							networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_B;
+						if ((abilities & ABILITY_DOT11_G) != 0)
+							networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_G;
+						if ((abilities & ABILITY_DOT11_N) != 0)
+							networkInfo.m_modes |= WirelessNetworkInfo::WIRELESS_MODE_N;
+							
+						if (networkHashTable.contains(networkInfo.m_name))
+						{
+							// entry already exists for SSID.  Or in network capabiities
+							WirelessNetworkInfo item;
+							item = networkHashTable.value(networkInfo.m_name);
+							item.m_assoc_modes |= networkInfo.m_assoc_modes;
+							item.m_modes |= networkInfo.m_modes;
+							item.m_signalStrength = std::max<int>(networkInfo.m_signalStrength, item.m_signalStrength);
+							
+							// replace item in table;
+							networkHashTable[item.m_name] = item;
+						}
+						else
+						{
+							// else just insert new item into table
+							networkHashTable[networkInfo.m_name] = networkInfo;
+						}
+					}
+					++j;
+				}
+				networkList = networkHashTable.values();
 				
 				if (pSSIDList != NULL)
 					xsupgui_request_free_ssid_enum(&pSSIDList);
