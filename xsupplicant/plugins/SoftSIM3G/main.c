@@ -44,6 +44,7 @@ void DLLMAGIC cleanup()
 void DLLMAGIC sim_hook_update_reader_list(char **readerlist)
 {
 	unsigned int listsize = 0;
+	unsigned int totallist = 0;
 	char *pReader = NULL;
 	char *newReaderList = NULL;
 
@@ -56,18 +57,19 @@ void DLLMAGIC sim_hook_update_reader_list(char **readerlist)
 		while ( '\0' != (*pReader))
 		{
 			listsize = strlen(pReader)+1;
+			totallist += listsize;
 			pReader += listsize;
 		}
-		listsize++;  // Pick up the last NULL character.
+		totallist++;  // Pick up the last NULL character.
 	}
 
-	newReaderList = malloc(listsize+strlen(READER_NAME)+2);
+	newReaderList = malloc(totallist+strlen(READER_NAME)+2);
 	if (newReaderList == NULL) return;   // Can't add ours. :-(
 
-	memset(newReaderList, 0x00, (strlen(READER_NAME)+listsize));
+	memset(newReaderList, 0x00, (strlen(READER_NAME)+totallist+2));
 	strcpy(newReaderList, READER_NAME);
 
-	memcpy(&newReaderList[strlen(READER_NAME)+1], (*readerlist), listsize);
+	memcpy(&newReaderList[strlen(READER_NAME)+1], (*readerlist), totallist);
 
 	pReader = (*readerlist);
 	free(pReader);
