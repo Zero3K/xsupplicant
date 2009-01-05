@@ -1,0 +1,6 @@
+; 1XGina.def : Declares the module parameters for the DLL.
+
+LIBRARY      "1XGina"
+
+EXPORTS
+    ; Explicit exports can go here
