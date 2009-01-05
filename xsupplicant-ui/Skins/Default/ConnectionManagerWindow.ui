@@ -2310,6 +2310,7 @@
     <addaction name="actionCreate_Trouble_Ticket_2" />
     <addaction name="separator" />
     <addaction name="actionAdvanced_Configuration" />
+    <addaction name="actionMachine_Authentication" />
    </widget>
    <addaction name="menuFile" />
    <addaction name="menuTools" />
@@ -2420,6 +2421,11 @@
      <family>MS Shell Dlg 2</family>
      <pointsize>8</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="actionMachine_Authentication" >
+   <property name="text" >
+    <string>Machine Authentication...</string>
    </property>
   </action>
  </widget>

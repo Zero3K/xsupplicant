@@ -193,6 +193,30 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		}
 	}
 
+	if ((write_all == TRUE) || (conf_globals->wiredMachineAuthConnection != NULL))
+	{
+		if (xmlNewChild(globalnode, NULL, (xmlChar *)"Wired_Machine_Authentication_Connection", (xmlChar *)conf_globals->machineAuthConnection) == NULL)
+		{
+#ifdef WRITE_GLOBALS_CONFIG
+			printf("Failed to create <Wired_Machine_Authentication_Connection> node!\n");
+#endif
+			xmlFreeNode(globalnode);
+			return NULL;
+		}
+	}
+
+	if ((write_all == TRUE) || (conf_globals->wirelessMachineAuthConnection != NULL))
+	{
+		if (xmlNewChild(globalnode, NULL, (xmlChar *)"Wireless_Machine_Authentication_Connection", (xmlChar *)conf_globals->machineAuthConnection) == NULL)
+		{
+#ifdef WRITE_GLOBALS_CONFIG
+			printf("Failed to create <Wireless_Machine_Authentication_Connection> node!\n");
+#endif
+			xmlFreeNode(globalnode);
+			return NULL;
+		}
+	}
+
 	if ((write_all == TRUE) || (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP)))
 	{
 		if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP))

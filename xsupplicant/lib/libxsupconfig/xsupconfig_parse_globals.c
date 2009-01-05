@@ -42,8 +42,7 @@ multichoice destination_choices[] = {
   { DEST_BSSID, "BSSID" },
   { DEST_BSSID, "bssid" },
   { DEST_MULTICAST, "MULTICAST" },
-  { DEST_MULTICAST, "multicast" },
-  { DEST_SOURCE, "SOURCE" },
+  { DEST_MULTICAST, "multicast" },{ DEST_SOURCE, "SOURCE" },
   { DEST_SOURCE, "source" },
   { -1, NULL}};
 
@@ -186,6 +185,60 @@ void *xsupconfig_parse_log_facility(void **attr, uint8_t config_type, xmlNodePtr
 	else
 	{
 		myglobals->log_facility = _strdup(value);
+		xmlFree(value);
+	}
+
+  return myglobals;
+}
+
+void *xsupconfig_parse_wired_machine_auth_connection(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Wired Machine Auth Connection : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+
+	if ((value == NULL) || (strlen(value) == 0))
+	{
+		xmlFree(value);
+		myglobals->wiredMachineAuthConnection = NULL;
+	}
+	else
+	{
+		myglobals->wiredMachineAuthConnection = _strdup(value);
+		xmlFree(value);
+	}
+
+  return myglobals;
+}
+
+void *xsupconfig_parse_wireless_machine_auth_connection(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Wireless Machine Auth Connection : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+
+	if ((value == NULL) || (strlen(value) == 0))
+	{
+		xmlFree(value);
+		myglobals->wirelessMachineAuthConnection = NULL;
+	}
+	else
+	{
+		myglobals->wirelessMachineAuthConnection = _strdup(value);
 		xmlFree(value);
 	}
 
@@ -1071,4 +1124,6 @@ parser globals[] = {
   {"Wireless_Only", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_wireless_only},    
   {"Control_Interfaces", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_control_ints},
   {"Dead_Connection_Timeout", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_dead_connection_timeout},
+  {"Wired_Machine_Authentication_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_wired_machine_auth_connection},
+  {"Wireless_Machine_Authentication_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_wireless_machine_auth_connection},
   {NULL, NULL, FALSE, 0, NULL}};

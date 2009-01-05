@@ -205,8 +205,6 @@ bool AuthTest::doTest(string connName)
 		return false;
 	}
 
-	// XXX Fix!
-	/*
 	retval = xsupgui_request_set_connection(myconnection->device, const_cast<char *>(connName.c_str()));
 	if (retval != REQUEST_SUCCESS)
 	{
@@ -219,7 +217,7 @@ bool AuthTest::doTest(string connName)
 
 		return false;
 	}
-*/
+
 	state = DISCONNECTED;
 
 	while ((state != AUTHENTICATED) && (failure == 0) && (pwdrequest == 0))
@@ -227,12 +225,11 @@ bool AuthTest::doTest(string connName)
 		processEvent();
 	}
 
-	// XXX Fix!
-/*	if (xsupgui_request_disconnect_connection(myconnection->device) != REQUEST_SUCCESS)
+	if (xsupgui_request_disconnect_connection(myconnection->device) != REQUEST_SUCCESS)
 	{
 		cout << "Unable to disconnect connection " + connName + "!\n";
 		return false;
-	}*/
+	}
 
 	xsupgui_request_free_connection_config(&myconnection);
 

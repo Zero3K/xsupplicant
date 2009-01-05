@@ -268,6 +268,8 @@ bool ConnectMgrDlg::initUI(void)
 
 bool ConnectMgrDlg::buildMenuBar(void)
 {
+	int admin = 0;
+
 	// set up menu bar
 	QMenuBar *pMenuBar = qFindChild<QMenuBar*>(m_pRealForm, "menubar");
 	if (pMenuBar != NULL)
@@ -310,7 +312,7 @@ bool ConnectMgrDlg::buildMenuBar(void)
 			QAction *pAction = new QAction(NULL);
 			if (pAction != NULL)
 			{
-				pAction->setText(tr("View Log"));
+				pAction->setText(tr("&View Log"));
 				pAction->setFont(pMenuBar->font());
 				pAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_L));
 				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuViewLog()));
@@ -320,12 +322,40 @@ bool ConnectMgrDlg::buildMenuBar(void)
 			pAction = new QAction(NULL);
 			if (pAction != NULL)
 			{
-				pAction->setText(tr("Create Troubleticket"));
+				pAction->setText(tr("&Create Troubleticket"));
 				pAction->setFont(pMenuBar->font());
 				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuCreateTicket()));
 				pToolsMenu->addAction(pAction);
 			}
-			
+
+			pToolsMenu->addSeparator();
+
+			// We only want to show the machine authentication menu if the user at the console is
+			// an administrative user.
+			if (xsupgui_request_get_are_administrator(&admin) == REQUEST_SUCCESS)
+			{
+				if (admin == TRUE)
+				{
+					pAction = new QAction(NULL);
+					if (pAction != NULL)
+					{
+						pAction->setText(tr("&Machine Authentication..."));
+						pAction->setFont(pMenuBar->font());
+						Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(menuMachineAuth()));
+						pToolsMenu->addAction(pAction);
+					}
+				}
+			}
+
+			pAction = new QAction(NULL);
+			if (pAction != NULL)
+			{
+				pAction->setText(tr("&Advanced Configuration..."));
+				pAction->setFont(pMenuBar->font());
+				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(showAdvancedConfig()));
+				pToolsMenu->addAction(pAction);
+			}
+
 			pMenuBar->addMenu(pToolsMenu);
 		}
 		
@@ -1097,6 +1127,14 @@ void ConnectMgrDlg::editSelectedConnection(void)
 			}
 		}
 	}
+}
+
+/**
+ * \brief The user wants to configure machine authentication.
+ **/
+void ConnectMgrDlg::menuMachineAuth(void)
+{
+	
 }
 
 void ConnectMgrDlg::menuViewLog(void)

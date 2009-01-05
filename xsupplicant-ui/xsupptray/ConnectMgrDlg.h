@@ -95,6 +95,7 @@ private slots:
 	void menuViewLog(void);
 	void menuHelp(void);
 	void menuAbout(void);	
+	void menuMachineAuth(void);
 	
 private:
 	QWidget *m_pParent;
