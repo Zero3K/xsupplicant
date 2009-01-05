@@ -82,6 +82,7 @@ int sim_reader_plugin_gs_supported(SCARDHANDLE *card_hdl)
 	struct config_plugins *cur = NULL;
 	int (*hook)(void *card_hdl);
 	int support = 0;
+	int result = 0;
 
 	cur = config_get_plugins();
 	
@@ -94,14 +95,14 @@ int sim_reader_plugin_gs_supported(SCARDHANDLE *card_hdl)
           if(hook != NULL)
 		  {
 		    support = (*hook)(card_hdl);
-			if (support > 0) return support;
+			if (support > 0) result |= support;
 		  }
 	    }
 
 		cur = cur->next;
 	}
 
-	return 0;
+	return result;
 }
 
 /**
