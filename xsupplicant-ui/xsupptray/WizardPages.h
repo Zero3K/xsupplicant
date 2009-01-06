@@ -348,4 +348,35 @@ private:
 	QCheckBox *m_pAutoRealm;
 };
 
+class WizardPageNetworkTypes : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageNetworkTypes(QWidget *parent, QWidget *parentWidget);
+	virtual bool create(void);
+	virtual void init(const ConnectionWizardData &data);
+	virtual bool validate(void) { return true; };
+	virtual const ConnectionWizardData &wizardData(void);
+private:
+	QCheckBox *m_pCheckBoxWireless;
+	QCheckBox *m_pCheckBoxWired;
+};
+
+class WizardPageMachineAuthFinished : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageMachineAuthFinished(QWidget *parent, QWidget *parentWidget);
+	virtual bool create(void);
+	virtual void init(const ConnectionWizardData &data);
+	virtual QString getHeaderString(void) { return tr("Finished"); };
+	virtual bool isFinalPage(void) { return true; };
+	virtual bool validate(void);
+	virtual const ConnectionWizardData &wizardData(void);
+private:
+	QLabel *m_pMsgLabel;
+};
+
 #endif

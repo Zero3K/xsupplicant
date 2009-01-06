@@ -34,29 +34,28 @@
 
 #include <QRadioButton>
 
-#include "ConnectionWizard.h"
+#include "MachineAuthWizard.h"
 #include "ConnectionWizardData.h"
 #include "WizardPages.h"
 #include "FormLoader.h"
 #include "Util.h"
 #include "XSupWrapper.h"
 
-ConnectionWizard::ConnectionWizard(QString adaptName, QWidget *parent, QWidget *parentWindow, Emitter *e)
+MachineAuthWizard::MachineAuthWizard(QString adaptName, QWidget *parent, QWidget *parentWindow, Emitter *e)
 	: QWidget(parent),
 	m_pParent(parent),
 	m_adapterName(adaptName),
 	m_pParentWindow(parentWindow),
 	m_pEmitter(e)
 {
-	for (int i=0; i<ConnectionWizard::pageLastPage; i++)
+	for (int i=0; i<MachineAuthWizard::pageLastPage; i++)
 		m_wizardPages[i] = NULL;
 
 	m_currentPage = pageNoPage;
-	m_dot1Xmode = false;
 	m_editMode = false;
 }
 
-ConnectionWizard::~ConnectionWizard(void)
+MachineAuthWizard::~MachineAuthWizard(void)
 {
 	if (m_pCancelButton != NULL)
 		Util::myDisconnect(m_pCancelButton, SIGNAL(clicked()), this, SLOT(cancelWizard()));
@@ -70,7 +69,7 @@ ConnectionWizard::~ConnectionWizard(void)
 	if (m_pRealForm != NULL)
 		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this, SLOT(cancelWizard()));		
 		
-	for (int i=0; i < ConnectionWizard::pageLastPage; i++)
+	for (int i=0; i < MachineAuthWizard::pageLastPage; i++)
 	{
 		delete m_wizardPages[i];
 		m_wizardPages[i] = NULL;
@@ -80,12 +79,12 @@ ConnectionWizard::~ConnectionWizard(void)
 		delete m_pRealForm;
 }
 
-bool ConnectionWizard::create(void)
+bool MachineAuthWizard::create(void)
 {
 	return this->initUI();
 }
 
-bool ConnectionWizard::initUI(void)
+bool MachineAuthWizard::initUI(void)
 {
 	// load form
 	m_pRealForm = FormLoader::buildform("ConnectionWizardWindow.ui", m_pParentWindow);
@@ -100,6 +99,8 @@ bool ConnectionWizard::initUI(void)
 	flags &= ~Qt::WindowMinimizeButtonHint;
 	m_pRealForm->setWindowFlags(flags);	
 	
+	m_pRealForm->setWindowTitle(tr("Machine Authentication Wizard - XSupplicant"));
+
 	m_pCancelButton = qFindChild<QPushButton*>(m_pRealForm, "buttonCancel");
 	m_pNextButton = qFindChild<QPushButton*>(m_pRealForm, "buttonNext");
 	m_pBackButton = qFindChild<QPushButton*>(m_pRealForm, "buttonBack");
@@ -117,7 +118,7 @@ bool ConnectionWizard::initUI(void)
 		m_pBackButton->setText(tr("Back"));
 		
 	if (m_pHeaderLabel != NULL)
-		m_pHeaderLabel->setText(tr("Create New Connection"));
+		m_pHeaderLabel->setText(tr("Configure Machine Authentication"));
 		
 	// set up event-handling
 	if (m_pCancelButton != NULL)
@@ -135,13 +136,13 @@ bool ConnectionWizard::initUI(void)
 	return this->loadPages();
 }
 
-void ConnectionWizard::show(void)
+void MachineAuthWizard::show(void)
 {
 	if (m_pRealForm != NULL)
 		m_pRealForm->show();
 }
 
-bool ConnectionWizard::loadPages(void)
+bool MachineAuthWizard::loadPages(void)
 {
 	bool success = true;
 	
@@ -159,58 +160,41 @@ bool ConnectionWizard::loadPages(void)
 		}
 		
 		// make sure we don't have any page objects sticking around
-		for (int i=0; i<ConnectionWizard::pageLastPage; i++)
+		for (int i=0; i<MachineAuthWizard::pageLastPage; i++)
 		{
 			if (m_wizardPages[i] != NULL)
 				delete m_wizardPages[i];
 		}
 		
-		for (int i=0; i<ConnectionWizard::pageLastPage; i++)
+		for (int i=0; i<MachineAuthWizard::pageLastPage; i++)
 		{
 			WizardPage *newPage = NULL;
 			switch (i) {
-				case ConnectionWizard::pageNetworkType:
-					newPage = new WizardPageNetworkType(this, m_pStackedWidget);
+				case MachineAuthWizard::pageNetworkTypes:
+					newPage = new WizardPageNetworkTypes(this, m_pStackedWidget);
 					break;
-				case ConnectionWizard::pageWiredSecurity:
-					newPage = new WizardPageWiredSecurity(this, m_pStackedWidget);
-					break;
-				case ConnectionWizard::pageIPOptions:
+				case MachineAuthWizard::pageIPOptions:
 					newPage = new WizardPageIPOptions(this, m_pStackedWidget);
 					break;
-				case ConnectionWizard::pageStaticIP:
+				case MachineAuthWizard::pageStaticIP:
 					newPage = new WizardPageStaticIP(this, m_pStackedWidget);
 					break;			
-				case ConnectionWizard::pageFinishPage:
-					newPage = new WizardPageFinished(this, m_pStackedWidget);
+				case MachineAuthWizard::pageMachineAuthFinishPage:
+					newPage = new WizardPageMachineAuthFinished(this, m_pStackedWidget);
 					break;
-				case ConnectionWizard::pageWirelessNetwork:
+				case MachineAuthWizard::pageWirelessNetwork:
 					newPage = new WizardPageWirelessNetwork(this, m_pStackedWidget);
 					break;
-				case ConnectionWizard::pageWirelessInfo:
+				case MachineAuthWizard::pageWirelessInfo:
 					newPage = new WizardPageWirelessInfo(this, m_pStackedWidget);
 					break;
-				case ConnectionWizard::pageDot1XProtocol:
-					newPage = new WizardPageDot1XProtocol(this, m_pStackedWidget);
-					break;
-				case ConnectionWizard::pageDot1XInnerProtocol:
-					newPage = new WizardPageDot1XInnerProtocol(this, m_pStackedWidget);
-					break;	
-				case ConnectionWizard::pageFastInnerProtocol:
-					newPage = new WizardPageFASTInnerProtocol(this, m_pStackedWidget);
-					break;
-				case ConnectionWizard::pageDot1XCert:
+				case MachineAuthWizard::pageDot1XCert:
 					newPage = new WizardPageDot1XCert(this, m_pStackedWidget);
 					break;									
-				case ConnectionWizard::pageDot1XUserCert:
-					newPage = new WizardPageDot1XUserCert(this, m_pStackedWidget);
-					break;
-				case ConnectionWizard::pageSCReader:
-					newPage = new WizardPageSCReader(this, m_pStackedWidget);
-					break;
 				default:
 					break;
 			}
+
 			if (newPage == NULL || newPage->create() == false || newPage->getWidget() == NULL)
 			{
 				// error creating page
@@ -225,21 +209,21 @@ bool ConnectionWizard::loadPages(void)
 			}
 		}
 	}
-	m_currentPage = ConnectionWizard::pageNoPage;
+
+	m_currentPage = MachineAuthWizard::pageNoPage;
 	return success;
 }
 
-void ConnectionWizard::gotoPage(ConnectionWizard::wizardPages newPageIdx)
+void MachineAuthWizard::gotoPage(MachineAuthWizard::wizardPages newPageIdx)
 {
-	if (newPageIdx != ConnectionWizard::pageNoPage && m_wizardPages[newPageIdx] != NULL) 
+	if (newPageIdx != MachineAuthWizard::pageNoPage && m_wizardPages[newPageIdx] != NULL) 
 	{
 		if (m_pHeaderLabel != NULL)
 		{
 			QString headerString;
-			if (m_editMode == true)
-				headerString = tr("Edit Connection");
-			else
-				headerString = tr("Create New Connection");
+
+			headerString = tr("Configure Machine Authentication");
+
 			QString pageHeader = m_wizardPages[newPageIdx]->getHeaderString();
 			if (!pageHeader.isEmpty())
 				headerString.append(" >> ").append(pageHeader);
@@ -266,7 +250,7 @@ void ConnectionWizard::gotoPage(ConnectionWizard::wizardPages newPageIdx)
 	}
 }
 
-void ConnectionWizard::gotoNextPage(void)
+void MachineAuthWizard::gotoNextPage(void)
 {
 	wizardPages nextPage = pageNoPage;
 	
@@ -299,7 +283,7 @@ void ConnectionWizard::gotoNextPage(void)
 		this->gotoPage(nextPage);
 }
 
-void ConnectionWizard::gotoPrevPage(void)
+void MachineAuthWizard::gotoPrevPage(void)
 {
 	// check if anything in stack
 	if (m_wizardHistory.isEmpty())
@@ -312,24 +296,22 @@ void ConnectionWizard::gotoPrevPage(void)
 	this->gotoPage(prevPage);
 }
 
-void ConnectionWizard::init(void)
+void MachineAuthWizard::init(void)
 {
 	// start with fresh connection data
 	m_connData = ConnectionWizardData();
 	m_editMode = false;
-	m_dot1Xmode = false;
 	
 	// load up first page
 	m_currentPage = pageNoPage;
 	this->gotoNextPage();
 }
 
-void ConnectionWizard::edit(const ConnectionWizardData &connData)
+void MachineAuthWizard::edit(const ConnectionWizardData &connData)
 {
 	m_connData = connData;
 	m_connData.m_newConnection = false;
 	m_editMode = true;
-	m_dot1Xmode = false;
 	m_originalConnName = connData.m_connectionName;
 	m_originalProfileName = connData.m_profileName;
 	m_originalServerName = connData.m_serverName;
@@ -338,14 +320,14 @@ void ConnectionWizard::edit(const ConnectionWizardData &connData)
 	this->gotoNextPage();
 }
 
-void ConnectionWizard::cancelWizard(void)
+void MachineAuthWizard::cancelWizard(void)
 {
 	if (m_pRealForm != NULL)
 		m_pRealForm->hide();
 	emit cancelled();
 }
 
-void ConnectionWizard::finishWizard(void)
+void MachineAuthWizard::finishWizard(void)
 {
 	bool success;
 	if (m_pRealForm != NULL)
@@ -357,7 +339,7 @@ void ConnectionWizard::finishWizard(void)
 	emit finished(success, connName, m_adapterName);
 }
 
-bool ConnectionWizard::saveConnectionData(QString *pConnName)
+bool MachineAuthWizard::saveConnectionData(QString *pConnName)
 {
 	bool success;
 	config_connection *pConfig = NULL;
@@ -419,132 +401,56 @@ bool ConnectionWizard::saveConnectionData(QString *pConnName)
 }
 
 
-ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
+MachineAuthWizard::wizardPages MachineAuthWizard::getNextPage(void)
 {
 	wizardPages nextPage = pageNoPage;
 	
 	switch (m_currentPage)
 	{
-		case ConnectionWizard::pageNoPage:
-			if (m_dot1Xmode == true)
-				nextPage = ConnectionWizard::pageDot1XProtocol;
-			else
-				nextPage = ConnectionWizard::pageNetworkType;
+		case MachineAuthWizard::pageNoPage:
+			nextPage = MachineAuthWizard::pageNetworkTypes;
 			break;
 			
-		case ConnectionWizard::pageNetworkType:
+		case MachineAuthWizard::pageNetworkTypes:
 			if (m_connData.m_wireless == true)
 			{
-				nextPage = ConnectionWizard::pageWirelessNetwork;
+				nextPage = MachineAuthWizard::pageWirelessNetwork;
 			}
 			else
 			{
-				nextPage =  ConnectionWizard::pageWiredSecurity;
+				nextPage =  MachineAuthWizard::pageDot1XCert;
 			}
-			break;
-						
-		case pageWiredSecurity:
-			if (m_connData.m_wiredSecurity == true)
-				nextPage = ConnectionWizard::pageDot1XProtocol;
-			else
-				nextPage = ConnectionWizard::pageIPOptions;
 			break;
 			
 		case pageWirelessNetwork:
 			if (m_connData.m_otherNetwork == true)
-				nextPage = ConnectionWizard::pageWirelessInfo;
+				nextPage = MachineAuthWizard::pageWirelessInfo;
 			else
 			{
-				if (m_connData.m_wirelessAssocMode == ConnectionWizardData::assoc_WPA_ENT || m_connData.m_wirelessAssocMode == ConnectionWizardData::assoc_WPA2_ENT)
-					nextPage = ConnectionWizard::pageDot1XProtocol;
-				else
-					nextPage = ConnectionWizard::pageIPOptions;				
+				nextPage = MachineAuthWizard::pageDot1XCert;
 			}	
 			break;
 			
 		case pageWirelessInfo:
-			if (m_connData.m_wirelessAssocMode == ConnectionWizardData::assoc_WPA_ENT || m_connData.m_wirelessAssocMode == ConnectionWizardData::assoc_WPA2_ENT)
-				nextPage = ConnectionWizard::pageDot1XProtocol;
-			else
-				nextPage = ConnectionWizard::pageIPOptions;			
+			nextPage = MachineAuthWizard::pageDot1XCert;
 			break;
 			
 		case pageIPOptions:
 			if (m_connData.m_staticIP == true)
-				nextPage = ConnectionWizard::pageStaticIP;
+				nextPage = MachineAuthWizard::pageStaticIP;
 			else
-				nextPage = ConnectionWizard::pageFinishPage;
+				nextPage = MachineAuthWizard::pageMachineAuthFinishPage;
 			break;
 			
 		case pageStaticIP:
-			nextPage = ConnectionWizard::pageFinishPage;
-			break;
-
-		case pageSCReader:
-			nextPage = pageIPOptions;
-			break;
-			
-		case pageDot1XProtocol:
-			if (m_connData.m_eapProtocol == ConnectionWizardData::eap_md5)
-			{
-				if (m_dot1Xmode == true)
-					nextPage = ConnectionWizard::pageFinishPage;
-				else
-					nextPage = ConnectionWizard::pageIPOptions;
-			}
-			else if (m_connData.m_eapProtocol == ConnectionWizardData::eap_fast)
-			{
-				nextPage = ConnectionWizard::pageFastInnerProtocol;
-			}
-			else if ((m_connData.m_eapProtocol == ConnectionWizardData::eap_aka) ||
-				(m_connData.m_eapProtocol == ConnectionWizardData::eap_sim))
-			{
-				nextPage = ConnectionWizard::pageSCReader;
-			}
-			else if (m_connData.m_eapProtocol == ConnectionWizardData::eap_tls)
-			{
-				nextPage = ConnectionWizard::pageDot1XUserCert;
-			}
-			else
-				nextPage = ConnectionWizard::pageDot1XInnerProtocol;
-			break;
-			
-		case pageDot1XInnerProtocol:
-			if (m_connData.m_validateCert == true)
-				nextPage = ConnectionWizard::pageDot1XCert;
-			else
-			{
-				if (m_dot1Xmode == true)
-					nextPage = ConnectionWizard::pageFinishPage;
-				else
-					nextPage = ConnectionWizard::pageIPOptions;
-			}
-			break;
-
-		case pageFastInnerProtocol:
-			if (m_connData.m_validateCert == true)
-				nextPage = ConnectionWizard::pageDot1XCert;
-			else
-			{
-				if (m_dot1Xmode == true)
-					nextPage = ConnectionWizard::pageFinishPage;
-				else
-					nextPage = ConnectionWizard::pageIPOptions;
-			}
+			nextPage = MachineAuthWizard::pageMachineAuthFinishPage;
 			break;
 			
 		case pageDot1XCert:
-			if (m_dot1Xmode == true)
-				nextPage = ConnectionWizard::pageFinishPage;
-			else		
-				nextPage = ConnectionWizard::pageIPOptions;
+			nextPage = MachineAuthWizard::pageIPOptions;
 			break;
 			
-		case pageDot1XUserCert:
-			nextPage = ConnectionWizard::pageDot1XCert;
-			break;
-
-		case pageFinishPage:
+		case pageMachineAuthFinishPage:
 			nextPage = pageNoPage;
 			break;
 			
@@ -555,14 +461,13 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 	return nextPage;
 }
 
-void ConnectionWizard::editDot1XInfo(const ConnectionWizardData &wizData)
+void MachineAuthWizard::editDot1XInfo(const ConnectionWizardData &wizData)
 {
 	// start with data passed in
 	m_connData = wizData;
 	
 	// load up first page
 	m_currentPage = pageNoPage;
-	m_dot1Xmode = true;
 	m_editMode = false;
 	this->gotoNextPage();
 }

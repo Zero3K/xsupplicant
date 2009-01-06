@@ -50,6 +50,7 @@ class TrayApp;
 class Emitter;
 class PreferredConnections;
 class ConnectionWizard;
+class MachineAuthWizard;
 
 class ConnectMgrDlg : public QWidget
 {
@@ -84,6 +85,8 @@ private slots:
 	void editSelectedConnection(void);
 	void cleanupConnectionWizard(void);
 	void finishConnectionWizard(bool, const QString &, const QString &);
+	void cleanupMachineAuthWizard(void);
+	void finishMachineAuthWizard(bool, const QString &, const QString &);
 	void enableDisableWirelessAutoConnect(int);
 	void enableDisableWiredAutoConnect(int);
 	void setWiredAutoConnection(const QString &connectionName);
@@ -124,6 +127,8 @@ private:
 	
 	PreferredConnections *m_pPrefDlg;
 	ConnectionWizard *m_pConnWizard;
+
+	MachineAuthWizard *m_pMachineAuth;
 	
 	static const int m_minConnListRowCount = 6;
 	

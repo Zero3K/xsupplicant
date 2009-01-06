@@ -166,40 +166,6 @@ const ConnectionWizardData &WizardPageNetworkType::wizardData(void)
 	else
 		m_curData.m_wireless = false;
 		
-	// assume one adapter and fill out connection data with first adapter of its kind
-	int_enum *pInterfaceList = NULL;
-	int retVal = xsupgui_request_enum_live_ints(&pInterfaceList);
-	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
-	{
-		// XXX ????
-		/*
-		int i=0;
-		while (pInterfaceList[i].desc != NULL)
-		{
-			if (pInterfaceList[i].is_wireless == TRUE && m_curData.m_wireless == true)
-			{
-				m_curData.m_adapterDesc = pInterfaceList[i].desc;
-				break;
-			}
-			else if (pInterfaceList[i].is_wireless == FALSE && m_curData.m_wireless == false)
-			{
-				m_curData.m_adapterDesc = pInterfaceList[i].desc;
-				break;				
-			}
-			++i;
-		}		
-		*/
-	}
-	else
-	{
-		// error. How do we alert user?
-	}
-	if (pInterfaceList != NULL)
-	{
-		xsupgui_request_free_int_enum(&pInterfaceList);
-		pInterfaceList = NULL;
-	}	
-
 	return m_curData;
 }
 
@@ -482,7 +448,6 @@ bool WizardPageFinished::create(void)
 	// dynamically populate text
 	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
 	if (pMsgLabel != NULL)
-		//pMsgLabel->setText(tr("Your network connection is now configured.\n\nPlease enter a name for the connection profile and press \"Connect\" to connect to the network now, or \"Finish\" to close the wizard."));	
 		pMsgLabel->setText(tr("Your network connection is now configured.\n\nPlease enter a name for the connection profile and press \"Finish\" to close the wizard."));	
 
 	QLabel *pConnNameLabel = qFindChild<QLabel*>(m_pRealForm, "labelConnectionName");
@@ -2045,3 +2010,146 @@ const ConnectionWizardData &WizardPageDot1XUserCert::wizardData()
 
 	return m_curData;
 }
+
+WizardPageNetworkTypes::WizardPageNetworkTypes(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+}
+
+bool WizardPageNetworkTypes::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageSelectNetworkTypes.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// dynamically populate text
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("Please indicate the types of network you would like to use machine authentication on:"));
+		
+	m_pCheckBoxWired = qFindChild<QCheckBox*>(m_pRealForm, "wiredCheckbox");
+	if (m_pCheckBoxWired != NULL)
+		m_pCheckBoxWired->setText(tr("Wired"));
+		
+	m_pCheckBoxWireless = qFindChild<QCheckBox*>(m_pRealForm, "wirelessCheckbox");
+	if (m_pCheckBoxWireless != NULL)
+		m_pCheckBoxWireless->setText(tr("Wireless"));
+		
+	// other initializations
+	if (m_pCheckBoxWired != NULL)
+		m_pCheckBoxWired->setChecked(true);
+
+	if (m_pCheckBoxWireless != NULL)
+		m_pCheckBoxWireless->setChecked(true);
+				
+	return true;
+}
+
+void WizardPageNetworkTypes::init(const ConnectionWizardData &data)
+{
+	m_curData = data;
+
+	// assume one of radio buttons isn't diabled
+	if (m_curData.m_wireless == true)
+	{
+		if (m_pCheckBoxWireless != NULL)
+		{
+			if (m_pCheckBoxWireless->isEnabled() == true)
+				m_pCheckBoxWireless->setChecked(true);
+			else
+			{
+				// if no wireless adapters, connection must be wired
+				m_curData.m_wireless = false;
+				if (m_pCheckBoxWired != NULL)
+				{
+					// assume it's enabled. Should check, and error out if not
+					m_pCheckBoxWired->setChecked(true);
+				}
+			}
+		}
+	}
+	else
+	{
+		if (m_pCheckBoxWired != NULL)
+		{
+			if (m_pCheckBoxWired->isEnabled() == true)
+				m_pCheckBoxWired->setChecked(true);
+			else
+			{
+				// if no wireless adapters, connection must be wired
+				m_curData.m_wireless = true;
+				if (m_pCheckBoxWireless != NULL)
+				{
+					// assume it's enabled. Should check, and error out if not
+					m_pCheckBoxWireless->setChecked(true);
+				}
+			}
+		}
+	}
+}
+
+
+const ConnectionWizardData &WizardPageNetworkTypes::wizardData(void)
+{
+
+	if (m_pCheckBoxWireless != NULL && m_pCheckBoxWireless->isChecked() == true)
+		m_curData.m_wireless = true;
+	else
+		m_curData.m_wireless = false;
+
+	if (m_pCheckBoxWired != NULL && m_pCheckBoxWired->isChecked() == true)
+		m_curData.m_wired = true;
+	else
+		m_curData.m_wired = false;
+		
+	return m_curData;
+}
+
+WizardPageMachineAuthFinished::WizardPageMachineAuthFinished(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+}
+
+bool WizardPageMachineAuthFinished::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageMachineAuthDone.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// dynamically populate text
+	m_pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "resultLabel");
+
+	return true;
+}
+
+void WizardPageMachineAuthFinished::init(const ConnectionWizardData &data)
+{
+	m_curData = data;
+	QString resultData = tr("Machine authentication has been successfully configured<br>with the following options :<br><ul>");
+
+	if (m_curData.m_wireless)
+		resultData += tr("<li>Machine Authentication on Wireless</li>");
+
+	if (m_curData.m_wired)
+		resultData += tr("<li>Machine Authentication on Wired</li>");
+
+	resultData += QString("</ul>");
+
+	m_pMsgLabel->setText(resultData);
+}
+
+bool WizardPageMachineAuthFinished::validate(void)
+{
+	return true;
+}
+const ConnectionWizardData &WizardPageMachineAuthFinished::wizardData(void)
+{
+	m_curData.m_connectionName = QString("Machine Authentication Connection");
+	m_curData.m_profileName = QString("Machine Authentication Profile");
+	m_curData.m_serverName = QString("Machine Authentication Trusted Server");
+	m_curData.m_config_type = CONFIG_LOAD_GLOBAL;
+	m_curData.m_machineAuth = true;
+
+	return m_curData;
+}
+

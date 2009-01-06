@@ -40,6 +40,7 @@
 #include "PreferredConnections.h"
 #include "ConnectionWizard.h"
 #include "ConnectionWizardData.h"
+#include "MachineAuthWizard.h"
 #include <QLabel>
 #include <QList>
 
@@ -59,6 +60,7 @@ ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e,
 	m_pConnections = NULL;
 	m_pPrefDlg = NULL;
 	m_pConnWizard = NULL;
+	m_pMachineAuth = NULL;
 }
 
 ConnectMgrDlg::~ConnectMgrDlg()
@@ -1011,6 +1013,24 @@ void ConnectMgrDlg::cleanupConnectionWizard(void)
 	}
 }
 
+void ConnectMgrDlg::finishMachineAuthWizard(bool success, const QString &, const QString &)
+{
+	if (success == false)
+		QMessageBox::critical(m_pRealForm, tr("Error saving Machine Authentication data"), tr("An error occurred while saving the machine authentication data you provided."));
+	this->cleanupMachineAuthWizard();
+}
+
+void ConnectMgrDlg::cleanupMachineAuthWizard(void)
+{
+	if (m_pMachineAuth != NULL)
+	{
+		Util::myDisconnect(m_pMachineAuth, SIGNAL(cancelled()), this, SLOT(cleaupMachineAuthWizard()));
+		Util::myDisconnect(m_pMachineAuth, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishMachineAuthWizard(bool, const QString &, const QString &)));
+		delete m_pMachineAuth;
+		m_pMachineAuth = NULL;
+	}
+}
+
 void ConnectMgrDlg::updateConnectionLists(void)
 {
 	// need to refresh the list of connections
@@ -1134,7 +1154,32 @@ void ConnectMgrDlg::editSelectedConnection(void)
  **/
 void ConnectMgrDlg::menuMachineAuth(void)
 {
-	
+	if (m_pMachineAuth != NULL)
+	{
+		m_pMachineAuth->show();
+		return;
+	}
+
+	m_pMachineAuth = new MachineAuthWizard(QString(""), this, m_pRealForm, m_pEmitter);
+	if (m_pMachineAuth != NULL)
+	{
+		m_pRealForm->setCursor(Qt::WaitCursor);
+		if (m_pMachineAuth->create() == true)
+		{
+			Util::myConnect(m_pMachineAuth, SIGNAL(cancelled()), this, SLOT(cleanupMachineAuthWizard()));
+			Util::myConnect(m_pMachineAuth, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishMachineAuthWizard(bool, const QString &, const QString &)));			
+			m_pMachineAuth->init();
+			m_pRealForm->setCursor(Qt::ArrowCursor);
+			m_pMachineAuth->show();
+		}
+		else
+		{
+			m_pRealForm->setCursor(Qt::ArrowCursor);
+			QMessageBox::critical(m_pRealForm, tr("Error"), tr("An error occurred when attempting to launch the Connection Wizard"));
+			delete m_pMachineAuth;
+			m_pMachineAuth = NULL;
+		}
+	}
 }
 
 void ConnectMgrDlg::menuViewLog(void)
