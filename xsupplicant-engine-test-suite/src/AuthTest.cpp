@@ -191,6 +191,7 @@ bool AuthTest::runConnectionTests()
 
 bool AuthTest::doTest(string connName)
 {
+	/*
 	int retval = 0;
 	config_connection *myconnection = NULL;
 
@@ -234,6 +235,6 @@ bool AuthTest::doTest(string connName)
 	xsupgui_request_free_connection_config(&myconnection);
 
 	log = 0;
-
+*/
 	return true;
 }
