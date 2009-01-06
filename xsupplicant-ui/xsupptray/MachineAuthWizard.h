@@ -57,10 +57,7 @@ public:
 	
 	// edit an existing connection
 	void edit(const ConnectionWizardData &);
-	
-	// prompt for only 802.1X info, as all other info is provided in Wizard Data passed in
-	void editDot1XInfo(const ConnectionWizardData &);
-	
+		
 	void show(void);
 	
 	typedef enum {
@@ -85,6 +82,7 @@ private:
 	void gotoPage(wizardPages newPageIdx);
 	void finishWizard(void);
 	bool saveConnectionData(QString *);
+	bool saveGlobalSettings();
 	wizardPages getNextPage(void);
 	
 private slots:

@@ -332,13 +332,15 @@ SectionIn 1 2 RO
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessScanDialog.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageAdapter.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XCert.ui"
-	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XUserCert.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XInnerProtocol.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XProtocol.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XUserCert.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageFASTInnerProtocol.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageFinished.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageIPOptions.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageMachineAuthDone.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageNetworkType.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageSelectNetworkTypes.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageSIMReader.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageStaticIP.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageWiredSecurity.ui"
@@ -621,13 +623,15 @@ remove_program_files:
 	Delete $INSTDIR\Skins\Default\WirelessScanDialog.ui
 	Delete $INSTDIR\Skins\Default\wizardPageAdapter.ui
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XCert.ui
-	Delete $INSTDIR\Skins\Default\wizardPageDot1XUserCert.ui"
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XInnerProtocol.ui
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XProtocol.ui
+	Delete $INSTDIR\Skins\Default\wizardPageDot1XUserCert.ui"
 	Delete $INSTDIR\Skins\Default\wizardPageFASTInnerProtocol.ui
 	Delete $INSTDIR\Skins\Default\wizardPageFinished.ui
 	Delete $INSTDIR\Skins\Default\wizardPageIPOptions.ui
+	Delete $INSTDIR\Skins\Default\wizardPageMachineAuthDone.ui
 	Delete $INSTDIR\Skins\Default\wizardPageNetworkType.ui
+	Delete $INSTDIR\Skins\Default\wizardPageSelectNetworkTypes.ui
         Delete $INSTDIR\Skins\Default\wizardPageSIMReader.ui
 	Delete $INSTDIR\Skins\Default\wizardPageStaticIP.ui
 	Delete $INSTDIR\Skins\Default\wizardPageWiredSecurity.ui

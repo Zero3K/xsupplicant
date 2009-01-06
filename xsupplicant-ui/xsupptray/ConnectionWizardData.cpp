@@ -41,6 +41,8 @@ ConnectionWizardData::ConnectionWizardData()
 	
 	// default to wired connection
 	m_wireless = false;
+	m_wired = false;
+	m_machineAuth = false;
 	
 	// get distinct name
 	m_connectionName = XSupWrapper::getUniqueConnectionName(QWidget::tr("New Connection"));
@@ -99,11 +101,16 @@ bool ConnectionWizardData::toProfileOuterIdentity(config_profiles * const pProfi
 		
 	if (pProfile->identity != NULL)
 		free(pProfile->identity);
-	if (m_outerIdentity.isEmpty())
-		pProfile->identity = _strdup("anonymous");
-	else
-		pProfile->identity = _strdup(m_outerIdentity.toAscii().data());
-		
+
+	// If we are doing machine auth, we want to leave the outer ID empty so the supplicant fills it in.
+	if (m_machineAuth == false)
+	{
+		if (m_outerIdentity.isEmpty())
+			pProfile->identity = _strdup("anonymous");
+		else
+			pProfile->identity = _strdup(m_outerIdentity.toAscii().data());
+	}
+
 	return true;
 }
 
@@ -264,6 +271,16 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 					else
 						mypeap->validate_cert = FALSE;
 					
+					// If we are doing machine auth, we need to set the "doing machine auth" flag.
+					if (m_machineAuth == true)
+					{
+						SET_FLAG(mypeap->flags, FLAGS_PEAP_MACHINE_AUTH);
+					}
+					else
+					{
+						UNSET_FLAG(mypeap->flags, FLAGS_PEAP_MACHINE_AUTH);
+					}
+
 					// inner protocol
 					if (m_innerPEAPProtocol == ConnectionWizardData::inner_eap_mschapv2)
 					{
@@ -290,6 +307,16 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 								UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
 								mscv2->nthash = NULL;
 								mscv2->password = NULL;
+
+								// If we are doing machine auth, we need to set the "doing machine auth" flag.
+								if (m_machineAuth == true)
+								{
+									SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
+								}
+								else
+								{
+									UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
+								}
 							}
 						}
 					}

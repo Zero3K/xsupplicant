@@ -2149,6 +2149,7 @@ const ConnectionWizardData &WizardPageMachineAuthFinished::wizardData(void)
 	m_curData.m_serverName = QString("Machine Authentication Trusted Server");
 	m_curData.m_config_type = CONFIG_LOAD_GLOBAL;
 	m_curData.m_machineAuth = true;
+	m_curData.m_innerPEAPProtocol = ConnectionWizardData::inner_eap_mschapv2;
 
 	return m_curData;
 }

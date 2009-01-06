@@ -1016,7 +1016,7 @@ void ConnectMgrDlg::cleanupConnectionWizard(void)
 void ConnectMgrDlg::finishMachineAuthWizard(bool success, const QString &, const QString &)
 {
 	if (success == false)
-		QMessageBox::critical(m_pRealForm, tr("Error saving Machine Authentication data"), tr("An error occurred while saving the machine authentication data you provided."));
+		QMessageBox::critical(m_pRealForm, tr("Error saving machine authentication data"), tr("An error occurred while saving the machine authentication data you provided."));
 	this->cleanupMachineAuthWizard();
 }
 
@@ -1024,7 +1024,7 @@ void ConnectMgrDlg::cleanupMachineAuthWizard(void)
 {
 	if (m_pMachineAuth != NULL)
 	{
-		Util::myDisconnect(m_pMachineAuth, SIGNAL(cancelled()), this, SLOT(cleaupMachineAuthWizard()));
+		Util::myDisconnect(m_pMachineAuth, SIGNAL(cancelled()), this, SLOT(cleanupMachineAuthWizard()));
 		Util::myDisconnect(m_pMachineAuth, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishMachineAuthWizard(bool, const QString &, const QString &)));
 		delete m_pMachineAuth;
 		m_pMachineAuth = NULL;

@@ -336,7 +336,59 @@ void MachineAuthWizard::finishWizard(void)
 	QString connName;
 	
 	success = this->saveConnectionData(&connName);
+
+	if (success) success = saveGlobalSettings();
+
 	emit finished(success, connName, m_adapterName);
+}
+
+/**
+ * \brief Save machine authentication settings to the globals in the machine config.
+ * 
+ * In addition to writing the normal configuration pieces, we also need to write some
+ * global settings to define which connection will be used for wired and wireless authentication.
+ *
+ * \retval true if data was saved.
+ * \retval false if data wasn't saved.
+ **/
+bool MachineAuthWizard::saveGlobalSettings()
+{
+	struct config_globals *myGlobals = NULL;
+	int retval = 0;
+
+	if (xsupgui_request_get_globals_config(&myGlobals) != REQUEST_SUCCESS) return false;
+
+	if (myGlobals->wiredMachineAuthConnection != NULL)
+	{
+		free(myGlobals->wiredMachineAuthConnection);
+		myGlobals->wiredMachineAuthConnection = NULL;
+	}
+
+	if (m_connData.m_wired == true)
+	{
+		myGlobals->wiredMachineAuthConnection = _strdup(m_connData.m_connectionName.toAscii().data());
+	}
+
+	if (myGlobals->wirelessMachineAuthConnection != NULL)
+	{
+		free(myGlobals->wirelessMachineAuthConnection);
+		myGlobals->wirelessMachineAuthConnection = NULL;
+	}
+
+	if (m_connData.m_wireless == true)
+	{
+		myGlobals->wirelessMachineAuthConnection = _strdup(m_connData.m_connectionName.toAscii().data());
+	}
+
+	retval = xsupgui_request_set_globals_config(myGlobals);
+
+	xsupgui_request_free_config_globals(&myGlobals);
+
+	if (retval != REQUEST_SUCCESS) return false;
+
+	if (xsupgui_request_write_config(CONFIG_LOAD_GLOBAL, NULL) != REQUEST_SUCCESS) return false;
+
+	return true;
 }
 
 bool MachineAuthWizard::saveConnectionData(QString *pConnName)
@@ -459,15 +511,4 @@ MachineAuthWizard::wizardPages MachineAuthWizard::getNextPage(void)
 			break;
 	}
 	return nextPage;
-}
-
-void MachineAuthWizard::editDot1XInfo(const ConnectionWizardData &wizData)
-{
-	// start with data passed in
-	m_connData = wizData;
-	
-	// load up first page
-	m_currentPage = pageNoPage;
-	m_editMode = false;
-	this->gotoNextPage();
 }
