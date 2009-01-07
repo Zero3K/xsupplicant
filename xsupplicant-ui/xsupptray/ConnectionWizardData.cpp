@@ -40,8 +40,8 @@ ConnectionWizardData::ConnectionWizardData()
 	m_newConnection = true;
 	
 	// default to wired connection
-	m_wireless = false;
-	m_wired = false;
+	m_wireless = true;
+	m_wired = true;
 	m_machineAuth = false;
 	
 	// get distinct name

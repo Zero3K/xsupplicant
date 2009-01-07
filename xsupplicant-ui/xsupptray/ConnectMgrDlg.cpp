@@ -1049,6 +1049,7 @@ void ConnectMgrDlg::editConnection(int config_type, const QString &connName)
 	bool success;
 	int inuse;
 	config_connection *pConfig;
+	struct config_eap_peap *peapconfig = NULL;
 	
 	success = XSupWrapper::getConfigConnection(config_type, connName,&pConfig);
 	if (success == true && pConfig != NULL)
@@ -1092,6 +1093,27 @@ void ConnectMgrDlg::editConnection(int config_type, const QString &connName)
 				
 			ConnectionWizardData wizData;
 			wizData.initFromSupplicantProfiles(config_type, pConfig,pProfile,pServer);
+
+			// See if this is a machine auth configuration.
+			if (pProfile->method->method_num == EAP_TYPE_PEAP)
+			{
+				peapconfig = (struct config_eap_peap *)pProfile->method->method_data;
+
+				if (TEST_FLAG(peapconfig->flags, FLAGS_PEAP_MACHINE_AUTH))
+				{
+					// Clean up the memory used here.
+					if (pConfig != NULL)
+						XSupWrapper::freeConfigConnection(&pConfig);
+					if (pProfile != NULL)
+						XSupWrapper::freeConfigProfile(&pProfile);
+					if (pServer != NULL)
+						XSupWrapper::freeConfigServer(&pServer);
+
+					// Let our machine auth handler take care of things.
+					menuMachineAuth();
+					return;
+				}
+			}
 			
 			if (pConfig != NULL)
 				XSupWrapper::freeConfigConnection(&pConfig);
@@ -1154,6 +1176,12 @@ void ConnectMgrDlg::editSelectedConnection(void)
  **/
 void ConnectMgrDlg::menuMachineAuth(void)
 {
+	ConnectionWizardData wizData;
+	struct config_connection *pConn = NULL;
+	struct config_profiles *pProf = NULL;
+	struct config_trusted_server *pServer = NULL;
+	struct config_globals *pGlobals = NULL;
+
 	if (m_pMachineAuth != NULL)
 	{
 		m_pMachineAuth->show();
@@ -1164,11 +1192,55 @@ void ConnectMgrDlg::menuMachineAuth(void)
 	if (m_pMachineAuth != NULL)
 	{
 		m_pRealForm->setCursor(Qt::WaitCursor);
+
 		if (m_pMachineAuth->create() == true)
 		{
 			Util::myConnect(m_pMachineAuth, SIGNAL(cancelled()), this, SLOT(cleanupMachineAuthWizard()));
 			Util::myConnect(m_pMachineAuth, SIGNAL(finished(bool, const QString &, const QString &)), this, SLOT(finishMachineAuthWizard(bool, const QString &, const QString &)));			
 			m_pMachineAuth->init();
+
+			if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, "Machine Authentication Connection", &pConn) == REQUEST_SUCCESS)
+			{
+				xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, "Machine Authentication Profile", &pProf);
+				xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, "Machine Authentication Trusted Server", &pServer);
+
+				if (wizData.initFromSupplicantProfiles(CONFIG_LOAD_GLOBAL, pConn, pProf, pServer) == true)
+				{
+					// Get the settings for wired/wireless.
+					if (xsupgui_request_get_globals_config(&pGlobals) == REQUEST_SUCCESS)
+					{
+						if (pGlobals->wiredMachineAuthConnection != NULL) 
+							wizData.m_wired = true;
+						else
+							wizData.m_wired = false;
+
+						if (pGlobals->wirelessMachineAuthConnection != NULL)
+							wizData.m_wireless = true;
+						else
+							wizData.m_wireless = false;
+
+						xsupgui_request_free_config_globals(&pGlobals);
+					}
+
+					// Clean up our used memory
+					xsupgui_request_free_connection_config(&pConn);
+					xsupgui_request_free_profile_config(&pProf);
+					xsupgui_request_free_trusted_server_config(&pServer);	
+
+					m_pMachineAuth->edit(wizData);
+				}
+				else
+				{
+					// Clean up our used memory
+					xsupgui_request_free_connection_config(&pConn);
+					xsupgui_request_free_profile_config(&pProf);
+					xsupgui_request_free_trusted_server_config(&pServer);	
+
+					QMessageBox::critical(this, tr("Machine Authentication Configuration Error"), tr("There was an error gathering existing machine authentication data to edit."));
+					return;
+				}
+			}
+
 			m_pRealForm->setCursor(Qt::ArrowCursor);
 			m_pMachineAuth->show();
 		}

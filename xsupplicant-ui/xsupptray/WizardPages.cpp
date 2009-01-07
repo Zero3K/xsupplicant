@@ -2049,42 +2049,14 @@ void WizardPageNetworkTypes::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
 
-	// assume one of radio buttons isn't diabled
-	if (m_curData.m_wireless == true)
+	if (m_pCheckBoxWireless != NULL)
 	{
-		if (m_pCheckBoxWireless != NULL)
-		{
-			if (m_pCheckBoxWireless->isEnabled() == true)
-				m_pCheckBoxWireless->setChecked(true);
-			else
-			{
-				// if no wireless adapters, connection must be wired
-				m_curData.m_wireless = false;
-				if (m_pCheckBoxWired != NULL)
-				{
-					// assume it's enabled. Should check, and error out if not
-					m_pCheckBoxWired->setChecked(true);
-				}
-			}
-		}
+		m_pCheckBoxWireless->setChecked(m_curData.m_wireless);
 	}
-	else
+
+	if (m_pCheckBoxWired != NULL)
 	{
-		if (m_pCheckBoxWired != NULL)
-		{
-			if (m_pCheckBoxWired->isEnabled() == true)
-				m_pCheckBoxWired->setChecked(true);
-			else
-			{
-				// if no wireless adapters, connection must be wired
-				m_curData.m_wireless = true;
-				if (m_pCheckBoxWireless != NULL)
-				{
-					// assume it's enabled. Should check, and error out if not
-					m_pCheckBoxWireless->setChecked(true);
-				}
-			}
-		}
+		m_pCheckBoxWired->setChecked(m_curData.m_wired);
 	}
 }
 
