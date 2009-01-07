@@ -84,7 +84,7 @@ set OPEN1X_GUI=%OPEN1X_BUILD_ROOT%\xsupplicant-ui
 set OPEN1X_GUI_PLUGINS=%OPEN1X_GUI%\plugins
 set OPEN1X_PROTINSTALL=%OPEN1X_VENDOR_ROOT%\ProtInstall
 set OPEN1X_PLUGINSTALL=%OPEN1X_BUILD_ROOT%\xsupplicant_plugin_installer
-set OPEN1X_TEST_SUITE=%OPEN1X_BUILD_ROOT%\xsupplicant-engine-test-suite
+set OPEN1X_TEST_SUITE=%OPEN1X_BUILD_ROOT%\xsupplicant-engine-test-suite\vs2005
 
 rem ---- OEM ----
 
