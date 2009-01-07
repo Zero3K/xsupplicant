@@ -15234,7 +15234,7 @@
                <x>10</x>
                <y>10</y>
                <width>520</width>
-               <height>234</height>
+               <height>251</height>
               </rect>
              </property>
              <property name="minimumSize" >
@@ -16334,12 +16334,62 @@
                <string>Disconnect on Logoff</string>
               </property>
              </widget>
+             <widget class="QCheckBox" name="checkBoxAllowMACont" >
+              <property name="geometry" >
+               <rect>
+                <x>10</x>
+                <y>230</y>
+                <width>381</width>
+                <height>18</height>
+               </rect>
+              </property>
+              <property name="palette" >
+               <palette>
+                <active>
+                 <colorrole role="WindowText" >
+                  <brush brushstyle="SolidPattern" >
+                   <color alpha="255" >
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </active>
+                <inactive>
+                 <colorrole role="WindowText" >
+                  <brush brushstyle="SolidPattern" >
+                   <color alpha="255" >
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </inactive>
+                <disabled>
+                 <colorrole role="WindowText" >
+                  <brush brushstyle="SolidPattern" >
+                   <color alpha="255" >
+                    <red>119</red>
+                    <green>119</green>
+                    <blue>119</blue>
+                   </color>
+                  </brush>
+                 </colorrole>
+                </disabled>
+               </palette>
+              </property>
+              <property name="text" >
+               <string>Allow logged on users to keep the machine's authentication</string>
+              </property>
+             </widget>
             </widget>
             <widget class="QPushButton" name="buttonAdvancedSettingsReset" >
              <property name="geometry" >
               <rect>
                <x>10</x>
-               <y>254</y>
+               <y>270</y>
                <width>75</width>
                <height>25</height>
               </rect>

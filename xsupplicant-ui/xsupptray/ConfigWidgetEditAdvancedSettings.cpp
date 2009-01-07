@@ -101,6 +101,11 @@ ConfigWidgetEditAdvancedSettings::~ConfigWidgetEditAdvancedSettings()
 		Util::myDisconnect(m_pPMKSACacheRefresh, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
 	}
 
+	if (m_pAllowMACont != NULL)
+	{
+		Util::myDisconnect(m_pAllowMACont, SIGNAL(clicked()), this, SLOT(slotDataChanged()));
+	}
+
 	Util::myDisconnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
 
 	Util::myDisconnect(m_pParent, SIGNAL(signalHelpClicked()), this, SLOT(slotShowHelp()));
@@ -127,6 +132,8 @@ bool ConfigWidgetEditAdvancedSettings::attach()
 	m_pDisconnectOnLogoff = qFindChild<QCheckBox*>(m_pRealWidget, "logoffDisconnect");
 
 	m_pWirelessOnly = qFindChild<QCheckBox*>(m_pRealWidget, "manageWireless");
+
+	m_pAllowMACont = qFindChild<QCheckBox*>(m_pRealWidget, "checkBoxAllowMACont");
 
 	updateWindow();
 
@@ -182,6 +189,11 @@ bool ConfigWidgetEditAdvancedSettings::attach()
 	if (m_pPMKSACacheRefresh != NULL)
 	{
 		Util::myConnect(m_pPMKSACacheRefresh, SIGNAL(valueChanged(int)), this, SLOT(slotDataChanged()));
+	}
+
+	if (m_pAllowMACont != NULL)
+	{
+		Util::myConnect(m_pAllowMACont, SIGNAL(clicked()), this, SLOT(slotDataChanged()));
 	}
 
 	Util::myConnect(this, SIGNAL(signalSetSaveBtn(bool)), m_pParent, SIGNAL(signalSetSaveBtn(bool)));
@@ -279,6 +291,18 @@ void ConfigWidgetEditAdvancedSettings::updateWindow()
 		}
 	}
 
+	if (m_pAllowMACont != NULL)
+	{
+		if ((m_pGlobals->flags & CONFIG_GLOBALS_ALLOW_MA_REMAIN) == CONFIG_GLOBALS_ALLOW_MA_REMAIN)
+		{
+			m_pAllowMACont->setChecked(true);
+		}
+		else
+		{
+			m_pAllowMACont->setChecked(false);
+		}
+	}
+
 	if (m_pDisconnectOnLogoff != NULL)
 	{
 		if ((m_pGlobals->flags & CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF) == CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF)
@@ -362,6 +386,11 @@ void ConfigWidgetEditAdvancedSettings::slotResetValues()
 	if (m_pPassiveScanInterval != NULL)
 	{
 		m_pPassiveScanInterval->setValue(PASSIVE_TIMEOUT);
+	}
+
+	if (m_pAllowMACont != NULL)
+	{
+		m_pAllowMACont->setChecked(false);
 	}
 
 	if (m_pPMKSACacheTimeout != NULL)
@@ -539,6 +568,18 @@ bool ConfigWidgetEditAdvancedSettings::save()
 		else
 		{
 			m_pGlobals->flags &= (~CONFIG_GLOBALS_WIRELESS_ONLY);
+		}
+	}
+
+	if (m_pAllowMACont != NULL)
+	{
+		if (m_pAllowMACont->isChecked())
+		{
+			m_pGlobals->flags |= CONFIG_GLOBALS_ALLOW_MA_REMAIN;
+		}
+		else
+		{
+			m_pGlobals->flags &= (~CONFIG_GLOBALS_ALLOW_MA_REMAIN);
 		}
 	}
 

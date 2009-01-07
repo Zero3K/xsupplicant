@@ -789,15 +789,30 @@ QVector<QString> XSupWrapper::getConnectionListForAdapter(bool isWireless)
 	QVector<QString> retVector;
 	int wantWireless = 0;
 	int configIsWireless = 0;
+	char *showanyway = NULL;
+	struct config_globals *globals = NULL;
+	conn_enum *pConn;
+	int retVal;
 
 	if (isWireless)
 		wantWireless = 1;
 	else
 		wantWireless = 0;
 
-	conn_enum *pConn;
-	int retVal;
-		
+	if (xsupgui_request_get_globals_config(&globals) == REQUEST_SUCCESS)
+	{
+		if (isWireless)
+		{
+			showanyway = _strdup(globals->wirelessMachineAuthConnection);
+		}
+		else
+		{
+			showanyway = _strdup(globals->wiredMachineAuthConnection);
+		}
+
+		xsupgui_request_free_config_globals(&globals);
+	}
+
 	retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
 	if (retVal == REQUEST_SUCCESS && pConn != NULL)
 	{
@@ -809,7 +824,12 @@ QVector<QString> XSupWrapper::getConnectionListForAdapter(bool isWireless)
 			else
 				configIsWireless = TRUE;
 
-			if (wantWireless == configIsWireless)
+			// Add this connection to the list if the interface in question is the right type (wired or wireless)
+			// or, if 'showanyway' matches the connection name.  Currently, 'showanyway' will hold the value
+			// of a machine authentication connection for wired or wireless.  (Which depends on the value of
+			// isWireless).
+			if ((wantWireless == configIsWireless) || ((showanyway != NULL) && (pConn[i].name != NULL) &&
+				(strcmp(pConn[i].name, showanyway) == 0)))
 			{
 				bool success;
 				config_connection *pConfig;
@@ -833,6 +853,8 @@ QVector<QString> XSupWrapper::getConnectionListForAdapter(bool isWireless)
 	if (pConn != NULL)
 		xsupgui_request_free_conn_enum(&pConn);
 		
+	if (showanyway != NULL) free(showanyway);
+
 	std::sort(retVector.begin(), retVector.end());
 
 	return retVector;

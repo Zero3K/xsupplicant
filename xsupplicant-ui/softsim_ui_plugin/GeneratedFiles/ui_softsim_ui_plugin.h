@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'softsim_ui_plugin.ui'
 **
-** Created: Tue Jan 6 10:53:31 2009
+** Created: Wed Jan 7 16:17:42 2009
 **      by: Qt User Interface Compiler version 4.3.4
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
