@@ -804,7 +804,7 @@ QVector<QString> XSupWrapper::getConnectionListForAdapter(bool isWireless)
 		int i = 0;
 		while (pConn[i].name != NULL)
 		{
-			if (pConn[i].ssid == NULL)
+			if ((pConn[i].ssid == NULL) || (strlen(pConn[i].ssid) == 0))
 				configIsWireless = FALSE;
 			else
 				configIsWireless = TRUE;

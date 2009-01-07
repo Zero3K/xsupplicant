@@ -202,6 +202,7 @@ int context_has_all_data(struct config_connection *cur)
 	struct config_profiles *prof = NULL;
 	char *password = NULL;
 	char *username = NULL;
+	struct config_eap_peap *peapconf = NULL;
 
 	if (cur == NULL) return FALSE;   // We can't use a NULL connection! ;)
 
@@ -210,6 +211,13 @@ int context_has_all_data(struct config_connection *cur)
 	{
 		prof = config_find_profile(CONFIG_LOAD_USER, cur->profile);
 		if (prof == NULL) return FALSE;
+	}
+
+	if (prof->method->method_num == EAP_TYPE_PEAP)
+	{
+		peapconf = (struct config_eap_peap *)prof->method->method_data;
+
+		if (TEST_FLAG(peapconf->flags, FLAGS_PEAP_MACHINE_AUTH)) return TRUE;
 	}
 
 	if (prof->identity == NULL) return FALSE;
@@ -244,6 +252,7 @@ char config_build(context *ctx, char *network_name)
 {
   struct config_connection *result = NULL;
   struct xsup_interfaces *myint = NULL;
+  struct config_globals *pGlobals = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 	  return FALSE;
@@ -268,19 +277,45 @@ char config_build(context *ctx, char *network_name)
 		// Otherwise, bind to the default.
 	      debug_printf(DEBUG_CONFIG_PARSE, "Searching configuration information in "
 			   "memory!\n");
+
+		  // If there is no user on the console, then start with the machine authentication
+		  // configuration (if we have one.)
+#ifdef WINDOWS
+		  // Only set this if nobody is logged in.
+		  if (win_impersonate_is_user_on_console() == FALSE)
+		  {
+			  pGlobals = config_get_globals();
+
+			  if (ctx->intType == ETH_802_11_INT)
+			  {
+				  result = config_find_connection(CONFIG_LOAD_GLOBAL, pGlobals->wirelessMachineAuthConnection);
+			  }
+			  else
+			  {
+				  result = config_find_connection(CONFIG_LOAD_GLOBAL, pGlobals->wiredMachineAuthConnection);
+			  }
+
+			  // If the machine auth connection wasn't found, then try to find the interface default.
+			  if (result == NULL) result = config_find_connection(CONFIG_LOAD_GLOBAL, myint->default_connection);
+		  }
+		  else
+		  {
+			  result = config_find_connection(CONFIG_LOAD_GLOBAL, myint->default_connection);
+		  }
+#else
 		  // Default networks can only be administratively defined, so don't search the user config.
 		  result = config_find_connection(CONFIG_LOAD_GLOBAL, myint->default_connection);
-
+#endif 
 		  // Only use a default connection if we are managing the interface.
 		  if ((result != NULL) && (!TEST_FLAG(myint->flags, CONFIG_INTERFACE_DONT_MANAGE)))
 		  {
-				debug_printf(DEBUG_CONFIG_PARSE, "!!!!!!!!!!!! Setting default network to : %s\n", myint->default_connection);
+			  debug_printf(DEBUG_CONFIG_PARSE, "!!!!!!!!!!!! Setting default network to : %s\n", result->name);
 
 				if (context_has_all_data(result) == TRUE)
 				{
 					ctx->conn = result;
 					FREE(ctx->conn_name);
-					ctx->conn_name = _strdup(myint->default_connection);
+					ctx->conn_name = _strdup(result->name);
 		
 					// Only system level profiles can be configured as a default.
 					ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL, ctx->conn->profile);
@@ -331,10 +366,10 @@ char config_build(context *ctx, char *network_name)
 		}
 		else
 		{
-			result = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_GLOBAL, network_name, ctx->desc);
+			result = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL, network_name);
 			if (result == NULL)
 			{
-				result = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_USER, network_name, ctx->desc);
+				result = config_find_connection_from_ssid(CONFIG_LOAD_USER, network_name);
 			}
 
 			if (result != NULL)

@@ -415,7 +415,7 @@ int config_set_pwd_on_profile(char *prof_name, char *password)
  *
  * \retval ptr to the connection (if found), NULL if the connection isn't found.
  **/
-struct config_connection *config_find_connection_from_ssid_and_desc(uint8_t config_type, char *ssidname, char *intDesc)
+struct config_connection *config_find_connection_from_ssid(uint8_t config_type, char *ssidname)
 {
     struct config_connection *cur = NULL;
 
@@ -449,7 +449,7 @@ struct config_connection *config_find_connection_from_ssid_and_desc(uint8_t conf
  * \retval 0..255 The priority of the connection. (1 = Highest, 254 = Lowest, 255 = No priority)
  *
  **/
-uint8_t config_get_network_priority(char *matchname, char *intDesc)
+uint8_t config_get_network_priority(char *matchname)
 {
   struct config_connection *cur = NULL;
 
@@ -459,10 +459,10 @@ uint8_t config_get_network_priority(char *matchname, char *intDesc)
       return 0xff;
 
   // Start at the top of the list.
-  cur = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_GLOBAL, matchname, intDesc);
+  cur = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL, matchname);
   if (cur == NULL)
   {
-	  cur = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_USER, matchname, intDesc);
+	  cur = config_find_connection_from_ssid(CONFIG_LOAD_USER, matchname);
   }
 
   if (!cur) return 0xff;

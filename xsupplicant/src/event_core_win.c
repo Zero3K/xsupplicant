@@ -1466,6 +1466,10 @@ void event_core_load_user_config()
 
 void event_core_win_do_user_logon()
 {
+	struct config_globals *globals = NULL;
+	int i = 0;
+	context *ctx = NULL;
+
 	  // Inform any IMCs that may need to know.
 	  debug_printf(DEBUG_EVENT_CORE, ">>* Processed user logged on flag.\n");
 	  if (imc_notify_callback != NULL) 
@@ -1478,6 +1482,30 @@ void event_core_win_do_user_logon()
 	  }
 
 	  event_core_load_user_config();
+
+	  // Determine if we want to allow a machine authentication to continue, if not, drop the
+	  // connection and reset the context so it starts to search the user's prioritized list.
+	  globals = config_get_globals();
+	  if ((globals != NULL) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN)))
+	  {
+		  // The admin hasn't allowed the user to keep the machine auth alive when they log in.  
+
+		  // Iterate all contexts.
+		for (i= 0; i< num_event_slots; i++)
+		{
+			// Loop through each event slot, cancel the IO, flag the context.
+			if (events[i].ctx != NULL)
+			{
+				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
+				{
+					ctx = events[i].ctx;
+
+					context_disconnect(ctx);
+					UNSET_FLAG(ctx->flags, FORCED_CONN);
+				}
+			}
+		}
+	  }
 
 	  userlogon = FALSE;   // Don't retrigger.
 }
@@ -1510,30 +1538,7 @@ void event_core_win_do_user_logoff()
 				{
 					ctx = events[i].ctx;
 
-					if (ctx->intType == ETH_802_11_INT)
-					{
-						// Do a wireless disconnect.
-						wireless_sm_change_state(INT_STOPPED, ctx);
-					}
-					else
-					{
-						// Do a wired disconnect.
-						if (statemachine_change_state(ctx, LOGOFF) == 0)
-						{
-							ctx->conn = NULL;
-							FREE(ctx->conn_name);
-							eap_sm_deinit(&ctx->eap_state);
-							eap_sm_init(&ctx->eap_state);
-							ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
-
-							txLogoff(ctx);
-						}
-					}
-
-					// Unbind any connections.
-					ctx->conn = NULL;
-					FREE(ctx->conn_name);
-					ctx->prof = NULL;
+					context_disconnect(ctx);
 					UNSET_FLAG(ctx->flags, FORCED_CONN);
 
 #ifdef HAVE_TNC

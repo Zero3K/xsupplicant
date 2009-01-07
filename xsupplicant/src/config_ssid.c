@@ -597,6 +597,9 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
   config_connection *conf = NULL;
   wireless_ctx *wctx = NULL;
   int retval = 0;
+  struct config_globals *globals = NULL;
+  struct config_connection *conn = NULL;
+  char *machineAuth_wireless = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return NULL;
   
@@ -605,6 +608,20 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
 	  debug_printf(DEBUG_NORMAL, "Attempted to find the 'best' SSID using an interface that isn't wireless!\n");
 	  return NULL;
   }
+
+  globals = config_get_globals();
+
+#ifdef WINDOWS
+	if ((globals != NULL) && (globals->wirelessMachineAuthConnection != NULL) &&
+		(win_impersonate_is_user_on_console() == FALSE)) 
+	{
+		conn = config_find_connection(CONFIG_LOAD_GLOBAL, globals->wirelessMachineAuthConnection);
+		if (conn != NULL)
+		{
+			machineAuth_wireless = _strdup(conn->ssid);
+		}
+	}
+#endif	
 
   wctx = (wireless_ctx *)ctx->intTypeData;
 
@@ -615,14 +632,24 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
   while (cur != NULL)
     {
 		retval = 0;
-		cur_pri = config_get_network_priority(cur->ssid_name, ctx->desc);
+
+		if ((machineAuth_wireless != NULL) && (cur->ssid_name != NULL) &&
+			(strcmp(machineAuth_wireless, cur->ssid_name) == 0))
+		{
+			cur_pri = 0;  // Force it lower than the lowest. ;)
+		}
+		else
+		{
+			cur_pri = config_get_network_priority(cur->ssid_name);
+		}
+
 		debug_printf(DEBUG_PHYSICAL_STATE, "Checking %s with Priority %d\n",
 		   cur->ssid_name, cur_pri);
 
-	  conf = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_GLOBAL, cur->ssid_name, ctx->desc);
+	  conf = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL, cur->ssid_name);
 	  if (conf == NULL)
 	  {
-		  conf = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_USER, cur->ssid_name, ctx->desc);
+		  conf = config_find_connection_from_ssid(CONFIG_LOAD_USER, cur->ssid_name);
 	  }
 
 	  if (conf != NULL)
@@ -655,10 +682,10 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
       debug_printf(DEBUG_PHYSICAL_STATE, "    Signal : %d   Noise : %d   Quality : "
 		   "%d\n", best->signal, best->noise, best->quality);
 
-	  conf = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_GLOBAL, best->ssid_name, ctx->desc);
+	  conf = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL, best->ssid_name);
 	  if (conf == NULL)
 	  {
-		  conf = config_find_connection_from_ssid_and_desc(CONFIG_LOAD_USER, best->ssid_name, ctx->desc);
+		  conf = config_find_connection_from_ssid(CONFIG_LOAD_USER, best->ssid_name);
 	  }
 
 	  if (conf != NULL)

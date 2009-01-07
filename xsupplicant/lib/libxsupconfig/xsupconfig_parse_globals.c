@@ -245,6 +245,42 @@ void *xsupconfig_parse_wireless_machine_auth_connection(void **attr, uint8_t con
   return myglobals;
 }
 
+void *xsupconfig_parse_allow_ma_remain(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+  struct config_globals *myglobals = NULL;
+  uint8_t result = 0;
+  char *value = NULL;
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Allow machine auth to remain : %s\n", value);
+#endif
+
+  myglobals = (*attr);
+
+  result = xsupconfig_common_yesno(value);
+
+  if (result == 1)
+    {
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN);
+    }
+  else
+    {
+      xsupconfig_common_log("Unknown value for Allow_Machine_Authentication_to_Remain.  (Line %ld)   Using default "
+	     "of 'NO'.\n", xsupconfig_parse_get_line_num());
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN);
+    }
+
+  xmlFree(value);
+
+  return myglobals;
+}
+
 void *xsupconfig_parse_ipc_group(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_globals *myglobals = NULL;
@@ -1126,4 +1162,5 @@ parser globals[] = {
   {"Dead_Connection_Timeout", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_dead_connection_timeout},
   {"Wired_Machine_Authentication_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_wired_machine_auth_connection},
   {"Wireless_Machine_Authentication_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_wireless_machine_auth_connection},
+  {"Allow_Machine_Authentication_to_Remain", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_allow_ma_remain},
   {NULL, NULL, FALSE, 0, NULL}};

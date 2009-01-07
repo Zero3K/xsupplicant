@@ -141,4 +141,22 @@ int win_impersonate_get_machine_password(uint8_t **password, uint16_t *length)
 	return XENONE;
 }
 
+/**
+ * \brief Determine if we have a user logged in to the console based on if we can
+ *			impersonate the user or not.
+ *
+ * \retval TRUE if a valid user is on the console
+ * \retval FALSE if no user is on the console
+ **/
+int win_impersonate_is_user_on_console()
+{
+#ifdef _DEBUG
+	return FALSE;
+#else
+	if (win_impersonate_desktop_user() != IMPERSONATE_NO_ERROR) return FALSE;
+
+	win_impersonate_back_to_self();
+	return TRUE;
+#endif
+}
 
