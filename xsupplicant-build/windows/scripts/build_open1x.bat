@@ -84,6 +84,7 @@ set OPEN1X_GUI=%OPEN1X_BUILD_ROOT%\xsupplicant-ui
 set OPEN1X_GUI_PLUGINS=%OPEN1X_GUI%\plugins
 set OPEN1X_PROTINSTALL=%OPEN1X_VENDOR_ROOT%\ProtInstall
 set OPEN1X_PLUGINSTALL=%OPEN1X_BUILD_ROOT%\xsupplicant_plugin_installer
+set OPEN1X_TEST_SUITE=%OPEN1X_BUILD_ROOT%\xsupplicant-engine-test-suite
 
 rem ---- OEM ----
 
@@ -194,6 +195,19 @@ vcbuild /time "%OPEN1X_PLUGINSTALL%\xsupplicant_plugin_installer.sln" "%BUILD_TY
 set BUILD_ERROR=%ERRORLEVEL%
 
 if NOT [%BUILD_ERROR%]==[0] goto FAIL
+
+set BUILD_STATUS=PASS
+
+echo %BUILD_PROJECT% Status: %BUILD_STATUS%
+
+rem ----------------------------------------------
+
+rem set BUILD_PROJECT="Open1X Test Suite"
+vcbuild /time "%OPEN1X_TEST_SUITE%\xsupplicant-engine-test.sln" "%BUILD_TYPE%|Win32" %BUILD_FLAGS%
+
+set BUILD_ERROR=%ERRORLEVEL%
+
+if NOT[%BUILD_ERROR%]==[0] goto FAIL
 
 set BUILD_STATUS=PASS
 
