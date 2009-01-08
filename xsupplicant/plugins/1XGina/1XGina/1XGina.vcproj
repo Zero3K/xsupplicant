@@ -43,7 +43,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_USRDLL;UNICODE;_UNICODE"
+				AdditionalIncludeDirectories="..\..\..\lib;..\..\..\lib\libxsupconfig;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\..\lib\libxsupgui"
+				PreprocessorDefinitions="WINDOWS;WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -66,7 +67,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libxsupconfig.lib libxsupgui.lib zlib.lib iconv_a.lib libxml2_a.lib"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;..\..\..\vs2005\build-debug&quot;;&quot;$(OutDir)&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(ZLIBDIR)\lib&quot;"
 				ModuleDefinitionFile=".\1XGina.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -125,7 +128,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_USRDLL;UNICODE;_UNICODE"
+				AdditionalIncludeDirectories="..\..\..\lib;..\..\..\lib\libxsupconfig;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\..\lib\libxsupgui"
+				PreprocessorDefinitions="WINDOWS;WIN32"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
 				WarningLevel="3"
@@ -146,7 +150,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libxsupconfig.lib libxsupgui.lib zlib.lib iconv_a.lib libxml2_a.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;..\..\..\vs2005\build-release&quot;;&quot;$(OutDir)&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(ZLIBDIR)\lib&quot;"
 				ModuleDefinitionFile=".\1XGina.def"
 				GenerateDebugInformation="true"
 				SubSystem="2"

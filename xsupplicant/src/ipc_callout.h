@@ -204,5 +204,6 @@ int ipc_callout_dhcp_release_renew(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_get_are_administrator(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_enum_smartcard_readers(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_enum_user_certs(xmlNodePtr, xmlNodePtr *);
+int ipc_callout_store_logon_creds(xmlNodePtr, xmlNodePtr *);
 
 #endif  // _IPC_CALLOUT_H_

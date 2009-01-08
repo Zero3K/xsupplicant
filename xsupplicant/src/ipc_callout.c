@@ -51,6 +51,7 @@
 #include "timer.h"
 #include "wpa_common.h"
 #include "ipc_events_index.h"
+#include "logon_creds.h"
 
 #ifdef EAP_SIM_ENABLE
 #include <winscard.h>
@@ -173,6 +174,7 @@ struct ipc_calls my_ipc_calls[] ={
 	{"Get_Are_Administrator", ipc_callout_get_are_administrator},
 	{"Enum_Smartcard_Readers", ipc_callout_enum_smartcard_readers},
 	{"Enum_User_Certs", ipc_callout_enum_user_certs},
+	{"Store_Logon_Creds", ipc_callout_store_logon_creds},
 	{NULL, NULL}
 };
 
@@ -8407,4 +8409,75 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr *outnode)
 	(*outnode) = n;
 
 	return IPC_SUCCESS;
+}
+
+/**
+ *  \brief Store the logon credentials for later user.
+ *
+ *  \param[in] innode   A pointer to the node tree that contains the request to change
+ *                      the username and password for a connection.
+ *  \param[out] outnode   A pointer to the node tree that contains either an ACK for
+ *                        success, or an error code for failure.
+ *
+ *  \retval IPC_SUCCESS on success
+ *  \retval IPC_FAILURE on failure
+ **/
+int ipc_callout_store_logon_creds(xmlNodePtr innode, xmlNodePtr *outnode)
+{
+	xmlNodePtr n = NULL, t = NULL;
+	char *request = NULL, *username = NULL, *password = NULL;
+
+	if (innode == NULL) return IPC_FAILURE;
+
+	debug_printf(DEBUG_IPC, "Got an IPC connection store logon creds request!\n");
+
+	n = ipc_callout_find_node(innode, "Store_Logon_Creds");
+	if (n == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get first creds node.\n");
+		return IPC_FAILURE;
+	}
+
+	n = n->children;
+
+	t = ipc_callout_find_node(n, "Username");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Username' node.\n");
+		return ipc_callout_create_error(NULL, "Store_Logon_Creds", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	username = (char *)xmlNodeGetContent(t);
+	if ((username != NULL) && (strlen(username) == 0))
+	{
+		xmlFree(username);
+		username = NULL;
+	}
+
+	t = ipc_callout_find_node(n, "Password");
+	if (t == NULL)
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Password' node!\n");
+		FREE(username);
+		return ipc_callout_create_error(NULL, "Store_Logon_Creds", IPC_ERROR_INVALID_REQUEST, outnode);
+	}
+
+	password = xmlNodeGetContent(t);
+	if ((password != NULL) && (strlen(password) == 0))
+	{
+		xmlFree(password);
+		password = NULL;
+	}
+
+	if (logon_creds_store_username_and_password(username, password) != NULL)
+	{
+		return ipc_callout_create_error(NULL, "Store_Logon_Creds", IPC_ERROR_REQUEST_FAILED, outnode);
+	}
+
+	debug_printf(DEBUG_NORMAL, "Stored global user credentials!\n");
+
+	FREE(username);
+	FREE(password);
+
+	return ipc_callout_create_ack(NULL, "Store_Logon_Creds", outnode);
 }

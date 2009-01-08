@@ -589,25 +589,7 @@ int xsupgui_request_set_connection_upw(char *conn_name, char *username, char *pa
 		goto request_set_upw_done;
 	}
 
-	// If we get here, then we know that the document passed the
-	// validation tests imposed.  So, we need to see if we got the result 
-	// we wanted.
-	n = n->children;
-	n = xsupgui_request_find_node(n, "Set_Connection_UPW_Result");
-	if (n != NULL)
-	{
-		done = IPC_ERROR_BAD_RESPONSE;
-		goto request_set_upw_done;
-	}
-
-	t = xsupgui_request_find_node(n, "ACK");
-	if (t != NULL)
-	{
-		done = IPC_ERROR_NOT_ACK;
-		goto request_set_upw_done;
-	}
-
-	done = REQUEST_SUCCESS;
+	done = xsupgui_request_is_ack(retdoc);
 
 request_set_upw_done:
 	if (doc != NULL) xmlFreeDoc(doc);

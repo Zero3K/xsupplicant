@@ -2873,6 +2873,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\logon_creds.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\platform\windows\lsa_calls.c"
 				>
 			</File>
@@ -3352,6 +3356,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\key_statemachine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\logon_creds.h"
 				>
 			</File>
 			<File

@@ -1765,3 +1765,86 @@ int xsupgui_request_free_enum_smartcard_readers(char ***readers)
 }
 
 
+/**
+ * \brief Store the logon username and password.  (Usually used with something like GINA or PAM.)
+ *
+ * @param[in] username    The new username to be stored (and used in profiles that request it)
+ * @param[in] password    The new password to be stored
+ *
+ * \retval REQUEST_SUCCESS on success
+ * \retval REQUEST_TIMEOUT on timeout
+ * \retval >299 on other error.
+ **/
+int xsupgui_request_set_logon_upw(char *username, char *password)
+{
+	xmlDocPtr doc = NULL, retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int err = 0;
+	int done = REQUEST_SUCCESS;
+	char *temp = NULL;
+
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) 
+	{
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto request_set_upw_done;
+	}
+
+	t = xmlNewChild(n, NULL, (xmlChar *)"Store_Logon_Creds", NULL);
+	if (t == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto request_set_upw_done;
+	}
+
+	xsupgui_xml_common_convert_amp(username, &temp);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Username", (xmlChar *)temp) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		free(temp);
+		goto request_set_upw_done;
+	}
+	free(temp);
+
+	xsupgui_xml_common_convert_amp(password, &temp);
+	if (xmlNewChild(t, NULL, (xmlChar *)"Password", (xmlChar *)temp) == NULL)
+	{
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		free(temp);
+		goto request_set_upw_done;
+	}
+	free(temp);
+
+	err = xsupgui_request_send(doc, &retdoc);
+	if (err != REQUEST_SUCCESS)
+	{
+		done = err;
+		goto request_set_upw_done;
+	}
+
+	// Otherwise, parse it and see if we got what we wanted.
+	err = xsupgui_request_check_exceptions(retdoc);
+	if (err != 0) 
+	{
+		done = err;
+		goto request_set_upw_done;
+	}
+
+	n = xmlDocGetRootElement(retdoc);
+	if (n == NULL)
+	{
+		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
+		goto request_set_upw_done;
+	}
+
+	done = xsupgui_request_is_ack(retdoc);
+
+request_set_upw_done:
+	if (doc != NULL) xmlFreeDoc(doc);
+	if (retdoc != NULL) xmlFreeDoc(retdoc);
+
+	return done;
+}

@@ -521,6 +521,7 @@ int xsupgui_request_get_is_profile_in_use(char *profname, int *inuse);
 int xsupgui_request_get_is_trusted_server_in_use(char *tsname, int *inuse);
 int xsupgui_request_get_are_administrator(int *admin);
 int xsupgui_request_enum_smartcard_readers(char ***readers);
+int xsupgui_request_set_logon_upw(char *username, char *password);
 
 /** 
  * Calls that operate on the configuration file structures.  (Things that will become

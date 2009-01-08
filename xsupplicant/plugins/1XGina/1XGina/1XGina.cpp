@@ -4,6 +4,11 @@
 #include "stdafx.h"
 #include "1XGina.h"
 
+extern "C" {
+#include <xsupgui.h>
+#include <xsupgui_request.h>
+};
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -58,15 +63,36 @@ CMy1XGinaApp theApp;
 
 BOOL CMy1XGinaApp::InitInstance()
 {
+	int i = 0;
+
 	CWinApp::InitInstance();
+
+	for (i=0; i < 30; i++)
+	{
+		if (xsupgui_connect() != REQUEST_SUCCESS)
+		{
+			Sleep(1);
+		}
+		else
+		{
+			break;
+		}
+	}
 
 	return TRUE;
 }
 
 OPEN1XGINA_API BOOL UserLogin(LPTSTR Username, LPTSTR Password, pGinaInfo *settingsInfo)
 {
+	char username[1024];
+	char password[1024];
+
 	// Set the username and password in the supplicant and tell it to connect.
-	//return false;
+	WideCharToMultiByte(CP_ACP, 0, Username, wcslen(Username), (char *)&username, 1024, NULL, NULL);
+	WideCharToMultiByte(CP_ACP, 0, Password, wcslen(Password), (char *)&password, 1024, NULL, NULL);
+
+	if (xsupgui_request_set_logon_upw(username, password) != REQUEST_SUCCESS) return false;
+
 	return true;
 }
 
@@ -78,7 +104,28 @@ OPEN1XGINA_API BOOL ChangeUserPassword(LPTSTR Username, LPTSTR OldPassword, LPTS
 
 OPEN1XGINA_API LPCTSTR AboutPlugin(void)
 {
-	return TEXT("This is the Open1X GINA Plugin.");
+	LPCTSTR resultText;
+	char *myVer = NULL;
+	wchar_t longVersion[256];
+
+	if (xsupgui_request_version_string(&myVer) != REQUEST_SUCCESS)
+	{
+		return TEXT("XSupplicant seems to be unavailable.");
+	}
+	
+	resultText = (LPCTSTR)malloc(1024);
+	if (resultText == NULL)
+	{
+		return TEXT("pGINA plugin failed to allocate memory");
+	}
+
+	memset((void *)&longVersion, 0x00, 256);
+	MultiByteToWideChar(CP_ACP, 0, myVer, strlen(myVer), (wchar_t *)&longVersion, 128);
+
+	swprintf((wchar_t *)resultText, 1024, L"%ws", longVersion);
+	free(myVer);
+
+	return resultText;
 }
 
 OPEN1XGINA_API void ChangePluginSettings(void)

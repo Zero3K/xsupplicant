@@ -41,6 +41,7 @@
 #include "pmksa.h"
 #include "platform/windows/wlanapi_interface.h"
 #include "platform/platform.h"
+#include "logon_creds.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -1524,6 +1525,8 @@ void event_core_win_do_user_logoff()
 		debug_printf(DEBUG_NORMAL, "Unable to obtain the global configuration data.\n");
 		return;
 	}
+
+	logon_creds_flush_stored_creds();
 
 	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF))
 	{

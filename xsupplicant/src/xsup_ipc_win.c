@@ -29,8 +29,8 @@
 #include <efence.h>
 #endif
 
-#define INSTANCES  5   // Maximum # of UIs we will allow to be connected
-					   // at once.
+#define INSTANCES  10   // Maximum # of UIs we will allow to be connected
+					    // at once.
 
 #define BUFSIZE 4096
 #define PIPE_TIMEOUT 5000
