@@ -489,6 +489,27 @@ finish_service_install:
 
 SectionEnd
 
+Section "GINA Integration" GINA
+     DetailPrint "Installing pGINA software..."
+
+     SetOutPath $INSTDIR\Modules
+     File "${SRCDIR}\xsupplicant\plugins\vs2005\release\1XGina.dll"
+
+     SetOutPath $INSTDIR
+     File "${THIRDPARTY}\pGina-1.8.8-x86-installer.exe"
+
+     DetailPrint "Starting pGina installer..."
+     nsExec::Exec '$INSTDIR\pGina-1.8.8-x86-installer.exe'
+     
+     DetailPrint "Remove the pGINA installer.."
+     Delete $INSTDIR\pGina-1.8.8-x86-installer.exe
+
+     DetailPrint "Configuring pGINA..."
+     ; Configure pGINA to use our plugin
+     WriteRegStr  HKLM SOFTWARE\pGina "pathPlugin" "$INSTDIR\Modules\1XGina.dll"
+SectionEnd
+     
+
 Section "3G Soft SIM" SoftSIM
      DetailPrint "Installing 3G SoftSIM Plugin..."
 
@@ -552,11 +573,13 @@ SectionEnd
 LangString DESC_SoftSIM ${LANG_ENGLISH} "Install the optional 3G USIM software emulator."
 LangString DESC_XSupplicant ${LANG_ENGLISH} "Install the core XSupplicant programs."
 LangString DESC_SoftSIM2G ${LANG_ENGLISH} "Install the option 2G SIM software emulator."
+LangString DESC_GINA ${LANG_ENGLISH} "Install pGINA and the XSupplicant authentication plugin."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
   !insertmacro MUI_DESCRIPTION_TEXT ${SoftSIM} $(DESC_SoftSIM)
   !insertmacro MUI_DESCRIPTION_TEXT ${XSupplicant} $(DESC_XSupplicant)
-  !insertmacro MUI_DESCRIPTION_TEXT ${SoftSIM2G} $(DESC_SoftSIM2G)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SoftSIM2} $(DESC_SoftSIM2G)
+  !insertmacro MUI_DESCRIPTION_TEXT ${GINA} $(DESC_GINA)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 Section "Uninstall"
@@ -703,8 +726,11 @@ remove_program_files:
         Delete $INSTDIR\Skins\Default\icons\wired.png
         Delete $INSTDIR\Skins\Default\icons\wireless.png
 
+	; It is okay here to try to delete files that don't exist.  NSIS will just quietly
+	; continue.  So having this here just makes sure we are extra clean. 
 	Delete $INSTDIR\Modules\SoftSIM3G.dll
-	Delete $INSTDIR\Movules\SoftSIM2G.dll
+	Delete $INSTDIR\Modules\SoftSIM2G.dll
+	Delete $INSTDIR\Modules\1XGina.dll
 
 	SetOutPath $INSTDIR
 

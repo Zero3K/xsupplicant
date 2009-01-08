@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoftSIM2G", "SoftSIM2G\Soft
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BirdDog", "BirdDog\BirdDog.vcproj", "{408DF754-4A58-48B4-A4F1-F54E6ACB6A8A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "1XGina", "..\1XGina\1XGina\1XGina.vcproj", "{4B22A7F7-F2C6-44F5-AA04-B36EB3AE163E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -25,6 +27,10 @@ Global
 		{408DF754-4A58-48B4-A4F1-F54E6ACB6A8A}.Debug|Win32.Build.0 = Debug|Win32
 		{408DF754-4A58-48B4-A4F1-F54E6ACB6A8A}.Release|Win32.ActiveCfg = Release|Win32
 		{408DF754-4A58-48B4-A4F1-F54E6ACB6A8A}.Release|Win32.Build.0 = Release|Win32
+		{4B22A7F7-F2C6-44F5-AA04-B36EB3AE163E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4B22A7F7-F2C6-44F5-AA04-B36EB3AE163E}.Debug|Win32.Build.0 = Debug|Win32
+		{4B22A7F7-F2C6-44F5-AA04-B36EB3AE163E}.Release|Win32.ActiveCfg = Release|Win32
+		{4B22A7F7-F2C6-44F5-AA04-B36EB3AE163E}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
