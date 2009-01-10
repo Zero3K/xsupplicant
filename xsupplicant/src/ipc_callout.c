@@ -2811,6 +2811,50 @@ int ipc_callout_change_socket_type(xmlNodePtr innode, xmlNodePtr *outnode)
 }
 
 /**
+ * \brief Determine if our desired connection can use logon credentials (assuming we have any).
+ *
+ * \retval TRUE if the configuration allows the use of logon credentials, and the needed credentials
+ *					are available.
+ *
+ * \retval FALSE if no credentials are available, or the configuration doesn't allow the use of
+ *					logon credentials.
+ **/
+int ipc_callout_helper_can_use_logon_creds(context *ctx, char *conn_name)
+{
+	int login_creds = 0;
+	struct config_profiles *myprof = NULL;
+	struct config_connection *mycon = NULL;
+	int result = TRUE;
+
+	if ((logon_creds_username_available() == FALSE) && (logon_creds_password_available() == FALSE))
+		return FALSE;
+
+	mycon = config_find_connection(CONFIG_LOAD_USER, conn_name);
+	if (mycon == NULL) mycon = config_find_connection(CONFIG_LOAD_GLOBAL, conn_name);
+
+	if (mycon == NULL) return FALSE;
+
+	myprof = config_find_profile(CONFIG_LOAD_USER, mycon->profile);
+	if (myprof == NULL) config_find_profile(CONFIG_LOAD_GLOBAL, mycon->profile);
+
+	if (myprof == NULL) return FALSE;
+
+	login_creds = eap_sm_creds_required(myprof->method->method_num, myprof->method->method_data);
+
+	if ((TEST_FLAG(login_creds, EAP_REQUIRES_USERNAME)) && (logon_creds_username_available() == FALSE)) 
+		return FALSE;
+
+	if ((TEST_FLAG(login_creds, EAP_REQUIRES_PASSWORD)) && (logon_creds_password_available() == FALSE))
+		return FALSE;
+
+	if (TEST_FLAG(login_creds, EAP_REQUIRES_PIN)) return FALSE;
+
+	if (TEST_FLAG(login_creds, EAP_REQUIRES_TOKEN_CODE)) return FALSE;
+
+	return TRUE;
+}
+
+/**
  * \brief Catch an IPC request to change the connection.
  *
  * This function should update the context, disassociate (if the interface is 
@@ -2920,6 +2964,9 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 
 	case CONNECTION_NEED_UPW:
 	case CONNECTION_NEED_PSK:
+		// If the EAP method is using logon creds and we have some, move along.
+		if (ipc_callout_helper_can_use_logon_creds(ctx, conn_name) == TRUE) break;
+
 		// We need to ask the user for information.
 		ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, conn_name);
 
@@ -8469,7 +8516,7 @@ int ipc_callout_store_logon_creds(xmlNodePtr innode, xmlNodePtr *outnode)
 		password = NULL;
 	}
 
-	if (logon_creds_store_username_and_password(username, password) != NULL)
+	if (logon_creds_store_username_and_password(username, password) != 0)
 	{
 		return ipc_callout_create_error(NULL, "Store_Logon_Creds", IPC_ERROR_REQUEST_FAILED, outnode);
 	}

@@ -91,6 +91,7 @@ uint8_t *eapaka_buildResp(eap_type_data *);
 uint8_t eapaka_isKeyAvailable(eap_type_data *);
 uint8_t *eapaka_getKey(eap_type_data *);
 void eapaka_deinit(eap_type_data *);
+int eapaka_creds_required(void *);
 
 #endif
 #endif

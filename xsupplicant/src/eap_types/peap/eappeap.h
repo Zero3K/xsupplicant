@@ -37,5 +37,5 @@ uint8_t eappeap_isKeyAvailable(eap_type_data *);
 uint8_t *eappeap_getKey(eap_type_data *);
 void eappeap_deinit(eap_type_data *);
 void eappeap_get_machineauth_name(context *ctx);
-
+int eappeap_creds_required(void *);
 #endif

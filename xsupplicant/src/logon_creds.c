@@ -36,16 +36,14 @@ char *logon_password = NULL;
 int logon_creds_store_username_and_password(char *username, char *password)
 {
 	if (username != NULL)
-	{
 		FREE(logon_username);
-		logon_username = _strdup(username);
-	}
+
+	logon_username = _strdup(username);
 
 	if (password != NULL)
-	{
 		FREE(logon_password);
-		logon_password = _strdup(password);
-	}
+
+	logon_password = _strdup(password);
 
 	// For now, this function can't fail, but who knows in the future. ;)
 	return XENONE;
@@ -67,29 +65,25 @@ int logon_creds_flush_stored_creds()
 /**
  * \brief Get a copy of the username that is currently stored.
  *
- * \note This function returns a COPY so the caller needs to free the memory!
+ * \warning This function returns the global pointer, so it shouldn't be freed!
  *
  * \retval ptr to the username, NULL on error (or no username available)
  **/
 char *logon_creds_get_username()
 {
-	if (logon_username == NULL) return NULL;
-
-	return _strdup(logon_username);
+	return logon_username;
 }
 
 /**
  * \brief Get a copy of the password that is currently stored.
  * 
- * \note This function returns a COPY so the caller needs to free the memory!
+ * \warning This function returns the global pointer, so it shouldn't be freed!
  *
  * \retval ptr to the password, NULL on error (or no password available)
  **/
 char *logon_creds_get_password()
 {
-	if (logon_password == NULL) return NULL;
-
-	return _strdup(logon_password);
+	return logon_password;
 }
 
 /**

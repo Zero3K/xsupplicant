@@ -481,7 +481,7 @@ void SSIDListDlg::connectToNetwork(const WirelessNetworkInfo &netInfo)
 	}
 }
 
-void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName, const QString &adaptName)
+void SSIDListDlg::finishConnectionWizard(bool success, const QString &connName, const QString &)
 {
 	if (success == true)
 	{

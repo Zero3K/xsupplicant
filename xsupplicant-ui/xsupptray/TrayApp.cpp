@@ -1537,8 +1537,8 @@ bool TrayApp::startEventListenerThread()
   if (!m_pEventListenerThread->connectXSupEventListener(true))
   {
     QMessageBox::critical(this, tr("XSupplicant Event Message Error"), 
-      tr("The utility can't connect to the event system from the XSupplicant."
-      "You must shut down the XSupplicant UI and restart. Contact IDEngines support if this occurs."));
+      tr("Unable to connect to the service's event channel."
+      "You must shut down the XSupplicant UI and restart."));
 
     delete m_pEventListenerThread;
     m_pEventListenerThread = NULL;

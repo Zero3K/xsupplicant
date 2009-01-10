@@ -2005,7 +2005,6 @@ void eapfast_phase2_buildResp(eap_type_data *eapdata, uint8_t *result,
 
   if (eapdata->ignore == TRUE)
   {
-	  (*result) = NULL;
 	  (*result_size) = 0;
 
 	  if (phase2->result_data != NULL)

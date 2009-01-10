@@ -168,10 +168,11 @@ struct config_eap_ttls
 									 //   structure that contains the information needed to complete the inner (phase 2) authentication.
 };
 
-#define FLAGS_EAP_MSCHAPV2_VOLATILE		BIT(0)   ///< This instance of the MSCHAPv2 configuration shouldn't be written to the config file.  (Mainly used with EAP-FAST for anonymous provisioning.)
-#define FLAGS_EAP_MSCHAPV2_IAS_QUIRK	BIT(1)   ///< A TRUE/FALSE value to deal with a strange quirk with some IAS configurations.  (This is generally not used.)
-#define FLAGS_EAP_MSCHAPV2_FAST_PROVISION  BIT(2)   ///< Is the purpose of this configuraion only for EAP-FAST provisioning?  (This option shouldn't be parsed in the parser, or written.)
-#define FLAGS_EAP_MSCHAPV2_MACHINE_AUTH  BIT(3)		///< Should MS-CHAPv2 operate in machine authentication mode?
+#define FLAGS_EAP_MSCHAPV2_VOLATILE			BIT(0)   ///< This instance of the MSCHAPv2 configuration shouldn't be written to the config file.  (Mainly used with EAP-FAST for anonymous provisioning.)
+#define FLAGS_EAP_MSCHAPV2_IAS_QUIRK		BIT(1)   ///< A TRUE/FALSE value to deal with a strange quirk with some IAS configurations.  (This is generally not used.)
+#define FLAGS_EAP_MSCHAPV2_FAST_PROVISION	BIT(2)   ///< Is the purpose of this configuraion only for EAP-FAST provisioning?  (This option shouldn't be parsed in the parser, or written.)
+#define FLAGS_EAP_MSCHAPV2_MACHINE_AUTH		BIT(3)	 ///< Should MS-CHAPv2 operate in machine authentication mode?
+#define FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS	BIT(4)	 ///< Should MS-CHAPv2 use available logon credentials (if available)?
 
 // Configuration information that is needed to authenticate using EAP-MSCHAPv2.
 //  NOTE: This structure can show up as both an inner method to tunneled methods, or an outer method on it's own.
@@ -190,6 +191,7 @@ struct config_eap_mschapv2
 // but has the side effect that the developer needs to be a bit more careful.
 
 #define FLAGS_PEAP_MACHINE_AUTH		BIT(0)			///< Should PEAP use machine authentication?
+#define FLAGS_PEAP_USE_LOGON_CREDS  BIT(1)			///< Should we use logon credentials for authentication?
 
 struct config_eap_peap
 {

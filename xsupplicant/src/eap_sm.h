@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  * EAP layer implementation.
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
@@ -7,7 +7,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef __EAP_SM_H__
 #define __EAP_SM_H__
@@ -125,6 +125,14 @@ typedef struct eap_sm_vars {
 
 } eap_sm;
 
+// Different types of credentials that an EAP method might require.
+//   The main purpose of these values is to allow the supplicant to determine
+//	 if some set of existing stored credentials can be used for an authentication.
+#define EAP_REQUIRES_USERNAME	BIT(0)
+#define EAP_REQUIRES_PASSWORD	BIT(1)
+#define EAP_REQUIRES_PIN		BIT(2)
+#define EAP_REQUIRES_TOKEN_CODE	BIT(3)
+
 struct rfc4137_eap_handler {
   int eap_type_handler;
   char *eapname;
@@ -134,6 +142,7 @@ struct rfc4137_eap_handler {
   uint8_t (*eap_isKeyAvailable)(eap_type_data *);
   uint8_t *(*eap_getKey)(eap_type_data *);
   uint8_t (*eap_getKeyLen)(eap_type_data *);
+  int (*eap_cred_requirements)(void *);
   void (*eap_deinit)(eap_type_data *);
 };
 
@@ -159,5 +168,6 @@ void eap_sm_cleanup(eap_sm *);
 void eap_sm_force_init(eap_sm *);
 void eap_sm_dump_state(eap_sm *);
 int eap_sm_find_method(uint8_t);
+int eap_sm_creds_required(uint8_t, void *);
 
 #endif

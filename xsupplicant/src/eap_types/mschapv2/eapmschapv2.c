@@ -28,6 +28,7 @@
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
 #include "../../platform/cardif.h"
+#include "../../logon_creds.h"
 
 #ifndef WINDOWS
 #include <netinet/in.h>
@@ -249,22 +250,23 @@ int eapmschapv2_init(eap_type_data *eapdata)
 
 	if (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
 	{
-		if (ctx->prof->temp_password == NULL)
-		 {
-			if (eapconf->password == NULL)
-			{
-				debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
-				eap_type_common_fail(eapdata);
-				return XEGENERROR;
-			}
-			else
-			{
-				mscv2data->password = _strdup(eapconf->password);
-			}
-	    }
-	  else
+		if (ctx->prof->temp_password != NULL)
 		{
 			mscv2data->password = _strdup(ctx->prof->temp_password);
+		}
+		else if (logon_creds_password_available() == TRUE)
+		{
+			mscv2data->password = _strdup(logon_creds_get_password());
+		}
+		else if (eapconf->password != NULL)
+		{
+			mscv2data->password = _strdup(eapconf->password);
+		}
+		else
+		{
+			debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
+			eap_type_common_fail(eapdata);
+			return XEGENERROR;
 		}
 	}
 
@@ -287,6 +289,10 @@ int eapmschapv2_init(eap_type_data *eapdata)
 		else if (ctx->prof->identity != NULL)
 		{
 			eapdata->ident = _strdup(ctx->prof->identity);
+		}
+		else if (logon_creds_username_available() == TRUE)
+		{
+			eapdata->ident = _strdup(logon_creds_get_username());
 		}
 		else
 		{
@@ -1446,4 +1452,16 @@ void eapmschapv2_deinit(eap_type_data *eapdata)
 	  FREE(myvars->password);
       FREE(eapdata->eap_data);
     }
+}
+
+/**
+ * \brief Return the credential requirements for EAP-MSCHAPv2
+ *
+ * @param[in] config	Not used.
+ *
+ * \retval (EAP_REQUIRES_USERNAME|EAP_REQUIRES_PASSWORD)
+ **/
+int eapmschapv2_creds_required(void *config)
+{
+	return (EAP_REQUIRES_USERNAME | EAP_REQUIRES_PASSWORD);
 }

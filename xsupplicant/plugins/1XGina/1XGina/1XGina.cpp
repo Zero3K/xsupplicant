@@ -66,7 +66,7 @@ BOOL CMy1XGinaApp::InitInstance()
 	int i = 0;
 
 	CWinApp::InitInstance();
-
+/*
 	for (i=0; i < 30; i++)
 	{
 		if (xsupgui_connect() != REQUEST_SUCCESS)
@@ -78,7 +78,7 @@ BOOL CMy1XGinaApp::InitInstance()
 			break;
 		}
 	}
-
+*/
 	return TRUE;
 }
 
@@ -86,14 +86,24 @@ OPEN1XGINA_API BOOL UserLogin(LPTSTR Username, LPTSTR Password, pGinaInfo *setti
 {
 	char username[1024];
 	char password[1024];
+	bool result = true;
+
+	if (xsupgui_connect() != REQUEST_SUCCESS) return false;
+
+	settingsInfo->errorString = wcsdup(Username);
+
+	memset((char *)&username, 0x00, 1024);
+	memset((char *)&password, 0x00, 1024);
 
 	// Set the username and password in the supplicant and tell it to connect.
-	WideCharToMultiByte(CP_ACP, 0, Username, wcslen(Username), (char *)&username, 1024, NULL, NULL);
-	WideCharToMultiByte(CP_ACP, 0, Password, wcslen(Password), (char *)&password, 1024, NULL, NULL);
+	WideCharToMultiByte(CP_ACP, 0, Username, (int)wcslen(Username)+1, (char *)&username, 1024, NULL, NULL);
+	WideCharToMultiByte(CP_ACP, 0, Password, (int)wcslen(Password)+1, (char *)&password, 1024, NULL, NULL);
 
-	if (xsupgui_request_set_logon_upw(username, password) != REQUEST_SUCCESS) return false;
+	if (xsupgui_request_set_logon_upw(username, password) != REQUEST_SUCCESS) result = false;
 
-	return true;
+	xsupgui_disconnect();
+
+	return result;
 }
 
 OPEN1XGINA_API BOOL ChangeUserPassword(LPTSTR Username, LPTSTR OldPassword, LPTSTR NewPassword)
@@ -108,10 +118,18 @@ OPEN1XGINA_API LPCTSTR AboutPlugin(void)
 	char *myVer = NULL;
 	wchar_t longVersion[256];
 
+	if (xsupgui_connect() != REQUEST_SUCCESS)
+	{
+		return TEXT("Unable to connect to the XSupplicant service!");
+	}
+
 	if (xsupgui_request_version_string(&myVer) != REQUEST_SUCCESS)
 	{
+		xsupgui_disconnect();
 		return TEXT("XSupplicant seems to be unavailable.");
 	}
+
+	xsupgui_disconnect();
 	
 	resultText = (LPCTSTR)malloc(1024);
 	if (resultText == NULL)
@@ -120,7 +138,7 @@ OPEN1XGINA_API LPCTSTR AboutPlugin(void)
 	}
 
 	memset((void *)&longVersion, 0x00, 256);
-	MultiByteToWideChar(CP_ACP, 0, myVer, strlen(myVer), (wchar_t *)&longVersion, 128);
+	MultiByteToWideChar(CP_ACP, 0, myVer, (int)strlen(myVer), (wchar_t *)&longVersion, 128);
 
 	swprintf((wchar_t *)resultText, 1024, L"%ws", longVersion);
 	free(myVer);

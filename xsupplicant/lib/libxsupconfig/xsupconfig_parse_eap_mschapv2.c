@@ -168,6 +168,42 @@ void *xsupconfig_parse_eap_mschapv2_machine_auth(void **attr, uint8_t config_typ
   return mscv2;
 }
 
+void *xsupconfig_parse_eap_mschapv2_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	struct config_eap_mschapv2 *mscv2 = NULL;
+	char *value = NULL;
+	uint8_t result = 0;
+
+	mscv2 = (*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Use logon creds : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
+    }
+
+  xmlFree(value);
+
+  return mscv2;
+}
+
 void *xsupconfig_parse_eap_mschapv2_nt_pwd_hash(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_eap_mschapv2 *mscv2 = NULL;
@@ -272,6 +308,7 @@ parser eap_mschapv2[] = {
   {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_enc_password},
   {"NT_Password_Hash", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_nt_pwd_hash},
   {"Machine_Authentication_Mode", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_eap_mschapv2_machine_auth},
+  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_logon_creds},
   {"IAS_Quirk", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_ias_quirk},
   {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_volatile},
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},

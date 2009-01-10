@@ -655,3 +655,30 @@ void eappeap_get_machineauth_name(context *ctx)
 #warning Machine authentication is not available for your platform!
 #endif
 }
+
+/**
+ * \brief Determine what credentials are needed for PEAP.
+ *
+ * @param[in] config   A pointer to a PEAP configuration blob.
+ *
+ * \retval int  A bitmap containing the requirements for this connection.
+ **/
+int eappeap_creds_required(void *config)
+{
+	struct config_eap_peap *peap = NULL;
+
+	peap = (struct config_eap_peap *)config;
+	if (peap == NULL) return -1;				// This is bad, we can't determine anything.
+
+	switch (peap->phase2->method_num)
+	{
+	case EAP_TYPE_MSCHAPV2:
+		return eapmschapv2_creds_required(peap->phase2->method_data);
+		break;
+
+	default:
+		return -1;
+	}
+
+	return -1;
+}

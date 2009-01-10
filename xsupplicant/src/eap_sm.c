@@ -32,6 +32,7 @@
 #include "ipc_events.h"
 #include "ipc_callout.h"
 #include "ipc_events_index.h"
+#include "logon_creds.h"
 
 #ifdef WINDOWS
 #include "event_core_win.h"
@@ -75,67 +76,67 @@
 struct rfc4137_eap_handler eaphandlers[] = {
   {EAP_TYPE_MD5, "EAP-MD5", eapmd5_check, eapmd5_process, eapmd5_buildResp,
    eapmd5_isKeyAvailable, eapmd5_getKey, eap_type_common_get_zero_len,
-   eapmd5_deinit},
+   eapmd5_creds_required, eapmd5_deinit},
 
   {EAP_TYPE_MSCHAPV2, "EAP-MSCHAPv2", eapmschapv2_check, eapmschapv2_process,
    eapmschapv2_buildResp, eapmschapv2_isKeyAvailable, eapmschapv2_getKey,
-   eap_type_common_get_common_key_len, eapmschapv2_deinit},
+   eap_type_common_get_common_key_len, eapmschapv2_creds_required, eapmschapv2_deinit},
 
   {EAP_TYPE_TLS, "EAP-TLS", eaptls_check, eaptls_process, eaptls_buildResp,
    eaptls_isKeyAvailable, eaptls_getKey, eap_type_common_get_common_key_len,
-   eaptls_deinit},
+   NULL, eaptls_deinit},
 
   {EAP_TYPE_TTLS, "EAP-TTLS", eapttls_check, eapttls_process, 
    eapttls_buildResp, eapttls_isKeyAvailable, eapttls_getKey, 
-   eap_type_common_get_common_key_len, eapttls_deinit},
+   eap_type_common_get_common_key_len, NULL, eapttls_deinit},
 
   {EAP_TYPE_OTP, "EAP-OTP", eapotp_check, eapotp_process, eapotp_buildResp,
    eapotp_isKeyAvailable, eapotp_getKey, eap_type_common_get_zero_len,
-   eapotp_deinit},
+   NULL, eapotp_deinit},
 
   {EAP_TYPE_GTC, "EAP-GTC", eapotp_check, eapotp_process, eapotp_buildResp,
    eapotp_isKeyAvailable, eapotp_getKey, eap_type_common_get_zero_len,
-   eapotp_deinit},
+   NULL, eapotp_deinit},
 
   {EAP_TYPE_PEAP, "EAP-PEAP", eappeap_check, eappeap_process, 
    eappeap_buildResp, eappeap_isKeyAvailable, eappeap_getKey, 
-   eap_type_common_get_common_key_len, eappeap_deinit},
+   eap_type_common_get_common_key_len, eappeap_creds_required, eappeap_deinit},
 
 #ifdef HAVE_TNC
   {EAP_TYPE_TNC, "EAP-TNC", eaptnc_check, eaptnc_process, eaptnc_buildResp,
    eaptnc_isKeyAvailable, eaptnc_getKey, eap_type_common_get_zero_len,
-   eaptnc_deinit},
+   NULL, eaptnc_deinit},
 #endif
 
 #ifdef EAP_SIM_ENABLE
   {EAP_TYPE_AKA, "EAP-AKA", eapaka_check, eapaka_process, eapaka_buildResp,
    eapaka_isKeyAvailable, eapaka_getKey, eap_type_common_get_common_key_len,
-   eapaka_deinit},
+   eapaka_creds_required, eapaka_deinit},
 
   {EAP_TYPE_SIM, "EAP-SIM", eapsim_check, eapsim_process, eapsim_buildResp,
    eapsim_isKeyAvailable, eapsim_getKey, eap_type_common_get_common_key_len,
-   eapsim_deinit},
+   NULL, eapsim_deinit},
 #endif
 
 #ifdef ENABLE_LEAP
   {EAP_TYPE_LEAP, "EAP-LEAP", eapleap_check, eapleap_process, 
    eapleap_buildResp, eapleap_isKeyAvailable, eapleap_getKey, 
-   eapleap_getKey_len, eapleap_deinit},
+   eapleap_getKey_len, eapleap_creds_required, eapleap_deinit},
 #endif
 
 #ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
   {EAP_TYPE_FAST, "EAP-FAST", eapfast_check, eapfast_process,
    eapfast_buildResp, eapfast_isKeyAvailable, eapfast_getKey, 
-   eap_type_common_get_common_key_len, eapfast_deinit},
+   eap_type_common_get_common_key_len, NULL, eapfast_deinit},
 #endif
 
 #ifdef EXPERIMENTAL
   {EAP_TYPE_PSK, "EAP-PSK", eappsk_check, eappsk_process,
   eappsk_buildResp, eappsk_isKeyAvailable, eappsk_getKey,
-  eap_type_common_get_common_key_len, eappsk_deinit},
+  eap_type_common_get_common_key_len, NULL, eappsk_deinit},
 #endif
 
-  {NO_EAP_AUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+  {NO_EAP_AUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
 };
 
 // Forward decls.
@@ -1349,7 +1350,7 @@ void eap_sm_change_to_discard(eap_sm *sm)
  **/
 void eap_sm_process_hints(eap_sm *sm)
 {
-#if 0   // Remove this for now, since no UIs support is.
+#if 0   // Remove this for now, since no UIs support it.
   struct eap_header     *myeap;
   char                  *inframe;
   char                  *hints;
@@ -1520,9 +1521,13 @@ void eap_sm_prepopulate_id(eap_sm *sm)
 	  {
 		  sm->ident = ctx->prof->identity;
 	  }
-	  else
+	  else if (ctx->prof->temp_username != NULL)
 	  {
 		  sm->ident = ctx->prof->temp_username;
+	  }
+	  else if (logon_creds_username_available() == TRUE)
+	  {
+		  sm->ident = logon_creds_get_username();
 	  }
   }
 }
@@ -2026,6 +2031,30 @@ int eap_sm_run(eap_sm *sm)
   }
 
   return XENONE;
+}
+
+/**
+ * \brief Based on the EAP type specified, determine what type of credentials
+ *		are required to successfully establish a connection.
+ *
+ * @param[in] eapType   The eap method ID to look at.
+ * @param[in] config	An EAP method specific configuration blob.
+ *
+ * \retval -1 (all bits set) on error, otherwise some combination of EAP_REQUIRES_* bits.
+ **/
+int eap_sm_creds_required(uint8_t eapType, void *config)
+{
+	int idx = 0;
+
+	idx = eap_sm_find_method(eapType);
+	if (idx == -1) return -1;
+
+	if (eaphandlers[idx].eap_cred_requirements != NULL)
+	{
+		return eaphandlers[idx].eap_cred_requirements(config);
+	}
+
+	return -1;
 }
 
 /**

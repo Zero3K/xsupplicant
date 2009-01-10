@@ -996,4 +996,16 @@ void eapaka_deinit(eap_type_data *eapdata)
   eapdata->eap_data = NULL;
 }
 
+/**
+ * \brief Return the type of credentials we need to make AKA work.
+ *
+ * @param[in] config   The EAP-AKA configuration data.  (Not currently used.)
+ *
+ * \retval EAP_REQUIRES_PIN  All we need (other than a smart card) is a PIN.
+ **/
+int eapaka_creds_required(void *config)
+{
+	return EAP_REQUIRES_PIN;
+}
+
 #endif

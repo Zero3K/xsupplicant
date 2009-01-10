@@ -58,25 +58,27 @@ CredentialsManager::~CredentialsManager()
 
 void CredentialsManager::storeCredentials(unsigned char config_type, const QString &connectionName, const QString &adaptDesc, const QString &userName, const QString &password)
 {	
+	config_type = config_type;  // Quiet the compiler, since we don't need this value here.
+
 	// make sure there's only one entry per adapter (if there's already an entry for this adapter it's stale)
 	if (connectionName.isEmpty() == false)	
 	{
 		QString intDesc;
 		
 		// get device for connection passed in
-			intDesc = adaptDesc;
+		intDesc = adaptDesc;
 	
-			// look at each entry we have stored off, and compare the device with the one for the connection
-			// passed in. If a match, delete the old entry
-			QVector<CredentialsManager::CredData>::iterator iter;
-			for (iter = m_credVector.begin(); iter != m_credVector.end(); iter++)
+		// look at each entry we have stored off, and compare the device with the one for the connection
+		// passed in. If a match, delete the old entry
+		QVector<CredentialsManager::CredData>::iterator iter;
+		for (iter = m_credVector.begin(); iter != m_credVector.end(); iter++)
+		{
+			if (intDesc.compare((*iter).m_adapterDesc) == 0)
 			{
-				if (intDesc.compare((*iter).m_adapterDesc) == 0)
-				{
-					m_credVector.erase(iter);
-					break;
-				}
+				m_credVector.erase(iter);
+				break;
 			}
+		}
 	}
 	
 	m_credVector.push_back(CredentialsManager::CredData(connectionName, adaptDesc, userName, password));

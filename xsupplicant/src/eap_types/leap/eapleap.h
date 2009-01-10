@@ -55,6 +55,7 @@ uint8_t eapleap_isKeyAvailable(eap_type_data *);
 uint8_t *eapleap_getKey(eap_type_data *);
 uint8_t eapleap_getKey_len(eap_type_data *);
 void eapleap_deinit(eap_type_data *);
+int eapleap_creds_required(void *);
 
 #endif
 

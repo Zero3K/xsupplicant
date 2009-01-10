@@ -386,7 +386,6 @@ uint8_t *eapmd5_getKey(eap_type_data *eapdata)
   return NULL;
 }
 
-
 /*****************************************************************
  *
  * Clean up any memory that we have used.
@@ -398,4 +397,17 @@ void eapmd5_deinit(eap_type_data *eapdata)
     return;
 
   FREE(eapdata->eap_data);
+}
+
+/**
+ * \brief Return the credential requirements for EAP-MD5.
+ *
+ * @param[in] config   Not used.
+ *
+ * \retval (EAP_REQUIRES_USERNAME|EAP_REQUIRES_PASSWORD) always. ;)
+ **/
+int eapmd5_creds_required(void *config)
+{
+	return -1;
+	//return (EAP_REQUIRES_USERNAME | EAP_REQUIRES_PASSWORD);
 }

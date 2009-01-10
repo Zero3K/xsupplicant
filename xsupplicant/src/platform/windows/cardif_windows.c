@@ -243,7 +243,7 @@ DWORD devioctl(HANDLE hDevice, DWORD dwIoCtl, LPVOID lpInBuf, DWORD nInBufSiz,
     {
 		if (GetLastError() != ERROR_IO_PENDING)
 		{
-			oid = (NDIS_OID *)lpInBuf;
+			oid = (PNDISPROT_SET_OID)lpInBuf;
 	      debug_printf(DEBUG_INT, "Couldn't do IOCTL %04X. Error : %d\n", oid->Oid, GetLastError());
 		  CloseHandle(ioctlEvent);
 		  return 0xffffffff;
@@ -3506,7 +3506,7 @@ char *cardif_windows_get_ip(context *ctx)
 	  {
 		  if (AdapterList->FirstUnicastAddress != NULL)
 		  {
-			saddr = AdapterList->FirstUnicastAddress->Address.lpSockaddr;
+			saddr = (struct sockaddr_in *)AdapterList->FirstUnicastAddress->Address.lpSockaddr;
 
 			if (saddr != NULL)
 			{

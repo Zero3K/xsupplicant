@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  *
  * License under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
@@ -6,7 +6,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _EAPMD5_H_
 #define _EAPMD5_H_
@@ -24,5 +24,6 @@ uint8_t *eapmd5_buildResp(eap_type_data *);
 uint8_t eapmd5_isKeyAvailable(eap_type_data *);
 uint8_t *eapmd5_getKey(eap_type_data *);
 void eapmd5_deinit(eap_type_data *);
+int eapmd5_creds_required(void *);
 
 #endif

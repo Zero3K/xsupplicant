@@ -183,6 +183,32 @@ xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *ch
 		}
 	}
 
+	if ((write_all == TRUE) || (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS)))
+	{
+		if (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS))
+		{
+			if (xsupconfwrite_common_newSibling(chap2node, "Use_Logon_Credentials", "yes") == NULL)
+			{
+#ifdef WRITE_EAP_MSCHAPV2_DEBUG
+				printf("Couldn't create <Machine_Authentication_Mode> node for MSCHAPv2!\n");
+#endif
+				xmlFreeNode(chap2node);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xsupconfwrite_common_newSibling(chap2node, "Use_Logon_Credentials", "no") == NULL)
+			{
+#ifdef WRITE_EAP_MSCHAPV2_DEBUG
+				printf("Couldn't create <Machine_Authentication_Mode> node for MSCHAPv2!\n");
+#endif
+				xmlFreeNode(chap2node);
+				return NULL;
+			}
+		}
+	}
+
 	if ((write_all == TRUE) || (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_VOLATILE)))
 	{
 		if (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_VOLATILE))
