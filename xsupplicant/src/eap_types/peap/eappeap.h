@@ -38,4 +38,5 @@ uint8_t *eappeap_getKey(eap_type_data *);
 void eappeap_deinit(eap_type_data *);
 void eappeap_get_machineauth_name(context *ctx);
 int eappeap_creds_required(void *);
+char *eappeap_get_username(void *);
 #endif

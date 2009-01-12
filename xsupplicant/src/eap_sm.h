@@ -143,6 +143,7 @@ struct rfc4137_eap_handler {
   uint8_t *(*eap_getKey)(eap_type_data *);
   uint8_t (*eap_getKeyLen)(eap_type_data *);
   int (*eap_cred_requirements)(void *);
+  char *(*eap_get_special_username)(void *);		// Allow an EAP method to return a username that we will force to be used.
   void (*eap_deinit)(eap_type_data *);
 };
 

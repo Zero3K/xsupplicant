@@ -34,6 +34,7 @@
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
 #include "../tls/certificates.h"
+#include "../../logon_creds.h"
 
 #ifdef WINDOWS
 #include "../../event_core_win.h"
@@ -681,4 +682,48 @@ int eappeap_creds_required(void *config)
 	}
 
 	return -1;
+}
+
+/**
+ * \brief Return a username if we need to override it for some reason (such as a
+ *			desire to use logon credentials.
+ *
+ * \note Any non-NULL value returned here will override any configuration file setting
+ *			or user provided entry (if any).  This call should be USED WITH CARE!
+ *
+ * \retval NULL if no username is to be returned, ptr to the new username otherwise.
+ **/
+char *eappeap_get_username(void *config)
+{
+	context *ctx = NULL;
+	struct config_eap_peap *peapdata = NULL;
+
+  peapdata = (struct config_eap_peap *)config;
+
+  // Only get the machine name if the machine auth flag is enabled.  If it is, then
+  // we want to ignore all other available usernames.  So, our get_machineauth_name()
+  // call should FREE() any usernames in the config in addition to providing our
+  // machine name in the proper format.
+  if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH))
+  {
+	  ctx = event_core_get_active_ctx();
+
+	  if (ctx != NULL)
+	  {
+	      eappeap_get_machineauth_name(ctx);
+		  if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) return ctx->prof->temp_username;
+	  }
+  }
+
+  // If we are configured to use logon creds we need to set the outer ID in the clear
+  // since some servers (like Microsoft's NPS) won't accept anonymous as an outer ID.
+  if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS))
+  {
+	  if (logon_creds_username_available() == TRUE)
+	  {
+		  return logon_creds_get_username();
+	  }
+  }
+
+  return NULL;
 }

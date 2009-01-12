@@ -496,8 +496,9 @@ char eapol_key_type2_do_pmkid_kde(context *ctx,
   else
   {
 	  // If we are on a PSK network, then a cache miss should be a non-issue.
+	  // If we are not on PSK and we have a cache miss and have a PMK, we should just continue on.
 	  if ((ctx->conn->association.psk == NULL) && (ctx->conn->association.psk_hex == NULL) &&
-		  (ctx->conn->association.temp_psk == NULL))
+		  (ctx->conn->association.temp_psk == NULL) && (ctx->statemachine->PMK == NULL))
 	  {
 		  debug_printf(DEBUG_NORMAL, "Interface '%s' had a cache miss.  You will have to do a full authentication.\n", ctx->desc);
 

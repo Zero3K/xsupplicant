@@ -76,64 +76,66 @@
 struct rfc4137_eap_handler eaphandlers[] = {
   {EAP_TYPE_MD5, "EAP-MD5", eapmd5_check, eapmd5_process, eapmd5_buildResp,
    eapmd5_isKeyAvailable, eapmd5_getKey, eap_type_common_get_zero_len,
-   eapmd5_creds_required, eapmd5_deinit},
+   eapmd5_creds_required, NULL, eapmd5_deinit},
 
   {EAP_TYPE_MSCHAPV2, "EAP-MSCHAPv2", eapmschapv2_check, eapmschapv2_process,
    eapmschapv2_buildResp, eapmschapv2_isKeyAvailable, eapmschapv2_getKey,
-   eap_type_common_get_common_key_len, eapmschapv2_creds_required, eapmschapv2_deinit},
+   eap_type_common_get_common_key_len, eapmschapv2_creds_required, NULL,
+   eapmschapv2_deinit},
 
   {EAP_TYPE_TLS, "EAP-TLS", eaptls_check, eaptls_process, eaptls_buildResp,
    eaptls_isKeyAvailable, eaptls_getKey, eap_type_common_get_common_key_len,
-   NULL, eaptls_deinit},
+   NULL, NULL, eaptls_deinit},
 
   {EAP_TYPE_TTLS, "EAP-TTLS", eapttls_check, eapttls_process, 
    eapttls_buildResp, eapttls_isKeyAvailable, eapttls_getKey, 
-   eap_type_common_get_common_key_len, NULL, eapttls_deinit},
+   eap_type_common_get_common_key_len, NULL, NULL, eapttls_deinit},
 
   {EAP_TYPE_OTP, "EAP-OTP", eapotp_check, eapotp_process, eapotp_buildResp,
    eapotp_isKeyAvailable, eapotp_getKey, eap_type_common_get_zero_len,
-   NULL, eapotp_deinit},
+   NULL, NULL, eapotp_deinit},
 
   {EAP_TYPE_GTC, "EAP-GTC", eapotp_check, eapotp_process, eapotp_buildResp,
    eapotp_isKeyAvailable, eapotp_getKey, eap_type_common_get_zero_len,
-   NULL, eapotp_deinit},
+   NULL, NULL, eapotp_deinit},
 
   {EAP_TYPE_PEAP, "EAP-PEAP", eappeap_check, eappeap_process, 
    eappeap_buildResp, eappeap_isKeyAvailable, eappeap_getKey, 
-   eap_type_common_get_common_key_len, eappeap_creds_required, eappeap_deinit},
+   eap_type_common_get_common_key_len, eappeap_creds_required, 
+   NULL, eappeap_deinit},
 
 #ifdef HAVE_TNC
   {EAP_TYPE_TNC, "EAP-TNC", eaptnc_check, eaptnc_process, eaptnc_buildResp,
    eaptnc_isKeyAvailable, eaptnc_getKey, eap_type_common_get_zero_len,
-   NULL, eaptnc_deinit},
+   NULL, NULL, eaptnc_deinit},
 #endif
 
 #ifdef EAP_SIM_ENABLE
   {EAP_TYPE_AKA, "EAP-AKA", eapaka_check, eapaka_process, eapaka_buildResp,
    eapaka_isKeyAvailable, eapaka_getKey, eap_type_common_get_common_key_len,
-   eapaka_creds_required, eapaka_deinit},
+   eapaka_creds_required, NULL, eapaka_deinit},
 
   {EAP_TYPE_SIM, "EAP-SIM", eapsim_check, eapsim_process, eapsim_buildResp,
    eapsim_isKeyAvailable, eapsim_getKey, eap_type_common_get_common_key_len,
-   NULL, eapsim_deinit},
+   NULL, NULL, eapsim_deinit},
 #endif
 
 #ifdef ENABLE_LEAP
   {EAP_TYPE_LEAP, "EAP-LEAP", eapleap_check, eapleap_process, 
    eapleap_buildResp, eapleap_isKeyAvailable, eapleap_getKey, 
-   eapleap_getKey_len, eapleap_creds_required, eapleap_deinit},
+   eapleap_getKey_len, eapleap_creds_required, NULL, eapleap_deinit},
 #endif
 
 #ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
   {EAP_TYPE_FAST, "EAP-FAST", eapfast_check, eapfast_process,
    eapfast_buildResp, eapfast_isKeyAvailable, eapfast_getKey, 
-   eap_type_common_get_common_key_len, NULL, eapfast_deinit},
+   eap_type_common_get_common_key_len, NULL, NULL, eapfast_deinit},
 #endif
 
 #ifdef EXPERIMENTAL
   {EAP_TYPE_PSK, "EAP-PSK", eappsk_check, eappsk_process,
   eappsk_buildResp, eappsk_isKeyAvailable, eappsk_getKey,
-  eap_type_common_get_common_key_len, NULL, eappsk_deinit},
+  eap_type_common_get_common_key_len, NULL, NULL, eappsk_deinit},
 #endif
 
   {NO_EAP_AUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
@@ -1433,66 +1435,34 @@ void eap_sm_process_hints(eap_sm *sm)
  **/
 void eap_sm_prepopulate_id(eap_sm *sm)
 {
-	context *ctx = NULL;
-#ifdef WINDOWS
-	struct config_eap_peap *peapdata = NULL;
-#endif
+	int idx = 0;
+	char *username = NULL;
+	context *ctx = NULL;		// XXX Remove once SIM and AKA are moved to the new calls.
 
-  if (!xsup_assert((sm != NULL), "sm != NULL", FALSE))
-    return;
+    if (!xsup_assert((sm != NULL), "sm != NULL", FALSE))
+		return;
 
-  ctx = event_core_get_active_ctx();
+	idx = eap_sm_find_method(sm->curMethods->method_num);
+	if (idx == -1) return -1;
 
-  if (ctx == NULL)
-  {
-	  debug_printf(DEBUG_NORMAL, "Invalid context?\n");
-	  return;
-  }
-
-  if (ctx->conn == NULL)
-    {
-		if (ctx->intType != ETH_802_11_INT)
+	if (eaphandlers[idx].eap_get_special_username != NULL)
+	{
+		username = eaphandlers[idx].eap_get_special_username(sm->curMethods->method_data);
+		if (username != NULL)
 		{
-			debug_printf(DEBUG_NORMAL, "Attempted to authenticate on interface '%s'"
-				" but, the interface doesn't have a connection defined.  Your "
-				"authentication cannot continue.\n", ctx->desc);
+			// If we have a username, we want to use it no matter what.
+			sm->ident = username;
+			return;
 		}
-      return;
-    }
-
-  if (!xsup_assert((ctx->prof != NULL),
-                   "ctx->prof != NULL", FALSE))
-    return;
+	}
 
 #ifdef WINDOWS
-  // If we are using PEAP, then we may need to get the machine name if using machine authentication.
-  if (sm->curMethods->method_num == EAP_TYPE_PEAP)
-  {
-	  peapdata = (struct config_eap_peap *)sm->curMethods->method_data;
-
-	  // Only get the machine name if the machine auth flag is enabled.  If it is, then
-	  // we want to ignore all other available usernames.  So, our get_machineauth_name()
-	  // call should FREE() any usernames in the config in addition to providing our
-	  // machine name in the proper format.
-	  if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH))
-	  {
-	      eappeap_get_machineauth_name(ctx);
-		  if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) sm->ident = strdup(ctx->prof->temp_username);
-	  }
-
-	  // If we are configured to use logon creds we need to set the outer ID in the clear
-	  // since some servers (like Microsoft's NPS) won't accept anonymous as an outer ID.
-	  if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS))
-	  {
-		  if (logon_creds_username_available() == TRUE)
-		  {
-			  sm->ident = _strdup(logon_creds_get_username());
-		  }
-	  }
-  }
 #endif
 
 #ifdef EAP_SIM_ENABLE
+	ctx = event_core_get_active_ctx();
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+
   // If we have SIM enabled, there is no username, and the primary EAP method
   // is SIM, then ask the SIM card for it's IMSI to use as the username.
   if ((sm->ident == NULL) &&
