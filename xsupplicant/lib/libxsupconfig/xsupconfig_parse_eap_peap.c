@@ -478,6 +478,42 @@ void *xsupconfig_parse_peap_trusted_server(void **attr, uint8_t config_type, xml
   return peap;
 }
 
+void *xsupconfig_parse_peap_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	struct config_eap_peap *peap = NULL;
+	char *value = NULL;
+	uint8_t result = 0;
+
+	peap = (*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Use logon creds : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(peap->flags, FLAGS_PEAP_USE_LOGON_CREDS);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(peap->flags, FLAGS_PEAP_USE_LOGON_CREDS);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(peap->flags, FLAGS_PEAP_USE_LOGON_CREDS);
+    }
+
+  xmlFree(value);
+
+  return peap;
+}
+
 parser eap_peap[] = {
   {"User_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_user_cert},
   {"CRL_Directory", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_peap_crl_dir},
@@ -493,6 +529,7 @@ parser eap_peap[] = {
   {"Force_PEAP_Version", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_force_peap_version},
   {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_peap_trusted_server},
   {"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_peap_validate_cert},
+  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_peap_logon_creds},
   {"Phase2", (struct conf_parse_struct *)&peap_phase2, TRUE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 

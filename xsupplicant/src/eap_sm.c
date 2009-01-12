@@ -1479,6 +1479,16 @@ void eap_sm_prepopulate_id(eap_sm *sm)
 	      eappeap_get_machineauth_name(ctx);
 		  if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) sm->ident = strdup(ctx->prof->temp_username);
 	  }
+
+	  // If we are configured to use logon creds we need to set the outer ID in the clear
+	  // since some servers (like Microsoft's NPS) won't accept anonymous as an outer ID.
+	  if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS))
+	  {
+		  if (logon_creds_username_available() == TRUE)
+		  {
+			  sm->ident = _strdup(logon_creds_get_username());
+		  }
+	  }
   }
 #endif
 

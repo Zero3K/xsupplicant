@@ -38,6 +38,7 @@
 #include "src/eap_types/eap_type_common.h"
 #include "src/ipc_events.h"
 #include "src/ipc_events_index.h"
+#include "../../logon_creds.h"
 
 #ifdef WINDOWS
 #include "src/event_core_win.h"
@@ -467,6 +468,10 @@ uint8_t peap_phase2_init(eap_type_data *eapdata)
   if ((ctx != NULL) && (ctx->prof != NULL) && (ctx->prof->temp_username != NULL))
   {
 	  p2d->sm->ident = ctx->prof->temp_username;
+  }
+  else if ((TEST_FLAG(peapconf->flags, FLAGS_PEAP_USE_LOGON_CREDS)) && (logon_creds_username_available() == TRUE))
+  {
+	  p2d->sm->ident = logon_creds_get_username();
   }
   else if (peapconf->identity != NULL)
   {

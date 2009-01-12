@@ -195,6 +195,25 @@ void eapmschapv2_set_eap_fast_anon_mode(eap_type_data *eapdata, uint8_t enable)
 }
 
 /**
+ * \brief Check to see if a password is available for this configuration.
+ *
+ * @param[in] ctx   A context to look in.
+ * @param[in] eapconf   A copy of the EAP-MSCHAPv2 configuration entry.
+ *
+ * \retval TRUE if a password is availble
+ * \retval FALSE if a password is not available.
+ **/
+int eapmschapv2_is_password_avail(context *ctx, struct config_eap_mschapv2 *eapconf)
+{
+	if ((eapconf != NULL) && (eapconf->password != NULL)) return TRUE;
+	if ((ctx != NULL) && (ctx->prof != NULL) && (ctx->prof->temp_password != NULL)) return TRUE;
+	if ((eapconf != NULL) && (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS)) && 
+		(logon_creds_password_available() == TRUE)) return TRUE;
+
+	return FALSE;
+}
+
+/**
  * \brief Execute the INIT functions for this EAP method.
  *
  * @param[in] eapdata   An eap_type_data   A pointer to a structure that contains the information needed to 
@@ -254,7 +273,7 @@ int eapmschapv2_init(eap_type_data *eapdata)
 		{
 			mscv2data->password = _strdup(ctx->prof->temp_password);
 		}
-		else if (logon_creds_password_available() == TRUE)
+		else if ((TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS)) && (logon_creds_password_available() == TRUE))
 		{
 			mscv2data->password = _strdup(logon_creds_get_password());
 		}
@@ -270,7 +289,11 @@ int eapmschapv2_init(eap_type_data *eapdata)
 		}
 	}
 
-	if (eapdata->ident == NULL)
+	if ((TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS)) && (logon_creds_username_available() == TRUE))
+	{
+		eapdata->ident = _strdup(logon_creds_get_username());
+	}
+	else if (eapdata->ident == NULL)
 	{
 		// The RADIUS server build in to my Cisco 1200 doesn't do an identity exchange as part of
 		// phase 2.  (When doing provisioning.) Since we need to know the identity, we will have to dig it out of the context.
@@ -289,10 +312,6 @@ int eapmschapv2_init(eap_type_data *eapdata)
 		else if (ctx->prof->identity != NULL)
 		{
 			eapdata->ident = _strdup(ctx->prof->identity);
-		}
-		else if (logon_creds_username_available() == TRUE)
-		{
-			eapdata->ident = _strdup(logon_creds_get_username());
 		}
 		else
 		{
@@ -371,23 +390,13 @@ void eapmschapv2_check(eap_type_data *eapdata)
 
   // If we are running in EAP-FAST provisioning mode, it is okay if we don't have a password, we
   // will prompt for one.
-  if ((eapconf->password == NULL) && (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_FAST_PROVISION)) &&
+  ctx = event_core_get_active_ctx();
+  if ((eapmschapv2_is_password_avail(ctx, eapconf) == FALSE) &&
 	  (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH)))
     {
-		ctx = event_core_get_active_ctx();
-		if (ctx == NULL)
-		{
-	      debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
-	      eap_type_common_fail(eapdata);
-	      return;
-		}
-
-		if (ctx->prof->temp_password == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
-			eap_type_common_fail(eapdata);
-			return;
-		}
+      debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2!\n");
+      eap_type_common_fail(eapdata);
+      return;
     }
 }
 
@@ -1007,7 +1016,7 @@ void eapmschapv2_process(eap_type_data *eapdata)
 		  return;
 	  }
 
-	  if ((eapconf->password == NULL) && (ctx->prof->temp_password == NULL) &&
+	  if ((eapmschapv2_is_password_avail(ctx, eapconf) == FALSE) && 
 		  (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH)))
 	  {
 	      debug_printf(DEBUG_NORMAL, "No password available for EAP-MSCHAPv2! (Trying to request one.)\n");

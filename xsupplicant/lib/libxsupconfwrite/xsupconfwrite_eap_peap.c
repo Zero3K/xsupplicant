@@ -193,6 +193,32 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		}
 	}
 
+	if ((write_all == TRUE) || (TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS)))
+	{
+		if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS))
+		{
+			if (xsupconfwrite_common_newSibling(peapnode, "Use_Logon_Credentials", "yes") == NULL)
+			{
+#ifdef WRITE_EAP_PEAP_DEBUG
+				printf("Couldn't create <Machine_Authentication_Mode> node for PEAP!\n");
+#endif
+				xmlFreeNode(peapnode);
+				return NULL;
+			}
+		}
+		else
+		{
+			if (xsupconfwrite_common_newSibling(peapnode, "Use_Logon_Credentials", "no") == NULL)
+			{
+#ifdef WRITE_EAP_PEAP_DEBUG
+				printf("Couldn't create <Machine_Authentication_Mode> node for PEAP!\n");
+#endif
+				xmlFreeNode(peapnode);
+				return NULL;
+			}
+		}
+	}
+
 	if ((write_all == TRUE) || (peapdata->session_resume != RES_UNSET))
 	{
 		switch (peapdata->session_resume)
