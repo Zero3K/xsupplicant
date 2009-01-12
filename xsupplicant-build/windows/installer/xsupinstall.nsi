@@ -499,7 +499,7 @@ Section "GINA Integration" GINA
      File "${THIRDPARTY}\pGina-1.8.8-x86-installer.exe"
 
      DetailPrint "Starting pGina installer..."
-     nsExec::Exec '$INSTDIR\pGina-1.8.8-x86-installer.exe'
+     nsExec::Exec '$INSTDIR\pGina-1.8.8-x86-installer.exe /SILENT /NORESTART /SP-'
      
      DetailPrint "Remove the pGINA installer.."
      Delete $INSTDIR\pGina-1.8.8-x86-installer.exe
