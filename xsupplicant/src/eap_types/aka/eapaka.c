@@ -62,7 +62,7 @@
  *
  * \retval XENONE on success, anything else is an error.
  **/
-int eapaka_get_username(context *ctx)
+int eapaka_get_imsi(context *ctx)
 {
   char *imsi = NULL;  
   char realm[25], card_mode=0;
@@ -1006,6 +1006,30 @@ void eapaka_deinit(eap_type_data *eapdata)
 int eapaka_creds_required(void *config)
 {
 	return EAP_REQUIRES_PIN;
+}
+
+/**
+ * \brief Get the IMSI from the USIM card.
+ *
+ * @param[in] config   A pointer to the AKA configuration for this profile.
+ *
+ * \retval NULL on error.  pointer to ASCII version of IMSI otherwise.
+ **/
+char *eapaka_get_username(void *config)
+{
+	context *ctx = NULL;
+
+	ctx = event_core_get_active_ctx();
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to get the IMSI for EAP-AKA!\n");
+		return NULL;
+	}
+
+	eapaka_get_imsi(ctx);
+	if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) return ctx->prof->temp_username;
+
+	return NULL;
 }
 
 #endif

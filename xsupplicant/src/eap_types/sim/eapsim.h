@@ -110,14 +110,13 @@ struct typelengthres {
 
 #endif
 
-// Get the IMSI as the username.
-int eapsim_get_username(context *ctx);
-
 void eapsim_check(eap_type_data *);
 void eapsim_process(eap_type_data *);
 uint8_t *eapsim_buildResp(eap_type_data *);
 uint8_t eapsim_isKeyAvailable(eap_type_data *);
 uint8_t *eapsim_getKey(eap_type_data *);
+int eapsim_creds_required(void *);
+char *eapsim_get_username(void *);
 void eapsim_deinit(eap_type_data *);
 
 #endif

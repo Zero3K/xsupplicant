@@ -102,7 +102,7 @@ struct rfc4137_eap_handler eaphandlers[] = {
   {EAP_TYPE_PEAP, "EAP-PEAP", eappeap_check, eappeap_process, 
    eappeap_buildResp, eappeap_isKeyAvailable, eappeap_getKey, 
    eap_type_common_get_common_key_len, eappeap_creds_required, 
-   NULL, eappeap_deinit},
+   eappeap_get_username, eappeap_deinit},
 
 #ifdef HAVE_TNC
   {EAP_TYPE_TNC, "EAP-TNC", eaptnc_check, eaptnc_process, eaptnc_buildResp,
@@ -113,11 +113,11 @@ struct rfc4137_eap_handler eaphandlers[] = {
 #ifdef EAP_SIM_ENABLE
   {EAP_TYPE_AKA, "EAP-AKA", eapaka_check, eapaka_process, eapaka_buildResp,
    eapaka_isKeyAvailable, eapaka_getKey, eap_type_common_get_common_key_len,
-   eapaka_creds_required, NULL, eapaka_deinit},
+   eapaka_creds_required, eapaka_get_username, eapaka_deinit},
 
   {EAP_TYPE_SIM, "EAP-SIM", eapsim_check, eapsim_process, eapsim_buildResp,
    eapsim_isKeyAvailable, eapsim_getKey, eap_type_common_get_common_key_len,
-   NULL, NULL, eapsim_deinit},
+   eapsim_creds_required, eapsim_get_username, eapsim_deinit},
 #endif
 
 #ifdef ENABLE_LEAP
@@ -1437,13 +1437,13 @@ void eap_sm_prepopulate_id(eap_sm *sm)
 {
 	int idx = 0;
 	char *username = NULL;
-	context *ctx = NULL;		// XXX Remove once SIM and AKA are moved to the new calls.
+	context *ctx = NULL;
 
     if (!xsup_assert((sm != NULL), "sm != NULL", FALSE))
 		return;
 
 	idx = eap_sm_find_method(sm->curMethods->method_num);
-	if (idx == -1) return -1;
+	if (idx == -1) return;
 
 	if (eaphandlers[idx].eap_get_special_username != NULL)
 	{
@@ -1456,47 +1456,11 @@ void eap_sm_prepopulate_id(eap_sm *sm)
 		}
 	}
 
-#ifdef WINDOWS
-#endif
-
-#ifdef EAP_SIM_ENABLE
-	ctx = event_core_get_active_ctx();
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
-
-  // If we have SIM enabled, there is no username, and the primary EAP method
-  // is SIM, then ask the SIM card for it's IMSI to use as the username.
-  if ((sm->ident == NULL) &&
-	  (sm->curMethods->method_num == EAP_TYPE_SIM))
-    {
-      sm->ident = (char *)Malloc(50);
-      if (sm->ident == NULL)
-        {
-          debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for identity!"
-		       "\n");
-          return;
-        }
-      eapsim_get_username(ctx);
-	  if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) sm->ident = strdup(ctx->prof->temp_username);
-    }
-
-  // Same is true for AKA.
-  if ((sm->ident == NULL) &&
-      (sm->curMethods->method_num == EAP_TYPE_AKA))
-    {
-      sm->ident = (char *)Malloc(50);
-      if (sm->ident == NULL)
-        {
-          debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for identity!"
-		       "\n");
-          return;
-        }
-      eapaka_get_username(ctx);
-	  if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) sm->ident = strdup(ctx->prof->temp_username);
-    }
-#endif
-
   if (sm->ident == NULL)
   {
+	  ctx = event_core_get_active_ctx();
+	  if (ctx == NULL) return;				// Nothing we can do.
+
 	  if (ctx->prof->identity != NULL)
 	  {
 		  sm->ident = ctx->prof->identity;

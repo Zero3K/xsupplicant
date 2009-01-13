@@ -507,6 +507,9 @@ Section "GINA Integration" GINA
      DetailPrint "Configuring pGINA..."
      ; Configure pGINA to use our plugin
      WriteRegStr  HKLM SOFTWARE\pGina "pathPlugin" "$INSTDIR\Modules\1XGina.dll"
+
+     ;pGINA installation needs a reboot to be fully functional.
+     SetRebootFlag true
 SectionEnd
      
 

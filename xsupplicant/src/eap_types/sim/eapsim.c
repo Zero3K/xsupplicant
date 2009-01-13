@@ -97,7 +97,7 @@ char *do_sha1(char *tohash, int size)
 }
 #endif
 
-int eapsim_get_username(context *ctx)
+int eapsim_get_imsi(context *ctx)
 {
   char *imsi = NULL;  
   char realm[25], card_mode=0;
@@ -809,6 +809,42 @@ void eapsim_deinit(eap_type_data *eapdata)
   FREE(eapdata->eap_data);
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-SIM) Deinit.\n");
+}
+
+/**
+ * \brief Get the type of credentials required for this EAP method.
+ *
+ * @param[in] config   A pointer to the SIM configuration for this profile. (Not used.)
+ *
+ * \retval EAP_REQUIRES_PIN
+ **/
+int eapsim_creds_required(void *config)
+{
+	return EAP_REQUIRES_PIN;
+}
+
+/**
+ * \brief Get the IMSI from the SIM card.
+ *
+ * @param[in] config   A pointer to the SIM configuration for this profile.
+ *
+ * \retval NULL on error.  pointer to ASCII version of IMSI otherwise.
+ **/
+char *eapsim_get_username(void *config)
+{
+	context *ctx = NULL;
+
+	ctx = event_core_get_active_ctx();
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to get the IMSI for EAP-SIM!\n");
+		return NULL;
+	}
+
+	eapsim_get_imsi(ctx);
+	if ((ctx->prof != NULL) && (ctx->prof->temp_username != NULL)) return ctx->prof->temp_username;
+
+	return NULL;
 }
 
 #endif
