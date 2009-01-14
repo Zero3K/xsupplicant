@@ -100,13 +100,14 @@ struct config_eap_tls
 #define EAP_FAST_PROVISION_ALLOWED			BIT(0)		// Should we allow the server to send us a new PAC?
 #define EAP_FAST_PROVISION_ANONYMOUS		BIT(1)		// Should we allow anonymous provisioning?
 #define EAP_FAST_PROVISION_AUTHENTICATED	BIT(2)		// Should we allow authenticted (certificate based) provisioning?
+#define EAP_FAST_USE_LOGON_CREDS			BIT(3)		// Should we use the logon credentials when doing EAP-FAST?
 
 // All of the variables that are needed to successfully complete an
 // EAP-FAST authentication.
 struct config_eap_fast
 {
   char *pac_location;			///< The path to the file that contains the EAP-FAST PAC for this user.
-  uint8_t provision_flags;		///< A set of flags that determine if we will allow provisioning, and which types of provisioning.
+  uint8_t flags;				///< A set of flags defined above.
   int chunk_size;				///< a.k.a. the TLS fragment size.  How big should TLS messages be when sent.
   char *innerid;				///< The username that will be used inside the tunnel that is created using the EAP-FAST PAC.
   char *trusted_server;			///< A trusted server to use with authenticated provisioning mode.
@@ -115,11 +116,14 @@ struct config_eap_fast
   struct config_eap_method *phase2; ///< A linked-list of valid inner (phase 2) configuration methods that can be used to authenticate an EAP-FAST connection.
 };
 
+#define CONFIG_PWD_ONLY_USE_LOGON_CREDS		BIT(0)
+
 // A generic structure that can be used to store passwords for authentication
 // methods that use only a password.
 struct config_pwd_only
 {
   char *password;				///< The clear text password that should be used for authentication.
+  uint8_t flags;
 };
 
 // Configuration information for how EAP-TNC should be used.
@@ -143,6 +147,8 @@ typedef enum {TTLS_PHASE2_UNDEFINED,
 	TTLS_PHASE2_MSCHAPV2,				///< Authenticate using TTLS-MSCHAPv2
     TTLS_PHASE2_EAP } ttls_phase2_type;	///< Authenticate using EAP inside of TTLS.
 
+#define TTLS_FLAGS_USE_LOGON_CREDS		BIT(0)		///< Use logon credentials.
+
 /// Configuration information for authenticating using EAP-TTLS.
 //
 // The items in this structure need to match those in config_eap_tls up to 
@@ -162,6 +168,8 @@ struct config_eap_ttls
   char *inner_id;					///< The username to use inside the TTLS tunnel.
   char *trusted_server;				///< The name of the <Trusted_Server> block to be used to validate the server certificate.
   uint8_t validate_cert;			///< A TRUE/FALSE value that indicates if we should validate the server certificate or not.
+
+  uint8_t flags;
 
   ttls_phase2_type phase2_type;      ///< One of the TTLS_PHASE2_* values.  Used to determine the inner method to use for authentication.
   void *phase2_data;                 ///< A pointer that should be type cast based on the TTLS_PHASE2_* values.  It will point to a configuration

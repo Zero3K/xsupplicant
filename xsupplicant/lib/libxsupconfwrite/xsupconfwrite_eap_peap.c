@@ -167,56 +167,18 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		}
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH)))
+	if (xsupconfwrite_common_write_bool(peapnode, "Machine_Authentication_Mode",
+		TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH), FALSE, write_all, TRUE) == NULL)
 	{
-		if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH))
-		{
-			if (xsupconfwrite_common_newSibling(peapnode, "Machine_Authentication_Mode", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <Machine_Authentication_Mode> node for PEAP!\n");
-#endif
-				xmlFreeNode(peapnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(peapnode, "Machine_Authentication_Mode", "no") == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <Machine_Authentication_Mode> node for PEAP!\n");
-#endif
-				xmlFreeNode(peapnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(peapnode);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS)))
+	if (xsupconfwrite_common_write_bool(peapnode, "Use_Logon_Credentials", 
+		TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS), FALSE, write_all, TRUE) == NULL)
 	{
-		if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS))
-		{
-			if (xsupconfwrite_common_newSibling(peapnode, "Use_Logon_Credentials", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <Machine_Authentication_Mode> node for PEAP!\n");
-#endif
-				xmlFreeNode(peapnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(peapnode, "Use_Logon_Credentials", "no") == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <Machine_Authentication_Mode> node for PEAP!\n");
-#endif
-				xmlFreeNode(peapnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(peapnode);
+		return NULL;
 	}
 
 	if ((write_all == TRUE) || (peapdata->session_resume != RES_UNSET))
@@ -273,56 +235,18 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		}
 	}
 
-	if ((write_all == TRUE) || (peapdata->validate_cert != TRUE))
+	if (xsupconfwrite_common_write_bool(peapnode, "Validate_Certificate", 
+		peapdata->validate_cert, TRUE, write_all, TRUE) == NULL)
 	{
-		if (peapdata->validate_cert != FALSE)
-		{
-			if (xsupconfwrite_common_newSibling(peapnode, "Validate_Certificate", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <Validate_Certificate> for PEAP!\n");
-#endif
-				xmlFreeNode(peapnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(peapnode, "Validate_Certificate", "no") == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <Validate_Certificate> for PEAP!\n");
-#endif
-				xmlFreeNode(peapnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(peapnode);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (peapdata->proper_peapv1 != FALSE))
+	if (xsupconfwrite_common_write_bool(peapnode, "Proper_PEAP_V1_Keying", 
+		peapdata->proper_peapv1, FALSE, write_all, TRUE) == NULL)
 	{
-		if (peapdata->proper_peapv1 != FALSE)
-		{
-			if (xsupconfwrite_common_newSibling(peapnode, "Proper_PEAP_V1_Keying", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <Proper_PEAP_V1_Keying> for PEAP!\n");
-#endif
-				xmlFreeNode(peapnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(peapnode, "Proper_PEAP_V1_Keying", "no") == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <Proper_PEAP_V1_Keying> for PEAP!\n");
-#endif
-				xmlFreeNode(peapnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(peapnode);
+		return NULL;
 	}
 
 	if ((write_all == TRUE) || (peapdata->force_peap_version != 0xff))

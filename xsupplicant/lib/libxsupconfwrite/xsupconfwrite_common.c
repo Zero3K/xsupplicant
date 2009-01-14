@@ -7,9 +7,6 @@
  * \file xsupconfwrite_common.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_common.c,v 1.4 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>
@@ -132,4 +129,53 @@ int xsupconfwrite_convert_amp(char *instr, char **outstr)
 	(*outstr) = newstr;
 
 	return 1;
+}
+
+/**
+ * \brief Write a yes/no value to an XML tree node
+ *
+ * @param[in] xmlNode   An XML node pointer that we want to add a sibling to.
+ * @param[in] nodeName   The name of the XML node that we want to add
+ * @param[in] yesno		A boolean value that indicates if we should write a yes or no.
+ * @param[in] defaultval   A boolean value that indicates what the default value should be.
+ * @param[in] force_write   A boolean value that indicates if we should write the value even if it is default.
+ * @param[in] sibling   Should this be a sibling or child node?
+ *
+ * \retval NULL on error otherwise an updated xmlNodePtr value.
+ **/
+xmlNodePtr xsupconfwrite_common_write_bool(xmlNodePtr xmlNode, char *nodeName, int yesno, int defaultval, int forcewrite, int sibling)
+{
+	if ((forcewrite != FALSE) || (yesno != defaultval))
+	{
+		if (yesno != FALSE)		// This needs to be a test against FALSE since TRUE is any value > 0.
+		{
+			if (sibling == TRUE)
+			{
+				if (xsupconfwrite_common_newSibling(xmlNode, nodeName, "yes") == NULL)
+					return NULL;
+			}
+			else
+			{
+				if (xmlNewChild(xmlNode, NULL, (xmlChar *)nodeName, (xmlChar *)"yes") == NULL)
+					return NULL;
+			}
+		}
+		else
+		{
+			if (sibling == TRUE)
+			{
+				if (xsupconfwrite_common_newSibling(xmlNode, nodeName, "no") == NULL)
+				{
+					return NULL;
+				}
+			}
+			else
+			{
+				if (xmlNewChild(xmlNode, NULL, (xmlChar *)nodeName, (xmlChar *)"no") == NULL)
+					return NULL;
+			}
+		}
+	}
+
+	return xmlNode;
 }

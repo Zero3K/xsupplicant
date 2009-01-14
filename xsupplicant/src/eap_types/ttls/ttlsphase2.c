@@ -78,7 +78,7 @@ struct phase2_handler phase2types[] = {
  ************************************************************************/
 signed char ttls_phase2_get_idx(eap_type_data *eapdata)
 {
-  struct config_eap_ttls *userdata;
+  struct config_eap_ttls *userdata = NULL;
   uint8_t i = 0;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -130,7 +130,7 @@ void ttls_phase2_process(eap_type_data *eapdata, uint8_t *indata,
 {
   signed char idx = 0;
   uint8_t *eapdiameter = NULL;
-  struct tls_vars *mytls_vars;
+  struct tls_vars *mytls_vars = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;

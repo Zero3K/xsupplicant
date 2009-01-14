@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  * EAPTTLS Function header
  * 
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
@@ -7,7 +7,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _EAPTTLS_H_
 #define _EAPTTLS_H_
@@ -30,5 +30,6 @@ uint8_t *eapttls_buildResp(eap_type_data *);
 uint8_t eapttls_isKeyAvailable(eap_type_data *);
 uint8_t *eapttls_getKey(eap_type_data *);
 void eapttls_deinit(eap_type_data *);
+char *eapttls_get_username(void *);
 
 #endif

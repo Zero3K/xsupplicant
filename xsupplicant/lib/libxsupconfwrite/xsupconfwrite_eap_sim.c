@@ -121,32 +121,16 @@ xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata, uin
 #ifdef WRITE_EAP_SIM_DEBUG
 			printf("Couldn't create <Reader> node for SIM!\n");
 #endif
+			xmlFreeNode(simnode);
 			return NULL;
 		}
 	}
 
-	if ((write_all == TRUE) || (simdata->auto_realm == TRUE))
+	if (xsupconfwrite_common_write_bool(simnode, "Auto_Realm",
+		simdata->auto_realm, FALSE, write_all, TRUE) == NULL)
 	{
-		if (simdata->auto_realm == TRUE)
-		{
-			if (xsupconfwrite_common_newSibling(simnode, "Auto_Realm", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_SIM_DEBUG
-				printf("Couldn't create <Auto_Realm> node for SIM!\n");
-#endif
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(simnode, "Auto_Realm", "no") == NULL)
-			{
-#ifdef WRITE_EAP_SIM_DEBUG
-				printf("Couldn't create <Auto_Realm> node for SIM!\n");
-#endif
-				return NULL;
-			}
-		}
+		xmlFreeNode(simnode);
+		return NULL;
 	}
 
 	return simnode;

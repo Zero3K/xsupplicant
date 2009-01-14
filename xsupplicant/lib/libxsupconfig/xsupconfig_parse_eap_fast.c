@@ -59,7 +59,7 @@ void *xsupconfig_parse_eap_fast(void **attr, uint8_t config_type, xmlNodePtr nod
 
   memset(meth->method_data, 0x00, sizeof(struct config_eap_fast));
 
-  ((struct config_eap_fast *)(meth->method_data))->provision_flags = EAP_FAST_PROVISION_ALLOWED | EAP_FAST_PROVISION_AUTHENTICATED;
+  ((struct config_eap_fast *)(meth->method_data))->flags = EAP_FAST_PROVISION_ALLOWED | EAP_FAST_PROVISION_AUTHENTICATED;
 
   return meth->method_data;
 }
@@ -82,18 +82,18 @@ void *xsupconfig_parse_eap_fast_provision(void **attr, uint8_t config_type, xmlN
 
   if (result == 1)
     {
-		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+		SET_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED);
     }
   else if (result == 0)
     {
-		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+		UNSET_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED);
     }
   else
     {
       xsupconfig_common_log("Invalid value was passed for 'Allow_Provision'!  (Line %ld)\n"
 	     "   Will use the default value of yes.\n",
 	     xsupconfig_parse_get_line_num());
-		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+		SET_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED);
     }
 
   xmlFree(value);
@@ -201,18 +201,18 @@ void *xsupconfig_parse_eap_fast_allow_anon_provision(void **attr, uint8_t config
 
   if (result == 1)
     {
-		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+		SET_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS);
     }
   else if (result == 0)
     {
-		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+		UNSET_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS);
     }
   else
     {
       xsupconfig_common_log("Invalid value was passed for 'Allow_Anonymous_Provision'!  (Line %ld)\n"
 	     "   Will use the default value of no.\n",
 	     xsupconfig_parse_get_line_num());
-		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+		UNSET_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS);
     }
 
   xmlFree(value);
@@ -238,18 +238,18 @@ void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr, uint8_t config
 
   if (result == 1)
     {
-		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+		SET_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
     }
   else if (result == 0)
     {
-		UNSET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+		UNSET_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
     }
   else
     {
       xsupconfig_common_log("Invalid value was passed for 'Allow_Authenticated_Provision'!  (Line %ld)\n"
 	     "   Will use the default value of yes.\n",
 	     xsupconfig_parse_get_line_num());
-		SET_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+		SET_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
     }
 
   xmlFree(value);
@@ -317,6 +317,42 @@ void *xsupconfig_parse_eap_fast_validate_cert(void **attr, uint8_t config_type, 
   return fast;
 }
 
+void *xsupconfig_parse_fast_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	struct config_eap_fast *fast = NULL;
+	char *value = NULL;
+	uint8_t result = 0;
+
+	fast = (*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Use logon creds : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
+    }
+
+  xmlFree(value);
+
+  return fast;
+}
+
 parser eap_fast[] = {
   {"Allow_Provision", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_provision},
   {"Allow_Anonymous_Provision", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_allow_anon_provision},
@@ -325,6 +361,7 @@ parser eap_fast[] = {
   {"Chunk_Size", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_chunk_size},
   {"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_innerid},
   {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_trusted_server},
+  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_fast_logon_creds},
   {"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_validate_cert},
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
   {"Phase2", (struct conf_parse_struct *)&fast_phase2, TRUE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},

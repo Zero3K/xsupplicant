@@ -203,31 +203,18 @@ xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *ttlsdata, 
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (ttlsdata->validate_cert != TRUE))
+	if (xsupconfwrite_common_write_bool(ttlsnode, "Use_Logon_Credentials", 
+		TEST_FLAG(ttlsdata->flags, TTLS_FLAGS_USE_LOGON_CREDS), FALSE, write_all, TRUE) == NULL)
 	{
-		switch (ttlsdata->validate_cert)
-		{
-		default:
-		case TRUE:
-			temp = _strdup("yes");  // Default setting.
-			break;
+		xmlFreeNode(ttlsnode);
+		return NULL;
+	}
 
-		case FALSE:
-			temp = _strdup("no");
-			break;
-		}
-
-		if (xsupconfwrite_common_newSibling(ttlsnode, "Validate_Certificate", temp) == NULL)
-		{
-#ifdef WRITE_EAP_TTLS_DEBUG
-			printf("Couldn't create <Validate_Certificate> node for TTLS!\n");
-#endif
-			xmlFreeNode(ttlsnode);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+	if (xsupconfwrite_common_write_bool(ttlsnode, "Validate_Certificate",
+		ttlsdata->validate_cert, TRUE, write_all, TRUE) == NULL)
+	{
+		xmlFreeNode(ttlsnode);
+		return NULL;
 	}
 
 	if ((write_all == TRUE) || (ttlsdata->chunk_size != 0))

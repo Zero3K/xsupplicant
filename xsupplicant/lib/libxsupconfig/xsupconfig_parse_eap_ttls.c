@@ -422,6 +422,42 @@ void *xsupconfig_parse_eap_ttls_inner_method(void **attr, uint8_t config_type, x
   return ttls;
 }
 
+void *xsupconfig_parse_ttls_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	struct config_eap_ttls *ttls = NULL;
+	char *value = NULL;
+	uint8_t result = 0;
+
+	ttls = (*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Use logon creds : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(ttls->flags, TTLS_FLAGS_USE_LOGON_CREDS);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(ttls->flags, TTLS_FLAGS_USE_LOGON_CREDS);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(ttls->flags, TTLS_FLAGS_USE_LOGON_CREDS);
+    }
+
+  xmlFree(value);
+
+  return ttls;
+}
+
 parser eap_ttls[] = {
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},   // So we don't complain about the option we already consumed.
   {"User_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_user_cert},
@@ -435,6 +471,7 @@ parser eap_ttls[] = {
   {"Inner_Method", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_inner_method},
   {"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_inner_id},
   {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_trusted_server},
+  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_ttls_logon_creds},
   {"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_validate_cert},
   {"Phase2", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_phase2},
 

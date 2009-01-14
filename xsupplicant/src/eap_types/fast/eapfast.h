@@ -191,6 +191,8 @@ uint8_t *eapfast_buildResp(eap_type_data *);
 uint8_t eapfast_isKeyAvailable(eap_type_data *);
 uint8_t *eapfast_getKey(eap_type_data *);
 void eapfast_deinit(eap_type_data *);
+char *eapfast_get_username(void *);
+int eapfast_creds_required(void *);
 
 uint8_t eapfast_get_ver(eap_type_data *);
 

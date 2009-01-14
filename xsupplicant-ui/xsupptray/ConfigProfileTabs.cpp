@@ -1,6 +1,6 @@
 /**
- * The XSupplicant User Interface is Copyright 2007, 2008 Identity Engines.
- * Identity Engines provides the XSupplicant User Interface under dual license terms.
+ * The XSupplicant User Interface is Copyright 2007, 2008, 2009 Nortel Networks.
+ * Nortel Networks provides the XSupplicant User Interface under dual license terms.
  *
  *   For open source projects, if you are developing and distributing open source 
  *   projects under the GPL License, then you are free to use the XSupplicant User 
@@ -27,7 +27,7 @@
  *   For commercial enterprises, OEMs, ISVs and VARs, if you want to distribute or 
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
- *   Identity Engines for an OEM Commercial License.
+ *   Nortel Networks for an OEM Commercial License.
  **/
 
 #include "stdafx.h"
@@ -785,29 +785,29 @@ bool ConfigProfileTabs::saveEAPFASTData()
 
 	if (m_pFASTAllowProvision->isChecked())
 	{
-		SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+		SET_FLAG(myfast->flags, EAP_FAST_PROVISION_ALLOWED);
 	}
 	else
 	{
-		UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+		UNSET_FLAG(myfast->flags, EAP_FAST_PROVISION_ALLOWED);
 	}
 
 	if (m_pFASTAuthProvision->isChecked())
 	{
-		SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+		SET_FLAG(myfast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
 	}
 	else
 	{
-		UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+		UNSET_FLAG(myfast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
 	}
 
 	if (m_pFASTAnonProvision->isChecked())
 	{
-		SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+		SET_FLAG(myfast->flags, EAP_FAST_PROVISION_ANONYMOUS);
 	}
 	else
 	{
-		UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+		UNSET_FLAG(myfast->flags, EAP_FAST_PROVISION_ANONYMOUS);
 	}
 
 	// Determine the inner method in use...
@@ -1398,7 +1398,7 @@ void ConfigProfileTabs::populateFASTData()
 		m_pUsername->setText(QString(fastdata->innerid));
 	}
 
-	if (TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_ALLOWED))
+	if (TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_ALLOWED))
 	{
 		m_pFASTAllowProvision->setChecked(true);
 	}
@@ -1407,7 +1407,7 @@ void ConfigProfileTabs::populateFASTData()
 		m_pFASTAllowProvision->setChecked(false);
 	}
 
-	if (TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
+	if (TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_ANONYMOUS))
 	{
 		m_pFASTAnonProvision->setChecked(true);
 	}
@@ -1416,7 +1416,7 @@ void ConfigProfileTabs::populateFASTData()
 		m_pFASTAnonProvision->setChecked(false);
 	}
 
-	if (TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))
+	if (TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_AUTHENTICATED))
 	{
 		m_pFASTAuthProvision->setChecked(true);
 	}

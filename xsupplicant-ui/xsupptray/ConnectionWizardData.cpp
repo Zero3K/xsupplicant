@@ -1,6 +1,6 @@
 /**
- * The XSupplicant User Interface is Copyright 2007, 2008 Identity Engines.
- * Identity Engines provides the XSupplicant User Interface under dual license terms.
+ * The XSupplicant User Interface is Copyright 2007, 2008, 2009 Nortel Networks.
+ * Nortel Networks provides the XSupplicant User Interface under dual license terms.
  *
  *   For open source projects, if you are developing and distributing open source 
  *   projects under the GPL License, then you are free to use the XSupplicant User 
@@ -27,7 +27,7 @@
  *   For commercial enterprises, OEMs, ISVs and VARs, if you want to distribute or 
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
- *   Identity Engines for an OEM Commercial License.
+ *   Nortel Networks for an OEM Commercial License.
  **/
 
 #include "stdafx.h"
@@ -454,24 +454,24 @@ bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pPr
 					memset(myfast, 0x00, sizeof(config_eap_fast));
 					
 					// We don't allow users to disable provisioning when using the wizard.
-					SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ALLOWED);
+					SET_FLAG(myfast->flags, EAP_FAST_PROVISION_ALLOWED);
 
 					if (m_anonymousProvisioning == true)
 					{
-						SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+						SET_FLAG(myfast->flags, EAP_FAST_PROVISION_ANONYMOUS);
 					}
 					else
 					{
-						UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS);
+						UNSET_FLAG(myfast->flags, EAP_FAST_PROVISION_ANONYMOUS);
 					}
 
 					if (m_authenticatedProvisioning == true)
 					{
-						SET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+						SET_FLAG(myfast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
 					}
 					else
 					{
-						UNSET_FLAG(myfast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED);
+						UNSET_FLAG(myfast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
 					}
 
 					// server cert
@@ -1142,7 +1142,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 					else
 						m_validateCert = false;			
 
-					if (TEST_FLAG(pFASTData->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
+					if (TEST_FLAG(pFASTData->flags, EAP_FAST_PROVISION_ANONYMOUS))
 					{
 						m_anonymousProvisioning = true;
 					}
@@ -1151,7 +1151,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 						m_anonymousProvisioning = false;
 					}
 
-					if (TEST_FLAG(pFASTData->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))
+					if (TEST_FLAG(pFASTData->flags, EAP_FAST_PROVISION_AUTHENTICATED))
 					{
 						m_authenticatedProvisioning = true;
 					}

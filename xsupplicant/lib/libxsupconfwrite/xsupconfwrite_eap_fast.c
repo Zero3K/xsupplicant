@@ -81,82 +81,32 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 		}
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_ALLOWED)))
+	if (xsupconfwrite_common_write_bool(fastnode, "Allow_Provision",
+		TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_ALLOWED), TRUE, write_all, TRUE) == NULL)
 	{
-		if (!TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_ALLOWED))
-		{
-			if (xsupconfwrite_common_newSibling(fastnode, "Allow_Provision", "no") == NULL)
-			{
-#ifdef WRITE_EAP_FAST_DEBUG
-				printf("Couldn't create <Allow_Provision> node for FAST!\n");
-#endif
-				xmlFreeNode(fastnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(fastnode, "Allow_Provision", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_FAST_DEBUG
-				printf("Couldn't create <Allow_Provision> node for FAST!\n");
-#endif
-				xmlFreeNode(fastnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(fastnode);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_ANONYMOUS)))
+	if (xsupconfwrite_common_write_bool(fastnode, "Allow_Anonymous_Provision",
+		TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_ANONYMOUS), FALSE, write_all, TRUE) == NULL)
 	{
-		if (!TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
-		{
-			if (xsupconfwrite_common_newSibling(fastnode, "Allow_Anonymous_Provision", "no") == NULL)
-			{
-#ifdef WRITE_EAP_FAST_DEBUG
-				printf("Couldn't create <Allow_Anonymous_Provision> node for FAST!\n");
-#endif
-				xmlFreeNode(fastnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(fastnode, "Allow_Anonymous_Provision", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_FAST_DEBUG
-				printf("Couldn't create <Allow_Anonymous_Provision> node for FAST!\n");
-#endif
-				xmlFreeNode(fastnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(fastnode);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED)))
+	if (xsupconfwrite_common_write_bool(fastnode, "Allow_Authenticated_Provision",
+		TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_AUTHENTICATED), TRUE, write_all, TRUE) == NULL)
 	{
-		if (!TEST_FLAG(fastdata->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))
-		{
-			if (xsupconfwrite_common_newSibling(fastnode, "Allow_Authenticated_Provision", "no") == NULL)
-			{
-#ifdef WRITE_EAP_FAST_DEBUG
-				printf("Couldn't create <Allow_Authenticated_Provision> node for FAST!\n");
-#endif
-				xmlFreeNode(fastnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(fastnode, "Allow_Authenticated_Provision", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_FAST_DEBUG
-				printf("Couldn't create <Allow_Authenticated_Provision> node for FAST!\n");
-#endif
-				xmlFreeNode(fastnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(fastnode);
+		return NULL;
+	}
+
+	if (xsupconfwrite_common_write_bool(fastnode, "Use_Logon_Credentials", 
+		TEST_FLAG(fastdata->flags, EAP_FAST_USE_LOGON_CREDS), FALSE, write_all, TRUE) == NULL)
+	{
+		xmlFreeNode(fastnode);
+		return NULL;
 	}
 
 	if ((write_all == TRUE) || (fastdata->chunk_size != 0))
@@ -200,30 +150,11 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 		}
 	}
 
-	if ((write_all == TRUE) || (fastdata->validate_cert != TRUE))
+	if (xsupconfwrite_common_write_bool(fastnode, "Validate_Certificate",
+		fastdata->validate_cert, TRUE, write_all, TRUE) == NULL)
 	{
-		if (fastdata->validate_cert != FALSE)
-		{
-			if (xsupconfwrite_common_newSibling(fastnode, "Validate_Certificate", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_FAST_DEBUG
-				printf("Couldn't create <Validate_Certificate> for PEAP!\n");
-#endif
-				xmlFreeNode(fastnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(fastnode, "Validate_Certificate", "no") == NULL)
-			{
-#ifdef WRITE_EAP_FAST_DEBUG
-				printf("Couldn't create <Validate_Certificate> for FAST!\n");
-#endif
-				xmlFreeNode(fastnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(fastnode);
+		return NULL;
 	}
 
 	p2node = xmlNewNode(NULL, (xmlChar *)"Phase2");

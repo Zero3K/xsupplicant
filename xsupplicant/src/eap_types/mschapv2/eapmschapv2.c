@@ -1464,13 +1464,27 @@ void eapmschapv2_deinit(eap_type_data *eapdata)
 }
 
 /**
- * \brief Return the credential requirements for EAP-MSCHAPv2
+ * \brief Return a username if we need to override it for some reason (such as a
+ *			desire to use logon credentials.
  *
- * @param[in] config	Not used.
+ * \note Any non-NULL value returned here will override any configuration file setting
+ *			or user provided entry (if any).  This call should be USED WITH CARE!
  *
- * \retval (EAP_REQUIRES_USERNAME|EAP_REQUIRES_PASSWORD)
+ * \retval NULL if no username is to be returned, ptr to the new username otherwise.
  **/
-int eapmschapv2_creds_required(void *config)
+char *eapmschapv2_get_username(void *config)
 {
-	return (EAP_REQUIRES_USERNAME | EAP_REQUIRES_PASSWORD);
+	struct config_eap_mschapv2 *mscv2 = NULL;
+
+	if (config == NULL) return NULL;
+
+	mscv2 = (struct config_eap_mschapv2 *)config;
+
+	if (TEST_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS))
+	{
+		if (logon_creds_username_available() == TRUE) return logon_creds_get_username();
+	}
+
+	return NULL;
 }
+

@@ -8,6 +8,7 @@
  * \author chris@open1x.org
  *
  **/
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -23,6 +24,7 @@
 #include "src/eap_types/mschapv2/mschapv2.h"
 #include "p2mschapv2.h"
 #include "src/eap_types/eap_type_common.h"
+#include "../../logon_creds.h"
 
 #ifdef WINDOWS
 #include <windows.h>
@@ -74,7 +76,16 @@ void mschapv2_check(eap_type_data *eapdata)
 	      return;
 		}
 
-		if (ctx->prof->temp_password == NULL)
+		if ((TEST_FLAG(outerdata->flags, TTLS_FLAGS_USE_LOGON_CREDS)) && (logon_creds_password_available() == TRUE))
+		{
+			if (ctx->prof != NULL)
+			{
+				FREE(ctx->prof->temp_password);
+				ctx->prof->temp_password = _strdup(logon_creds_get_password());
+			}
+		}
+
+		if ((ctx->prof != NULL) && (ctx->prof->temp_password == NULL))
 		{
 			debug_printf(DEBUG_NORMAL, "No password available for TTLS-MSCHAPv2!\n");
 			eap_type_common_fail(eapdata);

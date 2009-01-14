@@ -1,6 +1,6 @@
 /**
- * The XSupplicant User Interface is Copyright 2007, 2008 Identity Engines.
- * Identity Engines provides the XSupplicant User Interface under dual license terms.
+ * The XSupplicant User Interface is Copyright 2007, 2008, 2009 Nortel Networks.
+ * Nortel Networks provides the XSupplicant User Interface under dual license terms.
  *
  *   For open source projects, if you are developing and distributing open source 
  *   projects under the GPL License, then you are free to use the XSupplicant User 
@@ -27,7 +27,7 @@
  *   For commercial enterprises, OEMs, ISVs and VARs, if you want to distribute or 
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
- *   Identity Engines for an OEM Commercial License.
+ *   Nortel Networks for an OEM Commercial License.
  **/
 
 #ifndef _WIZARDPAGES_H_

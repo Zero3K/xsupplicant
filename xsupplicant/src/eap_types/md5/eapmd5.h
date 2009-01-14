@@ -24,6 +24,5 @@ uint8_t *eapmd5_buildResp(eap_type_data *);
 uint8_t eapmd5_isKeyAvailable(eap_type_data *);
 uint8_t *eapmd5_getKey(eap_type_data *);
 void eapmd5_deinit(eap_type_data *);
-int eapmd5_creds_required(void *);
 
 #endif

@@ -171,30 +171,11 @@ xmlNodePtr xsupconfwrite_connection_ipdata(struct config_ip_data *ipdata,
 		}
 	}
 
-	if ((write_all == TRUE) || (ipdata->renew_on_reauth == TRUE))
+	if (xsupconfwrite_common_write_bool(ipNode, "Renew_DHCP_on_Reauthentication",
+		ipdata->renew_on_reauth, FALSE, write_all, FALSE) == NULL)
 	{
-		if (ipdata->renew_on_reauth == TRUE)
-		{
-			if (xmlNewChild(ipNode, NULL, (xmlChar *)"Renew_DHCP_on_Reauthentication", (xmlChar *)"yes") == NULL)
-			{
-#ifdef WRITE_CONNECTION_CONFIG
-				printf("Couldn't create <Renew_DHCP_on_Reauthentication> node!\n");
-#endif
-				xmlFreeNode(ipNode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xmlNewChild(ipNode, NULL, (xmlChar *)"Renew_DHCP_on_Reauthentication", (xmlChar *)"no") == NULL)
-			{
-#ifdef WRITE_CONNECTION_CONFIG
-				printf("Couldn't create <Renew_DHCP_on_Reauthentication> node!\n");
-#endif
-				xmlFreeNode(ipNode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(ipNode);
+		return NULL;
 	}
 
 	if ((write_all == TRUE) || (ipdata->search_domain != NULL))
@@ -662,56 +643,18 @@ xmlNodePtr xsupconfwrite_connection_create_tree(struct config_connection *con, u
 		}
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(con->flags, CONFIG_NET_IS_HIDDEN)))
+	if (xsupconfwrite_common_write_bool(connode, "Hidden_SSID",
+		TEST_FLAG(con->flags, CONFIG_NET_IS_HIDDEN), FALSE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(con->flags, CONFIG_NET_IS_HIDDEN))
-		{
-			if (xmlNewChild(connode, NULL, (xmlChar *)"Hidden_SSID", (xmlChar *)"yes") == NULL)
-			{
-#ifdef WRITE_CONNECTION_CONFIG
-				printf("Couldn't allocate memory to store <Hidden_SSID> node!\n");
-#endif
-				xmlFreeNode(connode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xmlNewChild(connode, NULL, (xmlChar *)"Hidden_SSID", (xmlChar *)"no") == NULL)
-			{
-#ifdef WRITE_CONNECTION_CONFIG
-				printf("Couldn't allocate memory to store <Hidden_SSID> node!\n");
-#endif
-				xmlFreeNode(connode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(connode);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(con->flags, CONFIG_VOLATILE_CONN)))
+	if (xsupconfwrite_common_write_bool(connode, "Volatile",
+		TEST_FLAG(con->flags, CONFIG_VOLATILE_CONN), FALSE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(con->flags, CONFIG_VOLATILE_CONN))
-		{
-			if (xmlNewChild(connode, NULL, (xmlChar *)"Volatile", (xmlChar *)"yes") == NULL)
-			{
-#ifdef WRITE_CONNECTION_CONFIG
-				printf("Couldn't allocate memory to store <Volatile> node!\n");
-#endif
-				xmlFreeNode(connode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xmlNewChild(connode, NULL, (xmlChar *)"Volatile", (xmlChar *)"no") == NULL)
-			{
-#ifdef WRITE_CONNECTION_CONFIG
-				printf("Couldn't allocate memory to store <Volatile> node!\n");
-#endif
-				xmlFreeNode(connode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(connode);
+		return NULL;
 	}
 
 	assocNode = xsupconfwrite_connection_association(&con->association, config_type, write_all);

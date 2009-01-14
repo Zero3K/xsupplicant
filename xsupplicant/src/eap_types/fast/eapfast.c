@@ -88,7 +88,7 @@ uint8_t eapfast_init(eap_type_data *eapdata)
       return FALSE;
     }
 
-  if ((TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED)) && ((mytls_vars->certs_loaded & ROOT_CERTS_LOADED) == 0x00))
+  if ((TEST_FLAG(fastconf->flags, EAP_FAST_PROVISION_AUTHENTICATED)) && ((mytls_vars->certs_loaded & ROOT_CERTS_LOADED) == 0x00))
     {
 	  if (fastconf->validate_cert == FALSE)
         {
@@ -858,17 +858,17 @@ void eapfast_process(eap_type_data *eapdata)
 				  mytls_vars->pac_length = 0;
 
 				  // We don't have a PAC, are we allowed to provision one?
-				  if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_ALLOWED))
+				  if (TEST_FLAG(fastconf->flags, EAP_FAST_PROVISION_ALLOWED))
 				  {
 					  phase2->provisioning = TRUE;
 
-					  if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))	
+					  if (TEST_FLAG(fastconf->flags, EAP_FAST_PROVISION_AUTHENTICATED))	
 					  {
 						  // Do authenticated mode.
 						  debug_printf(DEBUG_NORMAL, "Doing authenticated provisioning mode.\n");
 						  phase2->anon_provisioning = FALSE;
 					  }
-					  else if (TEST_FLAG(fastconf->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
+					  else if (TEST_FLAG(fastconf->flags, EAP_FAST_PROVISION_ANONYMOUS))
 					  {
 						  // Set our cipher suite to only allow Anon-DH mode, which should force
 						  // any authenticator in to anonymous provisioning, or a failure case.
@@ -1151,6 +1151,62 @@ void eapfast_deinit(eap_type_data *eapdata)
   FREE(eapdata->eap_data);
 
   debug_printf(DEBUG_DEINIT, "(EAP-FAST) Cleaned up.\n");
+}
+
+/**
+ * \brief Return a username if we need to override it for some reason (such as a
+ *			desire to use logon credentials.
+ *
+ * \note Any non-NULL value returned here will override any configuration file setting
+ *			or user provided entry (if any).  This call should be USED WITH CARE!
+ *
+ * \retval NULL if no username is to be returned, ptr to the new username otherwise.
+ **/
+char *eapfast_get_username(void *config)
+{
+	struct config_eap_fast *fastdata = NULL;
+
+  fastdata = (struct config_eap_fast *)config;
+
+  // If we are configured to use logon creds we need to set the outer ID in the clear
+  // since some servers (like Microsoft's NPS) won't accept anonymous as an outer ID.
+  if (TEST_FLAG(fastdata->flags, EAP_FAST_USE_LOGON_CREDS))
+  {
+	  if (logon_creds_username_available() == TRUE)
+	  {
+		  return logon_creds_get_username();
+	  }
+  }
+
+  return NULL;
+}
+
+/**
+ * \brief Determine what credentials are needed for FAST.
+ *
+ * @param[in] config   A pointer to a FAST configuration blob.
+ *
+ * \retval int  A bitmap containing the requirements for this connection.
+ **/
+int eapfast_creds_required(void *config)
+{
+	struct config_eap_fast *fast = NULL;
+
+	fast = (struct config_eap_fast *)config;
+	if (fast == NULL) return -1;				// This is bad, we can't determine anything.
+
+	switch (fast->phase2->method_num)
+	{
+	case EAP_TYPE_GTC:				// For now, we don't support true token mode with FAST-GTC.
+	case EAP_TYPE_MSCHAPV2:
+		return eap_type_common_upw_required(fast->phase2->method_data);
+		break;
+
+	default:
+		return -1;
+	}
+
+	return -1;
 }
 
 #endif // OPENSSL_HELLO_EXTENSION_SUPPORTED

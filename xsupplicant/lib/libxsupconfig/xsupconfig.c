@@ -1356,14 +1356,14 @@ void dump_config_eap_fast(struct config_eap_fast *fast)
   printf("\t  TLS Chunk Size: %d\n", fast->chunk_size);
   printf("\t  Provisioning: ");
 
-  if (TEST_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ALLOWED))
+  if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED))
   {
-	  if (TEST_FLAG(fast->provision_flags, EAP_FAST_PROVISION_ANONYMOUS))
+	  if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS))
 	  {
 		  printf("Anonymous mode     ");
 	  }
 
-	  if (TEST_FLAG(fast->provision_flags, EAP_FAST_PROVISION_AUTHENTICATED))
+	  if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED))
 	  {
 		  printf("Authenticated mode");
 	  }

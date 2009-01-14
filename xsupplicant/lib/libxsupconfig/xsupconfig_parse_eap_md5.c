@@ -188,9 +188,46 @@ void *xsupconfig_parse_eap_md5_enc_password(void **attr, uint8_t config_type, xm
   return md5;
 }
 
+void *xsupconfig_parse_eap_md5_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	struct config_pwd_only *md5 = NULL;
+	char *value = NULL;
+	uint8_t result = 0;
+
+	md5 = (*attr);
+
+  value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+  printf("Use logon creds : %s\n", value);
+#endif
+
+  result = xsupconfig_common_yesno(value);
+ 
+    if (result == 1)
+    {
+      SET_FLAG(md5->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS);
+    }
+  else if (result == 0)
+    {
+      UNSET_FLAG(md5->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS);
+    }
+  else
+    {
+		xsupconfig_common_log("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
+			xsupconfig_parse_get_line_num());
+      UNSET_FLAG(md5->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS);
+    }
+
+  xmlFree(value);
+
+  return md5;
+}
+
 parser eap_md5[] = {
   {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_md5_password},
   {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_md5_enc_password},
+  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_md5_logon_creds},
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
   {NULL, NULL, FALSE, 0, NULL}};

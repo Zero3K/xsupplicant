@@ -135,56 +135,18 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 		}
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(cts->flags, CONFIG_VOLATILE_SERVER)))
+	if (xsupconfwrite_common_write_bool(tsnode, "Volatile",
+		TEST_FLAG(cts->flags, CONFIG_VOLATILE_SERVER), FALSE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(cts->flags, CONFIG_VOLATILE_SERVER))
-		{
-			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Volatile", (xmlChar *)"yes") == NULL)
-			{
-#ifdef WRITE_TS_CONFIG
-				printf("Couldn't allocate memory to store <Volatile> node!\n");
-#endif
-				xmlFreeNode(tsnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Volatile", (xmlChar *)"no") == NULL)
-			{
-#ifdef WRITE_TS_CONFIG
-				printf("Couldn't allocate memory to store <Volatile> node!\n");
-#endif
-				xmlFreeNode(tsnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(tsnode);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (cts->exact_common_name != FALSE))
+	if (xsupconfwrite_common_write_bool(tsnode, "Exact_Common_Name",
+		cts->exact_common_name, FALSE, write_all, FALSE) == NULL)
 	{
-		if (cts->exact_common_name == TRUE)
-		{
-			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Exact_Common_Name", (xmlChar *)"yes") == NULL)
-			{
-#ifdef WRITE_TS_CONFIG
-				printf("Couldn't allocate memory to store <Exact_Common_Name> node!\n");
-#endif
-				xmlFreeNode(tsnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Exact_Common_Name", (xmlChar *)"no") == NULL)
-			{
-#ifdef WRITE_TS_CONFIG
-				printf("Couldn't allocate memory to store <Exact_Common_Name> node!\n");
-#endif
-				xmlFreeNode(tsnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(tsnode);
+		return NULL;
 	}
 
 	return tsnode;

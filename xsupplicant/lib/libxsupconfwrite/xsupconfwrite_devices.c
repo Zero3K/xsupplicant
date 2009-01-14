@@ -7,9 +7,6 @@
  * \file xsupconfwrite_devices.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfwrite_devices.c,v 1.4 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>

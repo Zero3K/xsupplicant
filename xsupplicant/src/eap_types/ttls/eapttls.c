@@ -507,3 +507,30 @@ uint8_t *eapttls_getKey(eap_type_data *eapdata)
   return keydata;
 }
 
+/**
+ * \brief Return a username if we need to override it for some reason (such as a
+ *			desire to use logon credentials.
+ *
+ * \note Any non-NULL value returned here will override any configuration file setting
+ *			or user provided entry (if any).  This call should be USED WITH CARE!
+ *
+ * \retval NULL if no username is to be returned, ptr to the new username otherwise.
+ **/
+char *eapttls_get_username(void *config)
+{
+	struct config_eap_ttls *ttlsdata = NULL;
+
+  ttlsdata = (struct config_eap_ttls *)config;
+
+  // If we are configured to use logon creds we need to set the outer ID in the clear
+  // since some servers (like Microsoft's NPS) won't accept anonymous as an outer ID.
+  if (TEST_FLAG(ttlsdata->flags, TTLS_FLAGS_USE_LOGON_CREDS))
+  {
+	  if (logon_creds_username_available() == TRUE)
+	  {
+		  return logon_creds_get_username();
+	  }
+  }
+
+  return NULL;
+}

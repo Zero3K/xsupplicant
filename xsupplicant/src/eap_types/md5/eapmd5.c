@@ -28,6 +28,7 @@
 #include "../../eap_types/eap_type_common.h"
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
+#include "../../logon_creds.h"
 
 #ifndef WINDOWS
 #include <strings.h>
@@ -399,15 +400,3 @@ void eapmd5_deinit(eap_type_data *eapdata)
   FREE(eapdata->eap_data);
 }
 
-/**
- * \brief Return the credential requirements for EAP-MD5.
- *
- * @param[in] config   Not used.
- *
- * \retval (EAP_REQUIRES_USERNAME|EAP_REQUIRES_PASSWORD) always. ;)
- **/
-int eapmd5_creds_required(void *config)
-{
-	return -1;
-	//return (EAP_REQUIRES_USERNAME | EAP_REQUIRES_PASSWORD);
-}

@@ -59,172 +59,60 @@ xmlNodePtr xsupconfwrite_profile_compliance_create_tree(struct config_profiles *
 	compliance = xmlNewChild(parent, NULL, (xmlChar *)"Compliance", NULL);
 	if (compliance == NULL) return NULL;   //ACK!
 
-	if ((write_all == TRUE) || (!TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ENABLE)))
+	if (xsupconfwrite_common_write_bool(compliance, "Enable",
+		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ENABLE), TRUE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ENABLE))
-		{
-			temp = _strdup("yes");
-		}
-		else
-		{
-			temp = _strdup("no");
-		}
-
-		if (xmlNewChild(compliance, NULL, (xmlChar *)"Enable", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(compliance);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(compliance);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(profs->compliance, TNC_COMPLIANCE_PERSONALITY_CHECK)))
+	if (xsupconfwrite_common_write_bool(compliance, "Personality_Check",
+		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_PERSONALITY_CHECK), TRUE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->compliance, TNC_COMPLIANCE_PERSONALITY_CHECK))
-		{
-			temp = _strdup("yes");
-		}
-		else
-		{
-			temp = _strdup("no");
-		}
-
-		if (xmlNewChild(compliance, NULL, (xmlChar *)"Personality_Check", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(compliance);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(compliance);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(profs->compliance, TNC_COMPLIANCE_FIREWALL_CHECK)))
+	if (xsupconfwrite_common_write_bool(compliance, "Firewall_Check",
+		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_FIREWALL_CHECK), TRUE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->compliance, TNC_COMPLIANCE_FIREWALL_CHECK))
-		{
-			temp = _strdup("yes");
-		}
-		else
-		{
-			temp = _strdup("no");
-		}
-
-		if (xmlNewChild(compliance, NULL, (xmlChar *)"Firewall_Check", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(compliance);
-			free(temp);
-			return NULL;
-		}
-		
-		free(temp);
+		xmlFreeNode(compliance);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_SPYWARE_CHECK)))
+	if (xsupconfwrite_common_write_bool(compliance, "Anti_Spyware_Check",
+		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_SPYWARE_CHECK), TRUE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_SPYWARE_CHECK))
-		{
-			temp = _strdup("yes");
-		}
-		else
-		{
-			temp = _strdup("no");
-		}
-
-		if (xmlNewChild(compliance, NULL, (xmlChar *)"Anti_Spyware_Check", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(compliance);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(compliance);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_VIRUS_CHECK)))
+	if (xsupconfwrite_common_write_bool(compliance, "Anti_Virus_Check",
+		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_VIRUS_CHECK), TRUE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_VIRUS_CHECK))
-		{
-			temp = _strdup("yes");
-		}
-		else
-		{
-			temp = _strdup("no");
-		}
-
-		if (xmlNewChild(compliance, NULL, (xmlChar *)"Anti_Virus_Check", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(compliance);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(compliance);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_PHISHING_CHECK)))
+	if (xsupconfwrite_common_write_bool(compliance, "Anti_Phishing_Check",
+		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_PHISHING_CHECK), TRUE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_PHISHING_CHECK))
-		{
-			temp = _strdup("yes");
-		}
-		else
-		{
-			temp = _strdup("no");
-		}
-
-		if (xmlNewChild(compliance, NULL, (xmlChar *)"Anti_Phishing_Check", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(compliance);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(compliance);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN)))
+	if (xsupconfwrite_common_write_bool(compliance, "Allow_Full_Scan",
+		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN), TRUE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN))
-		{
-			temp = _strdup("yes");
-		}
-		else
-		{
-			temp = _strdup("no");
-		}
-
-		if (xmlNewChild(compliance, NULL, (xmlChar *)"Allow_Full_Scan", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(compliance);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(compliance);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (!TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ALLOW_AUTO_UPDATE)))
+	if (xsupconfwrite_common_write_bool(compliance, "Allow_Auto_Update",
+		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ALLOW_AUTO_UPDATE), TRUE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ALLOW_AUTO_UPDATE))
-		{
-			temp = _strdup("yes");
-		}
-		else
-		{
-			temp = _strdup("no");
-		}
-
-		if (xmlNewChild(compliance, NULL, (xmlChar *)"Allow_Auto_Update", (xmlChar *)temp) == NULL)
-		{
-			xmlFreeNode(compliance);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(compliance);
+		return NULL;
 	}
 
 	return compliance;
@@ -296,30 +184,11 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, uint
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(profs->flags, CONFIG_VOLATILE_PROFILE)))
+	if (xsupconfwrite_common_write_bool(profnode, "Volatile",
+		TEST_FLAG(profs->flags, CONFIG_VOLATILE_PROFILE), FALSE, write_all, FALSE) == NULL)
 	{
-		if (TEST_FLAG(profs->flags, CONFIG_VOLATILE_PROFILE))
-		{
-			if (xmlNewChild(profnode, NULL, (xmlChar *)"Volatile", (xmlChar *)"yes") == NULL)
-			{
-#ifdef WRITE_PROFILES_CONFIG
-				printf("Couldn't allocate memory to store <Volatile> node!\n");
-#endif
-				xmlFreeNode(profnode);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xmlNewChild(profnode, NULL, (xmlChar *)"Volatile", (xmlChar *)"no") == NULL)
-			{
-#ifdef WRITE_PROFILES_CONFIG
-				printf("Couldn't allocate memory to store <Volatile> node!\n");
-#endif
-				xmlFreeNode(profnode);
-				return NULL;
-			}
-		}
+		xmlFreeNode(profnode);
+		return NULL;
 	}
 
 	eapnode = xsupconfwrite_eap_create_tree(profs->method, config_type, write_all);

@@ -187,3 +187,39 @@ void eap_type_common_init_eap_data(eap_type_data *eapdata)
   eapdata->altReject = FALSE;
 }
 
+/**
+ * \brief Many different EAP methods just need a username/password.  So this common function just returns that
+ *			so that the same thing doesn't need to be implemented over and over in each EAP method.
+ *
+ * \retval EAP_REQUIRES_USERNAME|EAP_REQUIRES_PASSWORD
+ **/
+int eap_type_common_upw_required(void *config)
+{
+	return (EAP_REQUIRES_USERNAME | EAP_REQUIRES_PASSWORD);
+}
+
+/**
+ * \brief Return a username if we need to override it for some reason (such as a
+ *			desire to use logon credentials.
+ *
+ * \note Any non-NULL value returned here will override any configuration file setting
+ *			or user provided entry (if any).  This call should be USED WITH CARE!
+ *
+ * \retval NULL if no username is to be returned, ptr to the new username otherwise.
+ **/
+char *eap_type_common_get_username(void *config)
+{
+	struct config_pwd_only *pwd = NULL;
+
+	if (config == NULL) return NULL;
+
+	pwd = (struct config_pwd_only *)config;
+
+	if (TEST_FLAG(pwd->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS))
+	{
+		if (logon_creds_username_available() == TRUE) return logon_creds_get_username();
+	}
+
+	return NULL;
+}
+

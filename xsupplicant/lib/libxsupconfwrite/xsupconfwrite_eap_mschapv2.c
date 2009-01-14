@@ -131,108 +131,32 @@ xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *ch
 		}
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK)))
+	if (xsupconfwrite_common_write_bool(chap2node, "IAS_Quirk",
+		TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK), FALSE, write_all, TRUE) == NULL)
 	{
-		if (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
-		{
-			if (xsupconfwrite_common_newSibling(chap2node, "IAS_Quirk", "no") == NULL)
-			{
-#ifdef WRITE_EAP_MSCHAPV2_DEBUG
-				printf("Couldn't create <IAS_Quirk> node for MSCHAPv2!\n");
-#endif
-				xmlFreeNode(chap2node);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(chap2node, "IAS_Quirk", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_MSCHAPV2_DEBUG
-				printf("Couldn't create <IAS_Quirk> node for MSCHAPv2!\n");
-#endif
-				xmlFreeNode(chap2node);
-				return NULL;
-			}
-		}
+		xmlFreeNode(chap2node);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH)))
+	if (xsupconfwrite_common_write_bool(chap2node, "Machine_Authentication_Mode",
+		TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH), FALSE, write_all, TRUE) == NULL)
 	{
-		if (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
-		{
-			if (xsupconfwrite_common_newSibling(chap2node, "Machine_Authentication_Mode", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_MSCHAPV2_DEBUG
-				printf("Couldn't create <Machine_Authentication_Mode> node for MSCHAPv2!\n");
-#endif
-				xmlFreeNode(chap2node);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(chap2node, "Machine_Authentication_Mode", "no") == NULL)
-			{
-#ifdef WRITE_EAP_MSCHAPV2_DEBUG
-				printf("Couldn't create <Machine_Authentication_Mode> node for MSCHAPv2!\n");
-#endif
-				xmlFreeNode(chap2node);
-				return NULL;
-			}
-		}
+		xmlFreeNode(chap2node);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS)))
+	if (xsupconfwrite_common_write_bool(chap2node, "Use_Logon_Credentials",
+		TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS), FALSE, write_all, TRUE) == NULL)
 	{
-		if (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS))
-		{
-			if (xsupconfwrite_common_newSibling(chap2node, "Use_Logon_Credentials", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_MSCHAPV2_DEBUG
-				printf("Couldn't create <Machine_Authentication_Mode> node for MSCHAPv2!\n");
-#endif
-				xmlFreeNode(chap2node);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(chap2node, "Use_Logon_Credentials", "no") == NULL)
-			{
-#ifdef WRITE_EAP_MSCHAPV2_DEBUG
-				printf("Couldn't create <Machine_Authentication_Mode> node for MSCHAPv2!\n");
-#endif
-				xmlFreeNode(chap2node);
-				return NULL;
-			}
-		}
+		xmlFreeNode(chap2node);
+		return NULL;
 	}
 
-	if ((write_all == TRUE) || (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_VOLATILE)))
+	if (xsupconfwrite_common_write_bool(chap2node, "Volatile",
+		TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_VOLATILE), FALSE, write_all, TRUE) == NULL)
 	{
-		if (TEST_FLAG(chap2data->flags, FLAGS_EAP_MSCHAPV2_VOLATILE))
-		{
-			if (xsupconfwrite_common_newSibling(chap2node, "Volatile", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_MSCHAPV2_DEBUG
-				printf("Couldn't allocate memory to store <Volatile> node!\n");
-#endif
-				xmlFreeNode(chap2node);
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(chap2node, "Volatile", "no") == NULL)
-			{
-#ifdef WRITE_EAP_MSCHAPV2_DEBUG
-				printf("Couldn't allocate memory to store <Volatile> node!\n");
-#endif
-				xmlFreeNode(chap2node);
-				return NULL;
-			}
-		}
+		xmlFreeNode(chap2node);
+		return NULL;
 	}
 
 	return chap2node;

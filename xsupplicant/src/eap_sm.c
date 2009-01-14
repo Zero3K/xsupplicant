@@ -76,12 +76,12 @@
 struct rfc4137_eap_handler eaphandlers[] = {
   {EAP_TYPE_MD5, "EAP-MD5", eapmd5_check, eapmd5_process, eapmd5_buildResp,
    eapmd5_isKeyAvailable, eapmd5_getKey, eap_type_common_get_zero_len,
-   eapmd5_creds_required, NULL, eapmd5_deinit},
+   eap_type_common_upw_required, eap_type_common_get_username, eapmd5_deinit},
 
   {EAP_TYPE_MSCHAPV2, "EAP-MSCHAPv2", eapmschapv2_check, eapmschapv2_process,
    eapmschapv2_buildResp, eapmschapv2_isKeyAvailable, eapmschapv2_getKey,
-   eap_type_common_get_common_key_len, eapmschapv2_creds_required, NULL,
-   eapmschapv2_deinit},
+   eap_type_common_get_common_key_len, eap_type_common_upw_required, 
+   eap_type_common_get_username, eapmschapv2_deinit},
 
   {EAP_TYPE_TLS, "EAP-TLS", eaptls_check, eaptls_process, eaptls_buildResp,
    eaptls_isKeyAvailable, eaptls_getKey, eap_type_common_get_common_key_len,
@@ -89,11 +89,12 @@ struct rfc4137_eap_handler eaphandlers[] = {
 
   {EAP_TYPE_TTLS, "EAP-TTLS", eapttls_check, eapttls_process, 
    eapttls_buildResp, eapttls_isKeyAvailable, eapttls_getKey, 
-   eap_type_common_get_common_key_len, NULL, NULL, eapttls_deinit},
+   eap_type_common_get_common_key_len, eap_type_common_upw_required,
+   eapttls_get_username, eapttls_deinit},
 
   {EAP_TYPE_OTP, "EAP-OTP", eapotp_check, eapotp_process, eapotp_buildResp,
    eapotp_isKeyAvailable, eapotp_getKey, eap_type_common_get_zero_len,
-   NULL, NULL, eapotp_deinit},
+   eap_type_common_upw_required, eap_type_common_get_username, eapotp_deinit},
 
   {EAP_TYPE_GTC, "EAP-GTC", eapotp_check, eapotp_process, eapotp_buildResp,
    eapotp_isKeyAvailable, eapotp_getKey, eap_type_common_get_zero_len,
@@ -123,19 +124,21 @@ struct rfc4137_eap_handler eaphandlers[] = {
 #ifdef ENABLE_LEAP
   {EAP_TYPE_LEAP, "EAP-LEAP", eapleap_check, eapleap_process, 
    eapleap_buildResp, eapleap_isKeyAvailable, eapleap_getKey, 
-   eapleap_getKey_len, eapleap_creds_required, NULL, eapleap_deinit},
+   eapleap_getKey_len, eap_type_common_upw_required, NULL, eapleap_deinit},
 #endif
 
 #ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
   {EAP_TYPE_FAST, "EAP-FAST", eapfast_check, eapfast_process,
    eapfast_buildResp, eapfast_isKeyAvailable, eapfast_getKey, 
-   eap_type_common_get_common_key_len, NULL, NULL, eapfast_deinit},
+   eap_type_common_get_common_key_len, eapfast_creds_required, eapfast_get_username, 
+   eapfast_deinit},
 #endif
 
 #ifdef EXPERIMENTAL
   {EAP_TYPE_PSK, "EAP-PSK", eappsk_check, eappsk_process,
   eappsk_buildResp, eappsk_isKeyAvailable, eappsk_getKey,
-  eap_type_common_get_common_key_len, NULL, NULL, eappsk_deinit},
+  eap_type_common_get_common_key_len, eap_type_common_upw_required, 
+  NULL, eappsk_deinit},
 #endif
 
   {NO_EAP_AUTH, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
@@ -1469,7 +1472,7 @@ void eap_sm_prepopulate_id(eap_sm *sm)
 	  {
 		  sm->ident = ctx->prof->temp_username;
 	  }
-	  else if (logon_creds_username_available() == TRUE)
+	  else if (logon_creds_username_available() == TRUE)  // In general this is probably a bad idea, but it is better to try SOMETHING than to just fail.
 	  {
 		  sm->ident = logon_creds_get_username();
 	  }

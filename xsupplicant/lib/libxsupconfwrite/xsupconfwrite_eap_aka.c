@@ -121,28 +121,11 @@ xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_aka *akadata, uin
 		}
 	}
 
-	if ((write_all == TRUE) || (akadata->auto_realm == TRUE))
+	if (xsupconfwrite_common_write_bool(akanode, "Auto_Realm",
+		akadata->auto_realm, FALSE, write_all, TRUE) == NULL)
 	{
-		if (akadata->auto_realm == TRUE)
-		{
-			if (xsupconfwrite_common_newSibling(akanode, "Auto_Realm", "yes") == NULL)
-			{
-#ifdef WRITE_EAP_AKA_DEBUG
-				printf("Couldn't create <Auto_Realm> node for AKA!\n");
-#endif
-				return NULL;
-			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(akanode, "Auto_Realm", "no") == NULL)
-			{
-#ifdef WRITE_EAP_AKA_DEBUG
-				printf("Couldn't create <Auto_Realm> node for AKA!\n");
-#endif
-				return NULL;
-			}
-		}
+		xmlFreeNode(akanode);
+		return NULL;
 	}
 
 	return akanode;

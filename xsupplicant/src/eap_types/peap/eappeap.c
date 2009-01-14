@@ -674,7 +674,7 @@ int eappeap_creds_required(void *config)
 	switch (peap->phase2->method_num)
 	{
 	case EAP_TYPE_MSCHAPV2:
-		return eapmschapv2_creds_required(peap->phase2->method_data);
+		return eap_type_common_upw_required(peap->phase2->method_data);
 		break;
 
 	default:

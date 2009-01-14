@@ -743,10 +743,4 @@ void eapleap_deinit(eap_type_data *eapdata)
   debug_printf(DEBUG_AUTHTYPES, "(EAP-LEAP) Cleaning up.\n");
 }
 
-int eapleap_creds_required(void *config)
-{
-	return -1;
-	//return (EAP_REQUIRES_USERNAME | EAP_REQUIRES_PASSWORD);
-}
-
 #endif   // ENABLE_LEAP

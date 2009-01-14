@@ -116,31 +116,11 @@ xmlNodePtr xsupconfwrite_plugin_create_tree(struct config_plugins *plugs, uint8_
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (plugs->enabled == FALSE))
+	if (xsupconfwrite_common_write_bool(plugnode, "Enabled",
+		plugs->enabled, TRUE, write_all, FALSE) == NULL)
 	{
-		switch (plugs->enabled)
-		{
-		case FALSE:
-			temp = _strdup("no");  // Default setting.
-			break;
-
-		default:
-		case TRUE:
-			temp = _strdup("yes");
-			break;
-		}
-
-		if (xmlNewChild(plugnode, NULL, (xmlChar *)"Enabled", (xmlChar *)temp) == NULL)
-		{
-#ifdef WRITE_EAP_PEAP_DEBUG
-			printf("Couldn't create <Enabled> node for PEAP!\n");
-#endif
-			xmlFreeNode(plugnode);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(plugnode);
+		return NULL;
 	}
 
 	return plugnode;
