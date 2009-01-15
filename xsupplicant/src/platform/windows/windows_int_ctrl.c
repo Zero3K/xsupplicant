@@ -121,15 +121,15 @@ void windows_int_ctrl_change(config_globals *newsettings)
 
 	if (!xsup_assert((globals != NULL), "globals != NULL", FALSE)) return;
 
-	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL) != TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_NO_INT_CTRL))
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL) != TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_INT_CTRL))
 	{
-		if (TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_NO_INT_CTRL))
+		if (TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_INT_CTRL))
 		{
-			_beginthread(event_core_change_os_ctrl_state, 0, NULL);
+			_beginthread(event_core_change_os_ctrl_state, 0, 1);
 		}
 		else
 		{
-			_beginthread(event_core_change_os_ctrl_state, 0, 1);
+			_beginthread(event_core_change_os_ctrl_state, 0, NULL);
 		}
 	}
 }

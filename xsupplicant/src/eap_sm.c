@@ -806,7 +806,7 @@ void eap_sm_change_to_received(eap_sm *sm)
 		if ((!((sm->lastId == 0xff) && (sm->reqId == 0x00))) ||
 			((sm->reqId-1) == sm->lastId))
 		{
-		  if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+		  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 		    {
 		      debug_printf(DEBUG_NORMAL, "Your authenticator sent an incorrect"
 				   " ID value for the success response.\n");
@@ -843,7 +843,7 @@ void eap_sm_change_to_received(eap_sm *sm)
 				((sm->reqId-1) == sm->lastId))
 			{
 
-				  if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+				  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 			        {
 				      debug_printf(DEBUG_NORMAL, "Your authenticator sent an incorrect"
 						   " ID value for the failure response.\n");

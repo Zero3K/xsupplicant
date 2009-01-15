@@ -240,7 +240,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Friendly_Warnings",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS), TRUE, write_all, FALSE) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
@@ -365,7 +365,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Use_EAP_Hints",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_EAP_HINTS), TRUE, write_all, FALSE) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_EAP_HINTS), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
@@ -379,7 +379,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Control_Interfaces",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_INT_CTRL), TRUE, write_all, FALSE) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_INT_CTRL), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;

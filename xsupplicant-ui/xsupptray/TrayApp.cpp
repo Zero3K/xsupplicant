@@ -794,13 +794,13 @@ void TrayApp::updateIntControlCheck()
 
 	if (m_supplicant.getConfigGlobals(&globals, false) == true)
 	{
-		if ((globals->flags & CONFIG_GLOBALS_NO_INT_CTRL) == CONFIG_GLOBALS_NO_INT_CTRL)
+		if ((globals->flags & CONFIG_GLOBALS_INT_CTRL) == CONFIG_GLOBALS_INT_CTRL)
 		{
-			m_p1XControl->setChecked(false);
+			m_p1XControl->setChecked(true);
 		}
 		else
 		{
-			m_p1XControl->setChecked(true);
+			m_p1XControl->setChecked(false);
 		}
 
 		m_supplicant.freeConfigGlobals(&globals);

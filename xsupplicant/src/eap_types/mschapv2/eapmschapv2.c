@@ -551,12 +551,12 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
     }
 
   eapmschapv2_strip_backslash(eapdata->ident, &username);
-
+ 
   if (eapconf->nthash)
     {
       GenerateNTResponse((char *)myvars->AuthenticatorChallenge,
 			 (char *)myvars->PeerChallenge, username, 
-			 eapconf->nthash, (char *)myvars->NtResponse, 1);
+			 eapconf->nthash, (char *)myvars->NtResponse, USING_NTPWD_PWD);
     } 
   else if (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
   {
@@ -572,13 +572,13 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
 	  // Doing a machine auth.
       GenerateNTResponse((char *)myvars->AuthenticatorChallenge,
 			 (char *)myvars->PeerChallenge, username, 
-			 myvars->password, (char *)myvars->NtResponse, 2);
+			 myvars->password, (char *)myvars->NtResponse, USING_MAUTH_PWD);
   }
   else
   {
     GenerateNTResponse((char *)myvars->AuthenticatorChallenge,
 		       (char *)myvars->PeerChallenge, username,
-		       myvars->password, (char *)myvars->NtResponse, 0);
+		       myvars->password, (char *)myvars->NtResponse, USING_ASCII_PWD);
     }
 
   debug_printf(DEBUG_AUTHTYPES, "myvars->NtResponse = ");
@@ -642,7 +642,7 @@ uint8_t eapmschapv2_success(eap_type_data *eapdata)
 				 (char *)myvars->PeerChallenge,
 				 (char *)myvars->AuthenticatorChallenge,
 				 eapdata->ident, 
-				 (char *)&success->MsgField[2], &respOk, 1);
+				 (char *)&success->MsgField[2], &respOk, USING_NTPWD_PWD);
     } 
   else if (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
   {
@@ -651,7 +651,7 @@ uint8_t eapmschapv2_success(eap_type_data *eapdata)
 				 (char *)myvars->PeerChallenge,
 				 (char *)myvars->AuthenticatorChallenge,
 				 eapdata->ident, 
-				 (char *)&success->MsgField[2], &respOk, 2);
+				 (char *)&success->MsgField[2], &respOk, USING_MAUTH_PWD);
   }
   else {
       CheckAuthenticatorResponse(myvars->password,
@@ -659,7 +659,7 @@ uint8_t eapmschapv2_success(eap_type_data *eapdata)
 				 (char *)myvars->PeerChallenge,
 				 (char *)myvars->AuthenticatorChallenge,
 				 eapdata->ident, 
-				 (char *)&success->MsgField[2], &respOk, 0);
+				 (char *)&success->MsgField[2], &respOk, USING_ASCII_PWD);
     }
 
   if (respOk != 1)
@@ -670,10 +670,14 @@ uint8_t eapmschapv2_success(eap_type_data *eapdata)
 
   // Otherwise, generate our keying material.
   // We were successful, so generate keying material.
-  if (!eapconf->nthash)
+  if ((!eapconf->nthash) && (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH)))
     {
-      NtPasswordHash(myvars->password, (char *)&NtHash);
+      NtPasswordHash(myvars->password, (char *)&NtHash, TRUE);
     }
+  else if (TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))
+  {
+	  NtPasswordHash(myvars->password, (char *)&NtHash, FALSE);
+  }
   else
     {
       process_hex(myvars->password, strlen(myvars->password), 
@@ -900,22 +904,26 @@ uint8_t eapmschapv2_failure(eap_type_data *eapdata)
       debug_printf(DEBUG_NORMAL, "Your account is restricted to the hours "
 		   "you may log in.\n");
 	  ipc_events_error(NULL, IPC_EVENT_ERROR_RESTRICTED_HOURS, NULL);
+	  context_disconnect(event_core_get_active_ctx());
       break;
 
     case MSCHAPV2_ACCT_DISABLED:
       debug_printf(DEBUG_NORMAL, "Your account has been disabled.\n");
 	  ipc_events_error(NULL, IPC_EVENT_ERROR_ACCT_DISABLED, NULL);
+	  context_disconnect(event_core_get_active_ctx());
       break;
 
     case MSCHAPV2_PASSWD_EXPIRED:
       debug_printf(DEBUG_NORMAL, "Your password has expired.\n");
 	  ipc_events_error(NULL, IPC_EVENT_ERROR_PASSWD_EXPIRED, NULL);
+	  context_disconnect(event_core_get_active_ctx());
       break;
 
     case MSCHAPV2_NO_DIALIN_PERMISSION:
       debug_printf(DEBUG_NORMAL, "Your account does not have permission to "
 		   "use this network.\n");
 	  ipc_events_error(NULL, IPC_EVENT_ERROR_NO_PERMS, NULL);
+	  context_disconnect(event_core_get_active_ctx());
       break;
 
     case MSCHAPV2_AUTHENTICATION_FAILURE:
@@ -928,6 +936,7 @@ uint8_t eapmschapv2_failure(eap_type_data *eapdata)
       debug_printf(DEBUG_NORMAL, "There was an error changing your password."
 		   "\n");
 	  ipc_events_error(NULL, IPC_EVENT_ERROR_CHANGING_PASSWD, NULL);
+  	  context_disconnect(event_core_get_active_ctx());
       break;
 
     default:

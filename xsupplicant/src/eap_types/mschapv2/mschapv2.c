@@ -30,6 +30,7 @@
 #include "../../xsup_debug.h"
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
+#include "mschapv2.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -262,19 +263,25 @@ void GenerateAuthenticatorResponse(char *Password, char *NTResponse,
 		   "AuthenticatorResponse != NULL", FALSE))
     return;
 
-  if (mode == 0)
-    {
-      NtPasswordHash(Password, (char *)&PasswordHash, 0);
-    } 
-  else if (mode == 2)
+  switch (mode)
   {
-	  NtPasswordHash(Password, (char *)&PasswordHash, 1);
-  }
-	else {
+  case USING_ASCII_PWD:
+      NtPasswordHash(Password, (char *)&PasswordHash, TRUE);
+	  break;
+
+  case USING_MAUTH_PWD:
+	  NtPasswordHash(Password, (char *)&PasswordHash, FALSE);
+	  break;
+
+  default:
       process_hex(Password, strlen(Password), (char *)&PasswordHash);
-    }
+	  break;
+  } 
 
   HashNtPasswordHash((char *)&PasswordHash, (char *)&PasswordHashHash);
+
+  debug_printf(DEBUG_AUTHTYPES, "Password hash hash :\n");
+  debug_hex_printf(DEBUG_AUTHTYPES, PasswordHashHash, 16);
 
   EVP_DigestInit(&context, EVP_sha1());
   EVP_DigestUpdate(&context, &PasswordHashHash, 16);
@@ -282,7 +289,13 @@ void GenerateAuthenticatorResponse(char *Password, char *NTResponse,
   EVP_DigestUpdate(&context, Magic1, 39);
   EVP_DigestFinal(&context, (uint8_t *)&Digest, (unsigned int *) &Digest_len);
 
+  debug_printf(DEBUG_AUTHTYPES, "Digest 1 (%d):\n", Digest_len);
+  debug_hex_printf(DEBUG_AUTHTYPES, Digest, Digest_len);
+
   ChallengeHash(PeerChallenge, AuthenticatorChallenge, UserName, Challenge);
+
+  debug_printf(DEBUG_AUTHTYPES, "Challenge Hash : \n");
+  debug_hex_printf(DEBUG_AUTHTYPES, Challenge, 8);
 
   EVP_DigestInit(&context, EVP_sha1());
   EVP_DigestUpdate(&context, &Digest, 20);
@@ -348,6 +361,10 @@ void CheckAuthenticatorResponse(char *Password, char *NtResponse,
 
   FREE(stripped);
   stripped = NULL;
+
+  debug_printf(DEBUG_AUTHTYPES, "Comparison :\n");
+  debug_hex_dump(DEBUG_AUTHTYPES, MyResponse, 20);
+  debug_hex_dump(DEBUG_AUTHTYPES, procResp, 20);
 
   if (memcmp((char *)&MyResponse, (char *)&procResp, 20) == 0)
     {
@@ -444,19 +461,20 @@ void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
   debug_printf(DEBUG_AUTHTYPES, "Challenge : ");
   debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) Challenge, 8);
 
-  if (mode == 0)
-    {
-      NtPasswordHash(Password, (char *)&PasswordHash, 1);
-    } 
-  else if (mode == 2)
+  switch (mode)
   {
-	  debug_printf(DEBUG_AUTHTYPES, "Password : %ws\n", Password);
-	  NtPasswordHash(Password, (char *)&PasswordHash, 0);
-  }
-  else
-  {
+  case USING_ASCII_PWD:
+      NtPasswordHash(Password, (char *)&PasswordHash, TRUE);
+	  break;
+
+  case USING_MAUTH_PWD: 
+	  NtPasswordHash(Password, (char *)&PasswordHash, FALSE);
+	  break;
+
+  default:
       process_hex(Password, strlen(Password), (char *)&PasswordHash);
-    }
+	  break;
+  }
 
   debug_printf(DEBUG_AUTHTYPES, "PasswordHash : ");
   debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *) PasswordHash, 16);

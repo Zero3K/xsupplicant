@@ -667,7 +667,7 @@ void event_core_recv_frame(context *ctx, ULONG size)
 		{
 			globals = config_get_globals();
 
-			if ((((wireless_ctx *)(ctx->intTypeData))->state != ASSOCIATED) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
+			if ((((wireless_ctx *)(ctx->intTypeData))->state != ASSOCIATED) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL)))
 			{
 				cardif_windows_wmi_check_events();
 				wireless_sm_do_state(ctx);
@@ -933,7 +933,7 @@ void event_core()
 
   for (i=0; i<num_event_slots; i++)
   {
-	  if ((events[i].ctx != NULL) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
+	  if ((events[i].ctx != NULL) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL)))
 	  {
 		active_ctx = events[i].ctx;
 		if (events[i].ctx->intType != ETH_802_11_INT) 
@@ -1453,6 +1453,9 @@ void event_core_load_user_config()
 			  else
 			  {
 				  debug_printf(DEBUG_NORMAL, "Loaded new user specific configuration.\n");
+
+				  // Save the path so we can grab it for a trouble ticket or crash dump.
+				  crashdump_add_curuser_conf(conf_path);
 			  }
 
 			  FREE(temp);
@@ -1518,6 +1521,8 @@ void event_core_win_do_user_logoff()
 	int i = 0;
 
 	userlogoff = FALSE;  // Don't trigger again.
+
+	crashdump_remove_curuser_conf();  // So we don't try to save the wrong config it we crash or create a trouble ticket.
 
 	globals = config_get_globals();
 	if (globals == NULL) 

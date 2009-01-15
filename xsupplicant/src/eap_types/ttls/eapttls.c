@@ -209,7 +209,7 @@ void eapttls_check(eap_type_data *eapdata)
 	  
 		  if (globals != NULL)
 		    {
-		      if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+		      if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 				{
 					debug_printf(DEBUG_NORMAL, "WARNING - Verification of the Trusted Server's certificate is disabled.  The connection's security could be compromised.\n");
 				}

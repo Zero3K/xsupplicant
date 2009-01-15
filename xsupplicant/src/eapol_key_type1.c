@@ -393,7 +393,7 @@ int eapol_key_type1_decrypt(context *thisint, char *inframe,
 
       if (globals)
 	{
-	  if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+	  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 	    {
 	      debug_printf(DEBUG_NORMAL, "*WARNING* This AP uses the key "
 			   "generated during the authentication\nprocess.  If "
@@ -490,7 +490,7 @@ void eapol_key_type1_process(context *thisint)
       (wctx->unicastKeyLen != wctx->broadcastKeyLen))
     {
 
-      if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+      if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 	{
 	  debug_printf(DEBUG_NORMAL, "[WARNING] Unicast and broadcast keys "
 		       "are different lengths!  Some cards/drivers/APs do "

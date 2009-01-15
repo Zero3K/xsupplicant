@@ -399,7 +399,7 @@ void wpa_gen_ie(context *ctx, char *iedata)
 	  (wctx->pairwiseKeyType == CIPHER_CCMP)))
     {
 
-      if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+      if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 	{
 	  debug_printf(DEBUG_NORMAL, "WARNING : Group cipher is TKIP and "
 		       "pairwise cipher is using AES.  Many wireless cards "
@@ -413,7 +413,7 @@ void wpa_gen_ie(context *ctx, char *iedata)
 	  (wctx->pairwiseKeyType == CIPHER_CCMP)))
     {
       
-      if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+      if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 	{
 	  debug_printf(DEBUG_NORMAL, "WARNING : Group cipher is WEP and "
 		       "pairwise cipher is using AES.  Many wireless cards "

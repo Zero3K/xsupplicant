@@ -2344,15 +2344,17 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
     	  char *connname = NULL;
         char *eapmethod = NULL;
         char *chalstr = NULL;
+		char *intname = NULL;
 
 		// Process a password request event.
-		ccode = xsupgui_events_get_passwd_challenge(&connname, &eapmethod, &chalstr);
+		ccode = xsupgui_events_get_passwd_challenge(&connname, &intname, &eapmethod, &chalstr);
         if (ccode == 0)
         {
           e.sendRequestPassword(QString(connname), QString(eapmethod), QString(chalstr));
 			free(connname);
   		    free(eapmethod);
 	  	    free(chalstr);
+			free(intname);
         }
         else
         {

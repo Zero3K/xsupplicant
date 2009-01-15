@@ -9,5 +9,7 @@ void crashdump_init(char *);
 void crashdump_deinit();
 int crashdump_add_file(char *filename, char);
 void crashdump_gather_files();
+void crashdump_add_curuser_conf(char *conf_path);
+void crashdump_remove_curuser_conf();
 
 #endif  // __CRASH_DUMP_H__

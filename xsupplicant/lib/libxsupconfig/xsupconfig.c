@@ -196,14 +196,12 @@ uint8_t config_get_friendly_warnings()
 {
 	TRACE
 
-  if (TEST_FLAG(conf_globals->flags, 
-		CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+  if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
     {
-      // We don't want friendly warnings.
-      return FALSE;
+      return TRUE;
     }
 
-  return TRUE;
+  return FALSE;
 }
 
 /**
@@ -2609,7 +2607,7 @@ void dump_config_globals(struct config_globals *globals)
   if (globals->idleWhile_timeout != 0)
     printf("Idle While Timeout: %d\n", globals->idleWhile_timeout);
 
-  if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
     {
       printf("Friendly Warnings : Yes\n");
     } else {

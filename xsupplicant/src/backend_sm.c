@@ -292,7 +292,7 @@ int backend_sm_timeout_display(context *ctx)
       // waiting for the authenticator to send us a packet containing the
       // beginning of the actual EAP conversation.
 
-      if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+      if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 	{
 	  debug_printf(DEBUG_NORMAL, "[WARNING]  Timeout waiting for the "
 		       "authenticator to begin the EAP conversation.  This "
@@ -306,7 +306,7 @@ int backend_sm_timeout_display(context *ctx)
       break;
 
     default:
-      if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+      if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 	{
 	  debug_printf(DEBUG_NORMAL, "[WARNING] Timeout during the EAP "
 		       "conversation!  Please verify that the settings in "

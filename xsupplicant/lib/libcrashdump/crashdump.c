@@ -42,6 +42,8 @@ typedef struct {
 cfiles *crashfiles;   ///< This will be allocated as an array of values that we will want to add to our crash zip file if we crash.
 int num_crashfiles; ///< The number of crash files that we have listed in the array above.
 
+char *curuser_conf = NULL;
+
 char *zipdumppath;  ///< The full path (including filename) to where we want the zipped dump file to land.
 
 /**
@@ -52,6 +54,27 @@ void crashdump_init(char *zipdumppath_in)
 	crashfiles = NULL;
 	num_crashfiles = 0;
 	zipdumppath = _strdup(zipdumppath_in);
+}
+
+/**
+ * \brief Add the current user's configuration to the crash list.
+ **/
+void crashdump_add_curuser_conf(char *conf_path)
+{
+	crashdump_remove_curuser_conf();
+	curuser_conf = _strdup(conf_path);
+}
+
+/**
+ * \brief Remote the current user's configuration from the crash list.
+ **/
+void crashdump_remove_curuser_conf()
+{
+	if (curuser_conf != NULL)
+	{
+		free(curuser_conf);
+		curuser_conf = NULL;
+	}
 }
 
 /**
@@ -134,6 +157,109 @@ uLong filetime(f, tmzip, dt)
 #endif
 
 /**
+ * \brief Store a file in to an open ZIP file.
+ *
+ * @param[in] filename   The file we want to add to the zip archive.
+ * @param[in] zf   A handle to the zip archive we want to add the file to.
+ *
+ * \retval 0 on success
+ * \retval -1 on error.
+ **/
+int crashdump_store_file_in_zip(char *filename, zipFile *zf)
+{
+	FILE *fin = NULL;
+	int size_read;
+	zip_fileinfo zi;
+	int err = 0;
+	char buf[16384];
+	int size_buf = 16384;
+	int x = 0;
+	char *shortfname=NULL;        // The filename part of a file to add to the zip.
+
+	fin = fopen(filename, "rb");
+	if (fin == NULL)
+	{
+		printf("Error opening %s for reading! (Skipping)\n", filename);
+#ifdef DEBUG
+		fprintf(tempf, "Error opening %s for reading!  (Skipping)\n", filename);
+		fflush(tempf);
+#endif
+		return 0;
+	}
+		
+	memset(&zi, 0x00, sizeof(zi));
+	filetime(filename, &zi.tmz_date, &zi.dosDate);  // Get the date/time of the file.
+
+	// Find the filename part of the file in the list.
+	x = (int)strlen(filename);
+	while ((x >= 0) && (filename[x] != '\\')) x--;
+
+	if (x < 0)
+	{
+		// This will probably fail, but give it a shot anyway.
+		shortfname = filename;
+	}
+	else
+	{
+		shortfname = (char *)&filename[x+1];
+	}
+
+	err = zipOpenNewFileInZip3(zf, shortfname, &zi, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9, 0, -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, NULL, 0);
+	if (err != ZIP_OK)
+	{
+		printf("Error creating file in zip file!\n");
+#ifdef DEBUG
+		fprintf(tempf, "Error creating file '%s' in zip file!\n", shortfname);
+		fflush(tempf);
+#endif
+		return -1;
+	}
+
+	do
+	{
+		err = ZIP_OK;
+
+		size_read = (int)fread(buf, 1, size_buf, fin);
+		if (size_read < size_buf)
+		{
+			if (feof(fin) == 0)
+			{
+				printf("Error reading file!\n");
+				err = ZIP_ERRNO;
+			}
+		}
+
+		if (size_read > 0)
+		{
+			err = zipWriteInFileInZip(zf, buf, size_read);
+			if (err < 0)
+			{
+				printf("Error writing in zip file!\n");
+				return -1;
+			}
+		}
+	} while ((err == ZIP_OK) && (size_read > 0));
+
+	if (fin)
+		fclose(fin);
+
+	if (err < 0)
+	{
+		printf("Error writing zip file!\n");
+		return -1;
+	}
+
+	err = zipCloseFileInZip(zf);
+	if (err != ZIP_OK)
+	{
+		printf("Error closing file in zip!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+/**
  * \brief If we manage to crash, this function will be called.  It is expected to gather up all of the files
  *        from the file list, and put them in the right zip file.
  *
@@ -148,17 +274,11 @@ uLong filetime(f, tmzip, dt)
 void crashdump_gather_files(char *destoverride)
 {
 	zipFile zf = NULL;
-	FILE *fin = NULL;
-	int size_read;
-	zip_fileinfo zi;
-	int err = 0;
-	char buf[16384];
-	int size_buf = 16384;
 	zlib_filefunc_def ffunc;
-	int i = 0;
-	int x = 0;
-	char *shortfname=NULL;        // The filename part of a file to add to the zip.
 	char *path_to_use = NULL;
+	int i = 0;
+	int err = 0;
+
 #ifdef DEBUG
 	FILE *tempf = NULL;
 
@@ -202,90 +322,14 @@ void crashdump_gather_files(char *destoverride)
 #endif
 	while (i < num_crashfiles)
 	{
-		fin = fopen(crashfiles[i].filename, "rb");
-		if (fin == NULL)
-		{
-			printf("Error opening %s for reading! (Skipping)\n", crashfiles[i]);
-#ifdef DEBUG
-			fprintf(tempf, "Error opening %s for reading!  (Skipping)\n", crashfiles[i]);
-			fflush(tempf);
-#endif
-			i++;
-			continue;
-		}
-		
-		memset(&zi, 0x00, sizeof(zi));
-		filetime(crashfiles[i].filename, &zi.tmz_date, &zi.dosDate);  // Get the date/time of the file.
-
-		// Find the filename part of the file in the list.
-		x = (int)strlen(crashfiles[i].filename);
-		while ((x >= 0) && (crashfiles[i].filename[x] != '\\')) x--;
-
-		if (x < 0)
-		{
-			// This will probably fail, but give it a shot anyway.
-			shortfname = crashfiles[i].filename;
-		}
-		else
-		{
-			shortfname = (char *)&crashfiles[i].filename[x+1];
-		}
-
-		err = zipOpenNewFileInZip3(zf, shortfname, &zi, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9, 0, -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, NULL, 0);
-		if (err != ZIP_OK)
-		{
-			printf("Error creating file in zip file!\n");
-#ifdef DEBUG
-			fprintf(tempf, "Error creating file '%s' in zip file!\n", shortfname);
-			fflush(tempf);
-#endif
-			return;
-		}
-
-		do
-		{
-			err = ZIP_OK;
-
-			size_read = (int)fread(buf, 1, size_buf, fin);
-			if (size_read < size_buf)
-			{
-				if (feof(fin) == 0)
-				{
-					printf("Error reading file!\n");
-					err = ZIP_ERRNO;
-				}
-			}
-
-			if (size_read > 0)
-			{
-				err = zipWriteInFileInZip(zf, buf, size_read);
-				if (err < 0)
-				{
-					printf("Error writing in zip file!\n");
-					return;
-				}
-			}
-		} while ((err == ZIP_OK) && (size_read > 0));
-
-		if (fin)
-			fclose(fin);
-
-		if (err < 0)
-		{
-			printf("Error writing zip file!\n");
-			return;
-		}
+		// If we aren't successful, then just bail out.
+		if (crashdump_store_file_in_zip(crashfiles[i].filename, zf) != 0) return;
 
 		if (crashfiles[i].unlink == 1) unlink(crashfiles[i].filename);   // We are done with it.
 		i++;
 	}
 
-	err = zipCloseFileInZip(zf);
-	if (err != ZIP_OK)
-	{
-		printf("Error closing file in zip!\n");
-		return;
-	}
+	if (curuser_conf != NULL) crashdump_store_file_in_zip(curuser_conf, zf);
 
 	err = zipClose(zf, NULL);
 	if (err != ZIP_OK)

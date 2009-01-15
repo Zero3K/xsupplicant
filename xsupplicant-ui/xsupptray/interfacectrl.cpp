@@ -84,11 +84,11 @@ bool InterfaceCtrl::updateSupplicant()
 
 	if (xsupCtrl == true)
 	{
-		UNSET_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
+		SET_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL);
 	}
 	else
 	{
-		SET_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
+		UNSET_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL);
 	}
 
 	if (m_pSupplicant->setConfigGlobals(globals) == false)

@@ -214,13 +214,13 @@ bool ConfigWidgetEditGlobalsLogging::save()
 		}
 	}
 
-	if (m_pFriendlyWarnings->checkState() == Qt::Checked)
+	if (m_pFriendlyWarnings->checkState() == Qt::Unchecked)
 	{
-		m_pGlobals->flags &= (~CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS);
+		m_pGlobals->flags &= (~CONFIG_GLOBALS_FRIENDLY_WARNINGS);
 	}
 	else
 	{
-		m_pGlobals->flags |= CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS;
+		m_pGlobals->flags |= CONFIG_GLOBALS_FRIENDLY_WARNINGS;
 	}
 
 	if (m_pRollBySize->isChecked())
@@ -296,15 +296,15 @@ void ConfigWidgetEditGlobalsLogging::updateWindow()
 	// Set values on everything else, even if logging isn't enabled.
 	if (m_pFriendlyWarnings != NULL)
 	{
-		if (m_pGlobals->flags & CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS)
+		if (m_pGlobals->flags & CONFIG_GLOBALS_FRIENDLY_WARNINGS)
 		{
 			// Uncheck the check box.
-			m_pFriendlyWarnings->setCheckState(Qt::Unchecked);
+			m_pFriendlyWarnings->setCheckState(Qt::Checked);
 		}
 		else
 		{
 			// Check the check box.
-			m_pFriendlyWarnings->setCheckState(Qt::Checked);
+			m_pFriendlyWarnings->setCheckState(Qt::Unchecked);
 		}
 	}
 

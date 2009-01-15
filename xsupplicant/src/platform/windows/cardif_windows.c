@@ -922,7 +922,7 @@ int cardif_init(context *ctx, char driver)
 	  debug_printf(DEBUG_INT, "Interface is wireless.\n");
 	  ctx->intType = ETH_802_11_INT;
 
-	  if  ((!TEST_FLAG(ctx->flags, INT_IGNORE)) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
+	  if  ((!TEST_FLAG(ctx->flags, INT_IGNORE)) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL)))
 	  {
 		// Disable WZC (if it is running.)
 		  // First, try the wlan API as suggested by MS.
@@ -968,7 +968,7 @@ int cardif_init(context *ctx, char driver)
     }
 	else
 	{
-	  if ((!TEST_FLAG(ctx->flags, INT_IGNORE)) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_INT_CTRL)))
+	  if ((!TEST_FLAG(ctx->flags, INT_IGNORE)) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL)))
 	  {
 		// Disable the Windows 802.1X stack on a wired interface.
 		if (windows_eapol_ctrl_disable(ctx->desc, ctx->intName) != 0)

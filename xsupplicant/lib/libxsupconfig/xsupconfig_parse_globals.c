@@ -144,11 +144,11 @@ void *xsupconfig_parse_friendly_warnings(void **attr, uint8_t config_type, xmlNo
 
   if (result == 1) 
     {
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS);
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS);
     }
   else if (result == 0)
     {
-      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS);
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS);
     }
   else
     {
@@ -156,7 +156,7 @@ void *xsupconfig_parse_friendly_warnings(void **attr, uint8_t config_type, xmlNo
 	     "(Line %ld)   Defaulting to yes.\n", (char *)value,
 	     xsupconfig_parse_get_line_num());
 
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS);
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS);
     }
 
   xmlFree(value);
@@ -876,17 +876,17 @@ void *xsupconfig_parse_use_eap_hints(void **attr, uint8_t config_type, xmlNodePt
 
   if (result == 1)
     {
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_EAP_HINTS);
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_EAP_HINTS);
     }
   else if (result == 0)
     {
-      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_EAP_HINTS);
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_EAP_HINTS);
     }
   else
     {
       xsupconfig_common_log("Unknown value for Use_EAP_Hints.  (Line %ld)   Using "
 	     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_EAP_HINTS);
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_EAP_HINTS);
     }
 
   xmlFree(value);
@@ -1082,17 +1082,17 @@ void *xsupconfig_control_ints(void **attr, uint8_t config_type, xmlNodePtr node)
 
   if (result == 1)
     {
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_INT_CTRL);
     }
   else if (result == 0)
     {
-      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
+      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_INT_CTRL);
     }
   else
     {
       xsupconfig_common_log("Unknown value for Control_Interfaces.  (Line %ld)    Using "
 	     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
-      UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_NO_INT_CTRL);
+      SET_FLAG(myglobals->flags, CONFIG_GLOBALS_INT_CTRL);
     }
 
   xmlFree(value);
