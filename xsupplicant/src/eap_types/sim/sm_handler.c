@@ -789,7 +789,7 @@ cardio(SCARDHANDLE *card_hdl, char *cmd, long reader_protocol, char mode2g,
 
   if (*olen >= 2)
     {
-      t_response *t = response;
+      t_response *t = (t_response *)&response;
       int found = 0;
 
       p = *olen - 2;
@@ -1504,7 +1504,7 @@ int sm_handler_close_sc(SCARDHANDLE *card_hdl, SCARDCONTEXT *card_ctx)
   long ret = 0;
 
   if ((sim_reader_plugin_hook_available() == TRUE) && (card_ctx != NULL) && 
-	  (sim_reader_plugin_ctx_is_plugin(card_ctx) == TRUE))
+	  (sim_reader_plugin_ctx_is_plugin((void **)card_ctx) == TRUE))
   {
 	  // This is a plug-in context, call it to clean up.
 	  return sim_reader_plugin_deinit_ctx(card_hdl, card_ctx);

@@ -349,7 +349,7 @@ int sim_reader_plugin_hook_do_3g_auth(SCARDHANDLE *card_hdl, char reader_mode,
 	      
           if(hook != NULL)
 		  {
-		    result = (*hook)(card_hdl, reader_mode, Rand, autn, c_auts, res_len, c_sres, c_ck, c_ik, c_kc);
+		    result = (*hook)((void **)card_hdl, reader_mode, Rand, autn, c_auts, res_len, c_sres, c_ck, c_ik, c_kc);
 			if (result != -3) return result;
 		  }
 	    }
@@ -423,7 +423,7 @@ int sim_reader_plugin_deinit_ctx(SCARDHANDLE *card_hdl, SCARDCONTEXT *card_ctx)
 int sim_reader_plugin_ctx_is_plugin(void **card_ctx)
 {
 	if (card_ctx == NULL) return FALSE;
-	if ((*card_ctx) == -1) return TRUE;
+	if (((int)(*card_ctx)) == -1) return TRUE;
 
 	return FALSE;
 }

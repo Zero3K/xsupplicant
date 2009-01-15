@@ -113,7 +113,7 @@ TNC_Result TNC_9048_LogMessage(
 /*in*/ TNC_UInt32 severity,
 /*in*/ const char * message) 
 {
-	TNC_28383_TNCC_debug_log(-1, severity, message);
+	TNC_28383_TNCC_debug_log(-1, severity, (char *)message);
 	return TNC_RESULT_SUCCESS;
 }
 
@@ -122,7 +122,7 @@ TNC_Result TNC_9048_UserMessage(
 /*in*/ TNC_ConnectionID connectionID,
 /*in*/ const char * message) 
 {
-	TNC_28383_TNCC_debug_log(imcID, connectionID, message);
+	TNC_28383_TNCC_debug_log(imcID, connectionID, (char *)message);
 	return TNC_RESULT_SUCCESS;
 }
 

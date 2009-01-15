@@ -51,7 +51,7 @@
 char *do_sha1(char *tohash, int size);
 
 int aka_do_at_identity(struct aka_eaptypedata *mydata, uint8_t *dataoffs, 
-		   int *packet_offset)
+		   uint16_t *packet_offset)
 {
   struct typelength *typelen = NULL;
 
@@ -72,7 +72,7 @@ int aka_do_at_identity(struct aka_eaptypedata *mydata, uint8_t *dataoffs,
 }
 
 int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t *dataoffs, 
-		   int *packet_offset)
+		   uint16_t *packet_offset)
 {
   struct typelengthres *typelenres = NULL;
 
@@ -97,7 +97,7 @@ int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t *dataoffs,
   return XENONE;
 }
 
-int aka_skip_not_implemented(uint8_t *dataoffs, int *packet_offset)
+int aka_skip_not_implemented(uint8_t *dataoffs, uint16_t *packet_offset)
 {
   struct typelengthres *typelenres = NULL;
 
@@ -115,7 +115,7 @@ int aka_skip_not_implemented(uint8_t *dataoffs, int *packet_offset)
 }
 
 int aka_do_at_autn(struct aka_eaptypedata *mydata, uint8_t *dataoffs,
-		   int *packet_offset)
+		   uint16_t *packet_offset)
 {
   struct typelengthres *typelenres;
 
@@ -142,7 +142,7 @@ int aka_do_at_autn(struct aka_eaptypedata *mydata, uint8_t *dataoffs,
 
 int aka_do_at_mac(eap_type_data *eapdata, 
 		  struct aka_eaptypedata *mydata, uint8_t *dataoffs, int insize,
-		  int *packet_offset, char *username)
+		  uint16_t *packet_offset, char *username)
 {
   int saved_offset, i, value16, x;
   unsigned char reslen = 0;

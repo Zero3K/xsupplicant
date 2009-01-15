@@ -91,7 +91,7 @@ void GetLogicalAddress(void *addr, char *fModule, DWORD buflen, DWORD *section,
 					   DWORD *offset)
 {
 	MEMORY_BASIC_INFORMATION mbi;
-	DWORD hMod;
+	HMODULE hMod;
 	PIMAGE_DOS_HEADER pDosHdr;
 	PIMAGE_NT_HEADERS pNtHdr;
 	PIMAGE_SECTION_HEADER pSection;
@@ -105,17 +105,17 @@ void GetLogicalAddress(void *addr, char *fModule, DWORD buflen, DWORD *section,
 
 	if (!VirtualQuery( addr, &mbi, sizeof(mbi))) return;
 
-	hMod = (DWORD)mbi.AllocationBase;
+	hMod = (HMODULE)mbi.AllocationBase;
 
-	if (!GetModuleFileName((HMODULE)hMod, fModule, buflen)) return;
+	if (!GetModuleFileName(hMod, fModule, buflen)) return;
 
-	pDosHdr = (PIMAGE_DOS_HEADER)hMod;
+	pDosHdr = (PIMAGE_DOS_HEADER)mbi.AllocationBase;
 
 	pNtHdr = (PIMAGE_NT_HEADERS)(hMod + pDosHdr->e_lfanew);
 
 	pSection = IMAGE_FIRST_SECTION(pNtHdr);
 
-	rva = (DWORD)addr - hMod;  
+	rva = (DWORD)addr - (DWORD)mbi.AllocationBase;  
 
 	// Locate the section that holds our address.
 	for (i = 0; i < pNtHdr->FileHeader.NumberOfSections; i++, pSection++)
@@ -455,7 +455,7 @@ void WriteStackDetails(PCONTEXT pContext, int writevars)
 		}
 		else
 		{
-			GetLogicalAddress( (PVOID)sf.AddrPC.Offset, fModule, sizeof(fModule), &section, &offset);
+			GetLogicalAddress( (void *)sf.AddrPC.Offset, fModule, sizeof(fModule), &section, &offset);
 
 			fprintf(fh, "%04X:%08X %s", section, offset, fModule);
 		}
@@ -520,8 +520,7 @@ void GenerateTextDump(PEXCEPTION_POINTERS pExceptionInfo)
 	GetLogicalAddress( pExceptionRecord->ExceptionAddress,
 		faultingModule, sizeof(faultingModule), &section, &offset);
 
-	fprintf(fh, "Fault Address: %08X %02X:%08X %s\n", pExceptionRecord->ExceptionAddress,
-		section, offset, faultingModule);
+	fprintf(fh, "Fault Address: %02X:%08X %s\n", section, offset, faultingModule);
 
 	pCtx = pExceptionInfo->ContextRecord;
 

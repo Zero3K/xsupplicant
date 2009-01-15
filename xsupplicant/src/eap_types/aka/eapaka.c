@@ -785,6 +785,7 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
   struct eap_header *eaphdr = NULL;
   uint8_t *payload = NULL, *framecpy = NULL, *data = NULL;
   uint16_t offset = 0, i = 0, retsize = 0;
+  int t = 0;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return NULL;
@@ -902,7 +903,7 @@ uint8_t *eapaka_buildResp(eap_type_data *eapdata)
       debug_hex_dump(DEBUG_AUTHTYPES, framecpy, retsize);
 
       HMAC(EVP_sha1(), akadata->K_aut, 16, framecpy, retsize,
-	   mac_calc, &i);
+	   mac_calc, &t);
 
       FREE(framecpy);
  

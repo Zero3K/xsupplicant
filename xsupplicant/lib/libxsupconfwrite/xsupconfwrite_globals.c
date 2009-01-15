@@ -29,6 +29,7 @@
 #include "libxsupconfig/xsupconfig_vars.h"
 #include "src/xsup_debug.h"
 #include "xsupconfwrite.h"
+#include "xsupconfwrite_common.h"
 
 typedef struct multichoice_struct {
   int value;
@@ -218,28 +219,28 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Detect_on_startup",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP), TRUE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Allow_Machine_Authentication_to_Remain",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN), FALSE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN), FALSE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Disconnect_at_Logoff",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF), TRUE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Friendly_Warnings",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS), TRUE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
@@ -285,7 +286,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Wireless_Only",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY), FALSE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY), FALSE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
@@ -298,7 +299,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Allmulti",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ALLMULTI), TRUE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ALLMULTI), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
@@ -357,28 +358,28 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Passive_Scanning",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN), TRUE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Use_EAP_Hints",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_EAP_HINTS), TRUE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_EAP_HINTS), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Roll_Logs",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ROLL_LOGS), TRUE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ROLL_LOGS), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Control_Interfaces",
-		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_INT_CTRL), TRUE, write_all) == NULL)
+		TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_NO_INT_CTRL), TRUE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(globalnode);
 		return NULL;

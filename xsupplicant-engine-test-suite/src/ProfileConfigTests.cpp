@@ -2151,7 +2151,7 @@ struct config_eap_method *ProfileConfigTests::createEAPFASTTest()
 	fastdata->innerid = _strdup("my inner id test");
 	fastdata->pac_location = _strdup("my_pac_path\\is\\here");
 	fastdata->phase2 = NULL;
-	fastdata->provision_flags = 0xff;
+	fastdata->flags = 0xff;
 	fastdata->trusted_server = _strdup("my trusted server string");
 	fastdata->validate_cert = FALSE;
 
@@ -2224,7 +2224,7 @@ bool ProfileConfigTests::checkEAPFASTTest(struct config_eap_method *eapfast)
 		return false;
 	}
 
-	if (fastdata->provision_flags != 7)
+	if (fastdata->flags != 7)
 	{
 		innerError("Invalid provision flags were returned!\n");
 		return false;

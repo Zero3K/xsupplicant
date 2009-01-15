@@ -37,6 +37,13 @@
 #include "../tls/tls_funcs.h"
 #include "../eap_type_common.h"
 #include "../../context.h"
+#include "../../logon_creds.h"
+
+#ifdef WINDOWS
+#include "../../event_core_win.h"
+#else
+#include "../../event_core.h"
+#endif
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -760,7 +767,7 @@ void eapfast_process(eap_type_data *eapdata)
   struct eapfast_phase2 *phase2 = NULL;
   uint8_t *aid = NULL;
   uint16_t aid_len = 0, resout = 0;
-  int bufsiz = 0;
+  uint16_t bufsiz = 0;
   struct config_eap_fast *fastconf = NULL;
   context *ctx = NULL;
   uint8_t *temp = NULL;

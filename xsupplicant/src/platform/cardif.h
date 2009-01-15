@@ -137,7 +137,7 @@ struct cardif_funcs {
   int (*get_wpa_ie)(context *, char *, int *);
 
   // Return the WPA2 IE we need for this driver.
-  int (*get_wpa2_ie)(context *, char *, int *);
+  int (*get_wpa2_ie)(context *, unsigned char *, uint16_t *);
 
   // Disable encryption.
   int (*enc_disable)(context *);
@@ -228,6 +228,6 @@ void cardif_passive_scan_timeout(context *);
 void cardif_operstate(context *, uint8_t);
 void cardif_linkmode(context *, uint8_t);
 int cardif_get_signal_strength_percent(context *);
-int cardif_apply_pmkid_data(context *);
+int cardif_apply_pmkid_data(context *, pmksa_list *);
 
 #endif

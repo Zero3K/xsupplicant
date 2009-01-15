@@ -20,14 +20,14 @@
 #ifndef _AKA_H_
 #define _AKA_H_
 
-int aka_do_at_identity(struct aka_eaptypedata *, uint8_t *, int *);
-int aka_do_at_rand(struct aka_eaptypedata *, uint8_t *, int *);
-int aka_do_at_autn(struct aka_eaptypedata *, uint8_t *, int *);
+int aka_do_at_identity(struct aka_eaptypedata *, uint8_t *, uint16_t *);
+int aka_do_at_rand(struct aka_eaptypedata *, uint8_t *, uint16_t *);
+int aka_do_at_autn(struct aka_eaptypedata *, uint8_t *, uint16_t *);
 int aka_do_at_mac(eap_type_data *, struct aka_eaptypedata *, 
-		  uint8_t *, int, int *, char *);
+		  uint8_t *, int, uint16_t *, char *);
 uint8_t *aka_do_sync_fail(struct aka_eaptypedata *, uint8_t);
 uint8_t *aka_resp_identity(struct aka_eaptypedata *, uint8_t, char *);
-int aka_skip_not_implemented(uint8_t *, int *);
+int aka_skip_not_implemented(uint8_t *, uint16_t *);
 
 #endif
 #endif

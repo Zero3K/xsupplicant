@@ -686,7 +686,7 @@ void eaptnc_deinit(eap_type_data *eapdata)
  *
  **/
 TNC_Result TNC_TNCC_SendBatch(
-			      /*in*/ TNC_ConnectionID connectionID,
+			      /*in*/ libtnc_tncc_connection *conn,
 			      /*in*/ const char* messageBuffer,
 			      /*in*/ size_t messageLength)
 {

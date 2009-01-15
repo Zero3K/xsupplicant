@@ -35,6 +35,7 @@
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
 #include "../tls/certificates.h"
+#include "../../logon_creds.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>

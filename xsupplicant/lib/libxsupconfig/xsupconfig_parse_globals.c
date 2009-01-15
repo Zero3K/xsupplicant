@@ -554,7 +554,7 @@ void *xsupconfig_parse_loglevel(void **attr, uint8_t config_type, xmlNodePtr nod
 {
 	struct config_globals *myglobals = NULL;
 	char *value = NULL;
-	int result = NULL;
+	int result = 0;
 
 	value = (char *)xmlNodeGetContent(node);
 

@@ -141,7 +141,7 @@ int RegSetDomain(LPCTSTR lpszAdapterName, LPCTSTR pDomain)
 	}
 
 	strcpy(strKeyName, strKeyPath);
-	Strcat(strKeyName, bufsize, lpszAdapterName);
+	Strcat(strKeyName, bufsize, (char *)lpszAdapterName);
 
 	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
 				strKeyName,
@@ -188,7 +188,7 @@ int NotifyDNSChange(LPCTSTR lpszAdapterName)
 		return FALSE;
 
 	if((pDhcpNotifyProc = (DHCPNOTIFYPROC)GetProcAddress(hDhcpDll, "DhcpNotifyConfigChange")) != NULL)
-		if((pDhcpNotifyProc)(NULL, wcAdapterName, FALSE, 0, NULL,NULL, 0) == ERROR_SUCCESS)
+		if((pDhcpNotifyProc)(NULL, wcAdapterName, FALSE, 0, 0, 0, 0) == ERROR_SUCCESS)
 			bResult = TRUE;
 
 	FreeLibrary(hDhcpDll);

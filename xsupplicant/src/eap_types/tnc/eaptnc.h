@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  *
  * License under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
@@ -6,7 +6,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _EAPTNC_H_
 #define _EAPTNC_H_

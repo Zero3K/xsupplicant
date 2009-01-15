@@ -227,7 +227,7 @@ int cardif_windows_dot11_is_power_on(context *ctx)
 	  return FALSE;
   }
 
-  powered = &pQueryOid->Data[0];
+  powered = (unsigned int *)&pQueryOid->Data[0];
 
   debug_printf(DEBUG_NORMAL, "Powered = %d\n", (*powered));
 
@@ -256,7 +256,7 @@ int cardif_windows_dot11_reset(context *ctx)
  
   pSetOid->Oid = OID_DOT11_RESET_REQUEST;
 
-  drr = pSetOid->Data;
+  drr = (PDOT11_RESET_REQUEST)pSetOid->Data;
   drr->bSetDefaultMIB = 0xffff;
   drr->dot11ResetType = dot11_reset_type_phy_and_mac;
   memcpy(drr->dot11MacAddress, ctx->source_mac, 6);
@@ -334,7 +334,7 @@ int cardif_windows_dot11_get_extsta_capabilities(context *ctx, DOT11_EXTSTA_CAPA
   pQueryOid = (PNDISPROT_QUERY_OID)&Buffer[0];
  
   pQueryOid->Oid = OID_DOT11_EXTSTA_CAPABILITY;
-  pCapa = pQueryOid->Data;
+  pCapa = (PDOT11_EXTSTA_CAPABILITY)pQueryOid->Data;
 
   pCapa->Header.Type = NDIS_OBJECT_TYPE_DEFAULT;
   pCapa->Header.Revision = DOT11_EXTSTA_CAPABILITY_REVISION_1;
@@ -441,7 +441,7 @@ int cardif_windows_dot11_scan(context *ctx, char passive)
  
   pSetOid->Oid = OID_DOT11_SCAN_REQUEST;
   
-  pScanReq = pSetOid->Data;
+  pScanReq = (PDOT11_SCAN_REQUEST_V2)pSetOid->Data;
 
   pScanReq->dot11BSSType = dot11_BSS_type_any;
   memset(pScanReq->dot11BSSID, 0xff, 6);  // Get everything.
@@ -550,8 +550,8 @@ int cardif_windows_dot11_get_ies(context *ctx, char *ies, int *ie_size)
  *   
  *  The value for XX needs to be at least 8 for it to be a valid IE.
  **/
-int cardif_windows_dot11_find_wpa2_ie(context *ctx, char *in_ie, int in_size,
-										char *out_ie, int *out_size)
+int cardif_windows_dot11_find_wpa2_ie(context *ctx, uint8_t *in_ie, uint16_t in_size,
+										uint8_t *out_ie, uint16_t *out_size)
 {
 	const char wpa2oui[3] = {0x00, 0x0f, 0xac};
 	unsigned int i;
@@ -614,7 +614,7 @@ int cardif_windows_dot11_find_wpa2_ie(context *ctx, char *in_ie, int in_size,
 /**
  * Get the WPA2 Information Element.
  **/
-int cardif_windows_dot11_get_wpa2_ie(context *ctx, char *iedata, int *ielen)
+int cardif_windows_dot11_get_wpa2_ie(context *ctx, uint8_t *iedata, uint16_t *ielen)
 {
 	char ie_buf[65535];
 	int ie_size = 65535;
@@ -638,7 +638,7 @@ int cardif_windows_dot11_get_wpa2_ie(context *ctx, char *iedata, int *ielen)
 void cardif_windows_dot11_parse_ies(context *ctx, uint8_t *iedata, int ielen)
 {
   int i = 0;
-  int wpalen;
+  uint16_t wpalen;
   uint8_t wpaie[255];
   uint8_t abilities = 0;
   uint8_t authtypes = 0;
@@ -709,7 +709,7 @@ int cardif_windows_dot11_set_auth_mode(context *ctx, DWORD authmode)
   pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
 
   pSetOid->Oid = OID_DOT11_ENABLED_AUTHENTICATION_ALGORITHM;
-  algList = pSetOid->Data;
+  algList = (PDOT11_AUTH_ALGORITHM_LIST)pSetOid->Data;
 
   algList->Header.Type = NDIS_OBJECT_TYPE_DEFAULT;
   algList->Header.Revision = DOT11_AUTH_ALGORITHM_LIST_REVISION_1;
@@ -1686,7 +1686,7 @@ void cardif_windows_dot11_enc_pairs(context *ctx)
 
 	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
 	pQueryOid->Oid = OID_DOT11_SUPPORTED_UNICAST_ALGORITHM_PAIR;
-	pCipherList = pQueryOid->Data;
+	pCipherList = (PDOT11_AUTH_CIPHER_PAIR_LIST)pQueryOid->Data;
 	pCipherList->Header.Type = NDIS_OBJECT_TYPE_DEFAULT;
 	pCipherList->Header.Revision = DOT11_AUTH_CIPHER_PAIR_LIST_REVISION_1;
 	pCipherList->Header.Size = sizeof(DOT11_AUTH_CIPHER_PAIR_LIST);

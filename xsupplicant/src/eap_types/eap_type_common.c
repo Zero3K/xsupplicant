@@ -28,6 +28,7 @@
 #include "../ipc_events.h"
 #include "../ipc_events_index.h"
 #include "eap_type_common.h"
+#include "../logon_creds.h"
 
 /***************************************************************
  *

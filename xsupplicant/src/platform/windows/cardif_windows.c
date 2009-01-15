@@ -2312,7 +2312,7 @@ int cardif_get_wpa2_ie(context *intdata, uint8_t *iedata, uint8_t *ielen)
       return XEMALLOC;
     }
 
-  return wireless->get_wpa2_ie(intdata, iedata, ielen);
+  return wireless->get_wpa2_ie(intdata, iedata, (uint16_t *)ielen);
 }
 
 /**

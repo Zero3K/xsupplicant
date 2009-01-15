@@ -29,6 +29,8 @@
 #include "../../eap_types/tls/tls_funcs.h"
 #include "cardif_windows.h"
 
+char *convert_hex_to_str(uint8_t *inhex, uint16_t insize);
+
 //  #define CHECK_EKU   1      // Only show root certs with the server EKUs.  (Same as Windows XP defaults.)
 
 HCERTSTORE hCertStore = NULL;

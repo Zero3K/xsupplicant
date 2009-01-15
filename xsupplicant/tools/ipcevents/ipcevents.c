@@ -223,6 +223,7 @@ int main()
 {
 	long int result = 0;
 	char *logline, *ints, *connname, *eapmethod, *chalstr, *arg;
+	char *intname;
 	int cur_debug_level = 10;   ///< The user defined debug level in use.
 	int sm = 0, oldstate = 0, newstate = 0, evttype = 0;
 	uint32_t value321, value322, value323, value324, tncconnectionid;
@@ -336,7 +337,7 @@ int main()
 
 			case IPC_EVENT_REQUEST_PWD:
 				// Process a password request event.
-				result = xsupgui_events_get_passwd_challenge(&connname, &eapmethod, &chalstr);
+				result = xsupgui_events_get_passwd_challenge(&connname, &intname, &eapmethod, &chalstr);
 				printf("Password requested for connection '%s'!\n", connname);
 				printf("\tEAP method       : %s\n", eapmethod);
 				printf("\tChallenge String : %s\n", chalstr);

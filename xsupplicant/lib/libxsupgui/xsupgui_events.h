@@ -29,7 +29,7 @@ int xsupgui_events_generate_log_string(char **, char **);
 int xsupgui_events_get_state_change(char **, int *, int *, int *, uint32_t *);
 long int xsupgui_events_get_event_num(xmlDocPtr);
 int xsupgui_events_get_scan_complete_interface(char **);
-int xsupgui_events_get_passwd_challenge(char **, char **, char **);
+int xsupgui_events_get_passwd_challenge(char **, char **, char **, char **);
 int xsupgui_events_get_ui_event(int *, char **, char **);
 int xsupgui_events_get_tnc_ui_event(uint32_t *, uint32_t *);
 int xsupgui_events_get_tnc_ui_request_event(uint32_t *, uint32_t *, uint32_t *, uint32_t *);

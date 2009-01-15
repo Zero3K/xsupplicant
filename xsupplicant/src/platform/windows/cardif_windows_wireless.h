@@ -19,7 +19,7 @@
 
 extern struct cardif_funcs cardif_windows_wireless_driver;
 
-void cardif_windows_wireless_parse_ies(context *, uint8_t *, int);
+void cardif_windows_wireless_parse_ies(context *, uint8_t *, uint16_t);
 
 int cardif_windows_wireless_set_WEP_key(context *, uint8_t *, int, int);
 int cardif_windows_wireless_set_bssid(context *, uint8_t *);
