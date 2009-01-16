@@ -1854,7 +1854,7 @@ struct config_eap_method *ProfileConfigTests::createEAPTLSTest()
 	tlsdata->store_type = _strdup("WINDOWS");
 	tlsdata->crl_dir = _strdup("my_test_crl\\dir");
 	tlsdata->random_file = _strdup("mytest_random.fil");
-	tlsdata->session_resume = RES_YES;
+	tlsdata->flags = 0xffff;
 	tlsdata->trusted_server = _strdup("My Trusted Server Test");
 	tlsdata->user_cert = _strdup("my_user_cert_path");
 	tlsdata->user_key = _strdup("my_user_key_path");
@@ -1925,7 +1925,7 @@ bool ProfileConfigTests::checkEAPTLSTest(struct config_eap_method *eaptls)
 		return false;
 	}
 
-	if (tlsdata->session_resume != RES_YES)
+	if (TEST_FLAG(tlsdata->flags, EAP_TLS_FLAGS_SESSION_RESUME) != EAP_TLS_FLAGS_SESSION_RESUME)
 	{
 		innerError("Session resume didn't match!\n");
 		return false;
@@ -2361,21 +2361,19 @@ struct config_eap_method *ProfileConfigTests::createEAPPEAPTest()
 	peapdata->chunk_size = 1069;
 	peapdata->crl_dir = _strdup("my_test_crl\\dir");
 	peapdata->random_file = _strdup("mytest_random.fil");
-	peapdata->session_resume = RES_YES;
 	peapdata->trusted_server = _strdup("My Trusted Server Test");
 	peapdata->user_cert = _strdup("my_user_cert_path");
 	peapdata->user_key = _strdup("my_user_key_path");
 	peapdata->user_key_pass = _strdup("my user key password");
-	peapdata->proper_peapv1 = TRUE;
 	peapdata->force_peap_version = 2;
 	peapdata->identity = _strdup("my inner id");
 	peapdata->validate_cert = FALSE;
-	peapdata->flags = 0xff;							// If we make this larger, we need to update.
+	peapdata->flags = 0xffff;							// If we make this larger, we need to update.
 
 	return eapdata;
 }
 
-#define ALL_PEAP_FLAGS   (FLAGS_PEAP_MACHINE_AUTH)   // Add more as needed. ;)
+#define ALL_PEAP_FLAGS   (EAP_TLS_FLAGS_SESSION_RESUME | FLAGS_PEAP_MACHINE_AUTH | FLAGS_PEAP_USE_LOGON_CREDS | FLAGS_PEAP_PROPER_PEAPV1_KEYS)   // Add more as needed. ;)
 
 bool ProfileConfigTests::checkEAPPEAPTest(struct config_eap_method *eappeap)
 {
@@ -2425,12 +2423,6 @@ bool ProfileConfigTests::checkEAPPEAPTest(struct config_eap_method *eappeap)
 		return false;
 	}
 
-	if (peapdata->session_resume != RES_YES)
-	{
-		innerError("Session resume didn't match!\n");
-		return false;
-	}
-
 	if (peapdata->trusted_server == NULL)
 	{
 		innerError("Trusted server wasn't set!\n");
@@ -2476,12 +2468,6 @@ bool ProfileConfigTests::checkEAPPEAPTest(struct config_eap_method *eappeap)
 	if (strcmp(peapdata->user_key_pass, "my user key password") != 0)
 	{
 		innerError("User key pass didn't match!\n");
-		return false;
-	}
-
-	if (peapdata->proper_peapv1 != TRUE)
-	{
-		innerError("Proper PEAPv1 keying value was incorrect!\n");
 		return false;
 	}
 

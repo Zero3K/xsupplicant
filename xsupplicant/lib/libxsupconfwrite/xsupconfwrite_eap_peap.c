@@ -181,32 +181,11 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (peapdata->session_resume != RES_UNSET))
+	if (xsupconfwrite_common_write_bool(peapnode, "Session_Resume", 
+		TEST_FLAG(peapdata->flags, EAP_TLS_FLAGS_SESSION_RESUME), FALSE, write_all, TRUE) == NULL)
 	{
-		switch (peapdata->session_resume)
-		{
-		default:
-		case RES_NO:
-		case RES_UNSET:
-			temp = _strdup("no");  // Default setting.
-			break;
-
-		case RES_YES:
-			temp = _strdup("yes");
-			break;
-		}
-
-		if (xsupconfwrite_common_newSibling(peapnode, "Session_Resume", temp) == NULL)
-		{
-#ifdef WRITE_EAP_PEAP_DEBUG
-			printf("Couldn't create <Session_Resume> node for PEAP!\n");
-#endif
-			xmlFreeNode(peapnode);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(peapnode);
+		return NULL;
 	}
 
 	if ((write_all == TRUE) || (peapdata->chunk_size != 0))
@@ -243,7 +222,7 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 	}
 
 	if (xsupconfwrite_common_write_bool(peapnode, "Proper_PEAP_V1_Keying", 
-		peapdata->proper_peapv1, FALSE, write_all, TRUE) == NULL)
+		TEST_FLAG(peapdata->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS), FALSE, write_all, TRUE) == NULL)
 	{
 		xmlFreeNode(peapnode);
 		return NULL;

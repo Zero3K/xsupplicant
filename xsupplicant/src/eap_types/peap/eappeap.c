@@ -87,7 +87,7 @@ uint8_t eappeap_init(eap_type_data *eapdata)
 
   mytls_vars = eapdata->eap_data;
 
-  mytls_vars->resume = peapconf->session_resume;
+  mytls_vars->resume = TEST_FLAG(peapconf->flags, EAP_TLS_FLAGS_SESSION_RESUME);
 
   FREE(mytls_vars->keyblock);
  
@@ -523,7 +523,7 @@ uint8_t eappeap_isKeyAvailable(eap_type_data *eapdata)
 
   ver = get_peap_version(eapdata);
 
-  if ((ver == 1) && (peapconf->proper_peapv1 == TRUE))
+  if ((ver == 1) && (TEST_FLAG(peapconf->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS)))
   {
 	  debug_printf(DEBUG_NORMAL, "NOTICE : Most RADIUS servers do not do proper PEAP v1 keying! If your authentication succeeds, and traffic cannot flow, try turning off Proper_PEAP_V1_Keying!\n");
   }

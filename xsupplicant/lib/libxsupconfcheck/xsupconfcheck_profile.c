@@ -590,6 +590,7 @@ int xsupconfcheck_profile_check(struct config_profiles *myprof, int log)
 			}
 			else
 			{
+				// XXX If we are doing TLS here and are on Windows, we need to know the username, but not the password.
 				if (log == TRUE) error_prequeue_add("Profile is missing a valid username.");
 				retval = PROFILE_NEED_UPW;
 			}

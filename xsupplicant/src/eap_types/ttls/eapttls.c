@@ -83,7 +83,7 @@ int eapttls_init(eap_type_data *eapdata)
       mytls_vars = (struct tls_vars *)eapdata->eap_data;
     }
 
-  mytls_vars->resume = userdata->session_resume;
+  mytls_vars->resume = TEST_FLAG(userdata->flags, EAP_TLS_FLAGS_SESSION_RESUME);
 
   if (userdata->validate_cert == FALSE)
     {

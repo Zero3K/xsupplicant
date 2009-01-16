@@ -352,7 +352,7 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 
   mytls_vars->resuming = 0;
 
-  if ((mytls_vars->ssl == NULL) || (mytls_vars->resume != RES_YES))
+  if ((mytls_vars->ssl == NULL) || (mytls_vars->resume != FALSE))
     {
       resval = tls_funcs_build_new_session(mytls_vars);
       if (resval != XENONE) 
@@ -374,7 +374,7 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
     } else {
       // We already established a connection, so we probably we need to
       // resume the session.
-      if (mytls_vars->resume == RES_YES)
+      if (mytls_vars->resume != FALSE)
 		{
 			sess = SSL_get_session(mytls_vars->ssl);
 			if (!sess)

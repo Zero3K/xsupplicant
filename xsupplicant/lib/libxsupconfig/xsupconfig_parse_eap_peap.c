@@ -266,11 +266,11 @@ void *xsupconfig_parse_eap_peap_session_resume(void **attr, uint8_t config_type,
       xsupconfig_common_log("Invalid value was passed for 'Session_Resume'!  Will use the "
 	     "default value of no.  (Config line %ld)\n",
 	     xsupconfig_parse_get_line_num());
-      peap->session_resume = FALSE;
+      UNSET_FLAG(peap->flags, EAP_TLS_FLAGS_SESSION_RESUME);
     }
   else
     {
-      peap->session_resume = result;
+      SET_FLAG(peap->flags, EAP_TLS_FLAGS_SESSION_RESUME);
     }
   
   xmlFree(value);
@@ -299,11 +299,11 @@ void *xsupconfig_parse_eap_peap_proper_v1_keying(void **attr, uint8_t config_typ
       xsupconfig_common_log("Invalid value was passed for 'Proper_PEAP_V1_Keying'!  Will use "
 	     "the default value of no.  (Config line %ld)\n",
 	     xsupconfig_parse_get_line_num());
-      peap->proper_peapv1 = FALSE;
+	  UNSET_FLAG(peap->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS);
     }
   else
     {
-      peap->proper_peapv1 = result;
+		SET_FLAG(peap->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS);
     }
 
   xmlFree(value);

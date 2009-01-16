@@ -175,32 +175,11 @@ xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *ttlsdata, 
 		}
 	}
 
-	if ((write_all == TRUE) || (ttlsdata->session_resume != RES_UNSET))
+	if (xsupconfwrite_common_write_bool(ttlsnode, "Session_Resume", 
+		TEST_FLAG(ttlsdata->flags, EAP_TLS_FLAGS_SESSION_RESUME), FALSE, write_all, TRUE) == NULL)
 	{
-		switch (ttlsdata->session_resume)
-		{
-		default:
-		case RES_NO:
-		case RES_UNSET:
-			temp = _strdup("no");  // Default setting.
-			break;
-
-		case RES_YES:
-			temp = _strdup("yes");
-			break;
-		}
-
-		if (xsupconfwrite_common_newSibling(ttlsnode, "Session_Resume", temp) == NULL)
-		{
-#ifdef WRITE_EAP_TTLS_DEBUG
-			printf("Couldn't create <Session_Resume> node for TTLS!\n");
-#endif
-			xmlFreeNode(ttlsnode);
-			free(temp);
-			return NULL;
-		}
-
-		free(temp);
+		xmlFreeNode(ttlsnode);
+		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(ttlsnode, "Use_Logon_Credentials", 

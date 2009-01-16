@@ -239,11 +239,11 @@ void *xsupconfig_parse_eap_ttls_session_resume(void **attr, uint8_t config_type,
     {
       xsupconfig_common_log("Invalid value was passed for 'Session_Resume'!  Will use the "
 	     "default value of no.  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      ttls->session_resume = FALSE;
+	  UNSET_FLAG(ttls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
     }
   else
     {
-      ttls->session_resume = result;
+      SET_FLAG(ttls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
     }
   
   xmlFree(value);

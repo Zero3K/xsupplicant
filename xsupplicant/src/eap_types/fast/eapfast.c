@@ -132,7 +132,7 @@ uint8_t eapfast_init(eap_type_data *eapdata)
 
   mytls_vars->cncheck = FALSE;
   mytls_vars->cnexact = FALSE;
-  mytls_vars->resume = RES_NO;
+  mytls_vars->resume = FALSE;
 
   FREE(mytls_vars->keyblock);
 

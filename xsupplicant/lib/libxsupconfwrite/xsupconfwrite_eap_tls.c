@@ -173,29 +173,11 @@ xmlNodePtr xsupconfwrite_eap_tls_create_tree(struct config_eap_tls *tlsdata, uin
 		}
 	}
 
-	if ((write_all == TRUE) || (tlsdata->session_resume != RES_UNSET))
+	if (xsupconfwrite_common_write_bool(tlsnode, "Session_Resume", 
+		TEST_FLAG(tlsdata->flags, EAP_TLS_FLAGS_SESSION_RESUME), FALSE, write_all, TRUE) == NULL)
 	{
-		switch (tlsdata->session_resume)
-		{
-		default:
-		case RES_NO:
-		case RES_UNSET:
-			temp = _strdup("no");  // Default setting.
-			break;
-
-		case RES_YES:
-			temp = _strdup("yes");
-			break;
-		}
-
-		if (xsupconfwrite_common_newSibling(tlsnode, "Session_Resume", temp) == NULL)
-		{
-#ifdef WRITE_EAP_TLS_DEBUG
-			printf("Couldn't create <Session_Resume> node for TLS!\n");
-#endif
-			xmlFreeNode(tlsnode);
-			return NULL;
-		}
+		xmlFreeNode(tlsnode);
+		return NULL;
 	}
 
 	if ((write_all == TRUE) || (tlsdata->chunk_size != 0))

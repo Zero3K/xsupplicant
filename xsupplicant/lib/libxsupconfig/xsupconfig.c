@@ -1463,19 +1463,7 @@ void dump_config_eap_tls(struct config_eap_tls *tls)
   printf("\t  TLS Chunk Size: %d\n", tls->chunk_size);
   printf("\t  TLS Random Source: \"%s\"\n", 
 	       tls->random_file);
-  printf("\t  TLS Session Resumption: ");
-  switch (tls->session_resume)
-    {
-    case RES_UNSET:
-      printf("UNSET\n");
-      break;
-    case RES_YES:
-      printf("YES\n");
-      break;
-    case RES_NO:
-      printf("NO\n");
-      break;
-    }
+  printf("\t  TLS Session Resumption: %s\n", TEST_FLAG(tls->flags, EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
   printf("\t  Using Smartcard:\n");
   printf("\t\tEngine        : \"%s\"\n", tls->sc.engine_id);
   printf("\t\tOpensc SO_PATH: \"%s\"\n", tls->sc.opensc_so_path);
@@ -1728,19 +1716,8 @@ void dump_config_eap_ttls(struct config_eap_ttls *ttls)
   printf("\t  TTLS Key Pass: \"%s\"\n", ttls->user_key_pass);
   printf("\t  TTLS Chunk Size: %d\n", ttls->chunk_size);
   printf("\t  TTLS Random Source: \"%s\"\n", ttls->random_file);
-  printf("\t  TTLS Session Resumption: ");
-  switch (ttls->session_resume)
-    {
-    case RES_UNSET:
-      printf("UNSET\n");
-      break;
-    case RES_YES:
-      printf("YES\n");
-      break;
-    case RES_NO:
-      printf("NO\n");
-      break;
-    }
+  printf("\t  TTLS Session Resumption: %s\n", TEST_FLAG(ttls->flags, EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
+
   switch (ttls->phase2_type) {
   case TTLS_PHASE2_PAP:
     printf("\t  TTLS phase2: pap\n");    
@@ -1887,20 +1864,8 @@ void dump_config_eap_peap(struct config_eap_peap *peap)
   printf("\t  PEAP Key Pass: \"%s\"\n", peap->user_key_pass);
   printf("\t  PEAP Chunk Size: %d\n", peap->chunk_size);
   printf("\t  PEAP Random Source: \"%s\"\n", peap->random_file);
-  printf("\t  PEAP Session Resumption: ");
-  switch (peap->session_resume)
-    {
-    case RES_UNSET:
-      printf("UNSET\n");
-      break;
-    case RES_YES:
-      printf("YES\n");
-      break;
-    case RES_NO:
-      printf("NO\n");
-      break;
-    }
-  printf("\t  Proper PEAPv1 Keying : %s\n", peap->proper_peapv1 ? "yes" : "no");
+  printf("\t  PEAP Session Resumption: %s\n", TEST_FLAG(peap->flags, EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
+  printf("\t  Proper PEAPv1 Keying : %s\n", TEST_FLAG(peap->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS) ? "yes" : "no");
 
   if (peap->phase2) dump_config_eap_method(peap->phase2, 1);
   printf("\t------------------------------------\n");

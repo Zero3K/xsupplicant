@@ -145,6 +145,8 @@ int xsupconfwrite_convert_amp(char *instr, char **outstr)
  **/
 xmlNodePtr xsupconfwrite_common_write_bool(xmlNodePtr xmlNode, char *nodeName, int yesno, int defaultval, int forcewrite, int sibling)
 {
+	if (yesno > 0) yesno = TRUE;
+
 	if ((forcewrite != FALSE) || (yesno != defaultval))
 	{
 		if (yesno != FALSE)		// This needs to be a test against FALSE since TRUE is any value > 0.
