@@ -62,7 +62,7 @@ void *xsupconfig_parse_eap_peap(void **attr, uint8_t config_type, xmlNodePtr nod
   memset(meth->method_data, 0x00, sizeof(struct config_eap_peap));
 
   ((struct config_eap_peap *)(meth->method_data))->force_peap_version = 0xff;
-  ((struct config_eap_peap *)(meth->method_data))->validate_cert = TRUE;
+  SET_FLAG(((struct config_eap_peap *)(meth->method_data))->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
   
   return meth->method_data;
 }
@@ -270,7 +270,10 @@ void *xsupconfig_parse_eap_peap_session_resume(void **attr, uint8_t config_type,
     }
   else
     {
-      SET_FLAG(peap->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+		if (result == 1)
+			SET_FLAG(peap->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+		else
+			UNSET_FLAG(peap->flags, EAP_TLS_FLAGS_SESSION_RESUME);
     }
   
   xmlFree(value);
@@ -303,7 +306,10 @@ void *xsupconfig_parse_eap_peap_proper_v1_keying(void **attr, uint8_t config_typ
     }
   else
     {
-		SET_FLAG(peap->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS);
+		if (result == 1)
+			SET_FLAG(peap->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS);
+		else
+			UNSET_FLAG(peap->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS);
     }
 
   xmlFree(value);
@@ -332,11 +338,14 @@ void *xsupconfig_parse_peap_validate_cert(void **attr, uint8_t config_type, xmlN
       xsupconfig_common_log("Invalid value was passed for 'Validate_Certificate'!  Will use "
 	     "the default value of yes.  (Config line %ld)\n",
 	     xsupconfig_parse_get_line_num());
-      peap->validate_cert = TRUE;
+	  SET_FLAG(peap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
     }
   else
     {
-      peap->validate_cert = result;
+		if (result == TRUE)
+			SET_FLAG(peap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
+		else
+			UNSET_FLAG(peap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
     }
 
   xmlFree(value);

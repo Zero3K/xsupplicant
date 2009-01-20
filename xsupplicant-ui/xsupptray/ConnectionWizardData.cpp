@@ -200,6 +200,7 @@ bool ConnectionWizardData::toProfileEAP_SIMProtocol(config_profiles * const pPro
 bool ConnectionWizardData::toProfileEAP_MD5Protocol(config_profiles * const pProfile)
 {
 	bool success  = true;
+	config_pwd_only *md5 = NULL;
 
 	if (pProfile->method == NULL)
 	{
@@ -214,7 +215,16 @@ bool ConnectionWizardData::toProfileEAP_MD5Protocol(config_profiles * const pPro
 			if (pProfile->method->method_data == NULL)
 				success = false;
 			else
+			{
 				memset(pProfile->method->method_data, 0x00, sizeof(config_pwd_only));
+
+				md5 = (config_pwd_only *)pProfile->method->method_data;
+
+				if (m_useLogonCreds == true)
+					SET_FLAG(md5->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS);
+				else
+					UNSET_FLAG(md5->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS);
+			}
 		}
 	}
 	else
@@ -273,13 +283,14 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 					
 					// If we are doing machine auth, we need to set the "doing machine auth" flag.
 					if (m_machineAuth == true)
-					{
 						SET_FLAG(mypeap->flags, FLAGS_PEAP_MACHINE_AUTH);
-					}
 					else
-					{
 						UNSET_FLAG(mypeap->flags, FLAGS_PEAP_MACHINE_AUTH);
-					}
+
+					if (m_useLogonCreds == true)
+						SET_FLAG(mypeap->flags, FLAGS_PEAP_USE_LOGON_CREDS);
+					else
+						UNSET_FLAG(mypeap->flags, FLAGS_PEAP_USE_LOGON_CREDS);
 
 					// inner protocol
 					if (m_innerPEAPProtocol == ConnectionWizardData::inner_eap_mschapv2)
@@ -310,13 +321,14 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 
 								// If we are doing machine auth, we need to set the "doing machine auth" flag.
 								if (m_machineAuth == true)
-								{
 									SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
-								}
 								else
-								{
 									UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
-								}
+
+								if (m_useLogonCreds == true)
+									SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
+								else
+									UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
 							}
 						}
 					}
@@ -457,22 +469,19 @@ bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pPr
 					SET_FLAG(myfast->flags, EAP_FAST_PROVISION_ALLOWED);
 
 					if (m_anonymousProvisioning == true)
-					{
 						SET_FLAG(myfast->flags, EAP_FAST_PROVISION_ANONYMOUS);
-					}
 					else
-					{
 						UNSET_FLAG(myfast->flags, EAP_FAST_PROVISION_ANONYMOUS);
-					}
 
 					if (m_authenticatedProvisioning == true)
-					{
 						SET_FLAG(myfast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
-					}
 					else
-					{
 						UNSET_FLAG(myfast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
-					}
+
+					if (m_useLogonCreds == true)
+						SET_FLAG(myfast->flags, EAP_FAST_USE_LOGON_CREDS);
+					else
+						UNSET_FLAG(myfast->flags, EAP_FAST_USE_LOGON_CREDS);
 
 					// server cert
 					if (m_validateCert == true)
@@ -518,6 +527,11 @@ bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pPr
 								UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
 								mscv2->nthash = NULL;
 								mscv2->password = NULL;
+
+								if (m_useLogonCreds == true)
+									SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
+								else
+									UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
 							}
 						}
 					}
@@ -609,6 +623,11 @@ bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pPr
 				{
 					myttls->validate_cert = FALSE;
 				}
+
+				if (m_useLogonCreds == true)
+					SET_FLAG(myttls->flags, TTLS_FLAGS_USE_LOGON_CREDS);
+				else
+					UNSET_FLAG(myttls->flags, TTLS_FLAGS_USE_LOGON_CREDS);
 
 				// Determine the inner method in use...
 				if (m_innerTTLSProtocol == ConnectionWizardData::inner_pap)

@@ -2126,3 +2126,50 @@ const ConnectionWizardData &WizardPageMachineAuthFinished::wizardData(void)
 	return m_curData;
 }
 
+WizardPageAuthOptions::WizardPageAuthOptions(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+}
+
+bool WizardPageAuthOptions::create(void)
+{
+	m_pRealForm = FormLoader::buildform("wizardPageSelectAuthOptions.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// dynamically populate text
+	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("Please select any options you would like to enable for this configuration :"));
+		
+	m_pCheckBoxUseLogonCreds = qFindChild<QCheckBox*>(m_pRealForm, "useLogonCreds");
+	if (m_pCheckBoxUseLogonCreds != NULL)
+		m_pCheckBoxUseLogonCreds->setText(tr("Use logon credentials (if available)"));
+				
+	// other initializations
+	if (m_pCheckBoxUseLogonCreds != NULL)
+		m_pCheckBoxUseLogonCreds->setChecked(false);
+
+	return true;
+}
+
+void WizardPageAuthOptions::init(const ConnectionWizardData &data)
+{
+	m_curData = data;
+
+	if (m_pCheckBoxUseLogonCreds != NULL)
+	{
+		m_pCheckBoxUseLogonCreds->setChecked(m_curData.m_useLogonCreds);
+	}
+}
+
+const ConnectionWizardData &WizardPageAuthOptions::wizardData(void)
+{
+
+	if (m_pCheckBoxUseLogonCreds != NULL && m_pCheckBoxUseLogonCreds->isChecked() == true)
+		m_curData.m_useLogonCreds = true;
+	else
+		m_curData.m_useLogonCreds = false;
+
+	return m_curData;
+}

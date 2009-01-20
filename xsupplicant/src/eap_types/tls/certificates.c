@@ -455,7 +455,11 @@ int certificates_load_root(struct tls_vars *mytls_vars, char *trusted_servername
 
 	// Set up the CN match, and if it should be exact.
 	mytls_vars->cncheck = svr->common_name;
-	mytls_vars->cnexact = svr->exact_common_name;
+
+	if (TEST_FLAG(svr->flags, CONFIG_EXACT_COMMON_NAME))
+		mytls_vars->cnexact = TRUE;
+	else
+		mytls_vars->cncheck = FALSE;
 
 	if (strcmp(svr->store_type, "WINDOWS") == 0)
 	{

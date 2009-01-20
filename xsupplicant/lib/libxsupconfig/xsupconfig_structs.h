@@ -101,6 +101,7 @@ struct config_eap_tls
 #define EAP_FAST_PROVISION_ANONYMOUS		BIT(1)		// Should we allow anonymous provisioning?
 #define EAP_FAST_PROVISION_AUTHENTICATED	BIT(2)		// Should we allow authenticted (certificate based) provisioning?
 #define EAP_FAST_USE_LOGON_CREDS			BIT(3)		// Should we use the logon credentials when doing EAP-FAST?
+#define EAP_FAST_VALIDATE_SERVER_CERT		BIT(4)		// Should we validate the server certificate?
 
 // All of the variables that are needed to successfully complete an
 // EAP-FAST authentication.
@@ -111,7 +112,6 @@ struct config_eap_fast
   int chunk_size;				///< a.k.a. the TLS fragment size.  How big should TLS messages be when sent.
   char *innerid;				///< The username that will be used inside the tunnel that is created using the EAP-FAST PAC.
   char *trusted_server;			///< A trusted server to use with authenticated provisioning mode.
-  char validate_cert;			///< A TRUE/FALSE value to determine if we should validate the certificate.
 
   struct config_eap_method *phase2; ///< A linked-list of valid inner (phase 2) configuration methods that can be used to authenticate an EAP-FAST connection.
 };
@@ -148,6 +148,7 @@ typedef enum {TTLS_PHASE2_UNDEFINED,
     TTLS_PHASE2_EAP } ttls_phase2_type;	///< Authenticate using EAP inside of TTLS.
 
 #define TTLS_FLAGS_USE_LOGON_CREDS		BIT(8)		///< Use logon credentials.
+#define TTLS_FLAGS_VALIDATE_SERVER_CERT BIT(9)		///< Validate the server certificate.
 
 /// Configuration information for authenticating using EAP-TTLS.
 //
@@ -167,7 +168,6 @@ struct config_eap_ttls
 
   char *inner_id;					///< The username to use inside the TTLS tunnel.
   char *trusted_server;				///< The name of the <Trusted_Server> block to be used to validate the server certificate.
-  uint8_t validate_cert;			///< A TRUE/FALSE value that indicates if we should validate the server certificate or not.
 
   ttls_phase2_type phase2_type;      ///< One of the TTLS_PHASE2_* values.  Used to determine the inner method to use for authentication.
   void *phase2_data;                 ///< A pointer that should be type cast based on the TTLS_PHASE2_* values.  It will point to a configuration
@@ -199,6 +199,7 @@ struct config_eap_mschapv2
 #define FLAGS_PEAP_MACHINE_AUTH			BIT(8)			///< Should PEAP use machine authentication?
 #define FLAGS_PEAP_USE_LOGON_CREDS		BIT(9)			///< Should we use logon credentials for authentication?
 #define FLAGS_PEAP_PROPER_PEAPV1_KEYS	BIT(10)			///< Should we use proper PEAPv1 keying?  (Default: no)
+#define FLAGS_PEAP_VALIDATE_SERVER_CERT BIT(11)			///< Should we validate the server certificate?
 
 struct config_eap_peap
 {
@@ -213,7 +214,6 @@ struct config_eap_peap
   char *identity; // phase2 identity
   uint8_t force_peap_version;
   char *trusted_server;
-  uint8_t validate_cert;
 
   struct config_eap_method *phase2; 
 };
@@ -368,6 +368,7 @@ struct config_profiles {
 };
 
 #define CONFIG_VOLATILE_SERVER   BIT(0)
+#define CONFIG_EXACT_COMMON_NAME BIT(1)
 
 struct config_trusted_server {
 	char *name;
@@ -375,7 +376,6 @@ struct config_trusted_server {
 	uint16_t num_locations;
 	char **location;
 	char *common_name;
-	char exact_common_name;
 	uint8_t flags;
 
 	struct config_trusted_server *next;

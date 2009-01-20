@@ -305,11 +305,14 @@ void *xsupconfig_parse_eap_fast_validate_cert(void **attr, uint8_t config_type, 
       xsupconfig_common_log("Invalid value was passed for 'Validate_Certificate'!  Will use "
 	     "the default value of yes.  (Config line %ld)\n",
 	     xsupconfig_parse_get_line_num());
-      fast->validate_cert = TRUE;
+	  SET_FLAG(fast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
     }
   else
     {
-      fast->validate_cert = result;
+		if (result == 1)
+			SET_FLAG(fast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
+		else
+			UNSET_FLAG(fast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
     }
 
   xmlFree(value);
@@ -317,7 +320,7 @@ void *xsupconfig_parse_eap_fast_validate_cert(void **attr, uint8_t config_type, 
   return fast;
 }
 
-void *xsupconfig_parse_fast_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_eap_fast *fast = NULL;
 	char *value = NULL;
@@ -361,7 +364,7 @@ parser eap_fast[] = {
   {"Chunk_Size", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_chunk_size},
   {"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_innerid},
   {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_trusted_server},
-  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_fast_logon_creds},
+  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_logon_creds},
   {"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_validate_cert},
   {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
   {"Phase2", (struct conf_parse_struct *)&fast_phase2, TRUE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},

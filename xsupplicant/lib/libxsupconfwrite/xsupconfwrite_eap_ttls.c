@@ -190,7 +190,7 @@ xmlNodePtr xsupconfwrite_eap_ttls_create_tree(struct config_eap_ttls *ttlsdata, 
 	}
 
 	if (xsupconfwrite_common_write_bool(ttlsnode, "Validate_Certificate",
-		ttlsdata->validate_cert, TRUE, write_all, TRUE) == NULL)
+		TEST_FLAG(ttlsdata->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT), TRUE, write_all, TRUE) == NULL)
 	{
 		xmlFreeNode(ttlsnode);
 		return NULL;

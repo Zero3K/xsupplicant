@@ -175,14 +175,14 @@ int xsupconfcheck_profile_eap_ttls(struct config_eap_ttls *ttls, config_profiles
 		return -1;
 	}
 
-	if ((ttls->validate_cert == TRUE) && (ttls->trusted_server == NULL))
+	if ((TEST_FLAG(ttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT)) && (ttls->trusted_server == NULL))
 	{
 		if (log == TRUE) error_prequeue_add("There is no trusted server defined even though you want to validate the server certificate.");
 		retval = -1;
 	}
 	else
 	{
-		if (ttls->validate_cert == TRUE)
+		if (TEST_FLAG(ttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT))
 		{
 			if (xsupconfcheck_trusted_server(ttls->trusted_server, log) != 0)
 			{
@@ -266,14 +266,14 @@ int xsupconfcheck_profile_eap_peap(struct config_eap_peap *peap, config_profiles
 		return -1;
 	}
 
-	if ((peap->trusted_server == NULL) && (peap->validate_cert == TRUE))
+	if ((TEST_FLAG(peap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT)) && (peap->trusted_server == NULL))
 	{
 		if (log == TRUE) error_prequeue_add("There is no trusted server defined, but the profile is configured to validate the certificate.");
 		retval = -1;
 	}
 	else
 	{
-		if (peap->validate_cert == TRUE)
+		if (TEST_FLAG(peap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT))
 		{
 			if (xsupconfcheck_trusted_server(peap->trusted_server, log) != 0)
 			{
@@ -577,6 +577,12 @@ int xsupconfcheck_profile_check(struct config_profiles *myprof, int log)
 	// Verify that we have a valid identity set.
 	if ((myprof->identity == NULL) && (myprof->temp_username == NULL))
 	{
+		if (myprof->method == NULL)
+		{
+			if (log == TRUE) error_prequeue_add("Profile doesn't have a configuration.");
+			return -1;
+		}
+
 		if ((myprof->method->method_num != EAP_TYPE_SIM) && (myprof->method->method_num != EAP_TYPE_AKA))
 		{
 			if (myprof->method->method_num == EAP_TYPE_PEAP)

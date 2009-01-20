@@ -71,7 +71,7 @@ xmlNodePtr xsupconfwrite_pwd_only_create_tree(char *tagname,
 	}
 
 	if (xsupconfwrite_common_write_bool(pwdnode, "Use_Logon_Credentials",
-		TEST_FLAG(pwdonly->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS), FALSE, write_all, FALSE) == NULL)
+		TEST_FLAG(pwdonly->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS), FALSE, write_all, TRUE) == NULL)
 	{
 		xmlFreeNode(pwdnode);
 		return NULL;

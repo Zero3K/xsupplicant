@@ -97,7 +97,7 @@ uint8_t eapfast_init(eap_type_data *eapdata)
 
   if ((TEST_FLAG(fastconf->flags, EAP_FAST_PROVISION_AUTHENTICATED)) && ((mytls_vars->certs_loaded & ROOT_CERTS_LOADED) == 0x00))
     {
-	  if (fastconf->validate_cert == FALSE)
+		if (!TEST_FLAG(fastconf->flags, EAP_FAST_VALIDATE_SERVER_CERT))
         {
           // We were told not to verify certificates.  Spew out a warning, and
           // then do it!

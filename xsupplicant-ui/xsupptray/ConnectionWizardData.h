@@ -71,6 +71,7 @@ public:
 	bool m_wireless;
 	bool m_wired;				// Only used for machine authentication settings.
 	bool m_machineAuth;			// Is this a machine authentication connection?
+	bool m_useLogonCreds;		// Should we attempt to use the provided logon credentials?
 	QString m_connectionName;
 	QString m_serverName;
 	QString m_profileName;	

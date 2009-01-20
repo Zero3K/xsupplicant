@@ -77,6 +77,7 @@ public:
 		pageDot1XUserCert,
 		pageSCReader,
 		pageFastInnerProtocol,
+		pageAuthOptions,
 		pageFinishPage,
 		pageLastPage,
 	} wizardPages;

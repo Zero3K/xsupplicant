@@ -85,13 +85,13 @@ int eapttls_init(eap_type_data *eapdata)
 
   mytls_vars->resume = TEST_FLAG(userdata->flags, EAP_TLS_FLAGS_SESSION_RESUME);
 
-  if (userdata->validate_cert == FALSE)
+  if (TEST_FLAG(userdata->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT))
     {
-      mytls_vars->verify_cert = FALSE;
+      mytls_vars->verify_cert = TRUE;
     }
   else
     {
-      mytls_vars->verify_cert = TRUE;
+      mytls_vars->verify_cert = FALSE;
     }
 
   FREE(mytls_vars->keyblock);
@@ -197,7 +197,7 @@ void eapttls_check(eap_type_data *eapdata)
 
   if ((mytls_vars->certs_loaded & ROOT_CERTS_LOADED) != ROOT_CERTS_LOADED)
     {
-		if (ttlsconf->validate_cert == FALSE)
+		if (!TEST_FLAG(ttlsconf->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT))
 		{
 		  // We were told not to verify certificates.  Spew out a warning, and
 		  // then do it!

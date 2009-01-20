@@ -93,7 +93,7 @@ uint8_t eappeap_init(eap_type_data *eapdata)
  
   if ((mytls_vars->certs_loaded & ROOT_CERTS_LOADED) == 0x00)
     {
-	  if (peapconf->validate_cert == FALSE)
+		if (!TEST_FLAG(peapconf->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT))
         {
           // We were told not to verify certificates.  Spew out a warning, and
           // then do it!

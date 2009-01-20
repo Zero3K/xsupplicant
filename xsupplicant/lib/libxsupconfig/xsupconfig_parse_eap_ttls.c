@@ -74,7 +74,7 @@ void *xsupconfig_parse_eap_ttls(void **attr, uint8_t config_type, xmlNodePtr nod
 
   memset(meth->method_data, 0x00, sizeof(struct config_eap_ttls));
 
-  ((struct config_eap_ttls *)(meth->method_data))->validate_cert = TRUE;
+  SET_FLAG(((struct config_eap_ttls *)(meth->method_data))->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
   
   return meth->method_data;
 }
@@ -243,7 +243,10 @@ void *xsupconfig_parse_eap_ttls_session_resume(void **attr, uint8_t config_type,
     }
   else
     {
-      SET_FLAG(ttls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+		if (result == 1)
+			SET_FLAG(ttls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+		else
+			UNSET_FLAG(ttls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
     }
   
   xmlFree(value);
@@ -270,11 +273,14 @@ void *xsupconfig_parse_eap_ttls_validate_cert(void **attr, uint8_t config_type, 
     {
       xsupconfig_common_log("Invalid value was passed for 'Validate_Certificate'!  Will use the "
 	     "default value of yes.  (Line %ld)\n", xsupconfig_parse_get_line_num());
-	  ttls->validate_cert = TRUE;
+	  SET_FLAG(ttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
     }
   else
     {
-		ttls->validate_cert = result;
+		if (result == 1)
+			SET_FLAG(ttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
+		else
+			UNSET_FLAG(ttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
     }
   
   xmlFree(value);
@@ -422,7 +428,7 @@ void *xsupconfig_parse_eap_ttls_inner_method(void **attr, uint8_t config_type, x
   return ttls;
 }
 
-void *xsupconfig_parse_ttls_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
 {
 	struct config_eap_ttls *ttls = NULL;
 	char *value = NULL;
@@ -471,7 +477,7 @@ parser eap_ttls[] = {
   {"Inner_Method", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_inner_method},
   {"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_inner_id},
   {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_trusted_server},
-  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_ttls_logon_creds},
+  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_logon_creds},
   {"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_validate_cert},
   {"Phase2", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_phase2},
 

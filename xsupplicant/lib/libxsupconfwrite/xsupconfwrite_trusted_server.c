@@ -143,7 +143,7 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 	}
 
 	if (xsupconfwrite_common_write_bool(tsnode, "Exact_Common_Name",
-		cts->exact_common_name, FALSE, write_all, FALSE) == NULL)
+		TEST_FLAG(cts->flags, CONFIG_EXACT_COMMON_NAME), FALSE, write_all, FALSE) == NULL)
 	{
 		xmlFreeNode(tsnode);
 		return NULL;

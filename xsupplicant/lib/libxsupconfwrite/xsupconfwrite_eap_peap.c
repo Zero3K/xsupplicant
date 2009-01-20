@@ -215,7 +215,7 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 	}
 
 	if (xsupconfwrite_common_write_bool(peapnode, "Validate_Certificate", 
-		peapdata->validate_cert, TRUE, write_all, TRUE) == NULL)
+		TEST_FLAG(peapdata->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT), TRUE, write_all, TRUE) == NULL)
 	{
 		xmlFreeNode(peapnode);
 		return NULL;

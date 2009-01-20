@@ -363,6 +363,20 @@ private:
 	QCheckBox *m_pCheckBoxWired;
 };
 
+class WizardPageAuthOptions : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageAuthOptions(QWidget *parent, QWidget *parentWidget);
+	virtual bool create(void);
+	virtual void init(const ConnectionWizardData &data);
+	virtual bool validate(void) { return true; };
+	virtual const ConnectionWizardData &wizardData(void);
+private:
+	QCheckBox *m_pCheckBoxUseLogonCreds;
+};
+
 class WizardPageMachineAuthFinished : public WizardPage
 {
 	Q_OBJECT

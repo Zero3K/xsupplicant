@@ -293,11 +293,14 @@ void *xsupconfig_parse_trusted_server_ecn(void **attr, uint8_t config_type, xmlN
       printf("Invalid value was passed for 'Exact_Common_Name'!  Will use the "
              "default value of no.  (Line %ld)\n",
 	     xsupconfig_parse_get_line_num());
-	  myserver->exact_common_name = FALSE;
+	  UNSET_FLAG(myserver->flags, CONFIG_EXACT_COMMON_NAME);
     }
   else
     {
-		myserver->exact_common_name = result;
+		if (result == 1)
+			SET_FLAG(myserver->flags, CONFIG_EXACT_COMMON_NAME);
+		else
+			UNSET_FLAG(myserver->flags, CONFIG_EXACT_COMMON_NAME);
     }
 
   xmlFree(value);
@@ -331,13 +334,9 @@ void *xsupconfig_parse_volatile(void **attr, uint8_t config_type, xmlNodePtr nod
   else
     {
 		if (result == 1)
-		{
 			SET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
-		}
 		else
-		{
 			UNSET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
-		}
     }
 
   xmlFree(value);
