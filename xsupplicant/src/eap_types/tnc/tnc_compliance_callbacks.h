@@ -3,8 +3,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: tnc_compliance_callbacks.h,v 1.3 2008/01/23 23:45:10 galimorerpg Exp $
- * $Date: 2008/01/23 23:45:10 $
  **/
 
 #ifndef __TNC_COMPLIANCE_CALLBACKS_H__
@@ -14,6 +12,7 @@
 
 typedef struct _tnc_callbacks {
 	struct _tnc_callbacks *next;
+
 	uint32_t imcID;
 	uint32_t connID;
 	uint32_t oui;

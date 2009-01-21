@@ -26,11 +26,12 @@
 #include "xsupconfig_defaults.h"
 #include "xsupconfig_devices.h"
 #include "src/xsup_err.h"
+#include "liblist/liblist.h"
 
 void *xsupconfig_parse_interface(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct xsup_devices *mydevs = NULL;
-  struct xsup_interfaces *ints = NULL;
+  struct xsup_interfaces *newint = NULL;
 
   mydevs = (*attr);
 
@@ -38,33 +39,16 @@ void *xsupconfig_parse_interface(void **attr, uint8_t config_type, xmlNodePtr no
   printf("Building interfaces config.\n");
 #endif
 
-  if (mydevs->interf == NULL)
-    {
-		if (xsupconfig_defaults_create_interface(&mydevs->interf) != XENONE)
-		{
-			printf("Couldn't allocate memory to store interface setting configuration!"
-					"  (Line %ld)\n", xsupconfig_parse_get_line_num());
-			exit(1);
-		}
+  if (xsupconfig_defaults_create_interface(&newint) != XENONE)
+  {
+	printf("Couldn't allocate memory to store interface setting configuration!"
+			"  (Line %ld)\n", xsupconfig_parse_get_line_num());
+	exit(1);
+  }
 
-      ints = mydevs->interf;
-    }
-  else
-    {
-      ints = mydevs->interf;
+  liblist_add_to_tail((genlist **)&mydevs->interf, (genlist *)newint);
 
-      while (ints->next != NULL) ints = ints->next;
-
-	  if (xsupconfig_defaults_create_interface(&ints->next) != XENONE)
-	  {
-		printf("Couldn't allocate memory to store new interface data!\n");
-		return NULL;
-	  }
-
-      ints = ints->next;
-    }
-
-  return ints;
+  return newint;
 }
 
 void *xsupconfig_parse_interface_description(void **attr, uint8_t config_type, xmlNodePtr node)

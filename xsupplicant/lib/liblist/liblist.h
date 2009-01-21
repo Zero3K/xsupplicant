@@ -19,7 +19,7 @@ void liblist_add_to_head(genlist **addtolist, genlist *newnode);
 void liblist_add_to_tail(genlist **addtolist, genlist *newnode);
 void liblist_delete_child_node(genlist *parent, node_delete_func delfunc);
 void liblist_delete_list(genlist **list, node_delete_func delfunc);
-
+unsigned int liblist_num_nodes(genlist *list);
 
 #endif // __LIBLIST_H__
 

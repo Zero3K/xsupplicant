@@ -3,9 +3,6 @@
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \author chris@open1x.org
- *
- * $Id: cardif_windows_wmi_async.h,v 1.1 2008/01/30 20:46:43 galimorerpg Exp $
- * $Date: 2008/01/30 20:46:43 $
  **/
 #ifndef __CARDIF_WINDOWS_WMI_ASYNC_H__
 #define __CARDIF_WINDOWS_WMI_ASYNC_H__

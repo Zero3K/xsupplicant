@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  * PEAP Phase 2 Function Headers
  * 
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
@@ -7,7 +7,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef PEAP_PHASE2_H
 #define PEAP_PHASE2_H

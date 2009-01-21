@@ -13,12 +13,12 @@
 #define __INTERFACES_H__
 
 struct interfaces {
+	struct interfaces *next;
+
 	char *intname;
 	char *desc;
 	char mac[6];
 	unsigned char is_wireless;
-
-	struct interfaces *next;
 };
 
 int interfaces_add(char *, char *, char *, unsigned char);

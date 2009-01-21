@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
@@ -6,7 +6,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 #ifndef __IPC_EVENTS_INDEX_H__
 #define __IPC_EVENTS_INDEX_H__
 

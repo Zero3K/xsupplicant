@@ -73,7 +73,6 @@ node_delete_func error_prequeue_delete_node(void **node)
 
 	FREE(cur->errstr);
 
-//	FREE((*node));
 	return NULL;
 }
 
@@ -98,18 +97,7 @@ int error_prequeue_flush()
  **/
 int error_prequeue_events_available()
 {
-	err_prequeue *cur = NULL;
-	int count = 0;
-
-	cur = queue_head;
-
-	while (cur != NULL)
-	{
-		cur = cur->next;
-		count++;
-	}
-
-	return count;
+	return liblist_num_nodes((genlist *)queue_head);
 }
 
 /**

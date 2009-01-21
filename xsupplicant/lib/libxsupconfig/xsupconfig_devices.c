@@ -20,6 +20,7 @@
 #include "xsupconfig_devices.h"
 #include "xsupconfig.h"
 #include "xsupconfig_vars.h"
+#include "liblist/liblist.h"
 
 /**
  * \brief Initialize the devices structure so that it can be populated.
@@ -43,35 +44,19 @@ void xsupconfig_devices_init()
  * \brief Clean up the interfaces list in memory.
  *
  * Clean out the "interfaces" sub-structure in the devices structure.
- * All memory for each record should be freed here, and ->next should
- * be set to NULL.
  *
- * @param[in] ints   A pointer to the head of the list that contains the
- *                   interfaces we want to free.
+ * @param[in] ints   A pointer to the node in the list that contains the
+ *                   interface we want to free.
  **/
-void xsupconfig_devices_clear_interfaces(struct xsup_interfaces *ints)
+void xsupconfig_devices_clear_interface(void **inptr)
 {
-	struct xsup_interfaces *cur = NULL, *next = NULL;
+	struct xsup_interfaces *ints = (*inptr);
 
-	debug_printf(DEBUG_DEINIT, "Clearing out interfaces from devices structure.\n");
+	FREE(ints->description);
+	FREE(ints->driver_type);
+    FREE(ints->default_connection);
 
-	if (ints == NULL) return;   // Nothing to do.
-
-	cur = ints;
-
-	while (cur != NULL)
-	{
-		next = cur->next;
-
-		FREE(cur->description);
-		FREE(cur->driver_type);
-        FREE(cur->default_connection);
-		cur->next = NULL;
-
-		FREE(cur);
-
-		cur = next;
-	}
+	FREE((*inptr));
 }
 
 /**
@@ -91,7 +76,7 @@ void xsupconfig_devices_deinit(struct xsup_devices **xsup_devs)
 	if ((*xsup_devs) == NULL) return;
 
 	// Clear out any interfaces that we may have allocated.
-	xsupconfig_devices_clear_interfaces((*xsup_devs)->interf);
+	liblist_delete_list((genlist **)&(*xsup_devs)->interf, xsupconfig_devices_clear_interface);
 	(*xsup_devs)->interf = NULL;
 	if ((*xsup_devs) != NULL) 
 	{

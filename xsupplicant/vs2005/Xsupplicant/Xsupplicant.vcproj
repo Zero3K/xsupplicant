@@ -2865,6 +2865,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\ipc_callout_helper.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\ipc_events.c"
 				>
 			</File>
@@ -3002,6 +3006,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\platform\windows\win_ip_manip.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\win_svc.c"
 				>
 			</File>
 			<File
@@ -3343,6 +3351,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\ipc_callout_helper.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\ipc_events.h"
 				>
 			</File>
@@ -3504,6 +3516,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\platform\windows\win_ip_manip.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\win_svc.h"
 				>
 			</File>
 			<File

@@ -37,14 +37,14 @@ typedef uint8_t FDEPTH;
 
 ///< A PMKSA is made up of the following elements.  (Defined in section 8.4.1.1 of the 802.11 standard.)
 typedef struct _pmksa_cache_element {
+	struct _pmksa_cache_element *next;   ///< The next PMKSA in the list.
+
 	uint8_t pmkid[16];				///< According to section 8.5.1.2 of the 802.11 standard, a PMKID is 128 bits.
 	uint8_t authenticator_mac[6];	///< The MAC address of the authenticator this PMKID is tied to.
 	uint8_t *pmk;                   ///< The PMK for this SA.
 	uint16_t lifetime;				///< Lifetime (in seconds) of a key that we have not seen the AP beacon for.
 	uint8_t akmp;                   ///< The authentication and key management protocol used for this PMKSA.
 	char *ssid;                     ///< The SSID this PMKSA is valid for.
-
-	struct _pmksa_cache_element *next;   ///< The next PMKSA in the list.
 } pmksa_cache_element;
 
 typedef struct dot1x_state

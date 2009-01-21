@@ -235,7 +235,7 @@ bool ConfigProfileTabs::saveEAPTTLSData()
 
 	if (m_pValidateServer->isChecked() == true)
 	{
-		myttls->validate_cert = TRUE;
+		SET_FLAG(myttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
 
 		if (myttls->trusted_server != NULL)
 		{
@@ -250,7 +250,7 @@ bool ConfigProfileTabs::saveEAPTTLSData()
 	}
 	else
 	{
-		myttls->validate_cert = FALSE;
+		UNSET_FLAG(myttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
 
 		if (myttls->trusted_server != NULL)
 		{
@@ -759,7 +759,7 @@ bool ConfigProfileTabs::saveEAPFASTData()
 
 	if (m_pValidateServer->isChecked() == true)
 	{
-		myfast->validate_cert = TRUE;
+		SET_FLAG(myfast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
 
 		if (myfast->trusted_server != NULL)
 		{
@@ -774,7 +774,7 @@ bool ConfigProfileTabs::saveEAPFASTData()
 	}
 	else
 	{
-		myfast->validate_cert = FALSE;
+		UNSET_FLAG(myfast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
 
 		if (myfast->trusted_server != NULL)
 		{
@@ -943,7 +943,7 @@ bool ConfigProfileTabs::saveEAPPEAPData()
 
 	if (m_pValidateServer->isChecked() == true)
 	{
-		mypeap->validate_cert = TRUE;
+		SET_FLAG(mypeap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
 
 		if (mypeap->trusted_server != NULL)
 		{
@@ -958,7 +958,7 @@ bool ConfigProfileTabs::saveEAPPEAPData()
 	}
 	else
 	{
-		mypeap->validate_cert = FALSE;
+		UNSET_FLAG(mypeap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
 
 		if (mypeap->trusted_server != NULL)
 		{
@@ -1378,7 +1378,7 @@ void ConfigProfileTabs::populateFASTData()
 
 	fastdata = (struct config_eap_fast *)m_pProfile->method->method_data;
 
-	if (fastdata->validate_cert == TRUE)
+	if (TEST_FLAG(fastdata->flags, EAP_FAST_VALIDATE_SERVER_CERT))
 	{
 		m_pValidateServer->setChecked(true);
 		index = m_pTrustedServerCombo->findText(QString(fastdata->trusted_server));
@@ -1536,7 +1536,7 @@ void ConfigProfileTabs::populatePEAPData()
 
 	peapdata = (struct config_eap_peap *)m_pProfile->method->method_data;
 
-	if (peapdata->validate_cert == TRUE)
+	if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT))
 	{
 		m_pValidateServer->setChecked(true);
 		index = m_pTrustedServerCombo->findText(QString(peapdata->trusted_server));
@@ -1649,7 +1649,7 @@ void ConfigProfileTabs::populateTTLSData()
 
 	ttlsdata = (struct config_eap_ttls *)m_pProfile->method->method_data;
 
-	if (ttlsdata->validate_cert == TRUE)
+	if (TEST_FLAG(ttlsdata->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT))
 	{
 		m_pValidateServer->setChecked(true);
 		index = m_pTrustedServerCombo->findText(QString(ttlsdata->trusted_server));

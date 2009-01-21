@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  * EAPTTLS phase 2 common Function header
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
@@ -7,7 +7,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef __TTLS_PHASE2_COMMON_H__
 #define __TTLS_PHASE2_COMMON_H__

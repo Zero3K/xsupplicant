@@ -27,7 +27,7 @@
 #include "ipc_events.h"
 #include "ipc_events_index.h"
 #include "libxsupconfcheck/xsupconfcheck_conn.h"
-
+#include "liblist/liblist.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -129,50 +129,14 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
  **/
 struct found_ssids *config_ssid_init_new_node(wireless_ctx *wctx)
 {
-	struct found_ssids *ssids = NULL, *working = NULL;
+	struct found_ssids *working = NULL;
 
-	ssids = wctx->ssid_cache;
+	working = (struct found_ssids *)Malloc(sizeof(struct found_ssids));
+	if (working == NULL) return NULL;
 
-  if (!ssids)
-    {
-      // We don't have a first node allocated yet.
-		wctx->ssid_cache = (struct found_ssids *)Malloc(sizeof(struct found_ssids));
-		ssids = wctx->ssid_cache;
-      if (ssids == NULL)
-	{
-	  debug_printf(DEBUG_NORMAL, "Insufficient memory at %s:%d!\n",
-		       __FUNCTION__, __LINE__);
-	  ipc_events_malloc_failed(NULL);
-	  
-	  global_deinit();
-	}
+	liblist_add_to_tail((genlist **)&wctx->ssid_cache, (genlist *)working);
 
-	  working = ssids;
-    } else {
-      
-      working = ssids;
-
-      while (working->next)
-	{
-	  working = working->next;
-	}
-
-      working->next = (struct found_ssids *)Malloc(sizeof(struct found_ssids));
-      if (!working->next)
-	{
-	  debug_printf(DEBUG_NORMAL, "Insufficient memory at %s:%d!\n",
-		       __FUNCTION__, __LINE__);
-	  ipc_events_malloc_failed(NULL);
-	  global_deinit();
-	}
-
-      working = working->next;
-    }
-
-  // Initialize the new structure.
-  memset(working, 0x00, sizeof(struct found_ssids));
-
-  return working;
+	return working;
 }
  
 /**
@@ -448,6 +412,24 @@ void config_ssid_dump(wireless_ctx *wctx)
 }
 
 /**
+ * \brief Free the memory used in a single node.
+ *
+ * @param[in] node   A pointer to the node that has the data we want to free.
+ **/
+void config_ssid_free_node(void **inptr)
+{
+	struct found_ssids *node = (*inptr);
+
+	if (inptr == NULL) return;
+
+    FREE(node->ssid_name);
+    FREE(node->wpa_ie);
+    FREE(node->rsn_ie);
+
+	FREE((*inptr));
+}
+
+/**
  * \brief Free the SSID cache.
  *
  * Clear out the list of SSIDs that we know about.  This will usually be 
@@ -458,25 +440,11 @@ void config_ssid_dump(wireless_ctx *wctx)
  **/
 void config_ssid_clear(wireless_ctx *wctx)
 {
-  struct found_ssids *cur = NULL, *next = NULL;
-
   if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
-  cur = wctx->ssid_cache;
-
-  while (cur != NULL)
-    {
-      FREE(cur->ssid_name);
-      FREE(cur->wpa_ie);
-      FREE(cur->rsn_ie);
-
-      next = cur->next;
-      FREE(cur);
-      cur = next;
-    }
+  liblist_delete_list((genlist **)&wctx->ssid_cache, config_ssid_free_node);
 
   wctx->ssid_cache = NULL;
-//  wctx->active_ssid = NULL;
 }
 
 /**

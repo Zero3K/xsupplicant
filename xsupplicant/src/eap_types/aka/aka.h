@@ -1,5 +1,5 @@
 /**
- * EAPOL Function implementations for supplicant
+ * EAP-AKA utility functions
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  * 

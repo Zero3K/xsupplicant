@@ -27,11 +27,13 @@
 #include "xsupconfig_common.h"
 #include "xsupconfig_defaults.h"
 #include "src/xsup_err.h"
+#include "liblist/liblist.h"
 
 void *xsupconfig_parse_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_servers *myservers = NULL;
   struct config_trusted_server *myserver = NULL;
+  struct config_trusted_server *newserver = NULL;
 
   myservers = (*attr);
 
@@ -39,34 +41,16 @@ void *xsupconfig_parse_trusted_server(void **attr, uint8_t config_type, xmlNodeP
   printf("Building trusted server config.\n");
 #endif
 
-  if (myservers->servers == NULL)
-    {
-		if (xsupconfig_defaults_create_trusted_server(&myservers->servers) != XENONE)
-		{
-			printf("Couldn't allocate memory to store a trusted server configuration!"
-				"  (Line %ld)\n", xsupconfig_parse_get_line_num());
-			exit(1);
-		}
+  if (xsupconfig_defaults_create_trusted_server(&newserver) != XENONE)
+  {
+	printf("Couldn't allocate memory to store a trusted server configuration!"
+			"  (Line %ld)\n", xsupconfig_parse_get_line_num());
+	exit(1);
+  }
 
-	  myserver = myservers->servers;
-    }
-  else
-    {
-	  myserver = myservers->servers;
+  liblist_add_to_tail((genlist **)&myservers->servers, (genlist *)newserver);
 
-      while (myserver->next != NULL) myserver = myserver->next;
-
-	  if (xsupconfig_defaults_create_trusted_server(&myserver->next) != XENONE)
-	  {
-		  printf("Couldn't allocate memory to store a trusted server configuration!"
-			  "  (Line %ld)\n", xsupconfig_parse_get_line_num());
-		  exit(1);
-	  }
-
-      myserver = myserver->next;
-    }
-
-  return myserver;
+  return newserver;
 }
 
 void *xsupconfig_parse_trusted_server_name(void **attr, uint8_t config_type, xmlNodePtr node)

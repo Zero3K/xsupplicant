@@ -32,6 +32,7 @@
 #include "xsupconfig_structs.h"
 #include "xsupconfig_parse.h"
 #include "src/error_prequeue.h"
+#include "liblist/liblist.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -2148,25 +2149,9 @@ void delete_config_single_connection(struct config_connection **tmp_conn)
  **/
 void delete_config_connections(struct config_connection **tmp_conn)
 {
-  struct config_connection *next, *cur;
+	liblist_delete_list((genlist **)tmp_conn, delete_config_single_connection);
 
-  if (*tmp_conn == NULL)
-    return;
-
-  cur = (*tmp_conn);
-  next = (*tmp_conn)->next;
-
-  while (cur)
-    {
-      delete_config_single_connection(&cur);
-      cur = next;
-      if (next)
-	{
-	  next = next->next;
-	}
-    }
-
-  *tmp_conn = NULL;
+	*tmp_conn = NULL;
 }
 
 /**
@@ -2212,26 +2197,11 @@ void delete_config_interface(struct xsup_interfaces **intdata)
  **/
 void delete_config_devices(struct xsup_devices **head)
 {
-  struct xsup_interfaces *next, *cur;
+	liblist_delete_list((genlist **)head, delete_config_interface);
 
-  if (*head == NULL)
-    return;
-
-  cur = (*head)->interf;
-  next = (*head)->interf->next;
-
-  while (cur)
-    {
-      delete_config_interface(&cur);
-      cur = next;
-      if (next != NULL)
-	{
-	  next = next->next;
-	}
-    }
-
-  free((*head));
+	(*head) = NULL;
 }
+
   /***************************/
  /* CONFIG_TRUSTED_SERVERS  */
 /***************************/
@@ -2280,23 +2250,9 @@ void delete_config_trusted_servers(struct config_trusted_servers **tmp_servers)
 
   cur = (*tmp_servers)->servers;
 
-  if ((*tmp_servers)->servers != NULL) 
-  {
-	  next = (*tmp_servers)->servers->next;
-  }
-
-  while (cur)
-    {
-      delete_config_trusted_server(&cur);
-      cur = next;
-      if (next != NULL)
-		{
-			next = next->next;
-		}
-    }
+  liblist_delete_list((genlist **)&cur, delete_config_trusted_server);
 
   FREE((*tmp_servers));
-  *tmp_servers = NULL;
 }
 
 /**
@@ -2796,16 +2752,9 @@ void dump_config_plugins(struct config_plugins *data)
  **/
 void delete_config_profiles(struct config_profiles **prof)
 {
-	struct config_profiles *cur, *next;
+	liblist_delete_list((genlist **)prof, delete_config_single_profile);
 
-	cur = (*prof);
-
-	while (cur != NULL)
-	{
-	  next = cur->next;
-	  delete_config_single_profile(&cur);	
-	  cur = next;
-	}
+	(*prof) = NULL;
 }
 
 /**

@@ -1,4 +1,4 @@
-/*********************************************************************
+/**
  *
  * SIM Card Handler for PC/SC lite library
  *
@@ -12,7 +12,7 @@
  *
  * This code is released under dual BSD/GPL license.
  *
- **********************************************************************/
+ **/
 
 #ifdef EAP_SIM_ENABLE
 

@@ -939,11 +939,7 @@ void eapol_key_type2_do_type1(context *intdata)
   memset(&intdata->sendframe[OFFSET_TO_EAPOL+4], 0x00,
 	 sizeof(struct wpa2_key_packet));
 
-  // XXX Need to do this better.  Tie it in with Nonce code from SIM/AKA.
-  for (i=0;i<32;i++)
-    {
-      outkeydata->key_nonce[i] = rand();
-    }
+  RAND_bytes((uint8_t *)&outkeydata->key_nonce[0], 32);
 
   FREE(intdata->statemachine->SNonce);
 

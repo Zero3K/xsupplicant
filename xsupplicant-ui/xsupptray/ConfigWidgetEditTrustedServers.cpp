@@ -369,7 +369,7 @@ bool ConfigWidgetEditTrustedServers::save()
 		if (m_pCNEdit->text() != "")
 		{
 			m_pTrustedServer->common_name = _strdup(m_pCNEdit->text().toAscii());
-			m_pTrustedServer->exact_common_name = FALSE;
+			UNSET_FLAG(m_pTrustedServer->flags, CONFIG_EXACT_COMMON_NAME);
 		}
 		else
 		{

@@ -268,18 +268,18 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 					{
 						if (pServer != NULL)
 						{
-							mypeap->validate_cert = TRUE;
+							SET_FLAG(mypeap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
 							mypeap->trusted_server = _strdup(pServer->name);
 						}
 						else
 						{
 							// we should have had a trusted server passed in
-							mypeap->validate_cert = FALSE;
+							UNSET_FLAG(mypeap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
 							success = false;
 						}
 					}
 					else
-						mypeap->validate_cert = FALSE;
+						UNSET_FLAG(mypeap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
 					
 					// If we are doing machine auth, we need to set the "doing machine auth" flag.
 					if (m_machineAuth == true)
@@ -488,18 +488,18 @@ bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pPr
 					{
 						if ((pServer != NULL) && (m_authenticatedProvisioning == true))
 						{
-							myfast->validate_cert = TRUE;
+							SET_FLAG(myfast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
 							myfast->trusted_server = _strdup(pServer->name);
 						}
 						else
 						{
 							// we should have had a trusted server passed in
-							myfast->validate_cert = FALSE;
+							UNSET_FLAG(myfast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
 							success = false;
 						}
 					}
 					else
-						myfast->validate_cert = FALSE;
+						UNSET_FLAG(myfast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
 					
 					// inner protocol
 					if (m_innerFASTProtocol == ConnectionWizardData::inner_eap_mschapv2)
@@ -609,19 +609,19 @@ bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pPr
 				{
 					if (pServer != NULL)
 					{
-						myttls->validate_cert = TRUE;
+						SET_FLAG(myttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
 						myttls->trusted_server = _strdup(pServer->name);
 					}
 					else
 					{
 						// expected to have trusted server passed in
-						myttls->validate_cert = FALSE;
+						UNSET_FLAG(myttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
 						success = false;
 					}
 				}
 				else
 				{
-					myttls->validate_cert = FALSE;
+					UNSET_FLAG(myttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
 				}
 
 				if (m_useLogonCreds == true)
@@ -885,7 +885,7 @@ bool ConnectionWizardData::toServerData(config_trusted_server **retServer)
 				if (m_verifyCommonName == true) 
 				{
 					pServer->common_name = _strdup((m_commonNames.join(",")).toAscii().data());
-					pServer->exact_common_name = FALSE; // not sure when this is ever 'true'?
+					UNSET_FLAG(pServer->flags, CONFIG_EXACT_COMMON_NAME);
 				}
 
 				int numCerts = m_serverCerts.size();
@@ -1101,7 +1101,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 					else if (pTTLSData->phase2_type == TTLS_PHASE2_EAP)
 						m_innerTTLSProtocol = ConnectionWizardData::inner_eap_md5;
 						
-					if (pTTLSData->validate_cert == TRUE)
+					if (TEST_FLAG(pTTLSData->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT))
 						m_validateCert = true;
 					else
 						m_validateCert = false;			
@@ -1124,7 +1124,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 							m_innerPEAPProtocol = ConnectionWizardData::inner_eap_gtc;
 					}
 						
-					if (pPEAPData->validate_cert == TRUE)
+					if (TEST_FLAG(pPEAPData->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT))
 						m_validateCert = true;
 					else
 						m_validateCert = false;			
@@ -1156,7 +1156,7 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 							m_innerFASTProtocol = ConnectionWizardData::inner_eap_gtc;
 					}
 						
-					if (pFASTData->validate_cert == TRUE)
+					if (TEST_FLAG(pFASTData->flags, EAP_FAST_VALIDATE_SERVER_CERT))
 						m_validateCert = true;
 					else
 						m_validateCert = false;			

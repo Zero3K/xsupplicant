@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
@@ -6,7 +6,7 @@
  *
  * \author chris@open1x.org, Terry.Simons@utah.edu
  *
- *******************************************************************/
+ **/
 
 #ifndef _XSUP_IPC_H_
 #define _XSUP_IPC_H_

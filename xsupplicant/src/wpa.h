@@ -1,10 +1,10 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \file wpa.h
  *
- *******************************************************************/
+ **/
 
 #ifndef __WPA_H__
 #define __WPA_H__

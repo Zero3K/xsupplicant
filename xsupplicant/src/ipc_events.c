@@ -28,6 +28,7 @@
 #include "ipc_events.h"
 #include "ipc_events_index.h"
 #include "xsup_err.h"
+#include "liblist/liblist.h"
 
 #ifdef WINDOWS
 #include <windows.h>
@@ -1073,13 +1074,7 @@ void ipc_events_send_tnc_batch(void *batchlist, uint32_t imcID, uint32_t connID,
 	return;
 #else
 
-	cur = (tnc_msg_batch *)batchlist;
-
-	while (cur != NULL)
-	{
-		numitems++;
-		cur = cur->next;
-	}
+	numitems = liblist_num_nodes((genlist *)batchlist);
 
 	cur = (tnc_msg_batch *)batchlist;
 

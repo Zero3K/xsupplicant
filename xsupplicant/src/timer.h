@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
@@ -6,7 +6,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _TIMER_H_
 #define _TIMER_H_
@@ -30,14 +30,14 @@
 
 struct timer_data
 {
+  struct timer_data *next;
+
   uint16_t seconds_left;     // How many seconds are left before this timer
                              // expires.
   uint16_t timer_id;         // A numeric identifier that indicates what
                              // type of timer this is.  (From above)
   int8_t (*timer_tick)(context *);
   int8_t (*timer_expired)(context *);
-
-  struct timer_data *next;
 };
 
 void timer_init(context *);

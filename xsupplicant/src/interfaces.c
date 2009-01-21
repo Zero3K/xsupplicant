@@ -6,9 +6,6 @@
  * \file interfaces.c
  *
  * \author chris@open1x.org
- *
- * $Id: interfaces.c,v 1.4 2007/10/21 21:54:16 galimorerpg Exp $
- * $Date: 2007/10/21 21:54:16 $
  **/
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +24,7 @@
 #include "xsup_err.h"
 #include "ipc_events.h"
 #include "ipc_events_index.h"
+#include "liblist/liblist.h"
 
 struct interfaces *interface_cache = NULL;
 
@@ -35,38 +33,19 @@ struct interfaces *interface_cache = NULL;
  **/
 struct interfaces *interfaces_alloc(struct interfaces **root_int)
 {
-	struct interfaces *cur;
+	struct interfaces *newint = NULL;
 
-	cur = (*root_int);
-
-	if (cur == NULL)
+	newint = Malloc(sizeof(struct interfaces));
+	if (newint == NULL) 
 	{
-		// We don't have any interfaces in memory right now.
-		cur = Malloc(sizeof(struct interfaces));
-		if (cur == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to allocate memory for the interface cache!\n");
-			ipc_events_malloc_failed(NULL);
-			return NULL;
-		}
-
-		(*root_int) = cur;
-	}
-	else
-	{
-		while (cur->next != NULL) cur = cur->next;
-
-		cur->next = Malloc(sizeof(struct interfaces));
-		if (cur == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to allocate additional memory for the interface cache!\n");
-			return NULL;
-		}
-
-		cur = cur->next;
+		debug_printf(DEBUG_NORMAL, "Unable to allocate memory for the interface cache!\n");
+		ipc_events_malloc_failed(NULL);
+		return NULL;
 	}
 
-	return cur;
+	liblist_add_to_tail((genlist **)root_int, (genlist *)newint);
+
+	return newint;
 }
 
 /**
@@ -171,10 +150,11 @@ void interfaces_dump_cache()
  *
  * @param[in] todel   The node that we want to delete the contents of.
  **/
-void interfaces_delete_node(struct interfaces *todel)
+void interfaces_delete_node(struct interfaces **todel)
 {
-	FREE(todel->desc);
-	FREE(todel->intname);
+	FREE((*todel)->desc);
+	FREE((*todel)->intname);
+	FREE((*todel));
 }
 
 /**
@@ -202,8 +182,7 @@ int interfaces_delete(char *intdesc)
 	{
 		interface_cache = cur->next;
 
-		interfaces_delete_node(cur);
-		FREE(cur);
+		interfaces_delete_node(&cur);
 
 		return 1;
 	}
@@ -221,8 +200,7 @@ int interfaces_delete(char *intdesc)
 
 	// Otherwise, delete it from the tree.
 	last->next = cur->next;
-	interfaces_delete_node(cur);
-	FREE(cur);
+	interfaces_delete_node(&cur);
 
 	return 1;
 }
@@ -232,20 +210,7 @@ int interfaces_delete(char *intdesc)
  **/
 void interfaces_flush_cache()
 {
-	struct interfaces *cur, *next;
-
-	cur = interface_cache;
-
-	while (cur != NULL)
-	{
-		next = cur->next;
-
-		interfaces_delete_node(cur);
-
-		FREE(cur);
-
-		cur = next;
-	}
+	liblist_delete_list((genlist **)&interface_cache, interfaces_delete_node);
 }
 
 /**

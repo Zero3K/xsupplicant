@@ -1,4 +1,4 @@
-/*******************************************************************
+/**
  * Error codes used in various parts of the program.
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
@@ -7,7 +7,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef __XSUP_ERR_H__
 #define __XSUP_ERR_H__

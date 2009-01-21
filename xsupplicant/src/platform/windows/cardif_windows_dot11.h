@@ -1,5 +1,5 @@
 /**
- * Windows wireless extensions interface (for ExtSta).
+ * Windows wireless extensions interface.
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *

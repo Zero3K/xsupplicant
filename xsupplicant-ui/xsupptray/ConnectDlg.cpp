@@ -928,19 +928,19 @@ void ConnectDlg::getAndDisplayErrors()
         i++;
       }
 
-      QMessageBox::critical(this, tr("XSupplicant Error Summary"),
+      QMessageBox::critical(m_pRealForm, tr("XSupplicant Error Summary"),
         tr("The following errors were returned from XSupplicant while starting up or attempting to connect.\n%1")
         .arg(errors));
     }
 	else
 	{
-		QMessageBox::critical(this, tr("XSupplicant Error"),
+		QMessageBox::critical(m_pRealForm, tr("XSupplicant Error"),
 			tr("The supplicant service indicated there were queued errors, but didn't return any when asked!"));
 	}
   }
   else
   {
-    QMessageBox::critical(this, tr("Get Error Message error"),
+    QMessageBox::critical(m_pRealForm, tr("Get Error Message error"),
       tr("An error occurred while checking for errors from the XSupplicant."));
   }
 

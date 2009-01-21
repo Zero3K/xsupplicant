@@ -24,6 +24,7 @@
 #include "pmksa.h"
 #include "timer.h"
 #include "config_ssid.h"
+#include "liblist/liblist.h"
 
 #define MAX_PMKSA_CACHE_DEPTH    32     ///< The maximum number of entries that should ever be allowed in the cache.  (Per interface.)
 
@@ -87,14 +88,18 @@ void pmksa_dump_cache(context *ctx)
  *
  * @param[in] elem   The PMKSA cache entry that we want to be freed.
  **/
-void pmksa_free_cache_entry(pmksa_cache_element *elem)
+void pmksa_free_cache_entry(void **data)
 {
+	pmksa_cache_element *elem = (*data);
+
 	if (!xsup_assert((elem != NULL), "elem != NULL", FALSE)) return;
 
 	// Most of the data in our current cache entry will be freed when we free the base
 	// pointer.  The things below are the exception.
 	FREE(elem->pmk);
 	FREE(elem->ssid);
+
+	FREE((*data));
 }
 
 /**
@@ -102,7 +107,6 @@ void pmksa_free_cache_entry(pmksa_cache_element *elem)
  **/
 void pmksa_cache_clear(context *ctx)
 {
-	pmksa_cache_element *cur = NULL, *next = NULL;
 	wireless_ctx *wctx = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
@@ -111,19 +115,7 @@ void pmksa_cache_clear(context *ctx)
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
 
-	cur = wctx->pmksa_cache;
-
-	while (cur != NULL)
-	{
-		next = cur->next;
-
-		pmksa_free_cache_entry(cur);
-
-		// Free the base pointer of this entry.
-		FREE(cur);
-
-		cur = next;
-	}
+	liblist_delete_list((genlist **)&wctx->pmksa_cache, pmksa_free_cache_entry);
 
 	wctx->pmksa_cache = NULL;
 }
@@ -420,7 +412,7 @@ void pmksa_delete(context *ctx, pmksa_cache_element *toDelete)
 
 		wctx->pmksa_cache = wctx->pmksa_cache->next;
 
-		pmksa_free_cache_entry(cur);
+		pmksa_free_cache_entry(&cur);
 		FREE(cur);
 	}
 	else
@@ -436,7 +428,7 @@ void pmksa_delete(context *ctx, pmksa_cache_element *toDelete)
 				// Delete this entry.
 				last->next = cur->next;   // Remove the node from the list.
 
-				pmksa_free_cache_entry(cur);  // Free the memory of the removed node.
+				pmksa_free_cache_entry(&cur);  // Free the memory of the removed node.
 				FREE(cur);
 				return;                        // Jump out.
 			}

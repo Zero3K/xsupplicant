@@ -7,8 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: liblist.c,v 1.3 2007/10/22 03:29:06 galimorerpg Exp $
- * $Date: 2007/10/22 03:29:06 $
  **/
 
 #include <stdio.h>
@@ -90,4 +88,29 @@ void liblist_delete_list(genlist **list, node_delete_func delfunc)
 	}
 
 	(*list) = NULL;
+}
+
+/**
+ * \brief Return the number of nodes in the list.
+ *
+ * @param[in] list   A 'genlist' formatted linked list to count the nodes on.
+ *
+ * \retval >=0 the number of nodes in the list.
+ **/
+unsigned int liblist_num_nodes(genlist *list)
+{
+	genlist *cur = NULL;
+	unsigned int count = 0;
+
+	if (list == NULL) return 0;
+
+	cur = list;
+
+	while (cur != NULL)
+	{
+		count++;
+		cur = cur->next;
+	}
+
+	return count;
 }

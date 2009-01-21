@@ -1,10 +1,10 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef __CONFIG_SSID_H__
 #define __CONFIG_SSID_H__
@@ -16,6 +16,8 @@
 #define DOT11_N			BIT(4)		// 802.11n (???Mbps (max) 2.4 or 5.8 Ghz, MIMO)
 
 struct found_ssids {
+  struct found_ssids *next;
+
   char *ssid_name;
   uint16_t abilities;
   uint8_t *wpa_ie;
@@ -29,8 +31,6 @@ struct found_ssids {
   char noise;
   uint8_t strength;
   uint8_t radioTypes;
-
-  struct found_ssids *next;
 };
 
 void config_ssid_clear(wireless_ctx *);

@@ -931,8 +931,6 @@ int XSupWrapper::connectToConnection(const QString &interfaceName, const QString
 	if (interfaceName.isEmpty() == false)
 	{
 		retval = xsupgui_request_set_connection(interfaceName.toAscii().data(), connectionName.toAscii().data());
-		if (retval == IPC_ERROR_NEW_ERRORS_IN_QUEUE)
-			XSupWrapper::getAndDisplayErrors();
 	}
 		
 	return retval;

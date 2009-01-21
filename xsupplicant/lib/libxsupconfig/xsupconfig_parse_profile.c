@@ -26,77 +26,35 @@
 #include "xsupconfig_defaults.h"
 #include "xsupconfig_parse_eap.h"
 #include "xsupconfig_parse_profile_compliance.h"
+#include "liblist/liblist.h"
 
-void *xsupconfig_parse_profile(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_generic(struct config_profiles **profptr)
 {
-	struct config_profiles *cur = NULL;
+	struct config_profiles *newprof = NULL;
 
 #if PARSE_DEBUG
   printf("Parse a profile..\n");
 #endif
 
-	if (conf_profiles == NULL)
-	{
-		if (xsupconfig_defaults_create_profile(&conf_profiles) != 0)
-		{
-			printf("Couldn't allocate memory to store configuration profiles!\n");
-			return NULL;
-		}
+  if (xsupconfig_defaults_create_profile(&newprof) != 0)
+  {
+	printf("Couldn't allocate memory to store configuration profiles!\n");
+	return NULL;
+  }
 
-		cur = conf_profiles;
-	}
-	else
-	{
-		cur = conf_profiles;
+  liblist_add_to_tail((genlist **)profptr, (genlist *)newprof);
 
-		while (cur->next != NULL) cur = cur->next;
+  return newprof;
+}
 
-		if (xsupconfig_defaults_create_profile(&cur->next) != 0)
-		{
-			printf("Couldn't allocate memory to store additional configuration profiles!\n");
-			return NULL;
-		}
-
-		cur = cur->next;
-	}
-
-	return cur;
+void *xsupconfig_parse_profile(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	return xsupconfig_parse_profile_generic(&conf_profiles);
 }
 
 void *xsupconfig_parse_user_profile(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_profiles *cur = NULL;
-
-#if PARSE_DEBUG
-  printf("Parse a profile..\n");
-#endif
-
-	if (conf_user_profiles == NULL)
-	{
-		if (xsupconfig_defaults_create_profile(&conf_user_profiles) != 0)
-		{
-			printf("Couldn't allocate memory to store configuration profiles!\n");
-			return NULL;
-		}
-
-		cur = conf_user_profiles;
-	}
-	else
-	{
-		cur = conf_user_profiles;
-
-		while (cur->next != NULL) cur = cur->next;
-
-		if (xsupconfig_defaults_create_profile(&cur->next) != 0)
-		{
-			printf("Couldn't allocate memory to store additional configuration profiles!\n");
-			return NULL;
-		}
-
-		cur = cur->next;
-	}
-
-	return cur;
+	return xsupconfig_parse_profile_generic(&conf_user_profiles);
 }
 
 void *xsupconfig_parse_profile_name(void **attr, uint8_t config_type, xmlNodePtr node)

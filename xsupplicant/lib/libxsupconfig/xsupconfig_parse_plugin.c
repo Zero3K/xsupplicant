@@ -24,41 +24,25 @@
 #include "xsupconfig_common.h"
 #include "xsupconfig_defaults.h"
 #include "xsupconfig_parse_eap.h"
+#include "liblist/liblist.h"
 
 void *xsupconfig_parse_plugin(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_plugins *cur = NULL;
+	struct config_plugins *newplugin = NULL;
 
 #if PARSE_DEBUG
   printf("Parse a plugin..\n");
 #endif
 
-	if (conf_plugins == NULL)
+    if (xsupconfig_defaults_create_plugin(&newplugin) != 0)
 	{
-		if (xsupconfig_defaults_create_plugin(&conf_plugins) != 0)
-		{
-			printf("Couldn't allocate memory to store configuration plugins!\n");
-			return NULL;
-		}
-
-		cur = conf_plugins;
-	}
-	else
-	{
-		cur = conf_plugins;
-
-		while (cur->next != NULL) cur = cur->next;
-
-		if (xsupconfig_defaults_create_plugin(&cur->next) != 0)
-		{
-			printf("Couldn't allocate memory to store additional configuration plugins!\n");
-			return NULL;
-		}
-
-		cur = cur->next;
+		printf("Couldn't allocate memory to store configuration plugins!\n");
+		return NULL;
 	}
 
-	return cur;
+	liblist_add_to_tail((genlist **)&conf_plugins, (genlist *)newplugin);
+
+	return newplugin;
 }
 
 

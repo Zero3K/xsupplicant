@@ -41,6 +41,7 @@
 #include "xsupconfig_defaults.h"
 #include "xsupconfig.h"
 #include "src/xsup_err.h"
+#include "liblist/liblist.h"
 
 #define MAX_EAPOL_VER		2
 
@@ -64,6 +65,32 @@ multichoice assoc_choices[] = {
   { 2, "leap"},
   { 2, "LEAP"}};
 
+
+/**
+ * \brief Create a new connection node when the parser reaches a <Connection>
+ *		block in the config file.
+ *
+ * @param[in] conn   A pointer to the head of the list that we want to add this
+ *						node to.
+ *
+ * \retval void*  a pointer to the newly created node.
+ **/
+void *xsupconfig_parse_connection_generic(struct config_connection **conn)
+{
+	struct config_connection *newconn = NULL;
+
+#ifdef PARSE_DEBUG
+  printf("Parsing connection.\n");
+#endif
+
+	if (xsupconfig_defaults_create_connection(&newconn) != XENONE)
+		exit(2);
+
+	liblist_add_to_tail((genlist **)conn, (genlist *)newconn);
+
+	return newconn;
+}
+
 /**
  *  This is called when the parser decides it is time to parse connection
  *  information.  It should start at the top of the list of connections,
@@ -71,36 +98,7 @@ multichoice assoc_choices[] = {
  **/
 void *xsupconfig_parse_connection(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_connection *cur = NULL;
-
-#ifdef PARSE_DEBUG
-  printf("Parsing connection.\n");
-#endif
-
-  if (conf_connections == NULL)
-  {
-	  if (xsupconfig_defaults_create_connection(&conf_connections) != XENONE)
-	  {
-		  exit(2);
-	  }
-
-	  cur = conf_connections;
-  }
-  else
-  {
-	  cur = conf_connections;
-
-	  while (cur->next != NULL) cur = cur->next;
-
-	  if (xsupconfig_defaults_create_connection(&cur->next) != XENONE)
-	  {
-		  exit(2);
-	  }
-
-	  cur = cur->next;
-  }
-
-  return cur;
+	return xsupconfig_parse_connection_generic(&conf_connections);
 }
 
 /**
@@ -110,36 +108,7 @@ void *xsupconfig_parse_connection(void **attr, uint8_t config_type, xmlNodePtr n
  **/
 void *xsupconfig_parse_user_connection(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-	struct config_connection *cur = NULL;
-
-#ifdef PARSE_DEBUG
-  printf("Parsing connection.\n");
-#endif
-
-  if (conf_user_connections == NULL)
-  {
-	  if (xsupconfig_defaults_create_connection(&conf_user_connections) != XENONE)
-	  {
-		  exit(2);
-	  }
-
-	  cur = conf_user_connections;
-  }
-  else
-  {
-	  cur = conf_user_connections;
-
-	  while (cur->next != NULL) cur = cur->next;
-
-	  if (xsupconfig_defaults_create_connection(&cur->next) != XENONE)
-	  {
-		  exit(2);
-	  }
-
-	  cur = cur->next;
-  }
-
-  return cur;
+	return xsupconfig_parse_connection_generic(&conf_user_connections);
 }
 
 void *xsupconfig_parse_connection_priority(void **attr, uint8_t config_type, xmlNodePtr node)

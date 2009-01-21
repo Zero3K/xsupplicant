@@ -515,11 +515,7 @@ void eapol_key_type254_do_type1(context *ctx)
   memset(&ctx->sendframe[OFFSET_TO_EAPOL+4], 0x00,
 	 sizeof(struct wpa_key_packet));
 
-  // XXX Need to do this better.  Tie it in with Nonce code from SIM/AKA.
-  for (i=0;i<32;i++)
-    {
-      outkeydata->key_nonce[i] = rand();
-    }
+  RAND_bytes((uint8_t *)&outkeydata->key_nonce[0], 32);
 
   ctx->statemachine->SNonce = (uint8_t *)malloc(32);
   if (ctx->statemachine->SNonce == NULL)

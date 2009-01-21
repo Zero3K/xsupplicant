@@ -340,6 +340,7 @@ SectionIn 1 2 RO
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageIPOptions.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageMachineAuthDone.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageNetworkType.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageSelectAuthOptions.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageSelectNetworkTypes.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageSIMReader.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageStaticIP.ui"
@@ -657,6 +658,7 @@ remove_program_files:
 	Delete $INSTDIR\Skins\Default\wizardPageIPOptions.ui
 	Delete $INSTDIR\Skins\Default\wizardPageMachineAuthDone.ui
 	Delete $INSTDIR\Skins\Default\wizardPageNetworkType.ui
+	Delete $INSTDIR\Skins\Default\wizardPageSelectAuthOptions.ui"
 	Delete $INSTDIR\Skins\Default\wizardPageSelectNetworkTypes.ui
         Delete $INSTDIR\Skins\Default\wizardPageSIMReader.ui
 	Delete $INSTDIR\Skins\Default\wizardPageStaticIP.ui

@@ -698,12 +698,11 @@ void event_core_recv_frame(context *ctx, ULONG size)
 	cardif_setup_recv(ctx);
 }
 
-/***********************************************************************
+/**
+ * \brief Process any events that we may have received.  This includes processing
+ *		frames that may have come in.
  *
- * Process any events that we may have received.  This includes processing
- * frames that may have come in.
- *
- ***********************************************************************/
+ **/
 void event_core()
 {
   HANDLE *handles = NULL;

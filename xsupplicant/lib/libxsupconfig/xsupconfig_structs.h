@@ -235,9 +235,10 @@ struct config_eap_aka
 /* A generic wrapper struct for above */
 struct config_eap_method
 {
+  struct config_eap_method *next;
+
   int method_num;
   void *method_data; // one of the structs above
-  struct config_eap_method *next;
 };
 
 // flags relevant to config_connection
@@ -290,6 +291,8 @@ struct config_association
 
 struct config_connection
 {
+  struct config_connection *next;
+
   char *name;
   uint8_t flags;
   uint8_t priority;
@@ -299,7 +302,6 @@ struct config_connection
   struct config_ip_data ip;                        ///< The IP address settings to use on this connection.
   uint8_t  dest_mac[CONFIG_MAC_LEN];
   uint8_t force_eapol_ver; 
-  struct config_connection *next;
 };
 
   // the following indicate the values below are set and should be used
@@ -354,6 +356,8 @@ struct config_globals
 #define CONFIG_VOLATILE_PROFILE   BIT(0)
 
 struct config_profiles {
+		struct config_profiles *next;
+
 		char *name;
 		char *identity;
 		uint8_t flags;
@@ -363,22 +367,20 @@ struct config_profiles {
 		char *temp_password;                   ///< A user provided password.  This value should *NEVER* be sent to a UI!
 
 		struct config_eap_method *method;
-
-		struct config_profiles *next;
 };
 
 #define CONFIG_VOLATILE_SERVER   BIT(0)
 #define CONFIG_EXACT_COMMON_NAME BIT(1)
 
 struct config_trusted_server {
+	struct config_trusted_server *next;
+
 	char *name;
 	char *store_type;
 	uint16_t num_locations;
 	char **location;
 	char *common_name;
 	uint8_t flags;
-
-	struct config_trusted_server *next;
 };
 
 struct config_trusted_servers {
@@ -389,13 +391,13 @@ struct config_trusted_servers {
 #define CONFIG_INTERFACE_DONT_MANAGE  BIT(1)    ///< Don't manage this interface.
 
 struct xsup_interfaces {
+	struct xsup_interfaces *next;
+
 	char *description;
 	uint8_t mac[6];
 	char *driver_type;
 	char *default_connection;
 	uint8_t flags;
-
-	struct xsup_interfaces *next;
 };
 
 /**
@@ -408,6 +410,7 @@ struct xsup_devices {
 
 struct config_plugins {
   struct config_plugins *next;
+
   char *name;
   char *path;
   uint8_t enabled;					// True if it is enabled, false if not.

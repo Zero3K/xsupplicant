@@ -602,10 +602,7 @@ uint8_t *eappsk_create_packet1(eap_type_data *eapdata)
 
 	pskdata = (eappsk_data *)eapdata->eap_data;
 
-	for (i = 0; i < 16; i++)
-	{
-		pskdata->rand_p[i] = (char)((float)(rand() % 0xff));
-	}
+    RAND_bytes((uint8_t *)&pskdata->rand_p[0], 16);
 
 	// flags + rand_s + rand_p + mac_p + strlen(username)
 	size = sizeof(struct eap_header) + 1 + 16 + 16 + 16 + strlen(eapdata->ident);
