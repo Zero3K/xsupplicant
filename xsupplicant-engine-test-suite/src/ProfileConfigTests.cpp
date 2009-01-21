@@ -2153,7 +2153,7 @@ struct config_eap_method *ProfileConfigTests::createEAPFASTTest()
 	fastdata->phase2 = NULL;
 	fastdata->flags = 0xff;
 	fastdata->trusted_server = _strdup("my trusted server string");
-	fastdata->validate_cert = FALSE;
+	UNSET_FLAG(fastdata->flags, EAP_FAST_VALIDATE_SERVER_CERT);
 
 	return eapdata;
 }
@@ -2218,7 +2218,7 @@ bool ProfileConfigTests::checkEAPFASTTest(struct config_eap_method *eapfast)
 		return false;
 	}
 
-	if (fastdata->validate_cert != FALSE)
+	if (!TEST_FLAG(fastdata->flags, EAP_FAST_VALIDATE_SERVER_CERT))
 	{
 		innerError("Validate cert setting didn't match!\n");
 		return false;
@@ -2367,8 +2367,8 @@ struct config_eap_method *ProfileConfigTests::createEAPPEAPTest()
 	peapdata->user_key_pass = _strdup("my user key password");
 	peapdata->force_peap_version = 2;
 	peapdata->identity = _strdup("my inner id");
-	peapdata->validate_cert = FALSE;
 	peapdata->flags = 0xffff;							// If we make this larger, we need to update.
+	UNSET_FLAG(peapdata->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
 
 	return eapdata;
 }
@@ -2489,7 +2489,7 @@ bool ProfileConfigTests::checkEAPPEAPTest(struct config_eap_method *eappeap)
 		return false;
 	}
 
-	if (peapdata->validate_cert != FALSE)
+	if (TEST_FLAG(peapdata->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT))
 	{
 		innerError("Validate cert wasn't FALSE!\n");
 		return false;

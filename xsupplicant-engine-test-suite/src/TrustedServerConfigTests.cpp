@@ -76,8 +76,6 @@ bool TrustedServerConfigTests::executeTest()
 
 //	runInnerTest("1 checkUserSwitchToVolatile()", checkUserSwitchToVolatile());
 
-	runInnerTest("1 checkExactCommonNameRange()", checkExactCommonNameRange());
-
 	runInnerTest("1 checkFlagsRange()", checkFlagsRange());
 
 	runInnerTest("1 checkTSEnum()", checkTSEnum());
@@ -128,8 +126,8 @@ bool TrustedServerConfigTests::createSystemTrustedServerConfig()
 
 	ts = createFullTrustedServerConfig(SYSTEM_CONF_NAME, "WINDOWS", "000102030405060708");
 	ts->common_name = _strdup("Some common name");
-	ts->exact_common_name = TRUE;
 	ts->flags = 0;
+	SET_FLAG(ts->flags, CONFIG_EXACT_COMMON_NAME);
 
 	if ((result = xsupgui_request_set_trusted_server_config(CONFIG_LOAD_GLOBAL, ts)) != REQUEST_SUCCESS)
 	{
@@ -187,7 +185,7 @@ bool TrustedServerConfigTests::checkSystemTrustedServerConfig()
 		return false;
 	}
 
-	if (ts->exact_common_name != TRUE)
+	if (!TEST_FLAG(ts->flags, CONFIG_EXACT_COMMON_NAME))
 	{
 		innerError("Valid for exact_common_name changed!\n");
 		return false;
@@ -209,8 +207,8 @@ bool TrustedServerConfigTests::createUserTrustedServerConfig()
 
 	ts = createFullTrustedServerConfig(USER_CONF_NAME, "WINDOWS", "000102030405060708");
 	ts->common_name = _strdup("Some common name");
-	ts->exact_common_name = TRUE;
 	ts->flags = 0;
+	SET_FLAG(ts->flags, CONFIG_EXACT_COMMON_NAME);
 
 	if ((result = xsupgui_request_set_trusted_server_config(CONFIG_LOAD_USER, ts)) != REQUEST_SUCCESS)
 	{
@@ -268,7 +266,7 @@ bool TrustedServerConfigTests::checkUserTrustedServerConfig()
 		return false;
 	}
 
-	if (ts->exact_common_name != TRUE)
+	if (!TEST_FLAG(ts->flags, CONFIG_EXACT_COMMON_NAME))
 	{
 		innerError("Valid for exact_common_name changed!\n");
 		return false;
@@ -293,8 +291,8 @@ bool TrustedServerConfigTests::createVolatileSystemTrustedServerConfig()
 
 	ts = createFullTrustedServerConfig(SYSTEM_VOLATILE_CONF_NAME, "WINDOWS", "000102030405060708");
 	ts->common_name = _strdup("Some common name");
-	ts->exact_common_name = TRUE;
 	ts->flags = 0;
+	SET_FLAG(ts->flags, CONFIG_EXACT_COMMON_NAME);
 	SET_FLAG(ts->flags, CONFIG_VOLATILE_SERVER);
 
 	if ((result = xsupgui_request_set_trusted_server_config(CONFIG_LOAD_GLOBAL, ts)) != REQUEST_SUCCESS)
@@ -319,8 +317,8 @@ bool TrustedServerConfigTests::createVolatileUserTrustedServerConfig()
 
 	ts = createFullTrustedServerConfig(USER_VOLATILE_CONF_NAME, "WINDOWS", "000102030405060708");
 	ts->common_name = _strdup("Some common name");
-	ts->exact_common_name = TRUE;
 	ts->flags = 0;
+	SET_FLAG(ts->flags, CONFIG_EXACT_COMMON_NAME);
 	SET_FLAG(ts->flags, CONFIG_VOLATILE_SERVER);
 
 	if ((result = xsupgui_request_set_trusted_server_config(CONFIG_LOAD_USER, ts)) != REQUEST_SUCCESS)
@@ -393,9 +391,9 @@ bool TrustedServerConfigTests::checkVolatileSystemTrustedServerConfig(bool expec
 		return false;
 	}
 
-	if (ts->exact_common_name != TRUE)
+	if (!TEST_FLAG(ts->flags, CONFIG_EXACT_COMMON_NAME))
 	{
-		innerError("Valid for exact_common_name changed!\n");
+		innerError("Value for exact_common_name changed!\n");
 		return false;
 	}
 
@@ -463,7 +461,7 @@ bool TrustedServerConfigTests::checkVolatileUserTrustedServerConfig(bool expecte
 		return false;
 	}
 
-	if (ts->exact_common_name != TRUE)
+	if (!TEST_FLAG(ts->flags, CONFIG_EXACT_COMMON_NAME))
 	{
 		innerError("Valid for exact_common_name changed!\n");
 		return false;
@@ -558,67 +556,6 @@ bool TrustedServerConfigTests::checkUserSwitchToVolatile()
 	{
 		innerError("Engine allowed us to switch a static config to volatile.\n");
 		return false;
-	}
-
-	return true;
-}
-
-bool TrustedServerConfigTests::checkExactCommonNameRange()
-{
-	struct config_trusted_server *ts = NULL;
-	int result = 0;
-	uint8_t value = 0;
-
-	if ((result = xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, SYSTEM_CONF_NAME, &ts)) != REQUEST_SUCCESS)
-	{
-		innerError("Unable to read system trusted server configuration from the engine.  (Error : " + Util::itos(result) + ")\n");
-		return false;
-	}
-
-	if (ts == NULL)
-	{
-		innerError("System level trusted server configuration claimed to have been read back, but it was NULL!\n");
-		return false;
-	}
-
-	for (value = 0; value < 0xff; value++)
-	{
-		ts->exact_common_name = value;
-
-		if (result = xsupgui_request_set_trusted_server_config(CONFIG_LOAD_GLOBAL, ts) != REQUEST_SUCCESS)
-		{
-			innerError("Unable to update the system configuration.  (Value : " + Util::itos(value) + ")\n");
-			return false;
-		}
-
-		if (xsupgui_request_free_trusted_server_config(&ts) != 0)
-		{
-			innerError("Unable to free the trusted server configuration in memory!\n");
-			return false;
-		}
-
-		if ((result = xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, SYSTEM_CONF_NAME, &ts)) != REQUEST_SUCCESS)
-		{
-			innerError("Unable to read system trusted server configuration from the engine.  (Error : " + Util::itos(result) + ")\n");
-			return false;
-		}
-
-		if (value == 1)
-		{
-			if (ts->exact_common_name != 1)
-			{
-				innerError("Configuration didn't save a value of TRUE like we expected!\n");
-				return false;
-			}
-		}
-		else
-		{
-			if (ts->exact_common_name != 0)
-			{
-				innerError("Value wasn't 0 as expected!  (Value : " + Util::itos(value) + "  Common Name Value : " + Util::itos(ts->exact_common_name) + ")\n");
-				return false;
-			}
-		}
 	}
 
 	return true;

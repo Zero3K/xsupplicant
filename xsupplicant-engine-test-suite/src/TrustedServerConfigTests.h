@@ -40,7 +40,6 @@ protected:
 	bool checkRenameToVolatile();
 	bool checkSystemSwitchToVolatile();
 	bool checkUserSwitchToVolatile();
-	bool checkExactCommonNameRange();
 	bool checkFlagsRange();
 	bool checkTSEnum();
 	bool checkBadDelete();
