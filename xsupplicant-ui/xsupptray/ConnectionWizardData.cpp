@@ -1105,6 +1105,11 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 						m_validateCert = true;
 					else
 						m_validateCert = false;			
+
+					if (TEST_FLAG(pTTLSData->flags, TTLS_FLAGS_USE_LOGON_CREDS))
+						m_useLogonCreds = true;
+					else
+						m_useLogonCreds = false;
 				}
 				
 			}
@@ -1128,6 +1133,11 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 						m_validateCert = true;
 					else
 						m_validateCert = false;			
+
+					if (TEST_FLAG(pPEAPData->flags, FLAGS_PEAP_USE_LOGON_CREDS))
+						m_useLogonCreds = true;
+					else
+						m_useLogonCreds = false;
 				}				
 			}
 			else if (pEAPMethod->method_num == EAP_TYPE_TLS)
@@ -1162,22 +1172,19 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 						m_validateCert = false;			
 
 					if (TEST_FLAG(pFASTData->flags, EAP_FAST_PROVISION_ANONYMOUS))
-					{
 						m_anonymousProvisioning = true;
-					}
 					else
-					{
 						m_anonymousProvisioning = false;
-					}
 
 					if (TEST_FLAG(pFASTData->flags, EAP_FAST_PROVISION_AUTHENTICATED))
-					{
 						m_authenticatedProvisioning = true;
-					}
 					else
-					{
 						m_authenticatedProvisioning = false;
-					}
+
+					if (TEST_FLAG(pFASTData->flags, EAP_FAST_USE_LOGON_CREDS))
+						m_useLogonCreds = true;
+					else
+						m_useLogonCreds = false;
 				}				
 			}
 
