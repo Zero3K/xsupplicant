@@ -2005,8 +2005,11 @@ const ConnectionWizardData &WizardPageDot1XUserCert::wizardData()
 {
 	QTableWidgetItem *item = NULL;
 
-	item = m_pCertTable->selectedItems().at(0);	// There should only be one selected.
-	m_curData.m_userCert = QString(m_pCertArray[item->type() - 1000].location);
+	if (m_pCertTable->rowCount() > 0)
+	{
+		item = m_pCertTable->selectedItems().at(0);	// There should only be one selected.
+		m_curData.m_userCert = QString(m_pCertArray[item->type() - 1000].location);
+	}
 
 	return m_curData;
 }
