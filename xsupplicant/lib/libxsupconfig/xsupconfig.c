@@ -559,9 +559,10 @@ struct config_connection *config_find_connection(uint8_t conf_type, char *matchn
  * \retval XENONE on success
  * \retval XEMALLOC on failure
  **/
-int delete_config_single_profile(struct config_profiles **prof)
+int delete_config_single_profile(void **inptr)
 {
   struct config_profiles *cur = NULL;
+  struct config_profiles **prof = inptr;
 
   if (prof == NULL) return XEMALLOC;
 
@@ -2124,8 +2125,10 @@ void dump_config_eap_method(struct config_eap_method *method, int dumplevel)
  * @param[in] tmp_conn   A double dereferenced pointer to the location
  *                       in memory where the connection data is stored.
  **/
-void delete_config_single_connection(struct config_connection **tmp_conn)
+void delete_config_single_connection(void **inptr)
 {
+  struct config_connection **tmp_conn = inptr;
+
   if (*tmp_conn == NULL)
     return;
 
@@ -2180,8 +2183,10 @@ void initialize_config_connections(struct config_connection **tmp_conn)
  * @param[in] intdata   A double dereferenced pointer to the structure that we
  *                      need to free.
  **/
-void delete_config_interface(struct xsup_interfaces **intdata)
+void delete_config_interface(void **inptr)
 {
+	struct xsup_interfaces **intdata = inptr;
+
 	FREE((*intdata)->description);
 	FREE((*intdata)->driver_type);
 
@@ -2212,9 +2217,10 @@ void delete_config_devices(struct xsup_devices **head)
  * @param[in] tmp_server   A double dereferenced pointer to the location
  *                         in memory where the trusted server data is stored.
  **/
-void delete_config_trusted_server(struct config_trusted_server **tmp_server)
+void delete_config_trusted_server(void **inptr)
 {
 	int i = 0;
+	struct config_trusted_server **tmp_server = inptr;
 
   if (((*tmp_server) == NULL) || (tmp_server == NULL))
     return;

@@ -150,11 +150,12 @@ void interfaces_dump_cache()
  *
  * @param[in] todel   The node that we want to delete the contents of.
  **/
-void interfaces_delete_node(struct interfaces **todel)
+void interfaces_delete_node(void **inptr)
 {
-	FREE((*todel)->desc);
-	FREE((*todel)->intname);
-	FREE((*todel));
+	struct interfaces *todel = (*inptr);
+	FREE(todel->desc);
+	FREE(todel->intname);
+	FREE((*inptr));
 }
 
 /**
