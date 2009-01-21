@@ -7681,10 +7681,16 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	debug_printf(DEBUG_IPC, "Getting number of available certificates.\n");
+	if (win_impersonate_desktop_user() != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to impersonate the desktop user.  Will attempt to continue anyway, but no certificates may be listed.\n");
+	}
+
 	numcas = cert_handler_num_user_certs();
 	if (numcas < 0)
 	{
 		xmlFreeNode(n);
+		win_impersonate_back_to_self();
 		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CERT_STORE_ERROR, outnode);
 	}
 
@@ -7692,8 +7698,11 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr *outnode)
 	if (cert_handler_enum_user_certs(&numcas, &casa) < 0)
 	{
 		xmlFreeNode(n);
+		win_impersonate_back_to_self();
 		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CERT_STORE_ERROR, outnode);
 	}
+
+	win_impersonate_back_to_self();
 
 	if (casa == NULL)
 	{

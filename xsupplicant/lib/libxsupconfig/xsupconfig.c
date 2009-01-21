@@ -562,7 +562,7 @@ struct config_connection *config_find_connection(uint8_t conf_type, char *matchn
 int delete_config_single_profile(void **inptr)
 {
   struct config_profiles *cur = NULL;
-  struct config_profiles **prof = inptr;
+  struct config_profiles **prof = (struct config_profiles **)inptr;
 
   if (prof == NULL) return XEMALLOC;
 
@@ -2127,7 +2127,7 @@ void dump_config_eap_method(struct config_eap_method *method, int dumplevel)
  **/
 void delete_config_single_connection(void **inptr)
 {
-  struct config_connection **tmp_conn = inptr;
+  struct config_connection **tmp_conn = (struct config_connection **)inptr;
 
   if (*tmp_conn == NULL)
     return;
@@ -2185,7 +2185,7 @@ void initialize_config_connections(struct config_connection **tmp_conn)
  **/
 void delete_config_interface(void **inptr)
 {
-	struct xsup_interfaces **intdata = inptr;
+	struct xsup_interfaces **intdata = (struct xsup_interfaces **)inptr;
 
 	FREE((*intdata)->description);
 	FREE((*intdata)->driver_type);
@@ -2220,7 +2220,7 @@ void delete_config_devices(struct xsup_devices **head)
 void delete_config_trusted_server(void **inptr)
 {
 	int i = 0;
-	struct config_trusted_server **tmp_server = inptr;
+	struct config_trusted_server **tmp_server = (struct config_trusted_server **)inptr;
 
   if (((*tmp_server) == NULL) || (tmp_server == NULL))
     return;

@@ -185,7 +185,7 @@ void delete_config_eap_method(struct config_eap_method **);
 void dump_config_eap_method(struct config_eap_method *, int);
 
 void initialize_config_connections(struct config_connection **);
-void delete_config_single_connection(struct config_connection **);
+void delete_config_single_connection(void **);
 void delete_config_connections(struct config_connection **);
 void dump_config_connections(struct config_connection *);
 
@@ -199,8 +199,8 @@ void delete_config_data();
 void dump_config_data();
 
 int config_change_pwd(struct config_eap_method *, char *);
-void delete_config_trusted_server(struct config_trusted_server **);
-void delete_config_interface(struct xsup_interfaces **);
+void delete_config_trusted_server(void **);
+void delete_config_interface(void **);
 
 
 #endif
