@@ -1859,8 +1859,11 @@ struct config_eap_method *ProfileConfigTests::createEAPTLSTest()
 	tlsdata->user_cert = _strdup("my_user_cert_path");
 	tlsdata->user_key = _strdup("my_user_key_path");
 	tlsdata->user_key_pass = _strdup("my user key password");
+	tlsdata->sc.engine_id = NULL;
+	tlsdata->sc.key_id = NULL;
+	tlsdata->sc.opensc_so_path = NULL;
 	
-	// The tlsdata->sc struct isn't tested right now.
+	// The tlsdata->sc struct isn't tested right now, but we need to populate it anyway.
 
 	return eapdata;
 }

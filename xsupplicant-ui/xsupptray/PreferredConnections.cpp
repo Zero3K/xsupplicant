@@ -466,7 +466,7 @@ void PreferredConnections::updateLists()
 			
 			success = XSupWrapper::getConfigConnection(m_pConns[i].config_type, QString(m_pConns[i].name), &pConn);
 			
-			if (success == true && pConn != NULL && (pConn->flags & CONFIG_VOLATILE_CONN) == CONFIG_VOLATILE_CONN)
+			if (success == true && pConn != NULL && ((pConn->flags & CONFIG_VOLATILE_CONN) == CONFIG_VOLATILE_CONN))
 				volatileConn = true;
 				
 			if (pConn != NULL)

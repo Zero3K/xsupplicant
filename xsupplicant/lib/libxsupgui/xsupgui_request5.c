@@ -389,15 +389,15 @@ int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_en
 	n = n->children;
 	for (i=0; i <numsvrs; i++)
 	{
-		t = xsupgui_request_find_node(n, "Server");
-		if (t == NULL)
+		n = xsupgui_request_find_node(n, "Server");
+		if (n == NULL)
 		{
 			if (svrs != NULL) free(svrs);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_trusted_servers;
 		}
 
-		x = xsupgui_request_find_node(t->children, "Server_Name");
+		x = xsupgui_request_find_node(n->children, "Server_Name");
 		if (x == NULL) 
 		{
 			if (svrs != NULL) free(svrs);
@@ -407,7 +407,7 @@ int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_en
 
 		svrs[i].name = (char *)xmlNodeGetContent(x);
 
-		x = xsupgui_request_find_node(t->children, "Config_Type");
+		x = xsupgui_request_find_node(n->children, "Config_Type");
 		if (x == NULL)
 		{
 			if (svrs != NULL) free(svrs);
