@@ -61,6 +61,7 @@ ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e,
 	m_pPrefDlg = NULL;
 	m_pConnWizard = NULL;
 	m_pMachineAuth = NULL;
+	m_pViewLogDialog = NULL;
 }
 
 ConnectMgrDlg::~ConnectMgrDlg()
@@ -96,6 +97,86 @@ ConnectMgrDlg::~ConnectMgrDlg()
 		
 	if (m_pWiredConnections != NULL)
 		Util::myDisconnect(m_pWiredConnections, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setWiredAutoConnection(const QString &)));						
+		
+	if (m_pEnableLogging != NULL)
+		Util::myDisconnect(m_pEnableLogging, SIGNAL(stateChanged(int)), this, SLOT(updateCheckboxes()));
+
+	if (m_pLogPath != NULL)
+		Util::myDisconnect(m_pLogPath, SIGNAL(textChanged(const QString &)), this, SLOT(enableSaveBtns()));
+
+	if (m_pBrowse != NULL)
+		Util::myDisconnect(m_pBrowse, SIGNAL(clicked()), this, SLOT(browseLogs()));
+
+	if (m_pLogLevel != NULL)
+		Util::myDisconnect(m_pLogLevel, SIGNAL(indexChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pViewLog != NULL)
+		Util::myDisconnect(m_pViewLog, SIGNAL(clicked()), this, SLOT(viewLog()));
+
+	if (m_pLogsToKeep != NULL)
+		Util::myDisconnect(m_pLogsToKeep, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pRollBySize != NULL)
+		Util::myDisconnect(m_pRollBySize, SIGNAL(stateChanged(int)), this, SLOT(updateCheckboxes()));
+
+	if (m_pSizeToRoll != NULL)
+		Util::myDisconnect(m_pSizeToRoll, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pLoggingSave != NULL)
+		Util::myDisconnect(m_pLoggingSave, SIGNAL(clicked()), this, SLOT(configUpdate()));
+
+	// advanced settings tab objects
+	if (m_pCheckSupplicants != NULL)
+		Util::myDisconnect(m_pCheckSupplicants, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pDisconnectAtLogoff != NULL)
+		Util::myDisconnect(m_pDisconnectAtLogoff, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pAllowMachineAuthContinue != NULL)
+		Util::myDisconnect(m_pAllowMachineAuthContinue, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pScanTimeout != NULL)
+		Util::myDisconnect(m_pScanTimeout, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pAssocTimeout != NULL)
+		Util::myDisconnect(m_pAssocTimeout, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pPassiveInterval != NULL)
+		Util::myDisconnect(m_pPassiveInterval, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pPMKSACacheRefresh != NULL)
+		Util::myDisconnect(m_pPMKSACacheRefresh, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pPMKSACacheTimeout != NULL)
+		Util::myDisconnect(m_pPMKSACacheTimeout, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pSettingsReset != NULL)
+		Util::myDisconnect(m_pSettingsReset, SIGNAL(clicked()), this, SLOT(resetAdvSettings()));
+
+	if (m_pAdvSettingsSave != NULL)
+		Util::myDisconnect(m_pAdvSettingsSave, SIGNAL(clicked()), this, SLOT(configUpdate()));
+
+	// advanced timers
+	if (m_pAuthPeriod != NULL)
+		Util::myDisconnect(m_pAuthPeriod, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pHeldPeriod != NULL)
+		Util::myDisconnect(m_pHeldPeriod, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pIdlePeriod != NULL)
+		Util::myDisconnect(m_pIdlePeriod, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pStaleKey != NULL)
+		Util::myDisconnect(m_pStaleKey, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pMaxStarts != NULL)
+		Util::myDisconnect(m_pMaxStarts, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pTimersReset != NULL)
+		Util::myDisconnect(m_pTimersReset, SIGNAL(clicked()), this, SLOT(resetAdvTimers()));
+
+	if (m_pAdvTimersSave != NULL)
+		Util::myDisconnect(m_pAdvTimersSave, SIGNAL(clicked()), this, SLOT(configUpdate()));
 
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(updateConnectionLists()));
 
@@ -140,7 +221,38 @@ bool ConnectMgrDlg::initUI(void)
 	m_pEditConnButton = qFindChild<QPushButton*>(m_pRealForm, "buttonEditConnection");
 	m_pNewConnButton = qFindChild<QPushButton*>(m_pRealForm,"buttonNewConnection");
 	m_pConnectionsTable = qFindChild<QTableWidget*>(m_pRealForm, "dataTableConnectionProfiles");
-			
+
+	m_pEnableLogging = qFindChild<QCheckBox*>(m_pRealForm, "enableLogging");
+	m_pLogPath = qFindChild<QLineEdit*>(m_pRealForm, "logDirectory");
+	m_pBrowse = qFindChild<QPushButton*>(m_pRealForm, "browseButton");
+	m_pLogLevel = qFindChild<QComboBox*>(m_pRealForm, "logLevel");
+	m_pViewLog = qFindChild<QPushButton*>(m_pRealForm, "viewLogButton");
+	m_pLogsToKeep = qFindChild<QSpinBox*>(m_pRealForm, "numLogsToKeep");
+	m_pRollBySize = qFindChild<QCheckBox*>(m_pRealForm, "rollBySizeBox");
+	m_pSizeToRoll = qFindChild<QSpinBox*>(m_pRealForm, "sizeToRollBox");
+	m_pLoggingSave = qFindChild<QPushButton*>(m_pRealForm, "loggingSave");
+
+	// advanced settings tab objects
+	m_pCheckSupplicants = qFindChild<QCheckBox*>(m_pRealForm, "runOtherSuppCheck");
+	m_pDisconnectAtLogoff = qFindChild<QCheckBox*>(m_pRealForm, "disconnectOnLogoff");
+	m_pAllowMachineAuthContinue = qFindChild<QCheckBox*>(m_pRealForm, "allowMachineAuthRemain");
+	m_pScanTimeout = qFindChild<QSpinBox*>(m_pRealForm, "scanTimeout");
+	m_pAssocTimeout = qFindChild<QSpinBox*>(m_pRealForm, "assocTimeout");
+	m_pPassiveInterval = qFindChild<QSpinBox*>(m_pRealForm, "passiveScanInterval");
+	m_pPMKSACacheRefresh = qFindChild<QSpinBox*>(m_pRealForm, "pmksaRefresh");
+	m_pPMKSACacheTimeout = qFindChild<QSpinBox*>(m_pRealForm, "pmksaTimeout");
+	m_pSettingsReset = qFindChild<QPushButton*>(m_pRealForm, "resetButton");
+	m_pAdvSettingsSave = qFindChild<QPushButton*>(m_pRealForm, "advSaveBtn");
+
+	// advanced timers
+	m_pAuthPeriod = qFindChild<QSpinBox*>(m_pRealForm, "authPeriodBox");
+	m_pHeldPeriod = qFindChild<QSpinBox*>(m_pRealForm, "heldPeriodBox");
+	m_pIdlePeriod = qFindChild<QSpinBox*>(m_pRealForm, "idlePeriodBox");
+	m_pStaleKey = qFindChild<QSpinBox*>(m_pRealForm, "staleWepTimeout");
+	m_pMaxStarts = qFindChild<QSpinBox*>(m_pRealForm, "maxStartsBox");
+	m_pTimersReset = qFindChild<QPushButton*>(m_pRealForm, "resetBtn");
+	m_pAdvTimersSave = qFindChild<QPushButton*>(m_pRealForm, "advTimerSave");
+
 	// populate strings
 	if (m_pAdvancedButton != NULL)
 		m_pAdvancedButton->setText(tr("Show Advanced Configuration"));
@@ -201,6 +313,9 @@ bool ConnectMgrDlg::initUI(void)
 	if (pConnectionsHeader != NULL)
 		pConnectionsHeader->setText(tr("Connection Profiles"));
 		
+	// populate settings before activating events so that we don't generate a bunch of extra
+	// IPC chatter.
+	populateSettingsTabs();
 	
 	// set up event-handling
 	if (m_pAdvancedButton != NULL)
@@ -235,6 +350,86 @@ bool ConnectMgrDlg::initUI(void)
 	if (m_pWiredConnections != NULL)
 		Util::myConnect(m_pWiredConnections, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setWiredAutoConnection(const QString &)));			
 		
+	if (m_pEnableLogging != NULL)
+		Util::myConnect(m_pEnableLogging, SIGNAL(stateChanged(int)), this, SLOT(updateCheckboxes()));
+
+	if (m_pLogPath != NULL)
+		Util::myConnect(m_pLogPath, SIGNAL(textChanged(const QString &)), this, SLOT(enableSaveBtns()));
+
+	if (m_pBrowse != NULL)
+		Util::myConnect(m_pBrowse, SIGNAL(clicked()), this, SLOT(browseLogs()));
+
+	if (m_pLogLevel != NULL)
+		Util::myConnect(m_pLogLevel, SIGNAL(currentIndexChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pViewLog != NULL)
+		Util::myConnect(m_pViewLog, SIGNAL(clicked()), this, SLOT(viewLog()));
+
+	if (m_pLogsToKeep != NULL)
+		Util::myConnect(m_pLogsToKeep, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pRollBySize != NULL)
+		Util::myConnect(m_pRollBySize, SIGNAL(stateChanged(int)), this, SLOT(updateCheckboxes()));
+
+	if (m_pSizeToRoll != NULL)
+		Util::myConnect(m_pSizeToRoll, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pLoggingSave != NULL)
+		Util::myConnect(m_pLoggingSave, SIGNAL(clicked()), this, SLOT(configUpdate()));
+
+	// advanced settings tab objects
+	if (m_pCheckSupplicants != NULL)
+		Util::myConnect(m_pCheckSupplicants, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pDisconnectAtLogoff != NULL)
+		Util::myConnect(m_pDisconnectAtLogoff, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pAllowMachineAuthContinue != NULL)
+		Util::myConnect(m_pAllowMachineAuthContinue, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pScanTimeout != NULL)
+		Util::myConnect(m_pScanTimeout, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pAssocTimeout != NULL)
+		Util::myConnect(m_pAssocTimeout, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pPassiveInterval != NULL)
+		Util::myConnect(m_pPassiveInterval, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pPMKSACacheRefresh != NULL)
+		Util::myConnect(m_pPMKSACacheRefresh, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pPMKSACacheTimeout != NULL)
+		Util::myConnect(m_pPMKSACacheTimeout, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pSettingsReset != NULL)
+		Util::myConnect(m_pSettingsReset, SIGNAL(clicked()), this, SLOT(resetAdvSettings()));
+
+	if (m_pAdvSettingsSave != NULL)
+		Util::myConnect(m_pAdvSettingsSave, SIGNAL(clicked()), this, SLOT(configUpdate()));
+
+	// advanced timers
+	if (m_pAuthPeriod != NULL)
+		Util::myConnect(m_pAuthPeriod, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pHeldPeriod != NULL)
+		Util::myConnect(m_pHeldPeriod, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pIdlePeriod != NULL)
+		Util::myConnect(m_pIdlePeriod, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pStaleKey != NULL)
+		Util::myConnect(m_pStaleKey, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pMaxStarts != NULL)
+		Util::myConnect(m_pMaxStarts, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pTimersReset != NULL)
+		Util::myConnect(m_pTimersReset, SIGNAL(clicked()), this, SLOT(resetAdvTimers()));
+
+	if (m_pAdvTimersSave != NULL)
+		Util::myConnect(m_pAdvTimersSave, SIGNAL(clicked()), this, SLOT(configUpdate()));
+
 	Util::myConnect(m_pEmitter, SIGNAL(signalConnConfigUpdate()), this, SLOT(updateConnectionLists()));
 	
 	// other initializations
@@ -347,15 +542,6 @@ bool ConnectMgrDlg::buildMenuBar(void)
 						pToolsMenu->addAction(pAction);
 					}
 				}
-			}
-
-			pAction = new QAction(NULL);
-			if (pAction != NULL)
-			{
-				pAction->setText(tr("&Advanced Configuration..."));
-				pAction->setFont(pMenuBar->font());
-				Util::myConnect(pAction, SIGNAL(triggered()), this, SLOT(showAdvancedConfig()));
-				pToolsMenu->addAction(pAction);
 			}
 
 			pMenuBar->addMenu(pToolsMenu);
@@ -620,12 +806,6 @@ void ConnectMgrDlg::hide(void)
 {
 	if (m_pRealForm != NULL)
 		m_pRealForm->hide();
-}
-
-void ConnectMgrDlg::showAdvancedConfig(void)
-{
-	m_pTrayApp->showAdvancedConfig();
-	this->hide();
 }
 
 void ConnectMgrDlg::refreshConnectionList(void)
@@ -1288,4 +1468,429 @@ void ConnectMgrDlg::menuCreateTicket(void)
 void ConnectMgrDlg::menuHelp(void)
 {
 	HelpWindow::showPage("xsupphelp.html", "xsupconnections");
+}
+
+void ConnectMgrDlg::configUpdate()
+{
+	config_globals *globals = NULL;
+
+	tabStateUpdate();
+	setSaveEnabled(false);
+
+	globals = (config_globals *)malloc(sizeof(config_globals));
+	if (globals == NULL)
+	{
+		QMessageBox::critical(this, tr("Error"), tr("Unable to allocate memory needed to store configuration globals."));
+		return;
+	}
+
+	memset(globals, 0x00, sizeof(config_globals));
+	xsupconfig_defaults_set_globals(globals);
+
+	// Save logging tab data
+	if (m_pEnableLogging->checkState() == Qt::Unchecked)
+	{
+		// Clear out the path, and log level.
+		if (globals->logpath != NULL) free(globals->logpath);
+		globals->logpath = NULL;
+
+		globals->loglevel = 0;
+		globals->logtype = LOGGING_NONE;
+	}
+	else
+	{
+		if (globals->logpath != NULL) free(globals->logpath);
+		globals->logpath = NULL;
+
+		globals->logtype = LOGGING_FILE;
+		globals->logpath = _strdup(m_pLogPath->text().toAscii());
+
+		switch (m_pLogLevel->currentIndex())
+		{
+		case LOGGING_NORMAL:
+			globals->loglevel = DEBUG_NORMAL;
+			break;
+
+		case LOGGING_VERBOSE:
+			globals->loglevel = (DEBUG_VERBOSE | DEBUG_NORMAL);
+			break;
+
+		case LOGGING_DEBUG:
+			globals->loglevel = DEBUG_ALL;
+			break;
+
+		default:
+			QMessageBox::critical(this, tr("Form design error"), tr("You have selected a log level setting that is not understood.  Your form design may be incorrect.  Defaulting to NORMAL logging."));
+			globals->loglevel = DEBUG_NORMAL;
+			break;
+		}
+	}
+
+	globals->flags |= CONFIG_GLOBALS_FRIENDLY_WARNINGS;
+
+	if (m_pRollBySize->isChecked())
+	{
+		globals->flags |= CONFIG_GLOBALS_ROLL_LOGS;
+	}
+	else
+	{
+		globals->flags &= (~CONFIG_GLOBALS_ROLL_LOGS);
+	}
+
+	globals->logs_to_keep = m_pLogsToKeep->value();
+
+	globals->size_to_roll = m_pSizeToRoll->value();
+
+	// save Advanced Settings tab data
+	if (m_pAllowMachineAuthContinue != NULL)
+	{
+		if (m_pAllowMachineAuthContinue->isChecked())
+		{
+			globals->flags |= CONFIG_GLOBALS_ALLOW_MA_REMAIN;
+		}
+		else
+		{
+			globals->flags &= (~CONFIG_GLOBALS_ALLOW_MA_REMAIN);
+		}
+	}
+
+	if (m_pAssocTimeout != NULL)
+	{
+		globals->assoc_timeout = atoi(m_pAssocTimeout->text().toAscii());
+	}
+
+	if (m_pScanTimeout != NULL)
+	{
+		globals->active_timeout = atoi(m_pScanTimeout->text().toAscii());
+	}
+
+	if (m_pPassiveInterval != NULL)
+	{
+		globals->passive_timeout = m_pPassiveInterval->value();
+	}
+
+	if (m_pPMKSACacheTimeout != NULL)
+	{
+		globals->pmksa_age_out = m_pPMKSACacheTimeout->value();
+	}
+
+	if (m_pPMKSACacheRefresh != NULL)
+	{
+		globals->pmksa_cache_check = m_pPMKSACacheRefresh->value();
+	}
+
+	if (m_pCheckSupplicants != NULL)
+	{
+		if (m_pCheckSupplicants->isChecked())
+		{
+			globals->flags |= CONFIG_GLOBALS_DETECT_ON_STARTUP;
+		}
+		else
+		{
+			globals->flags &= (~CONFIG_GLOBALS_DETECT_ON_STARTUP);
+		}
+	}
+
+	if (m_pDisconnectAtLogoff != NULL)
+	{
+		if (m_pDisconnectAtLogoff->isChecked())
+		{
+			globals->flags |= CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF;
+		}
+		else
+		{
+			globals->flags &= (~CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF);
+		}
+	}
+
+	// save Advanced Timers settings
+	if (m_pAuthPeriod != NULL)
+	{
+		globals->auth_period = atoi(m_pAuthPeriod->text().toAscii());
+	}
+
+	if (m_pHeldPeriod != NULL)
+	{
+		globals->held_period = atoi(m_pHeldPeriod->text().toAscii());
+	}
+
+	if (m_pIdlePeriod != NULL)
+	{
+		globals->idleWhile_timeout = atoi(m_pIdlePeriod->text().toAscii());
+	}
+
+	if (m_pStaleKey != NULL)
+	{
+		globals->stale_key_timeout = atoi(m_pStaleKey->text().toAscii());
+	}
+
+	if (m_pMaxStarts != NULL)
+	{
+		globals->max_starts = atoi(m_pMaxStarts->text().toAscii());
+	}
+
+	if (xsupgui_request_set_globals_config(globals) != REQUEST_SUCCESS)
+	{
+		QMessageBox::critical(this, tr("Cannot Save"), tr("Unable to save your configuration data."));
+		xsupgui_request_free_config_globals(&globals);
+		return;
+	}
+
+	if (xsupgui_request_write_config(CONFIG_LOAD_GLOBAL, NULL) != REQUEST_SUCCESS)
+	{
+		QMessageBox::critical(this, tr("Cannot Save"), tr("Unable to save your configuration data."));
+		xsupgui_request_free_config_globals(&globals);
+		return;
+	}
+
+	xsupgui_request_free_config_globals(&globals);
+}
+
+void ConnectMgrDlg::updateCheckboxes()
+{
+	tabStateUpdate();
+	setSaveEnabled(true);
+}
+
+void ConnectMgrDlg::tabStateUpdate()
+{
+	if (m_pEnableLogging->isChecked())
+		setLoggingEnabled(true);
+	else
+		setLoggingEnabled(false);
+}
+
+void ConnectMgrDlg::resetAdvTimers()
+{
+	m_pAuthPeriod->setValue(32);
+	m_pHeldPeriod->setValue(60);
+	m_pIdlePeriod->setValue(32);
+	m_pStaleKey->setValue(600);
+	m_pMaxStarts->setValue(3);
+
+	enableSaveBtns();
+}
+
+void ConnectMgrDlg::resetAdvSettings()
+{
+	m_pCheckSupplicants->setChecked(true);
+	m_pDisconnectAtLogoff->setChecked(true);
+	m_pAllowMachineAuthContinue->setChecked(false);
+	m_pScanTimeout->setValue(30);
+	m_pAssocTimeout->setValue(60);
+	m_pPassiveInterval->setValue(30);
+	m_pPMKSACacheRefresh->setValue(10);
+	m_pPMKSACacheTimeout->setValue(300);
+
+	enableSaveBtns();
+}
+
+void ConnectMgrDlg::browseLogs()
+{
+  QString logDir = m_pLogPath->text();
+  QString directory = QFileDialog::getExistingDirectory(m_pRealForm,
+                             tr("Select Logging Folder"), logDir);
+  if (!directory.isEmpty()) 
+  {
+#ifdef WINDOWS
+	  directory.replace("/", "\\");   // Replace the / with a \ on Windows.
+#endif
+    m_pLogPath->setText(directory);
+  }
+}
+
+void ConnectMgrDlg::viewLog()
+{
+  QString temp;
+
+	if (m_pViewLogDialog != NULL)
+	{
+		cleanupuiWindowViewLogs();   // Close out the old one.
+	}
+
+	temp = m_pLogPath->text();
+	m_pViewLogDialog = new uiWindowViewLogs(temp);
+	
+	if ((m_pViewLogDialog == NULL) || (m_pViewLogDialog->attach() == false))
+	{
+		QMessageBox::critical(this, tr("Form Error"), tr("Unable to load the form 'ViewLogWindow.ui'."));
+		delete m_pViewLogDialog;
+		m_pViewLogDialog = NULL;
+
+		return;
+	}
+
+	m_pViewLogDialog->show();
+
+	Util::myConnect(m_pViewLogDialog, SIGNAL(close()), this, SLOT(cleanupuiWindowViewLogs()));
+}
+
+void ConnectMgrDlg::cleanupuiWindowViewLogs()
+{
+	if (m_pViewLogDialog != NULL)
+	{
+		Util::myDisconnect(m_pViewLogDialog, SIGNAL(close()), this, SLOT(cleanupuiWindowViewLogs()));
+		delete m_pViewLogDialog;
+		m_pViewLogDialog = NULL;
+	}
+}
+
+void ConnectMgrDlg::populateSettingsTabs()
+{
+	config_globals *myglobals = NULL;
+	int areadmin = 0;
+
+	if ((xsupgui_request_get_are_administrator(&areadmin) != REQUEST_SUCCESS) || (areadmin == TRUE))
+	{
+		// Disable the logging, advsettings, and adv timers tabs.
+		m_pMainTab->removeTab(4);
+		m_pMainTab->removeTab(3);
+		m_pMainTab->removeTab(2);
+
+		return;
+	}
+
+	if (xsupgui_request_get_globals_config(&myglobals) != REQUEST_SUCCESS) 
+	{
+		QMessageBox::critical(this, tr("Request Failed"), tr("Unable to get global configuration settings."));
+		return;
+	}
+
+	// Logging tab objects
+	if (myglobals->logtype == LOGGING_FILE) 
+	{
+		m_pEnableLogging->setChecked(true);
+		setLoggingEnabled(true);
+	}
+	else
+	{
+		m_pEnableLogging->setChecked(false);
+		setLoggingEnabled(false);
+	}
+
+	m_pLogPath->setText(myglobals->logpath);
+
+	if ((myglobals->loglevel & DEBUG_ALL) == DEBUG_ALL)
+	{
+		m_pLogLevel->setCurrentIndex(LOGGING_DEBUG);
+	}
+	else if ((myglobals->loglevel & DEBUG_VERBOSE) == DEBUG_VERBOSE)
+	{
+		m_pLogLevel->setCurrentIndex(LOGGING_VERBOSE);
+	}
+	else
+	{
+		m_pLogLevel->setCurrentIndex(LOGGING_NORMAL);
+	}
+
+	m_pLogsToKeep->setValue(myglobals->logs_to_keep);
+
+	if ((myglobals->logtype == LOGGING_FILE) && (myglobals->flags & CONFIG_GLOBALS_ROLL_LOGS) == CONFIG_GLOBALS_ROLL_LOGS)
+	{
+		m_pRollBySize->setChecked(true);
+		m_pSizeToRoll->setEnabled(true);
+	}
+	else
+	{
+		m_pRollBySize->setChecked(false);
+		m_pSizeToRoll->setEnabled(false);
+	}
+
+	m_pSizeToRoll->setValue(myglobals->size_to_roll);
+
+	// advanced settings
+	if ((myglobals->flags & CONFIG_GLOBALS_DETECT_ON_STARTUP) == CONFIG_GLOBALS_DETECT_ON_STARTUP)
+	{
+		m_pCheckSupplicants->setChecked(true);
+	}
+	else
+	{
+		m_pCheckSupplicants->setChecked(false);
+	}
+
+	if ((myglobals->flags & CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF) == CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF)
+	{
+		m_pDisconnectAtLogoff->setChecked(true);
+	}
+	else
+	{
+		m_pDisconnectAtLogoff->setChecked(false);
+	}
+
+	if ((myglobals->flags & CONFIG_GLOBALS_ALLOW_MA_REMAIN) == CONFIG_GLOBALS_ALLOW_MA_REMAIN)
+	{
+		m_pAllowMachineAuthContinue->setChecked(true);
+	}
+	else
+	{
+		m_pAllowMachineAuthContinue->setChecked(false);
+	}
+
+	m_pScanTimeout->setValue(myglobals->active_timeout);
+	m_pAssocTimeout->setValue(myglobals->assoc_timeout);
+	m_pPassiveInterval->setValue(myglobals->passive_timeout);
+
+	if (myglobals->pmksa_cache_check == 0)
+		m_pPMKSACacheRefresh->setValue(PMKSA_CACHE_REFRESH);
+	else
+		m_pPMKSACacheRefresh->setValue(myglobals->pmksa_cache_check);
+
+	if (myglobals->pmksa_age_out == 0)
+		m_pPMKSACacheTimeout->setValue(PMKSA_DEFAULT_AGEOUT_TIME);
+	else
+		m_pPMKSACacheTimeout->setValue(myglobals->pmksa_age_out);
+
+	// advanced timers
+	if (myglobals->auth_period == 0)
+		m_pAuthPeriod->setValue(AUTHENTICATION_TIMEOUT);
+	else
+		m_pAuthPeriod->setValue(myglobals->auth_period);
+
+	if (myglobals->held_period == 0)
+		m_pHeldPeriod->setValue(HELD_STATE_TIMEOUT);
+	else
+		m_pHeldPeriod->setValue(myglobals->held_period);
+
+	if (myglobals->idleWhile_timeout == 0)
+		m_pIdlePeriod->setValue(IDLE_WHILE_TIMER);
+	else
+		m_pIdlePeriod->setValue(myglobals->idleWhile_timeout);
+
+	if (myglobals->stale_key_timeout == 0)
+		m_pStaleKey->setValue(STALE_KEY_WARN_TIMEOUT);
+	else
+		m_pStaleKey->setValue(myglobals->stale_key_timeout);
+
+	if (myglobals->max_starts == 0)
+		m_pMaxStarts->setValue(MAX_STARTS);
+	else
+		m_pMaxStarts->setValue(myglobals->max_starts);
+
+	xsupgui_request_free_config_globals(&myglobals);
+}
+
+void ConnectMgrDlg::setLoggingEnabled(bool enabled)
+{
+	m_pLogPath->setEnabled(enabled);
+	m_pBrowse->setEnabled(enabled);
+	m_pLogLevel->setEnabled(enabled);
+	m_pViewLog->setEnabled(enabled);
+	m_pLogsToKeep->setEnabled(enabled);
+	m_pRollBySize->setEnabled(enabled);
+	if ((m_pRollBySize->isChecked()) && (enabled == true))
+		m_pSizeToRoll->setEnabled(true);
+	else
+		m_pSizeToRoll->setEnabled(false);
+}
+
+void ConnectMgrDlg::enableSaveBtns()
+{
+	setSaveEnabled(true);
+}
+
+void ConnectMgrDlg::setSaveEnabled(bool enabled)
+{
+	m_pLoggingSave->setEnabled(enabled);
+	m_pAdvSettingsSave->setEnabled(enabled);
+	m_pAdvTimersSave->setEnabled(enabled);
 }

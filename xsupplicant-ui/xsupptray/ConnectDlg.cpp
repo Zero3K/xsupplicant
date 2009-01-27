@@ -49,7 +49,7 @@ extern "C" {
 #include "libxsupgui/xsupgui_request.h"
 }
 
-static const QString editConnString = QWidget::tr("Edit Connections...");
+static const QString editConnString = QWidget::tr("Edit Configuration...");
 static const QString seperatorString = "-----";
 
 ConnectDlg::ConnectDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp)

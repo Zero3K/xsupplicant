@@ -40,6 +40,8 @@
 #include <QTableWidget>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QSpinBox>
+#include "ViewLogDlg.h"
 
 extern "C"
 {
@@ -74,9 +76,26 @@ private:
 	void updateWiredAutoConnectState(void);
 	void editConnection(int config_type, const QString &);
 	bool buildMenuBar(void);
+	void populateSettingsTabs();
+	void setLoggingEnabled(bool);
+	void tabStateUpdate();
+	void gatherSettings();
+	void setSaveEnabled(bool);
 	
+	 enum {
+		 LOGGING_NORMAL,
+		 LOGGING_VERBOSE,
+		 LOGGING_DEBUG
+	 };
+
+	 enum {
+		 DEBUG_NORMAL = BIT(0),
+		 DEBUG_VERBOSE = BIT(25)
+	 };
+
+	#define DEBUG_ALL            0x7fffffff   // Enable ALL debug flags.
+
 private slots:
-	void showAdvancedConfig(void);
 	void handleConnectionListSelectionChange(void);
 	void deleteSelectedConnection(void);
 	void showPriorityDialog(void);
@@ -99,7 +118,15 @@ private slots:
 	void menuHelp(void);
 	void menuAbout(void);	
 	void menuMachineAuth(void);
-	
+	void configUpdate();
+	void resetAdvTimers();
+	void resetAdvSettings();
+	void browseLogs();
+	void viewLog();
+	void cleanupuiWindowViewLogs();
+	void enableSaveBtns();
+	void updateCheckboxes();
+
 private:
 	QWidget *m_pParent;
 	QWidget *m_pRealForm;
@@ -124,7 +151,41 @@ private:
 	QPushButton *m_pEditConnButton;
 	QPushButton *m_pNewConnButton;
 	QTableWidget *m_pConnectionsTable;
+
+	// Logging tab objects
+	QCheckBox *m_pEnableLogging;
+	QLineEdit *m_pLogPath;
+	QPushButton *m_pBrowse;
+	QComboBox *m_pLogLevel;
+	QPushButton *m_pViewLog;
+	QSpinBox *m_pLogsToKeep;
+	QCheckBox *m_pRollBySize;
+	QSpinBox *m_pSizeToRoll;
+	QPushButton *m_pLoggingSave;
+
+	// advanced settings tab objects
+	QCheckBox *m_pCheckSupplicants;
+	QCheckBox *m_pDisconnectAtLogoff;
+	QCheckBox *m_pAllowMachineAuthContinue;
+	QSpinBox *m_pScanTimeout;
+	QSpinBox *m_pAssocTimeout;
+	QSpinBox *m_pPassiveInterval;
+	QSpinBox *m_pPMKSACacheRefresh;
+	QSpinBox *m_pPMKSACacheTimeout;
+	QPushButton *m_pSettingsReset;
+	QPushButton *m_pAdvSettingsSave;
+
+	// advanced timers
+	QSpinBox *m_pAuthPeriod;
+	QSpinBox *m_pHeldPeriod;
+	QSpinBox *m_pIdlePeriod;
+	QSpinBox *m_pStaleKey;
+	QSpinBox *m_pMaxStarts;
+	QPushButton *m_pTimersReset;
+	QPushButton *m_pAdvTimersSave;
 	
+	uiWindowViewLogs *m_pViewLogDialog;
+
 	PreferredConnections *m_pPrefDlg;
 	ConnectionWizard *m_pConnWizard;
 

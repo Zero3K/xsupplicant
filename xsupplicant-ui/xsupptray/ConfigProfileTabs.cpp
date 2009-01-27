@@ -2336,7 +2336,7 @@ void ConfigProfileTabs::populateEAPTLSData()
 		item = new QTableWidgetItem(pCerts[i].friendlyname);
 		m_pUserCertTable->setItem(i, 0, item);
 
-		if ((tlsdata != NULL) && (_stricmp(pCerts[i].location, tlsdata->user_cert) == 0))
+		if ((tlsdata != NULL) && (tlsdata->user_cert != NULL) && (_stricmp(pCerts[i].location, tlsdata->user_cert) == 0))
 		{
 			m_pUserCertTable->setCurrentItem(item);
 		}
