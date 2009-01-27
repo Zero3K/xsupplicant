@@ -108,7 +108,7 @@ ConnectMgrDlg::~ConnectMgrDlg()
 		Util::myDisconnect(m_pBrowse, SIGNAL(clicked()), this, SLOT(browseLogs()));
 
 	if (m_pLogLevel != NULL)
-		Util::myDisconnect(m_pLogLevel, SIGNAL(indexChanged(int)), this, SLOT(enableSaveBtns()));
+		Util::myDisconnect(m_pLogLevel, SIGNAL(currentIndexChanged(int)), this, SLOT(enableSaveBtns()));
 
 	if (m_pViewLog != NULL)
 		Util::myDisconnect(m_pViewLog, SIGNAL(clicked()), this, SLOT(viewLog()));

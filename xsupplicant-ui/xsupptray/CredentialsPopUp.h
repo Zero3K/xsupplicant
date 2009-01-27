@@ -89,6 +89,7 @@ private:
 	QComboBox *m_pWEPCombo;
 	bool m_doingPsk;
 	bool m_doingWEP;
+	bool m_ignoreNoPwd;
 
 	char *p_user;
 	char *p_pass;

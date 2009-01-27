@@ -2204,6 +2204,11 @@ uint8_t ipc_callout_auth_needs(struct config_connection *cur)
 			return POSS_CONN_NO_PWD;
 		}
 	}
+
+#ifdef WINDOWS
+	if (profile->method->method_num == EAP_TYPE_TLS)
+		return POSS_CONN_NO_PWD;
+#endif // WINDOWS
 	
 	return 0;
 }

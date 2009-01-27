@@ -75,6 +75,7 @@ CredentialsPopUp::CredentialsPopUp(QString connName, QString deviceName, QWidget
 	m_pWEPCombo			= NULL;
 	m_pRememberCreds	= NULL;
 	conn_type			= 0;
+	m_ignoreNoPwd			= false;
 
 	if (m_pCredManager == NULL)
 		m_pCredManager = new CredentialsManager(e);
@@ -419,6 +420,8 @@ bool CredentialsPopUp::createWEP()
 
 bool CredentialsPopUp::createUPW()
 {
+	config_profiles *pProfile = NULL;
+
 	m_pRealForm = FormLoader::buildform("UPWWindow.ui");
 
 	if (m_pRealForm == NULL) return false;
@@ -479,8 +482,10 @@ bool CredentialsPopUp::createUPW()
 			{
 				if (pConnection != NULL && pConnection->ssid != NULL)
 					networkName = pConnection->ssid;
+#ifndef WINDOWS
 				if (pConnection != NULL)
 					m_supplicant.freeConfigConnection(&pConnection);
+#endif // WINDOWS
 			}
 			else
 			{
@@ -489,10 +494,33 @@ bool CredentialsPopUp::createUPW()
 				{
 					if (pConnection != NULL && pConnection->ssid != NULL)
 						networkName = pConnection->ssid;
+#ifndef WINDOWS
 					if (pConnection != NULL)
 						m_supplicant.freeConfigConnection(&pConnection);
+#endif // WINDOWS
 				}
 			}
+
+#ifdef WINDOWS
+			// If we are on Windows, and we are attempting to do a TLS auth we don't need to prompt for the
+			// password, just the username.
+			if (pConnection->profile != NULL)
+			{
+				if (m_supplicant.getConfigProfile(CONFIG_LOAD_USER, QString(pConnection->profile), &pProfile, false) == false)
+					m_supplicant.getConfigProfile(CONFIG_LOAD_GLOBAL, QString(pConnection->profile), &pProfile, false);
+
+				if (pProfile->method->method_num == EAP_TYPE_TLS)
+				{
+					m_pPassword->setEnabled(false);
+					m_ignoreNoPwd = true;
+				}
+
+				xsupgui_request_free_profile_config(&pProfile);
+			}
+
+			if (pConnection != NULL)
+				m_supplicant.freeConfigConnection(&pConnection);
+#endif
 		}
 
 		// if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
@@ -696,7 +724,6 @@ void CredentialsPopUp::slotOkayBtn()
 			}		
 		}
 	}
-	
 	else if (m_doingPsk)
 	{
 		if (m_pPassword->text() == "")
@@ -788,7 +815,7 @@ void CredentialsPopUp::slotOkayBtn()
 		{
 			if (m_pUsername->text() == "")
 			{
-				if (m_pPassword->text() == "")
+				if ((m_pPassword->text() == "") && (m_ignoreNoPwd == false))
 				{
 					QMessageBox::information(this, tr("Invalid Credentials"), tr("Please enter a user name and password before attempting to connect to this network."));
 					return;
@@ -800,7 +827,7 @@ void CredentialsPopUp::slotOkayBtn()
 				}
 			}
 
-			if (m_pPassword->text() == "")
+			if ((m_pPassword->text() == "") && (m_ignoreNoPwd == false))
 			{
 				QMessageBox::information(this, tr("Invalid Credentials"), tr("Please enter a password before attempting to connect to this network."));
 				return;
