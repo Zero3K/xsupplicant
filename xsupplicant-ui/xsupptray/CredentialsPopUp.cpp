@@ -364,6 +364,10 @@ bool CredentialsPopUp::createWEP()
 			{
 				if (pConnection != NULL && pConnection->ssid != NULL)
 					networkName = pConnection->ssid;
+
+				if (TEST_FLAG(pConnection->flags, CONFIG_VOLATILE_CONN))
+					m_pRememberCreds->setEnabled(false);
+
 				if (pConnection != NULL)
 					m_supplicant.freeConfigConnection(&pConnection);
 			}
@@ -374,6 +378,10 @@ bool CredentialsPopUp::createWEP()
 				{
 					if (pConnection != NULL && pConnection->ssid != NULL)
 						networkName = pConnection->ssid;
+
+					if (TEST_FLAG(pConnection->flags, CONFIG_VOLATILE_CONN))
+						m_pRememberCreds->setEnabled(false);
+
 					if (pConnection != NULL)
 						m_supplicant.freeConfigConnection(&pConnection);
 				}
@@ -604,6 +612,10 @@ bool CredentialsPopUp::createPSK()
 			{
 				if (pConnection != NULL && pConnection->ssid != NULL)
 					networkName = pConnection->ssid;
+
+				if (TEST_FLAG(pConnection->flags, CONFIG_VOLATILE_CONN))
+					m_pRememberCreds->setEnabled(false);
+
 				if (pConnection != NULL)
 					m_supplicant.freeConfigConnection(&pConnection);
 			}
@@ -614,6 +626,10 @@ bool CredentialsPopUp::createPSK()
 				{
 					if (pConnection != NULL && pConnection->ssid != NULL)
 						networkName = pConnection->ssid;
+
+					if (TEST_FLAG(pConnection->flags, CONFIG_VOLATILE_CONN))
+						m_pRememberCreds->setEnabled(false);
+
 					if (pConnection != NULL)
 						m_supplicant.freeConfigConnection(&pConnection);
 				}
