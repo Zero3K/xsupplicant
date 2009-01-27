@@ -2703,6 +2703,10 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 				{
 					if (eapaka_is_pin_needed(ctx, myprof->method->method_data) == FALSE) break;
 				}
+				else if (myprof->method->method_num == EAP_TYPE_SIM)
+				{
+					if (eapsim_is_pin_needed(ctx, myprof->method->method_data) == FALSE) break;
+				}
 			}
 		}
 		// Fall through.

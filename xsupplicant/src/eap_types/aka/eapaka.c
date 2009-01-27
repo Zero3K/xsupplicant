@@ -241,7 +241,7 @@ int eapaka_is_pin_needed(context *ctx, struct config_eap_aka *userdata)
 
   if (sm_handler_wait_card_ready(&hdl, 1) != 0)
     {
-      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 10 seconds!\n");
+      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 1 seconds!\n");
 	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
       return XESIMGENERR;
     }

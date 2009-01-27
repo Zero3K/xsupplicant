@@ -110,6 +110,8 @@ struct typelengthres {
 
 #endif
 
+int eapsim_is_pin_needed(context *ctx, struct config_eap_sim *userdata);
+
 void eapsim_check(eap_type_data *);
 void eapsim_process(eap_type_data *);
 uint8_t *eapsim_buildResp(eap_type_data *);

@@ -847,4 +847,61 @@ char *eapsim_get_username(void *config)
 	return NULL;
 }
 
+/**
+ * \brief Determine in a PIN is needed.
+ *
+ * @param[in] ctx   The context for the interface that we want to see if a PIN is required on.
+ * @param[in] userdata   The EAP-SIM configuration that will (or already may be) bound to the context.
+ *
+ * \retval TRUE if a PIN is required
+ * \retval FALSE if a PIN is NOT required
+ * \retval XE* if an error occurred.
+ **/
+int eapsim_is_pin_needed(context *ctx, struct config_eap_sim *userdata)
+{
+  char card_mode=0;
+  char *readers = NULL;
+  SCARDCONTEXT sctx;
+  SCARDHANDLE hdl;
+  int retval = 0;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+    return XEBADCONFIG;
+
+  if (!xsup_assert((userdata != NULL), "userdata != NULL", FALSE)) return XEBADCONFIG;
+
+  // Initalize our smartcard context, and get ready to authenticate.
+  if (sm_handler_init_ctx(&sctx) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Couldn't initialize smart card context!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
+      return XESIMGENERR;
+    }
+
+  // Connect to the smart card.
+  if (sm_handler_card_connect(&sctx, &hdl, userdata->reader) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Error connecting to smart card reader!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
+      return XESIMGENERR;
+    }
+
+  if (sm_handler_wait_card_ready(&hdl, 1) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 1 seconds!\n");
+	  ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
+      return XESIMGENERR;
+    }
+
+
+  retval = sm_handler_2g_pin_needed(&hdl, 0);
+
+  // Close the smartcard, so that we know what state we are in.
+  sm_handler_close_sc(&hdl, &sctx);
+
+  FREE(readers);
+
+  return retval;
+}
+
 #endif

@@ -873,6 +873,50 @@ char *decode_imsi(unsigned char *imsibytes)
   return imsi;
 }
 
+int sm_handler_2g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode)
+{
+  long len;
+  unsigned char buf[512], buf2[512], buf3[8];
+  int i;
+  int result;
+
+  if ((sim_reader_plugin_hook_available() == TRUE) &&
+	  ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_2G_SIM) == SUPPORT_2G_SIM))
+  {
+	  // Process it through our plugin.
+	  result = sim_reader_plugin_hook_2g_pin_needed(card_hdl, reader_mode);
+	  if (result >= -1) return result;
+  }
+
+  if (!card_hdl)
+    {
+      debug_printf(DEBUG_NORMAL, "Invalid card handle passed to "
+		   "sm_handler_2g_pin_needed()!\n");
+      return SM_HANDLER_ERROR_INVALID_CARD_CTX;
+    }
+
+  // Select the card master file in 2g mode.
+  len = MAXBUFF;
+  if (cardio(card_hdl, SELECT_MF, reader_mode, MODE2G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Error trying to select the master file! "
+		   "(%s:%d)\n", __FUNCTION__, __LINE__);
+      return SM_HANDLER_ERROR_GETTING_MF;
+    }
+
+  if (cardio(card_hdl, SELECT_DF_GSM, reader_mode, MODE2G, (LPBYTE)&buf, &len, DO_DEBUG) != 0)
+    {
+      debug_printf(DEBUG_NORMAL, "Error selecting GSM authentication! "
+		   "(%s:%d)\n", __FUNCTION__, __LINE__);
+      return SM_HANDLER_ERROR_NO_GSM;
+    }
+
+  if (buf[13] & 0x80)
+	  return FALSE;
+
+  return TRUE;
+}
+
 int sm_handler_2g_imsi(SCARDHANDLE *card_hdl, char reader_mode, char *pin, char **imsi)
 {
   long len;

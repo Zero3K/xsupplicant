@@ -1071,6 +1071,11 @@ void ConnectMgrDlg::deleteSelectedConnection(void)
 
 void ConnectMgrDlg::showPriorityDialog()
 {
+	if (m_pPrefDlg != NULL)
+	{
+		cleanupPriorityDialog();
+	}
+
 	if (m_pPrefDlg == NULL)
 	{
 		m_pPrefDlg = new PreferredConnections(XSupCalls(m_pTrayApp), this, m_pRealForm);
@@ -1084,10 +1089,6 @@ void ConnectMgrDlg::showPriorityDialog()
 		}
 
 		Util::myConnect(m_pPrefDlg, SIGNAL(close()), this, SLOT(cleanupPriorityDialog()));
-		m_pPrefDlg->show();
-	}
-	else
-	{
 		m_pPrefDlg->show();
 	}
 }
@@ -1740,9 +1741,10 @@ void ConnectMgrDlg::populateSettingsTabs()
 	config_globals *myglobals = NULL;
 	int areadmin = 0;
 
-	if ((xsupgui_request_get_are_administrator(&areadmin) != REQUEST_SUCCESS) || (areadmin == TRUE))
+	if ((xsupgui_request_get_are_administrator(&areadmin) != REQUEST_SUCCESS) || (areadmin != TRUE))
 	{
 		// Disable the logging, advsettings, and adv timers tabs.
+		// remove them in reverse order as the indicies shift when a tab is removed.
 		m_pMainTab->removeTab(4);
 		m_pMainTab->removeTab(3);
 		m_pMainTab->removeTab(2);
