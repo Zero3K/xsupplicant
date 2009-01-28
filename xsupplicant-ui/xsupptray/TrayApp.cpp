@@ -45,7 +45,6 @@
 #include "MyMessageBox.h"
 #include "helpbrowser.h"
 #include "EventListenerThread.h"
-#include "ConfigDlg.h"
 #include "FormLoader.h"
 #include "version.h"
 #include "buildnum.h"
@@ -57,6 +56,7 @@
 #include "SSIDList.h"
 #include "WirelessNetworkMenu.h"
 #include "ConnectionSelectDlg.h"
+#include "UIPlugins.h"
 #include <algorithm>
 
 //! Constructor
@@ -84,7 +84,6 @@ TrayApp::TrayApp(QApplication &app):
   m_pAboutAction			= NULL;
   m_pAboutWindow			= NULL;
   m_pLoggingCon				= NULL;
-  m_pConfDlg				= NULL;
   m_pEmitter				= NULL;
   m_pTrayIcon				= NULL;
   m_pTrayIconMenu			= NULL;
@@ -133,12 +132,6 @@ TrayApp::~TrayApp()
 	{
 		delete m_pAboutWindow;  // Clean up any about window hanging around.
 		m_pAboutWindow = NULL;
-	}
-
-	if (m_pConfDlg != NULL)
-	{
-		delete m_pConfDlg;
-		m_pConfDlg = NULL;
 	}
 	
 	if (m_pConnMgr != NULL)
@@ -287,14 +280,12 @@ void TrayApp::slotRestart()
   }
 
   // delete in reverse order of creation
-  delete m_pConfDlg;
   delete m_pEventListenerThread;
   delete m_pLoggingCon;
   delete m_pIntCtrl;
   delete m_pConnMgr;
   delete m_pConnectDlg;
 
-  m_pConfDlg = NULL;
   m_pEventListenerThread = NULL;
   m_pLoggingCon = NULL;
   m_pIntCtrl = NULL;
@@ -422,12 +413,6 @@ void TrayApp::slotConnectToSupplicant()
 
 void TrayApp::closeChildren()
 {
-	if (m_pConfDlg)
-	{
-		delete m_pConfDlg;
-		m_pConfDlg = NULL;
-	}
-
 	if (m_pCreds)
 	{
 		delete m_pCreds;
@@ -1266,23 +1251,10 @@ void TrayApp::slotIconActivated(QSystemTrayIcon::ActivationReason reason)
 */
 void TrayApp::slotLaunchConfig()
 {
-	// TODO: check settings to see which config to launch
-	if (m_pConfDlg != NULL && m_pConfDlg->isVisible())
-		m_pConfDlg->bringToFront();
-	else if (m_pConnMgr != NULL && m_pConnMgr->isVisible())
+	if (m_pConnMgr != NULL && m_pConnMgr->isVisible())
 		m_pConnMgr->bringToFront();
 	else
 		this->showBasicConfig();
-}
-
-void TrayApp::slotCleanupConfig()
-{
-	if (m_pConfDlg != NULL)
-	{
-		Util::myDisconnect(m_pConfDlg, SIGNAL(close(void)), this, SLOT(slotCleanupConfig(void)));
-		m_pConfDlg->deleteLater();
-		m_pConfDlg = NULL;
-	}
 }
 
 //! 
@@ -1741,40 +1713,6 @@ void TrayApp::showBasicConfig(void)
 		else
 		{
 			m_pConnMgr->show();
-		}
-	}
-}
-
-void TrayApp::showAdvancedConfig(void)
-{
-	if (!m_bSupplicantConnected)
-	{
-		QMessageBox::warning(this,  tr("Service not connected yet."),
-		tr("You can't run the Configuration module until the service is connected"));
-	}
-	else
-	{
-		if (m_pConfDlg == NULL)
-		{
-			m_pConfDlg = new ConfigDlg(m_supplicant, m_pEmitter, this, this);
-			if (m_pConfDlg == NULL || m_pConfDlg->create() == false)
-			{
-				QMessageBox::critical(this, tr("Form Creation Error"), tr("The Configuration Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
-				if (m_pConfDlg != NULL)
-				{
-					delete m_pConfDlg;
-					m_pConfDlg = NULL;
-				}
-			}
-			else
-			{
-				m_pConfDlg->show();
-				Util::myConnect(m_pConfDlg, SIGNAL(close(void)), this, SLOT(slotCleanupConfig(void)));
-			}
-		}
-		else
-		{
-			m_pConfDlg->show();
 		}
 	}
 }

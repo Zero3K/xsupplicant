@@ -312,7 +312,6 @@ SectionIn 1 2 RO
         SetOutPath "$INSTDIR\Skins\Default"
 
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\AboutWindow.ui"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConfigWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionInfoWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionManagerWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ConnectionPromptWindow.ui"
@@ -630,7 +629,6 @@ remove_program_files:
 	;Delete $INSTDIR\msvcr80.dll
 
         Delete $INSTDIR\Skins\Default\AboutWindow.ui
-        Delete $INSTDIR\Skins\Default\ConfigWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionInfoWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionManagerWindow.ui
 	Delete $INSTDIR\Skins\Default\ConnectionPromptWindow.ui

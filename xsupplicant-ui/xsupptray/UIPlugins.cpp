@@ -34,7 +34,6 @@
 
 #include "UIPlugins.h"
 #include "PluginWidget.h"
-#include "ConfigProfileTabs.h"
 #include <QWidget>
 #include "stdafx.h"
 

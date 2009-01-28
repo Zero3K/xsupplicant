@@ -37,7 +37,6 @@
 #include <QWidget>
 #include "xsupcalls.h"
 #include "MessageClass.h"
-#include "ConfigDlg.h"
 #include "AboutDlg.h"
 #include "interfacectrl.h"
 #include "CreateTT.h"
@@ -117,7 +116,6 @@ private slots:
 	void slotCleanupAbout();
 	void slotHideLog();
 	void slotLaunchHelp(const QString &, const QString &);
-	void slotCleanupConfig();
 	void slotInterfaceInserted(char *);
 	void slotInterfaceRemoved(char *);
 	void slotControlInterfaces();
@@ -128,7 +126,6 @@ private slots:
 	void slotCleanupUPW();
 	void slotConnectionTimeout(const QString &devName);
 	void showBasicConfig(void);
-	void showAdvancedConfig(void);	
 	void buildPopupMenu(void);
 	void cancelConnectionWizard(void);
 	void finishConnectionWizard(bool, const QString &, const QString &);
@@ -175,7 +172,6 @@ private:
 	unsigned char m_cConnectFailures;
     
     // dialog window classes
-	ConfigDlg *m_pConfDlg;
     LogWindow *m_pLoggingCon;
     AboutWindow *m_pAboutWindow;
     ConnectMgrDlg *m_pConnMgr;

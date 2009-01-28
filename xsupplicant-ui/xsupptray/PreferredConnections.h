@@ -40,7 +40,7 @@ class QPushButton;
 class QFileInfo;
 class QListWidget;
 
-class PreferredConnections:public QWidget
+class PreferredConnections : public QWidget
 {
 	Q_OBJECT
 public:
