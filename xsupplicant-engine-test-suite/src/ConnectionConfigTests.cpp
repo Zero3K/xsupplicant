@@ -2457,7 +2457,8 @@ bool ConnectionConfigTests::checkInvalidConfigDest()
 			return false;
 		}
 
-		if ((result = xsupgui_request_set_connection_config(i, read_back_config)) != IPC_ERROR_INVALID_CONFIG)
+		result = xsupgui_request_set_connection_config(i, read_back_config);
+		if ((result != IPC_ERROR_INVALID_CONFIG) && (result != IPC_ERROR_PARSING))
 		{
 			innerError("Attempt to write an invalid connection config didn't fail properly!  (Error : " + Util::itos(result) + "  Iteration : " + Util::itos(i) + ")\n");
 			return false;

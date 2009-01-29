@@ -4575,6 +4575,19 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		debug_printf(DEBUG_IPC, "Couldn't get 'Set_Connection_Config' node.\n");
 		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_INVALID_NODE, outnode);	
 	}
+
+	t = ipc_callout_find_node(n->children, "Config_Type");
+	if (t == NULL) 
+	{
+		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node.\n");
+		return ipc_callout_create_error(NULL, "Config_Type", IPC_ERROR_INVALID_NODE, outnode);	
+	}
+
+	temp = xmlNodeGetContent(t);
+	config_type = atoi(temp);
+	xmlFree(temp);
+	debug_printf(DEBUG_IPC, "Setting connection for config type %d.\n", config_type);
+
 	
 	// Set up the new ones.
 	newc = Malloc(sizeof(struct config_connection));
@@ -4584,7 +4597,7 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_MALLOC, outnode);
 	}
 
-	xsupconfig_parse(n->children->children, connection, CONFIG_LOAD_GLOBAL, (void **)&newc);
+	xsupconfig_parse(n->children->children, connection, config_type, (void **)&newc);
 	if (newc == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse connection config information!\n");
@@ -4604,17 +4617,6 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_NOT_ALLOWED, outnode);
 	}
 */
-	t = ipc_callout_find_node(n->children, "Config_Type");
-	if (t == NULL) 
-	{
-		debug_printf(DEBUG_IPC, "Couldn't get 'Config_Type' node.\n");
-		return ipc_callout_create_error(NULL, "Config_Type", IPC_ERROR_INVALID_NODE, outnode);	
-	}
-
-	temp = xmlNodeGetContent(t);
-	config_type = atoi(temp);
-	xmlFree(temp);
-	debug_printf(DEBUG_IPC, "Setting connection for config type %d.\n", config_type);
 
 	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
 	{
@@ -4747,7 +4749,7 @@ int ipc_callout_set_profile_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Profile_Config", IPC_ERROR_INVALID_NODE, outnode);	
 	}
 
-	xsupconfig_parse(t->children, profile, CONFIG_LOAD_GLOBAL, (void **)&newp);
+	xsupconfig_parse(t->children, profile, config_type, (void **)&newp);
 	if (newp == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse profile config information!\n");
@@ -4876,7 +4878,7 @@ int ipc_callout_set_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_PARSING, outnode);
 	}
 
-	xsupconfig_parse(t->children, trusted_server, CONFIG_LOAD_GLOBAL, (void **)&newts);
+	xsupconfig_parse(t->children, trusted_server, config_type, (void **)&newts);
 	if (newts == NULL)
 	{
 		debug_printf(DEBUG_IPC, "Couldn't parse trusted server config information!\n");
