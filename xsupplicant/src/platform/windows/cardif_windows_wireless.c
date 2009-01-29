@@ -2616,9 +2616,12 @@ int cardif_windows_wireless_apply_pmkids(context *ctx, pmksa_list *pmklist)
 		}
 	}
 
-	if (numelems == 0) return TRUE;   // If there aren't any elements, we shouldn't try to set them.
+	// If we don't have any elements in the list, we want to send an empty element.
+	if (numelems == 0)
+		buflen = FIELD_OFFSET(NDIS_802_11_PMKID, BSSIDInfo) + sizeof(BSSID_INFO);
+	else
+		buflen = FIELD_OFFSET(NDIS_802_11_PMKID, BSSIDInfo) + (numelems * sizeof(BSSID_INFO));
 
-	buflen = FIELD_OFFSET(NDIS_802_11_PMKID, BSSIDInfo) + (numelems * sizeof(BSSID_INFO));
 	Buffer = Malloc(buflen + sizeof(NDISPROT_SET_OID));
 	if (Buffer == NULL)
 	{
@@ -2632,15 +2635,24 @@ int cardif_windows_wireless_apply_pmkids(context *ctx, pmksa_list *pmklist)
 	pPMKids = (PNDIS_802_11_PMKID)pSetOid->Data;
 
 	pPMKids->Length = buflen;
-	pPMKids->BSSIDInfoCount = numelems;
 
-	if ((wctx->pmkids_supported > 0) && (numelems > 0))
+	if (numelems > 0)
 	{
-		for (i = 1; i <= numelems; i++)
+		pPMKids->BSSIDInfoCount = numelems;
+
+		if ((wctx->pmkids_supported > 0) && (numelems > 0))
 		{
-			memcpy(pPMKids->BSSIDInfo[i-1].BSSID, pmklist[wctx->pmkids_supported-i].cache_element->authenticator_mac, 6);
-			memcpy(pPMKids->BSSIDInfo[i-1].PMKID, pmklist[wctx->pmkids_supported-i].cache_element->pmkid, sizeof(NDIS_802_11_PMKID_VALUE));
+			for (i = 1; i <= numelems; i++)
+			{
+				memcpy(pPMKids->BSSIDInfo[i-1].BSSID, pmklist[wctx->pmkids_supported-i].cache_element->authenticator_mac, 6);
+				memcpy(pPMKids->BSSIDInfo[i-1].PMKID, pmklist[wctx->pmkids_supported-i].cache_element->pmkid, sizeof(NDIS_802_11_PMKID_VALUE));
+			}
 		}
+	}
+	else
+	{
+		// Force an empty cache entry to be written.
+		pPMKids->BSSIDInfoCount = 1;
 	}
 
 	debug_printf(DEBUG_INT, "PMKSA set OID (%d) :\n", pPMKids->Length);
