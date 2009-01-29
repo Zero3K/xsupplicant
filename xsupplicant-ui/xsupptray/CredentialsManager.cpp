@@ -153,7 +153,7 @@ void CredentialsManager::handleStateChange(const QString &intName, int sm, int, 
 								m_pEmitter->sendConnConfigUpdate();
 													
 								// this may fail.  No need to prompt user if it does
-								XSupWrapper::writeConfig(config_type);	
+								XSupWrapper::writeConfig(config_type);
 							}
 							else
 								QMessageBox::critical(NULL, tr("error"),errMsg);					
@@ -227,7 +227,7 @@ void CredentialsManager::pskSuccess(const QString &intName)
 							m_pEmitter->sendConnConfigUpdate();
 												
 							// this may fail.  No need to prompt user if it does
-							XSupWrapper::writeConfig(config_type);	
+							XSupWrapper::writeConfig(config_type);
 						}
 						else
 							QMessageBox::critical(NULL, tr("error"),tr("Unable to save your PSK password"));					

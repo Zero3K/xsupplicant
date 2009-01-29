@@ -56,6 +56,8 @@ public:
 	void updateData();
 	void show();
 
+	static void clearCredentialsManager();
+
 signals:
 	void close();
 

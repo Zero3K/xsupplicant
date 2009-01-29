@@ -990,3 +990,11 @@ void CredentialsPopUp::slotWEPComboChange(int newVal)
 	}
 }
 
+void CredentialsPopUp::clearCredentialsManager()
+{
+	if (m_pCredManager != NULL)
+	{
+		delete m_pCredManager;
+		m_pCredManager = NULL;
+	}
+}

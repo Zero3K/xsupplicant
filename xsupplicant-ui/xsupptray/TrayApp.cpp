@@ -833,6 +833,8 @@ bool TrayApp::postConnectActions()
   setGlobalTrayIconState();
   this->buildPopupMenu();
 
+  CredentialsPopUp::clearCredentialsManager();
+  
   return true;
 }
 

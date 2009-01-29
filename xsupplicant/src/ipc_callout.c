@@ -4671,6 +4671,14 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		if (tempc != NULL)
 		{
 			tempc->priority = newc->priority;
+
+			// XXX ICK!  Need to clean up the behavior of updating configurations while they are in use.  This is getting
+			// silly!
+			if (newc->association.psk != NULL)
+			{
+				FREE(tempc->association.psk);
+				tempc->association.psk = _strdup(newc->association.psk);
+			}
 		}
 
 		// Free the memory used to parse the command.
