@@ -155,6 +155,7 @@ private:
 	void closeChildren();
 	void cleanupConnectionWizard(void);
 	void promptConnectionSelection(const QStringList &connList, QString adapterDesc);	
+	void dropAllConnections();
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();

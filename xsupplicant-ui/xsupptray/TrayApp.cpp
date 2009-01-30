@@ -1319,6 +1319,28 @@ void TrayApp::slotCleanupAbout()
 	}
 }
 
+void TrayApp::dropAllConnections()
+{
+	int_config_enum *intenum = NULL;
+	int i = 0;
+	char *device = NULL;
+
+	if (xsupgui_request_enum_ints_config(&intenum) != REQUEST_SUCCESS)
+	{
+		QMessageBox::critical(this, tr("Error"), tr("Unable to drop all authenticated connections."));
+		return;
+	}
+
+	for (i = 0; intenum[i].desc != NULL; i++)
+	{
+		if (xsupgui_request_get_devname(intenum[i].desc, &device) == REQUEST_SUCCESS)
+		{
+			xsupgui_request_disconnect_connection(device);
+			free(device);
+		}
+	}
+}
+
 //! 
 /*!
   \return 
@@ -1329,6 +1351,14 @@ void TrayApp::slotExit()
   // Stop the supplicant
   // m_supplicant.goQuiet();
   // then exit
+
+  if (QMessageBox::question(this, tr("Drop Connections"), tr("Would you like to terminate any active authenticated sessions?  This will terminate any active network connections you may have!"),
+	  (QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
+  {
+	  dropAllConnections();
+  }
+
+
   delete m_pTrayIcon;
   m_pTrayIcon = NULL;
   close();
