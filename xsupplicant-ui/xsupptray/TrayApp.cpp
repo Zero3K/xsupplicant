@@ -1352,12 +1352,14 @@ void TrayApp::slotExit()
   // m_supplicant.goQuiet();
   // then exit
 
-  if (QMessageBox::question(this, tr("Drop Connections"), tr("Would you like to terminate any active authenticated sessions?  This will terminate any active network connections you may have!"),
-	  (QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
+  if (m_bSupplicantConnected)
   {
-	  dropAllConnections();
+	  if (QMessageBox::question(this, tr("Drop Connections"), tr("Would you like to terminate any active authenticated sessions?  This will terminate any active network connections you may have!"),
+		  (QMessageBox::Yes | QMessageBox::No), QMessageBox::No) == QMessageBox::Yes)
+	  {
+		  dropAllConnections();
+	  }
   }
-
 
   delete m_pTrayIcon;
   m_pTrayIcon = NULL;
