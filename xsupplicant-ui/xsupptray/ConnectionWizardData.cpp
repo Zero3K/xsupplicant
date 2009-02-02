@@ -1084,6 +1084,19 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 					m_autoRealm = false;
 				}
 			}
+			else if (pEAPMethod->method_num == EAP_TYPE_MD5)
+			{
+				m_eapProtocol = ConnectionWizardData::eap_md5;
+				if (pEAPMethod->method_data != NULL)
+				{
+					config_pwd_only *pMD5Data = (config_pwd_only *)pEAPMethod->method_data;
+
+					if (TEST_FLAG(pMD5Data->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS))
+						m_useLogonCreds = true;
+					else
+						m_useLogonCreds = false;
+				}
+			}
 			else if (pEAPMethod->method_num == EAP_TYPE_TTLS)
 			{
 				m_eapProtocol = ConnectionWizardData::eap_ttls;
