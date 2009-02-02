@@ -468,9 +468,13 @@ MachineAuthWizard::wizardPages MachineAuthWizard::getNextPage(void)
 			{
 				nextPage = MachineAuthWizard::pageWirelessNetwork;
 			}
-			else
+			else if (m_connData.m_wired == true)
 			{
 				nextPage =  MachineAuthWizard::pageDot1XCert;
+			}
+			else
+			{
+				nextPage = MachineAuthWizard::pageMachineAuthFinishPage;
 			}
 			break;
 			

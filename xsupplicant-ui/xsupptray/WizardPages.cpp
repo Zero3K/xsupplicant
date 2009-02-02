@@ -2108,6 +2108,9 @@ void WizardPageMachineAuthFinished::init(const ConnectionWizardData &data)
 	if (m_curData.m_wired)
 		resultData += tr("<li>Machine Authentication on Wired</li>");
 
+	if ((!m_curData.m_wired) && (!m_curData.m_wireless))
+		resultData += tr("<li>Machine Authentication is Disabled</li>");
+
 	resultData += QString("</ul>");
 
 	m_pMsgLabel->setText(resultData);
