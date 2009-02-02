@@ -1932,12 +1932,12 @@ void WizardPageDot1XUserCert::init(const ConnectionWizardData &data)
 			
 		for (int i=0; i<nRows; i++)
 		{
-			QTableWidgetItem *item = m_pCertTable->item(i,1);
+			QTableWidgetItem *item = m_pCertTable->item(i,0);
 			if (item != NULL)
 			{
 				int index = item->type() - 1000;
 					
-				if (m_pCertArray != NULL && index > 0 && index < m_numCerts && m_curData.m_userCert == QString(m_pCertArray[index].location))
+				if (m_pCertArray != NULL && index >= 0 && index < m_numCerts && m_curData.m_userCert == QString(m_pCertArray[index].location))
 				{
 					m_pCertTable->setCurrentItem(item);
 					break;	// No need to continue, only one can be selected.
