@@ -90,8 +90,30 @@ void sim_split_line(char *line_in, char *imsi, char *kc, char *sres, char *rand)
 	char *temp = NULL;
 	char *prev = NULL;
 
+	if (line_in == NULL)
+	{
+		// Our line_in was invalid, so return NULL results.
+		imsi[0] = 0x00;
+		kc[0] = 0x00;
+		sres[0] = 0x00;
+		rand[0] = 0x00;
+
+		return;
+	}
+
 	prev = line_in;
 	temp = strstr(line_in, ":");
+
+	if (temp == NULL)
+	{
+		// Our first value wasn't found.
+		imsi[0] = 0x00;
+		kc[0] = 0x00;
+		sres[0] = 0x00;
+		rand[0] = 0x00;
+
+		return;
+	}
 
 	temp[0] = 0x00; // NULL terminate the IMSI.
 
@@ -101,6 +123,17 @@ void sim_split_line(char *line_in, char *imsi, char *kc, char *sres, char *rand)
 
 	temp = strstr(prev, ":");
 
+	if (temp == NULL)
+	{
+		// Our first value wasn't found.
+		imsi[0] = 0x00;
+		kc[0] = 0x00;
+		sres[0] = 0x00;
+		rand[0] = 0x00;
+
+		return;
+	}
+
 	temp[0] = 0x00;
 
 	strcpy(kc, prev);
@@ -108,6 +141,17 @@ void sim_split_line(char *line_in, char *imsi, char *kc, char *sres, char *rand)
 	prev = temp+1;
 
 	temp = strstr(prev, ":");
+
+	if (temp == NULL)
+	{
+		// Our first value wasn't found.
+		imsi[0] = 0x00;
+		kc[0] = 0x00;
+		sres[0] = 0x00;
+		rand[0] = 0x00;
+
+		return;
+	}
 
 	temp[0] = 0x00;
 
@@ -178,7 +222,7 @@ int sim_do_2g_auth(unsigned char *challenge, unsigned char *response, unsigned c
 			sim_split_line(line, (char *)&imsi, (char *)&kc, (char *)&sres, (char *)&rand);
 
 			// See if this is the line we want.
-			if (strncmp(rand, challenge_str, strlen(challenge_str)) == 0)
+			if ((rand != NULL) && (strncmp(rand, challenge_str, strlen(challenge_str)) == 0))
 			{
 				found = 1;
 				break;
