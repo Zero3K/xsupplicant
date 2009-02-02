@@ -495,7 +495,7 @@ bool XSupWrapper::getTrustedServerForProfile(unsigned char config_type, const QS
 				serverName = mypeap->trusted_server;
 				if (!serverName.isEmpty())
 				{
-					(*inconfig) = CONFIG_LOAD_GLOBAL;
+					(*inconfig) = CONFIG_LOAD_USER;
 					XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
 					if (*pServer != NULL)
 					{
@@ -503,7 +503,7 @@ bool XSupWrapper::getTrustedServerForProfile(unsigned char config_type, const QS
 					}
 					else
 					{
-						(*inconfig) = CONFIG_LOAD_USER;
+						(*inconfig) = CONFIG_LOAD_GLOBAL;
 						XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
 						if (*pServer != NULL)
 							success= true;
@@ -521,7 +521,7 @@ bool XSupWrapper::getTrustedServerForProfile(unsigned char config_type, const QS
 				serverName = myttls->trusted_server;
 				if (!serverName.isEmpty())
 				{
-					(*inconfig) = CONFIG_LOAD_GLOBAL;
+					(*inconfig) = CONFIG_LOAD_USER;
 					XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
 					if (*pServer != NULL)
 					{
@@ -529,7 +529,59 @@ bool XSupWrapper::getTrustedServerForProfile(unsigned char config_type, const QS
 					}
 					else
 					{
-						(*inconfig) = CONFIG_LOAD_USER;
+						(*inconfig) = CONFIG_LOAD_GLOBAL;
+						XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
+						if (*pServer != NULL)
+							success = true;
+					}
+				}
+			}
+		}
+		else if (pMethod->method_num == EAP_TYPE_FAST)
+		{
+			config_eap_fast *myfast;
+			myfast = (config_eap_fast *)pProfile->method->method_data;
+			if (myfast != NULL)
+			{
+				QString serverName;
+				serverName = myfast->trusted_server;
+				if (!serverName.isEmpty())
+				{
+					(*inconfig) = CONFIG_LOAD_USER;
+					XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
+					if (*pServer != NULL)
+					{
+						success = true;
+					}
+					else
+					{
+						(*inconfig) = CONFIG_LOAD_GLOBAL;
+						XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
+						if (*pServer != NULL)
+							success = true;
+					}
+				}
+			}
+		}
+		else if (pMethod->method_num == EAP_TYPE_TLS)
+		{
+			config_eap_tls *mytls;
+			mytls = (config_eap_tls *)pProfile->method->method_data;
+			if (mytls != NULL)
+			{
+				QString serverName;
+				serverName = mytls->trusted_server;
+				if (!serverName.isEmpty())
+				{
+					(*inconfig) = CONFIG_LOAD_USER;
+					XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
+					if (*pServer != NULL)
+					{
+						success = true;
+					}
+					else
+					{
+						(*inconfig) = CONFIG_LOAD_GLOBAL;
 						XSupWrapper::getConfigServer((*inconfig), serverName, pServer);
 						if (*pServer != NULL)
 							success = true;

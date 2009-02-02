@@ -1256,7 +1256,7 @@ void ConnectMgrDlg::editConnection(int config_type, const QString &connName)
 		{
 			config_profiles *pProfile = NULL;
 			config_trusted_server *pServer = NULL;
-			unsigned char profile_type = CONFIG_LOAD_GLOBAL;
+			unsigned char profile_type = CONFIG_LOAD_USER;
 			unsigned char ts_type = 0;
 			
 			if (pConfig->profile != NULL)
@@ -1264,7 +1264,7 @@ void ConnectMgrDlg::editConnection(int config_type, const QString &connName)
 				success = XSupWrapper::getConfigProfile(profile_type, QString(pConfig->profile),&pProfile);
 				if (success == false)
 				{
-					profile_type = CONFIG_LOAD_USER;
+					profile_type = CONFIG_LOAD_GLOBAL;
 					success = XSupWrapper::getConfigProfile(profile_type, QString(pConfig->profile), &pProfile);
 				}
 			}
