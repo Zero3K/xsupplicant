@@ -396,7 +396,6 @@ struct xsup_interfaces {
 	char *description;
 	uint8_t mac[6];
 	char *driver_type;
-	char *default_connection;
 	uint8_t flags;
 };
 

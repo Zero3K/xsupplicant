@@ -222,7 +222,6 @@ typedef struct {
 	char *mac;
 	char *desc;
 	unsigned char is_wireless;
-	char *default_connection;
 } int_config_enum;
 
 typedef struct {

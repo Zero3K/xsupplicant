@@ -54,7 +54,6 @@ void xsupconfig_devices_clear_interface(void **inptr)
 
 	FREE(ints->description);
 	FREE(ints->driver_type);
-    FREE(ints->default_connection);
 
 	FREE((*inptr));
 }

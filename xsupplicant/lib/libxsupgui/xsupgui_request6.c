@@ -195,26 +195,6 @@ int xsupgui_request_enum_ints_config(int_config_enum **retints)
 
 		xmlFree(content);
 
-		t = xsupgui_request_find_node(n->children, "Default_Connection");
-		if (t == NULL)
-		{
-			if (ints != NULL) free(ints);
-			done = IPC_ERROR_BAD_RESPONSE_DATA;
-			goto finish_enum_ints;
-		}
-
-		content = xmlNodeGetContent(t);
-		if ((content == NULL) || (strlen((char *)content) == 0))
-		{
-			ints[i].default_connection = NULL;
-		}
-		else
-		{
-			ints[i].default_connection = _strdup((char *)content);
-		}
-
-		xmlFree(content);
-
 		n = n->next;
 	}
 

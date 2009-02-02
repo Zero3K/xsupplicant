@@ -201,41 +201,6 @@ void *xsupconfig_parse_interface_mac(void **attr, uint8_t config_type, xmlNodePt
 }
 
 /**
- * \brief Get the name of the default connection for this interface.
- *
- * @param[in,out] attr   A pointer to an xsup_interfaces struct that we want to operate on.
- * @param[in] node   The node that the parser is currently on.
- *
- * \retval ptr to the modified xsup_interfaces struct.
- **/
-void *xsupconfig_parse_default_connection(void **attr, uint8_t config_type, xmlNodePtr node)
-{
-  struct xsup_interfaces *myints = NULL;
-  char *value = NULL;
-
-  value = (char *)xmlNodeGetContent(node);
-
-  myints = (*attr);
-
-#ifdef PARSE_DEBUG
-  printf("Default connection is '%s'!\n", value);
-#endif
-
-	if ((value == NULL) || (strlen(value) == 0))
-	{
-		xmlFree(value);
-		myints->default_connection = NULL;
-	}
-	else
-	{
-		myints->default_connection = _strdup(value);
-		xmlFree(value);
-	}
-
-  return myints;
-}
-
-/**
  * \brief Check the value that is set in the "<Wireless>" tag of an interface.
  *
  * @param[in,out] attr   A pointer to an xsup_interfaces struct that we want to operate on.
@@ -329,7 +294,6 @@ parser interf[] = {
   {"MAC", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_mac},
   {"Type", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_type},
   {"Wireless", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_is_wireless},
-  {"Default_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_default_connection},
   {"Manage", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_manage_interface},
   
   {NULL, NULL, FALSE, 0, NULL}};

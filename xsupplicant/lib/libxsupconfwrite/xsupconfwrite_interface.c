@@ -96,18 +96,6 @@ xmlNodePtr xsupconfwrite_interface_create_tree(struct xsup_interfaces *conf_int,
 		}
 	}
 
-	if ((write_all == TRUE) || (conf_int->default_connection != NULL))
-	{
-		if (xmlNewChild(intnode, NULL, (xmlChar *)"Default_Connection", (xmlChar *)conf_int->default_connection) == NULL)
-		{
-#ifdef WRITE_INTERFACE_DEBUG
-			printf("Couldn't create <Default_Connection> node!\n");
-#endif
-			xmlFreeNode(intnode);
-			return NULL;
-		}
-	}
-
 	if (xsupconfwrite_common_write_bool(intnode, "Wireless",
 		TEST_FLAG(conf_int->flags, CONFIG_INTERFACE_IS_WIRELESS), FALSE, write_all, FALSE) == NULL)
 	{

@@ -5116,12 +5116,6 @@ int ipc_callout_enum_config_interfaces(xmlNodePtr innode, xmlNodePtr *outnode)
 			return ipc_callout_create_error(NULL, "Interface_Config_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
 		}
 
-		if (xmlNewChild(t, NULL, (xmlChar *)"Default_Connection", (xmlChar *)ints->default_connection) == NULL)
-		{
-			xmlFreeNode(n);
-			return ipc_callout_create_error(NULL, "Interface_Config_List", IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
-		}
-
 		ints = ints->next;
 	}
 

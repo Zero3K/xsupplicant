@@ -140,6 +140,7 @@ struct config_connection *config_find_connection_from_ssid(uint8_t, char *);
 uint8_t config_get_friendly_warnings();
 uint8_t config_get_idleWhile();
 struct config_connection *config_find_connection(uint8_t, char *);
+struct config_connection *config_find_wired_default();
 struct config_profiles *config_find_profile(uint8_t, char *);
 char *config_get_pwd_from_profile(struct config_eap_method *);
 struct config_trusted_servers *config_get_trusted_servers(uint8_t);

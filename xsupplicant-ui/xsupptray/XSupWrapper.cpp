@@ -354,30 +354,8 @@ bool XSupWrapper::isDefaultWiredConnection(const QString &connName)
 			// check if wired
 			if (pConn->ssid == NULL || QString(pConn->ssid).isEmpty())
 			{
-				int_config_enum *pInterfaceList = NULL;
-				int retVal;
-				
-				retVal = xsupgui_request_enum_ints_config(&pInterfaceList);
-				if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
-				{
-					int i = 0;
-					while (pInterfaceList[i].desc != NULL)
-					{
-						if (pInterfaceList[i].is_wireless == FALSE)
-						{
-							if (pInterfaceList[i].default_connection != NULL)
-							{
-								if (QString(pInterfaceList[i].default_connection) == connName)
-								{
-									isDefault = true;
-									break;
-								}	
-							}
-						}
-						++i;	
-					}
-					xsupgui_request_free_int_config_enum(&pInterfaceList);
-				}			
+				if (pConn->priority == 1)
+					isDefault = true;
 			}
 		}
 		if (pConn != NULL)

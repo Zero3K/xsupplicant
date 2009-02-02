@@ -644,26 +644,23 @@ void ConnectMgrDlg::enableDisableWirelessAutoConnect(int newState)
 
 void ConnectMgrDlg::updateWiredAutoConnectState(void)
 {
+	int x, i;
+	conn_enum *connEnum = NULL;
+	bool found = false;
+
 	// don't bother doing any work if the UI elements aren't present
 	if (m_pWiredAutoConnect != NULL && m_pWiredConnections != NULL)
 	{
-		int_config_enum *pInterfaceList = NULL;
-		int retVal;
-		
-		// jking !!! for now just assume there's only one wired adapter
-		// The UI needs to be updated to handle the multi-adapter case.
-		retVal = xsupgui_request_enum_ints_config(&pInterfaceList);
-		if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+		for (x = CONFIG_LOAD_GLOBAL; x <= CONFIG_LOAD_USER; x++)
 		{
-			int i = 0;
-			while (pInterfaceList[i].desc != NULL)
+			if (xsupgui_request_enum_connections(x, &connEnum) == REQUEST_SUCCESS)
 			{
-				if (pInterfaceList[i].is_wireless == FALSE)
+				for (i = 0; connEnum[i].name != NULL; i++)
 				{
-					if (pInterfaceList[i].default_connection != NULL)
-					{										
-						// ensure connection is in list before checking option
-						QString connName = pInterfaceList[i].default_connection;
+					if (((connEnum[i].ssid == NULL) || (strlen(connEnum[i].ssid) == 0)) && (connEnum[i].priority == 1))
+					{
+						// We found our wired default network.
+						QString connName = connEnum[i].name;
 						int index = m_pWiredConnections->findText(connName);
 						if (index != -1)
 						{
@@ -671,101 +668,115 @@ void ConnectMgrDlg::updateWiredAutoConnectState(void)
 							m_pWiredAutoConnect->setCheckState(Qt::Checked);
 							this->enableDisableWiredAutoConnect(Qt::Checked);
 							m_pWiredConnections->setCurrentIndex(index);
+							found = true;
+							break;
 						}
 						else
 						{
 							m_pWiredAutoConnect->setCheckState(Qt::Unchecked);
 							enableDisableWiredAutoConnect(Qt::Unchecked);
+							found = true;
+							break;
 						}
 					}
-					else
-					{
-						m_pWiredAutoConnect->setCheckState(Qt::Unchecked);
-						this->enableDisableWiredAutoConnect(Qt::Unchecked);
-					}
-					break;
 				}
-				
-				++i;
 			}
-			xsupgui_request_free_int_config_enum(&pInterfaceList);
-			pInterfaceList = NULL;	
+
+			xsupgui_request_free_conn_enum(&connEnum);
+		}
+
+		if (!found)
+		{
+			m_pWiredAutoConnect->setCheckState(Qt::Unchecked);
+			this->enableDisableWiredAutoConnect(Qt::Unchecked);
 		}
 	}
 }
 
-
 void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
 {
-	bool success = false;
-	int_config_enum *pInterfaceList = NULL;
-	int retVal;
-		
-	// jking !!! for now just assume there's only one wired adapter
-	// The UI needs to be updated to handle the multi-adapter case.
-	retVal = xsupgui_request_enum_ints_config(&pInterfaceList);
-	if (retVal == REQUEST_SUCCESS && pInterfaceList != NULL)
+	conn_enum *connEnum = NULL;
+	config_connection *myConn = NULL;
+	int are_admin = 0;
+	int x, i;
+	bool alreadySet = false;
+
+	if (connectionName.isEmpty())
+		return;							// Nothing to do.
+
+	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, connectionName.toAscii().data(), &myConn) == REQUEST_SUCCESS)
 	{
-		int i = 0;
-		bool found = false;
-		
-		// find the first wired interface
-		while (pInterfaceList[i].desc != NULL)
+		// The current default is a machine defined default, so we need to verify that the user at the console
+		// is allowed to change it.
+		if (xsupgui_request_get_are_administrator(&are_admin) != REQUEST_SUCCESS)
 		{
-			if (pInterfaceList[i].is_wireless == FALSE)
-			{
-				found = true;
-				break;
-			}
-			++i;
+			QMessageBox::critical(this, tr("Error"), tr("Unable to determine if you have permissions to edit this setting."));
+			xsupgui_request_free_connection_config(&myConn);
+			return;
 		}
-		
-		// do nothing if no wired interfaces found
-		if (found == true)
+
+		if (are_admin == FALSE)
 		{
-			config_interfaces *pInterface;
-			retVal = xsupgui_request_get_interface_config(pInterfaceList[i].desc, &pInterface);
-			if (retVal == REQUEST_SUCCESS && pInterface != NULL)
-			{
-				if (!connectionName.isEmpty())
-				{
-					// save off new string
-					char *oldPtr = pInterface->default_connection;
-					pInterface->default_connection = _strdup(connectionName.toAscii().data());
-					
-					// free memory holding old string
-					if (oldPtr != NULL)
-						xsupgui_request_free_str(&oldPtr);					
-				}
-				else
-				{
-					// clear out old setting
-					char *oldPtr = pInterface->default_connection;
-					pInterface->default_connection = NULL;
-					
-					// free memory holding old string
-					if (oldPtr != NULL)
-						xsupgui_request_free_str(&oldPtr);
-				}
-				
-				// save off new setting
-				retVal = xsupgui_request_set_interface_config(pInterface);
-				if (retVal == REQUEST_SUCCESS)
-				{
-					success = true;
-					
-					// write out configuration
-					// no biggie if this fails
-					XSupWrapper::writeConfig(CONFIG_LOAD_GLOBAL);
-				}
-			}
-			if (pInterface != NULL)
-				xsupgui_request_free_interface_config(&pInterface);
+			QMessageBox::critical(this, tr("Error"), tr("The default wired connection is defined in the system configuration.  You must be an administrator to change it."));
+			xsupgui_request_free_connection_config(&myConn);
+			return;
 		}
 	}
-	if (pInterfaceList != NULL)
-		xsupgui_request_free_int_config_enum(&pInterfaceList);
-	//return success;
+
+	xsupgui_request_free_connection_config(&myConn);
+
+	for (x = CONFIG_LOAD_GLOBAL; x <= CONFIG_LOAD_USER; x++)
+	{
+		if (xsupgui_request_enum_connections(x, &connEnum) == REQUEST_SUCCESS)
+		{
+			for (i = 0; connEnum[i].name != NULL; i++)
+			{
+				if (((connEnum[i].ssid == NULL) || (strlen(connEnum[i].ssid) == 0)) && (connEnum[i].priority != DEFAULT_PRIORITY))
+				{
+					if (xsupgui_request_get_connection_config(x, connEnum[i].name, &myConn) != REQUEST_SUCCESS)
+					{
+						QMessageBox::critical(this, tr("Error"), tr("Unable to reset the priority settings on connection %1.  The wired default behavior may not be what is expected.").arg(connEnum[i].name));
+					}
+					else
+					{
+						myConn->priority = DEFAULT_PRIORITY;
+						if (xsupgui_request_set_connection_config(x, myConn) != REQUEST_SUCCESS)
+						{
+							QMessageBox::critical(this, tr("Error"), tr("Unable to reset the priority settings on connection %1.  The wired default behavior may not be what is expected.").arg(connEnum[i].name));
+						}
+
+						xsupgui_request_free_connection_config(&myConn);
+					}
+				}
+
+				// If we have already set the value, don't set it again.  Technically it should be impossible to
+				// end up in a situation where we have conflicting names in the configuration, but this bool will
+				// save us processing time and act as a guard to make sure that in the event we do have two with
+				// the same name that only the first one gets set.  (In this case we also would give preference
+				// to global config if we had a name conflict between the two.)
+				if ((!alreadySet) && ((connEnum[i].ssid == NULL) || (strlen(connEnum[i].ssid) == 0)) && (connectionName == QString(connEnum[i].name)))
+				{
+					if (xsupgui_request_get_connection_config(x, connEnum[i].name, &myConn) != REQUEST_SUCCESS)
+					{
+						QMessageBox::critical(this, tr("Error"), tr("Unable to set the priority settings on connection %1.  The wired default behavior may not be what is expected.").arg(connEnum[i].name));
+					}
+					else
+					{
+						myConn->priority = 1;
+						if (xsupgui_request_set_connection_config(x, myConn) != REQUEST_SUCCESS)
+						{
+							QMessageBox::critical(this, tr("Error"), tr("Unable to set the priority settings on connection %1.  The wired default behavior may not be what is expected.").arg(connEnum[i].name));
+						}
+
+						xsupgui_request_free_connection_config(&myConn);
+					}
+				}
+			}
+		}
+
+		xsupgui_request_free_conn_enum(&connEnum);
+		XSupWrapper::writeConfig(x);
+	}
 }
 
 void ConnectMgrDlg::enableDisableWiredAutoConnect(int newState)

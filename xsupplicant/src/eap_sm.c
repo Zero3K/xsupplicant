@@ -1445,6 +1445,8 @@ void eap_sm_prepopulate_id(eap_sm *sm)
     if (!xsup_assert((sm != NULL), "sm != NULL", FALSE))
 		return;
 
+	if (sm->curMethods == NULL) return;						// No method is selected, bail out.
+
 	idx = eap_sm_find_method(sm->curMethods->method_num);
 	if (idx == -1) return;
 

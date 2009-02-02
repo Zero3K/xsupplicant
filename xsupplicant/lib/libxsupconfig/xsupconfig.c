@@ -470,6 +470,36 @@ uint8_t config_get_network_priority(char *matchname)
 }
 
 /**
+ * \brief Find the wired default by looking at wired connections with a priority of 1.
+ *
+ * \retval NULL if no priority 1 networks are found, otherwise a pointer to the config for a priority 1 network.
+ **/
+struct config_connection *config_find_wired_default()
+{
+  struct config_connection *cur = NULL;
+
+  // Start by looking in the global config as it should override the user's selection.
+  cur = conf_connections;
+
+  while (cur != NULL) 
+  {
+	  if ((cur->ssid == NULL) && (cur->priority == 1)) return cur;
+	  cur = cur->next;
+  }
+
+  // If we don't find it in global config, look in the user config.
+  cur = conf_user_connections;
+
+  while (cur != NULL) 
+  {
+	  if ((cur->ssid == NULL) && (cur->priority == 1)) return cur;
+	  cur = cur->next;
+  }
+
+  return NULL;
+}
+
+/**
  * \brief Given a connection name, find the configuration information in memory.
  *
  * @param[in] conf_type   Should we look in the global, or user config?

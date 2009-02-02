@@ -28,6 +28,7 @@
 #include "snmp.h"
 #include "context.h"
 #include "statemachine.h"
+#include "ipc_events_index.h"
 
 #ifndef WINDOWS
 #include <event_core.h>
@@ -288,23 +289,25 @@ char config_build(context *ctx, char *network_name)
 
 			  if (ctx->intType == ETH_802_11_INT)
 			  {
-				  result = config_find_connection(CONFIG_LOAD_GLOBAL, pGlobals->wirelessMachineAuthConnection);
+				  if (pGlobals->wirelessMachineAuthConnection != NULL)
+					  result = config_find_connection(CONFIG_LOAD_GLOBAL, pGlobals->wirelessMachineAuthConnection);
 			  }
 			  else
 			  {
-				  result = config_find_connection(CONFIG_LOAD_GLOBAL, pGlobals->wiredMachineAuthConnection);
+				  if (pGlobals->wiredMachineAuthConnection != NULL)
+					  result = config_find_connection(CONFIG_LOAD_GLOBAL, pGlobals->wiredMachineAuthConnection);
 			  }
 
 			  // If the machine auth connection wasn't found, then try to find the interface default.
-			  if (result == NULL) result = config_find_connection(CONFIG_LOAD_GLOBAL, myint->default_connection);
+			  if ((ctx->intType != ETH_802_11_INT) && (result == NULL)) result = config_find_wired_default();
 		  }
 		  else
 		  {
-			  result = config_find_connection(CONFIG_LOAD_GLOBAL, myint->default_connection);
+			  if (ctx->intType != ETH_802_11_INT) result = config_find_wired_default();
 		  }
 #else
 		  // Default networks can only be administratively defined, so don't search the user config.
-		  result = config_find_connection(CONFIG_LOAD_GLOBAL, myint->default_connection);
+		  if (ctx->intType != ETH_802_11_INT) result = config_find_wired_default();
 #endif 
 		  // Only use a default connection if we are managing the interface.
 		  if ((result != NULL) && (!TEST_FLAG(myint->flags, CONFIG_INTERFACE_DONT_MANAGE)))
@@ -323,8 +326,9 @@ char config_build(context *ctx, char *network_name)
 				}
 				else
 				{
-					debug_printf(DEBUG_NORMAL, "Default connection '%s' on interface '%s' does not have enough configuration "
-						"information to complete an automatic connection.\n", myint->default_connection, ctx->desc);
+					debug_printf(DEBUG_NORMAL, "Default connection does not have enough configuration "
+						"information to complete an automatic connection.\n");
+					ipc_events_ui(ctx, IPC_EVENT_UI_NEED_UPW, result->name);
 				}
 		  }
 	  }
