@@ -322,7 +322,6 @@ SectionIn 1 2 RO
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\LogWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PINWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\PSKWindow.ui"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SelectTrustedServerWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\SSIDListWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\UPWWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\ViewLogWindow.ui"
@@ -639,7 +638,6 @@ remove_program_files:
         Delete $INSTDIR\Skins\Default\LogWindow.ui
 	Delete $INSTDIR\Skins\Default\PINWindow.ui
 	Delete $INSTDIR\Skins\Default\PSKWindow.ui
-        Delete $INSTDIR\Skins\Default\SelectTrustedServerWindow.ui
 	Delete $INSTDIR\Skins\Default\SSIDListWindow.ui
 	Delete $INSTDIR\Skins\Default\UPWWindow.ui
         Delete $INSTDIR\Skins\Default\ViewLogWindow.ui

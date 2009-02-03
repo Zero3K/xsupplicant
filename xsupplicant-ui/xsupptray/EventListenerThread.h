@@ -38,7 +38,7 @@
 #include "LoggingConsole.h"
 
 //!\class EventListenerThread 
-/*!\brief ListenerCharC class - used to convert QString objects to char * 
+/*!\brief Listener class - used to convert QString objects to char * 
 */
 class EventListenerThread : public QThread
 {

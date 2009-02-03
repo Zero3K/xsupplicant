@@ -29,14 +29,11 @@
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
  **/
-
 #include "stdafx.h"
 #include <libxml/tree.h>
 #include <libxsupgui/xsupgui_request.h>
 #include <xsup_err.h>
-#include "CharC.h"
 #include "MessageDlg.h"
-#include "MyMessageBox.h"
 #include "MessageClass.h"
 #include "helpbrowser.h"
 
@@ -141,128 +138,6 @@ MessageClass::MessageClass(QWidget *pParent)
 */
 MessageClass::~MessageClass(void)
 {
-}
-
-//! DisplayMessage
-/*!
-  \brief Logs and displays a message (all errors are logged, if the bDisplay is set to true (the default),
-   it also displays the message in a message box
-  \param [in] type - the type of the message MESSAGE_TYPE enum
-  \param [in] titleString - the string to display in the title of the box
-  \param [in] formatted String - the detail string to display
-  \param [in] parent - if the message needs to be modal, this must be non-null
-  \param [in] bDisplay - whether or not to display the message in a message box
-  \param [in] pHelpInfo - the tag in the help file to display with this message
-  \return StandardButton
-*/
-int MessageClass::DisplayMessage(MESSAGE_TYPE type, 
-                                 QString &titleString, 
-                                 QString &formattedString,  
-                                 char *pHelpLocation)
-{
-  return MessageClass::DisplayMessage(type, titleString, formattedString, 0, "", pHelpLocation);
-}
-
-//! DisplayMessage
-/*!
-  \brief Logs and displays a message (all errors are logged, if the bDisplay is set to true (the default),
-   it also displays the message in a message box
-  \param [in] type - the type of the message MESSAGE_TYPE enum
-  \param [in] titleString - the string to display in the title of the box
-  \param [in] formatted String - the detail string to display
-  \param [in] error - if this is due to an error, this will be non-null - it will look up the error in the list
-  \param [in] parent - if the message needs to be modal, this must be non-null
-  \param [in] bDisplay - whether or not to display the message in a message box
-  \param [in] pHelpInfo - the tag in the help file to display with this message
-  \return int - usually StandardButton
-  \todo Implement the log file option
-*/
-int MessageClass::DisplayMessage(MESSAGE_TYPE type, 
-                                 QString &titleString, 
-                                 QString &formattedString, 
-                                 int error, 
-                                 char *function,
-                                 char *pHelpLocation)
-{
-  m_pHelpLocation = pHelpLocation;
-  int retval;
-  QString errorText;
-  QString fullString = formattedString;
-  if (error != 0)
-  {
-    errorText = QString(tr("\n\nInternal Function Error\nAPI: %1\nError Code: '%2'\n'%3'\n\n")
-      .arg(function)
-      .arg(error)
-      .arg(MessageClass::getMessageString(error)));
-    if (error == IPC_ERROR_CANT_SEND_IPC_MSG)
-    {
-      // the supplicant may have gone down - emit a signal to that effect - need to link the signal to supplicant down message
-      fullString.append(tr("XSupplicant may have exited.  If you get this message more than once, you may need to restart the supplicant and then restart XSupplicant (this application) before proceeding.\n\n"));
-    }
-  }
-    switch (type)
-    {
-      default:
-      case  QUESTION_TYPE:
-        {
-          MyMessageBox mbox(m_pParent, titleString, fullString, pHelpLocation, MyMessageBox::Question);
-          retval = mbox.exec();
-        }
-        break;
-      case INFORMATION_TYPE:
-        {
-          MyMessageBox mbox(m_pParent, titleString, fullString, pHelpLocation, MyMessageBox::Info);
-          retval = mbox.exec();
-        }
-        break;
-      case WARNING_TYPE:
-        {
-          MyMessageBox mbox(m_pParent, titleString, fullString, pHelpLocation, MyMessageBox::Warning);
-          retval = mbox.exec();
-        }
-        break;
-      case ERROR_TYPE:
-        {
-          MyMessageBox mbox(m_pParent, titleString, fullString, errorText, pHelpLocation, MyMessageBox::Critical);
-          retval = mbox.exec();
-        }
-        break;
-    }
-
-  return retval;
-}
-
-void MessageClass::slotHelp()
-{
-  if (m_pHelpFile && m_pHelpLocation)
-  {
-    HelpWindow::showPage(m_pHelpFile, m_pHelpLocation);
-  }
-  else
-  {
-    HelpWindow::showPage("xsupphelp.html","xsupuserguide"); // generic help if none is passed in
-  }
-}
-//! DisplayMessageModeless
-/*!
-  \brief Displays a modeless dialog that always stays on top of all other windows
-  \param [in] type - the type of the message MESSAGE_TYPE enum
-  \param [in] titleString - the string to display in the title of the box
-  \param [in] formatted String - the detail string to display
-  \param [in] parent - if the message needs to be modal, this must be non-null
-  \param [in] bDisplay - whether or not to display the message in a message box
-  \param [in] pHelpInfo - the tag in the help file to display with this message
-  \return StandardButton
-*/
-void MessageClass::DisplayMessageModeless(QString &titleString, 
-                                          QString &formattedString,
-                                          QString &helpLocation)
-{
-  QString temp = "xsupphelp.html";
-
-  msgDlg.setInfo(titleString, formattedString, temp, helpLocation);
-  msgDlg.setWindowFlags(msgDlg.windowFlags() | Qt::WindowStaysOnTopHint);
-  msgDlg.show();
 }
 
 QString MessageClass::getMessageString(int errorNumber)

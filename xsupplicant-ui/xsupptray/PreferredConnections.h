@@ -73,7 +73,6 @@ private:
 	QString m_connection;
 	conn_enum *m_pConns;
 	XSupCalls &m_supplicant;
-	MessageClass m_message;
 
 	//! GUI variables
 	QWidget *m_pRealForm;

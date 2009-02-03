@@ -29,7 +29,6 @@
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
  **/
-
 #ifndef _MESSAGECLASS_H_
 #define _MESSAGECLASS_H_
 
@@ -55,50 +54,16 @@ class MessageClass :
 {
   Q_OBJECT
 public:
-  //MessageClass(bool bDisplayMessage = false, QWidget *pParent = NULL);
   MessageClass(QWidget *pParent);
 public:
   virtual ~MessageClass(void);
-  typedef enum 
-  {
-    QUESTION_TYPE,
-    INFORMATION_TYPE,
-    WARNING_TYPE,
-    ERROR_TYPE
-  }MESSAGE_TYPE;
-
   static MessageS m_xSupCalls[];
 
-  void DisplayMessageModeless(QString &titleString, 
-                                          QString &formattedString,
-                                          QString &helpLocation);
-
-  int DisplayMessage(MESSAGE_TYPE type, 
-    QString &titleString, 
-    QString &formattedString,  
-    char *helpLocation = NULL);
-
-  int DisplayMessage(MESSAGE_TYPE type, 
-    QString &titleString,
-    QString &formattedString, 
-    int error, 
-    char *api,
-    char *helpLocation = NULL);
-
 private:
-  QString m_titleMessage;
-  QString m_textMessage;
-  char *m_pHelpFile;
-  char *m_pHelpLocation;
-
   QWidget *m_pParent;
-  MessageDlg msgDlg;
+
 public:
   QString getMessageString(int errorNumber);
-
-  private slots:
-    void slotHelp();
-
 };
 
 #endif // _MESSAGECLASS_H_

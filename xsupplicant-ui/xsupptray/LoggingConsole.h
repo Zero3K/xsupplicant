@@ -35,7 +35,6 @@
 
 #include <stdafx.h>
 #include <QtGui>
-#include "MessageClass.h"
 #include "Emitter.h"
 #include "xsupcalls.h"
 #include "PasswordDlg.h"
@@ -81,7 +80,6 @@ private:
   QPushButton *m_pCopyToClipboard;
   bool m_bUpdateCalled;
   XSupCalls m_supplicant;
-  MessageClass m_message;
   QWidget *m_pRealForm;
   Emitter *m_pEmitter;
   PasswordDlg *m_pPassword;

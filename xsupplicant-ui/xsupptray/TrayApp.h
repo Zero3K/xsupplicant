@@ -36,7 +36,7 @@
 #include <QSystemTrayIcon>
 #include <QWidget>
 #include "xsupcalls.h"
-#include "MessageClass.h"
+//#include "MessageClass.h"
 #include "AboutDlg.h"
 #include "interfacectrl.h"
 #include "CreateTT.h"
@@ -81,7 +81,7 @@ public:
 
     TrayApp(QApplication &app);
     virtual ~TrayApp();
-    MessageClass m_message;
+    //MessageClass m_message;
     bool init(int argCount);
     void start();
 	void connectToNetwork(const QString &networkName, const QString &adapterDesc);    

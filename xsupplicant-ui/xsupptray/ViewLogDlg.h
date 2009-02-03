@@ -68,7 +68,6 @@ private:
   QTextEdit *m_pLogView;
   QString m_folderPath;
   QString m_filePath;
-  MessageClass m_message;
 
   bool m_bConnected;
 

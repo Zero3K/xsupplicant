@@ -42,7 +42,6 @@
 #include "LoggingConsole.h"
 #include "TrayApp.h"
 #include "AboutDlg.h"
-#include "MyMessageBox.h"
 #include "helpbrowser.h"
 #include "EventListenerThread.h"
 #include "FormLoader.h"
@@ -67,7 +66,6 @@
 TrayApp::TrayApp(QApplication &app):
   m_app(app),
   m_bSupplicantConnected(false),
-  m_message(NULL),
   m_supplicant(NULL),
   m_commandLineOption(NONE)
 {

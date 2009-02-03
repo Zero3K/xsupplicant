@@ -49,7 +49,7 @@
 LogWindow::LogWindow(QWidget *parent, Emitter *e)
   : QWidget(parent), 
   m_bUpdateCalled(false),
-  m_message(parent), m_pEmitter(e),
+  m_pEmitter(e),
   m_supplicant(parent)
 {
 	m_pCopyToClipboard = NULL;

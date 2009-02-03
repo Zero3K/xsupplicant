@@ -31,7 +31,6 @@
  **/
 
 #include "stdafx.h"
-#include "CharC.h"
 #include "Emitter.h"
 #include "xsupcalls.h"
 #include "Util.h"
@@ -316,7 +315,6 @@ bool XSupCalls::createNewInterface(QString &name, QString &deviceDescription, QS
                                    bool bWireless, bool /*bDisplayError*/)
 {
   bool bValue = true;
-  CharC macAddress(mac);
   config_interfaces *pConfig = NULL;
   QString newName = name;
   int i = 1;
@@ -344,7 +342,7 @@ bool XSupCalls::createNewInterface(QString &name, QString &deviceDescription, QS
 
   // Convert the one format of mac address to the other one
   // mac is an array of 6 char's
-  xsupgui_mac_utils_convert_mac(macAddress.charPtr(), (char *)pConfig->mac);
+  xsupgui_mac_utils_convert_mac(mac.toAscii().data(), (char *)pConfig->mac);
   if (bWireless)
   {
     pConfig->flags |= CONFIG_INTERFACE_IS_WIRELESS;
@@ -499,10 +497,9 @@ bool XSupCalls::getConfigConnectionName(QString &deviceDescription,
                                         bool bDisplayError)
 {
   bool bValue = true;
-  CharC d(deviceName);
   char *pName = NULL;
 
-  int retval = xsupgui_request_get_conn_name_from_int(d.charPtr(), &pName);
+  int retval = xsupgui_request_get_conn_name_from_int(deviceName.toAscii().data(), &pName);
   if (retval != 0)
   {
     if (retval != IPC_ERROR_NO_CONNECTION) // this means that there is no connection in use
@@ -539,10 +536,9 @@ bool XSupCalls::getConfigConnectionName(QString &deviceDescription,
 bool XSupCalls::getSignalStrength(QString &deviceDesc, QString &deviceName, int &signal, bool bDisplayError)
 {
   bool bValue = true;
-  CharC d(deviceName);
   int retval;
 
-  retval = xsupgui_request_get_signal_strength_percent(d.charPtr(), &signal);
+  retval = xsupgui_request_get_signal_strength_percent(deviceName.toAscii().data(), &signal);
   if (retval != 0)
   {
     if (bDisplayError)
@@ -568,10 +564,9 @@ bool XSupCalls::getAssociation(QString &deviceDesc, QString &deviceName, QString
 {
   bool bValue = true;
   QString text;
-  CharC d(deviceName);
   int assocType;
 
-  int retval = xsupgui_request_get_association_type(d.charPtr(), &assocType);
+  int retval = xsupgui_request_get_association_type(deviceName.toAscii().data(), &assocType);
   if (retval != 0)
   {
     bValue = false;
@@ -625,10 +620,9 @@ bool XSupCalls::getAssociation(QString &deviceDesc, QString &deviceName, QString
 */
 bool XSupCalls::getSSID(QString &deviceDesc, QString &device, QString &ssidString, bool bDisplayError)
 {
-  char *ssid;
-  CharC d(device);
+  char *ssid = NULL;
 
-  int retval = xsupgui_request_get_ssid(d.charPtr(), &ssid);
+  int retval = xsupgui_request_get_ssid(device.toAscii().data(), &ssid);
 	if (retval == REQUEST_SUCCESS)
   {
     ssidString = ssid;
@@ -950,10 +944,9 @@ bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, ssid_info_enum **p
 */
 bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, QString &deviceName, ssid_info_enum **pssids)
 {
-  CharC d(deviceName);
   Q_ASSERT(pssids);
 
-  int retval = xsupgui_request_enum_ssids(d.charPtr(), pssids);
+  int retval = xsupgui_request_enum_ssids(deviceName.toAscii().data(), pssids);
   if (retval == REQUEST_SUCCESS && *pssids)
 	{
 		return true;
@@ -1002,11 +995,10 @@ bool XSupCalls::enumProfiles(unsigned char config_type, profile_enum **pProfiles
 bool XSupCalls::getConfigProfile(unsigned char config_type, QString &profileName, config_profiles **pConfig, bool bDisplayError)
 {
   Q_ASSERT(pConfig);
-  CharC pName(profileName);
 
   *pConfig = NULL;
 
-  int retval = xsupgui_request_get_profile_config(config_type, pName.charPtr(), pConfig);
+  int retval = xsupgui_request_get_profile_config(config_type, profileName.toAscii().data(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
     return true;
@@ -1114,7 +1106,6 @@ bool XSupCalls::getCertInfo(QString &storetype, QString &location, cert_info **c
 bool XSupCalls::getConfigConnection(unsigned char config_type, QString &connection, config_connection **pConfig, bool bDisplayError)
 {
   Q_ASSERT(pConfig);
-  CharC conn(connection);
   *pConfig = NULL;
 
   if (connection.isEmpty())
@@ -1123,7 +1114,7 @@ bool XSupCalls::getConfigConnection(unsigned char config_type, QString &connecti
     return false;
   }
 
-  int retval = xsupgui_request_get_connection_config(config_type, conn.charPtr(), pConfig);
+  int retval = xsupgui_request_get_connection_config(config_type, connection.toAscii().data(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
     return true;
@@ -1149,10 +1140,9 @@ bool XSupCalls::getConfigConnection(unsigned char config_type, QString &connecti
 bool XSupCalls::getConfigTrustedServer(unsigned char config_type, QString &server, config_trusted_server **pConfig, bool bDisplayError)
 {
   Q_ASSERT(pConfig);
-  CharC srvr(server);
   *pConfig = NULL;
 
-  int retval = xsupgui_request_get_trusted_server_config(config_type, srvr.charPtr(), pConfig);
+  int retval = xsupgui_request_get_trusted_server_config(config_type, server.toAscii().data(), pConfig);
   if (retval == REQUEST_SUCCESS && *pConfig)
   {
     return true;
@@ -1181,9 +1171,8 @@ bool XSupCalls::getConnectionInformation(QString &connectionName, int &authType,
   bool bValue = true;
   char *username = NULL;
   char *password = NULL;
-  CharC c(connectionName);
 
-  int retval = xsupgui_request_get_connection_upw(c.charPtr(), &username, &password, &authType);
+  int retval = xsupgui_request_get_connection_upw(connectionName.toAscii().data(), &username, &password, &authType);
   if (retval)
   {
     if(bDisplayError)
@@ -1244,9 +1233,7 @@ bool XSupCalls::getDefaultSettings(config_globals **pGlobals)
 */
 bool XSupCalls::getAuthTime(QString &deviceName, long int &timeauthed, bool bDisplayError)
 {
-  CharC d(deviceName);
-
-  int retval = xsupgui_request_get_seconds_authenticated(d.charPtr(), &timeauthed);
+  int retval = xsupgui_request_get_seconds_authenticated(deviceName.toAscii().data(), &timeauthed);
   if (retval == REQUEST_SUCCESS)
   {
     return true;
@@ -1273,9 +1260,8 @@ bool XSupCalls::getAuthTime(QString &deviceName, long int &timeauthed, bool bDis
 bool XSupCalls::getIPInfo(QString &deviceDescription, IPInfoClass &outInfo, bool bDisplayError)
 {
   ipinfo_type *info = NULL; 
-  CharC d(deviceDescription);
 
-  int retval = xsupgui_request_get_ip_info(d.charPtr(), &info);
+  int retval = xsupgui_request_get_ip_info(deviceDescription.toAscii().data(), &info);
   if (retval == REQUEST_SUCCESS)
   {
     outInfo.setInfo(info);
@@ -1308,10 +1294,9 @@ bool XSupCalls::getDeviceName(const QString &deviceDescription, QString &deviceN
 {
   QString text;
   char *pDeviceName = NULL;
-  CharC d(deviceDescription);
 
   // Using the device description - get the device name
-  int retval = xsupgui_request_get_devname(d.charPtr(), &pDeviceName);
+  int retval = xsupgui_request_get_devname(deviceDescription.toAscii().data(), &pDeviceName);
 	if (retval != REQUEST_SUCCESS)
   {
     if (bDisplayError)
@@ -1347,10 +1332,9 @@ bool XSupCalls::getDeviceDescription(const QString &deviceName, QString &deviceD
 {
   QString text;
   char *pDeviceDescription = NULL;
-  CharC d(deviceName);
 
   // Using the device description - get the device name
-  int retval = xsupgui_request_get_devdesc(d.charPtr(), &pDeviceDescription);
+  int retval = xsupgui_request_get_devdesc(deviceName.toAscii().data(), &pDeviceDescription);
 	if (retval != REQUEST_SUCCESS)
   {
     if (bDisplayError)
@@ -1386,10 +1370,9 @@ bool XSupCalls::getDeviceDescription(const QString &deviceName, QString &deviceD
 bool XSupCalls::getEncryption(QString &device, QString &encryptionType, bool bDisplayError)
 {
   bool bValue = true;
-  CharC d(device);
   int keyType = 0;
 
-  int retval = xsupgui_request_get_pairwise_key_type(d.charPtr(), &keyType);
+  int retval = xsupgui_request_get_pairwise_key_type(device.toAscii().data(), &keyType);
   if (retval)
   {
     if (bDisplayError)
@@ -1464,9 +1447,8 @@ bool XSupCalls::getPhysicalState(QString &deviceDescription,
                                  bool bDisplayError)
 {
   bool bValue = true;
-  CharC d(deviceName);
 
-  int retval = xsupgui_request_get_physical_state(d.charPtr(), &state);
+  int retval = xsupgui_request_get_physical_state(deviceName.toAscii().data(), &state);
   if (retval)
   {
     if (bDisplayError)
@@ -1563,8 +1545,8 @@ bool XSupCalls::get1xState(QString &deviceDescription,
                            bool bDisplayError)
 {
   bool bValue = true;
-  CharC d(deviceName);
-  int retval = xsupgui_request_get_1x_state(d.charPtr(), &state);
+
+  int retval = xsupgui_request_get_1x_state(deviceName.toAscii().data(), &state);
   if (retval)
   {
     if (bDisplayError)
@@ -1702,9 +1684,8 @@ bool XSupCalls::getConfigInterface(QString &interfaceName, config_interfaces **p
   Q_ASSERT(pInterfaceData);
 
   int retval = 0;
-  CharC i(interfaceName);
 
-  retval = xsupgui_request_get_interface_config(i.charPtr(), pInterfaceData);
+  retval = xsupgui_request_get_interface_config(interfaceName.toAscii().data(), pInterfaceData);
 
   if (retval == REQUEST_SUCCESS && *pInterfaceData)
   {
@@ -1847,10 +1828,8 @@ bool XSupCalls::setConfigConnection(unsigned char config_type, config_connection
 bool XSupCalls::setConnection(QString &deviceName, QString &connectionName)
 {
   bool bValue = false;
-  CharC d(deviceName);
-  CharC c(connectionName);
 
-  int retval = xsupgui_request_set_connection(d.charPtr(), c.charPtr());
+  int retval = xsupgui_request_set_connection(deviceName.toAscii().data(), connectionName.toAscii().data());
   if (retval == REQUEST_SUCCESS)
   {
     bValue = true;
@@ -1993,9 +1972,6 @@ bool XSupCalls::setConfigInterface(config_interfaces *pConfig)
 bool XSupCalls::setUserNameAndPassword(const QString &connectionName, const QString &userName, 
                                        const QString &password, int authType)
 {
-  CharC connName(connectionName);
-  CharC uName(userName);
-  CharC pass(password); 
   char *pPassword = NULL;
   char *pUser = NULL;
   int	retval = REQUEST_SUCCESS;
@@ -2004,13 +1980,13 @@ bool XSupCalls::setUserNameAndPassword(const QString &connectionName, const QStr
   {
     if (!userName.isEmpty())
     {
-      pUser = uName.charPtr();
+      pUser = (char *)userName.toAscii().data_ptr();
     }
     if (!password.isEmpty())
     {
-      pPassword = pass.charPtr();
+      pPassword = (char *)password.toAscii().data_ptr();
     }
-    retval = xsupgui_request_set_connection_upw(connName.charPtr(), pUser, pPassword);
+    retval = xsupgui_request_set_connection_upw(connectionName.toAscii().data(), pUser, pPassword);
   }
 
   if (retval == REQUEST_SUCCESS)
@@ -2857,10 +2833,9 @@ bool XSupCalls::deleteProfileConfig(unsigned char config_type, QString &name)
 */
 bool XSupCalls::deleteTrustedServerConfig(unsigned char config_type, QString &name)
 {
-  CharC n(name);
   int retval = REQUEST_SUCCESS;
 
-  retval = xsupgui_request_delete_trusted_server_config(config_type, n.charPtr(), 0);
+  retval = xsupgui_request_delete_trusted_server_config(config_type, name.toAscii().data(), 0);
   if (retval == REQUEST_SUCCESS)
   {
     return writeConfig(config_type); // now save it to the configuration file
@@ -3463,8 +3438,8 @@ bool XSupCalls::isOnlyInstance(char *exeName)
 
 #ifdef WINDOWS
   QString fullName = QString ("%1.exe").arg(exeName);
-  CharC c = fullName;
-  if (supdetect_numinstances(c.charPtr()) >= 2)
+
+  if (supdetect_numinstances(fullName.toAscii().data()) >= 2)
   {
     return false;
   }
@@ -3574,9 +3549,8 @@ bool XSupCalls::isLiveInterface(const int_enum *pLiveInts, const char *pConfigIn
 bool XSupCalls::networkDisconnect(QString &deviceName, bool)
 {
   bool bValue = true;
-  CharC d(deviceName);
 
-  if (xsupgui_request_disconnect_connection((char *)deviceName.data()) == REQUEST_SUCCESS)
+  if (xsupgui_request_disconnect_connection(deviceName.toAscii().data()) == REQUEST_SUCCESS)
   {
 	  bValue = true;
   }
@@ -3588,7 +3562,7 @@ bool XSupCalls::networkDisconnect(QString &deviceName, bool)
   // Unbind the connection so that the user can delete or change the config.
   if (bValue == true)
   {
-	  if (xsupgui_request_unbind_connection(d.charPtr()) != REQUEST_SUCCESS)
+	  if (xsupgui_request_unbind_connection(deviceName.toAscii().data()) != REQUEST_SUCCESS)
 		  bValue = false;
   }
 

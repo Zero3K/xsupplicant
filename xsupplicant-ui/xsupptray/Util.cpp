@@ -34,12 +34,6 @@
 #include <QtGui>
 #include <qstring.h>
 #include "Util.h"
-#include "CharC.h"
-
-// This does not appear to be used.  Commented out on 2007-Sep-05.
-//#ifdef WINDOWS
-//#include <atlstr.h>
-//#endif /* WINDOWS */
 
 bool Util::myConnect(const QObject *from, const char *signal, const QObject *to, const char *slot)
 {

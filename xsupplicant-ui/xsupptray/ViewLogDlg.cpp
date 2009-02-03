@@ -32,14 +32,12 @@
 
 #include "stdafx.h"
 #include "ViewLogDlg.h"
-#include "CharC.h"
 #include <stdio.h>
 #include "Util.h"
 #include "FormLoader.h"
 #include "helpbrowser.h"
 
-uiWindowViewLogs::uiWindowViewLogs(QString &folderPath):
-  m_message(this)
+uiWindowViewLogs::uiWindowViewLogs(QString &folderPath)
 {
   int size = folderPath.size();
   if (folderPath.at(size-1) != '/' && folderPath.at(size-1) != '\\')

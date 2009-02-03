@@ -50,7 +50,7 @@
   \return Nothing
 */
 PreferredConnections::PreferredConnections(XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow)
-     : QWidget(parent), m_supplicant(supplicant), m_message(this), m_pParentWindow(parentWindow)
+     : QWidget(parent), m_supplicant(supplicant), m_pParentWindow(parentWindow)
  {
   m_pAvailableList = NULL;
   m_pPreferredList = NULL;
