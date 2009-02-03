@@ -438,6 +438,12 @@ void PreferredConnections::slotEnableButtons()
 */
 void PreferredConnections::updateLists()
 {
+	int i = 0;
+	int retval = 0;
+	bool success = false;
+	config_connection *pConn = NULL;
+	bool volatileConn = false;
+
 	if (m_pAvailableList != NULL)
 		m_pAvailableList->clear();
 	
@@ -449,21 +455,16 @@ void PreferredConnections::updateLists()
 		m_pConns = NULL;
 	}
 		
-	int retval = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &m_pConns);
+	retval = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &m_pConns);
 	
 	// if no connections then nothing to populate lists with
 	if (retval != REQUEST_SUCCESS || m_pConns == NULL)
 		return;
 
-	int i = 0;
 	while (m_pConns[i].name != NULL)
 	{
 		if (m_pConns[i].ssid != NULL && QString(m_pConns[i].ssid).isEmpty() == false)
 		{
-			bool success;
-			config_connection *pConn;
-			bool volatileConn = false;
-			
 			success = XSupWrapper::getConfigConnection(m_pConns[i].config_type, QString(m_pConns[i].name), &pConn);
 			
 			if (success == true && pConn != NULL && ((pConn->flags & CONFIG_VOLATILE_CONN) == CONFIG_VOLATILE_CONN))
@@ -478,13 +479,11 @@ void PreferredConnections::updateLists()
 			// don't show volatile connections in this list	
 			if (volatileConn == false)
 			{
-			
-				int priority = m_pConns[i].priority;
 				QListWidgetItem *pItem = new QListWidgetItem(m_pConns[i].name);
 				
 				if (pItem != NULL)
 				{
-					if (priority >= XSupCalls::CONNECTION_DEFAULT_PRIORITY)
+					if (m_pConns[i].priority >= XSupCalls::CONNECTION_DEFAULT_PRIORITY)
 					{
 						// Available list goes here
 						if (m_pAvailableList != NULL)

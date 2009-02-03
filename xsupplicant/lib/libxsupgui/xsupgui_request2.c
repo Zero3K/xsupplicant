@@ -825,7 +825,7 @@ int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connection
 	printf("%s connection(s) found!\n", content);
 #endif
 	numints = atoi((char *)content);
-	free(content);
+	xmlFree(content);
 
 	// Allocate memory for our return structure.
 	myconns = malloc(sizeof(conn_enum)*(numints+1));
@@ -896,7 +896,7 @@ int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connection
 		if (content != NULL)
 		{
 			myconns[i].priority = atoi((char *)content);
-			free(content);
+			xmlFree(content);
 		}
 
 		t = xsupgui_request_find_node(n->children, "Encryption");
@@ -911,7 +911,7 @@ int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connection
 		if (content != NULL)
 		{
 			myconns[i].encryption = atoi((char *)content);
-			free(content);
+			xmlFree(content);
 		}
 
 		t = xsupgui_request_find_node(n->children, "Authentication");
@@ -926,7 +926,7 @@ int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connection
 		if ((content != NULL) && (strlen((char *)content) > 0))
 		{
 			myconns[i].auth_type = atoi((char *)content);
-			free(content);
+			xmlFree(content);
 		}
 
 		t = xsupgui_request_find_node(n->children, "Association_Type");
@@ -941,7 +941,7 @@ int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connection
 		if ((content != NULL) && (strlen((char *)content) > 0))
 		{
 			myconns[i].assoc_type = atoi((char *)content);
-			free(content);
+			xmlFree(content);
 		}
 
 		n = n->next;

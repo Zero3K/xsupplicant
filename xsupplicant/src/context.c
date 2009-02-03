@@ -312,7 +312,7 @@ char config_build(context *ctx, char *network_name)
 		  // Only use a default connection if we are managing the interface.
 		  if ((result != NULL) && (!TEST_FLAG(myint->flags, CONFIG_INTERFACE_DONT_MANAGE)))
 		  {
-			  debug_printf(DEBUG_CONFIG_PARSE, "!!!!!!!!!!!! Setting default network to : %s\n", result->name);
+			  debug_printf(DEBUG_CONFIG_PARSE, "Setting default network to : %s\n", result->name);
 
 				if (context_has_all_data(result) == TRUE)
 				{
@@ -320,7 +320,6 @@ char config_build(context *ctx, char *network_name)
 					FREE(ctx->conn_name);
 					ctx->conn_name = _strdup(result->name);
 		
-					// Only system level profiles can be configured as a default.
 					ctx->prof = config_find_profile(CONFIG_LOAD_USER, ctx->conn->profile);
 					if (ctx->prof == NULL) ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL, ctx->conn->profile);
 					return TRUE;

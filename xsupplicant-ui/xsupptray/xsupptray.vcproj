@@ -226,13 +226,13 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-Zm200 -EHsc -w34100 -w34189 -Zm200 -EHsc -w34100 -w34189 -w34100 -w34189"
+				AdditionalOptions="-Zm200 -EHsc -w34100 -w34189"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\xsupplicant\src\eap_types\tnc;..\..\xsupplicant\lib\libsupdetect;..\..\xsupplicant\lib\libxsupconfig;..\..\xsupplicant\lib;..\..\xsupplicant\src;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;&quot;$(QTDIR)\include\QtCore&quot;;&quot;$(QTDIR)\include\QtGui&quot;;&quot;$(QTDIR)\include&quot;;.;&quot;$(QTDIR)\include\ActiveQt&quot;;&quot;$(QTDIR)\mkspecs\win32-msvc2005&quot;;.\GeneratedFiles"
 				PreprocessorDefinitions="_DEBUG;WINDOWS;_WINDOWS;UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_GUI_LIB;QT_CORE_LIB;QT_THREAD_SUPPORT"
 				GeneratePreprocessedFile="0"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="false"
+				BufferSecurityCheck="true"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="2"
