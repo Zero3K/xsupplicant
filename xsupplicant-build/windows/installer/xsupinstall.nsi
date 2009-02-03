@@ -384,8 +384,6 @@ SectionIn 1 2 RO
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_left.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_right.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\arrow_up.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\key.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lock.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lockedstate.png"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\lockedstate_bw.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\prod_color.png"
@@ -399,20 +397,6 @@ SectionIn 1 2 RO
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\signal_2.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\signal_3.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\signal_4.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tnc_allowed.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tnc_isolated.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tnc_none.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_advanced.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_connections.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_connection.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_globals.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_internals.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_logging.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_profile.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_profiles.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_settings.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_trustedserver.png"
-        File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\tree_trustedservers.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\unlockedstate.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\wired.png"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\icons\wireless.png"
@@ -694,10 +678,8 @@ remove_program_files:
         Delete $INSTDIR\Skins\Default\icons\arrow_left.png
         Delete $INSTDIR\Skins\Default\icons\arrow_right.png
         Delete $INSTDIR\Skins\Default\icons\arrow_up.png
-        Delete $INSTDIR\Skins\Default\icons\lock.png
         Delete $INSTDIR\Skins\Default\icons\lockedstate.png
 	Delete $INSTDIR\Skins\Default\icons\lockedstate_bw.png
-        Delete $INSTDIR\Skins\Default\icons\key.png
         Delete $INSTDIR\Skins\Default\icons\prod_color.png
         Delete $INSTDIR\Skins\Default\icons\prod_eng_connected.png
         Delete $INSTDIR\Skins\Default\icons\prod_green.png
@@ -709,20 +691,6 @@ remove_program_files:
         Delete $INSTDIR\Skins\Default\icons\signal_2.png
         Delete $INSTDIR\Skins\Default\icons\signal_3.png
         Delete $INSTDIR\Skins\Default\icons\signal_4.png
-        Delete $INSTDIR\Skins\Default\icons\tnc_allowed.png
-        Delete $INSTDIR\Skins\Default\icons\tnc_isolated.png
-        Delete $INSTDIR\Skins\Default\icons\tnc_none.png
-        Delete $INSTDIR\Skins\Default\icons\tree_advanced.png
-        Delete $INSTDIR\Skins\Default\icons\tree_connections.png
-        Delete $INSTDIR\Skins\Default\icons\tree_connection.png
-        Delete $INSTDIR\Skins\Default\icons\tree_globals.png
-        Delete $INSTDIR\Skins\Default\icons\tree_internals.png
-        Delete $INSTDIR\Skins\Default\icons\tree_logging.png
-        Delete $INSTDIR\Skins\Default\icons\tree_profiles.png
-        Delete $INSTDIR\Skins\Default\icons\tree_profile.png
-        Delete $INSTDIR\Skins\Default\icons\tree_settings.png
-        Delete $INSTDIR\Skins\Default\icons\tree_trustedservers.png
-        Delete $INSTDIR\Skins\Default\icons\tree_trustedserver.png
         Delete $INSTDIR\Skins\Default\icons\unlockedstate.png
         Delete $INSTDIR\Skins\Default\icons\wired.png
         Delete $INSTDIR\Skins\Default\icons\wireless.png
