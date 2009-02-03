@@ -1289,7 +1289,7 @@ void debug_printf(uint32_t level, char *fmt, ...)
 	}
 	else if (TEST_FLAG(level, DEBUG_PLUGINS))
 	  {
-	    if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE, "[PLUGIN HOOK ] ") != 0 )
+	    if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE, "[PLUGIN HOOK] ") != 0 )
 	      {
 		printf("Attempt to overflow a buffer in %s() at %d!\n", __FUNCTION__, __LINE__);
 		return;

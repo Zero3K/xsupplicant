@@ -321,7 +321,8 @@ char config_build(context *ctx, char *network_name)
 					ctx->conn_name = _strdup(result->name);
 		
 					// Only system level profiles can be configured as a default.
-					ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL, ctx->conn->profile);
+					ctx->prof = config_find_profile(CONFIG_LOAD_USER, ctx->conn->profile);
+					if (ctx->prof == NULL) ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL, ctx->conn->profile);
 					return TRUE;
 				}
 				else

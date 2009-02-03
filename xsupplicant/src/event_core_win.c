@@ -1505,6 +1505,9 @@ void event_core_win_do_user_logon()
 
 					context_disconnect(ctx);
 					UNSET_FLAG(ctx->flags, FORCED_CONN);
+
+					// Then, see if we have a default we need to hop to.
+					config_build(ctx, NULL);
 				}
 			}
 		}

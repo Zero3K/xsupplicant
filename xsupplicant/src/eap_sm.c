@@ -1445,7 +1445,8 @@ void eap_sm_prepopulate_id(eap_sm *sm)
     if (!xsup_assert((sm != NULL), "sm != NULL", FALSE))
 		return;
 
-	if (sm->curMethods == NULL) return;						// No method is selected, bail out.
+	if (sm->curMethods == NULL) 
+		return;						// No method is selected, bail out.
 
 	idx = eap_sm_find_method(sm->curMethods->method_num);
 	if (idx == -1) return;
@@ -1569,7 +1570,7 @@ uint8_t *buildIdentity(uint8_t reqId, char *ident)
  **/
 void eap_sm_change_to_identity(eap_sm *sm)
 {
-	context *ctx;
+	context *ctx = NULL;
 
   xsup_assert((sm != NULL), "sm != NULL", TRUE);
 
