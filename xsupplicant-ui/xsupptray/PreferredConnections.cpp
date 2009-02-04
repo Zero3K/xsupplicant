@@ -49,8 +49,8 @@
   \param[in] parent is the parent widget
   \return Nothing
 */
-PreferredConnections::PreferredConnections(XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow)
-     : QWidget(parent), m_supplicant(supplicant), m_pParentWindow(parentWindow)
+PreferredConnections::PreferredConnections(XSupCalls *supplicant, QWidget *parent, QWidget *parentWindow)
+     : QWidget(parent), m_psupplicant(supplicant), m_pParentWindow(parentWindow)
  {
   m_pAvailableList = NULL;
   m_pPreferredList = NULL;
@@ -543,7 +543,7 @@ void PreferredConnections::slotClose()
 		}
 	}
 
-	m_supplicant.applyPriorities(m_pConns);
+	m_psupplicant->applyPriorities(m_pConns);
 	emit close();
 }
 

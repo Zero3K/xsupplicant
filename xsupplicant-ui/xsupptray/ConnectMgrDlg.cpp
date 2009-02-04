@@ -50,11 +50,12 @@
 // TODO:  disable wired options if no wired interface present
 // TODO:  disable wireless options if no wireless interfaces present
 
-ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp)
+ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp, XSupCalls *supplicant)
 	: QWidget(parent),
 	m_pParent(parent),
 	m_pEmitter(e),
 	m_pTrayApp(trayApp),
+	m_psupplicant(supplicant),
 	m_pParentWindow(parentWindow)
 {
 	m_pConnections = NULL;
@@ -1089,7 +1090,7 @@ void ConnectMgrDlg::showPriorityDialog()
 
 	if (m_pPrefDlg == NULL)
 	{
-		m_pPrefDlg = new PreferredConnections(XSupCalls(m_pTrayApp), this, m_pRealForm);
+		m_pPrefDlg = new PreferredConnections(m_psupplicant, this, m_pRealForm);
 		if (m_pPrefDlg != NULL)
 		{
 			if (m_pPrefDlg->attach() == false)

@@ -44,7 +44,7 @@ class PreferredConnections : public QWidget
 {
 	Q_OBJECT
 public:
-	PreferredConnections(XSupCalls &supplicant, QWidget *parent, QWidget *parentWindow);
+	PreferredConnections(XSupCalls *supplicant, QWidget *parent, QWidget *parentWindow);
 	~PreferredConnections();
 	bool attach();
 	void show();
@@ -70,9 +70,8 @@ private:
 	void moveItems(QListWidget *from, QListWidget *to);
 	
 private:
-	QString m_connection;
 	conn_enum *m_pConns;
-	XSupCalls &m_supplicant;
+	XSupCalls *m_psupplicant;
 
 	//! GUI variables
 	QWidget *m_pRealForm;

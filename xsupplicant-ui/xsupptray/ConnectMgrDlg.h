@@ -53,13 +53,14 @@ class Emitter;
 class PreferredConnections;
 class ConnectionWizard;
 class MachineAuthWizard;
+class XSupCalls;
 
 class ConnectMgrDlg : public QWidget
 {
 	Q_OBJECT
 
 public:
-	ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp);
+	ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *trayApp, XSupCalls *supplicant);
 	~ConnectMgrDlg();
 	bool create(void);
 	void show(void);
@@ -190,6 +191,7 @@ private:
 	ConnectionWizard *m_pConnWizard;
 
 	MachineAuthWizard *m_pMachineAuth;
+	XSupCalls *m_psupplicant;
 	
 	static const int m_minConnListRowCount = 6;
 	

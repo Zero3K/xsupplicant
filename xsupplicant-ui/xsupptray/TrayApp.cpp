@@ -1727,7 +1727,7 @@ void TrayApp::showBasicConfig(void)
 	{
 		if (m_pConnMgr == NULL)
 		{
-			m_pConnMgr = new ConnectMgrDlg(this, NULL, m_pEmitter, this);
+			m_pConnMgr = new ConnectMgrDlg(this, NULL, m_pEmitter, this, &m_supplicant);
 			if (m_pConnMgr == NULL || m_pConnMgr->create() == false)
 			{
 				QMessageBox::critical(this, tr("Form Creation Error"), tr("The Connection Manager Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));

@@ -34,6 +34,9 @@
 
 #include "SSIDList.h"
 #include "FormLoader.h"
+#include "TableImageDelegate.h"
+#include "WifiStandardImages.h"
+#include "GraphSortItem.h"
 
 extern "C" {
 #include "libxsupgui/xsupgui_request.h"
@@ -103,6 +106,9 @@ void SSIDList::initUI(void)
 		
 		// don't allow user to edit any of the cells
 		m_pTableWidget->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+		// Set our image delegate.
+		m_pTableWidget->setItemDelegateForColumn(SSIDList::COL_802_11, new TableImageDelegate);
 		
 		// don't show header on left side of table
 		m_pTableWidget->verticalHeader()->setVisible(false);
@@ -200,9 +206,10 @@ void SSIDList::refreshList(const QString &adapterName)
 			signalText.setNum(strength);
 			signalText.append(tr("%"));
 			
-			QTableWidgetItem *signalItem = NULL;
-			signalItem = new QTableWidgetItem(signalText,1000+i);
-			
+			GraphSortItem *signalItem = NULL;
+			signalItem = new GraphSortItem(strength);
+			signalItem->setText(signalText);
+
 			if (signalItem != NULL)
 			{
 				if (strength <= 11)
@@ -254,46 +261,10 @@ void SSIDList::refreshList(const QString &adapterName)
 			{
 				// build filename for icon image to load into table
 				unsigned char modes = m_curNetworks.at(i).m_modes;
-				
-				QString labelFileName = "802_11_";
-				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_A) != 0)
-					labelFileName.append("a");
-				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_B) != 0)
-					labelFileName.append("b");
-				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_G) != 0)
-					labelFileName.append("g");
-				if ((modes & WirelessNetworkInfo::WIRELESS_MODE_N) != 0)
-					labelFileName.append("n");	
-				labelFileName.append(".png");
 
-				QMap<QString, QPixmap>::const_iterator iter;
-				
-				// look for pixmap in cache first before loading from disk
-				iter = m_pixmapMap.constFind(labelFileName);
-				if (iter == m_pixmapMap.constEnd())
-				{
-					QPixmap *p;
-					p = FormLoader::loadicon(labelFileName);
-					if (p != NULL)
-					{
-						m_pixmapMap.insert(labelFileName, *p);
-						iter = m_pixmapMap.constFind(labelFileName);
-						delete p;
-					}
-				}
-
-				// if image was successfully loaded or found in cache, use it in table
-				if (iter != m_pixmapMap.constEnd())
-				{
-					QLabel *tmpLabel;
-					tmpLabel = new QLabel();
-					if (tmpLabel != NULL)
-					{
-						tmpLabel->setPixmap(*iter);
-						tmpLabel->setAlignment(Qt::AlignCenter);
-						m_pTableWidget->setCellWidget(i, SSIDList::COL_802_11, tmpLabel);
-					}
-				}																	
+				GraphSortItem *standards = new GraphSortItem(modes);
+				standards->setData(0, qVariantFromValue(WifiStandardImages(modes)));
+				m_pTableWidget->setItem(i, SSIDList::COL_802_11, standards);
 			}
 		}
 	}
