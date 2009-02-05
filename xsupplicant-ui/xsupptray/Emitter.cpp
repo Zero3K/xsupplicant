@@ -515,3 +515,7 @@ void Emitter::sendAutoConnectionChange(QString newConn)
 	emit signalAutoConnectionChange(newConn);
 }
 
+void Emitter::sendOtherSupplicantDetected(QString intDesc)
+{
+	emit signalOtherSupplicantDetected(intDesc);
+}

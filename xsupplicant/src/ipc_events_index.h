@@ -99,6 +99,7 @@
 #define IPC_EVENT_PSK_TIMEOUT								   20  ///< The PSK connection attempt timed out.
 #define IPC_EVENT_CONNECTION_UNBOUND						   21  ///< The connection was unbound from interface %s.
 #define IPC_EVENT_AUTO_SELECTED_CONNECTION					   22  ///< A connection was automagically selected based on prioritization information.
+#define IPC_EVENT_OTHER_SUPPLICANT_POSSIBLE					   23  ///< Another supplicant may be operating on this system.
 
 // State machines that we may get state machine events for. 
 #define IPC_STATEMACHINE_PHYSICAL                              1   ///< Identify the physical state machine

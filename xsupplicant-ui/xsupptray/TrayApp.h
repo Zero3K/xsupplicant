@@ -133,7 +133,9 @@ private slots:
 	void handleBadPSK(const QString &);
 	void handleBadCreds(const QString &, const QString &);
 	void cleanupConnSelDialog(void);
-	
+	void slotOtherSupplicant(const QString &);
+	void slotLinkDropped(char *);
+
 private:
     void createTrayActionsAndConnections();
     void createTrayIcon();
@@ -191,6 +193,7 @@ private:
     EventListenerThread *m_pEventListenerThread; 
     bool m_bSupplicantConnected;
     bool m_bListenerStarted;
+	QStringList	m_OtherSupsDescs;				// A list of interfaces we have already screamed about finding other supplicants on.  (Wireless only for now.)
     startOption m_commandLineOption;
 
 	InterfaceCtrl *m_pIntCtrl;

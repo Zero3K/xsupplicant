@@ -174,6 +174,7 @@ typedef struct dot1x_state
 #define WIRELESS_SM_DOING_PSK		   BIT(12)  // We are doing WPA(2)-PSK.  This can be used on OSes that
 												//    don't return a reason code in a disassociate event.
 #define WIRELESS_SM_DISCONNECT_REQ     BIT(13)  // We set this when the user has requested a disconnect.  (So that we don't start the timer to prompt them to connect.)
+
 /**
  * Different values for the type of association that was used to connect to a 
  *  wireless network.
@@ -260,7 +261,7 @@ typedef enum {
 #define INT_GONE			BIT(4)   /**< The interface has been removed from the machine already.  (So don't do any of the interface deinit stuff, just clear the context.) */
 #define INT_IGNORE			BIT(5)   /**< The interface is not currently being used, or managed. */
 #define INT_REPROCESS		BIT(6)   /**< We are reprocessing a frame on this interface, so skip ahead to the highest layer. */
-#define DHCP_RELEASE_RENEW	BIT(7)   /**< The next DHCP event should be a release/renew, and not just a renew.
+#define DHCP_RELEASE_RENEW	BIT(7)   /**< The next DHCP event should be a release/renew, and not just a renew. */
 
 /**
  * Structure to store context information, mostly related to a specific

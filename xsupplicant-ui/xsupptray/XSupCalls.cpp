@@ -2455,7 +2455,13 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
 
 			case IPC_EVENT_AUTO_SELECTED_CONNECTION:
 				temp = value;
+				e.sendAutoConnectionChange(temp);
+				break;
 
+			case IPC_EVENT_OTHER_SUPPLICANT_POSSIBLE:
+				temp = value;
+				e.sendOtherSupplicantDetected(temp);
+				break;
 
             default:
             if (getUIEventString(uievent, desc))

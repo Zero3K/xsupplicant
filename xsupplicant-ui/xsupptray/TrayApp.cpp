@@ -121,6 +121,8 @@ TrayApp::~TrayApp()
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalRequestUPW(const QString &, const QString &)), this, SLOT(slotRequestUPW(const QString &, const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadPSK(const QString &)), this, SLOT(handleBadPSK(const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalBadCreds(const QString &, const QString &)), this, SLOT(handleBadCreds(const QString &, const QString &)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalOtherSupplicantDetected(const QString &)), this, SLOT(slotOtherSupplicant(const QString &)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalLinkDown(char *)), this, SLOT(slotLinkDropped(char *)));
 
 		delete m_pEmitter;
 		m_pEmitter = NULL;
@@ -662,6 +664,8 @@ void TrayApp::disconnectGlobalTrayIconSignals()
 		Util::myDisconnect(m_pEmitter, SIGNAL(interfaceRemoved(char *)), this, SLOT(slotInterfaceRemoved(char *)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalPostConnectTimeout(const QString &)), this, SLOT(slotConnectionTimeout(const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalScanCompleteMessage(const QString &)), this, SLOT(updatePopupMenuAfterScan(const QString &)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalOtherSupplicantDetected(const QString &)), this, SLOT(slotOtherSupplicant(const QString &)));
+		Util::myDisconnect(m_pEmitter, SIGNAL(signalLinkDown(char *)), this, SLOT(slotLinkDropped(char *)));
 	}
 }
 
@@ -826,6 +830,8 @@ bool TrayApp::postConnectActions()
   Util::myConnect(m_pEmitter, SIGNAL(signalShowConfig()), this, SLOT(slotLaunchConfig()));
   Util::myConnect(m_pEmitter, SIGNAL(signalShowLog()), this, SLOT(slotViewLog()));  
   Util::myConnect(m_pEmitter, SIGNAL(signalRequestUPW(const QString &, const QString &)), this, SLOT(slotRequestUPW(const QString &, const QString &)));
+  Util::myConnect(m_pEmitter, SIGNAL(signalOtherSupplicantDetected(const QString &)), this, SLOT(slotOtherSupplicant(const QString &)));
+  Util::myConnect(m_pEmitter, SIGNAL(signalLinkDown(char *)), this, SLOT(slotLinkDropped(char *)));
 
   updateIntControlCheck();
   setGlobalTrayIconState();
@@ -2144,5 +2150,31 @@ void TrayApp::cleanupConnSelDialog(void)
 		Util::myDisconnect(m_pConnSelDlg, SIGNAL(close(void)), this, SLOT(cleanupConnSelDialog(void)));
 		delete m_pConnSelDlg;
 		m_pConnSelDlg = NULL;
+	}
+}
+
+void TrayApp::slotOtherSupplicant(const QString &intDesc)
+{
+	if (!m_OtherSupsDescs.contains(intDesc))
+	{
+		QMessageBox::warning(this, tr("Other Wireless Manager"), tr("The state of the wireless interface changed unexpectedly.  This"
+			"often indicates another supplicant or wireless manager is running.  Please shut down any other supplicants or wireless "
+			"managers that may be running on interface '%1'.\n\n"
+			"Any active connection attempts by XSupplicant on this interface have been terminated.").arg(intDesc));
+
+		// Stuff the description in our string list so that we don't keep screaming.
+		m_OtherSupsDescs << intDesc;
+	}
+}
+
+void TrayApp::slotLinkDropped(char *intDesc)
+{
+	int myIdx = 0;
+
+	myIdx = m_OtherSupsDescs.indexOf(intDesc);
+	if (myIdx != -1)
+	{
+		// Remove it from the list so we scream again later if needed.
+		m_OtherSupsDescs.removeAt(myIdx);
 	}
 }

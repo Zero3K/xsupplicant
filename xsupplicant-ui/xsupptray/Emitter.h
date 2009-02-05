@@ -111,6 +111,7 @@ signals:
   void signalPSKTimeout(const QString &);
   void signalConnectionUnbound(const QString &);
   void signalAutoConnectionChange(const QString &);
+  void signalOtherSupplicantDetected(const QString &);
 
 public:
   Emitter();
@@ -172,6 +173,7 @@ public:
   void sendPSKTimeout(QString);
   void sendConnectionUnbound(QString);
   void sendAutoConnectionChange(QString);
+  void sendOtherSupplicantDetected(QString);
 };
 
 #endif  // _EMITTER_H_

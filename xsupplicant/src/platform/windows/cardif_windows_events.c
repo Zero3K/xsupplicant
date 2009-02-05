@@ -171,6 +171,51 @@ void cardif_windows_events_delay_link_up_thread(void *ctxptr)
 }
 
 /**
+ * \brief Verify that the SSID change we just got is one that was expected.  If it wasn't drop the connection and
+ *			send the UI a message.
+ *
+ * @param[in] ctx   The context for the interface we want to check the status on.
+ * @param[in] ssid   The SSID that we just hopped to.  (Can be NULL)
+ **/
+void cardif_windows_check_unexpected_change(context *ctx, char *ssid)
+{
+	wireless_ctx *wctx = NULL;
+
+	if (!TEST_FLAG(ctx->flags, INT_IGNORE))
+	{
+		if ((ctx->conn == NULL) || ((ssid != NULL) && (strcmp(ctx->conn->ssid, ssid) != 0)))
+		{
+			debug_printf(DEBUG_NORMAL, "XSupplicant has detected a change in SSIDs that was unexpected.  Another supplicant or manager might be running!\n");
+
+			// We need to change our state so that we don't attempt to take the authentication farther, BUT
+			// we can't use our normal disconnect routine since we don't want to disconnect the association,
+			// we just want to go silent.
+						
+			// If we have a connection bound, let the UI know we are dumpping it.
+			if (ctx->conn != NULL)
+			{
+				ipc_events_ui(NULL, IPC_EVENT_CONNECTION_UNBOUND, ctx->conn->name);
+
+				ctx->conn = NULL;
+				FREE(ctx->conn_name);
+				ctx->prof = NULL;
+							
+				if (ctx->intType == ETH_802_11_INT)
+				{
+					if (ctx->intTypeData != NULL)
+					{
+						wctx = (wireless_ctx *)ctx->intTypeData;
+						FREE(wctx->cur_essid);
+					}
+				}
+			}
+		
+			ipc_events_ui(NULL, IPC_EVENT_OTHER_SUPPLICANT_POSSIBLE, ctx->desc);
+		}
+	}
+}
+
+/**
  *  \brief Process the connect event that is passed up from the protocol driver.
  *
  *  There is no need to pass in any information from the protocol driver because the
@@ -219,11 +264,13 @@ void cardif_windows_int_event_connect(context *ctx)
 				{
 					debug_printf(DEBUG_NORMAL, "Interface '%s' assocated to the AP with BSSID %02X:%02X:%02X:%02X:%02X:%02X\n",
 						ctx->desc, bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
+					cardif_windows_check_unexpected_change(ctx, NULL);
 				}
 				else
 				{
 					debug_printf(DEBUG_NORMAL, "Interface '%s' assocated to the SSID '%s' with BSSID %02X:%02X:%02X:%02X:%02X:%02X\n",
 						ctx->desc, ssid, bssid[0], bssid[1], bssid[2], bssid[3], bssid[4], bssid[5]);
+					cardif_windows_check_unexpected_change(ctx, ssid);
 				}
 
 				if ((wctx->cur_essid != NULL) && (strcmp(ssid, wctx->cur_essid) != 0))
