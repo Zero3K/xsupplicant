@@ -26,6 +26,8 @@ struct win_sock_data {
   HANDLE mutexDhcpRunning;
   HANDLE mutexDhcpOutstanding;
   uint8_t needTerminate;
+
+  uint8_t strays;			// The # of frames that we didn't expect.
 };
 
 LPVOID GetLastErrorStr(DWORD);

@@ -35,7 +35,7 @@ WifiStandardImages::WifiStandardImages(unsigned char modes)
 	m_modes = modes;
 }
 
-void WifiStandardImages::paint(QPainter *painter, const QRect &rect, const QPalette &palette) const
+void WifiStandardImages::paint(QPainter *painter, const QRect &rect, const QPalette &) const
 {
 	unsigned char modes = m_modes;
 	unsigned int xpoint, ypoint;
