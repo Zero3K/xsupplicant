@@ -29,7 +29,7 @@
 !define PROTOCOL_DRIVER_REV     4     ; If the protocol driver is updated, this needs to be incremented to get it upgraded on user's systems.
 
 !ifndef QTDIR
-	!define QTDIR C:\Qt\qt-win-opensource-src-4.3.5
+	!define QTDIR C:\Qt\qt-win-opensource-src-4.3.4
 ;	!define QTDIR c:\qt\4.3.4
 !endif
 

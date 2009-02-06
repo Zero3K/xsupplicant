@@ -41,7 +41,7 @@ if ["%OPEN1X_BUILD_SDK%"]==[""] (
 )
 
 if ["%QTDIR%"]==[""] (
-	set QTDIR=C:\Qt\qt-win-opensource-src-4.3.5
+	set QTDIR=C:\Qt\qt-win-opensource-src-4.3.4
 )
 
 if [%QMAKESPEC%]==[] (
