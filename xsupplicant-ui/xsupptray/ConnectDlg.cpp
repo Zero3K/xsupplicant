@@ -115,7 +115,9 @@ ConnectDlg::~ConnectDlg()
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
 		
 	Util::myDisconnect(m_pEmitter, SIGNAL(signalPSKSuccess(const QString &)), this, SLOT(pskSuccess(const QString &)));
-		
+
+	Util::myDisconnect(m_pEmitter, SIGNAL(signalConnectionUnbound(const QString &)), this, SLOT(updateWirelessState(void)));
+
 	if (m_pSSIDListDlg != NULL)
 	{
 		delete m_pSSIDListDlg;
@@ -277,6 +279,7 @@ bool ConnectDlg::initUI(void)
 	Util::myConnect(&m_timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
 	Util::myConnect(m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
 	
+	Util::myConnect(m_pEmitter, SIGNAL(signalConnectionUnbound(const QString &)), this, SLOT(updateWirelessState(void)));
 	
 	// set initial state of UI - mainly setting the active tab
 	if (m_pAdapterTabControl != NULL)
@@ -1007,7 +1010,7 @@ void ConnectDlg::updateWirelessState(void)
 				free(connName);
 		}
 		
-		if (xsupgui_request_get_physical_state(m_currentWirelessAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS)
+		if ((pConn != NULL) && (xsupgui_request_get_physical_state(m_currentWirelessAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS))
 		{
 			if (state != WIRELESS_ASSOCIATED || (pConn != NULL && pConn->association.auth_type != AUTH_EAP))
 			{

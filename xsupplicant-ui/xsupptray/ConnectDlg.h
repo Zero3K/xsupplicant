@@ -64,8 +64,6 @@ private:
 	void populateWiredAdapterList(void);
 	void populateWirelessConnectionList(void);
 	void populateWiredConnectionList(void);
-	void updateWirelessState(void);
-	void updateWiredState(void);
 	void startConnectedTimer(const QString &adapterName);
 	void showTime(void);
 	void stopAndClearTimer(void);
@@ -79,6 +77,8 @@ private:
 	void getAndDisplayErrors();
 	
 private slots:
+	void updateWirelessState(void);
+	void updateWiredState(void);
 	void showSSIDList(void);
 	void selectWirelessAdapter(int);
 	void selectWiredAdapter(int);

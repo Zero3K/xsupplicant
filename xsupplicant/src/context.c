@@ -807,6 +807,9 @@ void context_disconnect(context *ctx)
 		txLogoff(ctx);
 	}
 
+	if (ctx->conn != NULL)
+		ipc_events_ui(NULL, IPC_EVENT_CONNECTION_UNBOUND, ctx->conn->name);
+
 	ctx->conn = NULL;
 	FREE(ctx->conn_name);
 	ctx->prof = NULL;
