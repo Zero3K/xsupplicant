@@ -588,8 +588,8 @@ void ConnectMgrDlg::updateWirelessAutoConnectState(void)
 {
 	if (m_pWirelessAutoConnect != NULL)
 	{
-		int retVal;
-		config_globals *pConfig;
+		int retVal = 0;
+		config_globals *pConfig = NULL;
 		
 		retVal = xsupgui_request_get_globals_config(&pConfig);
 		if (retVal == REQUEST_SUCCESS && pConfig != NULL) {
@@ -613,8 +613,8 @@ void ConnectMgrDlg::enableDisableWirelessAutoConnect(int newState)
 {
 	if (m_pWirelessAutoConnect != NULL)
 	{
-		int retVal;
-		config_globals *pConfig;
+		int retVal = 0;
+		config_globals *pConfig = NULL;
 		
 		retVal = xsupgui_request_get_globals_config(&pConfig);
 		if (retVal == REQUEST_SUCCESS && pConfig != NULL)	
@@ -645,7 +645,7 @@ void ConnectMgrDlg::enableDisableWirelessAutoConnect(int newState)
 
 void ConnectMgrDlg::updateWiredAutoConnectState(void)
 {
-	int x, i;
+	int x = 0, i = 0;
 	conn_enum *connEnum = NULL;
 	bool found = false;
 
@@ -699,7 +699,7 @@ void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
 	conn_enum *connEnum = NULL;
 	config_connection *myConn = NULL;
 	int are_admin = 0;
-	int x, i;
+	int x = 0, i = 0;
 	bool alreadySet = false;
 
 	if (connectionName.isEmpty())
