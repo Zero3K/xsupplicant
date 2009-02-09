@@ -2786,7 +2786,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
     {
 		myglobals = config_get_globals();
 
-	  if  ((!TEST_FLAG(ctx->flags, INT_IGNORE)) && (TEST_FLAG(myglobals->flags, CONFIG_GLOBALS_INT_CTRL)))
+	  if  ((myglobals != NULL) && (!TEST_FLAG(ctx->flags, INT_IGNORE)) && (TEST_FLAG(myglobals->flags, CONFIG_GLOBALS_INT_CTRL)))
 	  {
 		// Disable WZC (if it is running.)
 		  // First, try the wlan API as suggested by MS.
