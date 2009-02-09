@@ -2779,32 +2779,6 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 		}
 	}
 
-#ifdef WINDOWS
-	// We found what we were looking for, before we attempt to connect lets make sure that the native supplicant
-	// hasn't been turned on.
-    if (cardif_int_is_wireless(ctx) == TRUE)
-    {
-		myglobals = config_get_globals();
-
-	  if  ((myglobals != NULL) && (!TEST_FLAG(ctx->flags, INT_IGNORE)) && (TEST_FLAG(myglobals->flags, CONFIG_GLOBALS_INT_CTRL)))
-	  {
-		// Disable WZC (if it is running.)
-		  // First, try the wlan API as suggested by MS.
-		  if ((retval = wlanapi_interface_disable_wzc(ctx->desc)) == WLANAPI_NOT_AVAILABLE)
-		  {
-			if (wzc_ctrl_disable_wzc(ctx->intName) != 0)
-			{
-				debug_printf(DEBUG_NORMAL, "Unable to disable WZC for interface %s.\n", ctx->desc);
-			}
-		  }
-		  else if (retval != WLANAPI_OK)
-		  {
-			  debug_printf(DEBUG_NORMAL, "Unable to disable WZC for interface %s.\n", ctx->desc);
-		  }
-	  }
-	}
-#endif
-
 	// Validate and update the connection name.
 	FREE(ctx->conn_name);
 
