@@ -318,9 +318,9 @@ void ConnectionInfoDlg::updateWirelessState(void)
 				free(connName);
 		}
 		
-		if (xsupgui_request_get_physical_state(m_curAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS)
+		if ((pConn != NULL) && (xsupgui_request_get_physical_state(m_curAdapterName.toAscii().data(), &state) == REQUEST_SUCCESS))
 		{
-			if (state != WIRELESS_ASSOCIATED || (pConn != NULL && pConn->association.association_type != AUTH_EAP))
+			if (state != WIRELESS_ASSOCIATED || (pConn != NULL && pConn->association.auth_type != AUTH_EAP))
 			{
 				status = Util::getConnectionStatusFromPhysicalState(state);
 			}
