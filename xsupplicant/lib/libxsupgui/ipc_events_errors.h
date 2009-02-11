@@ -68,6 +68,7 @@
 #define IPC_EVENT_ERROR_3G_NOT_SUPPORTED_STR				   "Inserted SIM doesn't support 3G mode."
 #define IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR_STR				   "An unknown SIM error occurred."
 #define IPC_EVENT_ERROR_SIM_NOTIFICATION_STR				   "A SIM notification was generated, the number is provided in the parameter field."
+#define IPC_EVENT_ERROR_TLS_HANDSHAKE_FAILED_STR			   "Authentication failed.  (Reason : %s)"
 
 // Windows Specific Error Events 
 #define IPC_EVENT_ERROR_FAILED_TO_BIND_STR                     "Failed to bind interface %s to device handle."

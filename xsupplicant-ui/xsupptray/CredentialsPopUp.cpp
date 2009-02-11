@@ -222,9 +222,7 @@ bool CredentialsPopUp::createPIN()
 		QString dlgMsg;
 		if (networkName.isEmpty() == false)
 		{
-			dlgMsg.append(tr("The network \""));
-			dlgMsg.append(networkName);
-			dlgMsg.append(tr("\" requires a (U)SIM PIN to connect"));
+			dlgMsg.append(tr("The network \"%1\" requires a (U)SIM PIN to connect").arg(networkName));
 		}
 		else
 		{
@@ -393,9 +391,7 @@ bool CredentialsPopUp::createWEP()
 		QString dlgMsg;
 		if (networkName.isEmpty() == false)
 		{
-			dlgMsg.append(tr("The network \""));
-			dlgMsg.append(networkName);
-			dlgMsg.append(tr("\" requires a WEP password to connect"));
+			dlgMsg.append(tr("The network \"%1\" requires a WEP password to connect").arg(networkName));
 		}
 		else
 		{
@@ -536,9 +532,7 @@ bool CredentialsPopUp::createUPW()
 		QString dlgMsg;
 		if (networkName.isEmpty() == false)
 		{
-			dlgMsg.append(tr("The 802.1X network \""));
-			dlgMsg.append(networkName);
-			dlgMsg.append(tr("\" requires a username and password to connect"));
+			dlgMsg.append(tr("The 802.1X network \"%1\" requires a username and password to connect").arg(networkName));
 		}
 		else
 		{
@@ -641,9 +635,7 @@ bool CredentialsPopUp::createPSK()
 		QString dlgMsg;
 		if (networkName.isEmpty() == false)
 		{
-			dlgMsg.append(tr("The network \""));
-			dlgMsg.append(networkName);
-			dlgMsg.append(tr("\" requires a WPA password to connect"));
+			dlgMsg.append(tr("The network \"%1\" requires a WPA password to connect").arg(networkName));
 		}
 		else
 		{

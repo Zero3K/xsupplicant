@@ -118,6 +118,7 @@ bool LogWindow::create()
 	// If this one isn't around, ignore it.
 	if (m_pCloseButton != NULL)
 	{
+		m_pCloseButton->setText(tr("Close"));
 	    QObject::connect(m_pCloseButton, SIGNAL(clicked()),
 		                  this, SIGNAL(close()));
 	}
@@ -126,6 +127,7 @@ bool LogWindow::create()
 	// If this one isn't around, ignore it.
 	if (m_pClearButton != NULL)
 	{
+		m_pClearButton->setText(tr("Clear"));
 		QObject::connect(m_pClearButton, SIGNAL(clicked()),
 			this, SLOT(slotClear()));
 	}

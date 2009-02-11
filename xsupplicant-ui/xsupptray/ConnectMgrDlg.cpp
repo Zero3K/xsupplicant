@@ -46,6 +46,8 @@
 
 #include <algorithm>
 
+#define get_temp(a)			pTemp = qFindChild<QLabel*>(m_pRealForm, a);
+#define xlate_value(a,b)	if (a != NULL) a->setText(b);
 
 // TODO:  disable wired options if no wired interface present
 // TODO:  disable wireless options if no wireless interfaces present
@@ -66,10 +68,7 @@ ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e,
 }
 
 ConnectMgrDlg::~ConnectMgrDlg()
-{
-	if (m_pAdvancedButton != NULL)
-		Util::myDisconnect(m_pAdvancedButton, SIGNAL(clicked()), this, SLOT(showAdvancedConfig()));
-		
+{		
 	if (m_pCloseButton != NULL)
 		Util::myDisconnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm, SLOT(hide()));
 		
@@ -193,6 +192,8 @@ ConnectMgrDlg::~ConnectMgrDlg()
 
 bool ConnectMgrDlg::initUI(void)
 {
+	QLabel *pTemp = NULL;
+
 	// load form
 	m_pRealForm = FormLoader::buildform("ConnectionManagerWindow.ui", m_pParentWindow);
 	if (m_pRealForm == NULL)
@@ -213,7 +214,6 @@ bool ConnectMgrDlg::initUI(void)
 	m_pMainTab = qFindChild<QTabWidget*>(m_pRealForm, "mainTabControl");
 	
 	m_pNetworkPrioritiesButton = qFindChild<QPushButton*>(m_pRealForm, "buttonOptionsNetworkPriorities");
-	m_pAdvancedButton = qFindChild<QPushButton*>(m_pRealForm, "buttonOptionsAdvancedConfig");
 	m_pWiredConnections = qFindChild<QComboBox*>(m_pRealForm, "comboOptionsWirelessConnections");
 	m_pWiredAutoConnect = qFindChild<QCheckBox*>(m_pRealForm, "checkboxWiredAutoConnect");
 	m_pWirelessAutoConnect = qFindChild<QCheckBox*>(m_pRealForm, "checkboxWirelessAutoConnect");
@@ -223,27 +223,97 @@ bool ConnectMgrDlg::initUI(void)
 	m_pNewConnButton = qFindChild<QPushButton*>(m_pRealForm,"buttonNewConnection");
 	m_pConnectionsTable = qFindChild<QTableWidget*>(m_pRealForm, "dataTableConnectionProfiles");
 
+	// Logging settings
 	m_pEnableLogging = qFindChild<QCheckBox*>(m_pRealForm, "enableLogging");
+	if (m_pEnableLogging != NULL) m_pEnableLogging->setText(tr("Enable Logging to a File"));
+
 	m_pLogPath = qFindChild<QLineEdit*>(m_pRealForm, "logDirectory");
+	if (m_pLogPath != NULL) m_pLogPath->setText(tr("Log Directory"));
+
 	m_pBrowse = qFindChild<QPushButton*>(m_pRealForm, "browseButton");
+	if (m_pBrowse != NULL) m_pBrowse->setText(tr("Browse"));
+
 	m_pLogLevel = qFindChild<QComboBox*>(m_pRealForm, "logLevel");
 	m_pViewLog = qFindChild<QPushButton*>(m_pRealForm, "viewLogButton");
+	if (m_pViewLog != NULL) m_pViewLog->setText(tr("View Log"));
+
 	m_pLogsToKeep = qFindChild<QSpinBox*>(m_pRealForm, "numLogsToKeep");
 	m_pRollBySize = qFindChild<QCheckBox*>(m_pRealForm, "rollBySizeBox");
+	if (m_pRollBySize != NULL) m_pRollBySize->setText(tr("Roll Logs by Size"));
+
 	m_pSizeToRoll = qFindChild<QSpinBox*>(m_pRealForm, "sizeToRollBox");
 	m_pLoggingSave = qFindChild<QPushButton*>(m_pRealForm, "loggingSave");
+	if (m_pLoggingSave != NULL) m_pLoggingSave->setText(tr("Save"));
+
+	// Logging settings for translatable strings.
+	get_temp("logLevelLabel");
+	xlate_value(pTemp, tr("Log Level :"));
+
+	get_temp("logFileSettingsHeader");
+	xlate_value(pTemp, tr("Log File Settings"));
+
+	get_temp("logsToKeepLabel");
+	xlate_value(pTemp, tr("Number of Logs to Keep"));
+
+	get_temp("sizeToRollAt");
+	xlate_value(pTemp, tr("Log Size to Roll Files at :"));
+
+	get_temp("megabytes");
+	xlate_value(pTemp, tr("MB"));
 
 	// advanced settings tab objects
 	m_pCheckSupplicants = qFindChild<QCheckBox*>(m_pRealForm, "runOtherSuppCheck");
+	if (m_pCheckSupplicants != NULL) m_pCheckSupplicants->setText(tr("Run other supplicant check on startup"));
+
 	m_pDisconnectAtLogoff = qFindChild<QCheckBox*>(m_pRealForm, "disconnectOnLogoff");
+	if (m_pDisconnectAtLogoff != NULL) m_pDisconnectAtLogoff->setText(tr("Disconnect on Logoff"));
+
 	m_pAllowMachineAuthContinue = qFindChild<QCheckBox*>(m_pRealForm, "allowMachineAuthRemain");
+	if (m_pAllowMachineAuthContinue != NULL) m_pAllowMachineAuthContinue->setText(tr("Allow logged on users to keep the machines authentication"));
+
 	m_pScanTimeout = qFindChild<QSpinBox*>(m_pRealForm, "scanTimeout");
 	m_pAssocTimeout = qFindChild<QSpinBox*>(m_pRealForm, "assocTimeout");
 	m_pPassiveInterval = qFindChild<QSpinBox*>(m_pRealForm, "passiveScanInterval");
 	m_pPMKSACacheRefresh = qFindChild<QSpinBox*>(m_pRealForm, "pmksaRefresh");
 	m_pPMKSACacheTimeout = qFindChild<QSpinBox*>(m_pRealForm, "pmksaTimeout");
 	m_pSettingsReset = qFindChild<QPushButton*>(m_pRealForm, "resetButton");
+	if (m_pSettingsReset != NULL) m_pSettingsReset->setText(tr("Reset"));
+
 	m_pAdvSettingsSave = qFindChild<QPushButton*>(m_pRealForm, "advSaveBtn");
+	if (m_pAdvSettingsSave != NULL) m_pAdvSettingsSave->setText(tr("Save"));
+
+	get_temp("scanTimeoutSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("assocTimeoutSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("passiveTimeoutSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("cacheRefreshTimeoutSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("cacheTimeoutSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("scanTimeoutLabel");
+	xlate_value(pTemp, tr("Scan Timeout :"));
+
+	get_temp("assocTimeoutLabel");
+	xlate_value(pTemp, tr("Association Timeout :"));
+
+	get_temp("passiveTimeoutLabel");
+	xlate_value(pTemp, tr("Passive Scan Interval :"));
+
+	get_temp("cacheRefreshTimeoutLabel");
+	xlate_value(pTemp, tr("PMKSA Cache Refresh :"));
+
+	get_temp("cacheTimeoutLabel");
+	xlate_value(pTemp, tr("PMKSA Cache Entry Timeout :"));
+
+	get_temp("advSettingsHeader");
+	xlate_value(pTemp, tr("Advanced Settings"));
 
 	// advanced timers
 	m_pAuthPeriod = qFindChild<QSpinBox*>(m_pRealForm, "authPeriodBox");
@@ -252,12 +322,43 @@ bool ConnectMgrDlg::initUI(void)
 	m_pStaleKey = qFindChild<QSpinBox*>(m_pRealForm, "staleWepTimeout");
 	m_pMaxStarts = qFindChild<QSpinBox*>(m_pRealForm, "maxStartsBox");
 	m_pTimersReset = qFindChild<QPushButton*>(m_pRealForm, "resetBtn");
+	if (m_pTimersReset != NULL) m_pTimersReset->setText(tr("Reset"));
+
 	m_pAdvTimersSave = qFindChild<QPushButton*>(m_pRealForm, "advTimerSave");
+	if (m_pAdvTimersSave != NULL) m_pAdvTimersSave->setText(tr("Save"));
+
+	get_temp("advTimerHeader");
+	xlate_value(pTemp, tr("Advanced Timer Settings"));
+
+	get_temp("authSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("heldSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("idleSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("staleSeconds");
+	xlate_value(pTemp, tr("Seconds"));
+
+	get_temp("authTimerLabel");
+	xlate_value(pTemp, tr("Auth Period : "));
+
+	get_temp("heldTimerLabel");
+	xlate_value(pTemp, tr("Held Period : "));
+
+	get_temp("idleTimerLabel");
+	xlate_value(pTemp, tr("Idle Period : "));
+
+	get_temp("staleWEPTimerLabel");
+	xlate_value(pTemp, tr("Stale WEP Key Timeout :"));
+
+	get_temp("maxStartsLabel");
+	xlate_value(pTemp, tr("Maximum Starts :"));
+
 
 	// populate strings
-	if (m_pAdvancedButton != NULL)
-		m_pAdvancedButton->setText(tr("Show Advanced Configuration"));
-		
 	if (m_pCloseButton != NULL)
 		m_pCloseButton->setText(tr("Close"));
 	
@@ -318,10 +419,7 @@ bool ConnectMgrDlg::initUI(void)
 	// IPC chatter.
 	populateSettingsTabs();
 	
-	// set up event-handling
-	if (m_pAdvancedButton != NULL)
-		Util::myConnect(m_pAdvancedButton, SIGNAL(clicked()), this, SLOT(showAdvancedConfig()));
-		
+	// set up event-handling		
 	if (m_pCloseButton != NULL)
 		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm, SLOT(hide()));
 		

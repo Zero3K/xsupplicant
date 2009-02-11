@@ -778,7 +778,7 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 						{
 							sprintf(error_str, "Authentication handshake failed.  Reason : %s", ERR_reason_error_string(err));
 							debug_printf(DEBUG_NORMAL, "%s\n", error_str);
-							ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
+							ipc_events_error(NULL, IPC_EVENT_ERROR_TLS_HANDSHAKE_FAILED, error_str);
 							FREE(error_str);
 						}
 						context_disconnect(ctx);
@@ -810,7 +810,7 @@ uint8_t ossl_funcs_process_other(struct tls_vars *mytls_vars,
 						{
 							sprintf(error_str, "Authentication handshake failed.  Reason : %s", ERR_reason_error_string(err));
 							debug_printf(DEBUG_NORMAL, "%s\n", error_str);
-							ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, error_str);
+							ipc_events_error(NULL, IPC_EVENT_ERROR_TLS_HANDSHAKE_FAILED, error_str);
 							FREE(error_str);
 						}
 						context_disconnect(ctx);

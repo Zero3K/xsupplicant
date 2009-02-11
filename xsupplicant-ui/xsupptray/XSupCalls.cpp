@@ -1302,13 +1302,13 @@ bool XSupCalls::getDeviceName(const QString &deviceDescription, QString &deviceN
     if (bDisplayError)
     {
       QMessageBox::critical(NULL, tr("Get device info"),
-        tr("An error occurred while getting the device name for device '%1'\n%2\n%3\n%4\n%5\n%6\n\n")
-        .arg(deviceDescription)
-        .arg(tr("This has multiple causes:"))
-        .arg(tr("1. Your network card is disabled."))
-        .arg(tr("2. Your configuration file (*.conf) is incorrectly formatted."))
-        .arg(tr("3. A device with the associated <MAC> address isn't available on this computer."))
-        .arg(tr("Select another connection or fix the problem before proceeding.")));
+        tr("An error occurred while getting the device name for device '%1'\n"
+		"This has multiple causes:\n"
+		"1. Your network card is disabled.\n"
+		"2. Your configuration file is incorrectly formatted.\n"
+		"3. A device with the associated MAC address isn't available on this computer.\n"
+		"Please select another connection or fix the problem before proceeding.")
+        .arg(deviceDescription));
     }
     return false;
 	}
@@ -1638,8 +1638,8 @@ bool XSupCalls::enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDis
   {
     if (bDisplayError)
     {
-      QMessageBox::critical(NULL, tr("Enumerate Interfaces (adapters) Error"), 
-        tr("No interfaces(Linux)/adapters(Windows) defined in the configuration file."));
+      QMessageBox::critical(NULL, tr("Enumerate Interfaces Error"), 
+        tr("No interfaces defined in the configuration file."));
     }
 		return false;
 	}
@@ -2678,12 +2678,12 @@ bool XSupCalls::getUIEventString(int uiEvent, QString &desc)
 		break;
 
   case IPC_EVENT_INTERFACE_INSERTED:
-		desc = tr("An interface (adapter) was inserted!");
+		desc = tr("A network interface was inserted!");
     bValue = true; // I want to know about this one and act upon it
     break;
 
   case IPC_EVENT_INTERFACE_REMOVED:
-    desc = tr("An interface has been removed.");
+    desc = tr("A network interface has been removed.");
     bValue = false; // I don't care about this right now
     break;
 
@@ -2825,7 +2825,7 @@ bool XSupCalls::deleteProfileConfig(unsigned char config_type, QString &name)
 	  if (retval == IPC_ERROR_INVALID_PROF_NAME) return true;  // This means the profile wasn't written yet.  (Which means it was deleted. ;)
 
 	  QMessageBox::critical(NULL, tr("Delete a Profile"), 
-        tr("Can't delete profile '%1'from the configuration file.\n").arg(name));
+        tr("Can't delete profile '%1' from the configuration file.\n").arg(name));
 		  return false;
   }
 
@@ -2857,7 +2857,7 @@ bool XSupCalls::deleteTrustedServerConfig(unsigned char config_type, QString &na
 	  if (retval == IPC_ERROR_INVALID_TRUSTED_SVR) return true;  // Means the trusted server wasn't written yet.
 
 	  QMessageBox::critical(NULL, tr("Delete a Trusted Server"), 
-      tr("Can't delete trusted server '%1'from the configuration file.\n").arg(name));
+      tr("Can't delete trusted server '%1' from the configuration file.\n").arg(name));
   return false;
   }
 

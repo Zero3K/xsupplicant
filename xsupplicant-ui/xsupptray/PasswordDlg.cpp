@@ -35,6 +35,9 @@
 #include "Util.h"
 #include "FormLoader.h"
 
+#define get_temp(a)			pTemp = qFindChild<QLabel*>(m_pRealForm, a);
+#define xlate_value(a,b)	if (a != NULL) a->setText(b);
+
 PasswordDlg::PasswordDlg(const QString &connection, const QString &eapMethod, const QString &challengeString)
 {
 	m_connName = connection;
@@ -69,6 +72,7 @@ void PasswordDlg::show()
 bool PasswordDlg::attach()
 {
 	Qt::WindowFlags flags;
+	QLabel *pTemp = NULL;
 
 	m_pRealForm = FormLoader::buildform("GTCWindow.ui");
 
@@ -80,6 +84,7 @@ bool PasswordDlg::attach()
 		QMessageBox::critical(this, tr("Form Design Error"), tr("The QPushButton named 'buttonOK' does not exist!  Please fix the form!"));
 		return false;
 	}
+	m_pOKBtn->setText(tr("OK"));
 
 	m_pResponseField = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldYourResponse");
 	if (m_pResponseField == NULL)
@@ -94,6 +99,16 @@ bool PasswordDlg::attach()
 		QMessageBox::critical(this, tr("Form Design Error"), tr("The QLabel named 'dataFieldServerRequest' does not exist!  Please fix the form!"));
 		return false;
 	}
+
+	// Make strings translatable
+	get_temp("headerInfoNeeded");
+	xlate_value(pTemp, tr("Additional Information"));
+
+	get_temp("labelServerRequest");
+	xlate_value(pTemp, tr("Server Request :"));
+
+	get_temp("labelYourResponse");
+	xlate_value(pTemp, tr("Your Response :"));
 
 	m_pServerChallenge->setText(m_challenge);
 

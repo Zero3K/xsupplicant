@@ -141,7 +141,6 @@ private:
 	QTabWidget *m_pMainTab;
 		
 	// options tab objects
-	QPushButton *m_pAdvancedButton;
 	QPushButton *m_pNetworkPrioritiesButton;
 	QComboBox *m_pWiredConnections;
 	QCheckBox *m_pWiredAutoConnect;

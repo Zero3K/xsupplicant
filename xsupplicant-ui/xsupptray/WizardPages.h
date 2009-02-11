@@ -300,7 +300,6 @@ public:
 private slots:
 	void handleValidateChecked(int checkState);
 	void handleCertTableClick(int, int);
-	void updateCertTipStrip(int,int);
 private:
 	QTableWidget *m_pCertTable;
 	QLineEdit *m_pNameField;
@@ -323,7 +322,6 @@ public:
 	virtual const ConnectionWizardData &wizardData(void);
 private slots:
 	void handleCertTableClick(int, int);
-	void updateCertTipStrip(int,int);
 private:
 	QTableWidget *m_pCertTable;
 	cert_enum *m_pCertArray; 

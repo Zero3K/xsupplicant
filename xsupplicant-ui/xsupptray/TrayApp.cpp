@@ -1937,7 +1937,7 @@ void TrayApp::connectToNetwork(const QString &networkName, const QString &adapte
 				{
 					// alert user we are launching the wizard
 					QString msg = tr("The network '%1' requires some additional information to connect.  The XSupplicant will now launch the Connection Wizard to collect this information. Continue?").arg(networkName);
-					if (QMessageBox::information(this, tr(""), msg, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
+					if (QMessageBox::information(this, tr("Information Needed"), msg, QMessageBox::Ok | QMessageBox::Cancel) == QMessageBox::Ok)
 					{
 						if (m_pConnWizard == NULL)
 						{

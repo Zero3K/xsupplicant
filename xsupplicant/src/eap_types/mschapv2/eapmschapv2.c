@@ -942,8 +942,8 @@ uint8_t eapmschapv2_failure(eap_type_data *eapdata)
     default:
       debug_printf(DEBUG_NORMAL, "Unknown error type %d returned.  Please "
 		   "see text description of the error (on the next line) "
-		   "for more information.\n");
-	  ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, err_text);
+		   "for more information.\n", errcode);
+	  debug_printf(DEBUG_NORMAL, "Error is : %s\n", err_text);
       break;
     }
 

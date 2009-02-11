@@ -1252,7 +1252,10 @@ bool WizardPageFASTInnerProtocol::create(void)
 	m_pOuterID = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldOuterID");
 	m_pValidateCert = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxValidateCert");
 	m_pAnonymousProvision = qFindChild<QRadioButton*>(m_pRealForm, "unauthProv");
+	if (m_pAnonymousProvision != NULL) m_pAnonymousProvision->setText(tr("Use anonymous provisioning"));
+
 	m_pAuthenticatedProvision = qFindChild<QRadioButton*>(m_pRealForm, "authProv");
+	if (m_pAuthenticatedProvision != NULL) m_pAuthenticatedProvision->setText(tr("Use authenticated provisioning"));
 		
 	// dynamically populate text
 	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
@@ -1376,7 +1379,6 @@ WizardPageDot1XCert::~WizardPageDot1XCert()
 		Util::myDisconnect(m_pVerifyName, SIGNAL(stateChanged(int)), this, SLOT(handleValidateChecked(int)));
 	if (m_pCertTable != NULL) {
 		Util::myDisconnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
-		Util::myDisconnect(m_pCertTable, SIGNAL(cellEntered(int,int)), this, SLOT(updateCertTipStrip(int,int)));
 	}
 		
 }
@@ -1410,7 +1412,6 @@ bool WizardPageDot1XCert::create(void)
 		
 	if (m_pCertTable != NULL) {
 		Util::myConnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
-		Util::myConnect(m_pCertTable, SIGNAL(cellEntered(int,int)), this, SLOT(updateCertTipStrip(int,int)));
 	}
 		
 	// other initializations
@@ -1429,7 +1430,7 @@ bool WizardPageDot1XCert::create(void)
 		m_pCertTable->horizontalHeader()->setResizeMode(QHeaderView::Fixed);
 		
 		// network name
-		m_pCertTable->horizontalHeaderItem(0)->setText(tr(""));
+		m_pCertTable->horizontalHeaderItem(0)->setText(QString(""));
 		m_pCertTable->horizontalHeader()->resizeSection(0,16);	
 		
 		// signal
@@ -1557,34 +1558,6 @@ void WizardPageDot1XCert::handleValidateChecked(int checkState)
 {
 	if (m_pNameField != NULL)
 		m_pNameField->setDisabled(checkState == Qt::Unchecked);
-}
-
-void WizardPageDot1XCert::updateCertTipStrip(int row, int col)
-{
-	if (m_pCertTable != NULL)
-	{
-		if (col != 0)
-		{
-			QTableWidgetItem *item = m_pCertTable->item(row,1);
-			if (item != NULL)
-			{
-				int index = item->type() - 1000;
-				
-				if (m_pCertArray != NULL && index > 0 && index < m_numCerts)
-				{
-					QString dateStr;
-					QString tipText;
-					
-					QDate d(m_pCertArray[index].year, m_pCertArray[index].month, m_pCertArray[index].day);
-					dateStr = d.toString("MM/dd/yyyy"); // need to change this for appropriate locales
-					tipText = tr("<p style='white-space:pre'><font size='-1'><b>Issued To:</b> %1<br><b>Issued By:</b> %2<br><b>Friendly Name:</b> %3<br><b>Expires:</b> %4</font></p>").arg(m_pCertArray[index].certname).arg(m_pCertArray[index].issuer).arg(m_pCertArray[index].friendlyname).arg(dateStr);
-					m_pCertTable->setToolTip(tipText);
-				}
-			}
-		}
-		else
-			m_pCertTable->setToolTip(QString(""));
-	}
 }
 
 bool WizardPageDot1XCert::validate(void)
@@ -1817,7 +1790,6 @@ WizardPageDot1XUserCert::~WizardPageDot1XUserCert()
 		xsupgui_request_free_cert_enum(&m_pCertArray);
 	if (m_pCertTable != NULL) {
 		Util::myDisconnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
-		Util::myDisconnect(m_pCertTable, SIGNAL(cellEntered(int,int)), this, SLOT(updateCertTipStrip(int,int)));
 	}
 		
 }
@@ -1838,7 +1810,6 @@ bool WizardPageDot1XUserCert::create(void)
 			
 	if (m_pCertTable != NULL) {
 		Util::myConnect(m_pCertTable, SIGNAL(cellClicked(int,int)), this, SLOT(handleCertTableClick(int,int)));
-		Util::myConnect(m_pCertTable, SIGNAL(cellEntered(int,int)), this, SLOT(updateCertTipStrip(int,int)));
 	}
 			
 	if (m_pCertTable != NULL)
@@ -1960,34 +1931,6 @@ void WizardPageDot1XUserCert::handleCertTableClick(int, int)
 */
 }
 
-void WizardPageDot1XUserCert::updateCertTipStrip(int row, int col)
-{
-	if (m_pCertTable != NULL)
-	{
-		if (col != 0)
-		{
-			QTableWidgetItem *item = m_pCertTable->item(row,1);
-			if (item != NULL)
-			{
-				int index = item->type() - 1000;
-				
-				if (m_pCertArray != NULL && index > 0 && index < m_numCerts)
-				{
-					QString dateStr;
-					QString tipText;
-					
-					QDate d(m_pCertArray[index].year, m_pCertArray[index].month, m_pCertArray[index].day);
-					dateStr = d.toString("MM/dd/yyyy"); // need to change this for appropriate locales
-					tipText = tr("<p style='white-space:pre'><font size='-1'><b>Issued To:</b> %1<br><b>Issued By:</b> %2<br><b>Friendly Name:</b> %3<br><b>Expires:</b> %4</font></p>").arg(m_pCertArray[index].certname).arg(m_pCertArray[index].issuer).arg(m_pCertArray[index].friendlyname).arg(dateStr);
-					m_pCertTable->setToolTip(tipText);
-				}
-			}
-		}
-		else
-			m_pCertTable->setToolTip(QString(""));
-	}
-}
-
 bool WizardPageDot1XUserCert::validate(void)
 {
 	// check that a cert is selected - We check for 3 items selected because
@@ -2087,12 +2030,17 @@ WizardPageMachineAuthFinished::WizardPageMachineAuthFinished(QWidget *parent, QW
 
 bool WizardPageMachineAuthFinished::create(void)
 {
+	QLabel *pTemp = NULL;
+
 	m_pRealForm = FormLoader::buildform("wizardPageMachineAuthDone.ui", m_pParentWidget);
 	if (m_pRealForm == NULL)
 		return false;
 	
 	// dynamically populate text
 	m_pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "resultLabel");
+
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "finishLabel");
+	if (pTemp != NULL) pTemp->setText(tr("Click Finish to save this configuration, or Back to go back and change options."));
 
 	return true;
 }
@@ -2103,13 +2051,13 @@ void WizardPageMachineAuthFinished::init(const ConnectionWizardData &data)
 	QString resultData = tr("Machine authentication has been successfully configured<br>with the following options :<br><ul>");
 
 	if (m_curData.m_wireless)
-		resultData += tr("<li>Machine Authentication on Wireless</li>");
+		resultData += QString("<li>")+tr("Machine Authentication on Wireless")+QString("</li>");
 
 	if (m_curData.m_wired)
-		resultData += tr("<li>Machine Authentication on Wired</li>");
+		resultData += QString("<li>")+tr("Machine Authentication on Wired")+QString("</li>");
 
 	if ((!m_curData.m_wired) && (!m_curData.m_wireless))
-		resultData += tr("<li>Machine Authentication is Disabled</li>");
+		resultData += QString("<li>")+tr("Machine Authentication is Disabled")+QString("</li>");
 
 	resultData += QString("</ul>");
 

@@ -84,6 +84,8 @@ AboutWindow::~AboutWindow()
 
 bool AboutWindow::create()
 {
+	QLabel *pTemp = NULL;
+
 	m_pRealForm = FormLoader::buildform("AboutWindow.ui");
 
 	if (m_pRealForm == NULL) return false;
@@ -122,9 +124,32 @@ bool AboutWindow::create()
 	// If m_pbuttonClose is NULL, then there isn't a close button.  We don't consider that to be a problem, so don't complain.
 	if (m_pbuttonClose != NULL)
 	{
+		m_pbuttonClose->setText(tr("Close"));
+
 	    QObject::connect(m_pbuttonClose, SIGNAL(clicked()),
 		                  this, SIGNAL(close()));
 	}
+
+	// We need to attach to the various pieces of text in the form and put the text in so that linguist picks up the strings
+	// as needing to be translated.  (It is okay to acquire a pointer here, and then overwrite it.  Deleting the pointer would
+	// make a mess of the form, and we don't need to update this information later.)
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "headerProductInformation");
+	if (pTemp != NULL) pTemp->setText(tr("Product Information"));
+
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "headerVersionInformation");
+	if (pTemp != NULL) pTemp->setText(tr("Version Information"));
+
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "headerContactInformation");
+	if (pTemp != NULL) pTemp->setText(tr("Contact Information"));
+
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "labelMoreInformation");
+	if (pTemp != NULL) pTemp->setText(tr("For more information, please visit :"));
+
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "labelGUIVersion");
+	if (pTemp != NULL) pTemp->setText(tr("GUI Version :"));
+
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "labelEngineVersion");
+	if (pTemp != NULL) pTemp->setText(tr("Current Locale :"));
 
 	setupWindow();
 
@@ -158,7 +183,7 @@ void AboutWindow::updateData()
   QString guiVersion;
 
   m_supplicant.getAndCheckSupplicantVersion(fullVersion, numberString, false);
-  m_pSupVersion->setText(tr("%1").arg(numberString));
+  m_pSupVersion->setText(QString("%1").arg(numberString));
 
   if (m_pLocale != NULL) m_pLocale->setText(QLocale::system().name());
 

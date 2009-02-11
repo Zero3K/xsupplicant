@@ -462,7 +462,7 @@
           <enum>QTabWidget::Rounded</enum>
          </property>
          <property name="currentIndex" >
-          <number>4</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="pageConnections" >
           <property name="sizePolicy" >
@@ -2159,7 +2159,7 @@
               <property name="frameShadow" >
                <enum>QFrame::Plain</enum>
               </property>
-              <widget class="QLabel" name="headerConnectionProfiles_2" >
+              <widget class="QLabel" name="logFileSettingsHeader" >
                <property name="geometry" >
                 <rect>
                  <x>11</x>
@@ -2370,7 +2370,7 @@
                 <string>Browse</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_2" >
+              <widget class="QLabel" name="logLevelLabel" >
                <property name="geometry" >
                 <rect>
                  <x>30</x>
@@ -2458,7 +2458,7 @@
                 </property>
                </item>
               </widget>
-              <widget class="QLabel" name="label_3" >
+              <widget class="QLabel" name="logsToKeepLabel" >
                <property name="geometry" >
                 <rect>
                  <x>30</x>
@@ -2571,7 +2571,7 @@
                 <string>Roll Logs by Size</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_4" >
+              <widget class="QLabel" name="sizeToRollAt" >
                <property name="geometry" >
                 <rect>
                  <x>50</x>
@@ -2631,7 +2631,7 @@
                 </rect>
                </property>
               </widget>
-              <widget class="QLabel" name="label_5" >
+              <widget class="QLabel" name="megabytes" >
                <property name="geometry" >
                 <rect>
                  <x>260</x>
@@ -2927,7 +2927,7 @@
               <property name="frameShadow" >
                <enum>QFrame::Plain</enum>
               </property>
-              <widget class="QLabel" name="headerConnectionProfiles_3" >
+              <widget class="QLabel" name="advSettingsHeader" >
                <property name="geometry" >
                 <rect>
                  <x>11</x>
@@ -3078,7 +3078,7 @@
                 <string>Reset</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_8" >
+              <widget class="QLabel" name="scanTimeoutLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -3241,7 +3241,7 @@
                 <string>Allow logged on users to keep the machines authentication</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_16" >
+              <widget class="QLabel" name="cacheTimeoutLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -3346,7 +3346,7 @@
                 <number>300</number>
                </property>
               </widget>
-              <widget class="QLabel" name="label_9" >
+              <widget class="QLabel" name="assocTimeoutLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -3396,7 +3396,7 @@
                 <string>Association Timeout :</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_10" >
+              <widget class="QLabel" name="passiveTimeoutLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -3446,7 +3446,7 @@
                 <string>Passive Scan Interval :</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_17" >
+              <widget class="QLabel" name="cacheRefreshTimeoutLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -3496,7 +3496,7 @@
                 <string>PMKSA Cache Refresh :</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_18" >
+              <widget class="QLabel" name="scanTimeoutSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>
@@ -3546,7 +3546,7 @@
                 <string>Seconds</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_19" >
+              <widget class="QLabel" name="assocTimeoutSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>
@@ -3596,7 +3596,7 @@
                 <string>Seconds</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_20" >
+              <widget class="QLabel" name="passiveTimeoutSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>
@@ -3646,7 +3646,7 @@
                 <string>Seconds</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_21" >
+              <widget class="QLabel" name="cacheRefreshTimeoutSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>
@@ -3696,7 +3696,7 @@
                 <string>Seconds</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_22" >
+              <widget class="QLabel" name="cacheTimeoutSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>
@@ -3992,7 +3992,7 @@
               <property name="frameShadow" >
                <enum>QFrame::Plain</enum>
               </property>
-              <widget class="QLabel" name="headerConnectionProfiles_4" >
+              <widget class="QLabel" name="advTimerHeader" >
                <property name="geometry" >
                 <rect>
                  <x>11</x>
@@ -4080,7 +4080,7 @@
                 <number>0</number>
                </property>
               </widget>
-              <widget class="QLabel" name="label_11" >
+              <widget class="QLabel" name="authTimerLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -4143,7 +4143,7 @@
                 <string>Reset</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_13" >
+              <widget class="QLabel" name="authSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>
@@ -4206,7 +4206,7 @@
                 <number>32</number>
                </property>
               </widget>
-              <widget class="QLabel" name="label_12" >
+              <widget class="QLabel" name="heldTimerLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -4256,7 +4256,7 @@
                 <string>Held Period :</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_14" >
+              <widget class="QLabel" name="idleTimerLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -4306,7 +4306,7 @@
                 <string>Idle Period :</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_15" >
+              <widget class="QLabel" name="staleWEPTimerLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -4356,7 +4356,7 @@
                 <string>Stale WEP Key Timeout :</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_23" >
+              <widget class="QLabel" name="maxStartsLabel" >
                <property name="geometry" >
                 <rect>
                  <x>10</x>
@@ -4461,7 +4461,7 @@
                 <number>3</number>
                </property>
               </widget>
-              <widget class="QLabel" name="label_24" >
+              <widget class="QLabel" name="heldSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>
@@ -4511,7 +4511,7 @@
                 <string>Seconds</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_25" >
+              <widget class="QLabel" name="idleSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>
@@ -4561,7 +4561,7 @@
                 <string>Seconds</string>
                </property>
               </widget>
-              <widget class="QLabel" name="label_26" >
+              <widget class="QLabel" name="staleSeconds" >
                <property name="geometry" >
                 <rect>
                  <x>240</x>

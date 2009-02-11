@@ -78,10 +78,10 @@ QPixmap *FormLoader::loadicon(QString iconname)
 
 QString FormLoader::skinpath()
 {
-    return QApplication::applicationDirPath() + QString(tr("/Skins/Default/"));
+    return QApplication::applicationDirPath() + QString("/Skins/Default/");
 }
 
 QString FormLoader::iconpath() 
 {
-    return QString(skinpath() + tr("icons/"));
+    return QString(skinpath() + QString("icons/"));
 }

@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
   f.setPointSize(10);
   app.setFont(f);
   if (!QSystemTrayIcon::isSystemTrayAvailable()) {
-      QMessageBox::critical(0, QObject::tr("Systray"),
+      QMessageBox::critical(0, QObject::tr("System Tray"),
                             QObject::tr("Unable to detect any system tray "
                                         "on this system."));
       return 1;

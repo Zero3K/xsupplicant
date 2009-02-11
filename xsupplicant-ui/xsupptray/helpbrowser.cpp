@@ -85,6 +85,7 @@ bool HelpWindow::create()
 	// We don't care if the button is there or not, but if it is make it work.
 	if (m_pCloseButton != NULL)
 	{
+		m_pCloseButton->setText(tr("Close"));
 		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm, SLOT(hide()));
 	}
 

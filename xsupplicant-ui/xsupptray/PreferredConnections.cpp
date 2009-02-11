@@ -121,6 +121,8 @@ PreferredConnections::PreferredConnections(XSupCalls *supplicant, QWidget *paren
 
  bool PreferredConnections::attach()
  {
+	 QLabel *pTemp = NULL;
+
 	m_pRealForm = FormLoader::buildform("WirelessPriorityWindow.ui", m_pParentWindow);
 
 	if (m_pRealForm == NULL) 
@@ -177,6 +179,7 @@ PreferredConnections::PreferredConnections(XSupCalls *supplicant, QWidget *paren
 		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonClose' QPushButton!"));
 		return false;
 	}
+	m_pCloseButton->setText(tr("Close"));
 
 	m_pHelpButton = qFindChild<QPushButton*>(m_pRealForm, "buttonHelp");
 	if (m_pHelpButton == NULL)
@@ -184,6 +187,13 @@ PreferredConnections::PreferredConnections(XSupCalls *supplicant, QWidget *paren
 		QMessageBox::critical(this, tr("Form Design Error"), tr("The form is missing the 'buttonHelp' QPushButton!"));
 		return false;
 	}
+	m_pHelpButton->setText(tr("Help"));
+
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "headerPreferredConnctions");
+	if (pTemp != NULL) pTemp->setText(tr("Preferred Connections"));
+
+	pTemp = qFindChild<QLabel*>(m_pRealForm, "headerAvailableConnections");
+	if (pTemp != NULL) pTemp->setText(tr("Available Connections"));
 
 	setupWindow();
 	hookupSignalsAndSlots();
