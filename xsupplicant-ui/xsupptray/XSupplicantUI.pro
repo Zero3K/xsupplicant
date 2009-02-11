@@ -12,32 +12,34 @@ TARGET = XSupplicantUI
 DESTDIR = ../build-debug
 QT += xml
 CONFIG += debug
+DEFINES += WINDOWS _WINDOWS QT_LARGEFILE_SUPPORT QT_DLL
 INCLUDEPATH += ./../../xsupplicant/src/eap_types/tnc \
     ./../../xsupplicant/lib/libsupdetect \
     ./../../xsupplicant/lib/libxsupconfig \
-    ./../../xsupplicant/lib/libxsupgui \
+    ./../../xsupplicant/lib \
     ./../../xsupplicant/src \
-    ./../../iconv-1.9.2.win32/include \
-    ./../../libxml2-2.6.27.win32/include \
+    $(ICONVDIR)/include \
+    $(LIBXML2DIR)/include \
     . \
-    ./debug \
     ./GeneratedFiles
 LIBS += -L"./../../xsupplicant/vs2005/build-debug" \
-    -L"./../../zlib-1.2.3.win32/lib" \
-    -L"./../../iconv-1.9.2.win32/lib" \
-    -L"./../../libxml2-2.6.27.win32/lib/debug" \
+    -L"$(ZLIBDIR)/lib" \
+    -L"$(ICONVDIR)/lib" \
+    -L"$(LIBXML2DIR)/lib" \
     -L"$(OutDir)" \
-    .\libxsupgui.lib \
-    .\libxml2_a.lib \
-    .\iconv_a.lib \
-    .\zlib.lib \
-    .\ws2_32.lib \
-    .\libsupdetect.lib \
-    .\wbemuuid.lib
+    -llibxsupgui \
+    -llibxml2_a \
+    -liconv_a \
+    -lzlib \
+    -lws2_32 \
+    -llibsupdetect \
+    -lwbemuuid \
+    -llibcrashdump
+PRECOMPILED_HEADER = StdAfx.h
 DEPENDPATH += .
 MOC_DIR += debug
 OBJECTS_DIR += debug
-UI_DIR += ./GeneratedFiles
+UI_DIR += GeneratedFiles
 RCC_DIR += ./release
 
 #Include file(s)

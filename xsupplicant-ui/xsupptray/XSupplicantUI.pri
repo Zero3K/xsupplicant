@@ -5,108 +5,90 @@
 
 #Header files
 HEADERS += ./AboutDlg.h \
-    ./CharC.h \
-    ./ConfigConnAdapterTab.h \
-    ./ConfigConnAdaptTabWireless.h \
-    ./ConfigConnDNSTab.h \
-    ./ConfigConnectionTabs.h \
-    ./ConfigConnNetTab.h \
-    ./ConfigDlg.h \
-    ./ConfigInfo.h \
-    ./ConfigProfileTabs.h \
-    ./ConfigStackedWidget.h \
-    ./ConfigWidgetAdvancedTable.h \
-    ./ConfigWidgetBase.h \
-    ./ConfigWidgetConnectionsTable.h \
-    ./ConfigWidgetEditAdvancedInternals.h \
-    ./ConfigWidgetEditAdvancedSettings.h \
-    ./ConfigWidgetEditConnection.h \
-    ./ConfigWidgetEditGlobalsLogging.h \
-    ./ConfigWidgetEditProfile.h \
-    ./ConfigWidgetEditTrustedServers.h \
-    ./ConfigWidgetGlobalsTable.h \
-    ./ConfigWidgetProfilesTable.h \
-    ./ConfigWidgetTrustedServersTable.h \
+    ./buildnum.h \
+    ./ConnectDlg.h \
+    ./ConnectionInfoDlg.h \
+    ./ConnectionSelectDlg.h \
+    ./ConnectionWizard.h \
+    ./ConnectionWizardData.h \
+    ./ConnectMgrDlg.h \
+    ./CreateTT.h \
+    ./CredentialsManager.h \
+    ./CredentialsPopUp.h \
     ./Emitter.h \
     ./EventListenerThread.h \
     ./FormLoader.h \
+    ./GraphSortItem.h \
     ./helpbrowser.h \
+    ./interfacectrl.h \
     ./ipinfoclass.h \
     ./LoggingConsole.h \
-    ./LoginGetInfo.h \
-    ./LoginMainDlg.h \
-    ./LoginStatus.h \
-    ./LoginStatusWireless.h \
+    ./MachineAuthWizard.h \
     ./MessageClass.h \
     ./MessageDlg.h \
-    ./MyMessageBox.h \
-    ./NavPanel.h \
     ./PasswordDlg.h \
     ./PreferredConnections.h \
-    ./StackedLoginConfig.h \
+    ./SSIDList.h \
+    ./SSIDListDlg.h \
     ./stdafx.h \
-    ./TabWidgetBase.h \
+    ./TableImageDelegate.h \
     ./TrayApp.h \
-    ./TrustedRootCertsDlg.h \
     ./Util.h \
+    ./version.h \
     ./ViewLogDlg.h \
+    ./WifiStandardImages.h \
+    ./WirelessNetworkMenu.h \
+    ./WirelessScanDlg.h \
+    ./WizardPages.h \
     ./xsupcalls.h \
+    ./XSupWrapper.h \
+    ./PluginCallbacks.h \
     ./PluginWidget.h \
-    ./UIPlugins.h \
-    ../../xsupplicant/src/xsup_debug.c
+    ./UICallbacks.h \
+    ./UIPlugins.h
 
 #Source files
 SOURCES += ./AboutDlg.cpp \
-    ./CharC.cpp \
-    ./ConfigConnAdapterTab.cpp \
-    ./ConfigConnAdaptTabWireless.cpp \
-    ./ConfigConnDNSTab.cpp \
-    ./ConfigConnectionTabs.cpp \
-    ./ConfigConnNetTab.cpp \
-    ./ConfigDlg.cpp \
-    ./ConfigInfo.cpp \
-    ./ConfigProfileTabs.cpp \
-    ./ConfigStackedWidget.cpp \
-    ./ConfigWidgetAdvancedTable.cpp \
-    ./ConfigWidgetBase.cpp \
-    ./ConfigWidgetConnectionsTable.cpp \
-    ./ConfigWidgetEditAdvancedInternals.cpp \
-    ./ConfigWidgetEditAdvancedSettings.cpp \
-    ./ConfigWidgetEditConnection.cpp \
-    ./ConfigWidgetEditGlobalsLogging.cpp \
-    ./ConfigWidgetEditProfile.cpp \
-    ./ConfigWidgetEditTrustedServers.cpp \
-    ./ConfigWidgetGlobalsTable.cpp \
-    ./ConfigWidgetProfilesTable.cpp \
-    ./ConfigWidgetTrustedServersTable.cpp \
+    ./ConnectDlg.cpp \
+    ./ConnectionInfoDlg.cpp \
+    ./ConnectionSelectDlg.cpp \
+    ./ConnectionWizard.cpp \
+    ./ConnectionWizardData.cpp \
+    ./ConnectMgrDlg.cpp \
+    ./CreateTT.cpp \
+    ./CredentialsManager.cpp \
+    ./CredentialsPopUp.cpp \
     ./Emitter.cpp \
     ./EventListenerThread.cpp \
     ./FormLoader.cpp \
+    ./GraphSortItem.cpp \
     ./helpbrowser.cpp \
+    ./interfacectrl.cpp \
     ./ipinfoclass.cpp \
     ./LoggingConsole.cpp \
-    ./LoginGetInfo.cpp \
-    ./LoginMainDlg.cpp \
-    ./LoginStatus.cpp \
-    ./LoginStatusWireless.cpp \
+    ./MachineAuthWizard.cpp \
     ./main.cpp \
     ./MessageClass.cpp \
     ./MessageDlg.cpp \
-    ./MyMessageBox.cpp \
-    ./NavPanel.cpp \
     ./PasswordDlg.cpp \
     ./PreferredConnections.cpp \
-    ./StackedLoginConfig.cpp \
+    ./SSIDList.cpp \
+    ./SSIDListDlg.cpp \
     ./stdafx.cpp \
-    ./TabWidgetBase.cpp \
+    ./TableImageDelegate.cpp \
     ./TrayApp.cpp \
-    ./TrustedRootCertsDlg.cpp \
     ./Util.cpp \
     ./ViewLogDlg.cpp \
+    ./WifiStandardImages.cpp \
+    ./WirelessNetworkMenu.cpp \
+    ./WirelessScanDlg.cpp \
+    ./WizardPages.cpp \
     ./XSupCalls.cpp \
+    ./XSupWrapper.cpp \
+    ./PluginCallbacks.cpp \
     ./PluginWidget.cpp \
-    ./UIPlugins.cpp \
-    ../../xsupplicant/src/xsup_debug.c
+    ./UICallbacks.cpp \
+    ./UIPlugins.cpp
 
 #Resource file(s)
 RESOURCES += xsupptray.qrc

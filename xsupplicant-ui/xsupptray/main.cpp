@@ -46,7 +46,21 @@ int main(int argc, char *argv[])
   QT_REQUIRE_VERSION ( argc, argv, "4.2.2" )
 
   QApplication app(argc, argv);
-  
+
+  // If you want to force the UI to run in a specific language, uncomment this, modify it and comment out the block below it.
+/*
+  QTranslator translator;
+  translator.load("XSupplicantUI_es");
+  app.installTranslator(&translator);
+  */
+
+  // If you want to force the UI to run in a specific language, comment this, and uncomment the block above.
+  QString locale = QLocale::system().name();
+
+  QTranslator translator;
+  translator.load(QString("XSupplicantUI_")+locale);
+  app.installTranslator(&translator);
+
   QPixmap *p;
   QFont f;
 
@@ -68,7 +82,7 @@ int main(int argc, char *argv[])
   app.setFont(f);
   if (!QSystemTrayIcon::isSystemTrayAvailable()) {
       QMessageBox::critical(0, QObject::tr("Systray"),
-                            QObject::tr("I couldn't detect any system tray "
+                            QObject::tr("Unable to detect any system tray "
                                         "on this system."));
       return 1;
   }

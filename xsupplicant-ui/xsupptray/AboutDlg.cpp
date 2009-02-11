@@ -101,10 +101,12 @@ bool AboutWindow::create()
 
 	m_pGUIVersion = qFindChild<QLabel*>(m_pRealForm, "dataFieldGUIVersion");
 
-	if (m_pSupVersion == NULL)
+	if (m_pGUIVersion == NULL)
 	{
 		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'dataFieldGUIVersion' label.  The GUI version will not be displayed properly."));
 	}
+
+	m_pLocale = qFindChild<QLabel*>(m_pRealForm, "currentLocale");
 
 	m_pdataFieldPostureVersion = qFindChild<QLabel *>(m_pRealForm, "dataFieldPostureVersion");
 
@@ -157,6 +159,8 @@ void AboutWindow::updateData()
 
   m_supplicant.getAndCheckSupplicantVersion(fullVersion, numberString, false);
   m_pSupVersion->setText(tr("%1").arg(numberString));
+
+  if (m_pLocale != NULL) m_pLocale->setText(QLocale::system().name());
 
   m_pdataFieldPlugins->setText("");
   if(m_pdataFieldPostureVersion != NULL) {
