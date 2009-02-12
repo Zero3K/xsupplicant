@@ -328,6 +328,7 @@ SectionIn 1 2 RO
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WEPWindow.ui"
         File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessPriorityWindow.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\WirelessScanDialog.ui"
+	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageCredentials.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XCert.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XInnerProtocol.ui"
 	File "${SRCDIR}\${SKINROOT}\${SKINDIR}\wizardPageDot1XProtocol.ui"
@@ -627,6 +628,7 @@ remove_program_files:
 	Delete $INSTDIR\Skins\Default\WEPWindow.ui
 	Delete $INSTDIR\Skins\Default\WirelessPriorityWindow.ui
 	Delete $INSTDIR\Skins\Default\WirelessScanDialog.ui
+	Delete $INSTDIR\Skins\Default\wizardPageCredentials.ui
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XCert.ui
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XInnerProtocol.ui
 	Delete $INSTDIR\Skins\Default\wizardPageDot1XProtocol.ui

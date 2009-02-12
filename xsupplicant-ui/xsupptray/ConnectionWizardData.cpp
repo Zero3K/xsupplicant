@@ -75,6 +75,8 @@ ConnectionWizardData::ConnectionWizardData()
 	
 	m_eapProtocol = ConnectionWizardData::eap_peap;
 	m_outerIdentity = "";
+	m_username = "";
+	m_password = "";
 	m_validateCert = true;
 	m_innerPEAPProtocol = ConnectionWizardData::inner_mschapv2;
 	m_innerTTLSProtocol = ConnectionWizardData::inner_pap;
@@ -106,7 +108,12 @@ bool ConnectionWizardData::toProfileOuterIdentity(config_profiles * const pProfi
 	if (m_machineAuth == false)
 	{
 		if (m_outerIdentity.isEmpty())
-			pProfile->identity = _strdup("anonymous");
+		{
+			if (m_username.isEmpty())
+				pProfile->identity = _strdup("anonymous");
+			else
+				pProfile->identity = _strdup(m_username.toAscii().data());
+		}
 		else
 			pProfile->identity = _strdup(m_outerIdentity.toAscii().data());
 	}
@@ -220,6 +227,11 @@ bool ConnectionWizardData::toProfileEAP_MD5Protocol(config_profiles * const pPro
 
 				md5 = (config_pwd_only *)pProfile->method->method_data;
 
+				if (!m_password.isEmpty())
+				{
+					md5->password = _strdup(m_password.toAscii().data());
+				}
+
 				if (m_useLogonCreds == true)
 					SET_FLAG(md5->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS);
 				else
@@ -257,7 +269,7 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 					success = false;
 				else
 				{
-					config_eap_peap *mypeap;
+					config_eap_peap *mypeap = NULL;
 					mypeap = (config_eap_peap *)pProfile->method->method_data;					
 					memset(mypeap, 0x00, sizeof(config_eap_peap));
 					
@@ -300,7 +312,7 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 							success = false;
 						else
 						{
-							config_eap_method *myeap;
+							config_eap_method *myeap = NULL;
 							myeap = (config_eap_method *)mypeap->phase2;
 							memset(myeap, 0x00, sizeof(config_eap_method));
 					
@@ -318,6 +330,11 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 								UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
 								mscv2->nthash = NULL;
 								mscv2->password = NULL;
+
+								if (!m_password.isEmpty())
+								{
+									mscv2->password = _strdup(m_password.toAscii().data());
+								}
 
 								// If we are doing machine auth, we need to set the "doing machine auth" flag.
 								if (m_machineAuth == true)
@@ -347,7 +364,16 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 							if (myeap->method_data == NULL)
 								success = false;
 							else
+							{
 								memset(myeap->method_data, 0x00, sizeof(config_pwd_only));
+
+								if (!m_password.isEmpty())
+								{
+									config_pwd_only *pConfig = (config_pwd_only *)myeap->method_data;
+
+									pConfig->password = _strdup(m_password.toAscii().data());
+								}
+							}
 						}				
 					}
 					else
@@ -465,6 +491,12 @@ bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pPr
 					myfast = (config_eap_fast *)pProfile->method->method_data;					
 					memset(myfast, 0x00, sizeof(config_eap_fast));
 					
+					// If we have a username, store it.
+					if (!m_username.isEmpty())
+					{
+						myfast->innerid = _strdup(m_username.toAscii().data());
+					}
+
 					// We don't allow users to disable provisioning when using the wizard.
 					SET_FLAG(myfast->flags, EAP_FAST_PROVISION_ALLOWED);
 
@@ -523,6 +555,12 @@ bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pPr
 								mscv2 = (config_eap_mschapv2 *)myeap->method_data;
 								memset(mscv2, 0x00, sizeof(config_eap_mschapv2));
 
+								// If we have a password, store it.
+								if (!m_password.isEmpty())
+								{
+									mscv2->password = _strdup(m_password.toAscii().data());
+								}
+
 								// Set some defaults.
 								UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
 								mscv2->nthash = NULL;
@@ -550,7 +588,17 @@ bool ConnectionWizardData::toProfileEAP_FASTProtocol(config_profiles * const pPr
 							if (myeap->method_data == NULL)
 								success = false;
 							else
+							{
 								memset(myeap->method_data, 0x00, sizeof(config_pwd_only));
+
+								// If we have a password, store it.
+								if (!m_password.isEmpty())
+								{
+									config_pwd_only *gtcData = (config_pwd_only *)myeap->method_data;	
+
+									gtcData->password = _strdup(m_password.toAscii().data());
+								}
+							}
 						}				
 					}
 					else
@@ -637,7 +685,15 @@ bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pPr
 					if (myttls->phase2_data == NULL)
 						success = false;
 					else
+					{
 						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
+
+						if (!m_password.isEmpty())
+						{
+							config_pwd_only *pConfig = (config_pwd_only *)myttls->phase2_data;
+							pConfig->password = _strdup(m_password.toAscii().data());
+						}
+					}
 				}
 				else if (m_innerTTLSProtocol == ConnectionWizardData::inner_chap)
 				{
@@ -646,7 +702,15 @@ bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pPr
 					if (myttls->phase2_data == NULL)
 						success = false;
 					else
+					{
 						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
+
+						if (!m_password.isEmpty())
+						{
+							config_pwd_only *pConfig = (config_pwd_only *)myttls->phase2_data;
+							pConfig->password = _strdup(m_password.toAscii().data());
+						}
+					}
 				}
 				else if (m_innerTTLSProtocol == ConnectionWizardData::inner_mschap)
 				{
@@ -655,7 +719,15 @@ bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pPr
 					if (myttls->phase2_data == NULL)
 						success = false;
 					else
+					{
 						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
+
+						if (!m_password.isEmpty())
+						{
+							config_pwd_only *pConfig = (config_pwd_only *)myttls->phase2_data;
+							pConfig->password = _strdup(m_password.toAscii().data());
+						}
+					}
 				}
 				else if (m_innerTTLSProtocol == ConnectionWizardData::inner_mschapv2)
 				{
@@ -664,7 +736,15 @@ bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pPr
 					if (myttls->phase2_data == NULL)
 						success = false;
 					else
+					{
 						memset(myttls->phase2_data, 0x00, sizeof(config_pwd_only));
+
+						if (!m_password.isEmpty())
+						{
+							config_pwd_only *pConfig = (config_pwd_only *)myttls->phase2_data;
+							pConfig->password = _strdup(m_password.toAscii().data());
+						}
+					}
 				}	
 				else if (m_innerTTLSProtocol == ConnectionWizardData::inner_eap_md5)
 				{
@@ -682,7 +762,15 @@ bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pPr
 						if (myeap->method_data == NULL)
 							success = false;
 						else
+						{
 							memset(myeap->method_data, 0x00, sizeof(config_pwd_only));
+
+							if (!m_password.isEmpty())
+							{
+								config_pwd_only *pConfig = (config_pwd_only *)myeap->method_data;
+								pConfig->password = _strdup(m_password.toAscii().data());
+							}
+						}
 					}
 				}	
 			}
@@ -1052,155 +1140,26 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 		if (pProfile->method != NULL)
 		{
 			config_eap_method *pEAPMethod = (config_eap_method*)pProfile->method;
-			if (pEAPMethod->method_num == EAP_TYPE_MD5)
-			{
-				m_eapProtocol = ConnectionWizardData::eap_md5;
-			}
-			else if (pEAPMethod->method_num == EAP_TYPE_AKA)
-			{
-				config_eap_aka *pAKAData = (config_eap_aka *)pEAPMethod->method_data;
-				m_eapProtocol = ConnectionWizardData::eap_aka;
-				m_SCreader = pAKAData->reader;
-				if (pAKAData->auto_realm == TRUE)
-				{
-					m_autoRealm = true;
-				}
-				else
-				{
-					m_autoRealm = false;
-				}
-			}
+			if (pEAPMethod->method_num == EAP_TYPE_AKA)
+				initFromEAP_AKAProtocol(pEAPMethod);
 			else if (pEAPMethod->method_num == EAP_TYPE_SIM)
-			{
-				config_eap_sim *pSIMData = (config_eap_sim *)pEAPMethod->method_data;
-				m_eapProtocol = ConnectionWizardData::eap_sim;
-				m_SCreader = pSIMData->reader;
-				if (pSIMData->auto_realm == TRUE)
-				{
-					m_autoRealm = true;
-				}
-				else
-				{
-					m_autoRealm = false;
-				}
-			}
+				initFromEAP_SIMProtocol(pEAPMethod);
 			else if (pEAPMethod->method_num == EAP_TYPE_MD5)
 			{
-				m_eapProtocol = ConnectionWizardData::eap_md5;
-				if (pEAPMethod->method_data != NULL)
-				{
-					config_pwd_only *pMD5Data = (config_pwd_only *)pEAPMethod->method_data;
-
-					if (TEST_FLAG(pMD5Data->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS))
-						m_useLogonCreds = true;
-					else
-						m_useLogonCreds = false;
-				}
+				m_username = pProfile->identity;
+				initFromEAP_MD5Protocol(pEAPMethod);
 			}
 			else if (pEAPMethod->method_num == EAP_TYPE_TTLS)
-			{
-				m_eapProtocol = ConnectionWizardData::eap_ttls;
-				if (pEAPMethod->method_data != NULL)
-				{
-					config_eap_ttls *pTTLSData = (config_eap_ttls *)pEAPMethod->method_data;
-					if (pTTLSData->phase2_type == TTLS_PHASE2_PAP)
-						m_innerTTLSProtocol = ConnectionWizardData::inner_pap;
-					else if (pTTLSData->phase2_type == TTLS_PHASE2_CHAP)
-						m_innerTTLSProtocol = ConnectionWizardData::inner_chap;
-					else if (pTTLSData->phase2_type == TTLS_PHASE2_MSCHAP)
-						m_innerTTLSProtocol = ConnectionWizardData::inner_mschap;
-					else if (pTTLSData->phase2_type == TTLS_PHASE2_MSCHAPV2)
-						m_innerTTLSProtocol = ConnectionWizardData::inner_mschapv2;										
-					else if (pTTLSData->phase2_type == TTLS_PHASE2_EAP)
-						m_innerTTLSProtocol = ConnectionWizardData::inner_eap_md5;
-						
-					if (TEST_FLAG(pTTLSData->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT))
-						m_validateCert = true;
-					else
-						m_validateCert = false;			
-
-					if (TEST_FLAG(pTTLSData->flags, TTLS_FLAGS_USE_LOGON_CREDS))
-						m_useLogonCreds = true;
-					else
-						m_useLogonCreds = false;
-				}
-				
-			}
+				initFromEAP_TTLSProtocol(pEAPMethod);
 			else if (pEAPMethod->method_num == EAP_TYPE_PEAP)
-			{
-				m_eapProtocol = ConnectionWizardData::eap_peap;
-				if (pEAPMethod->method_data != NULL)
-				{
-					config_eap_peap *pPEAPData = (config_eap_peap *)pEAPMethod->method_data;
-					if (pPEAPData->phase2 != NULL)
-					{
-						config_eap_method *myeap = NULL;
-						myeap = (config_eap_method *)pPEAPData->phase2;					
-						if (myeap->method_num == EAP_TYPE_MSCHAPV2)
-							m_innerPEAPProtocol = ConnectionWizardData::inner_mschapv2;
-						else if (myeap->method_num == EAP_TYPE_GTC)
-							m_innerPEAPProtocol = ConnectionWizardData::inner_eap_gtc;
-					}
-						
-					if (TEST_FLAG(pPEAPData->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT))
-						m_validateCert = true;
-					else
-						m_validateCert = false;			
-
-					if (TEST_FLAG(pPEAPData->flags, FLAGS_PEAP_USE_LOGON_CREDS))
-						m_useLogonCreds = true;
-					else
-						m_useLogonCreds = false;
-				}				
-			}
+				initFromEAP_PEAPProtocol(pEAPMethod);
 			else if (pEAPMethod->method_num == EAP_TYPE_TLS)
 			{
-				m_eapProtocol = ConnectionWizardData::eap_tls;
-				if (pEAPMethod->method_data != NULL)
-				{
-					config_eap_tls *pTLSData = (config_eap_tls *)pEAPMethod->method_data;
-
-					m_userCert = pTLSData->user_cert;
-				}				
+				m_username = pProfile->identity;
+				initFromEAP_TLSProtocol(pEAPMethod);
 			}
 			else if (pEAPMethod->method_num == EAP_TYPE_FAST)
-			{
-				m_eapProtocol = ConnectionWizardData::eap_fast;
-				if (pEAPMethod->method_data != NULL)
-				{
-					config_eap_fast *pFASTData = (config_eap_fast *)pEAPMethod->method_data;
-					if (pFASTData->phase2 != NULL)
-					{
-						config_eap_method *myeap = NULL;
-						myeap = (config_eap_method *)pFASTData->phase2;					
-						if (myeap->method_num == EAP_TYPE_MSCHAPV2)
-							m_innerFASTProtocol = ConnectionWizardData::inner_mschapv2;
-						else if (myeap->method_num == EAP_TYPE_GTC)
-							m_innerFASTProtocol = ConnectionWizardData::inner_eap_gtc;
-					}
-						
-					if (TEST_FLAG(pFASTData->flags, EAP_FAST_VALIDATE_SERVER_CERT))
-						m_validateCert = true;
-					else
-						m_validateCert = false;			
-
-					if (TEST_FLAG(pFASTData->flags, EAP_FAST_PROVISION_ANONYMOUS))
-						m_anonymousProvisioning = true;
-					else
-						m_anonymousProvisioning = false;
-
-					if (TEST_FLAG(pFASTData->flags, EAP_FAST_PROVISION_AUTHENTICATED))
-						m_authenticatedProvisioning = true;
-					else
-						m_authenticatedProvisioning = false;
-
-					if (TEST_FLAG(pFASTData->flags, EAP_FAST_USE_LOGON_CREDS))
-						m_useLogonCreds = true;
-					else
-						m_useLogonCreds = false;
-				}				
-			}
-
+				initFromEAP_FASTProtocol(pEAPMethod);
 		}
 	}
 	
@@ -1225,3 +1184,246 @@ bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 	
 	return true;
 }
+
+void ConnectionWizardData::initFromEAP_AKAProtocol(config_eap_method *method)
+{
+	config_eap_aka *pAKAData = (config_eap_aka *)method->method_data;
+	m_eapProtocol = ConnectionWizardData::eap_aka;
+	m_SCreader = pAKAData->reader;
+	if (pAKAData->auto_realm == TRUE)
+	{
+		m_autoRealm = true;
+	}
+	else
+	{
+		m_autoRealm = false;
+	}
+}
+
+void ConnectionWizardData::initFromEAP_SIMProtocol(config_eap_method *method)
+{
+	config_eap_sim *pSIMData = (config_eap_sim *)method->method_data;
+	m_eapProtocol = ConnectionWizardData::eap_sim;
+	m_SCreader = pSIMData->reader;
+	if (pSIMData->auto_realm == TRUE)
+	{
+		m_autoRealm = true;
+	}
+	else
+	{
+		m_autoRealm = false;
+	}
+}
+
+void ConnectionWizardData::initFromEAP_PEAPProtocol(config_eap_method *method)
+{
+	m_eapProtocol = ConnectionWizardData::eap_peap;
+	if (method->method_data != NULL)
+	{
+		config_eap_peap *pPEAPData = (config_eap_peap *)method->method_data;
+		if (pPEAPData->phase2 != NULL)
+		{
+			m_username = pPEAPData->identity;
+
+			config_eap_method *myeap = NULL;
+			myeap = (config_eap_method *)pPEAPData->phase2;					
+			if (myeap->method_num == EAP_TYPE_MSCHAPV2)
+			{
+				m_innerPEAPProtocol = ConnectionWizardData::inner_mschapv2;
+
+				if (myeap->method_data != NULL)
+				{
+					config_eap_mschapv2 *myinner = NULL;
+					myinner = (config_eap_mschapv2 *)myeap->method_data;
+
+					m_password = myinner->password;
+				}			
+			}
+			else if (myeap->method_num == EAP_TYPE_GTC)
+			{
+				// We don't allow GTC to store a password right now.
+				m_innerPEAPProtocol = ConnectionWizardData::inner_eap_gtc;
+			}
+		}
+						
+		if (TEST_FLAG(pPEAPData->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT))
+			m_validateCert = true;
+		else
+			m_validateCert = false;			
+
+		if (TEST_FLAG(pPEAPData->flags, FLAGS_PEAP_USE_LOGON_CREDS))
+			m_useLogonCreds = true;
+		else
+			m_useLogonCreds = false;
+	}				
+}
+
+void ConnectionWizardData::initFromEAP_TTLSProtocol(config_eap_method *method)
+{
+	m_eapProtocol = ConnectionWizardData::eap_ttls;
+	if (method->method_data != NULL)
+	{
+		config_eap_ttls *pTTLSData = (config_eap_ttls *)method->method_data;
+
+		m_username = pTTLSData->inner_id;
+
+		if (pTTLSData->phase2_type == TTLS_PHASE2_PAP)
+		{
+			m_innerTTLSProtocol = ConnectionWizardData::inner_pap;
+
+			if (pTTLSData->phase2_data != NULL)
+			{
+				config_pwd_only *pConfig = (config_pwd_only *)pTTLSData->phase2_data;
+				m_password = pConfig->password;
+			}
+		}
+		else if (pTTLSData->phase2_type == TTLS_PHASE2_CHAP)
+		{
+			m_innerTTLSProtocol = ConnectionWizardData::inner_chap;
+
+			if (pTTLSData->phase2_data != NULL)
+			{
+				config_pwd_only *pConfig = (config_pwd_only *)pTTLSData->phase2_data;
+				m_password = pConfig->password;
+			}
+		}
+		else if (pTTLSData->phase2_type == TTLS_PHASE2_MSCHAP)
+		{
+			m_innerTTLSProtocol = ConnectionWizardData::inner_mschap;
+
+			if (pTTLSData->phase2_data != NULL)
+			{
+				config_pwd_only *pConfig = (config_pwd_only *)pTTLSData->phase2_data;
+				m_password = pConfig->password;
+			}
+		}
+		else if (pTTLSData->phase2_type == TTLS_PHASE2_MSCHAPV2)
+		{
+			m_innerTTLSProtocol = ConnectionWizardData::inner_mschapv2;										
+
+			if (pTTLSData->phase2_data != NULL)
+			{
+				config_pwd_only *pConfig = (config_pwd_only *)pTTLSData->phase2_data;
+				m_password = pConfig->password;
+			}
+		}
+		else if (pTTLSData->phase2_type == TTLS_PHASE2_EAP)
+		{
+			m_innerTTLSProtocol = ConnectionWizardData::inner_eap_md5;
+
+			if (pTTLSData->phase2_data != NULL)
+			{
+				config_eap_method *inner_method = (config_eap_method *)pTTLSData->phase2_data;
+				
+				if (inner_method->method_num == EAP_TYPE_MD5)
+				{
+					if (inner_method->method_data != NULL)
+					{
+						config_pwd_only *pConfig = (config_pwd_only *)inner_method->method_data;
+
+						m_password = pConfig->password;
+					}
+				}
+			}
+		}
+
+		if (TEST_FLAG(pTTLSData->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT))
+			m_validateCert = true;
+		else
+			m_validateCert = false;			
+
+		if (TEST_FLAG(pTTLSData->flags, TTLS_FLAGS_USE_LOGON_CREDS))
+			m_useLogonCreds = true;
+		else
+			m_useLogonCreds = false;
+	}	
+}
+
+void ConnectionWizardData::initFromEAP_FASTProtocol(config_eap_method *method)
+{
+	m_eapProtocol = ConnectionWizardData::eap_fast;
+	if (method->method_data != NULL)
+	{
+		config_eap_fast *pFASTData = (config_eap_fast *)method->method_data;
+
+		m_username = pFASTData->innerid;
+
+		if (pFASTData->phase2 != NULL)
+		{
+			config_eap_method *myeap = NULL;
+			myeap = (config_eap_method *)pFASTData->phase2;					
+			if (myeap->method_num == EAP_TYPE_MSCHAPV2)
+			{
+				m_innerFASTProtocol = ConnectionWizardData::inner_mschapv2;
+
+				if (myeap->method_data != NULL)
+				{
+					config_eap_mschapv2 *pConfig = (config_eap_mschapv2 *)myeap->method_data;
+
+					m_password = pConfig->password;
+				}
+			}
+			else if (myeap->method_num == EAP_TYPE_GTC)
+			{
+				m_innerFASTProtocol = ConnectionWizardData::inner_eap_gtc;
+
+				if (myeap->method_data != NULL)
+				{
+					config_pwd_only *pConfig = (config_pwd_only *)myeap->method_data;
+
+					m_password = pConfig->password;
+				}
+			}
+		}
+						
+		if (TEST_FLAG(pFASTData->flags, EAP_FAST_VALIDATE_SERVER_CERT))
+			m_validateCert = true;
+		else
+			m_validateCert = false;			
+
+		if (TEST_FLAG(pFASTData->flags, EAP_FAST_PROVISION_ANONYMOUS))
+			m_anonymousProvisioning = true;
+		else
+			m_anonymousProvisioning = false;
+
+		if (TEST_FLAG(pFASTData->flags, EAP_FAST_PROVISION_AUTHENTICATED))
+			m_authenticatedProvisioning = true;
+		else
+			m_authenticatedProvisioning = false;
+
+		if (TEST_FLAG(pFASTData->flags, EAP_FAST_USE_LOGON_CREDS))
+			m_useLogonCreds = true;
+		else
+			m_useLogonCreds = false;
+	}
+}
+
+void ConnectionWizardData::initFromEAP_MD5Protocol(config_eap_method *method)
+{
+	m_eapProtocol = ConnectionWizardData::eap_md5;
+	if (method->method_data != NULL)
+	{
+		config_pwd_only *pMD5Data = (config_pwd_only *)method->method_data;
+
+		m_password = pMD5Data->password;
+
+		if (TEST_FLAG(pMD5Data->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS))
+			m_useLogonCreds = true;
+		else
+			m_useLogonCreds = false;
+	}
+}
+
+void ConnectionWizardData::initFromEAP_TLSProtocol(config_eap_method *method)
+{
+	m_eapProtocol = ConnectionWizardData::eap_tls;
+	if (method->method_data != NULL)
+	{
+		config_eap_tls *pTLSData = (config_eap_tls *)method->method_data;
+
+		m_userCert = pTLSData->user_cert;
+	}				
+}
+
+
+

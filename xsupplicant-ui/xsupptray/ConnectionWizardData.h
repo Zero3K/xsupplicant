@@ -63,6 +63,14 @@ private:
 	bool toProfileData(config_profiles **, config_trusted_server const * const);
 	bool toConnectionData(config_connection **, config_profiles const * const);
 
+	void initFromEAP_AKAProtocol(config_eap_method *);
+	void initFromEAP_SIMProtocol(config_eap_method *);
+	void initFromEAP_PEAPProtocol(config_eap_method *);
+	void initFromEAP_TTLSProtocol(config_eap_method *);
+	void initFromEAP_FASTProtocol(config_eap_method *);
+	void initFromEAP_MD5Protocol(config_eap_method *);
+	void initFromEAP_TLSProtocol(config_eap_method *);
+
 public:
 
 	bool m_newConnection;
@@ -136,6 +144,8 @@ public:
 	Dot1XProtocol m_eapProtocol;
 	QString m_outerIdentity;
 	QString m_SCreader;
+	QString m_username;
+	QString m_password;
 	bool m_autoRealm;
 	bool m_anonymousProvisioning;
 	bool m_authenticatedProvisioning;

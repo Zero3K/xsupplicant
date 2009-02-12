@@ -71,6 +71,7 @@ public:
 		pageWirelessInfo,
 		pageIPOptions,
 		pageStaticIP,
+		pageCredentials,
 		pageDot1XProtocol,
 		pageDot1XInnerProtocol,
 		pageDot1XCert,

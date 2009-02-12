@@ -6,9 +6,6 @@
  * \file ttls_eap.c
  *
  * \author chris@open1x.org
- *
- * $Id: ttls_eap.c,v 1.3 2007/10/17 07:00:55 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:55 $
  **/
 #include <string.h>
 #include <stdlib.h>

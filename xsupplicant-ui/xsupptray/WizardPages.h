@@ -145,6 +145,30 @@ private:
 	QRadioButton *m_pRadioButtonStatic;
 };
 
+class WizardPageCredentials : public WizardPage
+{
+	Q_OBJECT
+	
+public:
+	WizardPageCredentials(QWidget *parent, QWidget *parentWidget);
+	virtual ~WizardPageCredentials();
+	virtual bool create(void);
+	virtual void init(const ConnectionWizardData &data);
+	virtual QString getHeaderString(void) { return tr("Credentials"); };
+	virtual bool validate(void);
+	virtual const ConnectionWizardData &wizardData(void);
+private:
+	QRadioButton *m_pRadioButtonPrompt;
+	QRadioButton *m_pRadioButtonStore;
+	QLineEdit *m_pUsernameEdit;
+	QLineEdit *m_pPasswordEdit;
+	QLabel *m_pUsernameLabel;
+	QLabel *m_pPasswordLabel;
+
+private slots:
+	void slotToggled(bool checked);
+};
+
 class WizardPageStaticIP : public WizardPage
 {
 	Q_OBJECT

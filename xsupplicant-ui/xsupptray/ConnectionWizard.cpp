@@ -181,6 +181,9 @@ bool ConnectionWizard::loadPages(void)
 				case ConnectionWizard::pageStaticIP:
 					newPage = new WizardPageStaticIP(this, m_pStackedWidget);
 					break;			
+				case ConnectionWizard::pageCredentials:
+					newPage = new WizardPageCredentials(this, m_pStackedWidget);
+					break;
 				case ConnectionWizard::pageFinishPage:
 					newPage = new WizardPageFinished(this, m_pStackedWidget);
 					break;
@@ -473,9 +476,16 @@ ConnectionWizard::wizardPages ConnectionWizard::getNextPage(void)
 			break;
 
 		case pageAuthOptions:
-			nextPage = ConnectionWizard::pageIPOptions;
+			if ((m_connData.m_eapProtocol != ConnectionWizardData::eap_aka) && (m_connData.m_eapProtocol != ConnectionWizardData::eap_sim))
+				nextPage = ConnectionWizard::pageCredentials;
+			else
+				nextPage = ConnectionWizard::pageIPOptions;
 			break;
 			
+		case pageCredentials:
+			nextPage = ConnectionWizard::pageIPOptions;
+			break;
+
 		case pageIPOptions:
 			if (m_connData.m_staticIP == true)
 				nextPage = ConnectionWizard::pageStaticIP;

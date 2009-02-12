@@ -2127,3 +2127,186 @@ const ConnectionWizardData &WizardPageAuthOptions::wizardData(void)
 
 	return m_curData;
 }
+
+WizardPageCredentials::WizardPageCredentials(QWidget *parent, QWidget *parentWidget)
+	:WizardPage(parent,parentWidget)
+{
+}
+
+bool WizardPageCredentials::create(void)
+{
+	QLabel *pMsgLabel = NULL;
+
+	m_pRealForm = FormLoader::buildform("wizardPageCredentials.ui", m_pParentWidget);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	// dynamically populate text
+	pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
+	if (pMsgLabel != NULL)
+		pMsgLabel->setText(tr("How would you like to obtain credentials? <i>(If you are unsure, use the default setting)<i>"));
+		
+	m_pRadioButtonPrompt = qFindChild<QRadioButton*>(m_pRealForm, "radioPromptForCreds");
+	if (m_pRadioButtonPrompt != NULL)
+		m_pRadioButtonPrompt->setText(tr("Prompt for credentials (default)"));
+		
+	m_pRadioButtonStore = qFindChild<QRadioButton*>(m_pRealForm, "radioStoredCreds");
+	if (m_pRadioButtonStore != NULL)
+		m_pRadioButtonStore->setText(tr("Store Credentials"));
+		
+	// other initializations
+	if (m_pRadioButtonPrompt != NULL)
+		m_pRadioButtonPrompt->setChecked(true);
+
+	m_pUsernameLabel = qFindChild<QLabel*>(m_pRealForm, "labelUsername");
+	if (m_pUsernameLabel != NULL)
+		m_pUsernameLabel->setText(tr("Username : "));
+
+	m_pPasswordLabel = qFindChild<QLabel*>(m_pRealForm, "labelPassword");
+	if (m_pPasswordLabel != NULL)
+		m_pPasswordLabel->setText(tr("Password : "));
+
+	m_pUsernameEdit = qFindChild<QLineEdit*>(m_pRealForm, "usernameEdit");
+	m_pPasswordEdit = qFindChild<QLineEdit*>(m_pRealForm, "passwordEdit");
+
+	Util::myConnect(m_pRadioButtonPrompt, SIGNAL(toggled(bool)), this, SLOT(slotToggled(bool)));
+
+	return true;
+}
+
+void WizardPageCredentials::init(const ConnectionWizardData &data)
+{
+	m_curData = data;
+	if ((m_curData.m_username == "") && (m_curData.m_password == ""))
+	{
+		if (m_pRadioButtonPrompt != NULL)
+			m_pRadioButtonPrompt->setChecked(true);
+
+		if (m_pUsernameLabel != NULL)
+			m_pUsernameLabel->setEnabled(false);
+
+		if (m_pUsernameEdit != NULL)
+			m_pUsernameEdit->setEnabled(false);
+
+		if (m_pPasswordLabel != NULL)
+			m_pPasswordLabel->setEnabled(false);
+
+		if (m_pPasswordEdit != NULL)
+			m_pPasswordEdit->setEnabled(false);
+	}
+	else
+	{
+		if (m_pRadioButtonStore != NULL)
+			m_pRadioButtonStore->setChecked(true);
+
+		if (m_pUsernameLabel != NULL)
+			m_pUsernameLabel->setEnabled(true);
+
+		if (m_pUsernameEdit != NULL)
+			m_pUsernameEdit->setEnabled(true);
+
+		if ((m_curData.m_eapProtocol != ConnectionWizardData::eap_tls) ||
+			!((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap) && (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)))
+		{
+			if (m_pPasswordLabel != NULL)
+				m_pPasswordLabel->setEnabled(false);
+
+			if (m_pPasswordEdit != NULL)
+				m_pPasswordEdit->setEnabled(false);
+		}
+		else
+		{
+			if (m_pPasswordLabel != NULL)
+				m_pPasswordLabel->setEnabled(true);
+
+			if (m_pPasswordEdit != NULL)
+				m_pPasswordEdit->setEnabled(true);
+		}
+	}
+}
+
+const ConnectionWizardData &WizardPageCredentials::wizardData(void)
+{
+	if ((m_pRadioButtonPrompt != NULL) && (m_pRadioButtonPrompt->isChecked()))
+	{
+		m_curData.m_username = "";
+		m_curData.m_password = "";
+	}
+	else
+	{
+		m_curData.m_username = m_pUsernameEdit->text();
+		m_curData.m_password = m_pPasswordEdit->text();
+	}
+
+	return m_curData;
+}
+
+bool WizardPageCredentials::validate(void)
+{
+	if ((m_pRadioButtonStore != NULL) && (m_pRadioButtonStore->isChecked()))
+	{
+		if ((m_curData.m_eapProtocol != ConnectionWizardData::eap_tls) ||
+			!((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap) && (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)))
+		{
+			// We need to make sure that we have values stored.
+			if ((m_pUsernameEdit->text() == "") || (m_pPasswordEdit->text() == ""))
+			{
+				QMessageBox::critical(this, tr("Error"), tr("You need to provide a username and password, or select the 'Prompt for credentials' option."));
+				return false;
+			}
+		}
+		else
+		{
+			if (m_pUsernameEdit->text() == "")
+			{
+				QMessageBox::critical(this, tr("Error"), tr("You need to provide a username, or select the 'Prompt for credentials' option."));
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+void WizardPageCredentials::slotToggled(bool checked)
+{
+	if (checked)
+	{
+		// Disable the username/password stuff
+		if (m_pUsernameLabel != NULL)
+			m_pUsernameLabel->setEnabled(false);
+
+		if (m_pUsernameEdit != NULL)
+			m_pUsernameEdit->setEnabled(false);
+
+		if (m_pPasswordLabel != NULL)
+			m_pPasswordLabel->setEnabled(false);
+
+		if (m_pPasswordEdit != NULL)
+			m_pPasswordEdit->setEnabled(false);
+	}
+	else
+	{
+		// Enable it
+		if (m_pUsernameLabel != NULL)
+			m_pUsernameLabel->setEnabled(true);
+
+		if (m_pUsernameEdit != NULL)
+			m_pUsernameEdit->setEnabled(true);
+
+		if ((m_curData.m_eapProtocol != ConnectionWizardData::eap_tls) ||
+			!((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap) && (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)))
+		{
+			if (m_pPasswordLabel != NULL)
+				m_pPasswordLabel->setEnabled(true);
+
+			if (m_pPasswordEdit != NULL)
+				m_pPasswordEdit->setEnabled(true);
+		}
+	}
+}
+
+WizardPageCredentials::~WizardPageCredentials()
+{
+	Util::myDisconnect(m_pRadioButtonPrompt, SIGNAL(toggled(bool)), this, SLOT(slotToggled(bool)));
+}
