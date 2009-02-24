@@ -495,8 +495,8 @@ xmlNodePtr ipc_callout_find_node(xmlNodePtr head, char *nodename)
  **/
 uint8_t ipc_callout_process(uint8_t *buffer, int size, uint8_t **retbuf, int *retsize)
 {
-	xmlDocPtr doc, outdoc;
-	xmlNodePtr cur_node, n, newChild, newRoot;
+	xmlDocPtr doc = NULL, outdoc = NULL;
+	xmlNodePtr cur_node = NULL, n = NULL, newChild = NULL, newRoot = NULL;
 	unsigned int valid_count = 0;
 	uint8_t retval = 0;
 
