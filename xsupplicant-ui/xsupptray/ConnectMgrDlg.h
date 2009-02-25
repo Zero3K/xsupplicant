@@ -167,6 +167,7 @@ private:
 	QCheckBox *m_pCheckSupplicants;
 	QCheckBox *m_pDisconnectAtLogoff;
 	QCheckBox *m_pAllowMachineAuthContinue;
+	QCheckBox *m_pForceMulticast;
 	QSpinBox *m_pScanTimeout;
 	QSpinBox *m_pAssocTimeout;
 	QSpinBox *m_pPassiveInterval;

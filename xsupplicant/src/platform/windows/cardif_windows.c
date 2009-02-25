@@ -1857,19 +1857,19 @@ int cardif_getframe(context *ctx)
       // came from.
       snmp_dot1xSuppLastEapolFrameSource((uint8_t *)&ctx->recvframe[6]);
 
-	  switch (globals->destination)
-		{
+	  if (ctx->intType == ETH_802_3_INT)
+	  {
+		  // Only allow the destination change on wired interfaces.  Wireless should always use the unicast address.
+		  switch (globals->destination)
+		  {
 			case DEST_AUTO:
 			// If it is a wired interface, only change the destination if
 			// the recieved frame destination isn't the multicast address.
-			if (ctx->intType != ETH_802_11_INT)
+			if (memcmp(&ctx->recvframe[0], dot1x_default_dest, 6) == 0)
 			{
-				if (memcmp(&ctx->recvframe[0], dot1x_default_dest, 6) == 0)
-				{
-					break;
-				}
-				// Otherwise, fall through.
+				break;
 			}
+				// Otherwise, fall through.
 
 			case DEST_SOURCE:
 			if (memcmp(ctx->dest_mac, &ctx->recvframe[6], 6) != 0)
@@ -1890,6 +1890,11 @@ int cardif_getframe(context *ctx)
 			default:
 				debug_printf(DEBUG_NORMAL, "Unknown destination mode on interface '%s'!\n", ctx->desc);
 			break;
+		  }
+	  }
+	  else
+	  {
+		  memcpy(ctx->dest_mac, &ctx->recvframe[6], 6);
 	  }
 
 	  // Make sure it is 888e.

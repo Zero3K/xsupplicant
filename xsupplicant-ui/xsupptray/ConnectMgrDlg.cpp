@@ -135,6 +135,9 @@ ConnectMgrDlg::~ConnectMgrDlg()
 	if (m_pAllowMachineAuthContinue != NULL)
 		Util::myDisconnect(m_pAllowMachineAuthContinue, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
 
+	if (m_pForceMulticast != NULL)
+		Util::myDisconnect(m_pForceMulticast, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
+
 	if (m_pScanTimeout != NULL)
 		Util::myDisconnect(m_pScanTimeout, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
 
@@ -270,6 +273,9 @@ bool ConnectMgrDlg::initUI(void)
 
 	m_pAllowMachineAuthContinue = qFindChild<QCheckBox*>(m_pRealForm, "allowMachineAuthRemain");
 	if (m_pAllowMachineAuthContinue != NULL) m_pAllowMachineAuthContinue->setText(tr("Allow logged on users to keep the machines authentication"));
+
+	m_pForceMulticast = qFindChild<QCheckBox*>(m_pRealForm, "forceMulticast");
+	if (m_pForceMulticast != NULL) m_pForceMulticast->setText(tr("Force wired connections to use the multicast MAC address"));
 
 	m_pScanTimeout = qFindChild<QSpinBox*>(m_pRealForm, "scanTimeout");
 	m_pAssocTimeout = qFindChild<QSpinBox*>(m_pRealForm, "assocTimeout");
@@ -485,6 +491,9 @@ bool ConnectMgrDlg::initUI(void)
 
 	if (m_pAllowMachineAuthContinue != NULL)
 		Util::myConnect(m_pAllowMachineAuthContinue, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
+
+	if (m_pForceMulticast != NULL)
+		Util::myConnect(m_pForceMulticast, SIGNAL(stateChanged(int)), this, SLOT(enableSaveBtns()));
 
 	if (m_pScanTimeout != NULL)
 		Util::myConnect(m_pScanTimeout, SIGNAL(valueChanged(int)), this, SLOT(enableSaveBtns()));
@@ -1665,6 +1674,14 @@ void ConnectMgrDlg::configUpdate()
 		}
 	}
 
+	if (m_pForceMulticast != NULL)
+	{
+		if (m_pForceMulticast->isChecked())
+			globals->destination = DEST_MULTICAST;
+		else
+			globals->destination = DEST_AUTO;
+	}
+
 	if (m_pAssocTimeout != NULL)
 	{
 		globals->assoc_timeout = atoi(m_pAssocTimeout->text().toAscii());
@@ -1936,6 +1953,15 @@ void ConnectMgrDlg::populateSettingsTabs()
 	else
 	{
 		m_pAllowMachineAuthContinue->setChecked(false);
+	}
+
+	if (myglobals->destination == DEST_MULTICAST)
+	{
+		m_pForceMulticast->setChecked(true);
+	}
+	else
+	{
+		m_pForceMulticast->setChecked(false);
 	}
 
 	m_pScanTimeout->setValue(myglobals->active_timeout);

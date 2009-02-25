@@ -2157,7 +2157,7 @@ void TrayApp::slotOtherSupplicant(const QString &intDesc)
 {
 	if (!m_OtherSupsDescs.contains(intDesc))
 	{
-		QMessageBox::warning(this, tr("Other Wireless Manager"), tr("The state of the wireless interface changed unexpectedly.  This"
+		QMessageBox::warning(this, tr("Other Wireless Manager"), tr("The state of the wireless interface changed unexpectedly.  This "
 			"often indicates another supplicant or wireless manager is running.  Please shut down any other supplicants or wireless "
 			"managers that may be running on interface '%1'.\n\n"
 			"Any active connection attempts by XSupplicant on this interface have been terminated.").arg(intDesc));

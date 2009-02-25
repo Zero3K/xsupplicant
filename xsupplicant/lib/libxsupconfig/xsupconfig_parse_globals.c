@@ -42,7 +42,8 @@ multichoice destination_choices[] = {
   { DEST_BSSID, "BSSID" },
   { DEST_BSSID, "bssid" },
   { DEST_MULTICAST, "MULTICAST" },
-  { DEST_MULTICAST, "multicast" },{ DEST_SOURCE, "SOURCE" },
+  { DEST_MULTICAST, "multicast" },
+  { DEST_SOURCE, "SOURCE" },
   { DEST_SOURCE, "source" },
   { -1, NULL}};
 
