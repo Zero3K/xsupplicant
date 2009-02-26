@@ -50,6 +50,7 @@ void ttls_eap_init(eap_type_data *eapdata, uint8_t fake_id)
   struct tls_vars *mytls_vars = NULL;
   eap_sm *sm = NULL;
   struct config_eap_ttls *ttlsdata = NULL;
+  context *ctx = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;
@@ -105,7 +106,17 @@ void ttls_eap_init(eap_type_data *eapdata, uint8_t fake_id)
     }
 
 	if (ttlsdata->inner_id != NULL)
+	{
 		sm->ident = ttlsdata->inner_id;
+	}
+	else
+	{
+		ctx = event_core_get_active_ctx();
+		if (ctx != NULL)
+		{
+			sm->ident = ctx->prof->temp_username;
+		}
+	}
 
 	if (ttlsdata->phase2_data == NULL)
     {

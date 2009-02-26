@@ -1426,10 +1426,10 @@ int txStart(context *ctx)
 		if (((ctx->conn->association.association_type == ASSOC_WPA) || 
 			(ctx->conn->association.association_type == ASSOC_WPA2)) &&
 			(ctx->conn->association.auth_type == AUTH_PSK) )
-	{
-	  debug_printf(DEBUG_DOT1X_STATE, "Doing WPA-PSK.. Not sending start!\n");
-	  return XENONE;
-	}
+		{
+			debug_printf(DEBUG_DOT1X_STATE, "Doing WPA-PSK.. Not sending start!\n");
+			return XENONE;
+		}
     }
 
   debug_printf(DEBUG_DOT1X_STATE, "Sending EAPOL-Start Frame.\n");
