@@ -283,6 +283,7 @@ private:
 	QComboBox *m_pProtocol;
 	QLineEdit *m_pOuterID;
 	QCheckBox *m_pValidateCert;
+	QCheckBox *m_pSessionResume;
 };
 
 class WizardPageFASTInnerProtocol : public WizardPage

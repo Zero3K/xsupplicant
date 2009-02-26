@@ -61,6 +61,9 @@ ConnectionWizardData::ConnectionWizardData()
 	
 	// default to 802.1X for wired
 	m_wiredSecurity = true;
+
+	// default to using session resumption
+	m_useSessionResume = true;
 	
 	// default to DHCP
 	m_staticIP = false;
@@ -293,6 +296,11 @@ bool ConnectionWizardData::toProfileEAP_PEAPProtocol(config_profiles * const pPr
 					else
 						UNSET_FLAG(mypeap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT);
 					
+					if (m_useSessionResume == true)
+						SET_FLAG(mypeap->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+					else
+						UNSET_FLAG(mypeap->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+
 					// If we are doing machine auth, we need to set the "doing machine auth" flag.
 					if (m_machineAuth == true)
 						SET_FLAG(mypeap->flags, FLAGS_PEAP_MACHINE_AUTH);
@@ -434,6 +442,11 @@ bool ConnectionWizardData::toProfileEAP_TLSProtocol(config_profiles * const pPro
 						// We don't allow users to not verify the server cert with TLS, so return an error.
 						success = false;
 					}
+
+					if (m_useSessionResume == true)
+						SET_FLAG(mytls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+					else
+						UNSET_FLAG(mytls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
 
 					// Now, add the TLS user cert to the config.
 					if (m_userCert == "")
@@ -671,6 +684,11 @@ bool ConnectionWizardData::toProfileEAP_TTLSProtocol(config_profiles * const pPr
 				{
 					UNSET_FLAG(myttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT);
 				}
+
+				if (m_useSessionResume == true)
+					SET_FLAG(myttls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+				else
+					UNSET_FLAG(myttls->flags, EAP_TLS_FLAGS_SESSION_RESUME);
 
 				if (m_useLogonCreds == true)
 					SET_FLAG(myttls->flags, TTLS_FLAGS_USE_LOGON_CREDS);
@@ -1225,6 +1243,11 @@ void ConnectionWizardData::initFromEAP_PEAPProtocol(config_eap_method *method)
 		{
 			m_username = pPEAPData->identity;
 
+			if (TEST_FLAG(pPEAPData->flags, EAP_TLS_FLAGS_SESSION_RESUME))
+				m_useSessionResume = true;
+			else
+				m_useSessionResume = false;
+
 			config_eap_method *myeap = NULL;
 			myeap = (config_eap_method *)pPEAPData->phase2;					
 			if (myeap->method_num == EAP_TYPE_MSCHAPV2)
@@ -1264,6 +1287,11 @@ void ConnectionWizardData::initFromEAP_TTLSProtocol(config_eap_method *method)
 	if (method->method_data != NULL)
 	{
 		config_eap_ttls *pTTLSData = (config_eap_ttls *)method->method_data;
+
+		if (TEST_FLAG(pTTLSData->flags, EAP_TLS_FLAGS_SESSION_RESUME))
+			m_useSessionResume = true;
+		else
+			m_useSessionResume = false;
 
 		m_username = pTTLSData->inner_id;
 
@@ -1420,6 +1448,11 @@ void ConnectionWizardData::initFromEAP_TLSProtocol(config_eap_method *method)
 	if (method->method_data != NULL)
 	{
 		config_eap_tls *pTLSData = (config_eap_tls *)method->method_data;
+
+		if (TEST_FLAG(pTLSData->flags, EAP_TLS_FLAGS_SESSION_RESUME))
+			m_useSessionResume = true;
+		else
+			m_useSessionResume = false;
 
 		m_userCert = pTLSData->user_cert;
 	}				

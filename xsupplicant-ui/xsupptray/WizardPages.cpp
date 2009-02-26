@@ -1133,14 +1133,24 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData &data)
 {
 	m_curData = data;
 	
+	m_pSessionResume = qFindChild<QCheckBox*>(m_pRealForm, "checkBoxSessionResume");
+
 	// populate this label dynamically because the text references the outer protocol used
 	QLabel *pMsgLabel = qFindChild<QLabel*>(m_pRealForm, "labelMessage");
 	if (pMsgLabel != NULL)
 	{
 		if (m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
+		{
 			pMsgLabel->setText(tr("Enter your PEAP settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
+			if (m_pSessionResume != NULL)
+				m_pSessionResume->setText(tr("Use Fast Reconnect"));
+		}
 		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
+		{
 			pMsgLabel->setText(tr("Enter your TTLS settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));	
+			if (m_pSessionResume != NULL)
+				m_pSessionResume->setText(tr("Use Session Resumption"));
+		}
 	}
 			
 	if (m_pOuterID != NULL)
@@ -1148,6 +1158,9 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData &data)
 		
 	if (m_pValidateCert != NULL)
 		m_pValidateCert->setChecked(m_curData.m_validateCert);
+
+	if (m_pSessionResume != NULL)
+		m_pSessionResume->setChecked(m_curData.m_useSessionResume);
 	
 	if (m_pProtocol != NULL)
 	{
@@ -1196,6 +1209,9 @@ const ConnectionWizardData &WizardPageDot1XInnerProtocol::wizardData(void)
 	if (m_pValidateCert != NULL)
 		m_curData.m_validateCert = m_pValidateCert->isChecked();
 		
+	if (m_pSessionResume != NULL)
+		m_curData.m_useSessionResume = m_pSessionResume->isChecked();
+
 	if (m_pProtocol != NULL)
 	{
 		if (m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
@@ -1950,8 +1966,11 @@ const ConnectionWizardData &WizardPageDot1XUserCert::wizardData()
 
 	if (m_pCertTable->rowCount() > 0)
 	{
-		item = m_pCertTable->selectedItems().at(0);	// There should only be one selected.
-		m_curData.m_userCert = QString(m_pCertArray[item->type() - 1000].location);
+		if (m_pCertTable->selectedItems().count() > 0)
+		{
+			item = m_pCertTable->selectedItems().at(0);	// There should only be one selected.
+			if (item != NULL) m_curData.m_userCert = QString(m_pCertArray[item->type() - 1000].location);
+		}
 	}
 
 	return m_curData;

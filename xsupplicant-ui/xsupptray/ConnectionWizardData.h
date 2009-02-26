@@ -158,6 +158,7 @@ public:
 	bool m_verifyCommonName;
 	QStringList m_commonNames;
 	unsigned char m_config_type;
+	bool m_useSessionResume;
 	
 	// data for bookkeeping
 	bool m_hasProfile;
