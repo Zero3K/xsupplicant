@@ -801,6 +801,70 @@ void ConnectMgrDlg::updateWiredAutoConnectState(void)
 	}
 }
 
+void ConnectMgrDlg::clearWiredAutoConnection(const QString &connectionName)
+{
+	conn_enum *connEnum = NULL;
+	config_connection *myConn = NULL;
+	int are_admin = 0;
+	int x = 0, i = 0;
+
+	if (connectionName.isEmpty())
+		return;							// Nothing to do.
+
+	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, connectionName.toAscii().data(), &myConn) == REQUEST_SUCCESS)
+	{
+		// The current default is a machine defined default, so we need to verify that the user at the console
+		// is allowed to change it.
+		if (xsupgui_request_get_are_administrator(&are_admin) != REQUEST_SUCCESS)
+		{
+			QMessageBox::critical(this, tr("Error"), tr("Unable to determine if you have permissions to edit this setting."));
+			xsupgui_request_free_connection_config(&myConn);
+			return;
+		}
+
+		if (are_admin == FALSE)
+		{
+			QMessageBox::critical(this, tr("Error"), tr("The default wired connection is defined in the system configuration.  You must be an administrator to change it."));
+			xsupgui_request_free_connection_config(&myConn);
+			return;
+		}
+	}
+
+	xsupgui_request_free_connection_config(&myConn);
+
+	for (x = CONFIG_LOAD_GLOBAL; x <= CONFIG_LOAD_USER; x++)
+	{
+		if (are_admin == FALSE) x++;		// Don't process global settings if we aren't admin.
+
+		if (xsupgui_request_enum_connections(x, &connEnum) == REQUEST_SUCCESS)
+		{
+			for (i = 0; connEnum[i].name != NULL; i++)
+			{
+				if (((connEnum[i].ssid == NULL) || (strlen(connEnum[i].ssid) == 0)) && (connEnum[i].priority != DEFAULT_PRIORITY))
+				{
+					if (xsupgui_request_get_connection_config(x, connEnum[i].name, &myConn) != REQUEST_SUCCESS)
+					{
+						QMessageBox::critical(this, tr("Error"), tr("Unable to reset the priority settings on connection %1.  The wired default behavior may not be what is expected.").arg(connEnum[i].name));
+					}
+					else
+					{
+						myConn->priority = DEFAULT_PRIORITY;
+						if (xsupgui_request_set_connection_config(x, myConn) != REQUEST_SUCCESS)
+						{
+							QMessageBox::critical(this, tr("Error"), tr("Unable to reset the priority settings on connection %1.  The wired default behavior may not be what is expected.").arg(connEnum[i].name));
+						}
+
+						xsupgui_request_free_connection_config(&myConn);
+					}
+				}
+			}
+		}
+
+		xsupgui_request_free_conn_enum(&connEnum);
+		XSupWrapper::writeConfig(x);
+	}
+}
+
 void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
 {
 	conn_enum *connEnum = NULL;
@@ -835,6 +899,8 @@ void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
 
 	for (x = CONFIG_LOAD_GLOBAL; x <= CONFIG_LOAD_USER; x++)
 	{
+		if (are_admin == FALSE) x++;		// Don't process global settings if we aren't admin.
+
 		if (xsupgui_request_enum_connections(x, &connEnum) == REQUEST_SUCCESS)
 		{
 			for (i = 0; connEnum[i].name != NULL; i++)
@@ -871,6 +937,7 @@ void ConnectMgrDlg::setWiredAutoConnection(const QString &connectionName)
 					else
 					{
 						myConn->priority = 1;
+						alreadySet = true;
 						if (xsupgui_request_set_connection_config(x, myConn) != REQUEST_SUCCESS)
 						{
 							QMessageBox::critical(this, tr("Error"), tr("Unable to set the priority settings on connection %1.  The wired default behavior may not be what is expected.").arg(connEnum[i].name));
@@ -898,7 +965,7 @@ void ConnectMgrDlg::enableDisableWiredAutoConnect(int newState)
 		}
 		else
 		{
-			this->setWiredAutoConnection(QString(""));
+			clearWiredAutoConnection(m_pWiredConnections->currentText());
 			m_pWiredConnections->setEnabled(false);
 		}
 	}

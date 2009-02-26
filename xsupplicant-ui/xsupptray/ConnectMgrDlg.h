@@ -110,6 +110,7 @@ private slots:
 	void enableDisableWirelessAutoConnect(int);
 	void enableDisableWiredAutoConnect(int);
 	void setWiredAutoConnection(const QString &connectionName);
+	void clearWiredAutoConnection(const QString &connectionName);
 	void updateConnectionLists(void);
 	void handleDoubleClick(int, int);
 	void menuClose(void);
