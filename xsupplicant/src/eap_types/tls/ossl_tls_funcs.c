@@ -253,6 +253,9 @@ int tls_funcs_init(struct tls_vars *mytls_vars, uint8_t eaptype)
   // XXX Need to move the global init pieces here. (OpenSSL init stuff.) Once we
   // finish making the changes to allow GNU-TLS as an option.
 
+  // If we are resuming, we don't want to blow everything away.
+  if (mytls_vars->resumable != TRUE)
+  {
   if (mytls_vars->ssl)
     {
       SSL_shutdown(mytls_vars->ssl);
@@ -274,7 +277,7 @@ int tls_funcs_init(struct tls_vars *mytls_vars, uint8_t eaptype)
 	  ipc_events_malloc_failed(NULL);
       return XETLSINIT;
     }
-
+  }
   mytls_vars->method_in_use = eaptype;
 
   return XENONE;
@@ -349,10 +352,8 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
     return XEMALLOC;
 
   debug_printf(DEBUG_TLS_CORE, "Got TLS Start!\n");
-
-  mytls_vars->resuming = 0;
-
-  if ((mytls_vars->ssl == NULL) || (mytls_vars->resume != FALSE))
+ 
+  if ((mytls_vars->ssl == NULL) || ((mytls_vars->resume != FALSE) && (mytls_vars->resumable == FALSE)))
     {
       resval = tls_funcs_build_new_session(mytls_vars);
       if (resval != XENONE) 
@@ -360,6 +361,8 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 			debug_printf(DEBUG_NORMAL, "Error building a new session!\n");
 			return resval;
 		}
+
+	  mytls_vars->resumable = TRUE;
 
 	  if (mytls_vars->cipher_list != NULL)
 	  {
@@ -370,20 +373,19 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 			return -1;
 		  }
 	  }
-
     } else {
       // We already established a connection, so we probably we need to
       // resume the session.
       if (mytls_vars->resume != FALSE)
 		{
-			sess = SSL_get_session(mytls_vars->ssl);
+			sess = SSL_get1_session(mytls_vars->ssl);
 			if (!sess)
 				{
 					debug_printf(DEBUG_TLS_CORE, "Couldn't get session information!"
 						" We won't try to resume this session!\n");
-					mytls_vars->resuming = 0;
+					mytls_vars->resumable = FALSE;
 
-			      // Clear the old session data.
+			        // Clear the old session data.
 				    SSL_free(mytls_vars->ssl);
 
 			      // Set up a new session.	
@@ -392,42 +394,44 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 			    } else {
 			      debug_printf(DEBUG_TLS_CORE, "Got session information, trying "
 					   "to resume session!\n");
-			      mytls_vars->resuming = 1;
 
-	      // We don't want to send an alert to the other end..  So do a 
-	      // quiet shutdown.  This violates the TLS standard, but it is 
-	      // needed to avoid confusing the other end of the connection 
-	      // when we want to do a reconnect!
-	      SSL_set_quiet_shutdown(mytls_vars->ssl, 1);
+			      // We don't want to send an alert to the other end..  So do a 
+			      // quiet shutdown.  This violates the TLS standard, but it is 
+			      // needed to avoid confusing the other end of the connection 
+			      // when we want to do a reconnect!
+			      SSL_set_quiet_shutdown(mytls_vars->ssl, 1);
 	      
-	      // Now, close off our old session.
-	      err = 0;
-	      counter = 0;
+			      // Now, close off our old session.
+			      err = 0;
+			      counter = 0;
 
-	      SSL_shutdown(mytls_vars->ssl);
+			      SSL_shutdown(mytls_vars->ssl);
 
-	      while ((err == 0) && (counter < 60))
-		{
-		  err = SSL_shutdown(mytls_vars->ssl);
-		  if (err == 0)
-		    {
+			      while ((err == 0) && (counter < 60))
+					{
+					  err = SSL_shutdown(mytls_vars->ssl);
+					  if (err == 0)
+					    {
 #ifndef WINDOWS
-		      sleep(1);
+					      sleep(1);
 #else
-			  Sleep(1000);
+						  Sleep(1000);
 #endif
-		      counter++;
-		    }
-		}
+					      counter++;
+					    }
+					}
 
-	      if (err < 0)
-		{
-		  debug_printf(DEBUG_NORMAL, "Error trying to shut down SSL "
-			       "context data.\n");
-		  tls_funcs_process_error();
+				if (err < 0)
+				{
+					debug_printf(DEBUG_NORMAL, "Error trying to shut down SSL "
+							   "context data.\n");
+					tls_funcs_process_error();
+				}
+
+				SSL_free(mytls_vars->ssl);
+				mytls_vars->ssl = SSL_new(mytls_vars->ctx);
+			}
 		}
-	    }
-	}
     }
 
   mytls_vars->ssl_in = BIO_new(BIO_s_mem());
@@ -514,13 +518,13 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
       debug_printf(DEBUG_NORMAL, "Error : %d\n", err);
 
       if (err != 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "OpenSSL Error -- %s\n",
-		       ERR_error_string(err, NULL));
-	  debug_printf(DEBUG_NORMAL, "Library  : %s\n", ERR_lib_error_string(err));
-	  debug_printf(DEBUG_NORMAL, "Function : %s\n", ERR_func_error_string(err));
-	  debug_printf(DEBUG_NORMAL, "Reason   : %s\n", ERR_reason_error_string(err));
-	}
+	  {
+			debug_printf(DEBUG_NORMAL, "OpenSSL Error -- %s\n",
+				   ERR_error_string(err, NULL));
+			debug_printf(DEBUG_NORMAL, "Library  : %s\n", ERR_lib_error_string(err));
+			debug_printf(DEBUG_NORMAL, "Function : %s\n", ERR_func_error_string(err));
+			debug_printf(DEBUG_NORMAL, "Reason   : %s\n", ERR_reason_error_string(err));
+	  }
 
       tls_funcs_process_error();
       return XEGENERROR;

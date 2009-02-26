@@ -295,7 +295,7 @@ void eapttls_process(eap_type_data *eapdata)
       eapdata->methodState = tls_funcs_process(eapdata->eap_data, 
 					       eapdata->eapReqData);
 
-      if ((mytls_vars->handshake_done == TRUE) && (eapdata->methodState != DONE))
+	  if ((mytls_vars->handshake_done == TRUE) && (eapdata->methodState != DONE))
 		{
 			// Process phase 2 data.
 			debug_printf(DEBUG_AUTHTYPES, "Processing phase 2 data.\n");

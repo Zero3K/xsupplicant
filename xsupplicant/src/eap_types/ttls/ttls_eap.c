@@ -34,6 +34,12 @@
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
 
+#ifdef WINDOWS
+#include "../../event_core_win.h"
+#else
+#include "../../event_core.h"
+#endif
+
 /**
  *  \brief Enter INIT state and get everything ready to run EAP.
  *

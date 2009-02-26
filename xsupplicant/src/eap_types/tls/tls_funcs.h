@@ -40,7 +40,7 @@ struct tls_vars {
 #endif // WINDOWS
 
   int resume;                // Should we attempt to resume this connection?
-  int resuming;              // Are we in the process of resuming?
+  int resumable;			 // Is this session in a resumable state?
 
   uint8_t cnexact;               // Should be the same as the cnexact value for
                                  // TTLS or PEAP, depending on which one we are
