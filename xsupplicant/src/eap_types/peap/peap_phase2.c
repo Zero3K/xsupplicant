@@ -607,8 +607,8 @@ void peap_phase2_process(eap_type_data *eapdata, uint8_t *indata,
 void peap_phase2_buildResp(eap_type_data *eapdata, uint8_t *outdata,
 			   uint16_t *outsize)
 {
-  struct tls_vars *mytls_vars;
-  struct phase2_data *p2d;
+  struct tls_vars *mytls_vars = NULL;
+  struct phase2_data *p2d = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     {
@@ -636,7 +636,7 @@ void peap_phase2_buildResp(eap_type_data *eapdata, uint8_t *outdata,
 
   if (p2d->result_data == NULL)
     {
-      debug_printf(DEBUG_AUTHTYPES, "Nothing to return. ACKing.\n");
+      debug_printf(DEBUG_AUTHTYPES, "(Phase 2) Nothing to return. ACKing.\n");
       *outsize = 0;
       return;
     }
@@ -657,8 +657,8 @@ void peap_phase2_buildResp(eap_type_data *eapdata, uint8_t *outdata,
  ************************************************************************/
 void peap_phase2_deinit(eap_type_data *eapdata)
 {
-  struct tls_vars *mytls_vars;
-  struct phase2_data *p2d;
+  struct tls_vars *mytls_vars = NULL;
+  struct phase2_data *p2d = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return;

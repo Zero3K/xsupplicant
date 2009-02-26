@@ -430,6 +430,15 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 
 				SSL_free(mytls_vars->ssl);
 				mytls_vars->ssl = SSL_new(mytls_vars->ctx);
+
+				if (mytls_vars->pac == NULL)
+				{
+					SSL_set_options(mytls_vars->ssl, (SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_SINGLE_DH_USE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS | SSL_OP_NO_TICKET));
+				}
+				else
+				{
+					SSL_set_options(mytls_vars->ssl, (SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_SINGLE_DH_USE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
+				}
 			}
 		}
     }
@@ -470,11 +479,11 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
       // session.
       debug_printf(DEBUG_TLS_CORE, "Attempting to resume session...\n");
       if (SSL_set_session(mytls_vars->ssl, sess) <= 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "There was an error attempting to resume "
-		       "the session!\n");
-	  tls_funcs_process_error();
-	}
+		{
+		  debug_printf(DEBUG_NORMAL, "There was an error attempting to resume "
+			       "the session!\n");
+		  tls_funcs_process_error();
+		}
     }
 
   SSL_set_bio(mytls_vars->ssl, mytls_vars->ssl_in, mytls_vars->ssl_out);

@@ -313,7 +313,7 @@ void eappeap_process(eap_type_data *eapdata)
   tls_type[0] = (tls_type[0] & PEAP_MASK_OUT_VERSION);
 
   if ((eapdata->eapReqData[sizeof(struct eap_header)] == EAPTLS_START)
-      || (mytls_vars->handshake_done != TRUE))
+	  || (mytls_vars->handshake_done != TRUE))
     {
       debug_printf(DEBUG_AUTHTYPES, "(EAP-PEAP) Processing packet.\n");
       // Actually start to process the packet.
@@ -409,22 +409,27 @@ uint8_t *eappeap_buildResp(eap_type_data *eapdata)
 
   mytls_vars = (struct tls_vars *)eapdata->eap_data;
 
+  // If we are resuming, we don't want to let it go to phase 2.
   if (mytls_vars->handshake_done == TRUE)
     {
       peap_phase2_buildResp(eapdata, (uint8_t *)&resbuf,
                             (uint16_t *)&res_size);
 
       if (res_size == 0)
-	{
+	  {
+		// If OpenSSL doesn't have anything queued either, then send an ACK.
+		if (tls_funcs_data_pending(mytls_vars) <= 0)
+		{
           // Build ACK.
           peapres = eap_type_common_buildAck(eapdata, EAP_TYPE_PEAP);
 		  peapres[sizeof(struct eap_header)] |= get_peap_version(eapdata);
 		  return peapres; 
-        }
+		}
+      }
       else
-        {
-          tls_funcs_encrypt(eapdata->eap_data, resbuf, res_size);
-        }
+      {
+        tls_funcs_encrypt(eapdata->eap_data, resbuf, res_size);
+      }
     }
 
   if ((eapconf->chunk_size == 0) || (eapconf->chunk_size > MAX_CHUNK))
@@ -602,7 +607,7 @@ void eappeap_deinit(eap_type_data *eapdata)
 		   "eapdata->eap_data != NULL", FALSE))
     return;
 
-  mytls_vars = (struct tls_vars *)eapdata->eap_data;
+  mytls_vars = (struct tls_vars *)eapdata->eap_data; 
 
   peap_phase2_deinit(eapdata);
   tls_funcs_deinit(mytls_vars);
