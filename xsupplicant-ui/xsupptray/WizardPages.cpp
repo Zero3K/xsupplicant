@@ -1479,13 +1479,13 @@ bool WizardPageDot1XCert::create(void)
 				m_pCertTable->setRowHeight(i,20);
 				
 				// use item type as index into original array
-				QTableWidgetItem *item = new QTableWidgetItem(QString(m_pCertArray[i].certname), i+1000);
+				QTableWidgetItem *item = new QTableWidgetItem(QString::fromUtf8(m_pCertArray[i].certname), i+1000);
 				m_pCertTable->setItem(i,1,item);
 				
 				QCheckBox *pCheckBox = new QCheckBox();
 				m_pCertTable->setCellWidget(i,0,pCheckBox);
 
-				QTableWidgetItem *issuedToItem = new QTableWidgetItem(QString(m_pCertArray[i].certname));
+				QTableWidgetItem *issuedToItem = new QTableWidgetItem(QString::fromUtf8(m_pCertArray[i].certname));
 				m_pCertTable->setItem(i,2,issuedToItem);
 
 				QDate d(m_pCertArray[i].year, m_pCertArray[i].month, m_pCertArray[i].day);
@@ -1874,10 +1874,10 @@ bool WizardPageDot1XUserCert::create(void)
 				m_pCertTable->setRowHeight(i,20);
 				
 				// use item type as index into original array
-				QTableWidgetItem *item = new QTableWidgetItem(QString(m_pCertArray[i].friendlyname), i+1000);
+				QTableWidgetItem *item = new QTableWidgetItem(QString::fromUtf8(m_pCertArray[i].friendlyname), i+1000);
 				m_pCertTable->setItem(i,0,item);
 				
-				QTableWidgetItem *issuedToItem = new QTableWidgetItem(QString(m_pCertArray[i].certname));
+				QTableWidgetItem *issuedToItem = new QTableWidgetItem(QString::fromUtf8(m_pCertArray[i].certname));
 				m_pCertTable->setItem(i,1,issuedToItem);
 
 				QDate d(m_pCertArray[i].year, m_pCertArray[i].month, m_pCertArray[i].day);

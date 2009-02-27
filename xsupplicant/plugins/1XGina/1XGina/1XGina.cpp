@@ -66,19 +66,7 @@ BOOL CMy1XGinaApp::InitInstance()
 	int i = 0;
 
 	CWinApp::InitInstance();
-/*
-	for (i=0; i < 30; i++)
-	{
-		if (xsupgui_connect() != REQUEST_SUCCESS)
-		{
-			Sleep(1);
-		}
-		else
-		{
-			break;
-		}
-	}
-*/
+
 	return TRUE;
 }
 

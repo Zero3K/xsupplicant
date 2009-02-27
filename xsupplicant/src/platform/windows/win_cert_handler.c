@@ -508,8 +508,9 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
 	PCCERT_CONTEXT  pCertContext = NULL;
 	int certidx = 0;
 	int i = 0;
-	char pszNameString[256];
-	char pszSubjectString[1024];
+	wchar_t pszNameString[256];
+	wchar_t pszSubjectString[1024];
+	char utf8_buffer[2048];
 	DWORD size = 0;
 	CERT_ENHKEY_USAGE *enhkey = NULL;
 	cert_enum *casa = NULL;
@@ -536,7 +537,7 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
 		(pCertContext != NULL))
 	{
 		// We only check this certificate if we can get it's name.  If not, it is ignored.
-		if (!CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, sizeof(pszNameString)))
+		if (!CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, sizeof(pszNameString)))
 		{
 			debug_printf(DEBUG_NORMAL, "Unable to determine certificate name.\n");
 		}
@@ -567,26 +568,48 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
 						if (strcmp(enhkey->rgpszUsageIdentifier[i], szOID_PKIX_KP_SERVER_AUTH) == 0)
 						{
 #endif
-							casa[certidx].certname = _strdup(pszNameString);
+							if (WideCharToMultiByte(CP_UTF8, 0, pszNameString, wcslen(pszNameString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
+							{
+								debug_printf(DEBUG_NORMAL, "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+								continue;
+							}
+							casa[certidx].certname = _strdup(utf8_buffer);
 							
 							// Get the subject name for this certificate.
 
-							if (CertGetNameString(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
+							if (CertGetNameStringW(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
 							{
-								casa[certidx].friendlyname = _strdup(pszSubjectString);
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
+								{
+									debug_printf(DEBUG_NORMAL, "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+									continue;
+								}
+								casa[certidx].friendlyname = _strdup(utf8_buffer);
 							}
 
 							memset(&pszSubjectString, 0x00, sizeof(pszSubjectString));
 
-							if (CertGetNameString(pCertContext, CERT_NAME_DNS_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
+							if (CertGetNameStringW(pCertContext, CERT_NAME_DNS_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
 							{
-								casa[certidx].commonname = _strdup(pszSubjectString);
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
+								{
+									debug_printf(DEBUG_NORMAL, "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+									continue;
+								}
+
+								casa[certidx].commonname = _strdup(utf8_buffer);
 							}
 
 							// Get the issuer name for this certificate.
-							if (CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
+							if (CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
 							{
-								casa[certidx].issuer = _strdup(pszSubjectString);
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
+								{
+									debug_printf(DEBUG_NORMAL, "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+									continue;
+								}
+
+								casa[certidx].issuer = _strdup(utf8_buffer);
 							}
 
 							memset(&systime, 0x00, sizeof(systime));
@@ -737,8 +760,9 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum **cer)
 	PCCERT_CONTEXT  pCertContext = NULL;
 	int certidx = 0;
 	int i = 0;
-	char pszNameString[256];
-	char pszSubjectString[1024];
+	wchar_t pszNameString[256];
+	wchar_t pszSubjectString[1024];
+	char utf8_buffer[2048];
 	DWORD size = 0;
 	CERT_ENHKEY_USAGE *enhkey = NULL;
 	cert_enum *certs = NULL;
@@ -769,7 +793,7 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum **cer)
 		(pCertContext != NULL))
 	{
 		// We only check this certificate if we can get it's name.  If not, it is ignored.
-		if (!CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, sizeof(pszNameString)))
+		if (!CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, sizeof(pszNameString)))
 		{
 			debug_printf(DEBUG_NORMAL, "Unable to determine certificate name.\n");
 		}
@@ -800,26 +824,50 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum **cer)
 						if (strcmp(enhkey->rgpszUsageIdentifier[i], szOID_PKIX_KP_CLIENT_AUTH) == 0)
 						{
 #endif
-							certs[certidx].certname = _strdup(pszNameString);
+							if (WideCharToMultiByte(CP_UTF8, 0, pszNameString, wcslen(pszNameString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
+							{
+								debug_printf(DEBUG_NORMAL, "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+								continue;
+							}
+
+							certs[certidx].certname = _strdup(utf8_buffer);
 							
 							// Get the subject name for this certificate.
 
-							if (CertGetNameString(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
+							if (CertGetNameStringW(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
 							{
-								certs[certidx].friendlyname = _strdup(pszSubjectString);
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
+								{
+									debug_printf(DEBUG_NORMAL, "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+									continue;
+								}
+
+								certs[certidx].friendlyname = _strdup(utf8_buffer);
 							}
 
 							memset(&pszSubjectString, 0x00, sizeof(pszSubjectString));
 
-							if (CertGetNameString(pCertContext, CERT_NAME_DNS_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
+							if (CertGetNameStringW(pCertContext, CERT_NAME_DNS_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
 							{
-								certs[certidx].commonname = _strdup(pszSubjectString);
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
+								{
+									debug_printf(DEBUG_NORMAL, "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+									continue;
+								}
+
+								certs[certidx].commonname = _strdup(utf8_buffer);
 							}
 
 							// Get the issuer name for this certificate.
-							if (CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
+							if (CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
 							{
-								certs[certidx].issuer = _strdup(pszSubjectString);
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
+								{
+									debug_printf(DEBUG_NORMAL, "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+									continue;
+								}
+
+								certs[certidx].issuer = _strdup(utf8_buffer);
 							}
 
 							memset(&systime, 0x00, sizeof(systime));
