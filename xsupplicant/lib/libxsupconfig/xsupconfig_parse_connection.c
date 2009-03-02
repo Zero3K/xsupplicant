@@ -451,7 +451,13 @@ void *xsupconfig_parse_connection_volatile(void **attr, uint8_t config_type, xml
 
   return conn;
 }
-  
+
+void *xsupconfig_parse_connection_do_nothing(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+	// Don't do anything.
+	return (*attr);
+}
+
 parser connection[] = {
   {"Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_name},
   {"Priority", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_priority},
@@ -463,5 +469,8 @@ parser connection[] = {
   {"Destination_MAC", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_mac_addr},
   {"Hidden_SSID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_hidden_ssid},
   {"IPv4_Configuration", (struct conf_parse_struct *)&conn_ip, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip},
+
+  // Config items no longer used, but we want to parse to avoid throwing errors.
+  {"Interface", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_do_nothing},
 
   {NULL, NULL, FALSE, 0, NULL}};

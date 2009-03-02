@@ -1148,7 +1148,7 @@ parser globals[] = {
   {"Passive_Timer", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_passive_timer},
   {"Scan_Timeout", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_scan_timeout},
   {"Use_EAP_Hints", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_use_eap_hints},
-  {"Destination", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_destination},  ///XXX MOVE THIS!
+  {"Destination", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_destination}, 
   {"Association_Timeout", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_assoc_timeout},
   {"Logging", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_logging},
   {"Detect_on_startup", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_detect_on_startup},

@@ -288,6 +288,13 @@ void *xsupconfig_parse_manage_interface(void **attr, uint8_t config_type, xmlNod
   return myints;
 }
 
+void *xsupconfig_parse_interface_default_connection(void **attr, uint8_t config_type, xmlNodePtr node)
+{
+  xsupconfig_common_log("The configuration settings for default wired connections have changed.  You will need to reconfigure "
+	  "your default wired connection.");
+  return (*attr);
+}
+
 
 parser interf[] = {
   {"Description", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_description},
@@ -295,5 +302,8 @@ parser interf[] = {
   {"Type", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_type},
   {"Wireless", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_is_wireless},
   {"Manage", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_manage_interface},
+
+  // Used to handle migration.
+  {"Default_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_interface_default_connection},
   
   {NULL, NULL, FALSE, 0, NULL}};
