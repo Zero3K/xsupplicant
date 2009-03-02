@@ -29,8 +29,6 @@ libxsupconfig_a_SOURCES = pwd_crypt.h xsupconfig_common.h \
 			  xsupconfig_parse_globals.h xsupconfig_parse.h \
 			  xsupconfig_parse_interface.h \
 			  xsupconfig_parse_leap.h \
-			  xsupconfig_parse_managed_network.h \
-			  xsupconfig_parse_managed_networks.h \
 			  xsupconfig_parse_plugin.h \
 			  xsupconfig_parse_plugins.h \
 			  xsupconfig_parse_profile_compliance.h \
@@ -73,8 +71,6 @@ libxsupconfig_a_SOURCES = pwd_crypt.h xsupconfig_common.h \
 			  xsupconfig_parse_trusted_servers.c \
 			  xsupconfig_parse_trusted_server.c \
 			  xsupconfig_parse_eap_tnc.c \
-			  xsupconfig_parse_managed_networks.c \
-			  xsupconfig_parse_managed_network.c \
 			  xsupconfig_parse_conn_ip.c \
 			  lin_crypt.c xsupconfig_defaults.c \
 			  xsupconfig_parse_profile_compliance.c \

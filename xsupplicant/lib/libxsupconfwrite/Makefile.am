@@ -8,7 +8,6 @@ libxsupconfwrite_a_SOURCES = xsupconfwrite_common.h xsupconfwrite_connection.h \
 			     xsupconfwrite_eap_tls.h xsupconfwrite_eap_tnc.h \
 			     xsupconfwrite_eap_ttls.h xsupconfwrite_globals.h \
 			     xsupconfwrite_interface.h \
-			     xsupconfwrite_managed_networks.h \
 			     xsupconfwrite_profiles.h \
 			     xsupconfwrite_pwd_only.h \
 			     xsupconfwrite_trusted_server.h \
@@ -33,6 +32,5 @@ libxsupconfwrite_a_SOURCES = xsupconfwrite_common.h xsupconfwrite_connection.h \
 			     xsupconfwrite_profiles.c \
 			     xsupconfwrite_pwd_only.c \
 			     xsupconfwrite_trusted_server.c \
-			     xsupconfwrite_trusted_servers.c \
-			     xsupconfwrite_managed_networks.c
+			     xsupconfwrite_trusted_servers.c 
 

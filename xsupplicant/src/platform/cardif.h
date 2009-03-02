@@ -38,6 +38,7 @@
 
 #define DRIVER_NONE        0
 #define DRIVER_WEXT        1
+#define DRIVER_NL80211	   2
 #define DRIVER_ATMEL       3
 
 #define FRAMESIZE          1520
@@ -163,6 +164,9 @@ struct cardif_funcs {
 
   // Get the frequency of the current connection
   int (*get_freq)(context *, uint32_t *);
+
+  // Set the frequency of the current connection
+  int (*set_freq)(context *);
 };
 
 // Stuff needed by both wired, and wireless interfaces.
@@ -192,6 +196,7 @@ int cardif_is_wireless_by_name(char *);
 void cardif_cancel_io(context *);
 void cardif_restart_io(context *);
 int cardif_get_freq(context *, uint32_t *);
+int cardif_set_freq(context *);
 
 // Stuff needed by wireless interfaces.  (If wireless isn't supported they
 // should either return XENOTWIRELSS, or just return (in the case of a void)
