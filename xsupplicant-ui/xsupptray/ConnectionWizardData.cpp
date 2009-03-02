@@ -1000,7 +1000,12 @@ bool ConnectionWizardData::toServerData(config_trusted_server **retServer)
 				{
 #ifdef WINDOWS
 					pServer->store_type = _strdup("WINDOWS");
+#else
+					pServer->store_type = _strdup("LINUX");
 #endif
+
+
+
 					pServer->location = (char**)malloc(numCerts * sizeof(char *));
 					if (pServer->location != NULL)
 					{

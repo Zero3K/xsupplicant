@@ -10,7 +10,6 @@
  **/
 
 #define _GNU_SOURCE
-
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
@@ -22,6 +21,10 @@
 #include <iwlib.h>
 #include <linux/if_packet.h>
 #include <stdio.h>
+#include <utmp.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <errno.h>
 #include <unistd.h>
 #include <linux/rtnetlink.h>
@@ -46,7 +49,7 @@
 #include "event_core.h"
 #include "eapol.h"
 #include "interfaces.h"
-
+#include "platform/linux/cardif_linux_nl80211.h"
 #ifdef USE_EFENCE
 #include <efence.h>
 #endif
@@ -253,13 +256,24 @@ int cardif_check_associated(context *ctx)
  *
  * @param[in] driver   A number that identifies the driver that we want to use.
  **/
-void cardif_set_driver(char driver)
+void cardif_set_driver(char driver, context *ctx)
 {
   switch (driver)
     {
     case DRIVER_NONE:
       wireless = NULL;
       break;
+
+    case DRIVER_NL80211:
+        if ( driver_nl80211_init(ctx) )
+        {
+                        return 1;
+        }
+                else
+        {
+                wireless = &cardif_linux_nl80211_driver;
+        }
+        break;
 
     default:
     case DRIVER_WEXT:
@@ -290,6 +304,8 @@ int cardif_init(context *ctx, char driver)
   struct lin_sock_data *sockData;
   int retval;
   struct config_globals *globals;
+  wireless_ctx *wctx = NULL;
+  wctx = (wireless_ctx *) ctx->intTypeData;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
@@ -408,7 +424,7 @@ int cardif_init(context *ctx, char driver)
     }
 
   // Set up wireless card drivers.
-  cardif_set_driver(driver);
+  cardif_set_driver(driver,ctx);
 
   if (cardif_int_is_wireless(ctx) == TRUE)
     {
@@ -426,6 +442,13 @@ int cardif_init(context *ctx, char driver)
       cardif_disassociate(ctx, 0);
 
       ctx->intType = ETH_802_11_INT;
+
+      wctx = (wireless_ctx *) ctx->intTypeData;
+      if (wctx != NULL) {
+        wctx->pmkids_supported = 1;
+        pmksa_cache_init(ctx);
+      }
+
     }
 
   ctx->sendframe = Malloc(FRAMESIZE);
@@ -457,7 +480,7 @@ int cardif_init(context *ctx, char driver)
 int cardif_do_wireless_scan(context *ctx, char passive)
 {
   wireless_ctx *wctx = NULL;
-
+   int resval = 0;
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
 
@@ -490,9 +513,19 @@ int cardif_do_wireless_scan(context *ctx, char passive)
     }
 
   SET_FLAG(wctx->flags, WIRELESS_SCANNING);
-  config_ssid_clear(wctx);
+  //This is moved to cardif_linux_rtnetlink_check_nets() to allow the cache to be used till
+  //we actually get the data from scanning
+  //config_ssid_clear(wctx);
 
-  return wireless->scan(ctx, passive);
+ resval = wireless->scan(ctx, passive);
+
+  if (resval != XENONE)
+  {
+          // We had an error trying to scan, so clear the scanning flag.
+          UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
+  }
+
+  return resval;
 }
 
 /**
@@ -508,8 +541,13 @@ int cardif_do_wireless_scan(context *ctx, char passive)
  **/
 int cardif_disassociate(context *ctx, int reason_code)
 {
+  wireless_ctx *wctx = NULL;
+  wctx = (wireless_ctx *) ctx->intTypeData;
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
+
+  if(TEST_FLAG(ctx->flags, INT_GONE)) 
+	return XENONE;
 
   if (wireless == NULL) return XEMALLOC;
 
@@ -562,8 +600,9 @@ int cardif_deinit(context *ctx)
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
 
-  cardif_linux_rtnetlink_set_operstate(ctx, XIF_OPER_UP);
-  cardif_linux_rtnetlink_set_linkmode(ctx, XIF_LINK_MODE_DEFAULT);
+  if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_rtnetlink_set_operstate(ctx, XIF_OPER_UP);
+  if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_rtnetlink_set_linkmode(ctx, XIF_LINK_MODE_DEFAULT);
+
 
   FREE(ctx->sendframe);
   FREE(ctx->recvframe);
@@ -572,23 +611,24 @@ int cardif_deinit(context *ctx)
 
   debug_printf(DEBUG_INT | DEBUG_DEINIT, "Cleaning up interface %s...\n",ctx->intName);
 
-  cardif_linux_rtnetlink_cleanup(ctx);
+  if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_rtnetlink_cleanup(ctx);
 
   if (ctx->intType == ETH_802_11_INT)
   {
+    pmksa_cache_deinit(ctx);
     // Remove all of the keys that we have set.
-    cardif_linux_clear_keys(ctx);
+    if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_clear_keys(ctx);
 
     debug_printf(DEBUG_INT, "Turning off WPA support/state.\n");
 
     // Clear the WPA IE.
-    cardif_linux_wext_set_wpa_ie(ctx, NULL, 0);
+    if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_wext_set_wpa_ie(ctx, NULL, 0);
 
-    cardif_disable_wpa_state(ctx);
+    if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_disable_wpa_state(ctx);
 
     // Reset the MAC address to all 0s.  (This tells the driver to
     // scan for new associations.
-    cardif_setBSSID(ctx, all0s);
+    if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_setBSSID(ctx, all0s);
   }
 
   // Check if we want ALLMULTI mode, and enable it.
@@ -631,6 +671,10 @@ int cardif_deinit(context *ctx)
 
   close(sockData->sockInt);
 
+  if (driver_nl80211_deinit(ctx) )
+        {
+                debug_printf(DEBUG_DEINIT,"nl80211 Driver De-init Failed\n");
+        }
   // Now clean up the memory.
   FREE(ctx->sockData);
 
@@ -666,6 +710,27 @@ int cardif_set_wep_key(context *ctx, uint8_t *key, int keylen, int index)
   if (wireless->set_wep_key == NULL) return XEMALLOC;
 
   return wireless->set_wep_key(ctx, key, keylen, index);
+}
+
+/**
+ * \brief Set a freq.  *
+ * @param[in] ctx   The context that contains the interface that we want to
+ *                  change the WEP key on.
+ *
+ * \retval XEMALLOC on memory allocation error.
+ * \retval XENONE on success
+ **/
+
+int cardif_set_freq( context *ctx )
+{
+   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+        return XEMALLOC;
+
+  if (wireless == NULL) return XEMALLOC;
+
+  if (wireless->set_freq == NULL) return XEMALLOC;
+
+  return wireless->set_freq(ctx);
 }
 
 /**
@@ -902,14 +967,26 @@ int cardif_get_if_state(context *ctx)
       debug_printf(DEBUG_NORMAL, "Interface %s not found!\n", ctx->intName);
       return FALSE;
     }
-  
-  if ((ifr.ifr_flags & IFF_UP) == IFF_UP)
-    {
-      return TRUE;
-    } else {
+  if (ctx->intType == ETH_802_11_INT)
+  {
+	if ((ifr.ifr_flags & IFF_UP) == IFF_UP) 
+	{
+      	return TRUE;
+    	} else {
       SET_FLAG(ctx->flags, WAS_DOWN);
       return FALSE;
     }
+  }
+  else
+  {
+  	if (((ifr.ifr_flags & IFF_UP) == IFF_UP) && (ctx->flag_link_state == 1))
+    	{
+      	return TRUE;
+    	} else {
+      	SET_FLAG(ctx->flags, WAS_DOWN);
+      	return FALSE;
+    	}
+  }
   return XENONE;
 }
 
@@ -1577,7 +1654,8 @@ int cardif_get_wpa_ie(context *ctx, char *iedata, int *ielen)
 /**
  * \todo Write this!
  **/
-int cardif_get_wpa2_ie(context *ctx, char *iedata, int *ielen)
+/*int cardif_get_wpa2_ie(context *ctx, char *iedata, int *ielen) commented by deepak*/
+int cardif_get_wpa2_ie(context *ctx, uint8_t *iedata, uint8_t *ielen) /*added by deepak*/
 {
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
@@ -1930,18 +2008,70 @@ void cardif_passive_scan_timeout(context *ctx)
     }
 }
 
+/*
+    this function is called when UI request for signal strength
+    ctx:  A pointer to the context that contains the interface 
+    
+    returns the singnal strength of the interface. 
+*/
 
 int cardif_get_signal_strength_percent(context *ctx)
 {
-#warning FINISH!
-  return 0;
-}
+ wireless_ctx *wctx = NULL;
+  struct found_ssids *working = NULL;
+  int signalStr = 0;
 
+  wctx = (wireless_ctx *) ctx->intTypeData;
+  working = config_ssid_find_by_name(wctx, wctx->cur_essid);
+
+  if (working)
+  {
+    signalStr = working->strength;
+  }
+  return signalStr;
+
+}
+/*
+        This is function called when UI request for IPAddress.
+        
+        ctx: A pointer to the ctx of the interface.
+        
+        returns the pointer to the IPaddress or NULL. 
+*/
 char *cardif_get_ip(context *ctx)
 {
-#warning FINISH!
-  return NULL;
+
+ char *ipaddress = NULL;
+  char *tmpaddr = NULL;
+  int sock;
+  struct ifreq ifr;
+  struct sockaddr_in *ifaddr;
+
+ if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+    return NULL;
+
+  sock = socket(AF_INET, SOCK_DGRAM, 0);
+  memset(&ifr, 0, sizeof(struct ifreq));
+  strncpy(ifr.ifr_name, ctx->intName, IF_NAMESIZE);
+
+ if (ioctl(sock, SIOCGIFADDR, &ifr) == -1)
+  {
+    debug_printf(DEBUG_NORMAL, "Failed to get IP Address of %s returning NULL\n", ctx->intName);
+  }
+ {
+    ifaddr = (struct sockaddr_in *)&ifr.ifr_addr;
+    close(sock);
+    ipaddress = Malloc(20);
+    if (ipaddress != NULL)
+    {
+      tmpaddr = inet_ntoa(ifaddr->sin_addr);
+      memcpy(ipaddress, tmpaddr, 20);
+    }
+    debug_printf(DEBUG_NORMAL, "Got IP Address of %s = %s\n", ctx->intName, ipaddress);
+  }
+  return ipaddress;
 }
+
 
 char *cardif_get_netmask(context *ctx)
 {
@@ -1974,6 +2104,32 @@ char *cardif_get_dns3(context *ctx)
 }
 
 /**
+ * \brief Add given interface to interface cache
+ **/
+void cardif_add_interface(char *ifname, int ifindex)
+{
+  char mac[6];
+
+  // Make sure we aren't looking at any loopback interfaces.
+  if( is_wireless(ifname ) == TRUE )
+  {
+    if(_getmac(( char *)&mac, ifname ) == TRUE )
+    {
+      debug_printf(DEBUG_INT, "Wireless Interface %d named %s.\n", ifindex, ifname);
+      interfaces_add (ifname, ifname, mac, is_wireless (ifname));
+    }
+  }
+  else if (strncasecmp (ifname, "eth", 3 ) == 0 )
+  {
+    if(_getmac(( char *)&mac,ifname ) == TRUE )
+    {
+      debug_printf(DEBUG_INT, "Wired Interface %d named %s.\n", ifindex, ifname);
+      interfaces_add (ifname, ifname, mac, is_wireless (ifname));
+    }
+  }
+}
+
+/**
  * \brief Enumerate all of the interfaces that are on the machine, and put
  *        them in the interface cache.
  **/
@@ -1985,29 +2141,17 @@ void cardif_enum_ints()
 
   ifnames = if_nameindex();
   if (ifnames == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Got an error with if_nameindex() call!\n");
-      debug_printf(DEBUG_NORMAL, "Are there no interfaces on this machine?\n");
-      return;
-    }
+  {
+    debug_printf(DEBUG_NORMAL, "Got an error with if_nameindex() call!\n");
+    debug_printf(DEBUG_NORMAL, "Are there no interfaces on this machine?\n");
+    return;
+  }
 
   while ((ifnames[i].if_index != 0) && (ifnames[i].if_name != NULL))
-    {
-      debug_printf(DEBUG_INT, "Interface %d named %s.\n", ifnames[i].if_index, ifnames[i].if_name);
-
-      // Make sure we aren't looking at any loopback interfaces.
-      if (strcasestr(ifnames[i].if_name, "lo") == NULL)
-        {
-          if (_getmac((char *)&mac, ifnames[i].if_name) == TRUE)
-            {
-              // Add it to our interface cache!
-              interfaces_add(ifnames[i].if_name, ifnames[i].if_name, mac,
-                             is_wireless(ifnames[i].if_name));
-            }
-        }
-
-      i++;
-    }
+  {
+    cardif_add_interface(ifnames[i].if_name, ifnames[i].if_index);
+    i++;
+  }
 
   if_freenameindex(ifnames);
 }
@@ -2068,3 +2212,152 @@ int cardif_is_wireless_by_name(char *intname)
 {
   return is_wireless(intname);
 }
+
+/**
+ * \brief Determine the system uptime in seconds.
+ *
+ * @param[out] uptime   A 64 bit number that indicates the uptime of the system in seconds.
+ *
+ * \retval 0 on success
+ * \retval -1 on failure
+ **/
+int cardif_get_uptime(uint64_t *uptime)
+{
+  struct utmp intEnt;
+  struct timeval curTime;
+  struct utmp *bTimePtr;
+
+  bTimePtr = NULL;
+  setutent();
+  intEnt.ut_type = BOOT_TIME;
+  bTimePtr = getutid( &intEnt );
+
+  if( bTimePtr == NULL )
+  {
+      return -1;
+  }
+
+  if( gettimeofday( &curTime, NULL ) != 0 )
+  {
+        return -1;
+  }
+
+  *uptime = ( curTime.tv_sec ) - ( bTimePtr->ut_tv.tv_sec );
+  return 0;
+}
+
+void cardif_cancel_io(context *ctx)    /*added by deepak*/
+{
+        /*TO BE DONE*/
+}
+
+int cardif_get_freq(context *ctx, uint32_t *freq) /*added by deepak*/
+{
+        return 0;
+}
+
+void event_core_set_active_ctx(context *ctx) { /*added by deepak*/
+        /*TO BE DONE*/
+}
+
+int cardif_apply_pmkid_data(context *ctx, pmksa_list *list)
+{
+        if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return FALSE;
+
+
+
+  if (wireless == NULL) return XEMALLOC;
+
+
+
+  if (wireless->apply_pmkid_data == NULL) return XEMALLOC;
+
+
+
+  return wireless->apply_pmkid_data(ctx, list);
+
+}
+int cardif_validate_connection( context *intdata )
+{
+	     wireless_ctx * wctx;
+         uint16_t abilities;
+         int retVal = FALSE;
+
+            if ( !xsup_assert(( intdata != NULL ), "intdata != NULL ", FALSE )) return FALSE;
+            wctx =( wireless_ctx * ) intdata->intTypeData;
+
+
+	    if( !xsup_assert(( wctx != NULL ), "wctx != NULL ", FALSE ) ) return FALSE;	
+           
+		abilities = config_ssid_get_ssid_abilities ( wctx );
+
+            switch (intdata->conn->association.auth_type)
+            {
+                case AUTH_NONE:
+                     if( ( abilities  & ABIL_ENC)  && ( intdata->conn != NULL ))
+                     {
+					  if( intdata->conn->association.txkey != 0)
+					  {
+                                	debug_printf(DEBUG_NORMAL,"WEP  Connection \n" );
+                                	retVal = TRUE;
+					  }
+                         	
+                     }
+                     else if(  ( config_ssid_get_ssid_abilities ( wctx ) == 0 ) && ( intdata->conn != NULL ))
+                     {
+				if( intdata->conn->association.txkey == 0 )
+				{
+                                	debug_printf(DEBUG_NORMAL,"OPEN  Connection \n" );
+                                	retVal = TRUE;
+                                	
+				}
+                     }
+                    break;
+               case AUTH_PSK:
+                       if( ( abilities & ABIL_WPA_PSK ) && ( abilities & ABIL_WPA_IE ) )
+                       {
+                                debug_printf(DEBUG_NORMAL, " WPA_PSK connection with WPA or WPA1 \n");
+                                retVal = TRUE;
+			
+                       }
+                      else if( ( abilities & ABIL_RSN_PSK ) && ( abilities & ABIL_RSN_IE ) )
+                      {
+                                debug_printf(DEBUG_NORMAL, " WPA_PSK connection with WPA2\n");
+                                retVal = TRUE;
+                                
+                      }
+		      break;
+
+               case AUTH_EAP: /* here i'm checking it for enterprise  and dynamic wep */
+               case AUTH_UNKNOWN:
+                   
+                       if( ( abilities & ABIL_WPA_DOT1X ) && ( abilities & ABIL_WPA_IE ) )
+                       {
+                                debug_printf(DEBUG_NORMAL, " WPA_DOT1X connection with WPA or WPA1 \n");
+                                retVal = TRUE;
+                                
+                       }
+                      else if( ( abilities & ABIL_RSN_DOT1X ) && ( abilities & ABIL_RSN_IE ) )
+                      {
+                                debug_printf(DEBUG_NORMAL, " WPA_DOT1X connection with WPA2\n");
+                                retVal = TRUE;
+                      }
+                     else if(( abilities & ABIL_ENC ) && ( intdata->prof != NULL ))
+                     {		
+					if( intdata->prof->name != NULL )
+					{
+			       	     	debug_printf(DEBUG_NORMAL,"DYNAMIC WEP Connection \n" );
+                               	retVal = TRUE;	
+					}
+                               
+                     }
+		      break;
+
+              default:
+                   break;
+             }
+
+ return retVal;
+}
+
+

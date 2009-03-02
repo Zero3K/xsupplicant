@@ -32,6 +32,7 @@
 
 #include "stdafx.h"
 
+#include "helpbrowser.h"	// Added by Avinash
 #include "ConnectMgrDlg.h"
 #include "FormLoader.h"
 #include "Emitter.h"

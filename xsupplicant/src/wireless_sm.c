@@ -859,10 +859,20 @@ void wireless_sm_change_to_associating(context *ctx)
 #ifndef WINDOWS
   // Windows can have fits doing this.  Some drivers get mad if you try to set keys before
   // it has associated.
-  if (ctx->conn->association.txkey != 0)
+  
+  if( cardif_validate_connection( ctx ) == FALSE )
+  {
+      debug_printf( DEBUG_NORMAL,"couldn't continue with associating due mismatch in profile between AP and client \n");    
+      wireless_sm_association_timeout( ctx );
+      return;
+  }   
+   
+  
+  if ( ( ctx->conn->association.txkey != 0 ) && ( config_ssid_get_ssid_abilities( wctx ) & ABIL_ENC))
     {
 		set_static_wep_keys(ctx, &ctx->conn->association);
     }
+    //cardif_set_freq( ctx );
 #endif  // WINDOWS
 				
   if (config_ssid_find_by_name(wctx, wctx->cur_essid) != NULL)
@@ -1199,11 +1209,15 @@ void wireless_sm_check_globals(context *ctx)
       wireless_sm_change_state(ACTIVE_SCAN, ctx);
     }
   */
-/*  if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED) && (!TEST_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION)))
+/*  if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED) && (!TEST_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION))
+  //It should not reach to ASSOCIATED from PORT_DOWN, still to be safer
+      && TEST_FLAG(wctx->flags, WIRELESS_SM_PORT_ACTIVE))
     {
       wireless_sm_change_state(ASSOCIATED, ctx);
+      //Avoid moving from associated to associated if we are waiting for Authentication to complete or interface to go UP
+      UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
     }
-
+/*
   if (!TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED))
     {
       wireless_sm_change_state(UNASSOCIATED, ctx);

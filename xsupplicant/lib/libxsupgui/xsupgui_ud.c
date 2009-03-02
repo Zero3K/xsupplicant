@@ -6,8 +6,6 @@
  *
  * \author chris@open1x.org, Terry.Simons@utah.edu
  *
- * $Id: xsupgui_ud.c,v 1.8 2007/12/09 05:56:09 chessing Exp $
- * $Date: 2007/12/09 05:56:09 $
  **/
 #include <fcntl.h>
 #include <errno.h>

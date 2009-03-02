@@ -79,7 +79,7 @@ int next_logroll_check = LOGCHECK_INTERVAL;  ///<  This will be decremented by a
  **/
 void xsup_debug_check_log_roll()
 {
-#ifndef LINUX
+#ifdef WINDOWS
 	struct config_globals *globals = NULL;
 	struct stat64 statdata;
 	uint64_t size = 0;
@@ -508,7 +508,7 @@ static int should_do_syslog()
 	  return XEMALLOC;
 	}
 
-	if (globals->logtype != LOGGING_SYSLOG)) return 0;
+	if (globals->logtype != LOGGING_SYSLOG) return 0;
 
     tempstr = globals->log_facility;
     lowercase(tempstr);
@@ -569,6 +569,8 @@ int logfile_setup()
   char *tempstr = NULL;
 #ifdef WINDOWS
   TCHAR szMyPath[MAX_PATH];
+#else
+  char path[100];
 #endif
   int result;
   struct config_globals *globals = NULL;
@@ -615,7 +617,14 @@ int logfile_setup()
 		    tempstr = (char *)Malloc(strlen(globals->logpath)+strlen(DEFAULT_LOG_NAME)+strlen(DEFAULT_LOG_EXT)+4);
 		}
 #else
-	    tempstr = (char *)Malloc(strlen(globals->logpath)+strlen(DEFAULT_LOG_NAME)+4);
+	    if ( globals->logpath == NULL )
+	    {
+	    	tempstr = (char *)Malloc(strlen(DEFAULT_LOG_PATH)+strlen(DEFAULT_LOG_NAME)+4);
+	    }
+	    else
+	    {
+	    	tempstr = (char *)Malloc(strlen(globals->logpath)+strlen(DEFAULT_LOG_NAME)+4);
+	    }
 #endif
 	    if (tempstr == NULL)
 	    {
@@ -634,7 +643,15 @@ int logfile_setup()
 		    sprintf(tempstr, "%s\\%s.%s", globals->logpath, DEFAULT_LOG_NAME, DEFAULT_LOG_EXT);
 		}
 #else
-	    sprintf(tempstr, "%s/%s", globals->logpath, DEFAULT_LOG_NAME);
+	
+		if (globals->logpath == NULL)
+		{
+	    		sprintf(tempstr, "%s/%s", DEFAULT_LOG_PATH, DEFAULT_LOG_NAME);
+		}
+		else
+		{
+	    		sprintf(tempstr, "%s/%s", globals->logpath, DEFAULT_LOG_NAME);
+		}
 #endif
 
 		if (rotate_log_files() < 0)
@@ -673,6 +690,13 @@ int logfile_setup()
 	  debug_printf(DEBUG_NORMAL, "active_logpath != NULL!  This is an error in the code, and should be fixed!\n");
 	  FREE(active_logpath);
   }
+#ifndef WINDOWS
+  if (globals->logpath == NULL)
+  {
+    	sprintf(path, "%s/%s", DEFAULT_LOG_PATH, DEFAULT_LOG_NAME);
+	active_logpath = _strdup(path);
+  }
+#endif
 
   if (globals->logpath != NULL) active_logpath = _strdup(globals->logpath);
 
@@ -1353,8 +1377,8 @@ void debug_printf(uint32_t level, char *fmt, ...)
 	  va_end(ap);
 	  return;
 	}
-
-	ufprintf(logfile, dumpstr, level);
+	if ( logfile != NULL )
+		ufprintf(logfile, dumpstr, level);
 
       va_end(ap);
     }

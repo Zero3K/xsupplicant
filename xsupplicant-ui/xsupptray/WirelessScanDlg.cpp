@@ -32,7 +32,7 @@
 
 #include "stdafx.h"
 
-#include "wirelessScanDlg.h"
+#include "WirelessScanDlg.h"
 #include "FormLoader.h"
 #include "Util.h"
 

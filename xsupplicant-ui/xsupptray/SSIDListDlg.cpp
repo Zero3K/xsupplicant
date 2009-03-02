@@ -35,14 +35,14 @@
 #include "SSIDListDlg.h"
 #include "FormLoader.h"
 #include "Util.h"
-#include "wirelessScanDlg.h"
+#include "WirelessScanDlg.h"
 #include "TrayApp.h"
 #include "SSIDList.h"
 #include "Emitter.h"
 #include "XSupWrapper.h"
 #include "ConnectionWizard.h"
 #include "ConnectionSelectDlg.h"
-
+#include "helpbrowser.h"		// Avinash
 extern "C"
 {
 #include "libxsupgui/xsupgui_request.h"

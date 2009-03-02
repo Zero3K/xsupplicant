@@ -240,6 +240,22 @@ else
 , or set PKG_CONFIG_PATH to point to the location of the libxml-2.0.pc file.])
 fi
 
+AC_MSG_CHECKING([for libnl-1])
+if `pkg-config libnl-1 --exists`; then
+if `pkg-config libnl-1 --exact-version=1.0-pre8` || `pkg-config libnl-1 --atleast-version=1.0`; then
+     LIBNLLIBS="`pkg-config libnl-1 --libs`"
+     LIBNLCFLAGS="`pkg-config libnl-1 --cflags`"
+     LIBS="$LIBS $LIBNLLIBS"
+     CFLAGS="$CFLAGS $LIBNLCFLAGS"
+     AC_MSG_RESULT([found with pkg-config])
+else
+     AC_MSG_ERROR([Xsupplicant requires libnl version >=1.0-pre8.])
+fi
+else
+     AC_MSG_ERROR([Xsupplicant requires libnl.  You need to either install libnl\
+, or set PKG_CONFIG_PATH to point to the location of the libnl-1.0.pc file.])
+fi
+
 dnl Below turns off Kerberos support in OpenSSL, to avoid compile errors.
 AC_DEFINE(OPENSSL_NO_KRB5)
 

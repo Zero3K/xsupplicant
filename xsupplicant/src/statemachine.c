@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #ifndef WINDOWS
+#include <utmp.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <strings.h>
@@ -294,6 +295,10 @@ char *statemachine_disp_state(int state)
  **/
 int statemachine_change_to_s_force_auth(context *ctx)
 {
+#ifndef WINDOWS
+   struct timeval upTime; 
+#endif
+
   xsup_assert((ctx != NULL), "ctx != NULL", TRUE);
 
   // Display the state we are changing to.
@@ -329,7 +334,14 @@ int statemachine_change_to_s_force_auth(context *ctx)
   if (ctx->statemachine->to_authenticated == 0)
 	  ctx->statemachine->to_authenticated = ctx->statemachine->last_reauth;
 #else
-#warning Implement for non-Windows platforms!
+if (cardif_get_uptime(&ctx->statemachine->last_reauth) != 0)
+  {
+        debug_printf(DEBUG_NORMAL, "Unable to determine the system uptime.  Your time connected counter will be wrong!\n");
+  }
+        
+   if( ctx->statemachine->to_authenticated == 0 )
+       ctx->statemachine->to_authenticated = ctx->statemachine->last_reauth;
+        
 #endif
 
   ctx->statemachine->suppPortStatus = AUTHORIZED;
@@ -953,7 +965,14 @@ int statemachine_change_to_authenticated(context *ctx)
   if (ctx->statemachine->to_authenticated == 0)
 	  ctx->statemachine->to_authenticated = ctx->statemachine->last_reauth;
 #else
-#warning Implement on non-Windows OSes.
+ if (cardif_get_uptime(&ctx->statemachine->last_reauth) != 0)
+  {
+        debug_printf(DEBUG_NORMAL, "Unable to determine the system uptime.  Your time connected counter will be wrong!\n");
+  }
+
+  // Only update the to_authenticated timestamp if this is the first time we authed.
+  if (ctx->statemachine->to_authenticated == 0)
+          ctx->statemachine->to_authenticated = ctx->statemachine->last_reauth;
 #endif
 
 #ifdef DARWIN_WIRELESS
@@ -1250,18 +1269,33 @@ int statemachine_run(context *ctx)
       statemachine_check_global_transition(ctx);
     }
 
+#ifndef WINDOWS
+    ctx->statemachine->portEnabled = cardif_get_if_state(ctx);
+#endif
 //  ctx->statemachine->portEnabled = cardif_get_if_state(ctx);
 //  ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
   
-  /*
+#ifndef WINDOWS  
   if (ctx->statemachine->portEnabled == FALSE)
     {
-      // Change our wireless state to port down state.
-      wireless_sm_change_state(DISCONNECTED, ctx);
+	if (ctx->intType == ETH_802_11_INT)
+	{
+      	// Change our wireless state to port down state.
+      	wireless_sm_change_state(DISCONNECTED, ctx);
+	}
+
+	ctx->statemachine->to_authenticated = 0;
+	ctx->statemachine->last_reauth = 0;
+
+	ctx->statemachine->initialize = TRUE;
+	ctx->eap_state->eapRestart = TRUE;
+
+	ctx->statemachine->portEnabled = FALSE;
+	ctx->eap_state->portEnabled = FALSE;
 
       return XENONE;
     }
-*/
+#endif
 
   switch(ctx->statemachine->curState)
     {
@@ -1456,3 +1490,36 @@ int txStart(context *ctx)
 
   return XENONE; 
 }
+
+#ifndef WINDOWS
+/* this function gets the system up time 
+   implemented by siva */
+   
+int sysUpTime( struct timeval * outTime )
+{
+    struct utmp intEnt;
+    struct timeval curTime;
+    struct utmp *bTimePtr;
+    
+    bTimePtr = NULL;
+    
+    setutent();
+    
+    intEnt.ut_type = BOOT_TIME;
+    bTimePtr = getutid( &intEnt );
+    
+    if( bTimePtr == NULL )
+    {
+        return FALSE;
+    }  
+     
+    if( gettimeofday( &curTime, NULL ) != 0 )
+    {
+          return FALSE;
+    }                  
+    outTime->tv_sec = ( curTime.tv_sec ) - ( bTimePtr->ut_tv.tv_sec );
+    outTime->tv_usec = ( curTime.tv_usec ) - ( bTimePtr->ut_tv.tv_usec );    
+    
+    return TRUE;
+}
+#endif  // WINDOWS

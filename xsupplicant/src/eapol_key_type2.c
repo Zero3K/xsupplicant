@@ -479,6 +479,8 @@ char eapol_key_type2_do_mac_kde(context *intdata, uint8_t *key,
 char eapol_key_type2_do_pmkid_kde(context *ctx,
 				  uint8_t *key, uint16_t kdelen, char version)
 {
+  wireless_ctx *wctx = NULL;
+  wctx = (wireless_ctx *) ctx->intTypeData;
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
 
@@ -487,6 +489,15 @@ char eapol_key_type2_do_pmkid_kde(context *ctx,
 
   debug_printf(DEBUG_KEY, "KDE (%d) : \n", kdelen);
   debug_hex_dump(DEBUG_KEY, key, kdelen);
+
+ if (wctx->pmkid_used) {
+        	if (memcmp(wctx->pmkid_used, key, 16) == 0 ) {
+                	//wctx->okc = 1;
+                	debug_printf(DEBUG_INT, "PMKID MATCH\n");
+                	debug_hex_printf(DEBUG_INT, wctx->pmkid_used, kdelen);
+        	}
+  }
+
 
   if (pmksa_populate_keydata(ctx, key) == 0)
   {
@@ -1006,6 +1017,7 @@ void eapol_key_type2_do_type1(context *intdata)
 	  intdata->send_size = 0;
 	  return;
   }
+  wctx->okc = 0;
 
   memcpy(&intdata->sendframe[OFFSET_TO_EAPOL+4+sizeof(struct wpa2_key_packet)], 
 	 &wpa_ie, ielen);
@@ -1422,6 +1434,8 @@ void eapol_key_type2_process(context *intdata)
 				   "(%s:%d)\n", __FUNCTION__, __LINE__);
 		      return;
 		    }
+
+		  memset(wctx->cur_essid, 0x00, 33);
 
 		  if (cardif_GetSSID(intdata, wctx->cur_essid, 33) != XENONE)
 		    {

@@ -70,6 +70,33 @@ BOOL CMy1XGinaApp::InitInstance()
 	return TRUE;
 }
 
+/**
+ * \brief Tell the supplicant to start any automatic authentications that it may need.  
+ *
+ * \note There are two methods used to determine if an authentication attempt "failed".
+ *		First, if we get two EAP-Failure messages before a success we fail the attempt.
+ *		Second, if it takes more than a certain amount of time for the authentication to
+ *			end in a success.
+ *
+ * \retval TRUE if the supplicant was able to connect to an 802.1X network.
+ * \retval FALSE if the supplicant was unable to connect to an 802.1X network.
+ **/
+int OneXGina_wait_for_authenticated()
+{
+	return TRUE;
+}
+
+/**
+ * \brief Get the username/password information from GINA, pass it in to the engine, and
+ *			attempt an authentication.
+ *
+ * @param[in] Username   The username that we are authenticating.
+ * @param[in] Password   The password for the user we are authenticating.
+ * @param[in] settingsInfo   Information about the settings used for this authentication.
+ *
+ * \retval TRUE if the authentication was a success
+ * \retval FALSE if the authentication failed.
+ **/
 OPEN1XGINA_API BOOL UserLogin(LPTSTR Username, LPTSTR Password, pGinaInfo *settingsInfo)
 {
 	char username[1024];
@@ -78,7 +105,7 @@ OPEN1XGINA_API BOOL UserLogin(LPTSTR Username, LPTSTR Password, pGinaInfo *setti
 
 	if (xsupgui_connect() != REQUEST_SUCCESS) return false;
 
-	settingsInfo->errorString = wcsdup(Username);
+	settingsInfo->errorString = _wcsdup(Username);
 
 	memset((char *)&username, 0x00, 1024);
 	memset((char *)&password, 0x00, 1024);
@@ -88,6 +115,8 @@ OPEN1XGINA_API BOOL UserLogin(LPTSTR Username, LPTSTR Password, pGinaInfo *setti
 	WideCharToMultiByte(CP_ACP, 0, Password, (int)wcslen(Password)+1, (char *)&password, 1024, NULL, NULL);
 
 	if (xsupgui_request_set_logon_upw(username, password) != REQUEST_SUCCESS) result = false;
+
+	if (OneXGina_wait_for_authenticated() == FALSE) result = false;
 
 	xsupgui_disconnect();
 

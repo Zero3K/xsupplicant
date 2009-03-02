@@ -241,8 +241,13 @@ bool XSupCalls::createNewTrustedServer(QString &name, config_trusted_server **pT
   char *p = "WINDOWS";
   pConfig->store_type = Util::myNullStrdup(p);
 #else
-  QMessageBox::critical(NULL, tr("Invalid Trusted Server Config"), tr("Need location for this OS."));
-  pConfig->location = "WHOKNOWS";
+  //QMessageBox::critical(NULL, tr("Invalid Trusted Server Config"), tr("Need location for this OS."));
+  //char* err_string = "LINUX";        // Quick and dirty fix. Suggest alternate method  
+  //char** x = &err_string;               // Modified by Avinash
+  //pConfig->location = x;
+  char *p = "LINUX";
+  //pConfig->store_type = Util::myNullStrdup(p);
+  pConfig->store_type = _strdup("LINUX");
 #endif 
 
   (*pTServer) = pConfig;

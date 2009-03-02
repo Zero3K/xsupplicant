@@ -576,7 +576,7 @@ int context_get_driver(char *drname)
 
   if (strcmp(drname, "none") == 0) return DRIVER_NONE;
   if (strcmp(drname, "wext") == 0) return DRIVER_WEXT;
-
+  if (strcmp(drname, "nl80211") == 0 ) return DRIVER_NL80211;
   printf("Unknown driver '%s' requested.\n", drname);
   return DRIVER_WEXT;
 #else

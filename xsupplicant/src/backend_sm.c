@@ -177,8 +177,10 @@ void getSuppRsp(context *ctx)
   xsup_assert((ctx->eap_state != NULL), "ctx->eap_state != NULL", TRUE);
 
   // Point to our request data.
-  ctx->eap_state->eapReqData = &ctx->recvframe[OFFSET_TO_EAP];
-
+  if (ctx->recvframe != NULL)
+  {
+  		ctx->eap_state->eapReqData = &ctx->recvframe[OFFSET_TO_EAP];
+  }
   backend_sm_sync_ll_to_p(ctx);
   eap_sm_run(ctx->eap_state);
   backend_sm_sync_p_to_ll(ctx);

@@ -35,6 +35,8 @@
 #include "timer.h"
 #include "mic.h"
 #include "event_core.h"
+#include "ipc_callout.h"
+#include "ipc_events_index.h"
 #include "cardif_linux_wext.h"
 #include "cardif_linux_rtnetlink.h"
 
@@ -50,6 +52,7 @@ extern char *if_indextoname(unsigned int, char *);
 
 static int rtnl_sock=-1;
 static struct sockaddr_nl rtnl_data;
+int clear_cache=0;
 
 #ifndef IWEVCUSTOM
 #warning IWEVCUSTOM is not defined!  We will define it, and try to continue!
@@ -64,7 +67,11 @@ static struct sockaddr_nl rtnl_data;
 // Forward defs to avoid compiler warnings.
 void cardif_linux_rtnetlink_process_token(context *ctx,
 					  struct iw_event *iwe);
+void cardif_linux_rtnetlink_process_scan_token(context *ctx,
+					  struct iw_event *iwe);
 
+void cardif_linux_rtnetlink_process_SIOCGIWAP_ASSOC(context *idata,
+						struct iw_event *iwe);
 extern unsigned int if_nametoindex(const char *);
 
 /********************************************************
@@ -178,7 +185,7 @@ void cardif_linux_rtnetlink_reap(context *intdata, char *data, int len)
 
       if (retval == 1)  // Then we got something
 	{
-	  cardif_linux_rtnetlink_process_token(intdata, &iwe);
+	  cardif_linux_rtnetlink_process_scan_token(intdata, &iwe);
 	} else {
 	  switch (retval)
 	    {
@@ -329,7 +336,7 @@ uint8_t cardif_linux_rtnetlink_check_nets(context *idata)
   debug_printf(DEBUG_NORMAL, "Scan complete.\n");
 
   // Cancel the scancheck timer, so it doesn't continue to fire.
-  timer_cancel(idata, SCANCHECK_TIMER);
+  //timer_cancel(idata, SCANCHECK_TIMER);
 
   if (iwr.u.data.length <= 0) 
     {
@@ -337,12 +344,32 @@ uint8_t cardif_linux_rtnetlink_check_nets(context *idata)
       return XENONE;
     }
 
+  debug_printf(DEBUG_NORMAL, "Clearing scan timer and cleaning the existing SSID cache. %d\n", clear_cache);
+  //This check is required as sometimes clearing the memory without allocations, makes the next allocations
+  //crazy and crashes
+  if (clear_cache != 0)
+  {
+    config_ssid_clear(wctx);
+  }
+  else
+  {
+    ++clear_cache;
+    debug_printf(DEBUG_NORMAL, "Skipping first cleaning of the existing SSID cache.\n");
+  }
+
+  timer_cancel(idata, SCANCHECK_TIMER);
   // Then harvest the data.
   debug_printf(DEBUG_INT, "Reaping data. (Size : %d)\n", iwr.u.data.length);
   debug_hex_dump(DEBUG_INT, (uint8_t *)buffer, iwr.u.data.length);
   cardif_linux_rtnetlink_reap(idata, (char *)buffer, iwr.u.data.length);
+  if (ipc_events_scan_complete(idata) != IPC_SUCCESS)
+  {
+    debug_printf(DEBUG_NORMAL, "Couldn't send scan complete event to IPC listeners.\n");
+  }
+
       
   UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
+  config_ssid_dump(wctx);
 
   // Clean up after ourselves.
   FREE(buffer);
@@ -389,13 +416,7 @@ int cardif_linux_rtnetlink_validate(context *idata, uint8_t *mac)
   return TRUE;
 }
 
-
-/**********************************************************************
- *
- * Process a SIOCGIWAP event.
- *
- **********************************************************************/
-void cardif_linux_rtnetlink_process_SIOCGIWAP(context *idata,
+void cardif_linux_rtnetlink_process_SIOCGIWAP_ASSOC(context *idata,
 					      struct iw_event *iwe)
 {
   char mac[6];
@@ -422,15 +443,16 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP(context *idata,
 #warning Check this!
   if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
     {
-      config_ssid_add_bssid(wctx, mac);
-    } else {
+	timer_cancel(idata, SCANCHECK_TIMER);
+        UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
+    }
       globals = config_get_globals();
 
       if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
 	return;
 
       assoc = cardif_linux_rtnetlink_validate(idata, (uint8_t *)&mac);
-      if (assoc)
+      if (assoc && (TEST_FLAG(wctx->flags, WIRELESS_SM_PORT_ACTIVE)))
 	{
 	  // We have changed to associated mode.  Populate the destination
 	  // MAC with the BSSID, as long as we are in auto mode.
@@ -440,11 +462,48 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP(context *idata,
 	  
 	  if (globals->destination == DEST_AUTO)
 	    memcpy(idata->dest_mac, mac, 6);
+	
+ 	UNSET_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ);
 	  
 	} else {
 	  UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
-	  UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
+	  UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION); 
 	}
+}
+
+
+/**********************************************************************
+ *
+ * Process a SIOCGIWAP event.
+ *
+ **********************************************************************/
+void cardif_linux_rtnetlink_process_SIOCGIWAP(context *idata,
+					      struct iw_event *iwe)
+{
+  char mac[6];
+  int assoc;
+  struct config_globals *globals = NULL;
+  wireless_ctx *wctx = NULL;
+
+  if (!xsup_assert((idata != NULL), "idata != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((idata->intTypeData != NULL), "idata->intTypeData != NULL",
+		   FALSE))
+    return;
+
+  if (!xsup_assert((iwe != NULL), "iwe != NULL", FALSE))
+    return;
+  wctx = (wireless_ctx *)idata->intTypeData;
+
+  memcpy(mac, iwe->u.ap_addr.sa_data, 6);
+  debug_printf(DEBUG_INT, "AP MAC : ");
+  debug_hex_printf(DEBUG_INT, (uint8_t *)mac, 6);
+
+#warning Check this!
+  if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
+    {
+      config_ssid_add_bssid(wctx, mac);
     }
 }
 
@@ -583,6 +642,7 @@ void cardif_linux_rtnetlink_parse_ies(context *ctx,
 {
   int i = 0;
   wireless_ctx *wctx = NULL;
+   uint8_t authtypes = 0;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
@@ -608,8 +668,14 @@ void cardif_linux_rtnetlink_parse_ies(context *ctx,
 	{
 	  if (wpa_parse_ie((char *)&iedata[i]) > 0)
 	    {
+		 authtypes = wpa_parse_auth_type((char *)&iedata[i]);
+        if (authtypes != 0xff)
+        {
+          if (TEST_FLAG(authtypes, WPA_PSK)) config_ssid_update_abilities(wctx, ABIL_WPA_PSK);
+          if (TEST_FLAG(authtypes, WPA_DOT1X)) config_ssid_update_abilities(wctx, ABIL_WPA_DOT1X);
+        }
 	      // We have a valid IE, save it.
-	      config_ssid_update_abilities(wctx, WPA_IE);
+	      config_ssid_update_abilities(wctx, ABIL_WPA_IE);
 	      config_ssid_add_wpa_ie(wctx, (uint8_t *)&iedata[i], iedata[i+1]+2);
 	    }
 	}
@@ -618,8 +684,14 @@ void cardif_linux_rtnetlink_parse_ies(context *ctx,
 	{
 	  if (wpa2_parse_ie((char *)&iedata[i]) > 0)
 	    {
+		  authtypes = wpa2_parse_auth_type((char *)&iedata[i]);
+        if (authtypes != 0xff)
+        {
+          if (TEST_FLAG(authtypes, RSN_PSK)) config_ssid_update_abilities(wctx, ABIL_RSN_PSK);
+          if (TEST_FLAG(authtypes, RSN_DOT1X)) config_ssid_update_abilities(wctx, ABIL_RSN_DOT1X);
+        }
 	      // We have a valid IE, save it.
-	      config_ssid_update_abilities(wctx, RSN_IE);
+	      config_ssid_update_abilities(wctx, ABIL_RSN_IE);
 	      config_ssid_add_rsn_ie(wctx, (uint8_t *)&iedata[i], iedata[i+1]+2);
 	    }
 	}
@@ -681,7 +753,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context *ctx,
       
       if (strncmp("wpa_ie=", custom, 7) == 0)
 	{
-	  config_ssid_update_abilities(wctx, WPA_IE);
+	  config_ssid_update_abilities(wctx, ABIL_WPA_IE);
 	  debug_printf(DEBUG_INT, "AP appears to support WPA!\n");
 	  
 	  process_hex(&custom[7], (iwe->len -7), temp);
@@ -693,7 +765,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context *ctx,
       
       if (strncmp("rsn_ie=", custom, 7) == 0)
 	{
-	  config_ssid_update_abilities(wctx, RSN_IE);
+	  config_ssid_update_abilities(wctx, ABIL_RSN_IE);
 	  debug_printf(DEBUG_INT, "AP appears to support WPA2/802.11i!\n");
 	  
 	  process_hex(&custom[7], (iwe->len -7), temp);
@@ -752,6 +824,11 @@ void cardif_linux_rtnetlink_process_SIOCGIWSCAN(context *ctx)
 void cardif_linux_rtnetlink_process_IWEVASSOCREQIE(context *ctx, 
 						   struct iw_event *iwe)
 {
+  uint8_t *iedata;
+  int ielen;
+  wireless_ctx *wctx = NULL;
+  wctx = (wireless_ctx *) ctx->intTypeData;
+
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
@@ -769,6 +846,22 @@ void cardif_linux_rtnetlink_process_IWEVASSOCREQIE(context *ctx,
   debug_hex_printf(DEBUG_INT, iwe->u.data.pointer, iwe->u.data.length);
   cardif_linux_rtnetlink_parse_ies(ctx, iwe->u.data.pointer, 
 				   iwe->u.data.length);
+  iedata = iwe->u.data.pointer;
+  ielen = iwe->u.data.length;
+
+   if (ielen >= 54) {
+        wctx->pmkid_used = (uint8_t *) malloc(16);
+        memcpy(wctx->pmkid_used, &iedata[(ielen-16)], 16);
+	  wctx->okc = 1;
+        debug_printf(DEBUG_INT, "PMKID might be sent in the ASSOCREQ IE is \n");
+        //debug_hex_printf(DEBUG_INT, pmkid, 16);
+        debug_hex_printf(DEBUG_INT, wctx->pmkid_used, 16);
+  }
+  else {
+	FREE(wctx->pmkid_used);
+	wctx->pmkid_used = NULL;
+  }
+
 }
 
 /**********************************************************************
@@ -892,6 +985,48 @@ void cardif_linux_rtnetlink_process_IWEVMICHAELMICFAILURE(context *ctx,
 #endif
 }
 
+
+/**********************************************************************
+ * Handle the FREQ event to decide whether the AP is A,B or G
+ **********************************************************************/
+void cardif_linux_rtnetlink_process_SIOCGIWFREQ(context *ctx, struct iw_event *iwe)
+{
+  char buffer[128];
+  double freq;
+  wireless_ctx *wctx = NULL;
+  wctx = (wireless_ctx *)ctx->intTypeData;
+  freq = iw_freq2float(&(iwe->u.freq));
+  memset(buffer, 0, sizeof(buffer));
+  iw_print_freq(buffer, sizeof(buffer), freq, -1, iwe->u.freq.flags);
+  if (wctx == NULL || buffer == NULL || buffer == '\0')
+  return;
+
+  if (strstr(buffer, "Channel") != NULL)
+    {
+    //ignore the Channel information
+    debug_printf(DEBUG_INT, "Channel %s\n", buffer);
+    return;
+    }
+  else if (strstr(buffer, "Freq") != NULL)
+    {
+    //process the frequency
+    sscanf(buffer, "Frequency:%lf", &freq);
+    debug_printf(DEBUG_INT, "Freq %lf\n", freq);
+    //adding freq to ssid cache.
+    config_ssid_add_freq( wctx, freq );
+    if (( freq > 2.0) && (freq < 3.0))
+        {
+      config_ssid_update_abilities(wctx, ABIL_DOT11_B);
+      config_ssid_update_abilities(wctx, ABIL_DOT11_G);
+        }
+    else if (freq > 5.0)
+        {
+      config_ssid_update_abilities(wctx, ABIL_DOT11_A);
+        }
+    }
+}
+
+
 /**********************************************************************
  *
  * Given a wireless event, process it.  If *state is NULL, then the event
@@ -900,10 +1035,11 @@ void cardif_linux_rtnetlink_process_IWEVMICHAELMICFAILURE(context *ctx,
  * the wireless interface.
  *
  **********************************************************************/
-void cardif_linux_rtnetlink_process_token(context *ctx,
+void cardif_linux_rtnetlink_process_scan_token(context *ctx,
 					  struct iw_event *iwe)
 {
   wireless_ctx *wctx = NULL;
+  unsigned int signalstr;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
@@ -924,6 +1060,7 @@ void cardif_linux_rtnetlink_process_token(context *ctx,
       break;
       
     case SIOCGIWFREQ:
+    cardif_linux_rtnetlink_process_SIOCGIWFREQ(ctx, iwe);
       // Don't care.
       break;
       
@@ -988,21 +1125,143 @@ void cardif_linux_rtnetlink_process_token(context *ctx,
 	{
 	  if (!(iwe->u.data.flags & IW_ENCODE_DISABLED))
 	    {
-	      config_ssid_update_abilities(wctx, ENC);
+	      config_ssid_update_abilities(wctx, ABIL_ENC);
 	    }
 	}
       break;
       
     case SIOCGIWRATE:
+      break;
+      
+    case IWEVQUAL:
+ debug_printf(DEBUG_INT, "Quality : %d  Signal : %d   Noise : %d\n",
+		   iwe->u.qual.qual, (iwe->u.qual.level - 0x100), 
+		   (iwe->u.qual.noise - 0x100));
+      signalstr = (((iwe->u.qual.level - 0x100)+100)*2);
+      if (signalstr > 100) signalstr = 100;
+      config_ssid_add_qual(wctx, iwe->u.qual.qual, (iwe->u.qual.level - 0x100), 
+			   (iwe->u.qual.noise - 0x100), signalstr);
+      break;
+
+    case IWEVCUSTOM:
+      cardif_linux_rtnetlink_process_IWEVCUSTOM(ctx, iwe);
+      break;
+
+    case SIOCSIWENCODE:
+      debug_printf(DEBUG_INT, "Encryption key set\n");
+      break;
+
+    default:
+      debug_printf(DEBUG_INT, "Unknown event (%04X)  (Unknown in wireless "
+		   "extensions %d?)\n", iwe->cmd, WIRELESS_EXT);
+    }
+}
+
+void cardif_linux_rtnetlink_process_token(context *ctx,
+					  struct iw_event *iwe)
+{
+  wireless_ctx *wctx = NULL;
+  unsigned int signalstr;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((iwe != NULL), "iwe != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
+		   FALSE))
+    return;
+
+  wctx = (wireless_ctx *)ctx->intTypeData;
+
+  switch (iwe->cmd)
+    {
+    case SIOCGIWAP:
+      cardif_linux_rtnetlink_process_SIOCGIWAP_ASSOC(ctx, iwe);
+      break;
+      
+    case SIOCGIWFREQ:
+    //cardif_linux_rtnetlink_process_SIOCGIWFREQ(ctx, iwe);
       // Don't care.
+      break;
+      
+    case SIOCGIWMODE:
+      // Don't care.
+      break;
+      
+    case SIOCGIWESSID:
+      //cardif_linux_rtnetlink_process_SIOCGIWESSID(ctx, iwe);
+      break;
+
+    case SIOCSIWESSID:
+     // cardif_linux_rtnetlink_process_SIOCSIWESSID(ctx, iwe);
+      break;
+      
+    case SIOCGIWNAME:
+      // Don't care.
+      break;
+
+    case SIOCGIWSCAN:
+      cardif_linux_rtnetlink_process_SIOCGIWSCAN(ctx);
+      break;
+
+#ifdef IWEVTXDROP
+      // This is mostly for the gee-whiz factor.
+    case IWEVTXDROP:
+      break;
+#endif
+      
+#if WIRELESS_EXT > 17
+    case IWEVASSOCREQIE:
+      debug_printf(DEBUG_INT, "IWEVASSOCREQIE\n");
+      debug_hex_printf(DEBUG_INT, iwe->u.data.pointer, iwe->u.data.length);
+      cardif_linux_rtnetlink_process_IWEVASSOCREQIE(ctx, iwe);
+      break;
+      
+    case IWEVASSOCRESPIE:
+      debug_printf(DEBUG_INT, "IWEVASSOCRESPIE\n");
+      cardif_linux_rtnetlink_process_IWEVASSOCRESPIE(ctx, iwe);
+      break;
+      
+    case IWEVGENIE:
+#warning Check this!
+      if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
+	{
+	  cardif_linux_rtnetlink_process_IWEVGENIE(ctx, iwe);
+	}
+      break;
+
+    case IWEVMICHAELMICFAILURE:
+      debug_printf(DEBUG_INT, "MIC Failure!\n");
+      cardif_linux_rtnetlink_process_IWEVMICHAELMICFAILURE(ctx, iwe);
+      break;
+      
+    case IWEVPMKIDCAND:
+      debug_printf(DEBUG_INT, "IWEVPMKIDCAND\n");
+      break;
+#endif
+    case SIOCGIWENCODE:
+      if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
+	{
+	  if (!(iwe->u.data.flags & IW_ENCODE_DISABLED))
+	    {
+	      config_ssid_update_abilities(wctx, ABIL_ENC);
+	    }
+	}
+      break;
+      
+    case SIOCGIWRATE:
       break;
       
     case IWEVQUAL:
       debug_printf(DEBUG_INT, "Quality : %d  Signal : %d   Noise : %d\n",
 		   iwe->u.qual.qual, (iwe->u.qual.level - 0x100), 
 		   (iwe->u.qual.noise - 0x100));
+      signalstr = (((iwe->u.qual.level - 0x100)+100)*2);
+      if (signalstr > 100) signalstr = 100;
       config_ssid_add_qual(wctx, iwe->u.qual.qual, (iwe->u.qual.level - 0x100), 
-			   (iwe->u.qual.noise - 0x100));
+			   (iwe->u.qual.noise - 0x100), signalstr);
       break;
       
     case IWEVCUSTOM:
@@ -1099,6 +1358,189 @@ int cardif_linux_rtnetlink_check_event(context *ctx, int sock)
 }
 
 /************************************************************
+ *  Get context for a ifname, utility function
+ ************************************************************/
+context *ifname_to_context(char* intName)
+{
+  context *ctx = NULL;
+
+  // Locate the context that matches the ifname.
+  event_core_reset_locator();
+  ctx = event_core_get_next_context();
+
+  if(ctx != NULL)
+  {
+    debug_printf(DEBUG_NORMAL, "Checking '%s = %s'.\n", intName, ctx->intName);
+  }
+
+  while (((ctx != NULL) && (strcmp(intName, ctx->intName) != 0)))
+  {
+    ctx = event_core_get_next_context();
+    if(ctx != NULL)
+    {
+      debug_printf(DEBUG_NORMAL, "Checking '%s = %s'.\n", intName, ctx->intName);
+    }
+    else
+    {
+      debug_printf(DEBUG_NORMAL, "ctx is NULL in %s:%d\n", __FUNCTION__, __LINE__);
+    }
+  }
+
+  if (ctx == NULL)
+  {
+    debug_printf(DEBUG_NORMAL, "Unable to locate interface %s in %s.\n", intName, __FUNCTION__);
+  }
+
+  if (ctx == NULL)
+  {
+    debug_printf(DEBUG_NORMAL, "Unable to locate interface %s in %s.\n", intName, __FUNCTION__);
+  }
+
+  return ctx;
+}
+
+
+/************************************************************
+ *  Get context for a ifindex, utility function
+ ************************************************************/
+context *ifindex_to_context(int ifindex)
+{
+  context *ctx = NULL;
+  char intName[128];
+
+  // Determine the name of the interface
+  if (if_indextoname(ifindex, intName) == NULL) return NULL;
+
+  ctx = ifname_to_context(intName);
+  if (ctx == NULL)
+  {
+    debug_printf(DEBUG_NORMAL, "Unable to locate interface '%s' with index '%d' in %s.\n", intName, ifindex, __FUNCTION__);
+  }
+
+  return ctx;
+}
+
+
+/************************************************************
+ *
+ *  We got an IFNAME with RTM_NEWLINK message,
+ *  see whether there are any new interfaces added and act.
+ *
+ ************************************************************/
+void cardif_linux_rtnetlink_new_ifla_ifname(int ifindex, char *data, int len)
+{
+  char intname[128];
+  char mac[6];
+  uint8_t flags=0;
+  context *ctx = NULL;
+  struct xsup_interfaces *confints = NULL;
+
+  debug_printf(DEBUG_NORMAL, "Processing NEWLINK on %d for interface insertion\n", ifindex);
+
+  if (if_indextoname(ifindex, intname) == NULL)
+  {
+    debug_printf(DEBUG_NORMAL, "Unable to get interface name for %d ifindex\n", ifindex);
+    return;
+  }
+
+  //If it is already added to the interfaces list, return
+  if (interfaces_get_by_desc(intname) != NULL)
+  {
+    debug_printf(DEBUG_NORMAL, "Looks like the interface %s is already added to interfaces\n", intname);
+    return;
+  }
+
+  if (get_mac_by_name_no_ctx(intname, (char *)&mac) != 0)
+  {
+    debug_printf(DEBUG_NORMAL, "Unable to get the MAC address for interface '%s'\n", intname);
+    return;
+  }
+
+  //Initialize the interface
+  cardif_add_interface(intname, ifindex);
+
+  confints = config_get_config_ints();
+  while ((confints != NULL) && (memcmp(mac, confints->mac, 6) != 0))
+  {
+    confints = confints->next;
+  }
+
+  if (confints != NULL)
+  {
+    debug_printf(DEBUG_NORMAL, "Found interface %s in added to config interfaces\n", intname);
+    if (TEST_FLAG(confints->flags, CONFIG_INTERFACE_DONT_MANAGE))
+    {
+      flags |= INT_IGNORE;
+    }
+
+    // Build the interface, and start watching it.
+    if (context_init_interface(&ctx, intname, intname, NULL, flags) != XENONE)
+    {
+      debug_printf(DEBUG_NORMAL, "Couldn't allocate context to manage newly inserted interface!\n");
+    }
+    else
+    {
+      // Add it to the event loop.
+      debug_printf(DEBUG_NORMAL, "Interface '%s' was inserted or enabled.\n", intname);
+     }
+   }
+   else
+   {
+     debug_printf(DEBUG_NORMAL, "Interface '%s' isn't in our configuration file.  We will not manage it.\n", intname);
+   }
+
+  // Send event.
+  ipc_events_ui(NULL, IPC_EVENT_INTERFACE_INSERTED, intname);
+  debug_printf(DEBUG_NORMAL, "Interface '%s' was inserted.\n", intname);
+}
+
+/************************************************************
+ *
+ *  We got an IFNAME with RTM_DELLINK message,
+ *  see whether there are any new interfaces removed and act.
+ *
+ ************************************************************/
+void cardif_linux_rtnetlink_del_ifla_ifname(int ifindex, char *data, int len)
+{
+  context *ctx = NULL;
+  char intname[128];
+  int sock;
+
+  debug_printf(DEBUG_NORMAL, "Processing DELLINK on %d for interface deletion\n", ifindex);
+
+  //Check whether the interface is existing if not return
+  memset(intname, 0, sizeof(intname));
+  if (len > sizeof(intname)) len = sizeof(intname) - 1;
+  memcpy(intname, data, len);
+  ctx = ifname_to_context(intname);
+  if (ctx == NULL)
+  {
+    debug_printf(DEBUG_NORMAL, "Looks like the interface deleted with index '%d', name '%s' is not managed...\n", ifindex, intname);
+    return;
+  }
+  if (interfaces_delete(intname))
+  {
+    debug_printf(DEBUG_NORMAL, "Interface deleted with index '%d', name '%s'\n", ifindex, intname);
+  }
+  ipc_events_ui(ctx, IPC_EVENT_INTERFACE_REMOVED, ctx->desc);
+
+  debug_printf(DEBUG_NORMAL, "Interface '%s' was removed.\n", ctx->desc);
+#ifdef HAVE_TNC
+  // If we are using a TNC enabled build, signal the IMC to clean up.
+  if(imc_disconnect_callback != NULL)
+                   imc_disconnect_callback(ctx->tnc_connID);
+#endif
+
+  ctx->flags |= INT_GONE;
+  if ((ctx != NULL) && (ctx->statemachine != NULL)) ctx->statemachine->portEnabled = FALSE;
+  if ((ctx != NULL) && (ctx->eap_state != NULL)) ctx->eap_state->portEnabled = FALSE;
+
+  sock = cardif_get_socket(ctx);
+  event_core_deregister(sock);
+}
+
+
+/************************************************************
  *
  *  We got an RTM_NEWLINK or RTM_DELLINK message, so process it, and 
  *  decide how to proceed.
@@ -1156,6 +1598,18 @@ void cardif_linux_rtnetlink_do_link(struct nlmsghdr *msg, int len, int type)
 	case IFLA_IFNAME:
 	  // This is a non-wireless event. (Ignore it.)
 	  debug_printf(DEBUG_INT, "IFLA_IFNAME event.\n");
+          if (type == INT_NEW)
+          {
+            cardif_linux_rtnetlink_new_ifla_ifname(ifinfo->ifi_index,
+                                                  ((char *) rtattr)+rtalen,
+                                                  rtattr->rta_len - rtalen);
+          }
+          else if(type == INT_DEL)
+          {
+            cardif_linux_rtnetlink_del_ifla_ifname(ifinfo->ifi_index,
+                                                  ((char *) rtattr)+rtalen,
+                                                  rtattr->rta_len - rtalen);
+          }
 	  break;
 
 	case IFLA_MTU:
@@ -1300,6 +1754,10 @@ void cardif_linux_rtnetlink_check_key_prob(context *idata)
  ***********************************************************/
 void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
 {
+ context *ctx = NULL;
+  wireless_ctx *wctx = NULL;
+  char intName[128];
+
   if (!xsup_assert((data != NULL), "data != NULL", FALSE))
     return;
 
@@ -1321,7 +1779,39 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
       break;
 
     case XIF_OPER_DOWN:
-      debug_printf(DEBUG_INT, "Interface is down.\n");
+      debug_printf(DEBUG_INT, "Interface is DOWN, DOWN.\n");
+	if (if_indextoname(ifindex, intName) == NULL) return;
+      ctx = ifindex_to_context(ifindex);
+      if ( ctx != NULL )
+      {
+	  if (ctx->intType != ETH_802_11_INT) {
+	  ctx->flag_link_state = 0;
+	  }
+        wctx = (wireless_ctx *)ctx->intTypeData;
+        if ( wctx != NULL)
+        {
+          debug_printf(DEBUG_INT, "Interface is %s DOWN, DOWN with %x.\n", intName, wctx->flags );
+          ctx->auths = 0;
+                    
+           if( TEST_FLAG( wctx->flags, WIRELESS_SM_DOING_PSK ))
+           {
+                 ipc_events_ui(ctx, IPC_EVENT_BAD_PSK, ctx->intName );
+                 UNSET_FLAG( wctx->flags, WIRELESS_SM_DOING_PSK );     
+           }    
+           
+           memset(ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
+           wireless_sm_change_state(UNASSOCIATED, ctx);
+         
+ 
+          // We dropped our connection, so we want to reset our state machines.
+          ctx->statemachine->initialize = TRUE;
+          ctx->eap_state->eapRestart = TRUE;
+
+          ctx->eap_state->portEnabled = FALSE;
+          ctx->statemachine->portEnabled = FALSE;
+        }
+      }
+
       break;
 
     case XIF_OPER_LOWERLAYERDOWN:
@@ -1329,11 +1819,31 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
       break;
 
     case XIF_OPER_DORMANT:
+	ctx = ifindex_to_context(ifindex);
+	if ( ctx != NULL ) {
+		if (ctx->intType != ETH_802_11_INT) {
+			ctx->flag_link_state = 1;
+		}
+	}
       debug_printf(DEBUG_INT, "Interface is dormant.\n");
       break;
 
     case XIF_OPER_UP:
-      debug_printf(DEBUG_INT, "Interface is up.\n");
+      debug_printf(DEBUG_INT, "UP!UP!UP!UP!Interface is up.\n");
+        ctx = ifindex_to_context(ifindex);
+        if ( ctx != NULL )
+        {
+		if (ctx->intType != ETH_802_11_INT) {
+		    ctx->flag_link_state = 1;
+		}
+                wctx = (wireless_ctx *)ctx->intTypeData;
+                if ( wctx != NULL)
+                {
+                        debug_printf(DEBUG_INT, "Interface UP , unset WIRELESS_SM_ASSOCIATED.\n");
+                        UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
+                }
+
+        }
       break;
 
     default:
@@ -1568,6 +2078,69 @@ void cardif_linux_rtnetlink_set_linkmode(context *ctx, uint8_t newstate)
   send(rtnl_sock, (void *)&state, sizeof(state), 0);
 }
 
+
+uint32_t setip(const char * interface, const char *address)
+{
+
+	int test_sock = 0;
+	struct sockaddr_in* addr = NULL;
+	struct ifreq ifr;
+
+	memset(&ifr,0,sizeof(struct ifreq));
+	addr = (struct sockaddr_in *)&(ifr.ifr_addr);
+	memset(addr,0,sizeof(struct sockaddr_in));
+	//addr->sin_len = sizeof(struct sockaddr_in);
+	addr->sin_family =  AF_INET;
+	addr->sin_addr.s_addr = inet_addr(address);
+
+	test_sock = socket( PF_INET, SOCK_DGRAM, 0);
+	if ( test_sock == -1 )
+	{
+      		debug_printf(DEBUG_NORMAL, "Unable to create socket to assign IP \n");
+      		return -1;
+	}
+	strncpy( ifr.ifr_name, interface, IFNAMSIZ);
+	if ( ioctl( test_sock, SIOCSIFADDR, &ifr) != 0 )
+ 	{
+      		debug_printf(DEBUG_NORMAL, "Unable to set IP %s on interface %s\n",address,interface);
+		return -1;
+	}
+	close(test_sock);
+	return 0;
+}
+
+uint32_t setnm(const char * interface, const char *address)
+{
+
+	int test_sock = 0;
+	struct sockaddr_in* addr = NULL;
+	struct ifreq ifr;
+
+	memset(&ifr,0,sizeof(struct ifreq));
+	addr = (struct sockaddr_in *)&(ifr.ifr_addr);
+	memset(addr,0,sizeof(struct sockaddr_in));
+//	addr->sin_len = sizeof(struct sockaddr_in);
+	addr->sin_family =  AF_INET;
+	addr->sin_addr.s_addr = inet_addr(address);
+
+	test_sock = socket( PF_INET, SOCK_DGRAM, 0);
+	if ( test_sock == -1 )
+	{
+      		debug_printf(DEBUG_NORMAL, "Unable to create socket to assign NM \n");
+      		return -1;
+	}
+	strncpy( ifr.ifr_name, interface, IFNAMSIZ);
+	if ( ioctl( test_sock, SIOCSIFNETMASK, &ifr) != 0 )
+ 	{
+      		debug_printf(DEBUG_NORMAL, "Unable to set NM %s on interface %s\n",address,interface);
+		return -1;
+	}
+	close(test_sock);
+	return 0;
+
+}
+
+
 /*************************************************************************
  *
  *  Send an RTNETLINK message that indicates that the interface is now 
@@ -1610,4 +2183,22 @@ void cardif_linux_rtnetlink_set_operstate(context *ctx, uint8_t newstate)
 
   // Otherwise, send the packet.
   send(rtnl_sock, (void *)&opstate, sizeof(opstate), 0);
+
+  
+  if ( newstate == XIF_OPER_UP )
+  {
+	if (ctx->conn->ip.type == CONFIG_IP_USE_STATIC )
+	{
+		debug_printf(DEBUG_NORMAL,"IP = %s,NM = %s,GW = %s \n",ctx->conn->ip.ipaddr,ctx->conn->ip.netmask,ctx->conn->ip.gateway);
+		if ( !setip(ctx->intName,ctx->conn->ip.ipaddr) )
+		{
+			if (setnm(ctx->intName,ctx->conn->ip.netmask) )		
+				return;
+		}
+		{
+			return;	
+		}
+		
+	}
+  }
 }

@@ -227,6 +227,8 @@ typedef struct {
 
   uint8_t pmkids_supported;     ///< The number of PMKIDs support in the association frames of this interface.  (Should be 0 if PMK caching isn't allowed.)
   pmksa_cache_element *pmksa_cache;
+  uint8_t *pmkid_used;
+  int okc;
 
 } wireless_ctx;
 
@@ -293,6 +295,13 @@ typedef struct context_data
    * use.  (Such as a socket.)
    **/
   void *sockData;
+
+#ifdef LINUX
+  /**
+   *   Flag to hold link state of the interface.
+   **/
+  uint8_t flag_link_state;
+#endif
 
   /**
    *   Bitmap of true/false values. (For the interface.)

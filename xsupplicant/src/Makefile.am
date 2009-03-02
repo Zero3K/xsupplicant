@@ -20,7 +20,7 @@ xsupplicant_SOURCES = backend_sm.h config_ssid.h context.h eapol.h \
 			event_core.h event_core_win.h frame_structs.h \
 			getopts.h hmac.h interfaces.h ipc_callout.h \
 			ipc_events_catalog.h ipc_events.h ipc_events_index.h \
-			key_statemachine.h mic.h plugins.h profile.h psk.h \
+			key_statemachine.h mic.h pmksa.h plugins.h profile.h psk.h \
 			snmp.h statemachine.h stdintwin.h timer.h \
 			wireless_sm.h wpa2.h wpa_common.h wpa.h xsup_common.h \
 			xsup_debug.h xsup_err.h xsupgui_ipc_events_index.h \
@@ -57,7 +57,7 @@ xsupplicant_SOURCES = backend_sm.h config_ssid.h context.h eapol.h \
 			getopts.c eapol.c statemachine.c eap_sm.c snmp.c wpa.c \
 			wireless_sm.c event_core.c xsup_common.c \
 			key_statemachine.c eapol_key_type1.c wpa_common.c \
-			eapol_key_type254.c mic.c psk.c backend_sm.c \
+			eapol_key_type254.c mic.c pmksa.c psk.c backend_sm.c \
 			eapol_key_type2.c wpa2.c timer.c interfaces.c \
 			ipc_events.c error_prequeue.c plugins.c xsup_ipc.c \
 			ipc_callout.c \

@@ -6,8 +6,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupconfig_defaults.h,v 1.3 2007/09/24 06:20:24 galimorerpg Exp $
- * $Date: 2007/09/24 06:20:24 $
  */
 
 #ifndef __XSUPCONFIG_DEFAULTS_H__

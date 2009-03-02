@@ -7,8 +7,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: error_prequeue.c,v 1.4 2007/10/17 07:00:47 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:47 $
  **/
 
 #include <stdio.h>

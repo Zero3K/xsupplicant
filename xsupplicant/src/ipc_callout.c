@@ -1044,6 +1044,9 @@ int ipc_callout_some_state_response(char *request_state, char *response_state, i
 	if (!xsup_assert((response_key != NULL), "response_key != NULL", FALSE))
 		return IPC_FAILURE;
 
+	if (!xsup_assert((device != NULL), "device != NULL", FALSE))
+		return IPC_FAILURE;
+
 	sprintf((char *)&resultstr, "%d", state_value);
 
 	n = xmlNewNode(NULL, (xmlChar *)response_state);
@@ -1551,9 +1554,14 @@ int ipc_callout_get_seconds_authenticated(xmlNodePtr innode, xmlNodePtr *outnode
   {
 	return ipc_callout_create_error(ctx->intName, "Get_Seconds_Authenticated", IPC_ERROR_CANT_GET_SYS_UPTIME, outnode);
   }
+#else
+ if (cardif_get_uptime(&curuptime) != 0)
+  {
+        return ipc_callout_create_error(ctx->intName, "Get_Seconds_Authenticated", IPC_ERROR_CANT_GET_SYS_UPTIME, outnode);
+  }
+	if ((ctx->statemachine->portEnabled == FALSE) && (ctx->statemachine->to_authenticated == 0))
+		curuptime = 0;
 #endif /* WINDOWS */
-
-
 
   // ipc_callout_response_int32 should handle a 64 bit number properly as well.
 	return ipc_callout_response_int32("Get_Seconds_Authenticated", "Seconds_Authenticated", (curuptime - ctx->statemachine->to_authenticated), 

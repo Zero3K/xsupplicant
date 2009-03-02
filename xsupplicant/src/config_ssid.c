@@ -975,3 +975,112 @@ uint8_t *config_ssid_get_mac(wireless_ctx *wctx)
 
   return (uint8_t *)&ssid->mac;
 }
+
+/**
+ * \brief Return the MAC address of the AP with SSID and given Freq
+ *
+ * @param[in] wctx   The wireless context that contains the MAC address for the
+ *                   active SSID.
+ *
+ * \retval NULL on error
+ * \retval ptr to the MAC address of the AP.
+ **/
+uint8_t *config_ssid_get_mac_with_freq(wireless_ctx *wctx, double freq)
+{
+  struct found_ssids *cur = NULL;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return NULL;
+
+  if (!xsup_assert((wctx->cur_essid != NULL), "ssid_name != NULL", FALSE))
+    return NULL;
+
+  // Start at the top of the list.
+  cur = wctx->ssid_cache;
+
+  while (cur != NULL) 
+  {
+    if ((cur->ssid_name != NULL) && (cur->ssid_name[0] == '\0')) 
+    {
+      debug_printf(DEBUG_PHYSICAL_STATE, "Found hidden SSID\n");
+    }
+    if ((cur->ssid_name == NULL) || (strcmp(wctx->cur_essid, cur->ssid_name) != 0) || (freq != cur->freq))
+    {
+      cur = cur->next;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  if (cur == NULL)
+  {
+    debug_printf(DEBUG_PHYSICAL_STATE, "Unable to find the BSSID with SSID %s and Freq %lf!\n", wctx->cur_essid, freq);
+    return NULL;
+  }
+
+  return (uint8_t *)&cur->mac;
+}
+
+
+/*
+ * \brief Return the best frequency we can associate with AP, checks if there are muiltiple 
+ *  radios scanned for a given SSID and returns the best one
+ *
+ * @param[in] wctx   The wireless context that contains the MAC address for the
+ *                   active SSID.
+ *
+ * \retval 0 on error
+ * \retval frequency
+ **/
+double config_ssid_get_best_freq(wireless_ctx *wctx)
+{
+  struct found_ssids *cur = NULL;
+  struct found_ssids *best = NULL;
+  int first = 1;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return 0;
+
+  if (!xsup_assert((wctx->cur_essid != NULL), "ssid_name != NULL", FALSE))
+    return 0;
+
+  // Start at the top of the list.
+  cur = wctx->ssid_cache;
+
+  while (cur != NULL) 
+  {
+    if ((cur->ssid_name != NULL) && (cur->ssid_name[0] == '\0')) 
+    {
+      debug_printf(DEBUG_PHYSICAL_STATE, "Found hidden SSID\n");
+    }
+    if ((cur->ssid_name != NULL) && (strcmp(wctx->cur_essid, cur->ssid_name) != 0))
+    {
+      cur = cur->next;
+    }
+    else
+    {
+      if (first)
+      {
+        best = cur;
+        first = 0;
+      }
+      else
+      {
+        if ((cur->freq) < (best->freq))
+        {
+           best = cur;
+        }
+      }
+      cur = cur->next;
+    }
+  }
+
+  if (best == NULL)
+  {
+    debug_printf(DEBUG_PHYSICAL_STATE, "Unable to find the best frequency with SSID %s!\n", wctx->cur_essid);
+    return 0;
+  }
+
+  debug_printf(DEBUG_PHYSICAL_STATE, "Found best frequency with SSID %s as %lf!\n", wctx->cur_essid, best->freq);
+  return best->freq;
+}

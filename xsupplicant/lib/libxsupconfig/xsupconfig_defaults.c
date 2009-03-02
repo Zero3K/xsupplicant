@@ -27,6 +27,7 @@
  **/
 void xsupconfig_defaults_set_globals(config_globals *toset)
 {
+	char * pathptr = NULL;
   toset->flags = CONFIG_GLOBALS_ALLMULTI | CONFIG_GLOBALS_ASSOC_AUTO | 
 	  			 CONFIG_GLOBALS_FIRMWARE_ROAM | CONFIG_GLOBALS_DETECT_ON_STARTUP |
 				 CONFIG_GLOBALS_ROLL_LOGS | CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF |
@@ -44,6 +45,14 @@ void xsupconfig_defaults_set_globals(config_globals *toset)
   toset->size_to_roll = LOG_SIZE_TO_ROLL;				// Roll logs when they reach 10 megs.
   toset->dead_connection_timeout = DEAD_CONN_TIMEOUT;   
   toset->logtype = LOGGING_FILE;
+#ifndef WINDOWS
+  pathptr = (char *)malloc(15);
+  if ( pathptr != NULL )
+  {
+        strcpy(pathptr,"/var/log/");
+        toset->logpath = pathptr;
+  }
+#endif
 }
 
 /**

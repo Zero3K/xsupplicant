@@ -55,6 +55,7 @@ typedef struct eventhandler_struct {
 eventhandler events[MAX_EVENTS];  
 
 int locate;
+int terminate=0;
 
 time_t last_check = 0;
 context *active_ctx = NULL;
@@ -69,11 +70,20 @@ context *event_core_get_active_ctx()
 
 /**
  * \brief We got a request to terminate ourselves.
+ * returns 1 if already in progress otherwise 0
  **/
-void event_core_terminate()
+int event_core_terminate()
 {
 #warning FIX!
-  _exit(1);
+   if (terminate)
+   {
+     debug_printf(DEBUG_DEINIT, "Already going down, so ignoning SHUTDOWN event.\n");
+     return 1;
+   }
+   terminate = 1;
+   debug_printf(DEBUG_DEINIT, "Sending SHUTDOWN event to GUI .\n");
+   ipc_events_ui(NULL, IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN, NULL);
+   return 0;
 }
 
 /**
@@ -230,6 +240,7 @@ void event_core_deregister(int sock)
 	  FREE(events[i].name);
 	  events[i].socket = -1;
 	  if (events[i].ctx != NULL) context_destroy(events[i].ctx);
+	  events[i].ctx = NULL;
 	  events[i].func_to_call = NULL;
 	}
     }
@@ -248,6 +259,14 @@ void event_core()
   fd_set rfds;
   struct timeval timeout;
   time_t cur_time;
+  wireless_ctx *wctx;
+
+  if (terminate == 1)
+  {
+     debug_printf(DEBUG_NORMAL, "Got to terminate the event core!\n");
+     global_deinit();
+     return;
+  }
 
   FD_ZERO(&rfds);
 
@@ -391,12 +410,20 @@ void event_core()
 	{
 	  active_ctx = events[i].ctx;
 	  if (events[i].ctx->intType != ETH_802_11_INT)
+	  {
+	    if (events[i].ctx->conn != NULL) 
 	    {
+ 		if (events[i].ctx->conn != NULL)
+               {
 	      statemachine_run(events[i].ctx);
+		}
 	    }
+	  }
 	  else
 	    {
-	      wireless_sm_do_state(events[i].ctx);
+		wctx = (wireless_ctx *)((events[i].ctx)->intTypeData);
+		if (wctx != NULL)
+	      	wireless_sm_do_state(events[i].ctx);
 	    }
 	  active_ctx = NULL;
 	}
@@ -440,7 +467,9 @@ context *event_core_locate(char *matchstr)
  **/
 void event_core_reset_locator()
 {
-  locate = 0;
+	/*mindtree*/
+	debug_printf(DEBUG_NORMAL, "event_core_reset_locator:locate = -1 \n");
+  locate = -1;
 }
 
 /**
@@ -453,9 +482,11 @@ context *event_core_get_next_context()
 {
   int desired_ctx = 0;
 
-  desired_ctx = locate;
+  desired_ctx = ++locate;
+	debug_printf(DEBUG_NORMAL, "event_core_get_next_context:desired_ctx = %d,MAX_EVENTS = %d,locate = %d \n",desired_ctx,MAX_EVENTS,locate);
 
-  locate++;
+  // locate++;
+	debug_printf(DEBUG_NORMAL, "event_core_get_next_context:locate = %d \n",locate);
 
   if (desired_ctx >= MAX_EVENTS) return NULL;
 
@@ -468,6 +499,15 @@ context *event_core_get_next_context()
 
   if (desired_ctx >= MAX_EVENTS) return NULL;
 
+	if (events[desired_ctx].ctx != NULL )
+	{
+	debug_printf(DEBUG_NORMAL, "event_core_reset_locator:{return}[desired_ctx = %d,desired_ctx->intName=%s]\n",desired_ctx,events[desired_ctx].ctx->intName);
+	}
+	else
+	{
+		debug_printf(DEBUG_NORMAL, "event_core_reset_locator:{return}desired_ctx->intName is NULL\n");
+
+	}
   return events[desired_ctx].ctx;
 }
 

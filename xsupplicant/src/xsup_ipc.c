@@ -318,6 +318,7 @@ void xsup_ipc_send_message(int skfd, char *tosend, int tolen)
 	{
 	  debug_printf(DEBUG_NORMAL, "Couldn't send response document to the "
 		       "IPC client!\n");
+          FREE(frag);
 	  return;
 	}
 
@@ -467,6 +468,7 @@ int xsup_ipc_event(context *ctx, int sock)
       event_core_deregister(ipcs[i].sock);
       ipcs[i].sock = 0;
       ipcs[i].flags = 0;
+      FREE(buf);
       return -1;
     }
 
@@ -497,8 +499,10 @@ int xsup_ipc_event(context *ctx, int sock)
   if ((resbuf != NULL) && (resbufsize > 0))
     {
       xsup_ipc_send_message(ipcs[i].sock, (char *)resbuf, resbufsize);
-      FREE(resbuf);
     }
+
+  FREE(resbuf);
+  FREE(buf);
 
   return XENONE;
 }

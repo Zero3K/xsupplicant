@@ -55,7 +55,15 @@
  **/
 void cardif_linux_wext_cancel_scantimer(context *ctx)
 {
+  wireless_ctx *wctx = NULL;
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+    return;
   timer_cancel(ctx, SCANCHECK_TIMER);
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
+    return;
+  wctx = (wireless_ctx *)ctx->intTypeData;
+  UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
+  wctx->temp_ssid = NULL;
 }
 
 /**
@@ -141,7 +149,7 @@ int cardif_linux_wext_scan(context *thisint, char passive)
   iwr.u.data.length = 0;
   iwr.u.data.pointer = NULL;
   iwr.u.data.flags = IW_SCAN_DEFAULT;
-#endif
+#endif //end WIRELESS_EXT > 17
   
   Strncpy((char *)&iwr.ifr_name, sizeof(iwr.ifr_name), thisint->intName,
 	  strlen(thisint->intName)+1);
@@ -287,6 +295,9 @@ int cardif_linux_wext_enc_disable(context *thisint)
  **/
 int cardif_linux_wext_get_wpa2_ie(context *thisint, char *iedata, int *ielen)
 {
+  wireless_ctx *wctx = NULL;
+  wctx = (wireless_ctx *) thisint->intTypeData; 
+   
   if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
     return XEMALLOC;
 
@@ -300,6 +311,16 @@ int cardif_linux_wext_get_wpa2_ie(context *thisint, char *iedata, int *ielen)
 
   // Should we use capabilities here?
   wpa2_gen_ie(thisint, iedata, ielen);
+  
+  if (wctx->okc == 1) {
+  printf("okc flag\n");
+  iedata[1] = 0x26;
+  iedata[22] = 0x01;
+  iedata[23] = 0x00;
+  memcpy(&iedata[24], wctx->pmkid_used, 16);
+        *ielen = 40;
+   }
+
 
   debug_printf(DEBUG_INT, "Setting WPA2 IE : ");
   debug_hex_printf(DEBUG_INT, (uint8_t *)iedata, *ielen);
@@ -312,7 +333,7 @@ int cardif_linux_wext_get_wpa2_ie(context *thisint, char *iedata, int *ielen)
 
   iedata = NULL;
   *ielen = 0;
-#endif
+#endif //end WIRELESS_EXT > 17
   return XENONE;
 }
 
@@ -423,6 +444,13 @@ int cardif_linux_wext_set_WEP_key(context *thisint, uint8_t *key,
 
   wctx = (wireless_ctx *)thisint->intTypeData;
 
+  if (keylen == 13) {
+      wctx->pairwiseKeyType = CIPHER_WEP104;
+  }
+  else if (keylen == 5) {
+	wctx->pairwiseKeyType = CIPHER_WEP40;
+  }
+
   if (index & 0x80) settx = 1;
 
 #if WIRELESS_EXT > 17
@@ -431,7 +459,7 @@ int cardif_linux_wext_set_WEP_key(context *thisint, uint8_t *key,
 				     keylen);
 
 
-  if (rc == XENONE) return rc;
+  //if (rc == XENONE) return rc;
 #endif
 
   debug_printf(DEBUG_INT, "Couldn't use extended key calls to set keys. \n");
@@ -637,6 +665,49 @@ int cardif_linux_wext_set_bssid(context *intdata, uint8_t *bssid)
   return XENONE;
 }
 
+/**
+ * Set the Frequency of the AP we are connecting to.
+ **/
+double cardif_linux_wext_set_freq(context *thisint)
+{
+  struct iwreq wrq;
+  struct lin_sock_data *sockData;
+  wireless_ctx *wctx = NULL;
+  double ret = 0;
+  double freq = 0;
+
+  if( !xsup_assert( ( thisint != NULL ), "thisint != NULL ", FALSE ))
+    return ret;
+
+  if( !xsup_assert( ( thisint->intTypeData != NULL ), "thisint->intTypeData != NULL ", FALSE ) )
+    return ret;
+  wctx = ( wireless_ctx * ) thisint->intTypeData;
+
+  sockData =  thisint->sockData;
+  xsup_assert( ( sockData != NULL ) , "sockData != NULL ", TRUE );
+  if( sockData->sockInt <= 0 )
+    return ret;
+
+
+  strncpy( wrq.ifr_name, thisint->intName, strlen( thisint->intName) +1 );
+
+  debug_printf(DEBUG_NORMAL,"Getting freq from SSID cache for %s \n", wctx->cur_essid);
+  freq = config_ssid_get_best_freq(wctx);
+  debug_printf(DEBUG_NORMAL,"Frequency :: %lf intName :: %s \n", freq, wrq.ifr_name );
+
+  ret =freq;
+  freq *=1e9;
+  iw_float2freq(freq, &(wrq.u.freq));
+  if (ioctl( sockData->sockInt, SIOCSIWFREQ, &wrq) < 0) 
+  {
+     debug_printf( DEBUG_NORMAL, "failed to set frequency , error %d : %s \n", errno, strerror( errno ) );
+     return 0;
+  }
+
+  return ret;    
+}
+
+
 
 /**
  * Get the Broadcast SSID (MAC address) of the Access Point we are connected 
@@ -766,6 +837,10 @@ int cardif_linux_wext_wep_associate(context *intdata,
   struct config_globals *globals;
   wireless_ctx *wctx = NULL;
   uint32_t alg;
+  double freq=0;
+  int index = 1;
+  char key[24];
+  char ifname[ IFNAMSIZ ];
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return XEMALLOC;
@@ -807,13 +882,50 @@ int cardif_linux_wext_wep_associate(context *intdata,
       break;
     }
 
+  wctx->assoc_type = ASSOC_TYPE_OPEN;
+  /*if (intdata->conn->association.txkey) 
+  {
+      wctx->pairwiseKeyType = CIPHER_WEP40;
+  }*/
   if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_80211_AUTH_ALG,
                                    alg, "802.11 auth. alg to open") < 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't set 802.11 auth. alg.\n");
     }
+    /*OPEN FIX: Below condition added */
+    if( config_ssid_get_ssid_abilities( wctx ) == 0 )
+    {
+        debug_printf(DEBUG_NORMAL, "Its OPEN, so disable ENC \n");
+        cardif_linux_wext_enc_disable( intdata );    
+    }
+    
+    /*OPEN FIX: the below statement was at the beginning of the function, has been moved here */
+    cardif_linux_wext_wpa_state( intdata, 0 );
+    
 #endif
-
+  /* below code is added for atheros for dynamic wep */  
+    while( if_indextoname( index, ifname ))
+    {
+           if( strncmp( ifname, "wifi", 4 ) == 0 )
+           {
+               if( ( intdata->conn  != NULL )  && ( intdata->prof != NULL ))
+               {
+                   if( ( intdata->conn->association.association_type == ASSOC_TYPE_OPEN ) && 
+                       ( intdata->conn->association.auth_type != AUTH_NONE ) &&
+                       ( intdata->prof->name != NULL ) &&( config_ssid_get_ssid_abilities( wctx ) & ABIL_ENC ))
+                   {
+                         memset( key, 0, 24 );
+                         strcpy( key, "0123456789" );
+                         cardif_linux_wext_set_WEP_key( intdata, key, strlen( key)/2 , 3 );     
+                   }
+               }    
+               break;
+           } 
+           index++;      
+    }
+    
+  
+  freq = cardif_linux_wext_set_freq(intdata);
   cardif_linux_wext_set_ssid(intdata, wctx->cur_essid);
 
   if (zero_keys == 0)
@@ -822,7 +934,6 @@ int cardif_linux_wext_wep_associate(context *intdata,
       return cardif_linux_wext_enc_disable(intdata);
     } else if (zero_keys == 1)
       {
-      debug_printf(DEBUG_INT, "WEP: zero keys.\n");
 	cardif_linux_wext_zero_keys(intdata);
 	return XENONE;
       } else
@@ -830,7 +941,16 @@ int cardif_linux_wext_wep_associate(context *intdata,
 	  debug_printf(DEBUG_NORMAL, "Invalid association value.\n");
 	}
 
-  bssid = config_ssid_get_mac(wctx);
+  //Patch for associating with best Frequency radio if there are multiple radios on one AP
+  //If we are able to set the frequency then search for the BSSID of that particular radio
+  if (!freq)
+  {
+    bssid = config_ssid_get_mac(wctx);
+  }
+  else
+  {
+    bssid = config_ssid_get_mac_with_freq(wctx, freq);
+  }
   if (bssid != NULL)
     {
       debug_printf(DEBUG_INT, "Dest. BSSID : ");
@@ -839,7 +959,7 @@ int cardif_linux_wext_wep_associate(context *intdata,
 
   globals = config_get_globals();
 
-  if ((!globals) || (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)))
+  if ((globals) || (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)))
     {
       cardif_linux_wext_set_bssid(intdata, bssid);
     }
@@ -872,7 +992,7 @@ int cardif_linux_wext_mlme(context *thisint, uint16_t mlme_type,
   memset(&iwr, 0, sizeof(iwr));
   // Specify the interface name we are asking about.
   Strncpy(iwr.ifr_name, sizeof(iwr.ifr_name), thisint->intName, 
-	  strlen(thisint->intName));
+	  strlen(thisint->intName)+3 );
 
   if (strlen(iwr.ifr_name) == 0)
     {
@@ -907,6 +1027,7 @@ void cardif_linux_clear_keys(context *);
 
 int cardif_linux_wext_disassociate(context *intdata, int reason)
 {
+  wireless_ctx *wctx = NULL;
 #if WIRELESS_EXT > 17
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return XEMALLOC;
@@ -918,6 +1039,14 @@ int cardif_linux_wext_disassociate(context *intdata, int reason)
   debug_printf(DEBUG_NORMAL, "!!!!!!!!! Setting invalid SSID!\n");
   cardif_linux_wext_set_ssid(intdata, "unlikelyssid");
   cardif_linux_clear_keys(intdata);
+  wctx = (wireless_ctx *)intdata->intTypeData;
+  if (wctx)
+  {
+    debug_printf(DEBUG_NORMAL, "Set assoc_type to UNKNOWN\n");
+    wctx->assoc_type = ASSOC_TYPE_UNKNOWN;
+    memset(wctx->cur_bssid, 0x00, 6);
+  }
+  cardif_linux_wext_set_bssid(intdata, wctx->cur_bssid);
 
   return XENONE;
 }
@@ -940,8 +1069,9 @@ int cardif_linux_wext_set_key_ext(context *intdata, int alg,
   xsup_assert((sockData != NULL), "sockData != NULL", TRUE);
 
   memset(&wrq, 0x00, sizeof(wrq));
-  Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
-	  sizeof(intdata->intName)+1);
+  //Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
+//	  sizeof(intdata->intName)+1);
+	strncpy( ( char *)&wrq.ifr_name, intdata->intName, sizeof( intdata->intName )+1 );
 
   if (strlen(wrq.ifr_name) == 0)
     {
@@ -1116,8 +1246,9 @@ int cardif_linux_wext_set_wpa_ie(context *intdata,
 
   memset(&wrq, 0x00, sizeof(wrq));
 
-  Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
-	  sizeof(intdata->intName)+1);
+//  Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
+//	  sizeof(intdata->intName)+1);
+	strncpy( ( char *) &wrq.ifr_name, intdata->intName, sizeof( intdata->intName ) + 1 );
 
   if (strlen(wrq.ifr_name) == 0)
     {
@@ -1142,6 +1273,7 @@ int cardif_linux_wext_set_wpa_ie(context *intdata,
 int cardif_linux_wext_wpa_state(context *intdata, char state)
 {
 
+    wireless_ctx * wctx;
   // If we have wireless extensions 18 or higher, we can support WPA/WPA2
   // with standard ioctls.
 
@@ -1150,6 +1282,11 @@ int cardif_linux_wext_wpa_state(context *intdata, char state)
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return XEMALLOC;
+    
+    wctx = ( wireless_ctx * )intdata->intTypeData;
+    
+     if (!xsup_assert((wctx!= NULL), "wctx != NULL", FALSE))
+    return XEMALLOC;
 
   if (state)
     {
@@ -1157,7 +1294,12 @@ int cardif_linux_wext_wpa_state(context *intdata, char state)
       cardif_linux_wext_wpa(intdata, TRUE);
     } else {
       cardif_linux_wext_wpa(intdata, FALSE);
-
+      
+      if( config_ssid_get_ssid_abilities( wctx ) == 0 )
+      {
+          debug_printf( DEBUG_NORMAL, "Its OPEN, so don't drop UNENC \n");
+          cardif_linux_wext_drop_unencrypted( intdata, FALSE );     
+      }
       // Otherwise, make sure we don't have an IE set.
       memset(wpaie, 0x00, sizeof(wpaie));
       if (cardif_linux_wext_set_wpa_ie(intdata, (unsigned char *)wpaie, 0) < 0)
@@ -1190,8 +1332,9 @@ int cardif_linux_wext_set_iwauth(context *intdata,
   xsup_assert((sockData != NULL), "sockData != NULL", TRUE);
 
   memset(&wrq, 0x00, sizeof(wrq));
-  Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
-	  sizeof(intdata->intName)+1);
+  //Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
+//	  sizeof(intdata->intName)+1);
+	strncpy( ( char * ) &wrq.ifr_name, intdata->intName, sizeof( intdata->intName ) + 1 );
 
   if (strlen(wrq.ifr_name) == 0)
     {
@@ -1305,6 +1448,7 @@ void cardif_linux_wext_associate(context *intdata)
 #endif
   struct config_globals *globals;
   wireless_ctx *wctx = NULL;
+  double freq = 0;
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return;
@@ -1345,6 +1489,15 @@ void cardif_linux_wext_associate(context *intdata)
       break;
     }
 
+  wctx->assoc_type = ASSOC_TYPE_OPEN;
+  if (intdata->conn->association.association_type != ASSOC_TYPE_OPEN)
+  {
+    wctx->assoc_type = ASSOC_TYPE_WPA1;
+    if (intdata->conn->association.association_type != ASSOC_TYPE_WPA1)
+    {
+      wctx->assoc_type = ASSOC_TYPE_WPA2;
+    }
+  }
   if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_80211_AUTH_ALG,
                                    alg, "802.11 auth. alg to open") < 0)
     {
@@ -1359,7 +1512,7 @@ void cardif_linux_wext_associate(context *intdata)
     }
 #endif
 
-  if (config_ssid_get_ssid_abilities(wctx) & RSN_IE)
+  if (config_ssid_get_ssid_abilities(wctx) & ABIL_RSN_IE)
     {
 #if WIRELESS_EXT > 17
       cardif_linux_wext_get_wpa2_ie(intdata, (char *) wpaie, &len);
@@ -1371,8 +1524,13 @@ void cardif_linux_wext_associate(context *intdata)
 	}
       wctx->groupKeyType = wpa2_get_group_crypt(intdata);
       wctx->pairwiseKeyType = wpa2_get_pairwise_crypt(intdata);
+      if (wctx->pairwiseKeyType == 0xff)
+      {
+        debug_printf(DEBUG_NORMAL, "Couldn't determine cipher type.  Forcing to CCMP.\n");
+        wctx->pairwiseKeyType = CIPHER_CCMP;
+      }
 #endif
-    } else if (config_ssid_get_ssid_abilities(wctx) & WPA_IE)
+    } else if (config_ssid_get_ssid_abilities(wctx) & ABIL_WPA_IE)
       {
 #if WIRELESS_EXT > 17
 	cardif_linux_wext_get_wpa_ie(intdata, (char *) wpaie, &len);
@@ -1384,6 +1542,11 @@ void cardif_linux_wext_associate(context *intdata)
 	  }
 	wctx->groupKeyType = wpa_get_group_crypt(intdata);
 	wctx->pairwiseKeyType = wpa_get_pairwise_crypt(intdata);
+        if (wctx->pairwiseKeyType == 0xff)
+        {
+          debug_printf(DEBUG_NORMAL, "Couldn't determine cipher type.  Forcing to TKIP.\n");
+          wctx->pairwiseKeyType = CIPHER_TKIP;
+        }
 #endif
       }
 
@@ -1412,7 +1575,7 @@ void cardif_linux_wext_associate(context *intdata)
 		   cipher);
     }
   
-  if (intdata->conn->association.auth_type == AUTH_PSK)
+  if (intdata->conn->association.auth_type != AUTH_PSK)
     {
       akm = IW_AUTH_KEY_MGMT_802_1X;
     } else {
@@ -1442,9 +1605,19 @@ void cardif_linux_wext_associate(context *intdata)
 
 #endif
 
+  cardif_linux_wext_set_freq(intdata);
   cardif_linux_wext_set_ssid(intdata, wctx->cur_essid);
 
-  bssid = config_ssid_get_mac(wctx);
+  //Patch for associating with best Frequency radio if there are multiple radios on one AP
+  //If we are able to set the frequency then search for the BSSID of that particular radio
+  if (!freq)
+  {
+    bssid = config_ssid_get_mac(wctx);
+  }
+  else
+  {
+    bssid = config_ssid_get_mac_with_freq(wctx, freq);
+  }
   if (bssid != NULL)
     {
       debug_printf(DEBUG_INT, "Dest. BSSID : ");
@@ -1453,7 +1626,7 @@ void cardif_linux_wext_associate(context *intdata)
 
   globals = config_get_globals();
 
-  if ((!globals) || (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)))
+  if ((globals) || (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)))
     {
       cardif_linux_wext_set_bssid(intdata, bssid);
     }
@@ -1531,8 +1704,9 @@ void cardif_linux_wext_enc_capabilities(context *intdata)
   wctx->enc_capa = 0;
 
   memset(&wrq, 0x00, sizeof(wrq));
-  Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
-	  sizeof(intdata->intName)+1);
+//  Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
+//	  sizeof(intdata->intName)+1);
+	strncpy( ( char *) &wrq.ifr_name, intdata->intName, sizeof( intdata->intName )+1 );
 
   if (strlen(wrq.ifr_name) == 0)
     {
@@ -1595,6 +1769,115 @@ int cardif_linux_wext_delete_key(context *intdata, int key_idx, int set_tx)
 }
 
 
+int cardif_linux_wireless_apply_pmkids (context *ctx, pmksa_list *pmklist)
+{
+    wireless_ctx *wctx = NULL;
+
+    wctx = ctx->intTypeData;
+
+    int i;
+
+    //sockData = ctx->sockData;
+
+    if (pmklist == NULL) {
+        printf("apply_list is NULL\n");
+    }
+
+    if (wctx->pmkids_supported > 0)
+
+    {
+
+        for (i = (wctx->pmkids_supported-1); i >= 0; i--)
+
+        {
+
+            if (pmklist[i].cache_element != NULL) {
+                xsupplicant_driver_pmksa(ctx, pmklist[i].cache_element->authenticator_mac, pmklist[i].cache_element->pmkid, IW_PMKSA_ADD);
+            }
+
+        }
+
+    }
+
+    #if 0
+    if ((wctx->pmkids_supported > 0) && (numelems > 0))
+
+    {
+
+        for (i = 1; i <= numelems; i++)
+
+        {
+                if (pmklist[i].cache_element != NULL) {
+                printf("deepak cache_element not NULL\n");
+                xsupplicant_driver_pmksa(ctx, pmklist[i].cache_element->authenticator_mac, pmklist[i].cache_element->pmkid, IW_PMKSA_ADD);
+                }
+
+        }
+  }
+        #endif
+
+}
+
+
+int xsupplicant_driver_pmksa(context *ctx, uint8_t *bssid, uint8_t *pmkid, unsigned int cmd)
+{
+
+    struct iwreq iwr;
+
+    struct iw_pmksa pmksa;
+
+    int sockData = -1;
+
+    wireless_ctx *wctx = NULL;
+
+    sockData = socket(AF_INET, SOCK_DGRAM, 0);
+
+   wctx = (wireless_ctx *) ctx->intTypeData;
+
+   /*if (config_ssid_get_ssid_abilities(wctx) & ABIL_RSN_IE) {
+	  	cardif_linux_wext_set_iwauth(ctx, IW_AUTH_WPA_VERSION, 
+			IW_AUTH_WPA_VERSION_WPA2, "WPA2 version" );
+	    if (ctx->conn->association.auth_type != AUTH_PSK) {
+	       	cardif_linux_wext_set_iwauth(ctx, IW_AUTH_KEY_MGMT, 
+			IW_AUTH_KEY_MGMT_802_1X, "WPA2 version" );
+    		}
+   }*/
+
+    memset(&iwr, 0, sizeof(iwr));
+
+    strncpy(iwr.ifr_name, ctx->intName, IFNAMSIZ);
+
+    memset(&pmksa, 0, sizeof(pmksa));
+
+    pmksa.cmd = cmd;
+
+    pmksa.bssid.sa_family = ARPHRD_ETHER;
+
+    if (bssid) {
+    memcpy(pmksa.bssid.sa_data, bssid, ETH_ALEN);
+   }
+
+   if (pmkid)
+    memcpy(pmksa.pmkid, pmkid, IW_PMKID_LEN);
+    iwr.u.data.pointer = (caddr_t) &pmksa;
+
+    iwr.u.data.length = sizeof(pmksa);
+if (ioctl( sockData, SIOCSIWPMKSA, &iwr) < 0)
+
+    {
+
+        //if (errno != EOPNOTSUPP)      /*EOPNOTSUPP the requested operation is not supported */
+
+        debug_printf(DEBUG_INT,"ioctl [SIOCSIWPMKSA] not supported\n");
+
+        return -1;
+
+    }
+   debug_printf(DEBUG_NORMAL, "PMKIDs set for %s\n", ctx->intName);
+   return 0;
+
+}
+
 struct cardif_funcs cardif_linux_wext_driver = {
   .scan = cardif_linux_wext_scan,
   .disassociate = cardif_linux_wext_disassociate,
@@ -1617,4 +1900,7 @@ struct cardif_funcs cardif_linux_wext_driver = {
   .setbssid = cardif_linux_wext_set_bssid,
   .set_operstate = cardif_linux_rtnetlink_set_operstate,
   .set_linkmode = cardif_linux_rtnetlink_set_linkmode,
+  NULL,
+  .apply_pmkid_data = cardif_linux_wireless_apply_pmkids,
+  .set_freq = cardif_linux_wext_set_freq,
 };
