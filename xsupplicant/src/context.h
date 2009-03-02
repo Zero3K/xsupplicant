@@ -347,6 +347,10 @@ typedef struct context_data
 
   uint8_t *sendframe, *recvframe;
   uint16_t send_size, recv_size;
+
+#ifdef LINUX
+  void *drv_handle;          /// XXX This needs to be moved, it doesn't belong here!
+#endif
 } context;
 
 int context_init(context *, char *);

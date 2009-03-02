@@ -3,7 +3,7 @@
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * Authors: Chris.Hessing@utah.edu
+ * Authors: chris@open1x.org
  *
  **/
 
@@ -457,8 +457,8 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP_ASSOC(context *idata,
 	  // We have changed to associated mode.  Populate the destination
 	  // MAC with the BSSID, as long as we are in auto mode.
 	  
-	  SET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
-	  UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
+	  //	  SET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
+	  //	  UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
 	  
 	  if (globals->destination == DEST_AUTO)
 	    memcpy(idata->dest_mac, mac, 6);
@@ -466,8 +466,8 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP_ASSOC(context *idata,
  	UNSET_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ);
 	  
 	} else {
-	  UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
-	  UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION); 
+	//	  UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
+	//	  UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION); 
 	}
 }
 
@@ -1735,7 +1735,7 @@ void cardif_linux_rtnetlink_check_key_prob(context *idata)
 
   if (timer_check_existing(idata, REKEY_PROB_TIMER))
     {
-      if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_NO_FRIENDLY_WARNINGS))
+      if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
 	{
 	  debug_printf(DEBUG_NORMAL, "** WARNING! ** You were disassocated "
 		       "within a short time of setting a key!\nThis usually "
@@ -1839,8 +1839,8 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
                 wctx = (wireless_ctx *)ctx->intTypeData;
                 if ( wctx != NULL)
                 {
-                        debug_printf(DEBUG_INT, "Interface UP , unset WIRELESS_SM_ASSOCIATED.\n");
-                        UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
+		  //                        debug_printf(DEBUG_INT, "Interface UP , unset WIRELESS_SM_ASSOCIATED.\n");
+                  //      UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
                 }
 
         }
