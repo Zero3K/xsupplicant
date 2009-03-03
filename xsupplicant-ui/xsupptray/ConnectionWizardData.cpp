@@ -37,12 +37,12 @@
 #include "ConnectionWizardData.h"
 #include "XSupWrapper.h"
 
+#ifndef WINDOWS
 extern "C"{
 #include "xsupgui_request.h"
 #include "xsupconfig.h"
 };
 
-#ifndef WINDOWS
 #define _strdup strdup
 #endif
 

@@ -37,9 +37,11 @@
 #include "Util.h"
 #include "XSupWrapper.h"
 
+#ifndef WINDOWS
 extern "C" {
 #include "xsupgui_request.h"
 };
+#endif
 
 ConnectionInfoDlg::ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, QTime *parentTime)
 	:QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow), m_pEmitter(e)

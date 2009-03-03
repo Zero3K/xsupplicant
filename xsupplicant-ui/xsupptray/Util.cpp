@@ -35,9 +35,11 @@
 #include <qstring.h>
 #include "Util.h"
 
+#ifndef WINDOWS
 extern "C"{
 #include "xsupgui_request.h"
 };
+#endif
 
 bool Util::myConnect(const QObject *from, const char *signal, const QObject *to, const char *slot)
 {
