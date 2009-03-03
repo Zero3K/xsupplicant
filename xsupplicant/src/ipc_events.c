@@ -190,8 +190,10 @@ int ipc_events_log_msg(char *logmsg)
 	// DO NOT xsup_assert here!  It will cause an infinite loop that will lead to a stack overflow!
 	if (logmsg == NULL) return IPC_FAILURE;
 
+#ifdef WINDOWS
 	// If we don't have a valid IPC handle, don't bother trying to send this data.
 	if (ipcLock == INVALID_HANDLE_VALUE) return IPC_SUCCESS;
+#endif
 
 	ctx = event_core_get_active_ctx();
 	if (ctx == NULL) return IPC_FAILURE;

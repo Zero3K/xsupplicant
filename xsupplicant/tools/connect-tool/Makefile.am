@@ -14,4 +14,5 @@ connect_tool_SOURCES	= connect-tool.c ${top_srcdir}/src/getopts.c \
 connect_tool_LDADD	= $(CORELIBS) $(MORELIBS) \
 		  -L${top_builddir}/lib/libxsupgui -lxsupgui \
 		  -L${top_builddir}/lib/libxsupconfig -lxsupconfig \
-		  -L${top_builddir}/lib/libxsupconfwrite -lxsupconfwrite
+		  -L${top_builddir}/lib/libxsupconfwrite -lxsupconfwrite \
+		  -L${top_builddir}/lib/liblist -llist

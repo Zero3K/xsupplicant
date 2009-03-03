@@ -13,4 +13,5 @@ ipctest_SOURCES	= ipctest.c ${top_srcdir}/src/getopts.c \
 ipctest_LDADD	= $(CORELIBS) $(MORELIBS) \
 		  -L${top_builddir}/lib/libxsupgui -lxsupgui \
 		  -L${top_builddir}/lib/libxsupconfig -lxsupconfig \
-		  -L${top_builddir}/lib/libxsupconfwrite -lxsupconfwrite
+		  -L${top_builddir}/lib/libxsupconfwrite -lxsupconfwrite \
+		  -L${top_builddir}/lib/liblist -llist

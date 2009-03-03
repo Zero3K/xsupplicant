@@ -20,6 +20,8 @@
 #include <netinet/in.h>
 #include <syslog.h>
 #include <time.h>
+
+#define _snprintf snprintf
 #else
 #include <winsock2.h>
 #include <shlobj.h>

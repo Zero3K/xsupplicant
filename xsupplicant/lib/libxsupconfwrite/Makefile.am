@@ -12,6 +12,7 @@ libxsupconfwrite_a_SOURCES = xsupconfwrite_common.h xsupconfwrite_connection.h \
 			     xsupconfwrite_pwd_only.h \
 			     xsupconfwrite_trusted_server.h \
 			     xsupconfwrite_trusted_servers.h \
+                             xsupconfwrite_plugins.h \
 			     xsupconfwrite.h \
 			     \
 			     xsupconfwrite.c xsupconfwrite_common.c \
@@ -31,6 +32,7 @@ libxsupconfwrite_a_SOURCES = xsupconfwrite_common.h xsupconfwrite_connection.h \
 			     xsupconfwrite_interface.c \
 			     xsupconfwrite_profiles.c \
 			     xsupconfwrite_pwd_only.c \
+                             xsupconfwrite_plugins.c \
 			     xsupconfwrite_trusted_server.c \
 			     xsupconfwrite_trusted_servers.c 
 

@@ -12,7 +12,7 @@
 #include <string.h>
 
 #include "xsup_common.h"
-#include "xsupconfig.h"
+#include "../lib/libxsupconfig/xsupconfig.h"
 #include "xsup_err.h"
 #include "logon_creds.h"
 

@@ -17,6 +17,7 @@ libxsupconfig_a_SOURCES = pwd_crypt.h xsupconfig_common.h \
 			  xsupconfig_parse_eap_otp.h \
 			  xsupconfig_parse_eap_peap.h \
 			  xsupconfig_parse_eap_peap_phase2.h \
+			  xsupconfig_parse_eap_psk.h \
 			  xsupconfig_parse_eap_sim.h \
 			  xsupconfig_parse_eap_tls.h \
 			  xsupconfig_parse_eap_tnc.h \
@@ -59,6 +60,7 @@ libxsupconfig_a_SOURCES = pwd_crypt.h xsupconfig_common.h \
 			  xsupconfig_parse_eap_otp.c \
 			  xsupconfig_parse_eap_peap.c \
 			  xsupconfig_parse_eap_peap_phase2.c \
+			  xsupconfig_parse_eap_psk.c \
 			  xsupconfig_parse_eap_ttls.c \
 			  xsupconfig_parse_eap_ttls_phase2.c \
 			  xsupconfig_parse_eap_ttls_pap.c \

@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
     exit(0);
   }
   
-  if (config_setup(config_fname) == XENONE) {
+  if (config_load_user_config(config_fname) == XENONE) {
     if (flags & CONFIG_PARSE_VERBOSE)
       {
 	printf("Dumping config.\n");

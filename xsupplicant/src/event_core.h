@@ -1,10 +1,10 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _EVENT_CORE_H_
 #define _EVENT_CORE_H_
@@ -21,7 +21,7 @@ context *event_core_get_active_ctx();
 context *event_core_get_next_context();
 void event_core_init();
 void event_core_deinit();
-void event_core_terminate();
+int event_core_terminate();
 void event_core();
 int event_core_register(int, context *, int(*)(context *, int), int, char *);
 void event_core_deregister(int);

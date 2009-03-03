@@ -1,5 +1,5 @@
 #CORELIBS = @CORELIBS@
-#MORELIBS = @MORELIBS@ -L${top_srcdir}/lib/libxsupconfig -l xsupconfig -L${top_srcdir}/lib/libxsupgui -lxsupgui
+#MORELIBS = @MORELIBS@ -L${top_srcdir}/lib/libxsupconfig -l xsupconfig -L${top_srcdir}/lib/libxsupgui -lxsupgui  -L${top_srcdir}/lib/liblist -l list
 #MOREDEFS = @MOREDEFS@ 
 DEFS = @DEFS@ $(MOREDEFS) -DEXTERNAL_USE
 
@@ -16,4 +16,4 @@ config_parser_LDADD   = $(MORELIBS) \
 			-L${top_builddir}/lib/libxsupconfig -lxsupconfig \
 			-L${top_builddir}/lib/libxsupconfwrite \
 			-lxsupconfwrite -L${top_builddir}/lib/libxsupgui \
-			-lxsupgui 
+			-lxsupgui -L${top_srcdir}/lib/liblist -llist

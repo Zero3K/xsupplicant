@@ -2713,6 +2713,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 			myprof = config_find_profile(CONFIG_LOAD_USER, mycon->profile);
 			if (myprof == NULL) myprof = config_find_profile(CONFIG_LOAD_GLOBAL, mycon->profile);
 
+#ifdef EAP_SIM_ENABLE
 			if (myprof != NULL)
 			{
 				if (myprof->method->method_num == EAP_TYPE_AKA)
@@ -2724,6 +2725,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 					if (eapsim_is_pin_needed(ctx, myprof->method->method_data) == FALSE) break;
 				}
 			}
+#endif
 		}
 		// Fall through.
 
@@ -7704,16 +7706,22 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	debug_printf(DEBUG_IPC, "Getting number of available certificates.\n");
+
+#ifdef WINDOWS
 	if (win_impersonate_desktop_user() != 0)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to impersonate the desktop user.  Will attempt to continue anyway, but no certificates may be listed.\n");
 	}
+#endif
 
 	numcas = cert_handler_num_user_certs();
 	if (numcas < 0)
 	{
 		xmlFreeNode(n);
+
+#ifdef WINDOWS
 		win_impersonate_back_to_self();
+#endif
 		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CERT_STORE_ERROR, outnode);
 	}
 
@@ -7721,11 +7729,15 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr *outnode)
 	if (cert_handler_enum_user_certs(&numcas, &casa) < 0)
 	{
 		xmlFreeNode(n);
+#ifdef WINDOWS
 		win_impersonate_back_to_self();
+#endif
 		return ipc_callout_create_error(NULL, "Enum_User_Certs", IPC_ERROR_CERT_STORE_ERROR, outnode);
 	}
 
+#ifdef WINDOWS
 	win_impersonate_back_to_self();
+#endif
 
 	if (casa == NULL)
 	{

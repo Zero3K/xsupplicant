@@ -30,6 +30,7 @@
 #include "xsup_debug.h"
 #include "xsup_err.h"
 #include "statemachine.h"
+#include "ipc_events_index.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -56,6 +57,7 @@ eventhandler events[MAX_EVENTS];
 
 int locate;
 int terminate=0;
+int num_event_slots = MAX_EVENTS;
 
 time_t last_check = 0;
 context *active_ctx = NULL;
@@ -74,7 +76,6 @@ context *event_core_get_active_ctx()
  **/
 int event_core_terminate()
 {
-#warning FIX!
    if (terminate)
    {
      debug_printf(DEBUG_DEINIT, "Already going down, so ignoning SHUTDOWN event.\n");
@@ -533,6 +534,77 @@ context *event_core_locate_by_desc(char *matchstr)
 				      == 0))
 	return events[i].ctx;
     }
+
+  // Otherwise, we ran out of options.
+  return NULL;
+}
+
+void event_core_change_wireless(config_globals *newsettings)
+{
+  // Functionality that we don't want to bother with on Linux.
+}
+
+void event_core_load_user_config()
+{
+	char *conf_path = NULL;
+	char *temp = NULL;
+
+	  temp = platform_get_users_data_store_path();
+	  if (temp != NULL)
+	  {
+		  conf_path = Malloc(strlen(temp)+50);
+		  if (conf_path != NULL)
+		  {
+			  strcpy(conf_path, temp);
+			  strcat(conf_path, "\\xsupplicant.user.conf");
+
+			  if (config_load_user_config(conf_path) != XENONE)
+			  {
+				  debug_printf(DEBUG_NORMAL, "Unable to load the user's configuration.  No user specific configuration settings will be available!\n");
+			  }
+			  else
+			  {
+				  debug_printf(DEBUG_NORMAL, "Loaded new user specific configuration.\n");
+
+				  // Save the path so we can grab it for a trouble ticket or crash dump.
+#ifdef WINDOWS
+				  crashdump_add_curuser_conf(conf_path);
+#else
+#warning Add this for your OS!
+#endif
+			  }
+
+			  FREE(temp);
+			  FREE(conf_path);
+		  }
+		  else
+		  {
+			  FREE(temp);
+		  }
+	  }
+}
+
+/**
+ *  \brief Find the context that matches the connection name string, and return it.  
+ *
+ * @param[in] matchstr   The connection name of the interface we wish to find the
+ *                       context for.
+ *
+ * \retval ptr  Pointer to a context structure for the interface requested.
+ * \retval NULL Couldn't locate the desired interface.
+ **/
+context *event_core_locate_by_connection(char *matchstr)
+{
+  int i;
+
+  if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
+    return NULL;
+
+  for (i = 0; i < num_event_slots; i++)
+  {
+	  if ((events[i].ctx != NULL) && (events[i].ctx->conn_name != NULL) && (strcmp(events[i].ctx->conn_name, matchstr) == 0))
+		  return events[i].ctx;
+  }
 
   // Otherwise, we ran out of options.
   return NULL;
