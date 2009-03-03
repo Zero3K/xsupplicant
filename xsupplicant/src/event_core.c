@@ -556,7 +556,7 @@ void event_core_load_user_config()
 		  if (conf_path != NULL)
 		  {
 			  strcpy(conf_path, temp);
-			  strcat(conf_path, "\\xsupplicant.user.conf");
+			  strcat(conf_path, "/xsupplicant.user.conf");
 
 			  if (config_load_user_config(conf_path) != XENONE)
 			  {

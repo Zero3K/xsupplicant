@@ -839,10 +839,12 @@ QVector<QString> XSupWrapper::getConnectionListForAdapter(bool isWireless)
 	{
 		if (isWireless)
 		{
+		  if (globals->wirelessMachineAuthConnection != NULL)
 			showanyway = _strdup(globals->wirelessMachineAuthConnection);
 		}
 		else
 		{
+		  if (globals->wiredMachineAuthConnection != NULL)
 			showanyway = _strdup(globals->wiredMachineAuthConnection);
 		}
 

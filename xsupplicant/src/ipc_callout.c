@@ -3492,7 +3492,11 @@ int ipc_callout_write_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		}
 
 		strcpy(filename, temp_filename);
+#ifdef WINDOWS
 		strcat(filename, "\\xsupplicant.user.conf");
+#else
+		strcat(filename, "/xsupplicant.user.conf");
+#endif
 		FREE(temp_filename);
 
 		if (xsupconfwrite_write_user_config(filename) != XSUPCONFWRITE_ERRNONE)

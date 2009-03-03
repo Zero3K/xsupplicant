@@ -188,9 +188,11 @@ void TrayApp::checkOtherSupplicants()
 
 	m_supplicant.freeConfigGlobals(&globals);
 
+#ifdef WINDOWS
 	// If we are not set to control the interfaces, don't run the check.
 	if ((m_p1XControl != NULL) && (m_p1XControl->isChecked() == false)) return;
-	
+#endif
+
 	// Otherwise, move on.
 
 	memset(&sInfo, 0x00, sizeof(sInfo));
@@ -444,7 +446,11 @@ void TrayApp::setEnabledMenuItems(bool bEnable)
 {
 	m_pConnectAction->setEnabled(bEnable);
 	m_pConfigAction->setEnabled(bEnable);
+
+#ifdef WINDOWS
 	m_p1XControl->setEnabled(bEnable);
+#endif
+
 	if (m_pQuickConnectMenu != NULL)
 		m_pQuickConnectMenu->setEnabled(bEnable);
 
@@ -479,12 +485,14 @@ void TrayApp::updateGlobalTrayIconState()
 	tooltip += ".";
 	tooltip += BUILDNUM;
 
+#ifdef WINDOWS
 	if (!m_p1XControl->isChecked())
 	{
 		highest = 0;   // Just show that we are connected.
 		tooltip += tr("\nWindows is controlling your interfaces.");
 	}
 	else
+#endif
 	{
 		tooltip += tr("\nInterfaces :\n");
 
@@ -777,6 +785,7 @@ void TrayApp::setGlobalTrayIconState()
  **/
 void TrayApp::updateIntControlCheck()
 {
+#ifdef WINDOWS
 	config_globals *globals = NULL;
 
 	if (m_supplicant.getConfigGlobals(&globals, false) == true)
@@ -794,6 +803,7 @@ void TrayApp::updateIntControlCheck()
 
 		setTrayMenuBasedOnControl();
 	}
+#endif
 }
 
 //! postConnectActions
@@ -991,6 +1001,7 @@ void TrayApp::createTrayActionsAndConnections()
 
 void TrayApp::slotControlInterfaces()
 {
+#ifdef WINDOWS
 	if (m_pIntCtrl != NULL)
 	{
 		delete m_pIntCtrl;
@@ -1012,10 +1023,12 @@ void TrayApp::slotControlInterfaces()
 	{
 		m_pIntCtrl->exec();
 	}
+#endif
 }
 
 void TrayApp::setTrayMenuBasedOnControl()
 {
+#ifdef WINDOWS
 	if (m_p1XControl->isChecked())
 	{
 		// Turn on the tray icon options.
@@ -1028,6 +1041,7 @@ void TrayApp::setTrayMenuBasedOnControl()
 		m_p1XControl->setEnabled(true);
 		setTrayIconState(ENGINE_CONNECTED);  // Set us to our default icon color.
 	}
+#endif
 }
 
 void TrayApp::slotControlInterfacesDone(bool)
@@ -1219,11 +1233,15 @@ void TrayApp::slotIconActivated(QSystemTrayIcon::ActivationReason reason)
 		case QSystemTrayIcon::DoubleClick:
 			if (m_bSupplicantConnected)
 			{
+#ifdef WINDOWS
 				if (m_p1XControl->isChecked())
 					this->showConnectDlg();
 	
 				else
 					QMessageBox::information(this, tr("Interface Management"), tr("XSupplicant is not currently managing your interfaces.  If you wish to have XSupplicant manage your interfaces, please right-click the icon, and select \"Manage Interfaces with XSupplicant\"."));
+#else
+				this->showConnectDlg();
+#endif // WINDOWS
 			}
 			else
 			{

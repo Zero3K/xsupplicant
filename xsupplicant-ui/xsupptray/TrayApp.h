@@ -81,7 +81,7 @@ public:
 
     TrayApp(QApplication &app);
     virtual ~TrayApp();
-    //MessageClass m_message;
+
     bool init(int argCount);
     void start();
 	void connectToNetwork(const QString &networkName, const QString &adapterDesc);    
@@ -167,7 +167,9 @@ private:
     QAction *m_pConfigAction;
     QAction *m_pConnectAction;
     QAction *m_pAboutAction;
+#ifdef WINDOWS
 	QAction *m_p1XControl;
+#endif
     QApplication &m_app;
 	Emitter *m_pEmitter;
     QTimer m_timer;
