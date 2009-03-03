@@ -61,6 +61,7 @@ ConnectMgrDlg::ConnectMgrDlg(QWidget *parent, QWidget *parentWindow, Emitter *e,
 	m_psupplicant(supplicant),
 	m_pParentWindow(parentWindow)
 {
+        m_minConnListRowCount = 6;
 	m_pConnections = NULL;
 	m_pPrefDlg = NULL;
 	m_pConnWizard = NULL;

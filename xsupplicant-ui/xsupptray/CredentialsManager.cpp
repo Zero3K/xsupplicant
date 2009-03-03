@@ -35,6 +35,7 @@
 #include "CredentialsManager.h"
 #include "Util.h"
 #include "XSupWrapper.h"
+#include "Emitter.h"
 
 extern "C"
 {

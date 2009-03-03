@@ -29,7 +29,7 @@ LIBS += -L"./../../xsupplicant/lib/libsupdetect" \
     -L"./../../xsupplicant/lib/libxsupgui" \
     -L"./../../xsupplicant/lib/libxsupconfwrite" \
     -L"./../../xsupplicant/lib/liblist" \
-    -L"./../../xsupplicant/lib/libsupdetect" \
+#    -L"./../../xsupplicant/lib/libsupdetect" \
     -L"./../../xsupplicant/lib/libxsupconfcheck" \
     -lQtUiTools \
     -lxsupgui \

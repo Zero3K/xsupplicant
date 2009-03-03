@@ -5,16 +5,15 @@
 
 #Header files
 HEADERS += ./AboutDlg.h \
-    ./buildnum.h \
-    ./ConnectDlg.h \
+    ./ConnectDlg.h \				# Added by Avinash (files new to trunk)
     ./ConnectionInfoDlg.h \
     ./ConnectionSelectDlg.h \
-    ./ConnectionWizard.h \
     ./ConnectionWizardData.h \
+    ./ConnectionWizard.h \
     ./ConnectMgrDlg.h \
     ./CreateTT.h \
     ./CredentialsManager.h \
-    ./CredentialsPopUp.h \
+    ./CredentialsPopUp.h \			# Added till here
     ./Emitter.h \
     ./EventListenerThread.h \
     ./FormLoader.h \
@@ -27,37 +26,43 @@ HEADERS += ./AboutDlg.h \
     ./MessageClass.h \
     ./MessageDlg.h \
     ./PasswordDlg.h \
+    ./PluginCallbacks.h \
+    ./PluginWidget.h \
     ./PreferredConnections.h \
-    ./SSIDList.h \
-    ./SSIDListDlg.h \
     ./stdafx.h \
+    ./SSIDListDlg.h \
+    ./SSIDList.h \
+    ./stdafx.h \
+    ./stdintwin.h \
     ./TableImageDelegate.h \
+    ./TabPlugins.h \
     ./TrayApp.h \
+    ./UICallbacks.h \
+    ./UIPlugins.h \
     ./Util.h \
-    ./version.h \
     ./ViewLogDlg.h \
     ./WifiStandardImages.h \
     ./WirelessNetworkMenu.h \
-    ./WirelessScanDlg.h \
+    ./WirelessScanDlg.h	\
     ./WizardPages.h \
     ./xsupcalls.h \
     ./XSupWrapper.h \
-    ./PluginCallbacks.h \
     ./PluginWidget.h \
-    ./UICallbacks.h \
-    ./UIPlugins.h
+    ./UIPlugins.h \
+    ../../xsupplicant/src/xsup_debug.h \
+    ../../xsupplicant/src/xsup_common.h		# Added by Avinash
 
 #Source files
 SOURCES += ./AboutDlg.cpp \
-    ./ConnectDlg.cpp \
+    ./ConnectDlg.cpp \				# Added by Avinash (files new in trunk)
     ./ConnectionInfoDlg.cpp \
     ./ConnectionSelectDlg.cpp \
     ./ConnectionWizard.cpp \
-    ./ConnectionWizardData.cpp \
+    ./ConnectionWizardData.cpp \	
     ./ConnectMgrDlg.cpp \
     ./CreateTT.cpp \
     ./CredentialsManager.cpp \
-    ./CredentialsPopUp.cpp \
+    ./CredentialsPopUp.cpp \			# Till here
     ./Emitter.cpp \
     ./EventListenerThread.cpp \
     ./FormLoader.cpp \
@@ -71,24 +76,27 @@ SOURCES += ./AboutDlg.cpp \
     ./MessageClass.cpp \
     ./MessageDlg.cpp \
     ./PasswordDlg.cpp \
+    ./PluginCallbacks.cpp \
+    ./PluginWidget.cpp \
     ./PreferredConnections.cpp \
     ./SSIDList.cpp \
     ./SSIDListDlg.cpp \
     ./stdafx.cpp \
-    ./TableImageDelegate.cpp \
     ./TrayApp.cpp \
     ./Util.cpp \
+    ./UICallbacks.cpp \
+    ./UIPlugins.cpp \
     ./ViewLogDlg.cpp \
+    ./XSupCalls.cpp \
+    ./XSupWrapper.cpp \
+    ./TableImageDelegate.cpp \
+    ./TabPlugins.cpp \
     ./WifiStandardImages.cpp \
     ./WirelessNetworkMenu.cpp \
     ./WirelessScanDlg.cpp \
     ./WizardPages.cpp \
-    ./XSupCalls.cpp \
-    ./XSupWrapper.cpp \
-    ./PluginCallbacks.cpp \
-    ./PluginWidget.cpp \
-    ./UICallbacks.cpp \
-    ./UIPlugins.cpp
+    ../../xsupplicant/src/xsup_debug.c \
+    ../../xsupplicant/src/xsup_common.c		# Added by Avinash
 
 #Resource file(s)
 RESOURCES += xsupptray.qrc

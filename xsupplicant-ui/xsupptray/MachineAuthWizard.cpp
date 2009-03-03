@@ -40,6 +40,7 @@
 #include "FormLoader.h"
 #include "Util.h"
 #include "XSupWrapper.h"
+#include "Emitter.h"
 
 MachineAuthWizard::MachineAuthWizard(QString adaptName, QWidget *parent, QWidget *parentWindow, Emitter *e)
 	: QWidget(parent),

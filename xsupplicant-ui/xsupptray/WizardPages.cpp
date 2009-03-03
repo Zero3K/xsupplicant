@@ -30,12 +30,16 @@
  *   Nortel Networks for an OEM Commercial License.
  **/
  
- #include "stdafx.h"
+#include "stdafx.h"
+
+#include <QMessageBox>
+#include <QHeaderView>
  
- #include "WizardPages.h"
- #include "FormLoader.h"
- #include "SSIDList.h"
- #include "XSupWrapper.h"
+#include "WizardPages.h"
+#include "FormLoader.h"
+#include "SSIDList.h"
+#include "XSupWrapper.h"
+#include "Util.h"
  
 extern "C" {
 #include "libxsupgui/xsupgui_request.h"

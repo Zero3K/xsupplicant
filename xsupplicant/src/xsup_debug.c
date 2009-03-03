@@ -43,6 +43,10 @@
 #include "xsup_debug.h"
 #include "buildnum.h"
 
+#ifndef VERSION
+#include "version.h"
+#endif
+
 // The DEBUG_LOG_PLUGINS define is used to provide the hooks for a log watcher plugin such as birddog.
 // Contrary to what it may seem, it isn't to enable debugging of the logging system. ;)
 #ifdef DEBUG_LOG_PLUGINS

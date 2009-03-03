@@ -32,8 +32,14 @@
  
 #include "stdafx.h"
 
+#include <QMessageBox>
 #include "XSupWrapper.h"
 #include <algorithm>
+
+#ifndef WINDOWS
+#define _strdup strdup
+#define XENONE  0
+#endif
 
 extern "C"
 {
@@ -912,7 +918,7 @@ bool XSupWrapper::isConnectionActive(const QString &interfaceName, const QString
 		
 		// See if a connection is bound to the interface in question.
 		retval = xsupgui_request_get_conn_name_from_int(interfaceName.toAscii().data(), &pName);
-		if (retval = REQUEST_SUCCESS && pName != NULL)
+		if ((retval == REQUEST_SUCCESS) && (pName != NULL))
 		{
 			// If they match, then check the status of the connection to determine if the connection
 			// is active.

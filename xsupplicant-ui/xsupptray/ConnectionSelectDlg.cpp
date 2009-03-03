@@ -37,6 +37,10 @@
 #include "ConnectionSelectDlg.h"
 #include "XSupWrapper.h"
 
+extern "C" {
+#include "xsupgui_request.h"
+};
+
 ConnectionSelectDlg::ConnectionSelectDlg(QWidget *parent, QWidget *parentWindow, const QStringList &connections, QString adapterToUse)
 	:QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow), m_connectionList(connections), m_adapterToUse(adapterToUse)
 {

@@ -52,10 +52,10 @@ public:
   static QString FormLoader::skinpath();
   static QString FormLoader::iconpath();
 #else
-  static QWidget *buildform(QString formname);
+  static QWidget *buildform(QString formname, QWidget *parent=NULL);
   static QPixmap *loadicon(QString iconname);
-  static QString &iconpath();
-  static QString &skinpath();
+  static QString iconpath();
+  static QString skinpath();
 #endif
 };
 

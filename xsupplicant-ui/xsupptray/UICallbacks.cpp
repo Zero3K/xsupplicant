@@ -30,6 +30,8 @@
  *   Nortel Networks for an OEM Commercial License.
  **/
 #include "stdafx.h"
+
+#include <QString>
 #include "UICallbacks.h"
 
 UICallbacks::UICallbacks() 

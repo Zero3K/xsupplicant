@@ -149,7 +149,7 @@ bool ConnectDlg::create(void)
 bool ConnectDlg::initUI(void)
 {
 	// load form
-	m_pRealForm = FormLoader::buildform("ConnectWindow.ui", m_pParentWindow);
+  m_pRealForm = FormLoader::buildform(QString("ConnectWindow.ui"), m_pParentWindow);
 	if (m_pRealForm == NULL)
 		return false;
 	

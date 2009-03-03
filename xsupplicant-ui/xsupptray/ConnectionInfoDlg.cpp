@@ -37,6 +37,10 @@
 #include "Util.h"
 #include "XSupWrapper.h"
 
+extern "C" {
+#include "xsupgui_request.h"
+};
+
 ConnectionInfoDlg::ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, QTime *parentTime)
 	:QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow), m_pEmitter(e)
 {
@@ -56,12 +60,12 @@ ConnectionInfoDlg::~ConnectionInfoDlg()
 	if (m_pRenewIPButton != NULL)
 		Util::myDisconnect(m_pRenewIPButton, SIGNAL(clicked()), this, SLOT(renewIP()));
 	
-	Util::myDisconnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
+	Util::myDisconnect((const QObject *)m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));	
 		
-	Util::myDisconnect(m_pEmitter, SIGNAL(signalIPAddressSet()), this, SLOT(updateIPAddress()));
+	Util::myDisconnect((const QObject *)m_pEmitter, SIGNAL(signalIPAddressSet()), this, SLOT(updateIPAddress()));
 
-	Util::myDisconnect(m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
+	Util::myDisconnect((const QObject *)m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
 
 	if (m_pRealForm != NULL)
 		delete m_pRealForm;
@@ -165,12 +169,12 @@ bool ConnectionInfoDlg::initUI(void)
 	if (m_pRenewIPButton != NULL)
 		Util::myConnect(m_pRenewIPButton, SIGNAL(clicked()), this, SLOT(renewIP()));
 			
-	Util::myConnect(m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
+	Util::myConnect((const QObject *)m_pEmitter, SIGNAL(signalSignalStrength(const QString &, int)), this, SLOT(slotSignalUpdate(const QString &, int)));
 		
-	Util::myConnect(m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
+	Util::myConnect((const QObject *)m_pEmitter, SIGNAL(signalStateChange(const QString &, int, int, int, unsigned int)),
 		this, SLOT(stateChange(const QString &, int, int, int, unsigned int)));
 		
-	Util::myConnect(m_pEmitter, SIGNAL(signalIPAddressSet()), this, SLOT(updateIPAddress()));	
+	Util::myConnect((const QObject *)m_pEmitter, SIGNAL(signalIPAddressSet()), this, SLOT(updateIPAddress()));	
 	
 	// other initializations
 	

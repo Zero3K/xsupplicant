@@ -3,10 +3,9 @@
 #include "TabPlugins.h"
 #include "PluginWidget.h"
 
-#include <QWidget.h>
-#include <QTabWidget.h>
+#include <QWidget>
+#include <QTabWidget>
 
-#include "ConfigProfileTabs.h"
 
 TabPlugins::TabPlugins()
 {
@@ -24,10 +23,11 @@ int TabPlugins::addToParent(QWidget *pParent)
 		if(plugin != NULL)
 		{
 			// We pass a -1 as the index so we will get appended to the tab list.
+#if 0
 			index = ((ConfigProfileTabs *)pParent)->insertTab(-1, plugin, "Compliance");
 
 			plugin->setParent(pParent);
-
+#endif
 			return PLUGIN_ACTION_SUCCESS;
 		}
 	} 

@@ -24,6 +24,10 @@
 #ifndef _WIFISTANDARDIMAGES_H_
 #define _WIFISTANDARDIMAGES_H_
 
+#include <QPainter>
+#include <QPixmap>
+#include <QMap>
+
 class WifiStandardImages
 {
 public:

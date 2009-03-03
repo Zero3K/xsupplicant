@@ -32,11 +32,14 @@
 
 #include "stdafx.h"
 
+#include <QHeaderView>
+
 #include "SSIDList.h"
 #include "FormLoader.h"
 #include "TableImageDelegate.h"
 #include "WifiStandardImages.h"
 #include "GraphSortItem.h"
+#include "Util.h"
 
 extern "C" {
 #include "libxsupgui/xsupgui_request.h"

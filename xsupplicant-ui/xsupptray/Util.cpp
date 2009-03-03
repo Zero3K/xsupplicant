@@ -35,6 +35,10 @@
 #include <qstring.h>
 #include "Util.h"
 
+extern "C"{
+#include "xsupgui_request.h"
+};
+
 bool Util::myConnect(const QObject *from, const char *signal, const QObject *to, const char *slot)
 {
   if (!connect(from, signal, to, slot))

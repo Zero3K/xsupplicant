@@ -194,7 +194,7 @@ private:
 	MachineAuthWizard *m_pMachineAuth;
 	XSupCalls *m_psupplicant;
 	
-	static const int m_minConnListRowCount = 6;
+	int m_minConnListRowCount;
 	
 	conn_enum *m_pConnections;
 	int m_nConnections;

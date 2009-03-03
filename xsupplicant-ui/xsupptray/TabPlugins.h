@@ -2,7 +2,6 @@
 #define XSUPPLICANT_UI_PROFILE_CONFIG_PLUGIN_H
 
 #include "UIPlugins.h"
-#include "ConfigProfileTabs.h"
 
 class TabPlugins : public UIPlugins
 {
