@@ -174,6 +174,7 @@ typedef struct dot1x_state
 #define WIRELESS_SM_DOING_PSK		   BIT(12)  // We are doing WPA(2)-PSK.  This can be used on OSes that
 												//    don't return a reason code in a disassociate event.
 #define WIRELESS_SM_DISCONNECT_REQ     BIT(13)  // We set this when the user has requested a disconnect.  (So that we don't start the timer to prompt them to connect.)
+#define WIRELESS_SM_ASSOCIATED         BIT(14)
 
 /**
  * Different values for the type of association that was used to connect to a 

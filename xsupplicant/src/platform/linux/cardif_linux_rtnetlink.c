@@ -457,8 +457,8 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP_ASSOC(context *idata,
 	  // We have changed to associated mode.  Populate the destination
 	  // MAC with the BSSID, as long as we are in auto mode.
 	  
-	  //	  SET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
-	  //	  UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
+	  	  SET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
+	  	  //UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION);
 	  
 	  if (globals->destination == DEST_AUTO)
 	    memcpy(idata->dest_mac, mac, 6);
@@ -466,8 +466,8 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP_ASSOC(context *idata,
  	UNSET_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ);
 	  
 	} else {
-	//	  UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
-	//	  UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION); 
+		  UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
+		  //UNSET_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION); 
 	}
 }
 
@@ -1839,8 +1839,8 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
                 wctx = (wireless_ctx *)ctx->intTypeData;
                 if ( wctx != NULL)
                 {
-		  //                        debug_printf(DEBUG_INT, "Interface UP , unset WIRELESS_SM_ASSOCIATED.\n");
-                  //      UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
+                        debug_printf(DEBUG_INT, "Interface UP , unset WIRELESS_SM_ASSOCIATED.\n");
+                        UNSET_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED);
                 }
 
         }

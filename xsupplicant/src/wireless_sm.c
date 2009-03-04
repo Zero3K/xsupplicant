@@ -1209,8 +1209,9 @@ void wireless_sm_check_globals(context *ctx)
       wireless_sm_change_state(ACTIVE_SCAN, ctx);
     }
   */
-/*  if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED) && (!TEST_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION))
+  //  if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED) && (!TEST_FLAG(wctx->flags, WIRELESS_SM_STALE_ASSOCIATION))
   //It should not reach to ASSOCIATED from PORT_DOWN, still to be safer
+  if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED) 
       && TEST_FLAG(wctx->flags, WIRELESS_SM_PORT_ACTIVE))
     {
       wireless_sm_change_state(ASSOCIATED, ctx);
