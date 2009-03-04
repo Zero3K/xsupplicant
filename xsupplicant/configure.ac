@@ -70,6 +70,13 @@ AC_ARG_WITH(openssl-headers,
   [CPPFLAGS="$CPPFLAGS -I${with_openssl_headers}"])
 AC_MSG_RESULT([$with_openssl_headers])
 
+AC_MSG_CHECKING([user defined path to iwlib])
+AC_ARG_WITH(iwlib-path,
+  AS_HELP_STRING([--with-iwlib-path],
+    [location of the iwlib headers and libraries]),
+  [CPPFLAGS="$CPPFLAGS -I${with_iwlib_path}/include";MORELIBS="$MORELIBS -L${with_iwlib_path}/lib"])
+AC_MSG_RESULT([$with_iwlib_path])
+
 AC_ARG_ENABLE(experimental,
   AS_HELP_STRING([--enable-experimental],
     [enable the use of experimental features/code.]),
@@ -157,7 +164,11 @@ AC_ARG_ENABLE(universal-binary,
   [],
   [enable_universal_binary="no"])
 
-
+AC_ARG_ENABLE(net80211,
+  AS_HELP_STRING([--disable-net80211],
+    [build without the Linux Net 802.11 extensions]),
+  [disable_net80211="yes"],
+  [])
 
 
 ########### CONFIGURE TESTS #############
@@ -240,21 +251,22 @@ else
 , or set PKG_CONFIG_PATH to point to the location of the libxml-2.0.pc file.])
 fi
 
-AC_MSG_CHECKING([for libnl-1])
-if `pkg-config libnl-1 --exists`; then
-if `pkg-config libnl-1 --exact-version=1.0-pre8` || `pkg-config libnl-1 --atleast-version=1.0`; then
-     LIBNLLIBS="`pkg-config libnl-1 --libs`"
-     LIBNLCFLAGS="`pkg-config libnl-1 --cflags`"
-     LIBS="$LIBS $LIBNLLIBS"
-     CFLAGS="$CFLAGS $LIBNLCFLAGS"
-     AC_MSG_RESULT([found with pkg-config])
-else
-     AC_MSG_ERROR([Xsupplicant requires libnl version >=1.0-pre8.])
-fi
-else
-     AC_MSG_ERROR([Xsupplicant requires libnl.  You need to either install libnl\
+AS_IF([test "$disable_net80211" != yes],
+	    [AC_MSG_CHECKING([for libnl-1])
+	    if `pkg-config libnl-1 --exists`; then
+	    if `pkg-config libnl-1 --exact-version=1.0-pre8` || `pkg-config libnl-1 --atleast-version=1.0`; then
+	         LIBNLLIBS="`pkg-config libnl-1 --libs`"
+		 LIBNLCFLAGS="`pkg-config libnl-1 --cflags`"
+		 LIBS="$LIBS $LIBNLLIBS"
+		 CFLAGS="$CFLAGS $LIBNLCFLAGS"
+		 AC_MSG_RESULT([found with pkg-config])
+	    else
+		 AC_MSG_ERROR([Xsupplicant requires libnl version >=1.0-pre8.])
+	    fi
+	   else
+                AC_MSG_ERROR([Xsupplicant requires libnl.  You need to either install libnl\
 , or set PKG_CONFIG_PATH to point to the location of the libnl-1.0.pc file.])
-fi
+     	 fi], [AC_DEFINE(DISABLE_LIBNL)])
 
 dnl Below turns off Kerberos support in OpenSSL, to avoid compile errors.
 AC_DEFINE(OPENSSL_NO_KRB5)

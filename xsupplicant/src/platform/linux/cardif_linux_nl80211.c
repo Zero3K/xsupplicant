@@ -11,6 +11,8 @@
 /*
 Function Description:TODO
 */
+#ifndef DISABLE_LIBNL
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -449,6 +451,7 @@ struct cardif_funcs cardif_linux_nl80211_driver = {
 
 
 
+#endif // DISABLE_LIBNL
 
 
 

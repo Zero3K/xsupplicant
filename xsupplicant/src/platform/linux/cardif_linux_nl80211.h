@@ -6,6 +6,8 @@
  * file cardif_linux_nl80211.h
  *
  */
+#ifndef DISABLE_LIBNL
+
 #ifndef _CARDIF_LINUX_NL80211_
 #define _CARDIF_LINUX_NL80211_
 
@@ -40,3 +42,5 @@ struct lin_nl80211_drv_handle {
 #endif
 
 #endif
+
+#endif // DISABLE_LIBNL

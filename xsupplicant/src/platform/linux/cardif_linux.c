@@ -264,6 +264,7 @@ void cardif_set_driver(char driver, context *ctx)
       wireless = NULL;
       break;
 
+#ifndef DISABLE_LIBNL
     case DRIVER_NL80211:
         if ( driver_nl80211_init(ctx) )
         {
@@ -274,6 +275,7 @@ void cardif_set_driver(char driver, context *ctx)
                 wireless = &cardif_linux_nl80211_driver;
         }
         break;
+#endif // DISABLE_LIBNL
 
     default:
     case DRIVER_WEXT:
@@ -671,10 +673,13 @@ int cardif_deinit(context *ctx)
 
   close(sockData->sockInt);
 
+#ifndef DISABLE_LIBNL
   if (driver_nl80211_deinit(ctx) )
         {
                 debug_printf(DEBUG_DEINIT,"nl80211 Driver De-init Failed\n");
         }
+#endif  // DISABLE_LIBNL
+
   // Now clean up the memory.
   FREE(ctx->sockData);
 
