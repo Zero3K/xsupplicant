@@ -321,11 +321,13 @@ int tls_funcs_build_new_session(struct tls_vars *mytls_vars)
       return XETLSSTARTFAIL;
     }
 
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
   if (mytls_vars->pac == NULL)
   {
 	  SSL_set_options(mytls_vars->ssl, (SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_SINGLE_DH_USE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS | SSL_OP_NO_TICKET));
   }
   else
+#endif
   {
 	  SSL_set_options(mytls_vars->ssl, (SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_SINGLE_DH_USE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
   }
@@ -431,11 +433,13 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 				SSL_free(mytls_vars->ssl);
 				mytls_vars->ssl = SSL_new(mytls_vars->ctx);
 
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 				if (mytls_vars->pac == NULL)
 				{
 					SSL_set_options(mytls_vars->ssl, (SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_SINGLE_DH_USE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS | SSL_OP_NO_TICKET));
 				}
 				else
+#endif
 				{
 					SSL_set_options(mytls_vars->ssl, (SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_SINGLE_DH_USE | SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS));
 				}
