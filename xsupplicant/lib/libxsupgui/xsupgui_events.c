@@ -11,6 +11,8 @@
 
 #ifndef WINDOWS
 #include <stdint.h>
+
+#define _strdup  strdup
 #endif
 
 #include "src/ipc_events_index.h"
@@ -46,6 +48,7 @@ int xsupgui_events_generate_log_string(char **ints, char **logline)
 	xmlNodePtr log = NULL;
 	xmlNodePtr msg = NULL;
 	xmlNodePtr t = NULL;
+	xmlChar *content = NULL;
 	int retval = REQUEST_SUCCESS;
 
 	(*ints) = NULL;
@@ -53,9 +56,7 @@ int xsupgui_events_generate_log_string(char **ints, char **logline)
 
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
-	{
 		return IPC_ERROR_NULL_DOCUMENT;
-	}
 
 	root = xmlDocGetRootElement(doc);
 	if (root == NULL) 
@@ -78,7 +79,9 @@ int xsupgui_events_generate_log_string(char **ints, char **logline)
 		goto gen_log_done;
 	}
 
-	(*ints) = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	(*ints) = _strdup((char *)content);
+	xmlFree(content);
 
 	msg = xsupgui_request_find_node(log->children, "Message");
 	if (msg == NULL)
@@ -87,7 +90,9 @@ int xsupgui_events_generate_log_string(char **ints, char **logline)
 		goto gen_log_done;
 	}
 
-	(*logline) = (char *)xmlNodeGetContent(msg);
+	content = xmlNodeGetContent(t);
+	(*logline) = _strdup((char *)content);
+	xmlFree(content);
 
 gen_log_done:
 
@@ -119,9 +124,7 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
-	{
 		return -1;
-	}
 
 	root = xmlDocGetRootElement(doc);
 	if (root == NULL) 
@@ -146,7 +149,9 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 		goto state_change_done;
 	}
 
-	(*intf) = (char *)xmlNodeGetContent(t);
+	value = (char *)xmlNodeGetContent(t);
+	(*intf) = _strdup(value);
+	xmlFree(value);
 
 	t = xsupgui_request_find_node(t, "Statemachine");
 	if (t == NULL)
@@ -156,10 +161,8 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	}
 
 	value = (char *)xmlNodeGetContent(t);
-
 	(*sm) = atoi(value);
-
-	free(value);
+	xmlFree(value);
 	value = NULL;
 
 	t = xsupgui_request_find_node(t, "Old_State");
@@ -170,10 +173,8 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	}
 
 	value = (char *)xmlNodeGetContent(t);
-
 	(*oldstate) = atoi(value);
-
-	free(value);
+	xmlFree(value);
 	value = NULL;
 
 	t = xsupgui_request_find_node(t, "New_State");
@@ -184,10 +185,8 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	}
 
 	value = (char *)xmlNodeGetContent(t);
-
 	(*newstate) = atoi(value);
-
-	free(value);
+	xmlFree(value);
 	value = NULL;
 
     // Note that if this tag doesn't exist, we still need to return
@@ -200,16 +199,14 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
     }
     else
     {
-        value = xmlNodeGetContent(t);
-
+      value = (char *)xmlNodeGetContent(t);
         (*tncconnectionid) = atoi(value);
+	xmlFree(value);
     }
 
-    free(value);
     value = NULL;
 
 state_change_done:
-	//xsupgui_free_event_doc();
 
 	return retval;
 }
@@ -319,14 +316,12 @@ int xsupgui_events_get_scan_complete_interface(char **intf)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL;
+	xmlChar *content = NULL;
 	int retval = 0;
 
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
-	{
-//		xsupgui_free_event_doc();
 		return -1;
-	}
 
 	root = xmlDocGetRootElement(doc);
 	if (root == NULL) 
@@ -351,10 +346,11 @@ int xsupgui_events_get_scan_complete_interface(char **intf)
 		goto done;
 	}
 
-	(*intf) = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	(*intf) = _strdup((char *)content);
+	xmlFree(content);
 
 done:
-//	xsupgui_free_event_doc();
 
 	return retval;
 }
@@ -377,13 +373,12 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL;
+	xmlChar *content = NULL;
 	int retval = 0;
 
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
-	{
 		return -1;
-	}
 
 	root = xmlDocGetRootElement(doc);
 	if (root == NULL) 
@@ -408,7 +403,9 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 		goto done;
 	}
 
-	(*conn_name) = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	(*conn_name) = _strdup((char *)content);
+	xmlFree(content);
 
 	t = xsupgui_request_find_node(t, "Interface_Name");
 	if (t == NULL)
@@ -417,7 +414,9 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 		goto done;
 	}
 
-	(*intName) = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	(*intName) = _strdup((char *)content);
+	xmlFree(content);
 
 	t = xsupgui_request_find_node(t, "EAP_Method");
 	if (t == NULL)
@@ -426,7 +425,9 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 		goto done;
 	}
 
-	(*eapmethod) = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	(*eapmethod) = _strdup((char *)content);
+	xmlFree(content);
 
 	t = xsupgui_request_find_node(t, "Challenge_String");
 	if (t == NULL)
@@ -435,10 +436,11 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 		goto done;
 	}
 
-	(*chalstr) = (char *)xmlNodeGetContent(t);
+	content = xmlNodeGetContent(t);
+	(*chalstr) = _strdup((char *)content);
+	xmlFree(content);
 
 done:
-//	xsupgui_free_event_doc();
 
 	return retval;
 }
@@ -533,12 +535,9 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 	}
 
 	value = (char *)xmlNodeGetContent(n);
-
 	code = atoi(value);
-
 	(*errnum) = code;
-
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(n, "Argument");
 	if (n == NULL)
@@ -801,10 +800,9 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 		break;
 	}
 
-	free(value);
+	xmlFree(value);
 
 done:
-//	xsupgui_free_event_doc();
 
 	return retval;
 }
@@ -824,15 +822,13 @@ int xsupgui_events_get_ui_event(int *evtnum, char **intname, char **param)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL, n = NULL;
+	xmlChar *content = NULL;
 	char *value = NULL;
 	int retval  = 0;
 
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
-	{
-//		xsupgui_free_event_doc();
 		return -1;
-	}
 
 	root = xmlDocGetRootElement(doc);
 	if (root == NULL) 
@@ -858,17 +854,17 @@ int xsupgui_events_get_ui_event(int *evtnum, char **intname, char **param)
 	}
 
 	value = (char *)xmlNodeGetContent(n);
-
 	(*evtnum) = atoi(value);
-
-	free(value);
+	xmlFree(value);
 
 	(*intname) = NULL;
 
 	n = xsupgui_request_find_node(t, "Interface");
 	if (n != NULL)
 	{
-		(*intname) = (char *)xmlNodeGetContent(n);
+	        content = xmlNodeGetContent(n);
+		(*intname) = _strdup((char *)content);
+		xmlFree(content);
 	}
 	
 	n = xsupgui_request_find_node(t, "Parameter");
@@ -878,10 +874,11 @@ int xsupgui_events_get_ui_event(int *evtnum, char **intname, char **param)
 		goto done;
 	}
 
-	(*param) = (char *)xmlNodeGetContent(n);
+	content = xmlNodeGetContent(n);
+	(*param) = _strdup((char *)content);
+	xmlFree(content);
 
 done:
-//	xsupgui_free_event_doc();
 
 	return retval;
 }
@@ -905,10 +902,7 @@ int xsupgui_events_get_tnc_ui_event(uint32_t *oui, uint32_t *notification)
 
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
-	{
-//		xsupgui_free_event_doc();
 		return -1;
-	}
 
 	root = xmlDocGetRootElement(doc);
 	if (root == NULL) 
@@ -936,7 +930,7 @@ int xsupgui_events_get_tnc_ui_event(uint32_t *oui, uint32_t *notification)
 	value = (char *)xmlNodeGetContent(n);
 
 	(*oui) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "Notification");
 	if (n == NULL)
@@ -948,10 +942,9 @@ int xsupgui_events_get_tnc_ui_event(uint32_t *oui, uint32_t *notification)
 	value = (char *)xmlNodeGetContent(n);
 
 	(*notification) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 done:
-//	xsupgui_free_event_doc();
 
 	return retval;
 }
@@ -979,10 +972,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
-	{
-//		xsupgui_free_event_doc();
 		return -1;
-	}
 
 	root = xmlDocGetRootElement(doc);
 	if (root == NULL) 
@@ -1010,7 +1000,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	value = (char *)xmlNodeGetContent(n);
 
 	(*imcID) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "connID");
 	if (n == NULL)
@@ -1022,7 +1012,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	value = (char *)xmlNodeGetContent(n);
 
 	(*connID) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "OUI");
 	if (n == NULL)
@@ -1034,7 +1024,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	value = (char *)xmlNodeGetContent(n);
 
 	(*oui) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "Request");
 	if (n == NULL)
@@ -1046,10 +1036,9 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	value = (char *)xmlNodeGetContent(n);
 
 	(*request) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 done:
-//	xsupgui_free_event_doc();
 
 	return retval;
 }
@@ -1069,7 +1058,8 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL, n = NULL, item = NULL;
-	char *value;
+	xmlChar *content = NULL;
+	char *value = NULL;
 	int items = 0;
 	int retval = 0;
 	int i = 0;
@@ -1077,10 +1067,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 
 	doc = xsupgui_get_event_doc();
 	if (doc == NULL) 
-	{
-//		xsupgui_free_event_doc();
 		return -1;
-	}
 
 	root = xmlDocGetRootElement(doc);
 	if (root == NULL) 
@@ -1108,7 +1095,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	value = (char *)xmlNodeGetContent(n);
 
 	(*imcID) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "connID");
 	if (n == NULL)
@@ -1120,7 +1107,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	value = (char *)xmlNodeGetContent(n);
 
 	(*connID) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "OUI");
 	if (n == NULL)
@@ -1132,7 +1119,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	value = (char *)xmlNodeGetContent(n);
 
 	(*oui) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "MsgID");
 	if (n == NULL)
@@ -1144,7 +1131,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	value = (char *)xmlNodeGetContent(n);
 
 	(*msgid) = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "Items");
 	if (n == NULL)
@@ -1156,7 +1143,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	value = (char *)xmlNodeGetContent(n);
 
 	items = atoi(value);
-	free(value);
+	xmlFree(value);
 
 	// "items" contains the number of items that are in the batch.  So
 	// allocate some memory to store the items.
@@ -1197,7 +1184,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 
 		value = (char *)xmlNodeGetContent(item);
 		data[i].imcID = atoi(value);
-		free(value);
+		xmlFree(value);
 
 		item = xsupgui_request_find_node(t->children, "connectionID");
 		if (item == NULL)
@@ -1208,7 +1195,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 
 		value = (char *)xmlNodeGetContent(item);
 		data[i].connectionID = atoi(value);
-		free(value);
+		xmlFree(value);
 
 		item = xsupgui_request_find_node(t->children, "OUI");
 		if (item == NULL)
@@ -1219,7 +1206,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 
 		value = (char *)xmlNodeGetContent(item);
 		data[i].oui = atoi(value);
-		free(value);
+		xmlFree(value);
 
 		item = xsupgui_request_find_node(t->children, "MsgID");
 		if (item == NULL)
@@ -1230,7 +1217,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 
 		value = (char *)xmlNodeGetContent(item);
 		data[i].msgid = atoi(value);
-		free(value);
+		xmlFree(value);
 
 		item = xsupgui_request_find_node(t->children, "Parameter");
 		if (item == NULL)
@@ -1239,7 +1226,9 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 			goto done;
 		}
 
-		value = (char *)xmlNodeGetContent(item);
+		content = xmlNodeGetContent(item);
+		value = _strdup((char *)content);
+		xmlFree(content);
 
 		if ((value != NULL) || (strlen(value) != 0))
 		{
@@ -1256,7 +1245,6 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	(*batch) = data;
 
 done:
-//	xsupgui_free_event_doc();
 
 	return retval;
 }

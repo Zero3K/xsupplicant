@@ -94,7 +94,7 @@ void *xsupconfig_parse_eap_ttls_phase2(void **attr, uint8_t config_type, xmlNode
 	{
 		meths->init_method((void **)&cur, config_type, node->children);
 		temp = cur->phase2_data;
-		xsupconfig_parse(node->children, meths->parsedata, OPTION_ANY_CONFIG, &temp);
+		xsupconfig_parse(node->children, meths->parsedata, OPTION_ANY_CONFIG, (void **)&temp);
 		if (temp == NULL) FREE(cur->phase2_data);
 	}
 	else

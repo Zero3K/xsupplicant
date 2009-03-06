@@ -19,4 +19,4 @@ void *xsupconfig_parse_leap(void **, uint8_t, xmlNodePtr);
 
 #endif  // __XSUPCONFIG_PARSE_LEAP_H__
 
-#endif ENABLE_LEAP
+#endif //  ENABLE_LEAP

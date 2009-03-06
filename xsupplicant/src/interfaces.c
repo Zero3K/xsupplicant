@@ -183,7 +183,7 @@ int interfaces_delete(char *intdesc)
 	{
 		interface_cache = cur->next;
 
-		interfaces_delete_node(&cur);
+		interfaces_delete_node((void **)&cur);
 
 		return 1;
 	}
@@ -201,7 +201,7 @@ int interfaces_delete(char *intdesc)
 
 	// Otherwise, delete it from the tree.
 	last->next = cur->next;
-	interfaces_delete_node(&cur);
+	interfaces_delete_node((void **)&cur);
 
 	return 1;
 }

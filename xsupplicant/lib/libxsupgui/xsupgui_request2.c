@@ -767,7 +767,7 @@ int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connection
 	}
 
 	sprintf((char *)&tempnum, "%d", config_type);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", tempnum) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)tempnum) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_connections;
@@ -871,7 +871,7 @@ int xsupgui_request_enum_connections(uint8_t config_type, conn_enum **connection
 		}
 
 		content = xmlNodeGetContent(t);
-		myconns[i].config_type = atoi(content);
+		myconns[i].config_type = atoi((char *)content);
 		xmlFree(content);
 
 		t = xsupgui_request_find_node(n->children, "SSID_Name");

@@ -5,7 +5,7 @@
  *
  * \file cardif_linux_wext.c
  *
- * \authors Chris.Hessing@utah.edu
+ * \authors chris@open1x.org
  *
  **/
 
@@ -310,7 +310,7 @@ int cardif_linux_wext_get_wpa2_ie(context *thisint, char *iedata, int *ielen)
 #if WIRELESS_EXT > 17
 
   // Should we use capabilities here?
-  wpa2_gen_ie(thisint, iedata, ielen);
+  wpa2_gen_ie(thisint, (unsigned char *)iedata, ielen);
   
   if (wctx->okc == 1) {
   printf("okc flag\n");
@@ -841,7 +841,7 @@ int cardif_linux_wext_wep_associate(context *intdata,
   uint32_t alg;
   double freq=0;
   int index = 1;
-  char key[24];
+  unsigned char key[24];
   char ifname[ IFNAMSIZ ];
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
@@ -1770,6 +1770,60 @@ int cardif_linux_wext_delete_key(context *intdata, int key_idx, int set_tx)
   return XENONE;
 }
 
+int xsupplicant_driver_pmksa(context *ctx, uint8_t *bssid, uint8_t *pmkid, unsigned int cmd)
+{
+    struct iwreq iwr;
+    struct iw_pmksa pmksa;
+    struct lin_sock_data *sockData = NULL;
+    wireless_ctx *wctx = NULL;
+
+    if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+
+    if (!xsup_assert((bssid != NULL), "bssid != NULL", FALSE)) return -1;
+
+    if (!xsup_assert((pmkid != NULL), "pmkid != NULL", FALSE)) return -1;
+    
+    if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return -1;
+
+    sockData = (struct lin_sock_data *)ctx->sockData;
+
+    if (ctx->intType != ETH_802_11_INT)
+      {
+	debug_printf(DEBUG_NORMAL, "Attempted to apply a PMKSA to an interface that isn't wireless!\n");
+	return -1;
+      }
+
+    if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE)) return -1;
+
+    wctx = (wireless_ctx *) ctx->intTypeData;
+
+    memset(&pmksa, 0, sizeof(pmksa));
+
+    pmksa.cmd = cmd;
+
+    pmksa.bssid.sa_family = ARPHRD_ETHER;
+
+    if (bssid) {
+    memcpy(pmksa.bssid.sa_data, bssid, ETH_ALEN);
+   }
+
+   if (pmkid)
+    memcpy(pmksa.pmkid, pmkid, IW_PMKID_LEN);
+
+    iwr.u.data.pointer = (caddr_t) &pmksa;
+
+    iwr.u.data.length = sizeof(pmksa);
+    if (ioctl( sockData->sockInt, SIOCSIWPMKSA, &iwr) < 0)
+
+    {
+        debug_printf(DEBUG_INT,"ioctl [SIOCSIWPMKSA] not supported\n");
+
+        return -1;
+    }
+
+   debug_printf(DEBUG_NORMAL, "PMKIDs set for %s\n", ctx->intName);
+   return 0;
+}
 
 int cardif_linux_wireless_apply_pmkids (context *ctx, pmksa_list *pmklist)
 {
@@ -1813,69 +1867,11 @@ int cardif_linux_wireless_apply_pmkids (context *ctx, pmksa_list *pmklist)
 
         }
   }
-        #endif
+    #endif
 
+    return TRUE;         
 }
 
-
-int xsupplicant_driver_pmksa(context *ctx, uint8_t *bssid, uint8_t *pmkid, unsigned int cmd)
-{
-
-    struct iwreq iwr;
-
-    struct iw_pmksa pmksa;
-
-    int sockData = -1;
-
-    wireless_ctx *wctx = NULL;
-
-    sockData = socket(AF_INET, SOCK_DGRAM, 0);
-
-   wctx = (wireless_ctx *) ctx->intTypeData;
-
-   /*if (config_ssid_get_ssid_abilities(wctx) & ABIL_RSN_IE) {
-	  	cardif_linux_wext_set_iwauth(ctx, IW_AUTH_WPA_VERSION, 
-			IW_AUTH_WPA_VERSION_WPA2, "WPA2 version" );
-	    if (ctx->conn->association.auth_type != AUTH_PSK) {
-	       	cardif_linux_wext_set_iwauth(ctx, IW_AUTH_KEY_MGMT, 
-			IW_AUTH_KEY_MGMT_802_1X, "WPA2 version" );
-    		}
-   }*/
-
-    memset(&iwr, 0, sizeof(iwr));
-
-    strncpy(iwr.ifr_name, ctx->intName, IFNAMSIZ);
-
-    memset(&pmksa, 0, sizeof(pmksa));
-
-    pmksa.cmd = cmd;
-
-    pmksa.bssid.sa_family = ARPHRD_ETHER;
-
-    if (bssid) {
-    memcpy(pmksa.bssid.sa_data, bssid, ETH_ALEN);
-   }
-
-   if (pmkid)
-    memcpy(pmksa.pmkid, pmkid, IW_PMKID_LEN);
-    iwr.u.data.pointer = (caddr_t) &pmksa;
-
-    iwr.u.data.length = sizeof(pmksa);
-if (ioctl( sockData, SIOCSIWPMKSA, &iwr) < 0)
-
-    {
-
-        //if (errno != EOPNOTSUPP)      /*EOPNOTSUPP the requested operation is not supported */
-
-        debug_printf(DEBUG_INT,"ioctl [SIOCSIWPMKSA] not supported\n");
-
-        return -1;
-
-    }
-   debug_printf(DEBUG_NORMAL, "PMKIDs set for %s\n", ctx->intName);
-   return 0;
-
-}
 
 struct cardif_funcs cardif_linux_wext_driver = {
   .scan = cardif_linux_wext_scan,

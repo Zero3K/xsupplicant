@@ -54,6 +54,7 @@
 #include "logon_creds.h"
 #include "liblist/liblist.h"
 #include "ipc_callout_helper.h"
+#include "ipc_events.h"
 
 #ifdef EAP_SIM_ENABLE
 #include <winscard.h>
@@ -1646,7 +1647,7 @@ int ipc_callout_enum_connections(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	ttype = xmlNodeGetContent(t);
-	config_type = atoi(ttype);
+	config_type = atoi((char *)ttype);
 	xmlFree(ttype);
 
 	count = 0;
@@ -2316,14 +2317,15 @@ int ipc_callout_set_connection_upw(xmlNodePtr innode, xmlNodePtr *outnode)
 		if (t == NULL)
 		{
 			debug_printf(DEBUG_IPC, "Couldn't get 'Password' node!\n");
-			FREE(username);
+			xmlFree(username);
 			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_INVALID_REQUEST, outnode);
 		}
 
-		password = xmlNodeGetContent(t);
+		password = (char *)xmlNodeGetContent(t);
 		if ((password != NULL) && (strlen(password) == 0))
 		{
 			xmlFree(password);
+			xmlFree(username);
 			password = NULL;
 			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_NEED_PASSWORD, outnode);
 		}
@@ -2338,8 +2340,8 @@ int ipc_callout_set_connection_upw(xmlNodePtr innode, xmlNodePtr *outnode)
 		if (ipc_callout_set_profile_upw(prof, username, password) != 0)
 		{
 			debug_printf(DEBUG_IPC, "Couldn't change username/password!\n");
-			FREE(username);
-			FREE(password);
+			xmlFree(username);
+			if (password != NULL) xmlFree(password);
 			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_COULDNT_CHANGE_UPW, outnode);
 		}
 	}
@@ -2348,15 +2350,15 @@ int ipc_callout_set_connection_upw(xmlNodePtr innode, xmlNodePtr *outnode)
 		if (ipc_callout_set_connection_psk(conn, password) != 0)
 		{
 			debug_printf(DEBUG_IPC, "Couldn't change password!\n");
-			FREE(password);
+			if (password != NULL) xmlFree(password);
 			// Username should already be NULL.  But make sure it is.
-			FREE(username);
+			if (username != NULL) xmlFree(username);
 			return ipc_callout_create_error(NULL, "Set_Connection_UPW", IPC_ERROR_COULDNT_CHANGE_UPW, outnode);
 		}
 	}
 
-	FREE(username);
-	FREE(password);
+	if (username != NULL) xmlFree(username);
+	if (password != NULL) xmlFree(password);
 
 	ipc_callout_rebind_upw_all();
 
@@ -2411,7 +2413,7 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
-	request = xmlNodeGetContent(t);
+	request = (char *)xmlNodeGetContent(t);
 	if (request == NULL) 
 	{
 		debug_printf(DEBUG_IPC, "Couldn't get data from the 'Set_Connection_PW' node.\n");
@@ -2426,13 +2428,13 @@ int ipc_callout_set_connection_pw(xmlNodePtr innode, xmlNodePtr *outnode)
 		if (conn == NULL)
 		{
 			debug_printf(DEBUG_IPC, "Couldn't locate connection '%s'!\n", request);
-			FREE(request);
+			xmlFree(request);
 			return ipc_callout_create_error(NULL, "Set_Connection_PW", IPC_ERROR_INVALID_CONN_NAME, outnode);
 		}
 	}
 
 	// Done with 'request'.
-	FREE(request);
+	xmlFree(request);
 
 	// If we don't know the auth type, try to reason it out.
 	if (conn->association.auth_type == AUTH_UNKNOWN)
@@ -2632,7 +2634,6 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	xmlChar *content = NULL;
 	struct config_profiles *myprof = NULL;
 	struct config_connection *mycon = NULL;
-	config_globals *myglobals = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -2655,7 +2656,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	content = xmlNodeGetContent(t);
-	iface = _strdup(content);
+	iface = _strdup((char *)content);
 	xmlFree(content);
 
 	if ((iface == NULL) || (strlen(iface) <= 0))
@@ -2672,7 +2673,7 @@ int ipc_callout_change_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	content = xmlNodeGetContent(t);
-	conn_name = _strdup(content);
+	conn_name = _strdup((char *)content);
 	xmlFree(content);
 
 	if ((conn_name == NULL) || (strlen(conn_name) <= 0))
@@ -3259,7 +3260,7 @@ int ipc_callout_enum_profiles(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	ttype = xmlNodeGetContent(t);
-	config_type = atoi(ttype);
+	config_type = atoi((char *)ttype);
 	xmlFree(ttype);
 
 	count = 0;
@@ -3349,7 +3350,7 @@ int ipc_callout_enum_trusted_servers(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	ttype = xmlNodeGetContent(t);
-	config_type = atoi(ttype);
+	config_type = atoi((char *)ttype);
 	xmlFree(ttype);
 
 	count = 0;
@@ -3461,7 +3462,7 @@ int ipc_callout_write_config(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	temp = xmlNodeGetContent(t);
-	conf_type = atoi(temp);
+	conf_type = atoi((char *)temp);
 	xmlFree(temp);
 
 	if ((conf_type == CONFIG_LOAD_USER) && (filename == NULL))
@@ -3595,7 +3596,7 @@ int ipc_callout_get_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	content = xmlNodeGetContent(t);
-	profname = _strdup(content);
+	profname = _strdup((char *)content);
 	xmlFree(content);
 
 	if ((profname == NULL) || (strlen(profname) == 0))
@@ -3616,7 +3617,7 @@ int ipc_callout_get_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	content = xmlNodeGetContent(t);
-	config_type = atoi(content);
+	config_type = atoi((char *)content);
 	xmlFree(content);
 
 	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
@@ -3711,7 +3712,7 @@ int ipc_callout_get_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	content = xmlNodeGetContent(t);
-	connname = _strdup(content);
+	connname = _strdup((char *)content);
 	xmlFree(content);
 
 	if ((connname == NULL) || (strlen(connname) == 0))
@@ -3732,7 +3733,7 @@ int ipc_callout_get_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	content = xmlNodeGetContent(t);
-	config_type = atoi(content);
+	config_type = atoi((char *)content);
 	xmlFree(content);
 
 	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
@@ -3828,7 +3829,7 @@ int ipc_callout_get_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 	}
 
 	content = xmlNodeGetContent(t);
-	tsname = _strdup(content);
+	tsname = _strdup((char *)content);
 	xmlFree(content);
 
 	if ((tsname == NULL) || (strlen(tsname) == 0))
@@ -3849,7 +3850,7 @@ int ipc_callout_get_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 	}
 
 	content = xmlNodeGetContent(t);
-	config_type = atoi(content);
+	config_type = atoi((char *)content);
 	xmlFree(content);
 
 	if ((config_type != CONFIG_LOAD_GLOBAL) && (config_type != CONFIG_LOAD_USER))
@@ -4045,7 +4046,7 @@ int ipc_callout_get_delete_name(xmlNodePtr innode, char *cmdname, char *findtag,
     }
 
   content = xmlNodeGetContent(t);
-  resval = _strdup(content);
+  resval = _strdup((char *)content);
   xmlFree(content);
 
   if ((resval == NULL) || (strlen(resval) == 0))
@@ -4582,7 +4583,7 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	temp = xmlNodeGetContent(t);
-	config_type = atoi(temp);
+	config_type = atoi((char *)temp);
 	xmlFree(temp);
 	debug_printf(DEBUG_IPC, "Setting connection for config type %d.\n", config_type);
 
@@ -4643,7 +4644,7 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 			if (config_find_connection(CONFIG_LOAD_USER, newc->name) != NULL)
 			{
 				// The request asked us to create a connection in the wrong config.  Scream.
-				delete_config_single_connection(&newc);
+			  delete_config_single_connection((void **)&newc);
 				return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_CONFIG_CONFLICT, outnode);
 			}
 		}
@@ -4652,7 +4653,7 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 			if (config_find_connection(CONFIG_LOAD_GLOBAL, newc->name) != NULL)
 			{
 				// The request asked us to create a connection in the wrong config.  Scream.
-				delete_config_single_connection(&newc);
+			  delete_config_single_connection((void **)&newc);
 				return ipc_callout_create_error(NULL, "Set_Connection_Config", IPC_ERROR_CONFIG_CONFLICT, outnode);
 			}
 		}
@@ -4680,7 +4681,7 @@ int ipc_callout_set_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
 		}
 
 		// Free the memory used to parse the command.
-		delete_config_single_connection(&newc);
+		delete_config_single_connection((void **)&newc);
 	}
 
   return ipc_callout_create_ack(NULL, "Set_Connection_Config", outnode);
@@ -4896,7 +4897,7 @@ int ipc_callout_set_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 		debug_printf(DEBUG_IPC, "Attempted to change the configuration on a trusted server that is already in use.\n");
 
 		// Free the memory used to parse the command.
-		delete_config_trusted_server(&newts);
+		delete_config_trusted_server((void **)&newts);
 
 		return ipc_callout_create_error(NULL, "Set_Trusted_Server_Config", IPC_ERROR_NOT_ALLOWED, outnode);
 	}
@@ -5006,7 +5007,7 @@ int ipc_callout_set_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
 
 			if (status == 0)  // No context was found.  Let's see if the interface is alive.
 			{
-				intname = interfaces_get_name_from_mac(newif->mac);
+			  intname = interfaces_get_name_from_mac((char *)newif->mac);
 				if (intname != NULL)
 				{
 					// But the interface is alive, so we need to bind it.
@@ -6471,7 +6472,7 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	content = xmlNodeGetContent(n);
-	oldname = _strdup(content);
+	oldname = _strdup((char *)content);
 	xmlFree(content);
 
 	n = ipc_callout_find_node(n, "New_Name");
@@ -6483,7 +6484,7 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	content = xmlNodeGetContent(n);
-	newname = _strdup(content);
+	newname = _strdup((char *)content);
 	xmlFree(content);
 
 	debug_printf(DEBUG_IPC, "Renaming profile '%s' to '%s'.\n", oldname, newname);
@@ -6648,7 +6649,7 @@ int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *out
 	}
 
 	content = xmlNodeGetContent(n);
-	oldname = _strdup(content);
+	oldname = _strdup((char *)content);
 	xmlFree(content);
 
 	n = ipc_callout_find_node(n, "New_Name");
@@ -6660,7 +6661,7 @@ int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *out
 	}
 
 	content = xmlNodeGetContent(n);
-	newname = _strdup(content);
+	newname = _strdup((char *)content);
 	xmlFree(content);
 
 	debug_printf(DEBUG_IPC, "Renaming trusted server '%s' to '%s'.\n", oldname, newname);
@@ -6770,7 +6771,7 @@ int ipc_callout_get_link_state_for_int(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Get_Link_State_From_Interface", IPC_ERROR_INVALID_INTERFACE, outnode);
 	}
 
-	n = xmlNewNode(NULL, "Link_State_From_Interface");
+	n = xmlNewNode(NULL, (xmlChar *)"Link_State_From_Interface");
 	if (n == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Couldn't create response message!\n");
@@ -6778,7 +6779,7 @@ int ipc_callout_get_link_state_for_int(xmlNodePtr innode, xmlNodePtr *outnode)
 	}
 
 	ipc_callout_convert_amp(ctx->intName, &temp);
-	if (xmlNewChild(n, NULL, "Interface", temp) == NULL)
+	if (xmlNewChild(n, NULL, (xmlChar *)"Interface", (xmlChar *)&temp) == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Couldn't create <Interface> node!\n");
 		free(temp);
@@ -6795,7 +6796,7 @@ int ipc_callout_get_link_state_for_int(xmlNodePtr innode, xmlNodePtr *outnode)
 	sprintf((char *)&stattemp, "%d", state);
 
 	ipc_callout_convert_amp(stattemp, &temp);
-	if (xmlNewChild(n, NULL, "Link_State", temp) == NULL)
+	if (xmlNewChild(n, NULL, (xmlChar *)"Link_State", (xmlChar *)&temp) == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Couldn't create <Link_State> node!\n");
 		free(temp);
@@ -6828,6 +6829,7 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 	char *tt_data_path = NULL;
 	int overwrite = 0;
 	FILE *fh = NULL;
+	char *temp = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -6847,7 +6849,7 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 		return ipc_callout_create_error(NULL, "Create_Trouble_Ticket", IPC_ERROR_INVALID_NODE, outnode);
 	}
 
-	temp_data_path = xmlNodeGetContent(n);
+	temp_data_path = (char *)xmlNodeGetContent(n);
 
 	n = ipc_callout_find_node(n, "Trouble_Ticket_File");
 	if (n == NULL)
@@ -6857,7 +6859,7 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 		return ipc_callout_create_error(NULL, "Create_Trouble_Ticket", IPC_ERROR_INVALID_NODE, outnode);
 	}
 
-	tt_data_path = xmlNodeGetContent(n);
+	tt_data_path = (char *)xmlNodeGetContent(n);
 
 	n = ipc_callout_find_node(n, "Overwrite");
 	if (n == NULL)
@@ -6866,7 +6868,9 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 	}
 	else
 	{
-		overwrite = atoi(xmlNodeGetContent(n));
+	        temp = (char *)xmlNodeGetContent(n);
+		overwrite = atoi(temp);
+		xmlFree(temp);
 	}
 
 	fh = fopen(tt_data_path, "r");
@@ -6960,10 +6964,11 @@ int ipc_callout_add_cert_to_store(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Add_Cert_to_Store", IPC_ERROR_INVALID_NODE, outnode);
 	}
 
-	cert_to_add = xmlNodeGetContent(n);
+	cert_to_add = (char *)xmlNodeGetContent(n);
 
 	retval = cert_handler_add_cert_to_store(cert_to_add);
-
+	xmlFree(cert_to_add);
+	
 	if (retval != 0)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to add the certificate at '%s' to the certificate store.\n",

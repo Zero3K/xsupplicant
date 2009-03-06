@@ -917,7 +917,7 @@ void eapol_key_type2_do_type1(context *intdata)
   int version;
   uint8_t ielen;
   char key[16];
-  char wpa_ie[256];
+  unsigned char wpa_ie[256];
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
   wireless_ctx *wctx = NULL;
 

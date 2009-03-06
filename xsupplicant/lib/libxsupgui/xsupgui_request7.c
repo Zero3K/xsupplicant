@@ -12,6 +12,8 @@
 
 #ifdef WINDOWS
 #include "src/stdintwin.h"
+#else
+#include <stdint.h>
 #endif
 
 #include "src/xsup_common.h"
@@ -803,7 +805,7 @@ int xsupgui_request_get_link_state_from_int(char *intname, int *state)
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, "Get_Link_State_From_Interface", NULL);
+	t = xmlNewChild(n, NULL, (xmlChar *)"Get_Link_State_From_Interface", NULL);
 	if (t == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
@@ -811,7 +813,7 @@ int xsupgui_request_get_link_state_from_int(char *intname, int *state)
 	}
 
 	xsupgui_xml_common_convert_amp(intname, &temp);
-	if (xmlNewChild(t, NULL, "Interface", temp) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
@@ -856,11 +858,11 @@ int xsupgui_request_get_link_state_from_int(char *intname, int *state)
 		goto done;
 	}
 
-	value = xmlNodeGetContent(t);
+	value = (char *)xmlNodeGetContent(t);
 
 	(*state) = atoi(value);
 
-	free(value);
+	xmlFree(value);
 
 done:
 	xmlFreeDoc(doc);
@@ -900,7 +902,7 @@ int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir,
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, "Create_Trouble_Ticket", NULL);
+	t = xmlNewChild(n, NULL, (xmlChar *)"Create_Trouble_Ticket", NULL);
 	if (t == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
@@ -908,7 +910,7 @@ int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir,
 	}
 
 	xsupgui_xml_common_convert_amp(scratchdir, &temp);
-	if (xmlNewChild(t, NULL, "Temp_Data_Path", temp) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Temp_Data_Path", (xmlChar *)temp) == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
@@ -917,7 +919,7 @@ int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir,
 	free(temp);
 
 	xsupgui_xml_common_convert_amp(filename, &temp);
-	if (xmlNewChild(t, NULL, "Trouble_Ticket_File", temp) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Trouble_Ticket_File", (xmlChar *)temp) == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
@@ -926,7 +928,7 @@ int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir,
 	free(temp);
 
 	sprintf((char *)&tempstatic, "%d", overwrite);
-	if (xmlNewChild(t, NULL, "Overwrite", tempstatic) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Overwrite", (xmlChar *)tempstatic) == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
@@ -987,7 +989,6 @@ int xsupgui_request_add_root_ca_certificate(char *filename)
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
 	xmlNodePtr n = NULL, t = NULL;
-	char tempstatic[100];
 	char *temp = NULL;
 	int retval = REQUEST_SUCCESS;
 	int err = 0;
@@ -1002,7 +1003,7 @@ int xsupgui_request_add_root_ca_certificate(char *filename)
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, "Add_Cert_to_Store", NULL);
+	t = xmlNewChild(n, NULL, (xmlChar *)"Add_Cert_to_Store", NULL);
 	if (t == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
@@ -1010,7 +1011,7 @@ int xsupgui_request_add_root_ca_certificate(char *filename)
 	}
 
 	xsupgui_xml_common_convert_amp(filename, &temp);
-	if (xmlNewChild(t, NULL, "Cert_Path", temp) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Cert_Path", (xmlChar *)temp) == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
@@ -1056,7 +1057,7 @@ done:
 int xsupgui_request_get_tnc_conn_id(char *device, unsigned int *tnc_conn_id)
 {
 	return xsupgui_request_get_some_value(device, "Get_TNC_Conn_ID", "TNC_Conn_ID", 
-			"Conn_ID", tnc_conn_id);
+					      "Conn_ID", (int *)tnc_conn_id);
 }
 
 /**
@@ -1199,7 +1200,7 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int tnc_conn_id, char **in
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, "Get_Interface_From_TNC_Conn_ID", NULL);
+	t = xmlNewChild(n, NULL, (xmlChar *)"Get_Interface_From_TNC_Conn_ID", NULL);
 	if (t == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
@@ -1208,7 +1209,7 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int tnc_conn_id, char **in
 
 	memset(&tempint, 0x00, sizeof(tempint));
 	sprintf((char *)&tempint, "%d", tnc_conn_id);
-	if (xmlNewChild(t, NULL, "Connection_ID", tempint) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Connection_ID", (xmlChar *)tempint) == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
 		goto done;
@@ -1251,11 +1252,11 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int tnc_conn_id, char **in
 		goto done;
 	}
 
-	value = xmlNodeGetContent(t);
+	value = (char *)xmlNodeGetContent(t);
 
 	(*intname) = _strdup(value);
 
-	free(value);
+	xmlFree(value);
 
 done:
 	xmlFreeDoc(doc);
@@ -1280,7 +1281,6 @@ int xsupgui_request_dhcp_release_renew(char *intname)
 	xmlNodePtr n = NULL, t = NULL;
 	int done = 0, err = 0;
 	char *temp = NULL;
-	char temp_static[10];
 
 	if (intname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -1366,7 +1366,7 @@ request_done:
 int xsupgui_request_get_freq(char *device, unsigned int *freq)
 {
 	return xsupgui_request_get_some_value(device, "Get_Frequency", "Frequency", 
-			"Freq", freq);
+					      "Freq", (int *)freq);
 }
 
 /**
@@ -1385,7 +1385,6 @@ int xsupgui_request_disconnect_connection(char *device)
 	xmlNodePtr n = NULL, t = NULL;
 	int done = 0, err = 0;
 	char *temp = NULL;
-	char temp_static[10];
 
 	if (device == NULL) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -1493,9 +1492,9 @@ int xsupgui_request_get_in_use_state(char *root_cmd, char *child_cmd, char *valu
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
 	xmlNodePtr n = NULL, t = NULL;
+	xmlChar *content = NULL;
 	int retval = REQUEST_SUCCESS;
 	int err = 0;
-	char tempint[10];
 
 	if ((root_cmd == NULL) || (child_cmd == NULL) || (value == NULL) || (state == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
 
@@ -1511,14 +1510,14 @@ int xsupgui_request_get_in_use_state(char *root_cmd, char *child_cmd, char *valu
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, root_cmd, NULL);
+	t = xmlNewChild(n, NULL, (xmlChar *)root_cmd, NULL);
 	if (t == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
-	if (xmlNewChild(t, NULL, child_cmd, value) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)child_cmd, (xmlChar *)value) == NULL)
 	{
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
 		goto done;
@@ -1561,7 +1560,9 @@ int xsupgui_request_get_in_use_state(char *root_cmd, char *child_cmd, char *valu
 		goto done;
 	}
 
-	(*state) = atoi(xmlNodeGetContent(t));
+	content = xmlNodeGetContent(t);
+	(*state) = atoi((char *)content);
+	xmlFree(content);
 
 done:
 	xmlFreeDoc(doc);
@@ -1725,9 +1726,10 @@ int xsupgui_request_enum_smartcard_readers(char ***readers)
 				goto request_done;
 			}
 
-			value = xmlNodeGetContent(t);
+			value = (char *)xmlNodeGetContent(t);
 
 			readerlist[(count-1)] = _strdup(value);
+			xmlFree(value);
 			t = t->next;
 		}
 	}

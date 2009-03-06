@@ -16,6 +16,7 @@
 #include <net/if.h>
 #include <linux/if_packet.h>
 #include <math.h>
+#include <arpa/inet.h>
 
 #include "libxsupconfig/xsupconfig.h"
 #include "context.h"
@@ -39,6 +40,9 @@
 #include "ipc_events_index.h"
 #include "cardif_linux_wext.h"
 #include "cardif_linux_rtnetlink.h"
+#include "interfaces.h"
+#include "wpa2.h"
+#include "ipc_events.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -440,7 +444,6 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP_ASSOC(context *idata,
   debug_printf(DEBUG_INT, "AP MAC : ");
   debug_hex_printf(DEBUG_INT, (uint8_t *)mac, 6);
 
-#warning Check this!
   if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
     {
 	timer_cancel(idata, SCANCHECK_TIMER);
@@ -481,8 +484,6 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP(context *idata,
 					      struct iw_event *iwe)
 {
   char mac[6];
-  int assoc;
-  struct config_globals *globals = NULL;
   wireless_ctx *wctx = NULL;
 
   if (!xsup_assert((idata != NULL), "idata != NULL", FALSE))
@@ -500,7 +501,6 @@ void cardif_linux_rtnetlink_process_SIOCGIWAP(context *idata,
   debug_printf(DEBUG_INT, "AP MAC : ");
   debug_hex_printf(DEBUG_INT, (uint8_t *)mac, 6);
 
-#warning Check this!
   if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
     {
       config_ssid_add_bssid(wctx, mac);
@@ -994,11 +994,12 @@ void cardif_linux_rtnetlink_process_SIOCGIWFREQ(context *ctx, struct iw_event *i
   char buffer[128];
   double freq;
   wireless_ctx *wctx = NULL;
+
   wctx = (wireless_ctx *)ctx->intTypeData;
   freq = iw_freq2float(&(iwe->u.freq));
   memset(buffer, 0, sizeof(buffer));
   iw_print_freq(buffer, sizeof(buffer), freq, -1, iwe->u.freq.flags);
-  if (wctx == NULL || buffer == NULL || buffer == '\0')
+  if (wctx == NULL || buffer == '\0')
   return;
 
   if (strstr(buffer, "Channel") != NULL)
@@ -1766,7 +1767,7 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
   debug_printf(DEBUG_INT, "OPERSTATE event on interface %d\n", ifindex);
 
   debug_printf(DEBUG_INT, "Event dump (%d) : \n", len);
-  debug_hex_dump(DEBUG_INT, data, len);
+  debug_hex_dump(DEBUG_INT, (unsigned char *)data, len);
 
   switch(data[0])
     {

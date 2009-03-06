@@ -18,6 +18,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifndef WINDOWS
+#include <stdint.h>
+#endif
+
 #include "supdetect_private.h"
 #include "src/xsup_common.h"
 #include "src/error_prequeue.h"

@@ -77,6 +77,7 @@ int get_pemfl_count(const char * pathname);
 time_t ASN1_UTCTIME_get(const ASN1_UTCTIME *s);
 char *getFriendlyname(char *sO,int iI);
 char *getIssuername(char * location);
+int get_pemfl_count_and_build_list(const char * pathname);
 ///////////////////////////////////////////////////////
 
 /**

@@ -54,7 +54,6 @@ xmlNodePtr xsupconfwrite_profile_compliance_create_tree(struct config_profiles *
 														xmlNodePtr parent, char write_all)
 {
 	xmlNodePtr compliance = NULL;
-	char *temp = NULL;
 
 	compliance = xmlNewChild(parent, NULL, (xmlChar *)"Compliance", NULL);
 	if (compliance == NULL) return NULL;   //ACK!
@@ -138,7 +137,6 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, uint
 	xmlNodePtr profnode = NULL;
 	xmlNodePtr eapnode = NULL;
 	char *temp = NULL;
-	char temp_str[10];
 	
 	if (profs == NULL) return NULL;
 

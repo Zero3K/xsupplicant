@@ -32,7 +32,6 @@
 void *xsupconfig_parse_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
 {
   struct config_trusted_servers *myservers = NULL;
-  struct config_trusted_server *myserver = NULL;
   struct config_trusted_server *newserver = NULL;
 
   myservers = (*attr);

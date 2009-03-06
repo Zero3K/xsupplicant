@@ -630,7 +630,7 @@ int xsupgui_request_set_connection_pw(char *conn_name, char *password)
 		goto request_set_pw_done;
 	}
 
-	t = xmlNewChild(n, NULL, "Set_Connection_PW", NULL);
+	t = xmlNewChild(n, NULL, (xmlChar *)"Set_Connection_PW", NULL);
 	if (t == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
@@ -638,7 +638,7 @@ int xsupgui_request_set_connection_pw(char *conn_name, char *password)
 	}
 
 	xsupgui_xml_common_convert_amp(conn_name, &temp);
-	if (xmlNewChild(t, NULL, "Connection_Name", temp) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Connection_Name", (xmlChar *)temp) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
@@ -647,7 +647,7 @@ int xsupgui_request_set_connection_pw(char *conn_name, char *password)
 	free(temp);
 
 	xsupgui_xml_common_convert_amp(password, &temp);
-	if (xmlNewChild(t, NULL, "Password", temp) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Password", (xmlChar *)temp) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
@@ -749,7 +749,7 @@ int xsupgui_request_enum_profiles(uint8_t config_type, profile_enum **profs)
 	}
 
 	sprintf((char *)&tempnum, "%d", config_type);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", tempnum) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)tempnum) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_profiles;
@@ -848,7 +848,7 @@ int xsupgui_request_enum_profiles(uint8_t config_type, profile_enum **profs)
 		}
 
 		content = xmlNodeGetContent(t);
-		myprofs[i].config_type = atoi(content);
+		myprofs[i].config_type = atoi((char *)content);
 		xmlFree(content);
 
 		n = n->next;

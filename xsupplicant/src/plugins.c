@@ -1,11 +1,11 @@
-/*******************************************************************
+/**
  * \file plugins.c
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
  * \author galimorerpg@users.sourceforge.net
  *
- *******************************************************************/
+ **/
 
 
 #ifdef WINDOWS
@@ -134,6 +134,9 @@ uint8_t load_plugins()
     }
 
   return plugins_loaded;
+#else
+#warning Implement for this OS!
+  return 0;
 #endif // WINDOWS
 }
 

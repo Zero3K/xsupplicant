@@ -66,7 +66,7 @@ int xsupgui_request_set_profile_config(uint8_t config_type, config_profiles *pro
     }
 
   sprintf(res, "%d", config_type);
-  if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", res) == NULL)
+  if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
   {
 	  done = IPC_ERROR_CANT_CREATE_REQUEST;
 	  goto finish_set_profile_config;
@@ -301,7 +301,7 @@ int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_en
 	}
 
 	sprintf((char *)&temp, "%d", config_type);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", temp) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)temp) == NULL)
 	{
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_trusted_servers;
@@ -414,7 +414,7 @@ int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_en
 		}
 
 		content = xmlNodeGetContent(x);
-		svrs[i].config_type = atoi(content);
+		svrs[i].config_type = atoi((char *)content);
 		xmlFree(content);
 
 		n = n->next;
@@ -508,7 +508,7 @@ int xsupgui_request_write_config(uint8_t config_type, char *filename)
 	}
 
 	sprintf((char *)&temp, "%d", config_type);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", temp) == NULL)
+	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)temp) == NULL)
 	{
 		done = IPC_ERROR_CANT_ADD_NODE;
 		goto finish_write_config;
@@ -640,7 +640,7 @@ int xsupgui_request_set_trusted_server_config(uint8_t config_type, config_truste
     }
 
   sprintf(res, "%d", config_type);
-  if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", res) == NULL)
+  if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
   {
 	  done = IPC_ERROR_CANT_CREATE_REQUEST;
 	  goto finish_set_trusted_server_config;
@@ -750,7 +750,7 @@ int xsupgui_request_free_connection_config(config_connection **conn)
  **/
 int xsupgui_request_free_interface_config(config_interfaces **intf)
 {
-	delete_config_interface(intf);
+  delete_config_interface((void **)intf);
 
   return REQUEST_SUCCESS;
 }
@@ -770,7 +770,7 @@ int xsupgui_request_free_interface_config(config_interfaces **intf)
  **/
 int xsupgui_request_free_trusted_server_config(config_trusted_server **tserver)
 {
-	delete_config_trusted_server(tserver);
+  delete_config_trusted_server((void **)tserver);
 
   return REQUEST_SUCCESS;
 }

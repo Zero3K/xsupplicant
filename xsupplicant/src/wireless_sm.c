@@ -48,6 +48,7 @@
 #define INT_HELD_TIMEOUT    10 // Seconds.
 
 void set_static_wep_keys(context *, struct config_association *);
+void global_deinit();   // In xsup_driver.c, there is no header we can include so this prototype keeps the compiler from complaining.
 
 // This is in mschapv2.c.  We need it for the static WEP piece.
 extern void process_hex(char *, int, char *);

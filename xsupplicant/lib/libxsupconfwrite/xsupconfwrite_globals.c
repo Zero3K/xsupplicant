@@ -481,7 +481,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		(conf_globals->logs_to_keep != 0)))
 	{
 		sprintf((char *)&static_temp, "%d", conf_globals->logs_to_keep);
-		if (xmlNewChild(globalnode, NULL, "Logs_To_Keep", static_temp) == NULL)
+		if (xmlNewChild(globalnode, NULL, (xmlChar *)"Logs_To_Keep", (xmlChar *)static_temp) == NULL)
 		{
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Logs_To_Keep> node!\n");
@@ -495,7 +495,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *conf_globals
 		(conf_globals->size_to_roll != 0)))
 	{
 		sprintf((char *)&static_temp, "%d", conf_globals->size_to_roll);
-		if (xmlNewChild(globalnode, NULL, "Log_Size_To_Roll", static_temp) == NULL)
+		if (xmlNewChild(globalnode, NULL, (xmlChar *)"Log_Size_To_Roll", (xmlChar *)static_temp) == NULL)
 		{
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Log_Size_To_Roll> node!\n");

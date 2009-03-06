@@ -37,7 +37,7 @@ void *xsupconfig_parse_profile_compliance_enable(void **attr, uint8_t config_typ
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -76,7 +76,7 @@ void *xsupconfig_parse_profile_compliance_personality_check(void **attr, uint8_t
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -115,7 +115,7 @@ void *xsupconfig_parse_profile_compliance_firewall_check(void **attr, uint8_t co
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -154,7 +154,7 @@ void *xsupconfig_parse_profile_compliance_anti_spyware_check(void **attr, uint8_
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -193,7 +193,7 @@ void *xsupconfig_parse_profile_compliance_anti_virus_check(void **attr, uint8_t 
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -232,7 +232,7 @@ void *xsupconfig_parse_profile_compliance_anti_phishing_check(void **attr, uint8
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -271,7 +271,7 @@ void *xsupconfig_parse_profile_compliance_allow_full_system_scan(void **attr, ui
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -310,7 +310,7 @@ void *xsupconfig_parse_profile_compliance_allow_auto_update(void **attr, uint8_t
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG

@@ -101,7 +101,7 @@ void *xsupconfig_parse_conn_ip_addr(void **attr, uint8_t config_type, xmlNodePtr
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
-	value = _strdup(content);
+	value = _strdup((char *)content);
 	xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -139,7 +139,7 @@ void *xsupconfig_parse_conn_ip_netmask(void **attr, uint8_t config_type, xmlNode
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
-	value = _strdup(content);
+	value = _strdup((char *)content);
 	xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -177,7 +177,7 @@ void *xsupconfig_parse_conn_ip_gateway(void **attr, uint8_t config_type, xmlNode
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
-	value = _strdup(content);
+	value = _strdup((char *)content);
 	xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -215,7 +215,7 @@ void *xsupconfig_parse_conn_ip_dns1(void **attr, uint8_t config_type, xmlNodePtr
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
-	value = _strdup(content);
+	value = _strdup((char *)content);
 	xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -253,7 +253,7 @@ void *xsupconfig_parse_conn_ip_dns2(void **attr, uint8_t config_type, xmlNodePtr
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
-	value = _strdup(content);
+	value = _strdup((char *)content);
 	xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -291,7 +291,7 @@ void *xsupconfig_parse_conn_ip_dns3(void **attr, uint8_t config_type, xmlNodePtr
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
-	value = _strdup(content);
+	value = _strdup((char *)content);
 	xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -329,7 +329,7 @@ void *xsupconfig_parse_conn_ip_search_domain(void **attr, uint8_t config_type, x
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
-	value = _strdup(content);
+	value = _strdup((char *)content);
 	xmlFree(content);
 
 #ifdef PARSE_DEBUG

@@ -1025,7 +1025,7 @@ uint8_t *config_ssid_get_mac_with_freq(wireless_ctx *wctx, double freq)
 }
 
 
-/*
+/**
  * \brief Return the best frequency we can associate with AP, checks if there are muiltiple 
  *  radios scanned for a given SSID and returns the best one
  *

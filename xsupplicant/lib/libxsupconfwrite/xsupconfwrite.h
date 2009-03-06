@@ -15,6 +15,7 @@
 
 char *mac2str(char *);
 int xsupconfwrite_write_config(char *);
+int xsupconfwrite_write_user_config(char *);
 
 /* *** Error codes */
 

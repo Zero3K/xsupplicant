@@ -748,7 +748,7 @@ void *xsupconfig_parse_logs_to_keep(void **attr, uint8_t config_type, xmlNodePtr
   struct config_globals *myglobals = NULL;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Number of Logs To Keep : %s\n", value);
@@ -777,7 +777,7 @@ void *xsupconfig_parse_log_size_to_roll(void **attr, uint8_t config_type, xmlNod
   struct config_globals *myglobals = NULL;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Log Size To Roll On : %s\n", value);
@@ -806,7 +806,7 @@ void *xsupconfig_parse_pmksa_age_out(void **attr, uint8_t config_type, xmlNodePt
   struct config_globals *myglobals = NULL;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("PMKSA Age Out Time : %s\n", value);
@@ -835,7 +835,7 @@ void *xsupconfig_parse_pmksa_refresh_time(void **attr, uint8_t config_type, xmlN
   struct config_globals *myglobals = NULL;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("PMKSA Cache Refresh : %s\n", value);
@@ -927,7 +927,7 @@ void *xsupconfig_disconnect_at_logoff(void **attr, uint8_t config_type, xmlNodeP
   uint8_t result = 0;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Disconnect at Logoff : %s\n", value);
@@ -963,7 +963,7 @@ void *xsupconfig_parse_detect_on_startup(void **attr, uint8_t config_type, xmlNo
   uint8_t result = 0;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Detect_on_startup : %s\n", value);
@@ -999,7 +999,7 @@ void *xsupconfig_parse_roll_logs(void **attr, uint8_t config_type, xmlNodePtr no
   uint8_t result = 0;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Roll_Logs : %s\n", value);
@@ -1035,7 +1035,7 @@ void *xsupconfig_parse_wireless_only(void **attr, uint8_t config_type, xmlNodePt
   uint8_t result;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Wireless_Only : %s\n", value);
@@ -1071,7 +1071,7 @@ void *xsupconfig_control_ints(void **attr, uint8_t config_type, xmlNodePtr node)
   uint8_t result = 0;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Control_Interfaces : %s\n", value);
@@ -1106,7 +1106,7 @@ void *xsupconfig_parse_dead_connection_timeout(void **attr, uint8_t config_type,
   struct config_globals *myglobals = NULL;
   char *value = NULL;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Dead connection timeout : %s\n", value);

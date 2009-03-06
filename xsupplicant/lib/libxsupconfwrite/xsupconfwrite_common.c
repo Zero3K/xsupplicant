@@ -19,6 +19,10 @@
 #include <string.h>
 #include <libxml/parser.h>
 
+#ifndef WINDOWS
+#include <stdint.h>
+#endif
+
 #include "src/xsup_common.h"
 
 // Uncomment below for debug output

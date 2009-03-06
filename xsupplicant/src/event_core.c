@@ -48,7 +48,9 @@
 #include "platform/macosx/cardif_macosx.h"
 #endif
 
-#ifdef LINUX_FRAMER
+#ifdef LINUX
+#include "linux/netlink.h"
+#include "linux/rtnetlink.h"
 #include "platform/linux/cardif_linux_rtnetlink.h"
 #endif
 

@@ -412,7 +412,7 @@ void *xsupconfig_parse_eap_tls_store_type(void **attr, uint8_t config_type, xmlN
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG

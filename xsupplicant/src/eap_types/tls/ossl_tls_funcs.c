@@ -642,6 +642,46 @@ int tls_funcs_get_embedded_appdata(struct tls_vars *mytls_vars, uint8_t **buffer
 	return 0;
 }
 
+/**
+ * \brief Search a target string to see if it matches with the string provided by pattern.
+ *
+ * @param [in] pattern   The wildcarded string that we need to match.
+ * @param [in] target   The string we are matching against.
+ *
+ * \note For now, we only allow leading astrisks.
+ *
+ * \retval XENONE on match success
+ * \retval XEBADCN on match failure
+ **/
+int tls_funcs_wildcard_match(char *pattern, char *target)
+{
+	char *temp = NULL;
+	char *offset = NULL;
+
+	if (!xsup_assert((pattern != NULL), "pattern != NULL", FALSE)) return XEBADCN;
+
+	if (!xsup_assert((target != NULL), "target != NULL", FALSE)) return XEBADCN;
+
+	temp = pattern;
+
+	while (temp[0] != '*') temp++;
+
+	// We are pointing at the '*' now, we want to go one farther.
+	temp++;
+
+	offset = strstr(target, temp);
+
+	if (offset == NULL) return XEBADCN;   // The substring wasn't found.  The CN is invalid.
+
+	// Check that the string pointed to by offset, and the string pointed to by temp are the
+	// same length.  If they aren't, then the string pointed to by offset isn't located at the
+	// end of the target string.  Since we want to do an exact match beyond the wildcard, this 
+	// would be considered a failure.
+	if (strlen(offset) != strlen(temp)) return XEBADCN;
+
+	return XENONE;
+}
+
 /***********************************************************************
  *
  *  Check the CN field of a certificate against what the user has requested
@@ -1158,45 +1198,6 @@ int tls_funcs_get_packet(struct tls_vars *mytls_vars, int maxsize,
 	  return XENONE;
 }
 
-/**
- * \brief Search a target string to see if it matches with the string provided by pattern.
- *
- * @param [in] pattern   The wildcarded string that we need to match.
- * @param [in] target   The string we are matching against.
- *
- * \note For now, we only allow leading astrisks.
- *
- * \retval XENONE on match success
- * \retval XEBADCN on match failure
- **/
-int tls_funcs_wildcard_match(char *pattern, char *target)
-{
-	char *temp = NULL;
-	char *offset = NULL;
-
-	if (!xsup_assert((pattern != NULL), "pattern != NULL", FALSE)) return XEBADCN;
-
-	if (!xsup_assert((target != NULL), "target != NULL", FALSE)) return XEBADCN;
-
-	temp = pattern;
-
-	while (temp[0] != '*') temp++;
-
-	// We are pointing at the '*' now, we want to go one farther.
-	temp++;
-
-	offset = strstr(target, temp);
-
-	if (offset == NULL) return XEBADCN;   // The substring wasn't found.  The CN is invalid.
-
-	// Check that the string pointed to by offset, and the string pointed to by temp are the
-	// same length.  If they aren't, then the string pointed to by offset isn't located at the
-	// end of the target string.  Since we want to do an exact match beyond the wildcard, this 
-	// would be considered a failure.
-	if (strlen(offset) != strlen(temp)) return XEBADCN;
-
-	return XENONE;
-}
 
 /**********************************************************************
  *

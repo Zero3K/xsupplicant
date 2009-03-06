@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <stdint.h>
 #include "xsup_common.h"
 
 char *platform_get_machine_data_store_path()

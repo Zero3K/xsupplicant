@@ -36,6 +36,9 @@ int cert_handler_enum_root_ca_certs(int *, cert_enum **);	///< Enumerate the cer
 int cert_handler_get_info_from_store(char *, char *, cert_info *);   ///< Search for a certificate in a store, and return it's attribute(s).
 void cert_handler_free_cert_info(cert_info *);              ///< Free the memory used by the members of the cert_info struct.
 void cert_handler_free_cert_enum(int numcas, cert_enum **cas);
+int cert_handler_num_user_certs();
+int cert_handler_enum_user_certs(int *numcer, cert_enum **cer);
+int cert_handler_add_cert_to_store(char *path_to_cert);
 
 #endif // _CERT_HANDLER_H_
 

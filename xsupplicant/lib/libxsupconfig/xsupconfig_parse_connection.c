@@ -197,7 +197,7 @@ void *xsupconfig_parse_connection_name(void **attr, uint8_t config_type, xmlNode
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
   conn = (*attr);
@@ -293,7 +293,7 @@ void *xsupconfig_parse_connection_profile(void **attr, uint8_t config_type, xmlN
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
   conn = (*attr);
@@ -322,7 +322,7 @@ void *xsupconfig_parse_connection_ssid(void **attr, uint8_t config_type, xmlNode
   xmlChar *content = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
   conn = (*attr);

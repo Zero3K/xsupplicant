@@ -324,8 +324,6 @@ int xsupconfwrite_write_config(char *destfile)
  **/
 int xsupconfwrite_write_user_config(char *destfile)
 {
-  xmlNodePtr globals = NULL;
-  xmlNodePtr devices = NULL;
   xmlNodePtr trusted_servers = NULL;
   xmlNodePtr connections = NULL;
   xmlNodePtr profiles = NULL;

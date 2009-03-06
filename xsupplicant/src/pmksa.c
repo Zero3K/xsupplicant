@@ -146,7 +146,7 @@ uint8_t *pmksa_create_pmkid(uint8_t *pmk, uint8_t *spa, uint8_t *aa)
 		return NULL;
 	}
 
-	strcpy(tohash, strhash);
+	strcpy((char *)tohash, strhash);
 
 	memcpy(&tohash[strlen(strhash)], aa, 6);
 	memcpy(&tohash[strlen(strhash)+6], spa, 6);
@@ -310,7 +310,7 @@ int pmksa_add(context *ctx, uint8_t *aMac)
 	// If there is no PMK available, then ignore this request.
 	if (ctx->statemachine->PMK == NULL) return 1;
 
-	pmkid = pmksa_create_pmkid(ctx->statemachine->PMK, ctx->source_mac, aMac);
+	pmkid = pmksa_create_pmkid(ctx->statemachine->PMK, (unsigned char *)ctx->source_mac, aMac);
 	if (pmkid == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "Unable to create PMKID for interface '%s'.  This key will not be cached.\n",
@@ -414,7 +414,7 @@ void pmksa_delete(context *ctx, pmksa_cache_element *toDelete)
 
 		wctx->pmksa_cache = wctx->pmksa_cache->next;
 
-		pmksa_free_cache_entry(&cur);
+		pmksa_free_cache_entry((void **)&cur);
 		FREE(cur);
 	}
 	else
@@ -430,7 +430,7 @@ void pmksa_delete(context *ctx, pmksa_cache_element *toDelete)
 				// Delete this entry.
 				last->next = cur->next;   // Remove the node from the list.
 
-				pmksa_free_cache_entry(&cur);  // Free the memory of the removed node.
+				pmksa_free_cache_entry((void **)&cur);  // Free the memory of the removed node.
 				FREE(cur);
 				return;                        // Jump out.
 			}

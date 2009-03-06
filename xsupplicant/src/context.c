@@ -53,6 +53,8 @@
 #include <efence.h>
 #endif
 
+void global_deinit();   // In xsup_driver.c, there is no header we can include so this prototype keeps the compiler from complaining.
+
 /**
  * \brief Initalize the default values for the structure.  
  *
@@ -254,7 +256,9 @@ char config_build(context *ctx, char *network_name)
 {
   struct config_connection *result = NULL;
   struct xsup_interfaces *myint = NULL;
+#ifdef WINDOWS
   struct config_globals *pGlobals = NULL;
+#endif // WINDOWS
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 	  return FALSE;

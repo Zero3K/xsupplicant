@@ -43,7 +43,6 @@
  **/
 int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int log)
 {
-	char *errmsg = NULL;
 	int retval = 0;
 	wireless_ctx *wctx = NULL;
 

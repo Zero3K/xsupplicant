@@ -295,10 +295,6 @@ char *statemachine_disp_state(int state)
  **/
 int statemachine_change_to_s_force_auth(context *ctx)
 {
-#ifndef WINDOWS
-   struct timeval upTime; 
-#endif
-
   xsup_assert((ctx != NULL), "ctx != NULL", TRUE);
 
   // Display the state we are changing to.

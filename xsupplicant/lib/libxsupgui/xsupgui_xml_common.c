@@ -5,12 +5,15 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupgui_xml_common.c,v 1.4 2007/10/17 07:00:46 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:46 $
  **/
 
 #include <string.h>
 #include <libxml/parser.h>
+
+#ifndef WINDOWS
+#include <stdint.h>
+#endif // WINDOWS
+
 #include "xsupgui_xml_common.h"
 #include "src/xsup_common.h"
 

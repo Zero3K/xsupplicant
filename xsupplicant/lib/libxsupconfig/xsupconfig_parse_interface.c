@@ -258,7 +258,7 @@ void *xsupconfig_parse_manage_interface(void **attr, uint8_t config_type, xmlNod
   char *value = NULL;
   uint8_t result = 0;
 
-  value = xmlNodeGetContent(node);
+  value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
   printf("Interface should be managed : %s\n", value);

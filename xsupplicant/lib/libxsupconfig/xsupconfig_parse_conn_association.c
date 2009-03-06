@@ -208,7 +208,7 @@ void *xsupconfig_parse_conn_group_key_type(void **attr, uint8_t config_type, xml
   char *errstr = NULL;
 
   content = xmlNodeGetContent(node);
-  value = _strdup(content);
+  value = _strdup((char *)content);
   xmlFree(content);
 
 #ifdef PARSE_DEBUG
@@ -382,15 +382,15 @@ void *xsupconfig_parse_conn_key1(void **attr, uint8_t config_type, xmlNodePtr no
 	printf("Key 1 : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
+	if ((value == NULL) || (strlen((char *)value) == 0))
 	{
 		conn->association.keys[1] = NULL;
 
-		if (strlen(value) == 0) xmlFree(value);		
+		if (strlen((char *)value) == 0) xmlFree(value);		
 	}
 	else
 	{
-		conn->association.keys[1] = _strdup(value);
+	  conn->association.keys[1] = _strdup((char *)value);
 		xmlFree(value);
 	}
 
@@ -409,15 +409,15 @@ void *xsupconfig_parse_conn_key2(void **attr, uint8_t config_type, xmlNodePtr no
 	printf("Key 2 : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
+	if ((value == NULL) || (strlen((char *)value) == 0))
 	{
 		conn->association.keys[2] = NULL;
 
-		if (strlen(value) == 0) xmlFree(value);
+		if (strlen((char *)value) == 0) xmlFree(value);
 	}
 	else
 	{
-		conn->association.keys[2] = _strdup(value);
+	  conn->association.keys[2] = _strdup((char *)value);
 		xmlFree(value);
 	}
 
@@ -436,7 +436,7 @@ void *xsupconfig_parse_conn_key3(void **attr, uint8_t config_type, xmlNodePtr no
 	printf("Key 3 : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
+	if ((value == NULL) || (strlen((char *)value) == 0))
 	{
 		conn->association.keys[3] = NULL;
 
@@ -444,7 +444,7 @@ void *xsupconfig_parse_conn_key3(void **attr, uint8_t config_type, xmlNodePtr no
 	}
 	else
 	{
-		conn->association.keys[3] = _strdup(value);
+	  conn->association.keys[3] = _strdup((char *)value);
 		xmlFree(value);
 	}
 
@@ -463,15 +463,15 @@ void *xsupconfig_parse_conn_key4(void **attr, uint8_t config_type, xmlNodePtr no
 	printf("Key 4 : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
+	if ((value == NULL) || (strlen((char *)value) == 0))
 	{
 		conn->association.keys[4] = NULL;
 
-		if (strlen(value) == 0) xmlFree(value);
+		if (strlen((char *)value) == 0) xmlFree(value);
 	}
 	else
 	{
-		conn->association.keys[4] = _strdup(value);
+	  conn->association.keys[4] = _strdup((char *)value);
 		xmlFree(value);
 	}
 
@@ -491,15 +491,15 @@ void *xsupconfig_parse_conn_psk(void **attr, uint8_t config_type, xmlNodePtr nod
   printf("WPA Preshared Key is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
+  if ((value == NULL) || (strlen((char *)value) == 0))
 	{
 		conn->association.psk = NULL;
 
-		if (strlen(value) == 0) xmlFree(value);
+		if (strlen((char *)value) == 0) xmlFree(value);
 	}
 	else
 	{
-		conn->association.psk = _strdup(value);
+	  conn->association.psk = _strdup((char *)value);
 		xmlFree(value);
 	}
 
@@ -520,13 +520,13 @@ void *xsupconfig_parse_conn_enc_psk(void **attr, uint8_t config_type, xmlNodePtr
   printf("WPA (Encrypted) Preshared Key is '%s'!\n", value);
 #endif
 
-  if ((value == NULL) || (strlen(value) == 0))
+  if ((value == NULL) || (strlen((char *)value) == 0))
   {
 	  xmlFree(value);
 	  return conn;
   }
 
-  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&conn->association.psk, &size) != 0)
+  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen((char *)value), (uint8_t **)&conn->association.psk, &size) != 0)
   {
 	  xmlFree(value);
 	  conn->association.psk = NULL;
@@ -556,14 +556,14 @@ void *xsupconfig_parse_conn_psk_hex(void **attr, uint8_t config_type, xmlNodePtr
   printf("WPA Hex Key is '%s'!\n", value);
 #endif
 
-  if ((value == NULL) || (strlen(value) == 0))
+  if ((value == NULL) || (strlen((char *)value) == 0))
   {
 	  xmlFree(value);
 	  conn->association.psk_hex = NULL;
   }
   else
   {
-	conn->association.psk_hex = _strdup(value);
+    conn->association.psk_hex = _strdup((char *)value);
 	xmlFree(value);
   }
 

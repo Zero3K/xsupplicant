@@ -13,6 +13,7 @@
 
 #ifndef WINDOWS
 #include <strings.h>
+#include <stdint.h>
 #endif
 
 #include <string.h>
@@ -664,7 +665,7 @@ int config_delete_profile_global(char *profname)
 	conf_profiles = cur->next;
 
 	// Then, delete everything in that network.
-	delete_config_single_profile(&cur);
+	delete_config_single_profile((void **)&cur);
 
 	return XENONE;
       }
@@ -684,7 +685,7 @@ int config_delete_profile_global(char *profname)
       // We found the network to delete.
       prev->next = cur->next;
 
-      delete_config_single_profile(&cur);
+      delete_config_single_profile((void **)&cur);
       return XENONE;
     }
 
@@ -717,7 +718,7 @@ int config_delete_profile_user(char *profname)
 	conf_user_profiles = cur->next;
 
 	// Then, delete everything in that network.
-	delete_config_single_profile(&cur);
+	delete_config_single_profile((void **)&cur);
 
 	return XENONE;
       }
@@ -737,7 +738,7 @@ int config_delete_profile_user(char *profname)
       // We found the network to delete.
       prev->next = cur->next;
 
-      delete_config_single_profile(&cur);
+      delete_config_single_profile((void **)&cur);
       return XENONE;
     }
 
@@ -787,7 +788,7 @@ int config_delete_connection_global(char *netname)
       conf_connections = cur->next;
 
       // Then, delete everything in that network.
-      delete_config_single_connection(&cur);
+      delete_config_single_connection((void **)&cur);
 
       return XENONE;
     }
@@ -807,7 +808,7 @@ int config_delete_connection_global(char *netname)
       // We found the network to delete.
       prev->next = cur->next;
 
-      delete_config_single_connection(&cur);
+      delete_config_single_connection((void **)&cur);
       return XENONE;
     }
   
@@ -839,7 +840,7 @@ int config_delete_connection_user(char *netname)
       conf_user_connections = cur->next;
 
       // Then, delete everything in that network.
-      delete_config_single_connection(&cur);
+      delete_config_single_connection((void **)&cur);
 
       return XENONE;
     }
@@ -859,7 +860,7 @@ int config_delete_connection_user(char *netname)
       // We found the network to delete.
       prev->next = cur->next;
 
-      delete_config_single_connection(&cur);
+      delete_config_single_connection((void **)&cur);
       return XENONE;
     }
   
@@ -909,7 +910,7 @@ int config_delete_interface(char *intdesc)
 		conf_devices->interf = cur->next;
 
       // Then, delete everything in that network.
-      delete_config_interface(&cur);
+		delete_config_interface((void **)&cur);
 
       return XENONE;
     }
@@ -929,7 +930,7 @@ int config_delete_interface(char *intdesc)
       // We found the network to delete.
       prev->next = cur->next;
 
-      delete_config_interface(&cur);
+      delete_config_interface((void **)&cur);
       return XENONE;
     }
   
@@ -964,7 +965,7 @@ int config_delete_trusted_server_global(char *svrname)
 	  conf_trusted_servers->servers = cur->next;
 
       // Then, delete everything in that network.
-      delete_config_trusted_server(&cur);
+	  delete_config_trusted_server((void **)&cur);
 
       return XENONE;
     }
@@ -984,7 +985,7 @@ int config_delete_trusted_server_global(char *svrname)
       // We found the one to delete.
       prev->next = cur->next;
 
-      delete_config_trusted_server(&cur);
+      delete_config_trusted_server((void **)&cur);
       return XENONE;
     }
   
@@ -1019,7 +1020,7 @@ int config_delete_trusted_server_user(char *svrname)
 	  conf_user_trusted_servers->servers = cur->next;
 
       // Then, delete everything in that network.
-      delete_config_trusted_server(&cur);
+	  delete_config_trusted_server((void **)&cur);
 
       return XENONE;
     }
@@ -1039,7 +1040,7 @@ int config_delete_trusted_server_user(char *svrname)
       // We found the one to delete.
       prev->next = cur->next;
 
-      delete_config_trusted_server(&cur);
+      delete_config_trusted_server((void **)&cur);
       return XENONE;
     }
   
@@ -2279,7 +2280,7 @@ void delete_config_trusted_server(void **inptr)
  **/
 void delete_config_trusted_servers(struct config_trusted_servers **tmp_servers)
 {
-  struct config_trusted_server *next = NULL, *cur = NULL;
+  struct config_trusted_server *cur = NULL;
 
   if ((tmp_servers == NULL) || ((*tmp_servers) == NULL))
     return;
@@ -2852,7 +2853,7 @@ int add_change_config_connections_global(struct config_connection *confconn)
 	{
 		// The first node is the one we are changing.
 		confconn->next = conf_connections->next;
-		delete_config_single_connection(&conf_connections);
+		delete_config_single_connection((void **)&conf_connections);
 		conf_connections = confconn;
 		return XENONE;
 	}
@@ -2876,7 +2877,7 @@ int add_change_config_connections_global(struct config_connection *confconn)
 	// Otherwise, we need to replace the node that cur points to.
 	confconn->next = cur->next;
 	prev->next = confconn;
-	delete_config_single_connection(&cur);
+	delete_config_single_connection((void **)&cur);
 
 	return XENONE;
 }
@@ -2909,7 +2910,7 @@ int add_change_config_connections_user(struct config_connection *confconn)
 	{
 		// The first node is the one we are changing.
 		confconn->next = conf_user_connections->next;
-		delete_config_single_connection(&conf_user_connections);
+		delete_config_single_connection((void **)&conf_user_connections);
 		conf_user_connections = confconn;
 		return XENONE;
 	}
@@ -2933,7 +2934,7 @@ int add_change_config_connections_user(struct config_connection *confconn)
 	// Otherwise, we need to replace the node that cur points to.
 	confconn->next = cur->next;
 	prev->next = confconn;
-	delete_config_single_connection(&cur);
+	delete_config_single_connection((void **)&cur);
 
 	return XENONE;
 }
@@ -3045,7 +3046,7 @@ int add_change_config_profiles_global(struct config_profiles *confprof)
 	{
 		// The first node is the one we are changing.
 		confprof->next = conf_profiles->next;
-		delete_config_single_profile(&conf_profiles);
+		delete_config_single_profile((void **)&conf_profiles);
 		conf_profiles = confprof;
 		return XENONE;
 	}
@@ -3069,7 +3070,7 @@ int add_change_config_profiles_global(struct config_profiles *confprof)
 	// Otherwise, we need to replace the node that cur points to.
 	confprof->next = cur->next;
 	prev->next = confprof;
-	delete_config_single_profile(&cur);
+	delete_config_single_profile((void **)&cur);
 
 	return XENONE;
 }
@@ -3102,7 +3103,7 @@ int add_change_config_profiles_user(struct config_profiles *confprof)
 	{
 		// The first node is the one we are changing.
 		confprof->next = conf_user_profiles->next;
-		delete_config_single_profile(&conf_user_profiles);
+		delete_config_single_profile((void **)&conf_user_profiles);
 		conf_user_profiles = confprof;
 		return XENONE;
 	}
@@ -3126,7 +3127,7 @@ int add_change_config_profiles_user(struct config_profiles *confprof)
 	// Otherwise, we need to replace the node that cur points to.
 	confprof->next = cur->next;
 	prev->next = confprof;
-	delete_config_single_profile(&cur);
+	delete_config_single_profile((void **)&cur);
 
 	return XENONE;
 }
@@ -3191,7 +3192,7 @@ int add_change_config_trusted_server_global(struct config_trusted_server *confts
 	{
 		// The first node is the one we are changing.
 		confts->next = cur->next;
-		delete_config_trusted_server(&cur);
+		delete_config_trusted_server((void **)&cur);
 		conf_trusted_servers->servers = confts;
 		return XENONE;
 	}
@@ -3215,7 +3216,7 @@ int add_change_config_trusted_server_global(struct config_trusted_server *confts
 	// Otherwise, we need to replace the node that cur points to.
 	confts->next = cur->next;
 	prev->next = confts;
-	delete_config_trusted_server(&cur);
+	delete_config_trusted_server((void **)&cur);
 
 	return XENONE;
 }
@@ -3261,7 +3262,7 @@ int add_change_config_trusted_server_user(struct config_trusted_server *confts)
 	{
 		// The first node is the one we are changing.
 		confts->next = cur->next;
-		delete_config_trusted_server(&cur);
+		delete_config_trusted_server((void **)&cur);
 		conf_user_trusted_servers->servers = confts;
 		return XENONE;
 	}
@@ -3285,7 +3286,7 @@ int add_change_config_trusted_server_user(struct config_trusted_server *confts)
 	// Otherwise, we need to replace the node that cur points to.
 	confts->next = cur->next;
 	prev->next = confts;
-	delete_config_trusted_server(&cur);
+	delete_config_trusted_server((void **)&cur);
 
 	return XENONE;
 }
@@ -3351,7 +3352,7 @@ int add_change_config_interface(struct xsup_interfaces *confif)
 	{
 		// The first node is the one we are changing.
 		confif->next = cur->next;
-		delete_config_interface(&cur);
+		delete_config_interface((void **)&cur);
 		conf_devices->interf = confif;
 		return XDATACHANGED;
 	}
@@ -3375,7 +3376,7 @@ int add_change_config_interface(struct xsup_interfaces *confif)
 	// Otherwise, we need to replace the node that cur points to.
 	confif->next = cur->next;
 	prev->next = confif;
-	delete_config_interface(&cur);
+	delete_config_interface((void **)&cur);
 
 	return XDATACHANGED;
 }
