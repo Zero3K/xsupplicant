@@ -338,10 +338,10 @@ uint8_t wpa2_get_group_crypt(context *ctx)
  * Generate the IE needed to associate correctly to a WPA2 network.
  *
  **************************************************************************/
-void wpa2_gen_ie(context *ctx, char *iedata, int *ielen)
+void wpa2_gen_ie(context *ctx, unsigned char *iedata, int *ielen)
 {
-  struct config_globals *globals;
-  wireless_ctx *wctx;
+  struct config_globals *globals = NULL;
+  wireless_ctx *wctx = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
@@ -372,6 +372,9 @@ void wpa2_gen_ie(context *ctx, char *iedata, int *ielen)
   iedata[2] = 0x01;
   iedata[3] = 0x00;
 
+  debug_printf(DEBUG_INT, "Created IE DUMP :\n");
+  debug_hex_printf(DEBUG_INT, iedata, 4);
+
   // The group key cipher suite.
   memcpy(&iedata[4], wpa2oui, 3);
 
@@ -385,6 +388,9 @@ void wpa2_gen_ie(context *ctx, char *iedata, int *ielen)
 
   debug_printf(DEBUG_KEY, "Using Group Cipher Suite : ");
   wpa_print_cipher_suite(DEBUG_KEY, iedata[7]);
+
+  debug_printf(DEBUG_INT, "Created IE DUMP :\n");
+  debug_hex_printf(DEBUG_INT, iedata, 8);
 
   // We can only support 1 pairwise cipher suite!
   iedata[8] = 0x01;
@@ -403,6 +409,9 @@ void wpa2_gen_ie(context *ctx, char *iedata, int *ielen)
 
   debug_printf(DEBUG_KEY, "Using Pairwise Cipher Suite : ");
   wpa_print_cipher_suite(DEBUG_KEY, iedata[13]);
+
+  debug_printf(DEBUG_INT, "Created IE DUMP :\n");
+  debug_hex_printf(DEBUG_INT, iedata, 14);
 
   if ((ctx->conn->association.group_keys == CIPHER_TKIP) &&
 	  ((wctx->pairwiseKeyType == CIPHER_WRAP) ||
@@ -436,6 +445,9 @@ void wpa2_gen_ie(context *ctx, char *iedata, int *ielen)
   // The authenticated key management suite.
   memcpy(&iedata[16], wpa2oui, 3);
 
+  debug_printf(DEBUG_INT, "Created IE DUMP :\n");
+  debug_hex_printf(DEBUG_INT, iedata, 19);
+
   if (ctx->conn->association.auth_type == AUTH_PSK)
     {
       iedata[19] = 2;  // PSK
@@ -453,11 +465,17 @@ void wpa2_gen_ie(context *ctx, char *iedata, int *ielen)
       debug_printf(DEBUG_KEY, "Using 802.1X\n");
     }
 
+  debug_printf(DEBUG_INT, "Created IE DUMP :\n");
+  debug_hex_printf(DEBUG_INT, iedata, 20);
+
   // We don't support capabilities yet.
   iedata[20] = 0x00;
   iedata[21] = 0x00;
 
-  *ielen = 22;
+  (*ielen) = 22;
+
+  debug_printf(DEBUG_INT, "Created IE DUMP :\n");
+  debug_hex_printf(DEBUG_INT, iedata, (*ielen));
 }
  
 void wpa2_gen_ie_caps(context *thisint, char *iedata)

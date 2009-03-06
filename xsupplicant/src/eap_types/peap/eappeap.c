@@ -39,6 +39,8 @@
 #ifdef WINDOWS
 #include "../../event_core_win.h"
 #include "../../platform/windows/win_impersonate.h"
+#else
+#include "../../event_core.h"
 #endif
 
 #ifdef USE_EFENCE
@@ -222,7 +224,8 @@ void eappeap_process(eap_type_data *eapdata)
   uint8_t *tls_type = NULL;
   struct eap_header *eaphdr = NULL;
   uint8_t *resbuf = NULL;
-  int16_t bufsiz = 0;
+  int decryptReadyBufSize = 0;
+  uint16_t bufsiz = 0;
   context *ctx = NULL;
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-PEAP) Processing.\n");
@@ -338,9 +341,9 @@ void eappeap_process(eap_type_data *eapdata)
           return;
         }
 
-      bufsiz = tls_funcs_decrypt_ready(eapdata->eap_data);
+      decryptReadyBufSize = tls_funcs_decrypt_ready(eapdata->eap_data);
 
-      switch (bufsiz)
+      switch (decryptReadyBufSize)
         {
         case 0:
           // Nothing to do yet.
@@ -353,7 +356,7 @@ void eappeap_process(eap_type_data *eapdata)
 
         default:
           // Data to be decrypted.
-          resbuf = Malloc(bufsiz);
+          resbuf = Malloc(decryptReadyBufSize);
           if (resbuf == NULL)
             {
               debug_printf(DEBUG_NORMAL, "Couldn't allocate memory needed to"
@@ -362,6 +365,7 @@ void eappeap_process(eap_type_data *eapdata)
 			  eap_type_common_fail(eapdata);
               break;
             }
+	  bufsiz = decryptReadyBufSize;
 
           if (tls_funcs_decrypt(eapdata->eap_data, resbuf, (uint16_t *)&bufsiz) != XENONE)
             {

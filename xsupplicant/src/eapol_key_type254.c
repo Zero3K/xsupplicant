@@ -16,6 +16,8 @@
 #include <winsock2.h>
 #endif
 
+#include <openssl/rand.h>
+
 #include "libxsupconfig/xsupconfig_structs.h"
 #include "xsup_common.h"
 #include "libxsupconfig/xsupconfig.h"
@@ -482,7 +484,7 @@ void eapol_key_type254_do_type1(context *ctx)
 {
   struct wpa_key_packet *inkeydata = NULL, *outkeydata = NULL;
   uint16_t keyflags, len, value16;
-  int i, version, ielen;
+  int version, ielen;
   char key[16], wpa_ie[26];
   char zeros[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
   wireless_ctx *wctx = NULL;

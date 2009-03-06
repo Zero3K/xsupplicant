@@ -29,6 +29,7 @@
 #include "../../ipc_events_index.h"
 #include "../../platform/cardif.h"
 #include "../../logon_creds.h"
+#include "../../eapol.h"
 
 #ifndef WINDOWS
 #include <netinet/in.h>
@@ -443,10 +444,9 @@ uint8_t eapmschapv2_challenge(eap_type_data *eapdata)
   struct mschapv2_vars *myvars = NULL;
   struct config_eap_mschapv2 *eapconf = NULL;
   char *username = NULL;
-  char *ident = NULL;
 
 #ifdef WINDOWS
-  uint16_t length;
+  uint16_t length = 0;
 #endif
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -1131,7 +1131,6 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
   uint8_t eapid = 0;
   struct eap_header *eap_header = NULL;
   char *username = NULL;
-  char *temp = NULL;
 
   if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
     return NULL;
@@ -1205,10 +1204,6 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data *eapdata)
 
   response->Flags = 0;
 
-
-/*  memcpy(&resp[sizeof(struct eap_header)+54], eapdata->ident, 
-	 strlen(eapdata->ident));
-	 */
   memcpy(&resp[sizeof(struct eap_header)+54], username, strlen(username));
 
   return resp;

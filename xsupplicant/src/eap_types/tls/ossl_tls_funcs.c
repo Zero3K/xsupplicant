@@ -53,6 +53,8 @@
 #include "../../frame_structs.h"
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
+#include "../../statemachine.h"
+#include "../../platform/cardif.h"
 
 #ifndef WINDOWS
 #include "../../event_core.h"
@@ -640,6 +642,100 @@ int tls_funcs_get_embedded_appdata(struct tls_vars *mytls_vars, uint8_t **buffer
 	return 0;
 }
 
+/***********************************************************************
+ *
+ *  Check the CN field of a certificate against what the user has requested
+ *  that we test with.
+ *
+ ***********************************************************************/
+int tls_funcs_cn_check(struct tls_vars *mytls_vars)
+{
+  char *cnname = NULL;
+  char *temp = NULL;
+  char *temp2 = NULL;
+  char *submatch = NULL;
+
+  TRACE
+
+  if (!xsup_assert((mytls_vars != NULL), "mytls_vars != NULL", FALSE))
+    return XEMALLOC;
+
+  if (mytls_vars->cncheck != NULL)
+    {
+      cnname = get_cert_common_name(mytls_vars->ssl);
+
+      debug_printf(DEBUG_TLS_CORE, "Certificate CN : %s\n",cnname);
+
+      // mytls_vars->cncheck == NULL, do nothing.
+      debug_printf(DEBUG_TLS_CORE, "Doing a CN Check!\n");
+
+      if (mytls_vars->cnexact == 1)
+	{
+	  debug_printf(DEBUG_TLS_CORE, "Looking for an exact match!\n");
+
+	  if (cnname != NULL)
+	    {
+	      if (strcmp(mytls_vars->cncheck, cnname) != 0)
+		{
+		  debug_printf(DEBUG_NORMAL, "Certificate CN didn't "
+			  "match!  (Server : %s    Us : %s)\n", cnname, mytls_vars->cncheck);
+		  FREE(cnname);
+		  return XEBADCN;
+		} else {
+		  debug_printf(DEBUG_TLS_CORE, "Certificate CN matched!\n");
+		}
+	    }
+	} else {
+	  debug_printf(DEBUG_TLS_CORE, "Looking for a relative match!\n");
+
+	  if (cnname != NULL)
+	    {
+			submatch = strdup(mytls_vars->cncheck);
+			temp2 = submatch-1;  //Back up one, since the first time through the loop we will add one to get us back to where we need to be.
+
+			do
+			{
+				temp = temp2+1;  // Skip the NULL
+				temp2 = strstr(temp, ",");
+
+				if (temp2 != NULL) temp2 = 0x00;  // Convert the character to a NULL so that temp just points to a single entry.
+
+				// Determine if the search string is the old style (i.e. doesn't use * for a wildcard,
+				// and assumes that mytls_vars->cncheck must be a substring of the one provided), or
+				// is the new style (where * is used as a wildcard.)
+				if (strstr(temp, "*") == NULL)
+				{
+			      if (strstr(cnname, temp) != NULL)
+				  {
+					  debug_printf(DEBUG_TLS_CORE, "Certificate CN matched!\n");
+					  
+					  // If we find one that matches, we are done.
+					  FREE(cnname);
+					  return XENONE;
+					}
+				}
+				else
+				{
+					if (tls_funcs_wildcard_match(temp, cnname) == XENONE)
+					{
+						FREE(cnname);
+						return XENONE;   // We found a match.
+					}
+				}
+			} while (temp2 != NULL);
+
+			// If we get here, then we didn't find a match.
+			FREE(cnname);
+			return XEBADCN;
+	    }
+	}
+    }
+
+  FREE(cnname);
+
+  return XENONE;
+}
+
 /**
  * \brief Process packets that aren't start packets.
  *
@@ -1100,101 +1196,6 @@ int tls_funcs_wildcard_match(char *pattern, char *target)
 	if (strlen(offset) != strlen(temp)) return XEBADCN;
 
 	return XENONE;
-}
-
-/***********************************************************************
- *
- *  Check the CN field of a certificate against what the user has requested
- *  that we test with.
- *
- ***********************************************************************/
-int tls_funcs_cn_check(struct tls_vars *mytls_vars)
-{
-  char *cnname = NULL;
-  char *temp = NULL;
-  char *temp2 = NULL;
-  int retval = XENONE;
-  char *submatch = NULL;
-
-  TRACE
-
-  if (!xsup_assert((mytls_vars != NULL), "mytls_vars != NULL", FALSE))
-    return XEMALLOC;
-
-  if (mytls_vars->cncheck != NULL)
-    {
-      cnname = get_cert_common_name(mytls_vars->ssl);
-
-      debug_printf(DEBUG_TLS_CORE, "Certificate CN : %s\n",cnname);
-
-      // mytls_vars->cncheck == NULL, do nothing.
-      debug_printf(DEBUG_TLS_CORE, "Doing a CN Check!\n");
-
-      if (mytls_vars->cnexact == 1)
-	{
-	  debug_printf(DEBUG_TLS_CORE, "Looking for an exact match!\n");
-
-	  if (cnname != NULL)
-	    {
-	      if (strcmp(mytls_vars->cncheck, cnname) != 0)
-		{
-		  debug_printf(DEBUG_NORMAL, "Certificate CN didn't "
-			  "match!  (Server : %s    Us : %s)\n", cnname, mytls_vars->cncheck);
-		  FREE(cnname);
-		  return XEBADCN;
-		} else {
-		  debug_printf(DEBUG_TLS_CORE, "Certificate CN matched!\n");
-		}
-	    }
-	} else {
-	  debug_printf(DEBUG_TLS_CORE, "Looking for a relative match!\n");
-
-	  if (cnname != NULL)
-	    {
-			submatch = strdup(mytls_vars->cncheck);
-			temp2 = submatch-1;  //Back up one, since the first time through the loop we will add one to get us back to where we need to be.
-
-			do
-			{
-				temp = temp2+1;  // Skip the NULL
-				temp2 = strstr(temp, ",");
-
-				if (temp2 != NULL) temp2 = 0x00;  // Convert the character to a NULL so that temp just points to a single entry.
-
-				// Determine if the search string is the old style (i.e. doesn't use * for a wildcard,
-				// and assumes that mytls_vars->cncheck must be a substring of the one provided), or
-				// is the new style (where * is used as a wildcard.)
-				if (strstr(temp, "*") == NULL)
-				{
-			      if (strstr(cnname, temp) != NULL)
-				  {
-					  debug_printf(DEBUG_TLS_CORE, "Certificate CN matched!\n");
-					  
-					  // If we find one that matches, we are done.
-					  FREE(cnname);
-					  return XENONE;
-					}
-				}
-				else
-				{
-					if (tls_funcs_wildcard_match(temp, cnname) == XENONE)
-					{
-						FREE(cnname);
-						return XENONE;   // We found a match.
-					}
-				}
-			} while (temp2 != NULL);
-
-			// If we get here, then we didn't find a match.
-			FREE(cnname);
-			return XEBADCN;
-	    }
-	}
-    }
-
-  FREE(cnname);
-
-  return XENONE;
 }
 
 /**********************************************************************

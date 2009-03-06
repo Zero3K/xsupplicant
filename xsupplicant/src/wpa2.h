@@ -45,7 +45,7 @@ struct wpa2_ie_struct {
 #pragma pack()
 #endif
 
-void wpa2_gen_ie(context *, char *, int *);
+void wpa2_gen_ie(context *, unsigned char *, int *);
 void wpa2_gen_ie_caps(context *, char *);
 char *wpa_minmax(char *, char *, int, char);
 int wpa2_parse_ie(char *iedata);

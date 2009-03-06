@@ -268,7 +268,7 @@ void cardif_set_driver(char driver, context *ctx)
     case DRIVER_NL80211:
         if ( driver_nl80211_init(ctx) )
         {
-                        return 1;
+                return;
         }
                 else
         {
@@ -320,10 +320,6 @@ int cardif_init(context *ctx, char driver)
 
   debug_printf(DEBUG_INT, "Initializing socket for interface %s..\n",
 	       ctx->intName);
-
-  // Keep track of which driver we were assigned.
-#warning The below needs to be moved to the wireless context init function!
-  //  ctx->driver_in_use = driver;
 
   // Allocate memory for the things we need.
   ctx->sockData = (void *)Malloc(sizeof(struct lin_sock_data));
@@ -1656,11 +1652,7 @@ int cardif_get_wpa_ie(context *ctx, char *iedata, int *ielen)
   return wireless->get_wpa_ie(ctx, iedata, ielen);
 }
 
-/**
- * \todo Write this!
- **/
-/*int cardif_get_wpa2_ie(context *ctx, char *iedata, int *ielen) commented by deepak*/
-int cardif_get_wpa2_ie(context *ctx, uint8_t *iedata, uint8_t *ielen) /*added by deepak*/
+int cardif_get_wpa2_ie(context *ctx, uint8_t *iedata, uint8_t *ielen) 
 {
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
@@ -1919,8 +1911,6 @@ void cardif_passive_scan_timeout(context *ctx)
 
   wctx = (wireless_ctx *)ctx->intTypeData;
 
-#warning FINISH!  We get scan data results, but we still need to do something with them.
-
   if (!TEST_FLAG(wctx->flags, WIRELESS_PASV_SCANNING))
     {
      if (!TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
@@ -2080,31 +2070,31 @@ char *cardif_get_ip(context *ctx)
 
 char *cardif_get_netmask(context *ctx)
 {
-#warning FINISH!
+  // XXX  FINISH!
   return NULL;
 }
 
 char *cardif_get_gw(context *ctx)
 {
-#warning FINISH!
+  // XXX  FINISH!
   return NULL;
 }
 
 char *cardif_get_dns1(context *ctx)
 {
-#warning FINISH!
+  // XXX FINISH!
   return NULL;
 }
 
 char *cardif_get_dns2(context *ctx)
 {
-#warning FINISH!
+  // XXX FINISH!
   return NULL;
 }
 
 char *cardif_get_dns3(context *ctx)
 {
-#warning FINISH!
+  // XXX FINISH!
   return NULL;
 }
 
@@ -2142,7 +2132,6 @@ void cardif_enum_ints()
 {
   struct if_nameindex *ifnames;
   int i = 0;
-  char mac[6];
 
   ifnames = if_nameindex();
   if (ifnames == NULL)
@@ -2251,18 +2240,9 @@ int cardif_get_uptime(uint64_t *uptime)
   return 0;
 }
 
-void cardif_cancel_io(context *ctx)    /*added by deepak*/
-{
-        /*TO BE DONE*/
-}
-
-int cardif_get_freq(context *ctx, uint32_t *freq) /*added by deepak*/
+int cardif_get_freq(context *ctx, uint32_t *freq) 
 {
         return 0;
-}
-
-void event_core_set_active_ctx(context *ctx) { /*added by deepak*/
-        /*TO BE DONE*/
 }
 
 int cardif_apply_pmkid_data(context *ctx, pmksa_list *list)

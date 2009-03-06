@@ -11,7 +11,9 @@
 #include <windows.h>
 
 #include "stdintwin.h"
-#endif
+#else
+#include <string.h>
+#endif   // WINDOWS
 
 #include <openssl/hmac.h>
 #include <openssl/sha.h>
@@ -564,7 +566,6 @@ void pmksa_cache_deinit(context *ctx)
  **/
 void pmksa_cache_update(context *ctx)
 {
-	int i = 0;
 	config_globals *confdata = NULL;
 	uint8_t secs_elapsed;
 
@@ -673,7 +674,6 @@ int pmksa_populate_keydata(context *ctx, uint8_t *pmkid)
  **/
 void pmksa_generate_okc_data(context *ctx)
 {
-	pmksa_cache_element *cur = NULL;
 	wireless_ctx *wctx = NULL;
 	struct found_ssids *ssids = NULL;
 	
@@ -766,12 +766,10 @@ struct found_ssids *pmksa_add_to_int_cache_list(context *ctx, struct found_ssids
  **/
 void pmksa_apply_cache(context *ctx)
 {
-	pmksa_cache_element *cur = NULL;
 	wireless_ctx *wctx = NULL;
 	struct found_ssids *ssids = NULL;
 	struct found_ssids *lowest = NULL;
 	pmksa_list *apply_list = NULL;
-	int i = 0, num_entries = 0;
 	
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
 

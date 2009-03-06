@@ -1117,11 +1117,6 @@ void debug_printf(uint32_t level, char *fmt, ...)
   char *ipcevent = NULL;
   char *tdstring = NULL;
 
-#ifndef EXTERNAL_USE
-  char *temp_desc = NULL;
-  context *ctx = NULL;
-#endif
-
 #ifdef DEBUG_LOG_PLUGINS
   // No need wasting time processing this one...
   if(((registered_debug_loggers() <= 0) && ((!(debug_level & level)) && (level != 0))))

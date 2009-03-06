@@ -1063,11 +1063,11 @@ done:
  **/
 void ipc_events_send_tnc_batch(void *batchlist, uint32_t imcID, uint32_t connID, uint32_t oui, uint32_t msg)
 {
+#ifdef HAVE_TNC
 	xmlNodePtr t = NULL, root = NULL, n = NULL, b = NULL;
 	xmlDocPtr indoc = NULL;
 	char temp[100];
 	int numitems = 0;
-#ifdef HAVE_TNC
 	tnc_msg_batch *cur = NULL;
 #endif
 

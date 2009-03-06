@@ -566,7 +566,9 @@ struct found_ssids *config_ssid_find_best_ssid(context *ctx)
   wireless_ctx *wctx = NULL;
   int retval = 0;
   struct config_globals *globals = NULL;
+#ifdef WINDOWS
   struct config_connection *conn = NULL;
+#endif // WINDOWS
   char *machineAuth_wireless = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return NULL;

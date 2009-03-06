@@ -18,6 +18,7 @@
 #ifndef WINDOWS
 #include <strings.h>
 #include <stdint.h>
+#include <wchar.h>
 #endif
 
 #include <ctype.h>
@@ -223,11 +224,11 @@ void GenerateAuthenticatorResponse(char *Password, char *NTResponse,
 				   char *AuthenticatorChallenge, char *UserName,
 				   char *AuthenticatorResponse, int mode)
 {
-  char PasswordHash[16];
-  char PasswordHashHash[16];
+  unsigned char PasswordHash[16];
+  unsigned char PasswordHashHash[16];
   EVP_MD_CTX context;
   int Digest_len;
-  char Digest[20];
+  unsigned char Digest[20];
   char Challenge[8];
 
   char Magic1[39] =
@@ -295,7 +296,7 @@ void GenerateAuthenticatorResponse(char *Password, char *NTResponse,
   ChallengeHash(PeerChallenge, AuthenticatorChallenge, UserName, Challenge);
 
   debug_printf(DEBUG_AUTHTYPES, "Challenge Hash : \n");
-  debug_hex_printf(DEBUG_AUTHTYPES, Challenge, 8);
+  debug_hex_printf(DEBUG_AUTHTYPES, (unsigned char *)Challenge, 8);
 
   EVP_DigestInit(&context, EVP_sha1());
   EVP_DigestUpdate(&context, &Digest, 20);
@@ -314,7 +315,7 @@ void CheckAuthenticatorResponse(char *Password, char *NtResponse,
 				char *ReceivedResponse, int *ResponseOK,
 				int mode)
 {
-  char MyResponse[20], procResp[20];
+  unsigned char MyResponse[20], procResp[20];
   char *stripped;
   int i = 0;
 
@@ -431,9 +432,6 @@ void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
 			int mode)
 {
   char Challenge[8], PasswordHash[16];
-  char *temp = NULL;
-  char *temp2 = NULL;
-  int i = 0;
 
   if (!xsup_assert((AuthenticatorChallenge != NULL),
 		   "AuthenticatorChallenge != NULL", FALSE))

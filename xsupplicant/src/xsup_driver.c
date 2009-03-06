@@ -621,7 +621,9 @@ int main(int argc, char *argv[])
 
   int xdaemon = 1, new_debug, zeros=0;
   int retval = 0;
-  int numsupps = 0;
+#ifdef WINDOWS
+  int numsupps = 0;     // This is only being used by Windows right now.
+#endif
   FDEPTH flags = 0;
   uint8_t clear_ipc = FALSE;
 

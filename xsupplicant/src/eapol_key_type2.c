@@ -16,6 +16,8 @@
 #include <winsock2.h>
 #endif
 
+#include <openssl/rand.h>
+
 #include "libxsupconfig/xsupconfig_structs.h"
 #include "xsup_common.h"
 #include "libxsupconfig/xsupconfig.h"
@@ -41,6 +43,7 @@
 #include "ipc_events.h"
 #include "ipc_events_index.h"
 #include "timer.h"
+#include "pmksa.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -911,7 +914,7 @@ void eapol_key_type2_do_type1(context *intdata)
 {
   struct wpa2_key_packet *inkeydata, *outkeydata;
   uint16_t keyflags, len, value16;
-  int i, version;
+  int version;
   uint8_t ielen;
   char key[16];
   char wpa_ie[256];

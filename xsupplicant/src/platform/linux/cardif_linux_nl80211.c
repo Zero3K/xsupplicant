@@ -288,7 +288,7 @@ int  cardif_linux_nl80211_set_WEP_key(context *thisint, uint8_t *key,
 	struct iwreq wrq;
 	struct lin_sock_data *sockData;
 	wireless_ctx *wctx = NULL;
-	char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+	unsigned char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
 	uint8_t addr[6] = {0xff,0xff,0xff,0xff,0xff,0xff};
 
 	printf("-------> %s \n ", __FUNCTION__ );
@@ -304,7 +304,7 @@ int  cardif_linux_nl80211_set_WEP_key(context *thisint, uint8_t *key,
 	if (index & 0x80) settx = 1;
 
 	rc = cardif_linux_nl80211_set_key(thisint, DRV_ALG_WEP, addr,
-				     (index & 0x7f), settx, seq, 6, (char *)key,
+				     (index & 0x7f), settx, seq, 6, key,
 				     keylen);
 	if (rc == XENONE) return rc;
 	debug_printf(DEBUG_INT, "Couldn't use extended key calls to set keys. \n");
@@ -385,9 +385,9 @@ int  cardif_linux_nl80211_set_WEP_key(context *thisint, uint8_t *key,
 
 int cardif_linux_nl80211_set_tkip_key(context *intdata, 
 				   unsigned char *addr, int keyidx, int settx, 
-				   char *key, int keylen)
+				   unsigned char *key, int keylen)
 {
-  char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+  unsigned char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return XEMALLOC;
@@ -398,9 +398,9 @@ int cardif_linux_nl80211_set_tkip_key(context *intdata,
 
 int cardif_linux_nl80211_set_ccmp_key(context *intdata,
 				   unsigned char *addr, int keyidx, int settx,
-				   char *key, int keylen)
+				   unsigned char *key, int keylen)
 {
-  	char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+  	unsigned char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
 
   	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     	return XEMALLOC;
@@ -411,8 +411,6 @@ int cardif_linux_nl80211_set_ccmp_key(context *intdata,
 
 int cardif_linux_nl80211_delete_key(context *intdata, int key_idx, int set_tx)
 {
-	char *bcast = (char *) "\xff\xff\xff\xff\xff\xff";
-	printf("-------> %s \n ", __FUNCTION__ );
   	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     	return XEMALLOC;
 

@@ -11,6 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef WINDOWS
+#include "stdintwin.h"
+#else
+#include <stdint.h>
+#endif
+
 #include "xsup_common.h"
 #include "../lib/libxsupconfig/xsupconfig.h"
 #include "xsup_err.h"

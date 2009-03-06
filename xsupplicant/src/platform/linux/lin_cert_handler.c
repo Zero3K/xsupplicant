@@ -24,6 +24,7 @@
 #include <openssl/x509v3.h>
 #include <openssl/x509_vfy.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include "src/xsup_common.h"
 #include "src/xsup_err.h"
@@ -264,7 +265,7 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
 	cert_enum *casa = NULL;
 	PEMFL_LIST * tmp_ca_list = NULL;;
 	int cert_index = 0,sz = 0,i = 0;
-	char tmp_str[300],cName[50];
+	char tmp_str[300];
  	cert_info ci;
 
 	
@@ -327,7 +328,6 @@ int cert_handler_get_info_from_store(char *storetype, char *location, cert_info 
 {
 	X509* cert = NULL;
         BIO* bio_cert = NULL;
-	long datalen = 0;
 	X509_NAME *name=NULL;
 	char * cert_buff = NULL;
 
@@ -461,7 +461,6 @@ char * X509_NAME_to_str(X509_NAME *name, int fmt)
         X509_NAME_ENTRY *e;
         const char *field_name;
         char       *sp;
-        char       *dp;
         ASN1_STRING *v;
         size_t     size;
 		int do_once = 1;
@@ -739,7 +738,6 @@ char *getIssuername(char * location)
 {
 	X509* cert = NULL;
         BIO* bio_cert;
-        long datalen = 0;
         X509_NAME *name=NULL;
         char * cert_buff = NULL;
 

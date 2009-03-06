@@ -34,6 +34,7 @@
 #include "../../ipc_events.h"
 #include "../../ipc_events_index.h"
 #include "../../platform/cardif.h"
+#include "../../eapol.h"
 
 #ifdef WINDOWS
 #include "../../event_core_win.h"
@@ -325,7 +326,6 @@ void eapotp_process(eap_type_data *eapdata)
   uint16_t eaplen = 0;
   struct eap_header *header = NULL;
   context *ctx = NULL;
-  struct config_profile *prof = NULL;
   struct eap_otp_stored_frame *myFrame = NULL;
 
   debug_printf(DEBUG_AUTHTYPES, "(EAP-OTP/GTC) Processing.\n");

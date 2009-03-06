@@ -41,6 +41,9 @@ struct lin_nl80211_drv_handle {
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 #endif
 
+int driver_nl80211_init(context *ctx);
+unsigned int driver_nl80211_deinit(context *ctx);
+
 #endif
 
 #endif // DISABLE_LIBNL

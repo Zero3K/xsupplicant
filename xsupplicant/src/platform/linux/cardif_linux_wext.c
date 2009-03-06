@@ -691,16 +691,18 @@ double cardif_linux_wext_set_freq(context *thisint)
 
   strncpy( wrq.ifr_name, thisint->intName, strlen( thisint->intName) +1 );
 
-  debug_printf(DEBUG_NORMAL,"Getting freq from SSID cache for %s \n", wctx->cur_essid);
+  debug_printf(DEBUG_INT,"Getting freq from SSID cache for %s \n", wctx->cur_essid);
   freq = config_ssid_get_best_freq(wctx);
-  debug_printf(DEBUG_NORMAL,"Frequency :: %lf intName :: %s \n", freq, wrq.ifr_name );
+  debug_printf(DEBUG_INT,"Frequency :: %lf intName :: %s \n", freq, wrq.ifr_name );
 
   ret =freq;
   freq *=1e9;
   iw_float2freq(freq, &(wrq.u.freq));
   if (ioctl( sockData->sockInt, SIOCSIWFREQ, &wrq) < 0) 
   {
-     debug_printf( DEBUG_NORMAL, "failed to set frequency , error %d : %s \n", errno, strerror( errno ) );
+    // Some wireless interfaces won't let us set the frequency, so don't scream
+    // if we run across one of those.
+     debug_printf( DEBUG_INT, "failed to set frequency , error %d : %s \n", errno, strerror( errno ) );
      return 0;
   }
 
@@ -1772,10 +1774,9 @@ int cardif_linux_wext_delete_key(context *intdata, int key_idx, int set_tx)
 int cardif_linux_wireless_apply_pmkids (context *ctx, pmksa_list *pmklist)
 {
     wireless_ctx *wctx = NULL;
+    int i = 0;
 
     wctx = ctx->intTypeData;
-
-    int i;
 
     //sockData = ctx->sockData;
 
@@ -1788,9 +1789,7 @@ int cardif_linux_wireless_apply_pmkids (context *ctx, pmksa_list *pmklist)
     {
 
         for (i = (wctx->pmkids_supported-1); i >= 0; i--)
-
         {
-
             if (pmklist[i].cache_element != NULL) {
                 xsupplicant_driver_pmksa(ctx, pmklist[i].cache_element->authenticator_mac, pmklist[i].cache_element->pmkid, IW_PMKSA_ADD);
             }

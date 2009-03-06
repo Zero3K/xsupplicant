@@ -29,6 +29,7 @@
 #include "context.h"
 #include "statemachine.h"
 #include "ipc_events_index.h"
+#include "ipc_events.h"
 
 #ifndef WINDOWS
 #include <event_core.h>
@@ -516,10 +517,12 @@ int context_init_interface_hdwr(context **ctx, char *desc, char *device, char dr
   if (cardif_init(cur, driveridx) < 0) 
     return XENOTINT;
 
+#ifdef WINDOWS
   if (TEST_FLAG(cur->flags, INT_IGNORE))
   {
 	cardif_cancel_io((*ctx));   // Make sure we don't queue up frames that we won't process.
   }
+#endif
 
   if (cur->intType == ETH_802_11_INT)
   {
@@ -712,6 +715,7 @@ void context_init_ints_from_conf(context **ctx)
 				debug_printf(DEBUG_NORMAL, "Couldn't initialize interface '%s'!\n", ints->description);
 			}
 
+#ifdef WINDOWS
 			if ((globals != NULL) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
 			{
 				if ((*ctx)->intType != ETH_802_11_INT)
@@ -719,6 +723,7 @@ void context_init_ints_from_conf(context **ctx)
 					cardif_cancel_io((*ctx));
 				}
 			}
+#endif // WINDOWS
 		}
     else
     {

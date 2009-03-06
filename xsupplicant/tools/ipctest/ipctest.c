@@ -1113,8 +1113,7 @@ void dogeteaptype(char *device)
  **/
 void show_poss_conns(poss_conn_enum *conn)
 {
-	int i = 0, retval = 0;
-	char *devname = NULL;
+        int i = 0;
 
 	printf("\n");
 	while (conn[i].name != NULL)
@@ -1151,8 +1150,7 @@ void show_poss_conns(poss_conn_enum *conn)
  **/
 void show_conns(conn_enum *conn)
 {
-	int i = 0, retval = 0;
-	char *devname = NULL;
+        int i = 0;
 
 	printf("\n");
 	while (conn[i].name != NULL)
@@ -1781,7 +1779,7 @@ void create_conn()
 	struct config_connection *conn = NULL;
 	int result = 0;
 
-	conn = (struct config_connection *)Malloc(sizeof(struct config_connection));
+	conn = (struct config_connection *)malloc(sizeof(struct config_connection));
 	
 	conn->name = _strdup("Test User Connection");
 	conn->profile = _strdup("Test Profile");
@@ -1814,7 +1812,6 @@ void create_conn()
 void change_conn()
 {
 	struct config_connection *conn = NULL;
-	char *val = NULL;
 
 	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, "Ignition Test", &conn) != REQUEST_SUCCESS)
 	{

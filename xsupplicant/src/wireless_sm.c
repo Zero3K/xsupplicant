@@ -37,6 +37,7 @@
 #include "ipc_events_index.h"
 #include "wpa_common.h"
 #include "config_ssid.h"
+#include "pmksa.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>

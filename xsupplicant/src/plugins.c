@@ -15,6 +15,8 @@
 #include "libcrashdump/crashdump.h"
 
 #define  strdup  _strdup
+#else
+#include <string.h>
 #endif // WINDOWS
 
 #include <stdio.h>

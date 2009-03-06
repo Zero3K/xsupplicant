@@ -182,15 +182,6 @@ struct ipc_calls my_ipc_calls[] ={
 	{NULL, NULL}
 };
 
-
-
-struct pwd_callback_data {
-  uint8_t (*pwd_set_cb)(void *data, char *new_password);
-  void *cb_data;
-};
-
-static struct pwd_callback_data cbdata;
-
 // XXX ICK..  Do this better.
 extern void (*imc_disconnect_callback)(uint32_t connectionID);
 
@@ -697,7 +688,7 @@ int ipc_callout_ping(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_enum_live_interfaces(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
-	struct interfaces *intcache = NULL, *cur = NULL;
+	struct interfaces *intcache = NULL;
 	unsigned int count;
 	char res[100];
 	char *temp = NULL;
@@ -1632,7 +1623,6 @@ int ipc_callout_enum_connections(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
 	unsigned int count = 0, result = 0;
-	uint8_t flags = 0;
 	uint8_t config_type = 0;
 	xmlChar *ttype = NULL;
 	char res[100];
@@ -3238,7 +3228,6 @@ int ipc_callout_enum_profiles(xmlNodePtr innode, xmlNodePtr *outnode)
 	xmlNodePtr n = NULL, t = NULL;
 	unsigned int count;
 	char res[100];
-	char *temp = NULL;
 	uint8_t config_type = 0;
 	xmlChar *ttype = NULL;
 	int result = 0;
@@ -3325,10 +3314,8 @@ int ipc_callout_enum_trusted_servers(xmlNodePtr innode, xmlNodePtr *outnode)
 	xmlNodePtr n = NULL, t = NULL;
 	unsigned int count;
 	char res[100];
-	struct config_trusted_server *cur = NULL;
 	struct config_trusted_servers *svrs = NULL;
 	uint8_t config_type = 0;
-	char *temp = NULL;
 	xmlChar *ttype = NULL;
 	int result = 0;
 
@@ -3587,7 +3574,6 @@ int ipc_callout_get_profile(xmlNodePtr innode, xmlNodePtr *outnode)
 	char *profname = NULL;
 	struct config_profiles *profs = NULL;
 	uint8_t config_type = 0;
-	char temp[5];
 	xmlChar *content = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
@@ -3704,7 +3690,6 @@ int ipc_callout_get_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 	char *connname = NULL;
 	struct config_connection *conns = NULL;
 	uint8_t config_type = 0;
-	char temp[5];
 	xmlChar *content = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
@@ -3822,7 +3807,6 @@ int ipc_callout_get_trusted_server_config(xmlNodePtr innode, xmlNodePtr *outnode
 	struct config_trusted_server *ts = NULL;
 	struct config_trusted_servers *tss = NULL;
 	uint8_t config_type = 0;
-	char temp[5];
 	xmlChar *content = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
@@ -4228,8 +4212,6 @@ int ipc_callout_delete_connection_config(xmlNodePtr innode, xmlNodePtr *outnode)
   char *name = NULL;
   int retval;
   context *ctx = NULL;
-  xmlNodePtr t = NULL;
-  xmlChar *content = NULL;
   uint8_t config_type = 0;
 
   retval = ipc_callout_get_delete_name(innode, "Delete_Connection_Config", 
@@ -5057,7 +5039,7 @@ int ipc_callout_set_interface_config(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_enum_config_interfaces(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
-	config_interfaces *ints = NULL, *cur = NULL;
+	config_interfaces *ints = NULL;
 	unsigned int count;
 	char res[100];
 	char addr[50];
@@ -6618,7 +6600,6 @@ int ipc_callout_request_rename_profile(xmlNodePtr innode, xmlNodePtr *outnode)
  **/
 int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *outnode)
 {
-	context *ctx = NULL;
 	char *oldname = NULL;
 	char *newname = NULL;
 	int done = FALSE;
@@ -6626,7 +6607,6 @@ int ipc_callout_request_rename_trusted_server(xmlNodePtr innode, xmlNodePtr *out
 	struct config_trusted_server *confts = NULL;
 	struct config_trusted_servers *conftss = NULL;
 	xmlNodePtr n = NULL;
-	char *tsname = NULL;
 	xmlChar *content = NULL;
 	uint8_t config_type = 0;
 
@@ -6843,9 +6823,7 @@ int ipc_callout_get_link_state_for_int(xmlNodePtr innode, xmlNodePtr *outnode)
  **/
 int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *outnode)
 {
-	context *ctx = NULL;
 	xmlNodePtr n = NULL;
-	char *temp = NULL;
 	char *temp_data_path = NULL;
 	char *tt_data_path = NULL;
 	int overwrite = 0;
@@ -6875,6 +6853,7 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 	if (n == NULL)
 	{
 		debug_printf(DEBUG_NORMAL, "No <Trouble_Ticket_File> specified in 'Create_Trouble_Ticket' request!\n");
+		xmlFree(temp_data_path);
 		return ipc_callout_create_error(NULL, "Create_Trouble_Ticket", IPC_ERROR_INVALID_NODE, outnode);
 	}
 
@@ -6894,6 +6873,8 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 	if ((fh != NULL) && (overwrite == 0))
 	{
 		fclose(fh);
+		xmlFree(temp_data_path);
+		xmlFree(tt_data_path);
 		return ipc_callout_create_error(NULL, "Create_Trouble_Ticket", IPC_ERROR_FILE_EXISTS, outnode);
 	}
 	if (fh != NULL) fclose(fh);
@@ -6903,6 +6884,9 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode, xmlNodePtr *out
 #else
         #warning Need to implement crash dump file handling for this platform.
 #endif // WINDOWS
+
+	xmlFree(temp_data_path);
+	xmlFree(tt_data_path);
 	
 	// We have the data we need, so create the response.
 	return ipc_callout_create_ack(NULL, "Create_Trouble_Ticket", outnode);
@@ -6998,8 +6982,6 @@ int ipc_callout_add_cert_to_store(xmlNodePtr innode, xmlNodePtr *outnode)
  * \param[out] outnode   The XML node tree that contains either the response to the
  *                        request, or an error message.
  *
- * \retval IPC_SUCCESS on success
- * \retval IPC_FAILURE on failure
  **/
 int ipc_callout_get_tnc_conn_id(xmlNodePtr innode, xmlNodePtr *outnode)
 {
@@ -7027,6 +7009,8 @@ int ipc_callout_get_tnc_conn_id(xmlNodePtr innode, xmlNodePtr *outnode)
 	debug_printf(DEBUG_VERBOSE, "Returning TNC connection ID : %d\n", ctx->tnc_data->connectionID);
 	return ipc_callout_some_state_response("Get_TNC_Conn_ID", "TNC_Conn_ID", ctx->tnc_data->connectionID, 
 		"Conn_ID", ctx->intName, outnode);
+#else
+	return -1;
 #endif // HAVE_TNC
 }
 
@@ -7049,7 +7033,7 @@ int ipc_callout_set_conn_lock(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
 	xmlChar *temp = NULL;
-	int retval = IPC_SUCCESS, retval2 = IPC_SUCCESS;
+	int retval = IPC_SUCCESS;
 	char *iface = NULL;
 	context *ctx = NULL;
 	int newval = 0;
@@ -7272,10 +7256,9 @@ int ipc_callout_get_doing_psk(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_dhcp_release_renew(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
-	int retval = IPC_SUCCESS, retval2 = IPC_SUCCESS;
+	int retval = IPC_SUCCESS;
 	char *iface = NULL;
 	context *ctx = NULL;
-	int newval = 0;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -7479,8 +7462,8 @@ int ipc_callout_disconnect_connection(xmlNodePtr innode, xmlNodePtr *outnode)
 char *ipc_callout_get_value_from_command(xmlNodePtr innode, char *cmd_root, char *subvalue)
 {
 	xmlNodePtr n = NULL, t = NULL;
-	int retval = IPC_SUCCESS;
 	char *retsval = NULL;
+	xmlChar *temp = NULL;
 
 	if ((cmd_root == NULL) || (subvalue == NULL)) return NULL;
 
@@ -7500,7 +7483,9 @@ char *ipc_callout_get_value_from_command(xmlNodePtr innode, char *cmd_root, char
 		return NULL;
 	}
 
-	retsval = _strdup(xmlNodeGetContent(t));
+	temp = xmlNodeGetContent(t);
+	retsval = _strdup((char *)temp);
+	xmlFree(temp);
 
 	return retsval;
 }
@@ -7928,7 +7913,7 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr *outnode)
 int ipc_callout_store_logon_creds(xmlNodePtr innode, xmlNodePtr *outnode)
 {
 	xmlNodePtr n = NULL, t = NULL;
-	char *request = NULL, *username = NULL, *password = NULL;
+	char *username = NULL, *password = NULL;
 
 	if (innode == NULL) return IPC_FAILURE;
 
@@ -7965,7 +7950,7 @@ int ipc_callout_store_logon_creds(xmlNodePtr innode, xmlNodePtr *outnode)
 		return ipc_callout_create_error(NULL, "Store_Logon_Creds", IPC_ERROR_INVALID_REQUEST, outnode);
 	}
 
-	password = xmlNodeGetContent(t);
+	password = (char *)xmlNodeGetContent(t);
 	if ((password != NULL) && (strlen(password) == 0))
 	{
 		xmlFree(password);

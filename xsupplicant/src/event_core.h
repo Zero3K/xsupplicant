@@ -18,6 +18,7 @@
 #define MAX_EVENTS       20
 
 context *event_core_get_active_ctx();
+void event_core_set_active_ctx(context *ctx);
 context *event_core_get_next_context();
 void event_core_init();
 void event_core_deinit();
@@ -29,5 +30,6 @@ context *event_core_locate(char *);
 void event_core_reset_locator();
 context *events_core_get_next_context();
 context *event_core_locate_by_desc(char *);
+void event_core_load_user_config();
 
 #endif

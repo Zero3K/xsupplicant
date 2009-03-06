@@ -29,6 +29,7 @@
 #include "ipc_callout.h"
 #include "logon_creds.h"
 #include "eap_sm.h"
+#include "platform/platform.h"
 #include "ipc_callout_helper.h"
 
 /**
@@ -278,7 +279,6 @@ int ipc_callout_helper_can_use_logon_creds(context *ctx, char *conn_name)
 	int login_creds = 0;
 	struct config_profiles *myprof = NULL;
 	struct config_connection *mycon = NULL;
-	int result = TRUE;
 
 	if ((logon_creds_username_available() == FALSE) && (logon_creds_password_available() == FALSE))
 		return FALSE;

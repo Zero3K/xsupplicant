@@ -31,6 +31,8 @@
 #include "xsup_err.h"
 #include "statemachine.h"
 #include "ipc_events_index.h"
+#include "ipc_events.h"
+#include "platform/platform.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -44,6 +46,10 @@
 // If we run in to another situation where we need a manual event handler, then
 // we should remove this, and create a callback.
 #include "platform/macosx/cardif_macosx.h"
+#endif
+
+#ifdef LINUX_FRAMER
+#include "platform/linux/cardif_linux_rtnetlink.h"
 #endif
 
 typedef struct eventhandler_struct {
@@ -61,6 +67,8 @@ int num_event_slots = MAX_EVENTS;
 
 time_t last_check = 0;
 context *active_ctx = NULL;
+
+void global_deinit();   // In xsup_driver.c, there is no header we can include so this prototype keeps the compiler from complaining.
 
 /**
  *  \brief  Return the context that is currently being processed!
@@ -610,3 +618,7 @@ context *event_core_locate_by_connection(char *matchstr)
   return NULL;
 }
 
+void event_core_set_active_ctx(context *ctx) 
+{ 
+  active_ctx = ctx;
+}

@@ -22,6 +22,8 @@
 #include <Winsock2.h>
 #endif
 
+#include <openssl/hmac.h>
+
 #include "libxsupconfig/xsupconfig_structs.h"
 #include "src/xsup_common.h"
 #include "libxsupconfig/xsupconfig.h"
@@ -60,7 +62,7 @@ uint8_t *prf_plus(uint8_t *key, uint8_t *seed, uint8_t len)
 	uint8_t last_val[20];
 	uint8_t *Tn = NULL;
 	uint8_t mac[20];
-	int mdlen = 0;
+	unsigned int mdlen = 0;
 
 	if (!xsup_assert((key != NULL), "key != NULL", FALSE)) return NULL;
 	if (!xsup_assert((seed != NULL), "seed != NULL", FALSE)) return NULL;
@@ -178,7 +180,7 @@ void peap_extensions_process_cryptobinding_tlv(eap_type_data *eapdata, struct ph
 	uint8_t *TempKey = NULL;		// Reference pointer (DON'T FREE!)
 	uint8_t *cmk = NULL;			// Reference pointer (DON'T FREE!)
 	uint8_t mac[20];
-	int mdlen;
+	unsigned int mdlen = 0;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE)) return;
 	if (!xsup_assert((p2d != NULL), "p2d != NULL", FALSE)) return;
