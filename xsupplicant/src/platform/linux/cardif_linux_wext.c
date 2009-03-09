@@ -773,7 +773,7 @@ int cardif_linux_wext_get_ssid(context *thisint, char *ssid_name,
 {
   struct iwreq iwr;
   struct lin_sock_data *sockData;
-  char newssid[100];
+  char newssid[IW_ESSID_MAX_SIZE+1];
 
   if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
     return XEMALLOC;
