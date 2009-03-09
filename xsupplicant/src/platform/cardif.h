@@ -166,7 +166,7 @@ struct cardif_funcs {
   int (*get_freq)(context *, uint32_t *);
 
   // Set the frequency of the current connection
-  int (*set_freq)(context *);
+  double (*set_freq)(context *);
 };
 
 // Stuff needed by both wired, and wireless interfaces.
@@ -181,6 +181,7 @@ int cardif_get_if_state(context *);
 int cardif_int_is_valid(char *);
 int cardif_check_dest(context *);
 int cardif_validate(char *);
+int cardif_validate_connection(context *);
 char *cardif_get_search_ssid();
 void cardif_set_search_ssid(char *);
 void cardif_enum_ints();
@@ -190,6 +191,8 @@ char *cardif_get_gw(context *);
 char *cardif_get_dns1(context *);
 char *cardif_get_dns2(context *);
 char *cardif_get_dns3(context *);
+int cardif_get_link_state(context *);
+int cardif_get_uptime(uint64_t *);
 char *cardif_find_description(char *);
 char *cardif_get_mac_str(char *);
 int cardif_is_wireless_by_name(char *);

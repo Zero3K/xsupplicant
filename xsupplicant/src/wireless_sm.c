@@ -30,7 +30,7 @@
 #include "config_ssid.h"
 #include "timer.h"
 #include "statemachine.h"
-#include "platform/linux/cardif_linux_wext.h"
+//#include "platform/linux/cardif_linux_wext.h"
 #include "eap_sm.h"
 #include "ipc_events.h"
 #include "ipc_callout.h"

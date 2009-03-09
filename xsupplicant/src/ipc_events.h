@@ -18,9 +18,10 @@ int ipc_events_request_eap_upwd(char *, char *);
 void ipc_events_ui(context *, unsigned int, char *);
 void ipc_events_imc_event(uint32_t, uint32_t);
 void ipc_events_imc_request_event(uint32_t, uint32_t, uint32_t, uint32_t);
-int ipc_events_send(xmlDocPtr indoc);
+int ipc_events_send(xmlDocPtr);
 void ipc_events_send_tnc_batch(void *, uint32_t, uint32_t, uint32_t, uint32_t);
 int ipc_events_log_msg(char *);
+int ipc_events_scan_complete(context *);
 
 // "Quicker" version of the malloc failure error.
 #define ipc_events_malloc_failed(ctx) ipc_events_error(ctx, IPC_EVENT_ERROR_MALLOC, (char *)__FUNCTION__)

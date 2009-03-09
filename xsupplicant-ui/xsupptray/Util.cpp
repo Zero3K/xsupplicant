@@ -52,16 +52,11 @@ bool Util::myConnect(const QObject *from, const char *signal, const QObject *to,
       .arg(slot);
 
     // This doesn't work if we are not in the main GUI thread
-    // How can I check to see if we are in the GUI thread?
     if (QThread::currentThread() == qApp->thread())
     {
       QMessageBox::critical(NULL, tr("Run-time coding API Error"), text);
     }
-    else
-    {
-      // Display a message to the user outside of the gui thread?
-      qDebug(text.toAscii());
-    }
+
     return false;
   }
   return true;

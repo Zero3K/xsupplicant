@@ -51,5 +51,6 @@ char *wpa_minmax(char *, char *, int, char);
 int wpa2_parse_ie(char *iedata);
 uint8_t wpa2_get_group_crypt(context *);
 uint8_t wpa2_get_pairwise_crypt(context *);
+uint8_t wpa2_parse_auth_type(char *);
 
 #endif

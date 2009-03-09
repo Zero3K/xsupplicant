@@ -54,7 +54,6 @@ xmlNodePtr xsupconfwrite_plugin_create_tree(struct config_plugins *plugs, uint8_
 {
 	xmlNodePtr plugnode = NULL;
 	char *temp = NULL;
-	char temp_str[10];
 	
 	if (plugs == NULL) return NULL;
 

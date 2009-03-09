@@ -1179,7 +1179,8 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData &data)
 			else if (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)
 				m_pProtocol->setCurrentIndex(1);
 			else
-				; // error
+			  {
+			  } // error
 		}
 		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
 		{
@@ -1200,7 +1201,8 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData &data)
 			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_eap_md5)
 				m_pProtocol->setCurrentIndex(4);															
 			else
-				; // error										
+			  {
+			  }  // error
 		}
 	}
 }
@@ -1225,7 +1227,8 @@ const ConnectionWizardData &WizardPageDot1XInnerProtocol::wizardData(void)
 			else if (m_pProtocol->currentIndex() == 1)
 				m_curData.m_innerPEAPProtocol = ConnectionWizardData::inner_eap_gtc;
 			else
-				; // error
+			  {
+			  }  // error
 		}
 		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
 		{
@@ -1240,7 +1243,8 @@ const ConnectionWizardData &WizardPageDot1XInnerProtocol::wizardData(void)
 			else if (m_pProtocol->currentIndex() == 4)
 				m_curData.m_innerTTLSProtocol = ConnectionWizardData::inner_eap_md5;																												
 			else
-				; // error										
+			  {
+			  } // error
 		}
 	}			
 	
@@ -1348,7 +1352,8 @@ void WizardPageFASTInnerProtocol::init(const ConnectionWizardData &data)
 		else if (m_curData.m_innerFASTProtocol == ConnectionWizardData::inner_eap_gtc)
 			m_pProtocol->setCurrentIndex(1);
 		else
-			; // error
+		  {
+		  } // error
 	}
 }
 
@@ -1367,7 +1372,8 @@ const ConnectionWizardData &WizardPageFASTInnerProtocol::wizardData(void)
 		else if (m_pProtocol->currentIndex() == 1)
 			m_curData.m_innerFASTProtocol = ConnectionWizardData::inner_eap_gtc;
 		else
-			; // error
+		  {
+		  }  // error
 	}
 
 	if (m_pAnonymousProvision->isChecked() == true)

@@ -440,7 +440,7 @@ void *xsupconfig_parse_conn_key3(void **attr, uint8_t config_type, xmlNodePtr no
 	{
 		conn->association.keys[3] = NULL;
 
-		if (strlen(value) == 0) xmlFree(value);
+		if (strlen((char *)value) == 0) xmlFree(value);
 	}
 	else
 	{

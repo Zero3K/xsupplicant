@@ -32,5 +32,6 @@ context *events_core_get_next_context();
 context *event_core_locate_by_desc(char *);
 void event_core_load_user_config();
 void event_core_change_wireless(config_globals *newsettings);
+context *event_core_locate_by_connection(char *matchstr);
 
 #endif

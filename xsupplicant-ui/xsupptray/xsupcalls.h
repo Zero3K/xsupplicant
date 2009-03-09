@@ -55,8 +55,6 @@ extern "C"
 #include "supdetect.h"
 }
 
-static int ID_ENGINES_OUI = 25065; 
-
 #include "ipinfoclass.h"
 
 typedef struct tncmessages

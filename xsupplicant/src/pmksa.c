@@ -27,6 +27,7 @@
 #include "timer.h"
 #include "config_ssid.h"
 #include "liblist/liblist.h"
+#include "platform/cardif.h"
 
 #define MAX_PMKSA_CACHE_DEPTH    32     ///< The maximum number of entries that should ever be allowed in the cache.  (Per interface.)
 
@@ -137,7 +138,7 @@ uint8_t *pmksa_create_pmkid(uint8_t *pmk, uint8_t *spa, uint8_t *aa)
 	uint8_t *pmkid = NULL;
 	uint8_t *tohash = NULL;
 	char *strhash = "PMK Name";
-	int ressize = 0;
+	unsigned int ressize = 0;
 
 	tohash = Malloc(strlen(strhash)+6+6);  // length of 'PMK Name' + sizeof(spa) + sizeof(aa) -- (Can't use sizeof on spa or aa because they are pointers.  But, you get the idea. ;)
 	if (tohash == NULL)

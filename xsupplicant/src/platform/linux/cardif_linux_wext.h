@@ -44,7 +44,7 @@ int cardif_linux_wext_delete_key(context *,int,int);
 int cardif_linux_wext_wpa(context *, char);
 int cardif_linux_wext_countermeasures(context *,char);
 int cardif_linux_wext_drop_unencrypted(context *,char);
-int cardif_linux_wext_get_wpa2_ie(context *,char *, int *);
+int cardif_linux_wext_get_wpa2_ie(context *, unsigned char *, uint16_t *);
 int cardif_linux_wext_disassociate(context *, int);
 int cardif_linux_wext_get_wpa_ie(context *,char *,int *);
 

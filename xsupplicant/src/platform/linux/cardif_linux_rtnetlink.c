@@ -38,11 +38,13 @@
 #include "event_core.h"
 #include "ipc_callout.h"
 #include "ipc_events_index.h"
+#include "ipc_events.h"
 #include "cardif_linux_wext.h"
 #include "cardif_linux_rtnetlink.h"
 #include "interfaces.h"
 #include "wpa2.h"
 #include "ipc_events.h"
+#include "platform/linux/cardif_linux.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -999,8 +1001,9 @@ void cardif_linux_rtnetlink_process_SIOCGIWFREQ(context *ctx, struct iw_event *i
   freq = iw_freq2float(&(iwe->u.freq));
   memset(buffer, 0, sizeof(buffer));
   iw_print_freq(buffer, sizeof(buffer), freq, -1, iwe->u.freq.flags);
-  if (wctx == NULL || buffer == '\0')
-  return;
+
+  if (wctx == NULL || buffer[0] == '\0')
+    return;
 
   if (strstr(buffer, "Channel") != NULL)
     {
@@ -1451,14 +1454,14 @@ void cardif_linux_rtnetlink_new_ifla_ifname(int ifindex, char *data, int len)
     return;
   }
 
-  if (get_mac_by_name_no_ctx(intname, (char *)&mac) != 0)
+  if (cardif_linux_get_mac_by_name_no_ctx(intname, (char *)&mac) != 0)
   {
     debug_printf(DEBUG_NORMAL, "Unable to get the MAC address for interface '%s'\n", intname);
     return;
   }
 
   //Initialize the interface
-  cardif_add_interface(intname, ifindex);
+  cardif_linux_add_interface(intname, ifindex);
 
   confints = config_get_config_ints();
   while ((confints != NULL) && (memcmp(mac, confints->mac, 6) != 0))
@@ -1998,7 +2001,6 @@ uint8_t cardif_linux_rtnetlink_scancheck(context *ctx)
 	  else
 	    {
 	      // We got data, and canceled our timer, so let the caller know.
-#warning Update caller to use the proper value!
 	      return 0xff;
 	    }
 	}

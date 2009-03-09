@@ -101,7 +101,7 @@ static int cardif_linux_nl80211_set_key(context *ctx, drv_alg alg,
 				 const unsigned char *addr,
 				 int key_idx, int set_tx, 
 				 const unsigned char *seq,
-				 int seq_len, const unsigned char *key,
+				 int seq_len, const char *key,
 				 int key_len )
 {
 	int err = 0;
@@ -304,7 +304,7 @@ int  cardif_linux_nl80211_set_WEP_key(context *thisint, uint8_t *key,
 	if (index & 0x80) settx = 1;
 
 	rc = cardif_linux_nl80211_set_key(thisint, DRV_ALG_WEP, addr,
-				     (index & 0x7f), settx, seq, 6, key,
+					  (index & 0x7f), settx, seq, 6, (char *)key,
 				     keylen);
 	if (rc == XENONE) return rc;
 	debug_printf(DEBUG_INT, "Couldn't use extended key calls to set keys. \n");
@@ -385,7 +385,7 @@ int  cardif_linux_nl80211_set_WEP_key(context *thisint, uint8_t *key,
 
 int cardif_linux_nl80211_set_tkip_key(context *intdata, 
 				   unsigned char *addr, int keyidx, int settx, 
-				   unsigned char *key, int keylen)
+				   char *key, int keylen)
 {
   unsigned char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
 
@@ -398,7 +398,7 @@ int cardif_linux_nl80211_set_tkip_key(context *intdata,
 
 int cardif_linux_nl80211_set_ccmp_key(context *intdata,
 				   unsigned char *addr, int keyidx, int settx,
-				   unsigned char *key, int keylen)
+				   char *key, int keylen)
 {
   	unsigned char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
 

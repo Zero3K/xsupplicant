@@ -1,12 +1,12 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * File: cardif_linux.c
+ * \file cardif_linux.c
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef _CARDIF_LINUX_H_
 #define _CARDIF_LINUX_H_
@@ -17,5 +17,8 @@ struct lin_sock_data {
   int sockInt;
   struct sockaddr_ll sll;
 };
+
+void cardif_linux_add_interface(char *ifname, int ifindex);
+int cardif_linux_get_mac_by_name_no_ctx(char *intname, char *intmac);
 
 #endif

@@ -1014,7 +1014,7 @@ int statemachine_change_to_authenticated(context *ctx)
 
 	  if (rsnie != NULL)
 	  {
-		if (pmksa_add(ctx, ctx->dest_mac) == 0)
+	    if (pmksa_add(ctx, (uint8_t *)ctx->dest_mac) == 0)
 		{
 			// Then, generate our OKC cache.
 			debug_printf(DEBUG_DOT1X_STATE, "Generating OKC cache.\n");

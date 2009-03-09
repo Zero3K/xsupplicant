@@ -424,8 +424,6 @@ bool CredentialsPopUp::createWEP()
 
 bool CredentialsPopUp::createUPW()
 {
-	config_profiles *pProfile = NULL;
-
 	m_pRealForm = FormLoader::buildform("UPWWindow.ui");
 
 	if (m_pRealForm == NULL) return false;

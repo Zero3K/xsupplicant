@@ -293,9 +293,11 @@ int cardif_linux_wext_enc_disable(context *thisint)
 /**
  * Create the WPA2 Information Element.
  **/
-int cardif_linux_wext_get_wpa2_ie(context *thisint, char *iedata, int *ielen)
+int cardif_linux_wext_get_wpa2_ie(context *thisint, unsigned char *iedata, uint16_t *ielen)
 {
   wireless_ctx *wctx = NULL;
+  int intIelen = 0;
+
   wctx = (wireless_ctx *) thisint->intTypeData; 
    
   if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
@@ -310,7 +312,9 @@ int cardif_linux_wext_get_wpa2_ie(context *thisint, char *iedata, int *ielen)
 #if WIRELESS_EXT > 17
 
   // Should we use capabilities here?
-  wpa2_gen_ie(thisint, (unsigned char *)iedata, ielen);
+  wpa2_gen_ie(thisint, iedata, &intIelen);
+
+  (*ielen) = intIelen;
   
   if (wctx->okc == 1) {
   printf("okc flag\n");
@@ -623,7 +627,7 @@ int cardif_linux_wext_set_ssid(context *thisint, char *ssid_name)
 int cardif_linux_wext_set_bssid(context *intdata, uint8_t *bssid)
 {
   struct iwreq wrq;
-  struct lin_sock_data *sockData;
+  struct lin_sock_data *sockData = NULL;
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return XEGENERROR;
@@ -668,28 +672,29 @@ int cardif_linux_wext_set_bssid(context *intdata, uint8_t *bssid)
 /**
  * Set the Frequency of the AP we are connecting to.
  **/
-double cardif_linux_wext_set_freq(context *thisint)
+double cardif_linux_wext_set_freq(context *ctx)
 {
   struct iwreq wrq;
-  struct lin_sock_data *sockData;
+  struct lin_sock_data *sockData = NULL;
   wireless_ctx *wctx = NULL;
   double ret = 0;
   double freq = 0;
 
-  if( !xsup_assert( ( thisint != NULL ), "thisint != NULL ", FALSE ))
+  if( !xsup_assert( ( ctx != NULL ), "ctx != NULL ", FALSE ))
     return ret;
 
-  if( !xsup_assert( ( thisint->intTypeData != NULL ), "thisint->intTypeData != NULL ", FALSE ) )
+  if( !xsup_assert( ( ctx->intTypeData != NULL ), "ctx->intTypeData != NULL ", FALSE ) )
     return ret;
-  wctx = ( wireless_ctx * ) thisint->intTypeData;
 
-  sockData =  thisint->sockData;
+  wctx = ( wireless_ctx * ) ctx->intTypeData;
+
+  sockData =  ctx->sockData;
   xsup_assert( ( sockData != NULL ) , "sockData != NULL ", TRUE );
   if( sockData->sockInt <= 0 )
     return ret;
 
 
-  strncpy( wrq.ifr_name, thisint->intName, strlen( thisint->intName) +1 );
+  strncpy( wrq.ifr_name, ctx->intName, strlen( ctx->intName) +1 );
 
   debug_printf(DEBUG_INT,"Getting freq from SSID cache for %s \n", wctx->cur_essid);
   freq = config_ssid_get_best_freq(wctx);
@@ -720,7 +725,7 @@ int cardif_linux_wext_get_bssid(context *thisint,
 				char *bssid_dest)
 {
   struct iwreq iwr;
-  struct lin_sock_data *sockData;
+  struct lin_sock_data *sockData = NULL;
 
   if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
     return XEMALLOC;
@@ -841,7 +846,7 @@ int cardif_linux_wext_wep_associate(context *intdata,
   uint32_t alg;
   double freq=0;
   int index = 1;
-  unsigned char key[24];
+  char akey[24];
   char ifname[ IFNAMSIZ ];
 
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
@@ -916,9 +921,9 @@ int cardif_linux_wext_wep_associate(context *intdata,
                        ( intdata->conn->association.auth_type != AUTH_NONE ) &&
                        ( intdata->prof->name != NULL ) &&( config_ssid_get_ssid_abilities( wctx ) & ABIL_ENC ))
                    {
-                         memset( key, 0, 24 );
-                         strcpy( key, "0123456789" );
-                         cardif_linux_wext_set_WEP_key( intdata, key, strlen( key)/2 , 3 );     
+                         memset( akey, 0, 24 );
+                         strcpy( akey, "0123456789" );
+                         cardif_linux_wext_set_WEP_key( intdata, (unsigned char *)akey, strlen( akey)/2 , 3 );     
                    }
                }    
                break;
@@ -1440,11 +1445,13 @@ int cardif_linux_wext_iw_cipher(int cipher)
  * Set all of the card settings that are needed in order to complete an
  * association, so that we can begin the authentication.
  **/
-void cardif_linux_wext_associate(context *intdata)
+void cardif_linux_wext_associate(context *ctx)
 {
   uint8_t *bssid;
 #if WIRELESS_EXT > 17
-  int len = 0, akm = 0;
+  int akm = 0;
+  uint16_t len = 0;
+  int wlen = 0;
   uint32_t cipher, alg;
   uint8_t wpaie[255];
 #endif
@@ -1452,20 +1459,20 @@ void cardif_linux_wext_associate(context *intdata)
   wireless_ctx *wctx = NULL;
   double freq = 0;
 
-  if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
 
-  if (!xsup_assert((intdata->intTypeData != NULL), "intdata->intTypeData != NULL",
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
 		   FALSE))
     return;
 
-  wctx = (wireless_ctx *)intdata->intTypeData;
+  wctx = (wireless_ctx *)ctx->intTypeData;
 
 #if WIRELESS_EXT > 17
   // Determine the type of association we want, and set it up if we are using
   // the proper versions of WEXT.
 
-  switch (intdata->conn->association.association_type)
+  switch (ctx->conn->association.association_type)
     {
     case ASSOC_TYPE_WPA1:
     case ASSOC_TYPE_WPA2:
@@ -1485,28 +1492,28 @@ void cardif_linux_wext_associate(context *intdata)
       debug_printf(DEBUG_NORMAL, "Unknown 802.11 authetication alg.  Defaulting "
                    "to Open System.\n");
 
-      debug_printf(DEBUG_NORMAL, "Type was %d.\n", intdata->conn->association.association_type);
+      debug_printf(DEBUG_NORMAL, "Type was %d.\n", ctx->conn->association.association_type);
 
       alg = IW_AUTH_ALG_OPEN_SYSTEM;
       break;
     }
 
   wctx->assoc_type = ASSOC_TYPE_OPEN;
-  if (intdata->conn->association.association_type != ASSOC_TYPE_OPEN)
+  if (ctx->conn->association.association_type != ASSOC_TYPE_OPEN)
   {
     wctx->assoc_type = ASSOC_TYPE_WPA1;
-    if (intdata->conn->association.association_type != ASSOC_TYPE_WPA1)
+    if (ctx->conn->association.association_type != ASSOC_TYPE_WPA1)
     {
       wctx->assoc_type = ASSOC_TYPE_WPA2;
     }
   }
-  if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_80211_AUTH_ALG,
+  if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_80211_AUTH_ALG,
                                    alg, "802.11 auth. alg to open") < 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't set 802.11 auth. alg.\n");
     }
 
-  if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_DROP_UNENCRYPTED,
+  if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_DROP_UNENCRYPTED,
                                    TRUE, "drop unencrypted data") < 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't enable dropping of unencrypted"
@@ -1517,15 +1524,15 @@ void cardif_linux_wext_associate(context *intdata)
   if (config_ssid_get_ssid_abilities(wctx) & ABIL_RSN_IE)
     {
 #if WIRELESS_EXT > 17
-      cardif_linux_wext_get_wpa2_ie(intdata, (char *) wpaie, &len);
-      if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_WPA_VERSION,
+      cardif_linux_wext_get_wpa2_ie(ctx, wpaie, &len);
+      if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_WPA_VERSION,
 				       IW_AUTH_WPA_VERSION_WPA2,
 				       "WPA2 version") < 0)
 	{
 	  debug_printf(DEBUG_NORMAL, "Couldn't set WPA2 version!\n");
 	}
-      wctx->groupKeyType = wpa2_get_group_crypt(intdata);
-      wctx->pairwiseKeyType = wpa2_get_pairwise_crypt(intdata);
+      wctx->groupKeyType = wpa2_get_group_crypt(ctx);
+      wctx->pairwiseKeyType = wpa2_get_pairwise_crypt(ctx);
       if (wctx->pairwiseKeyType == 0xff)
       {
         debug_printf(DEBUG_NORMAL, "Couldn't determine cipher type.  Forcing to CCMP.\n");
@@ -1535,15 +1542,16 @@ void cardif_linux_wext_associate(context *intdata)
     } else if (config_ssid_get_ssid_abilities(wctx) & ABIL_WPA_IE)
       {
 #if WIRELESS_EXT > 17
-	cardif_linux_wext_get_wpa_ie(intdata, (char *) wpaie, &len);
-	if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_WPA_VERSION,
+	cardif_linux_wext_get_wpa_ie(ctx, (char *) wpaie, &wlen);
+	len = wlen;
+	if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_WPA_VERSION,
 					 IW_AUTH_WPA_VERSION_WPA,
 					 "WPA version") < 0)
 	  {
 	    debug_printf(DEBUG_NORMAL, "Couldn't set WPA version!\n");
 	  }
-	wctx->groupKeyType = wpa_get_group_crypt(intdata);
-	wctx->pairwiseKeyType = wpa_get_pairwise_crypt(intdata);
+	wctx->groupKeyType = wpa_get_group_crypt(ctx);
+	wctx->pairwiseKeyType = wpa_get_pairwise_crypt(ctx);
         if (wctx->pairwiseKeyType == 0xff)
         {
           debug_printf(DEBUG_NORMAL, "Couldn't determine cipher type.  Forcing to TKIP.\n");
@@ -1553,16 +1561,16 @@ void cardif_linux_wext_associate(context *intdata)
       }
 
 #if WIRELESS_EXT > 17
-  if (cardif_linux_wext_set_wpa_ie(intdata, wpaie, len) < 0)
+  if (cardif_linux_wext_set_wpa_ie(ctx, wpaie, len) < 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't set WPA IE on device %s!\n",
-		   intdata->intName);
+		   ctx->intName);
     }
   
   // For drivers that require something other than just setting a
   // WPA IE, we will set the components for the IE instead.
   cipher = cardif_linux_wext_iw_cipher(wctx->pairwiseKeyType);
-  if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_CIPHER_PAIRWISE,
+  if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_CIPHER_PAIRWISE,
 				   cipher, "pairwise cipher") < 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't set pairwise cipher to %d.\n",
@@ -1570,21 +1578,21 @@ void cardif_linux_wext_associate(context *intdata)
     }
   
   cipher = cardif_linux_wext_iw_cipher(wctx->groupKeyType);
-  if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_CIPHER_GROUP,
+  if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_CIPHER_GROUP,
 				   cipher, "group cipher") < 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't set group cipher to %d.\n",
 		   cipher);
     }
   
-  if (intdata->conn->association.auth_type != AUTH_PSK)
+  if (ctx->conn->association.auth_type != AUTH_PSK)
     {
       akm = IW_AUTH_KEY_MGMT_802_1X;
     } else {
       akm = IW_AUTH_KEY_MGMT_PSK;
     }
   
-  if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_KEY_MGMT, akm,
+  if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_KEY_MGMT, akm,
 				   "Authenticated Key Management Suite") 
       < 0)
     {
@@ -1592,13 +1600,13 @@ void cardif_linux_wext_associate(context *intdata)
 		   "Management Suite.\n");
     }
 
-  if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_PRIVACY_INVOKED,
+  if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_PRIVACY_INVOKED,
 				   TRUE, "Privacy Invoked") < 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't invoke privacy!\n");
     }
 
-  if (cardif_linux_wext_set_iwauth(intdata, IW_AUTH_RX_UNENCRYPTED_EAPOL,
+  if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_RX_UNENCRYPTED_EAPOL,
                                    TRUE, "RX unencrypted EAPoL") < 0)
     {
       debug_printf(DEBUG_NORMAL, "Couldn't enable RX of unencrypted"
@@ -1607,8 +1615,8 @@ void cardif_linux_wext_associate(context *intdata)
 
 #endif
 
-  cardif_linux_wext_set_freq(intdata);
-  cardif_linux_wext_set_ssid(intdata, wctx->cur_essid);
+  cardif_linux_wext_set_freq(ctx);
+  cardif_linux_wext_set_ssid(ctx, wctx->cur_essid);
 
   //Patch for associating with best Frequency radio if there are multiple radios on one AP
   //If we are able to set the frequency then search for the BSSID of that particular radio
@@ -1630,13 +1638,13 @@ void cardif_linux_wext_associate(context *intdata)
 
   if ((globals) || (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)))
     {
-      cardif_linux_wext_set_bssid(intdata, bssid);
+      cardif_linux_wext_set_bssid(ctx, bssid);
     }
   
   if ((wctx->wpa_ie == NULL) && (wctx->rsn_ie == NULL))
     {
       // We need to set up the card to allow unencrypted EAPoL frames.
-      cardif_linux_wext_unencrypted_eapol(intdata, TRUE);
+      cardif_linux_wext_unencrypted_eapol(ctx, TRUE);
     }
   
   return;

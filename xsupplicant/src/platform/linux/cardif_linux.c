@@ -81,7 +81,7 @@ struct int_starting_data *startup;
  * \retval XEGENERROR on general error
  * \retval XENONE on success
  **/
-int get_mac_by_name_no_ctx(char *intname, char *intmac)
+int cardif_linux_get_mac_by_name_no_ctx(char *intname, char *intmac)
 {
   struct ifreq ifr;
   int sock = -1;
@@ -133,7 +133,7 @@ int get_mac_by_name_no_ctx(char *intname, char *intmac)
  * \retval XEGENERROR on general error
  * \retval XENONE on success
  **/
-int get_mac_by_name(char *intname, char *intmac)
+int cardif_linux_get_mac_by_name(char *intname, char *intmac)
 {
   struct ifreq ifr;
   struct lin_sock_data *sockData = NULL;
@@ -142,7 +142,7 @@ int get_mac_by_name(char *intname, char *intmac)
  
   ctx = event_core_get_active_ctx();
 
-  if (ctx == NULL) return get_mac_by_name_no_ctx(intname, intmac);
+  if (ctx == NULL) return cardif_linux_get_mac_by_name_no_ctx(intname, intmac);
 
   sockData = ctx->sockData;
 
@@ -1682,7 +1682,7 @@ int cardif_get_wpa2_ie(context *ctx, uint8_t *iedata, uint8_t *ielen)
       return XEMALLOC;
     }
 
-  return wireless->get_wpa2_ie(ctx, iedata, ielen);
+  return wireless->get_wpa2_ie(ctx, iedata, (uint16_t *)ielen);
 }
 
 /**
@@ -2101,7 +2101,7 @@ char *cardif_get_dns3(context *ctx)
 /**
  * \brief Add given interface to interface cache
  **/
-void cardif_add_interface(char *ifname, int ifindex)
+void cardif_linux_add_interface(char *ifname, int ifindex)
 {
   char mac[6];
 
@@ -2143,7 +2143,7 @@ void cardif_enum_ints()
 
   while ((ifnames[i].if_index != 0) && (ifnames[i].if_name != NULL))
   {
-    cardif_add_interface(ifnames[i].if_name, ifnames[i].if_index);
+    cardif_linux_add_interface(ifnames[i].if_name, ifnames[i].if_index);
     i++;
   }
 
@@ -2180,7 +2180,7 @@ char *cardif_get_mac_str(char *intname)
   uint8_t mac[6];
   char *resmac = NULL;
 
-  if (get_mac_by_name(intname, (char *)&mac) != 0) return NULL;
+  if (cardif_linux_get_mac_by_name(intname, (char *)&mac) != 0) return NULL;
 
   resmac = Malloc(25);
   if (resmac == NULL) return NULL;
@@ -2262,6 +2262,7 @@ int cardif_apply_pmkid_data(context *ctx, pmksa_list *list)
   return wireless->apply_pmkid_data(ctx, list);
 
 }
+
 int cardif_validate_connection( context *intdata )
 {
 	     wireless_ctx * wctx;

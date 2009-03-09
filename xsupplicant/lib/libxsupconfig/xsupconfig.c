@@ -586,18 +586,15 @@ struct config_connection *config_find_connection(uint8_t conf_type, char *matchn
  * \brief Free a single profile.
  *
  * @param[in] prof   A pointer to the profile that we want to free.
- *
- * \retval XENONE on success
- * \retval XEMALLOC on failure
  **/
-int delete_config_single_profile(void **inptr)
+void delete_config_single_profile(void **inptr)
 {
   struct config_profiles *cur = NULL;
   struct config_profiles **prof = (struct config_profiles **)inptr;
 
-  if (prof == NULL) return XEMALLOC;
+  if (prof == NULL) return;
 
-  if ((*prof) == NULL) return XEMALLOC;
+  if ((*prof) == NULL) return;
 
   cur = (*prof);
 
@@ -609,7 +606,7 @@ int delete_config_single_profile(void **inptr)
 
   free((*prof));
 
-  return XENONE;
+  return;
 }
 
 /**
