@@ -749,7 +749,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context *ctx,
   if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
     {
       Strncpy(custom, IW_CUSTOM_MAX+1, iwe->u.data.pointer, 
-	      iwe->u.data.length);
+	      iwe->u.data.length+1);
       
       debug_printf(DEBUG_INT, "IWEVCUSTOM : %s\n", custom);
       
@@ -778,7 +778,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context *ctx,
 	}
     } else {
       Strncpy(custom, IW_CUSTOM_MAX+1, iwe->u.data.pointer, 
-	      iwe->u.data.length);
+	      iwe->u.data.length+1);
 
       memset(temp, 0x00, IW_CUSTOM_MAX+1);
       

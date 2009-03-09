@@ -28,7 +28,6 @@
 #include <errno.h>
 #include <unistd.h>
 #include <linux/rtnetlink.h>
-#include <string.h>
 
 #include "libxsupconfig/xsupconfig.h"
 #include "context.h"
@@ -1378,7 +1377,10 @@ int cardif_validate(char *interface)
 
   sd = socket(PF_PACKET, SOCK_RAW, 0);
   if (sd < 0)
-    return FALSE;
+    {
+      debug_printf(DEBUG_NORMAL, "Unable to obtain a handle to a socket at %s():%d!\n", __FUNCTION__, __LINE__);
+      return FALSE;
+    }
 
   res = ioctl(sd, SIOCGIFHWADDR, &ifr);
   close(sd);
@@ -1392,6 +1394,10 @@ int cardif_validate(char *interface)
 	case ARPHRD_ETHER:
 	case ARPHRD_IEEE80211:
 	  return TRUE;
+
+	default:
+	  debug_printf(DEBUG_NORMAL, "Unknown interface type %d!\n", ifr.ifr_hwaddr.sa_family);
+	  break;
 	}
     }
 
@@ -2265,11 +2271,12 @@ int cardif_apply_pmkid_data(context *ctx, pmksa_list *list)
 
 int cardif_validate_connection( context *intdata )
 {
-	     wireless_ctx * wctx;
-         uint16_t abilities;
+	     wireless_ctx * wctx = NULL;
+         uint16_t abilities = 0;
          int retVal = FALSE;
 
             if ( !xsup_assert(( intdata != NULL ), "intdata != NULL ", FALSE )) return FALSE;
+
             wctx =( wireless_ctx * ) intdata->intTypeData;
 
 
@@ -2280,6 +2287,7 @@ int cardif_validate_connection( context *intdata )
             switch (intdata->conn->association.auth_type)
             {
                 case AUTH_NONE:
+		  debug_printf(DEBUG_NORMAL, "Checking AUTH_NONE.\n");
                      if( ( abilities  & ABIL_ENC)  && ( intdata->conn != NULL ))
                      {
 					  if( intdata->conn->association.txkey != 0)
@@ -2300,9 +2308,10 @@ int cardif_validate_connection( context *intdata )
                      }
                     break;
                case AUTH_PSK:
+		 debug_printf(DEBUG_INT, "Checking AUTH_PSK (%x)\n", abilities);
                        if( ( abilities & ABIL_WPA_PSK ) && ( abilities & ABIL_WPA_IE ) )
                        {
-                                debug_printf(DEBUG_NORMAL, " WPA_PSK connection with WPA or WPA1 \n");
+                                debug_printf(DEBUG_NORMAL, " WPA_PSK connection with WPA1 \n");
                                 retVal = TRUE;
 			
                        }
@@ -2316,10 +2325,11 @@ int cardif_validate_connection( context *intdata )
 
                case AUTH_EAP: /* here i'm checking it for enterprise  and dynamic wep */
                case AUTH_UNKNOWN:
-                   
+	    default:
+	      debug_printf(DEBUG_INT, "Checking AUTH_* (default case)\n");
                        if( ( abilities & ABIL_WPA_DOT1X ) && ( abilities & ABIL_WPA_IE ) )
                        {
-                                debug_printf(DEBUG_NORMAL, " WPA_DOT1X connection with WPA or WPA1 \n");
+                                debug_printf(DEBUG_NORMAL, " WPA_DOT1X connection with WPA1 \n");
                                 retVal = TRUE;
                                 
                        }
@@ -2338,9 +2348,6 @@ int cardif_validate_connection( context *intdata )
                                
                      }
 		      break;
-
-              default:
-                   break;
              }
 
  return retVal;

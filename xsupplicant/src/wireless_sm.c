@@ -864,7 +864,7 @@ void wireless_sm_change_to_associating(context *ctx)
   
   if( cardif_validate_connection( ctx ) == FALSE )
   {
-      debug_printf( DEBUG_NORMAL,"couldn't continue with associating due mismatch in profile between AP and client \n");    
+      debug_printf( DEBUG_NORMAL,"Couldn't continue association attempt due mismatch in profile between AP and client \n");    
       wireless_sm_association_timeout( ctx );
       return;
   }   
