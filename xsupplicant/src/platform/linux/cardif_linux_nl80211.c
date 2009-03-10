@@ -67,7 +67,7 @@ static int send_and_recv_msgs(context *ctx,
 	printf("-------> %s \n ", __FUNCTION__ );
 	if (ctx->drv_handle == NULL)
 	{
-		debug_printf(DEBUG_NORMAL,"Couldn't find Context Netlink Driver Handle");
+		debug_printf(DEBUG_NORMAL,"Couldn't find Context Netlink Driver Handle\n");
 		return 1;
 	}
 	drv_handle=(struct lin_nl80211_drv_handle *)(ctx->drv_handle);

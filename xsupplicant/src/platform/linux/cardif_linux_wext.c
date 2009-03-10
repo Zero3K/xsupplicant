@@ -902,7 +902,7 @@ int cardif_linux_wext_wep_associate(context *intdata,
     /*OPEN FIX: Below condition added */
     if( config_ssid_get_ssid_abilities( wctx ) == 0 )
     {
-        debug_printf(DEBUG_NORMAL, "Its OPEN, so disable ENC \n");
+        debug_printf(DEBUG_INT, "Its OPEN, so disable ENC \n");
         cardif_linux_wext_enc_disable( intdata );    
     }
     

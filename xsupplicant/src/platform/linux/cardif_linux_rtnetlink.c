@@ -808,7 +808,7 @@ void cardif_linux_rtnetlink_process_SIOCGIWSCAN(context *ctx)
 
   wctx = (wireless_ctx *)ctx->intTypeData;
 
-  if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
+  if (!TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
     {
       debug_printf(DEBUG_NORMAL, "Got an SIOCGIWSCAN in a scan result!? "
 		   "Contact your wireless card driver maintainer!\n");

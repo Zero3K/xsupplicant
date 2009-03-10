@@ -382,31 +382,6 @@ int config_change_pwd(struct config_eap_method *meth, char *password)
 }
 
 /**
- *  \brief Given a profile name, set the password.
- *
- *  @param[in] prof_name  A string that indicates the profile name to use.
- *  @param[in] password   The new value to set the password to for the 
- *                        profile specified by 'prof_name'.
- *
- *  \retval XENONE on success
- **/
-/*   XXX Not used!?
-int config_set_pwd_on_profile(char *prof_name, char *password)
-{
-	struct config_profiles *prof = NULL;
-
-	prof = config_find_profile(CONFIG_LOAD_GLOBAL, prof_name);
-	if (prof == NULL) 
-	{
-		prof = config_find_profile(CONFIG_LOAD_USER, prof_name);
-		if (prof == NULL) return -1;
-	}
-
-	return config_change_pwd(prof->method, password);
-}
-*/
-
-/**
  * \brief Locate a connection based on the SSID that is mapped to it.
  *
  * @param[in] config_type   Indicates the configuration structure we should be looking at.
@@ -1287,7 +1262,7 @@ struct config_profiles *config_find_profile(uint8_t config_type, char *profile_n
 	struct config_profiles *cur = NULL;
 
 	// There was a request to find nothing, so return nothing.
-	if (profile_name == NULL) return NULL;
+	if ((profile_name == NULL) || (strlen(profile_name) == 0)) return NULL;
 
 	debug_printf(DEBUG_CONFIG_PARSE, "Looking for profile '%s'!\n",
 		profile_name);
@@ -3390,7 +3365,7 @@ struct xsup_interfaces *config_find_int(char *intdesc)
 {
 	struct xsup_interfaces *cur = NULL;
 
-	if (intdesc == NULL) return NULL;    // If we asked for nothing, return nothing.
+	if ((intdesc == NULL) || (strlen(intdesc) == 0)) return NULL;    // If we asked for nothing, return nothing.
 
 	cur = config_get_config_ints();
 
