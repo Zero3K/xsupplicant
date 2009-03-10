@@ -16,6 +16,7 @@
 struct lin_sock_data {
   int sockInt;
   struct sockaddr_ll sll;
+  uint8_t flag_link_state;
 };
 
 void cardif_linux_add_interface(char *ifname, int ifindex);

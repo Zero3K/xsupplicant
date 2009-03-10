@@ -1761,6 +1761,7 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
  context *ctx = NULL;
   wireless_ctx *wctx = NULL;
   char intName[128];
+  struct lin_sock_data *sockData = NULL;
 
   if (!xsup_assert((data != NULL), "data != NULL", FALSE))
     return;
@@ -1789,8 +1790,12 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
       if ( ctx != NULL )
       {
 	  if (ctx->intType != ETH_802_11_INT) {
-	  ctx->flag_link_state = 0;
+	    sockData = ctx->sockData;
+	    
+	    if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return;
+	    sockData->flag_link_state = 0;
 	  }
+
         wctx = (wireless_ctx *)ctx->intTypeData;
         if ( wctx != NULL)
         {
@@ -1826,20 +1831,27 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
 	ctx = ifindex_to_context(ifindex);
 	if ( ctx != NULL ) {
 		if (ctx->intType != ETH_802_11_INT) {
-			ctx->flag_link_state = 1;
+		  sockData = ctx->sockData;
+	    
+		  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return;
+		  sockData->flag_link_state = 1;
 		}
 	}
       debug_printf(DEBUG_INT, "Interface is dormant.\n");
       break;
 
     case XIF_OPER_UP:
-      debug_printf(DEBUG_INT, "UP!UP!UP!UP!Interface is up.\n");
+      debug_printf(DEBUG_INT, "Interface is up.\n");
         ctx = ifindex_to_context(ifindex);
         if ( ctx != NULL )
         {
 		if (ctx->intType != ETH_802_11_INT) {
-		    ctx->flag_link_state = 1;
+		  sockData = ctx->sockData;
+	    
+		  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return;
+		  sockData->flag_link_state = 1;
 		}
+
                 wctx = (wireless_ctx *)ctx->intTypeData;
                 if ( wctx != NULL)
                 {

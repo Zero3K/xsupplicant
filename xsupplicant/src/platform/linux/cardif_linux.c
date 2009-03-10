@@ -940,7 +940,7 @@ int cardif_get_if_state(context *ctx)
 {
   int retVal;
   struct ifreq ifr;
-  struct lin_sock_data *sockData;
+  struct lin_sock_data *sockData = NULL;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return XEMALLOC;
@@ -979,7 +979,7 @@ int cardif_get_if_state(context *ctx)
   }
   else
   {
-  	if (((ifr.ifr_flags & IFF_UP) == IFF_UP) && (ctx->flag_link_state == 1))
+  	if (((ifr.ifr_flags & IFF_UP) == IFF_UP) && (sockData->flag_link_state == 1))
     	{
       	return TRUE;
     	} else {

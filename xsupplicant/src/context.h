@@ -297,13 +297,6 @@ typedef struct context_data
    **/
   void *sockData;
 
-#ifdef LINUX
-  /**
-   *   Flag to hold link state of the interface.
-   **/
-  uint8_t flag_link_state;
-#endif
-
   /**
    *   Bitmap of true/false values. (For the interface.)
    **/
@@ -352,6 +345,7 @@ typedef struct context_data
 #ifdef LINUX
   void *drv_handle;          /// XXX This needs to be moved, it doesn't belong here!
 #endif
+ 
 } context;
 
 int context_init(context *, char *);

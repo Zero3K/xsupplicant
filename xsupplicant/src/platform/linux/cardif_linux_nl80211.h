@@ -26,12 +26,14 @@ typedef enum { 	DRV_ALG_NONE,
 		DRV_ALG_TKIP,
 		DRV_ALG_CCMP
 	} drv_alg;
+
 struct lin_nl80211_drv_handle {
 	struct nl_handle *nl_handle;
 	struct nl_cache *nl_cache;
 	struct nl_cb *nl_cb;
 	struct genl_family *nl80211;	
 	};
+
 #ifndef ETH_ALEN
 #define ETH_ALEN 6
 #endif
