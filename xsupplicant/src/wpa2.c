@@ -379,9 +379,6 @@ void wpa2_gen_ie(context * ctx, uint8_t * iedata, uint8_t * ielen)
 	debug_printf(DEBUG_KEY, "Using Pairwise Cipher Suite : ");
 	wpa_print_cipher_suite(DEBUG_KEY, iedata[13]);
 
-	debug_printf(DEBUG_INT, "Created IE DUMP :\n");
-	debug_hex_printf(DEBUG_INT, iedata, 14);
-
 	if ((ctx->conn->association.group_keys == CIPHER_TKIP) &&
 	    ((wctx->pairwiseKeyType == CIPHER_WRAP) ||
 	     (wctx->pairwiseKeyType == CIPHER_CCMP))) {
@@ -426,9 +423,6 @@ void wpa2_gen_ie(context * ctx, uint8_t * iedata, uint8_t * ielen)
 		iedata[19] = 1;	// 802.1X
 		debug_printf(DEBUG_KEY, "Using 802.1X\n");
 	}
-
-	debug_printf(DEBUG_INT, "Created IE DUMP :\n");
-	debug_hex_printf(DEBUG_INT, iedata, 20);
 
 	// We don't support capabilities yet.
 	iedata[20] = 0x00;

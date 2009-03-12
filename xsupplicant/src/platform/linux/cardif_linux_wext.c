@@ -311,6 +311,7 @@ int cardif_linux_wext_get_wpa2_ie(context * thisint, uint8_t * iedata,
 	// Should we use capabilities here?
 	wpa2_gen_ie(thisint, iedata, ielen);
 
+	// XXX Move this to the wpa2_gen_ie() function.
 	if (wctx->okc == 1) {
 		printf("okc flag\n");
 		iedata[1] = 0x26;
@@ -321,7 +322,7 @@ int cardif_linux_wext_get_wpa2_ie(context * thisint, uint8_t * iedata,
 	}
 
 	debug_printf(DEBUG_INT, "Setting WPA2 IE : ");
-	debug_hex_printf(DEBUG_INT, (uint8_t *) iedata, *ielen);
+	debug_hex_printf(DEBUG_INT, (uint8_t *) iedata, (*ielen));
 	debug_printf(DEBUG_INT, "\n");
 #else
 	debug_printf(DEBUG_NORMAL,
