@@ -40,37 +40,34 @@ class QPushButton;
 class QFileInfo;
 class QListWidget;
 
-class PreferredConnections : public QWidget
-{
-	Q_OBJECT
-public:
-	PreferredConnections(XSupCalls *supplicant, QWidget *parent, QWidget *parentWindow);
+class PreferredConnections:public QWidget {
+ Q_OBJECT public:
+	PreferredConnections(XSupCalls * supplicant, QWidget * parent,
+			     QWidget * parentWindow);
 	~PreferredConnections();
 	bool attach();
 	void show();
 
-signals:
-	void close();
+	 signals: void close();
 
-private slots:
-    void slotMoveLeft();
-    void slotMoveRight();
-    void slotMoveUp();
-    void slotMoveDown();
-    void slotClose();
-    void slotEnableButtons();
+	private slots: void slotMoveLeft();
+	void slotMoveRight();
+	void slotMoveUp();
+	void slotMoveDown();
+	void slotClose();
+	void slotEnableButtons();
 	void slotPreferredSelected(QListWidgetItem *);
 	void slotAvailableSelected(QListWidgetItem *);
-    void slotHelp();
-    
-private:
+	void slotHelp();
+
+ private:
 	void hookupSignalsAndSlots();
 	void updateLists();
 	void setupWindow();
-	void moveItems(QListWidget *from, QListWidget *to);
-	
-private:
-	conn_enum *m_pConns;
+	void moveItems(QListWidget * from, QListWidget * to);
+
+ private:
+	 conn_enum * m_pConns;
 	XSupCalls *m_psupplicant;
 
 	//! GUI variables
@@ -86,5 +83,4 @@ private:
 	QPushButton *m_pHelpButton;
 };
 
-#endif  // _PREFERREDCONNECTIONS_H_
-
+#endif				// _PREFERREDCONNECTIONS_H_

@@ -19,25 +19,21 @@
  *  You may also find the license at the following link
  *  http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt .
  *
- **/
-
+ **/  
+    
 #ifndef _TABLEIMAGEDELEGATE_H_
 #define _TABLEIMAGEDELEGATE_H_
-
+    
 #include <QItemDelegate>
+ class TableImageDelegate:public QItemDelegate  {
+ Q_OBJECT  public: TableImageDelegate(QWidget * parent = 0):QItemDelegate(parent)
+	{
+	} void paint(QPainter * painter, const QStyleOptionViewItem & option,
+		       const QModelIndex & index) const;
+	QSize sizeHint(const QStyleOptionViewItem & option,
+			const QModelIndex & index) const;
+};
 
- class TableImageDelegate : public QItemDelegate
- {
-     Q_OBJECT
-
- public:
-     TableImageDelegate(QWidget *parent = 0) : QItemDelegate(parent) {}
-
-     void paint(QPainter *painter, const QStyleOptionViewItem &option,
-                const QModelIndex &index) const;
-     QSize sizeHint(const QStyleOptionViewItem &option,
-                    const QModelIndex &index) const;
- };
-
-#endif // _TABLEIMAGEDELEGATE_H_
-
+
+#endif				// _TABLEIMAGEDELEGATE_H_
+    

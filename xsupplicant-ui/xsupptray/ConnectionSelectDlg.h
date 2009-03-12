@@ -28,47 +28,36 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
- 
+ **/  
+    
 #ifndef _CONNECTIONSELECTDLG_H_
 #define _CONNECTIONSELECTDLG_H_
-
+    
 #include <QWidget>
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QStringList>
+ class ConnectionSelectDlg:public QWidget  {
+ Q_OBJECT  public:ConnectionSelectDlg(QWidget * parent, QWidget * parentWindow,
+			     const QStringList & connections,
+			     QString adapterToUse);
+	~ConnectionSelectDlg();
+	void show(void);
+	bool create(void);
+ signals:void close(void);
+ private:bool initUI(void);
+ private slots:void okay(void);
+	void cancel(void);
+ private:QWidget * m_pParent;
+	QWidget * m_pParentWindow;
+	QWidget * m_pRealForm;
+	
+	    // pointers to UI elements
+	    QComboBox * m_pConnectionCombo;
+	QDialogButtonBox * m_pButtonBox;
+	QStringList m_connectionList;
+	QString m_adapterToUse;
+};
 
-class ConnectionSelectDlg : public QWidget
-{
-	Q_OBJECT
-	
-public:
-	ConnectionSelectDlg(QWidget *parent, QWidget *parentWindow, const QStringList &connections, QString adapterToUse);
-	~ConnectionSelectDlg();
-	void show(void);
-	bool create(void);
-	
-signals:
-	void close(void);
-	
-private:
-	bool initUI(void);
-	
-private slots:
-	void okay(void);
-	void cancel(void);
-
-private:
-	QWidget *m_pParent;
-	QWidget *m_pParentWindow;
-	QWidget *m_pRealForm;
-	
-	// pointers to UI elements
-	QComboBox *m_pConnectionCombo;
-	QDialogButtonBox *m_pButtonBox;
-	
-	QStringList m_connectionList;
-	QString m_adapterToUse;
-}; 
-
+
 #endif

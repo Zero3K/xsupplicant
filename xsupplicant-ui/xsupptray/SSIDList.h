@@ -28,90 +28,71 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef _SSIDLIST_H_
 #define _SSIDLIST_H_
-
+    
 #include <QWidget>
 #include <QTableWidget>
 #include <QList>
-
-		
-class WirelessNetworkInfo
-{
-public:
-	WirelessNetworkInfo();
-	~WirelessNetworkInfo();
-		
-public:
-
-	//values for auth modes bitfield
-	static const unsigned char SECURITY_NONE			= 0x00;
-	static const unsigned char SECURITY_STATIC_WEP		= 0x01;
-	static const unsigned char SECURITY_WPA_PSK			= 0x02;
-	static const unsigned char SECURITY_WPA_ENTERPRISE	= 0x04;
-	static const unsigned char SECURITY_WPA2_PSK		= 0x08;
-	static const unsigned char SECURITY_WPA2_ENTERPRISE	= 0x10;	
-		
-	// values for network mode bitfield
+    class WirelessNetworkInfo  {
+ public:WirelessNetworkInfo();
+	~WirelessNetworkInfo();
+ public:
+	    //values for auth modes bitfield
+	static const unsigned char SECURITY_NONE = 0x00;
+	static const unsigned char SECURITY_STATIC_WEP = 0x01;
+	static const unsigned char SECURITY_WPA_PSK = 0x02;
+	static const unsigned char SECURITY_WPA_ENTERPRISE = 0x04;
+	static const unsigned char SECURITY_WPA2_PSK = 0x08;
+	static const unsigned char SECURITY_WPA2_ENTERPRISE = 0x10;
+	
+	    // values for network mode bitfield
 	static const unsigned char WIRELESS_MODE_A = 0x01;
-	static const unsigned char WIRELESS_MODE_B = 0x02;
-	static const unsigned char WIRELESS_MODE_G = 0x04;
-	static const unsigned char WIRELESS_MODE_N = 0x08;
-	
-	QString m_name;
-	int m_signalStrength;
-	unsigned char m_assoc_modes;
-	unsigned char m_modes;
-};
+	static const unsigned char WIRELESS_MODE_B = 0x02;
+	static const unsigned char WIRELESS_MODE_G = 0x04;
+	static const unsigned char WIRELESS_MODE_N = 0x08;
+	QString m_name;
+	int m_signalStrength;
+	unsigned char m_assoc_modes;
+	unsigned char m_modes;
+};
 
+
 // so that we can use sort algorithm on container of WirelessNetworkInfo
-bool operator< (const WirelessNetworkInfo &lhs, const WirelessNetworkInfo &rhs);
+    bool operator<(const WirelessNetworkInfo & lhs,
+		   const WirelessNetworkInfo & rhs);
+ class SSIDList:public QWidget  {
+ Q_OBJECT  public:
+	    // enum representing columns in the SSIDList/table
+	typedef enum { COL_NAME, COL_SIGNAL, COL_SECURITY, COL_802_11 
+	} SSIDListCol;
+	SSIDList(QWidget * parent, QTableWidget * tableWidget,
+		   int minRowCount = 0);
+	~SSIDList();
+	void refreshList(const QString & adapterName);
+	void refreshCompleteList();
+	void hideColumn(SSIDListCol colIndex);
+	void showColumn(SSIDListCol colIndex);
+	bool selectNetwork(const QString & networkName);
+	static QList < WirelessNetworkInfo >
+	    getNetworkInfo(QString adapterName);
+	static QList < WirelessNetworkInfo > getCompleteNetworkInfo();
+ signals:void ssidSelectionChange(const WirelessNetworkInfo &);
+	void ssidDoubleClick(const WirelessNetworkInfo &);
+ private:void initUI(void);
+	void tempAssocModeHack(void);
+ private slots:void handleSSIDTableSelectionChange(void);
+	void handleSSIDTableDoubleClick(int row, int col);
+ private:QWidget * m_parent;
+	QTableWidget * m_pTableWidget;
+	int m_minRowCount;
+	QString m_curWirelessAdapter;
+	QList < WirelessNetworkInfo > m_curNetworks;
+	QIcon m_signalIcons[5];
+	QMap < QString, QPixmap > m_pixmapMap;
+};
 
-class SSIDList : public QWidget
-{
-     Q_OBJECT
 
-public:
-
-	// enum representing columns in the SSIDList/table
-	typedef enum {
-		COL_NAME,
-		COL_SIGNAL,
-		COL_SECURITY,
-		COL_802_11
-		} SSIDListCol;
-		
-	SSIDList(QWidget *parent, QTableWidget *tableWidget, int minRowCount=0);
-	~SSIDList();
-	void refreshList(const QString &adapterName);
-	void refreshCompleteList();
-	void hideColumn(SSIDListCol colIndex);
-	void showColumn(SSIDListCol colIndex);
-	bool selectNetwork(const QString &networkName);
-	static QList<WirelessNetworkInfo> getNetworkInfo(QString adapterName);
-	static QList<WirelessNetworkInfo> getCompleteNetworkInfo();	
-
-signals:
-	void ssidSelectionChange(const WirelessNetworkInfo &);
-	void ssidDoubleClick(const WirelessNetworkInfo &);
-	
-private:
-	void initUI(void);
-	void tempAssocModeHack(void);
-	
-private slots:
-	void handleSSIDTableSelectionChange(void);
-	void handleSSIDTableDoubleClick(int row, int col);
-		
-private:
-	QWidget *m_parent;
-	QTableWidget *m_pTableWidget;
-	int m_minRowCount;
-	QString m_curWirelessAdapter;
-	QList<WirelessNetworkInfo> m_curNetworks;
-	QIcon m_signalIcons[5];
-	QMap<QString,QPixmap> m_pixmapMap;
-};
 #endif

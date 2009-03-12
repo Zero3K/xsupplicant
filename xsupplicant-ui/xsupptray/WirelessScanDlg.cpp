@@ -28,113 +28,119 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #include "stdafx.h"
-
+    
 #include "WirelessScanDlg.h"
 #include "FormLoader.h"
 #include "Util.h"
-
+    
 #include <QLabel>
-
-WirelessScanDlg::WirelessScanDlg(QWidget *parent, QWidget *parentWindow)
-	: QWidget(parent),
-	m_pParent(parent),
-	m_pParentWindow(parentWindow)
+ WirelessScanDlg::WirelessScanDlg(QWidget * parent, QWidget * parentWindow) :
+QWidget(parent), m_pParent(parent),
+m_pParentWindow(parentWindow) 
 {
-	m_pProgressTimer = new QTimer(this);
-	initUI();
-}
+	m_pProgressTimer = new QTimer(this);
+	initUI();
+}
 
-WirelessScanDlg::~WirelessScanDlg()
+WirelessScanDlg::~WirelessScanDlg() 
 {
-	if (m_pCancelButton != NULL)
-		Util::myDisconnect(m_pCancelButton, SIGNAL(clicked()), this, SIGNAL(scanCancelled()));	
-		
-	if (m_pRealForm != NULL)
-		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(scanCancelled()));		
-		
-	if (m_pRealForm != NULL)
-		delete m_pRealForm;
-		
-	if (m_pProgressTimer != NULL)
-	{
-		Util::myDisconnect(m_pProgressTimer, SIGNAL(timeout()), this, SLOT(updateProgress()));
-		delete m_pProgressTimer;
-	}
-}
+	if (m_pCancelButton != NULL)
+		Util::myDisconnect(m_pCancelButton, SIGNAL(clicked()), this,
+				    SIGNAL(scanCancelled()));
+	if (m_pRealForm != NULL)
+		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this,
+				    SIGNAL(scanCancelled()));
+	if (m_pRealForm != NULL)
+		delete m_pRealForm;
+	if (m_pProgressTimer != NULL)
+		 {
+		Util::myDisconnect(m_pProgressTimer, SIGNAL(timeout()), this,
+				    SLOT(updateProgress()));
+		delete m_pProgressTimer;
+		}
+}
 
-bool WirelessScanDlg::initUI(void)
+bool WirelessScanDlg::initUI(void) 
 {
-	// load form
-	m_pRealForm = FormLoader::buildform("WirelessScanDialog.ui", m_pParentWindow);
-	if (m_pRealForm == NULL)
-		return false;	
-
-	// set window flags so not minimizeable and context help thingy is turned off
-	Qt::WindowFlags flags;
-	flags = m_pRealForm->windowFlags();
-	flags &= ~Qt::WindowContextHelpButtonHint;
-	flags &= ~Qt::WindowMinimizeButtonHint;
-	m_pRealForm->setWindowFlags(flags);	
 	
-	// cache pointers to objects we'll reference frequently
-	m_pCancelButton = qFindChild<QPushButton*>(m_pRealForm, "buttonCancel");
-	m_pProgressBar = qFindChild<QProgressBar*>(m_pRealForm, "progressBar");
+	    // load form
+	    m_pRealForm =
+	    FormLoader::buildform("WirelessScanDialog.ui", m_pParentWindow);
+	if (m_pRealForm == NULL)
+		return false;
+	
+	    // set window flags so not minimizeable and context help thingy is turned off
+	    Qt::WindowFlags flags;
+	flags = m_pRealForm->windowFlags();
+	flags &= ~Qt::WindowContextHelpButtonHint;
+	flags &= ~Qt::WindowMinimizeButtonHint;
+	m_pRealForm->setWindowFlags(flags);
+	
+	    // cache pointers to objects we'll reference frequently
+	    m_pCancelButton =
+	    qFindChild < QPushButton * >(m_pRealForm, "buttonCancel");
+	m_pProgressBar =
+	    qFindChild < QProgressBar * >(m_pRealForm, "progressBar");
+	
+	    // populate text labels
+	    QLabel * pMessageLabel =
+	    qFindChild < QLabel * >(m_pRealForm, "labelScanMsg");
+	if (pMessageLabel != NULL)
+		pMessageLabel->
+		    setText(tr
+			    ("Scanning For Wireless Networks -- Please Wait..."));
+	if (m_pCancelButton != NULL)
+		m_pCancelButton->setText(tr("Cancel"));
+	
+	    // set up event handling
+	    if (m_pCancelButton != NULL)
+		Util::myConnect(m_pCancelButton, SIGNAL(clicked()), this,
+				 SIGNAL(scanCancelled()));
+	if (m_pProgressTimer != NULL)
+		Util::myConnect(m_pProgressTimer, SIGNAL(timeout()), this,
+				 SLOT(updateProgress()));
+	if (m_pRealForm != NULL)
+		Util::myConnect(m_pRealForm, SIGNAL(rejected()), this,
+				 SIGNAL(scanCancelled()));
+	
+	    // misc
+	    if (m_pProgressBar != NULL)
+		 {
+		m_pProgressBar->setMinimum(0);
+		m_pProgressBar->setMaximum(8);
+		}
+	return true;
+}
 
-	// populate text labels
-	QLabel *pMessageLabel = qFindChild<QLabel*>(m_pRealForm, "labelScanMsg");
-	if (pMessageLabel != NULL)
-		pMessageLabel->setText(tr("Scanning For Wireless Networks -- Please Wait..."));
-		
-	if (m_pCancelButton != NULL)
-		m_pCancelButton->setText(tr("Cancel"));
-		
-	// set up event handling
-	if (m_pCancelButton != NULL)
-		Util::myConnect(m_pCancelButton, SIGNAL(clicked()), this, SIGNAL(scanCancelled()));
-		
-	if (m_pProgressTimer != NULL)
-		Util::myConnect(m_pProgressTimer, SIGNAL(timeout()), this, SLOT(updateProgress()));
-		
-	if (m_pRealForm != NULL)
-		Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(scanCancelled()));
-		
-	// misc
-	if (m_pProgressBar != NULL)
-	{
-		m_pProgressBar->setMinimum(0);
-		m_pProgressBar->setMaximum(8);
-	}
-	return true;
-}
-
-void WirelessScanDlg::show(void)
+void WirelessScanDlg::show(void) 
 {
-	if (m_pProgressBar != NULL)
-		m_pProgressBar->setValue(0);
-	if (m_pProgressTimer != NULL)
-		m_pProgressTimer->start(200);
-	if (m_pRealForm != NULL)
-		m_pRealForm->show();
-}
+	if (m_pProgressBar != NULL)
+		m_pProgressBar->setValue(0);
+	if (m_pProgressTimer != NULL)
+		m_pProgressTimer->start(200);
+	if (m_pRealForm != NULL)
+		m_pRealForm->show();
+}
 
-void WirelessScanDlg::hide(void)
+void WirelessScanDlg::hide(void) 
 {
-	if (m_pRealForm != NULL)
-		m_pRealForm->hide();
-	if (m_pProgressTimer != NULL)
-		m_pProgressTimer->stop();
-}
+	if (m_pRealForm != NULL)
+		m_pRealForm->hide();
+	if (m_pProgressTimer != NULL)
+		m_pProgressTimer->stop();
+}
 
-void WirelessScanDlg::updateProgress(void)
+void WirelessScanDlg::updateProgress(void) 
 {
-	if (m_pProgressBar != NULL)
-	{
-		if (m_pProgressBar->value() == m_pProgressBar->maximum())
-			m_pProgressBar->setValue(m_pProgressBar->minimum());
+	if (m_pProgressBar != NULL)
+		 {
+		if (m_pProgressBar->value() == m_pProgressBar->maximum())
+			m_pProgressBar->setValue(m_pProgressBar->minimum());
+		
 		else
-			m_pProgressBar->setValue(m_pProgressBar->value()+1);
-	}
-}
+			m_pProgressBar->setValue(m_pProgressBar->value() + 1);
+		}
+}

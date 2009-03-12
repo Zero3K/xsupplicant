@@ -28,53 +28,74 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef _XSUPWRAPPER_H_
 #define _XSUPWRAPPER_H_
-
+    
 #include <QString>
 #include <QStringList>
 #include <QVector>
-
-extern "C" 
-{
+extern "C"  {
+	
 #include "libxsupconfig/xsupconfig_structs.h"
-}
+}   class XSupWrapper  {
+ public:static bool createNewConnection(const QString & suggName,
+					 config_connection ** newConnection,
+					 bool forceName = false);
+	static bool getConfigConnection(unsigned char config_type,
+					 const QString & connName,
+					 config_connection ** pConfig);
+	static void freeConfigConnection(config_connection ** p);
+	static bool deleteConnectionConfig(unsigned char config_type,
+					    const QString & connName);
+	static bool writeConfig(unsigned char config_type);
+	static QString getUniqueConnectionName(const QString & suggestedName);
+	static QString getUniqueProfileName(const QString & suggestedName);
+	static QString getUniqueServerName(const QString & suggestedName);
+	static bool createNewProfile(const QString & suggName,
+				      config_profiles ** newProfile,
+				      bool forceName = false);
+	static bool getConfigProfile(unsigned char config_type,
+				      const QString & profileName,
+				      config_profiles ** pProfile);
+	static void freeConfigProfile(config_profiles ** p);
+	static bool isDefaultWiredConnection(const QString & connName);
+	static bool createNewTrustedServer(const QString & suggName,
+					    config_trusted_server ** newServer,
+					    bool forceName = false);
+	static bool getConfigServer(unsigned char config_type,
+				     const QString & serverName,
+				     config_trusted_server ** pServer);
+	static void freeConfigServer(config_trusted_server ** p);
+	static bool isProfileInUse(const QString & profileName);
+	static bool getTrustedServerForProfile(unsigned char config_type,
+						const QString & profileName,
+						config_trusted_server **
+						pServer,
+						unsigned char *inconfig);
+	static bool deleteProfileConfig(unsigned char config_type,
+					 const QString & profileName);
+	static bool deleteServerConfig(unsigned char config_type,
+					const QString & serverName);
+	static bool isTrustedServerInUse(const QString & serverName);
+	static QStringList getWirelessInterfaceList(void);
+	static bool setProfileUsername(unsigned char config_type,
+					const QString & profileName,
+					const QString & username);
+	static bool setProfilePassword(unsigned char config_type,
+					const QString & profileName,
+					const QString & password);
+	static void getAndDisplayErrors(void);
+	static QVector < QString > getWirelessAdapters(void);	// returns descriptions of wireless adapters in system
+	static QVector < QString > getWiredAdapters(void);	// returns descriptions of wired adapters in system
+	static QVector < QString > getConnectionListForAdapter(bool isWireless);
+	static bool isConnectionActive(const QString & interfaceName,
+					const QString & connectionName,
+					bool isWireless);
+	static int connectToConnection(const QString & interfaceName,
+					const QString & connectionName);
+};
 
-class XSupWrapper
-{
-
-public:
-	static bool createNewConnection(const QString &suggName, config_connection **newConnection, bool forceName = false);
-	static bool getConfigConnection(unsigned char config_type, const QString &connName, config_connection **pConfig);
-	static void freeConfigConnection(config_connection **p);
-	static bool deleteConnectionConfig(unsigned char config_type, const QString &connName);
-	static bool writeConfig(unsigned char config_type);
-	static QString getUniqueConnectionName(const QString &suggestedName);
-	static QString getUniqueProfileName(const QString &suggestedName);
-	static QString getUniqueServerName(const QString &suggestedName);
-	static bool createNewProfile(const QString &suggName, config_profiles **newProfile, bool forceName = false);
-	static bool getConfigProfile(unsigned char config_type, const QString &profileName, config_profiles **pProfile);
-	static void freeConfigProfile(config_profiles **p);
-	static bool isDefaultWiredConnection(const QString &connName);
-	static bool createNewTrustedServer(const QString &suggName, config_trusted_server **newServer, bool forceName = false);
-	static bool getConfigServer(unsigned char config_type, const QString &serverName, config_trusted_server **pServer);
-	static void freeConfigServer(config_trusted_server **p);
-	static bool isProfileInUse(const QString &profileName);
-	static bool getTrustedServerForProfile(unsigned char config_type, const QString &profileName, config_trusted_server **pServer, unsigned char *inconfig);
-	static bool deleteProfileConfig(unsigned char config_type, const QString &profileName);
-	static bool deleteServerConfig(unsigned char config_type, const QString &serverName);
-	static bool isTrustedServerInUse(const QString &serverName);
-	static QStringList getWirelessInterfaceList(void);
-	static bool setProfileUsername(unsigned char config_type, const QString &profileName, const QString &username);
-	static bool setProfilePassword(unsigned char config_type, const QString &profileName, const QString &password);
-	static void getAndDisplayErrors(void);
-	static QVector<QString> getWirelessAdapters(void); // returns descriptions of wireless adapters in system
-	static QVector<QString> getWiredAdapters(void); // returns descriptions of wired adapters in system
-	static QVector<QString> getConnectionListForAdapter(bool isWireless);
-	static bool isConnectionActive(const QString &interfaceName, const QString &connectionName, bool isWireless);
-	static int connectToConnection(const QString &interfaceName, const QString &connectionName);
-};
-
-#endif
+
+#endif	/*  */

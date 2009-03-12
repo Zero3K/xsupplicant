@@ -28,23 +28,19 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
+ **/  
 #ifndef PLUGIN_CALLBACKS_H
 #define PLUGIN_CALLBACKS_H
-
+    
 #include "UICallbacks.h"
+    class PluginCallbacks  {
+ public:QString(*pluginVersionStringP) ();
+	UICallbacks uiCallbacks;
+	PluginCallbacks();
+	~PluginCallbacks();
+	QString pluginVersionString();
+	void setUICallbacks(UICallbacks & callbacks);
+};
 
-class PluginCallbacks
-{
-public:
-	QString (*pluginVersionStringP)();
-	UICallbacks uiCallbacks;
-
-	PluginCallbacks();
-	~PluginCallbacks();
-
-	QString pluginVersionString();
-	void setUICallbacks(UICallbacks &callbacks);
-};
-
-#endif // PLUGIN_CALLBACKS_H
+
+#endif				// PLUGIN_CALLBACKS_H

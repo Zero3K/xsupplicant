@@ -51,23 +51,18 @@ class ConnectionWizard;
 class WirelessNetworkMenu;
 class ConnectionSelectDlg;
 
-#define RECONNECT_MAX_ATTEMPTS	  10   // A timeout takes 30 seconds.  So 10 attempts is 5 minutes.
+#define RECONNECT_MAX_ATTEMPTS	  10	// A timeout takes 30 seconds.  So 10 attempts is 5 minutes.
 
-class TrayApp : public QWidget
-{
-    Q_OBJECT
+class TrayApp:public QWidget {
+	Q_OBJECT enum startOption {
+		NONE,
+		START_LOG,
+		START_LOGIN,
+		START_CONFIG,
+		START_ABOUT
+	};
 
-  enum startOption
-    {
-      NONE,
-      START_LOG,
-      START_LOGIN,
-      START_CONFIG,
-      START_ABOUT
-    };
-
-	enum iconState
-	{
+	enum iconState {
 		ENGINE_DISCONNECTED,
 		ENGINE_CONNECTED,
 		AUTHENTICATION_FAILED,
@@ -76,43 +71,43 @@ class TrayApp : public QWidget
 		AUTHENTICATION_NAC_NON_COMPLIANT
 	};
 
-public:
-	QString m_pluginVersionString;
+ public:
+	 QString m_pluginVersionString;
 
-    TrayApp(QApplication &app);
-    virtual ~TrayApp();
+	 TrayApp(QApplication & app);
+	 virtual ~ TrayApp();
 
-    bool init(int argCount);
-    void start();
-	void connectToNetwork(const QString &networkName, const QString &adapterDesc);    
-    
-public:
-	friend class ConnectDlg;
+	bool init(int argCount);
+	void start();
+	void connectToNetwork(const QString & networkName,
+			      const QString & adapterDesc);
+
+ public:
+	 friend class ConnectDlg;
 	friend class ConnectMgrDlg;
 	friend class ConfigDlg;
 
-signals:
-	// Signals that can be rebroadcast from the root that other objects can subscribe to.
+	 signals:
+	    // Signals that can be rebroadcast from the root that other objects can subscribe to.
 	void signalStrengthChanged(int);
 	void signalStateChange(const QString &, int, int, int, unsigned int);
 	void signalIPAddressSet();
 
-public slots:
-	void slotHelp(void);
-	void slotSupError(const QString &error);
-	void slotSupWarning(const QString &warning);
+	public slots: void slotHelp(void);
+	void slotSupError(const QString & error);
+	void slotSupWarning(const QString & warning);
 	void slotRestart(void);
 	void slotStateChange(const QString &, int, int, int, unsigned int);
 	void showConnectDlg(void);
 	void slotLaunchConfig(void);
 
-private slots:
-    void slotIconActivated(QSystemTrayIcon::ActivationReason reason);
-    void slotViewLog();
-    void slotAbout();
-    void slotExit();
-    void slotCreateTroubleticket();
-    void slotConnectToSupplicant();
+	private slots:void slotIconActivated(QSystemTrayIcon::
+					     ActivationReason reason);
+	void slotViewLog();
+	void slotAbout();
+	void slotExit();
+	void slotCreateTroubleticket();
+	void slotConnectToSupplicant();
 	void slotCleanupAbout();
 	void slotHideLog();
 	void slotLaunchHelp(const QString &, const QString &);
@@ -122,9 +117,9 @@ private slots:
 	void slotControlInterfacesDone(bool);
 	void slotCreateTroubleticketDone();
 	void slotCreateTroubleticketError();
-	void slotRequestUPW(const QString &intName, const QString &connName);
+	void slotRequestUPW(const QString & intName, const QString & connName);
 	void slotCleanupUPW();
-	void slotConnectionTimeout(const QString &devName);
+	void slotConnectionTimeout(const QString & devName);
 	void showBasicConfig(void);
 	void buildPopupMenu(void);
 	void cancelConnectionWizard(void);
@@ -136,15 +131,15 @@ private slots:
 	void slotOtherSupplicant(const QString &);
 	void slotLinkDropped(char *);
 
-private:
-    void createTrayActionsAndConnections();
-    void createTrayIcon();
+ private:
+	void createTrayActionsAndConnections();
+	void createTrayIcon();
 	void setTrayIconState(int curState);
 	void setGlobalTrayIconState();
-    void setEnabledMenuItems(bool bEnable);
-    bool startEventListenerThread();
-    bool postConnectActions();
-    bool checkCommandLineParams(int argc);
+	void setEnabledMenuItems(bool bEnable);
+	bool startEventListenerThread();
+	bool postConnectActions();
+	bool checkCommandLineParams(int argc);
 	void loadPlugins();
 	void unloadPlugins();
 	void updateGlobalTrayIconState();
@@ -156,47 +151,48 @@ private:
 	void setTrayMenuBasedOnControl();
 	void closeChildren();
 	void cleanupConnectionWizard(void);
-	void promptConnectionSelection(const QStringList &connList, QString adapterDesc);	
+	void promptConnectionSelection(const QStringList & connList,
+				       QString adapterDesc);
 	void dropAllConnections();
 
 #ifdef WINDOWS
 	void checkOtherSupplicants();
 #endif
 
-    QAction *m_pQuitAction;
-    QAction *m_pConfigAction;
-    QAction *m_pConnectAction;
-    QAction *m_pAboutAction;
+	QAction *m_pQuitAction;
+	QAction *m_pConfigAction;
+	QAction *m_pConnectAction;
+	QAction *m_pAboutAction;
 #ifdef WINDOWS
 	QAction *m_p1XControl;
 #endif
-    QApplication &m_app;
+	 QApplication & m_app;
 	Emitter *m_pEmitter;
-    QTimer m_timer;
-    bool m_bConnectFailed;
+	QTimer m_timer;
+	bool m_bConnectFailed;
 	unsigned char m_cConnectFailures;
-    
-    // dialog window classes
-    LogWindow *m_pLoggingCon;
-    AboutWindow *m_pAboutWindow;
-    ConnectMgrDlg *m_pConnMgr;
-    ConnectDlg *m_pConnectDlg;
-    ConnectionWizard *m_pConnWizard;
-    ConnectionSelectDlg *m_pConnSelDlg;
-    
-    QVector<WirelessNetworkMenu*> m_networkMenuVec;
 
-	QMultiHash<QString, QString> m_intStateHash;
+	// dialog window classes
+	LogWindow *m_pLoggingCon;
+	AboutWindow *m_pAboutWindow;
+	ConnectMgrDlg *m_pConnMgr;
+	ConnectDlg *m_pConnectDlg;
+	ConnectionWizard *m_pConnWizard;
+	ConnectionSelectDlg *m_pConnSelDlg;
 
-    QSystemTrayIcon *m_pTrayIcon;
-    QMenu *m_pTrayIconMenu;
-    QMenu *m_pQuickConnectMenu;
-    XSupCalls m_supplicant;
-    EventListenerThread *m_pEventListenerThread; 
-    bool m_bSupplicantConnected;
-    bool m_bListenerStarted;
-	QStringList	m_OtherSupsDescs;				// A list of interfaces we have already screamed about finding other supplicants on.  (Wireless only for now.)
-    startOption m_commandLineOption;
+	 QVector < WirelessNetworkMenu * >m_networkMenuVec;
+
+	 QMultiHash < QString, QString > m_intStateHash;
+
+	QSystemTrayIcon *m_pTrayIcon;
+	QMenu *m_pTrayIconMenu;
+	QMenu *m_pQuickConnectMenu;
+	XSupCalls m_supplicant;
+	EventListenerThread *m_pEventListenerThread;
+	bool m_bSupplicantConnected;
+	bool m_bListenerStarted;
+	QStringList m_OtherSupsDescs;	// A list of interfaces we have already screamed about finding other supplicants on.  (Wireless only for now.)
+	startOption m_commandLineOption;
 
 	InterfaceCtrl *m_pIntCtrl;
 	CreateTT *m_pCreateTT;
@@ -206,5 +202,4 @@ private:
 	UICallbacks uiCallbacks;
 };
 
-#endif // _TRAYAPP_H_
-
+#endif				// _TRAYAPP_H_

@@ -28,24 +28,23 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
+ **/  
 #ifndef UI_CALLBACKS_H
 #define UI_CALLBACKS_H
+    class UICallbacks  {
+ public:void (*launchHelpP) (const QString & file,
+			      const QString & anchor);
+	QString(*connectionNameForConnectionIDP) (unsigned int connectionID);
+	bool(*connectionAdapterIsWirelessP) (unsigned int connectionID);
+	unsigned int (*postureSettingsForConnectionIDP) (unsigned int
+							  connectionID);
+	UICallbacks();
+	~UICallbacks();
+	void launchHelp(const QString & file, const QString & anchor);
+	QString connectionNameForConnectionID(unsigned int connectionID);
+	bool connectionAdapterIsWireless(unsigned int connectionID);
+	unsigned int postureSettingsForConnectionID(unsigned int connectionID);
+};
 
-class UICallbacks 
-{
-public:
-	void (*launchHelpP)(const QString &file, const QString &anchor);
-	QString (*connectionNameForConnectionIDP)(unsigned int connectionID);
-	bool (*connectionAdapterIsWirelessP)(unsigned int connectionID);
-	unsigned int (*postureSettingsForConnectionIDP)(unsigned int connectionID);
-
-	UICallbacks();
-	~UICallbacks();
-	void launchHelp(const QString &file, const QString &anchor);
-	QString connectionNameForConnectionID(unsigned int connectionID);
-	bool connectionAdapterIsWireless(unsigned int connectionID);
-	unsigned int postureSettingsForConnectionID(unsigned int connectionID);
-};
-
-#endif // UI_CALLBACKS_H
+
+#endif				// UI_CALLBACKS_H

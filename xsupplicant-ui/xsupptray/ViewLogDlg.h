@@ -37,43 +37,36 @@
 #include "MessageClass.h"
 #include <QFile>
 
-class uiWindowViewLogs :
-  public QWidget
-{
-  Q_OBJECT 
+class uiWindowViewLogs:public QWidget {
+ Q_OBJECT public:
+	uiWindowViewLogs(QString & path);
+	virtual ~ uiWindowViewLogs();
+	bool attach();
+	bool open();
+	void show();
 
-public:
-  uiWindowViewLogs(QString &path);
-  virtual ~uiWindowViewLogs();
-  bool attach();
-  bool open();
-  void show();
-
-  private slots:
-    void slotHelp();
-    void slotBrowse();
+	private slots: void slotHelp();
+	void slotBrowse();
 	void slotCopyToClipboard();
 
-signals:
-	void close();
+	 signals: void close();
 
-private:
-	QWidget *m_pRealWidget;
+ private:
+	 QWidget * m_pRealWidget;
 
-  QLineEdit *m_pPathName;
-  QPushButton *m_pBrowseButton;
-  QPushButton *m_pCloseButton;
-  QPushButton *m_pHelpButton;
-  QPushButton *m_pCopyToClipboard;
-  QTextEdit *m_pLogView;
-  QString m_folderPath;
-  QString m_filePath;
+	QLineEdit *m_pPathName;
+	QPushButton *m_pBrowseButton;
+	QPushButton *m_pCloseButton;
+	QPushButton *m_pHelpButton;
+	QPushButton *m_pCopyToClipboard;
+	QTextEdit *m_pLogView;
+	QString m_folderPath;
+	QString m_filePath;
 
-  bool m_bConnected;
+	bool m_bConnected;
 
-  QString getErrorText(QFile::FileError e);
+	QString getErrorText(QFile::FileError e);
 
 };
 
-#endif  // _UIWINDOWVIEWLOGS_H_
-
+#endif				// _UIWINDOWVIEWLOGS_H_

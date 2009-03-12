@@ -39,28 +39,26 @@
 
 // This help window is a singleton class/object.  It is not intended to be instantiated and instead simply
 // use the static functions provided 
-class HelpWindow: public QWidget
-{
-  Q_OBJECT
-
-public:
-	static void showPage(const QString &file, const QString &page);
+class HelpWindow:public QWidget {
+ Q_OBJECT public:
+	static void showPage(const QString & file, const QString & page);
 	static HelpWindow *Instance(void);
-  
-protected:
-	HelpWindow(void);
-	HelpWindow(const HelpWindow &);
-	
-private:
-	void setSource(const QString &path, const QString &file, const QString &page);
+
+ protected:
+	 HelpWindow(void);
+	 HelpWindow(const HelpWindow &);
+
+ private:
+	void setSource(const QString & path, const QString & file,
+		       const QString & page);
 	bool create();
 	void show();
-	
-private:
+
+ private:
 	static HelpWindow *m_pInstance;
 	QWidget *m_pRealForm;
 	QTextBrowser *m_pTextBrowser;
 	QPushButton *m_pCloseButton;
 };
 
-#endif // _HELPWINDOW_H_
+#endif				// _HELPWINDOW_H_

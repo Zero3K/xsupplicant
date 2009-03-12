@@ -35,22 +35,22 @@
 #include "MessageDlg.h"
 #include "helpbrowser.h"
 
-MessageDlg::MessageDlg(QWidget *parent):
-  QDialog(parent)
+ MessageDlg::MessageDlg(QWidget * parent):
+QDialog(parent)
 {
-  setAttribute(Qt::WA_GroupLeader);
+	setAttribute(Qt::WA_GroupLeader);
 
-  m_pMessageEdit = NULL;
+	m_pMessageEdit = NULL;
 
-  setupFields();
-  setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);
-  resize(500, 400);
+	setupFields();
+	setWindowFlags(windowFlags() | Qt::WindowMinimizeButtonHint);
+	resize(500, 400);
 }
-
 
 MessageDlg::~MessageDlg(void)
 {
-	if (m_pMessageEdit != NULL) delete m_pMessageEdit;
+	if (m_pMessageEdit != NULL)
+		delete m_pMessageEdit;
 }
 
 //! setupFields
@@ -60,40 +60,44 @@ MessageDlg::~MessageDlg(void)
 */
 void MessageDlg::setupFields()
 {
-  bool bcode = true;
-  QPixmap p;
-  m_pMessageEdit = new QTextEdit();
-  m_pMessageEdit->setWordWrapMode(QTextOption::WordWrap);
-  m_pMessageEdit->setReadOnly(true);
-  m_pMessageTitle = Util::createLabel("", 
-    tr("These are errors that were encountered by the XSupplicant before the GUI started up."));
+	bool bcode = true;
+	QPixmap p;
+	m_pMessageEdit = new QTextEdit();
+	m_pMessageEdit->setWordWrapMode(QTextOption::WordWrap);
+	m_pMessageEdit->setReadOnly(true);
+	m_pMessageTitle = Util::createLabel("",
+					    tr
+					    ("These are errors that were encountered by the XSupplicant before the GUI started up."));
 
-  Util::myConnect(m_pMessageEdit, SIGNAL(copyAvailable(bool)), this, SLOT(slotCopy(bool))); 
-  QPushButton *pCloseButton = Util::createButton(tr("&Close"), this, SLOT(accept()), tr("Close this dialog"));
-  QPushButton *pHelpButton = Util::createButton(tr("&Help"), this, SLOT(slotHelp()), tr("Display the help for these messages."));
+	Util::myConnect(m_pMessageEdit, SIGNAL(copyAvailable(bool)), this,
+			SLOT(slotCopy(bool)));
+	QPushButton *pCloseButton =
+	    Util::createButton(tr("&Close"), this, SLOT(accept()),
+			       tr("Close this dialog"));
+	QPushButton *pHelpButton =
+	    Util::createButton(tr("&Help"), this, SLOT(slotHelp()),
+			       tr("Display the help for these messages."));
 
-  QDialogButtonBox *pButtonLayout = new QDialogButtonBox();
-  pButtonLayout->setOrientation(Qt::Horizontal);
-  pButtonLayout->addButton(pCloseButton, QDialogButtonBox::AcceptRole);
-  pButtonLayout->addButton(pHelpButton, QDialogButtonBox::HelpRole);
+	QDialogButtonBox *pButtonLayout = new QDialogButtonBox();
+	pButtonLayout->setOrientation(Qt::Horizontal);
+	pButtonLayout->addButton(pCloseButton, QDialogButtonBox::AcceptRole);
+	pButtonLayout->addButton(pHelpButton, QDialogButtonBox::HelpRole);
 
-  QVBoxLayout *pMainLayout = new QVBoxLayout();
-  pMainLayout->addWidget(m_pMessageTitle);
-  pMainLayout->addWidget(m_pMessageEdit);
-  pMainLayout->addWidget(pButtonLayout, 0, Qt::AlignCenter);
+	QVBoxLayout *pMainLayout = new QVBoxLayout();
+	pMainLayout->addWidget(m_pMessageTitle);
+	pMainLayout->addWidget(m_pMessageEdit);
+	pMainLayout->addWidget(pButtonLayout, 0, Qt::AlignCenter);
 #ifdef TNC
-  bcode = p.load(":/images/idbugclr0256.png");
+	bcode = p.load(":/images/idbugclr0256.png");
 #else
-  bcode = p.load(":/images/opensea.png");
+	bcode = p.load(":/images/opensea.png");
 #endif
-  if (bcode)
-  {
-    QIcon i(p);
-    this->setWindowIcon(i);
-  }
-  setLayout(pMainLayout);
+	if (bcode) {
+		QIcon i(p);
+		this->setWindowIcon(i);
+	}
+	setLayout(pMainLayout);
 }
-
 
 //! setInfo
 /*!
@@ -104,13 +108,14 @@ void MessageDlg::setupFields()
   \param[in] helpLocation - the location in the help file
   \return Nothing
 */
-void MessageDlg::setInfo(QString &title, QString &text, QString &helpFile, QString &helpLocation)
+void MessageDlg::setInfo(QString & title, QString & text, QString & helpFile,
+			 QString & helpLocation)
 {
-  setWindowTitle(tr("XSupplicant Startup Log"));
-  m_pMessageTitle->setText(title);
-  m_pMessageEdit->setText(text);
-  m_helpFile = helpFile;
-  m_helpLocation = helpLocation;
+	setWindowTitle(tr("XSupplicant Startup Log"));
+	m_pMessageTitle->setText(title);
+	m_pMessageEdit->setText(text);
+	m_helpFile = helpFile;
+	m_helpLocation = helpLocation;
 }
 
 //! slotCopy
@@ -121,10 +126,9 @@ void MessageDlg::setInfo(QString &title, QString &text, QString &helpFile, QStri
 */
 void MessageDlg::slotCopy(bool bCopy)
 {
-  if (bCopy)
-  {
-    m_pMessageEdit->copy();
-  }
+	if (bCopy) {
+		m_pMessageEdit->copy();
+	}
 }
 
 //! slotHelp
@@ -134,5 +138,5 @@ void MessageDlg::slotCopy(bool bCopy)
 */
 void MessageDlg::slotHelp()
 {
-  HelpWindow::showPage(m_helpFile, m_helpLocation);
+	HelpWindow::showPage(m_helpFile, m_helpLocation);
 }

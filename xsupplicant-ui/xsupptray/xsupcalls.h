@@ -38,8 +38,7 @@
 
 class Emitter;
 
-extern "C" 
-{
+extern "C" {
 #include "libxml/parser.h"
 #include "libxsupgui/xsupgui_request.h"
 #include "libxsupgui/xsupgui_xml_common.h"
@@ -54,19 +53,16 @@ extern "C"
 #include "xsup_err.h"
 #include "supdetect.h"
 }
-
 #include "ipinfoclass.h"
+typedef struct tncmessages {
+	int messageNumber;	// the message number
+	QString text;		// the associated text for this message
+	int autoFix;		// whether or not this problem can be resolved by the supplicant
+} TNCMessageS;
 
-typedef struct tncmessages
-{
-  int messageNumber; // the message number
-  QString text;      // the associated text for this message
-  int autoFix;       // whether or not this problem can be resolved by the supplicant
-}TNCMessageS;
-
-enum ConnSortType{
-  SORT_BY_NAME,
-  SORT_BY_PRIORITY
+enum ConnSortType {
+	SORT_BY_NAME,
+	SORT_BY_PRIORITY
 };
 
 enum VersionCheckResults {
@@ -78,192 +74,245 @@ enum VersionCheckResults {
 //!\class XSupCalls
 /*!\brief Class to interface with the supplicant
 */
-class XSupCalls : public QObject
-{
-	Q_OBJECT
+class XSupCalls:public QObject {
+ Q_OBJECT public:
 
-public:
+	XSupCalls(QWidget * parent);
+	virtual ~ XSupCalls(void);
+	bool checkSupplicantVersion(QString & numberString);
+	bool connectEventListener(bool bDisplayMessage);
+	bool connectToSupplicant();
 
-  XSupCalls(QWidget *parent);
-  virtual ~XSupCalls(void);
-  bool checkSupplicantVersion(QString &numberString);
-  bool connectEventListener(bool bDisplayMessage);
-  bool connectToSupplicant();
+	bool createNewConnection(QString & name,
+				 config_connection ** newConnection);
+	bool createNewConnectionDefaults(QString & name,
+					 config_connection ** pConfig);
 
-  bool createNewConnection(QString &name, config_connection **newConnection);
-  bool createNewConnectionDefaults(QString &name, config_connection **pConfig);
+	bool createNewTrustedServer(QString & name,
+				    config_trusted_server ** pTServer);
+	bool createNewTrustedServerDefaults(QString & name,
+					    config_trusted_server ** pConfig);
 
-  bool createNewTrustedServer(QString &name, config_trusted_server **pTServer);
-  bool createNewTrustedServerDefaults(QString &name, config_trusted_server **pConfig);
+	bool createNewProfile(QString & name, config_profiles ** m_pConfig);
+	bool createNewProfileDefaults(QString & name,
+				      config_profiles ** pConfig);
 
-  bool createNewProfile(QString &name, config_profiles **m_pConfig);
-  bool createNewProfileDefaults(QString &name, config_profiles **pConfig);
+	bool createNewInterface(QString & name, QString & deviceName,
+				QString & mac, bool bWireless,
+				bool bDisplayError);
+	bool createNewInterfaceDefaults(QString & name,
+					config_interfaces ** pConfig);
 
-  bool createNewInterface(QString &name, QString &deviceName, QString &mac, bool bWireless, bool bDisplayError);
-  bool createNewInterfaceDefaults(QString &name, config_interfaces **pConfig);
+	void displaySupplicantError(QString & numberString);
+	bool deleteConnectionConfig(unsigned char config_type, QString & name);
+	void deleteConfigEapMethod(config_eap_method ** p);
+	bool deleteProfileConfig(unsigned char config_type, QString & name);
+	bool deleteTrustedServerConfig(unsigned char config_type,
+				       QString & name);
+	bool disconnectEventListener();
+	void disconnectXSupplicant();
+	bool disassociateWireless(QString & deviceName, QString & desc);
+	bool logoffWired(QString & deviceName, QString & desc);
 
+	bool enumCertificates(cert_enum ** pCertificates, bool bDisplayError =
+			      true);
+	bool enumAndSortConnections(conn_enum ** pConn, bool b);
+	bool enumConfigInterfaces(int_config_enum ** pInterfaceData,
+				  bool bDisplayError = true);
+	bool enumLiveInterfaces(int_enum ** mydata, bool bDisplayError = true);
+	bool enumProfiles(unsigned char config_type, profile_enum ** pProfiles,
+			  bool bDisplayError = true);
+	bool enumTrustedServers(unsigned char config_type,
+				trusted_servers_enum ** pServers,
+				bool bDisplayError = true);
 
-  void displaySupplicantError(QString &numberString);
-  bool deleteConnectionConfig(unsigned char config_type, QString &name);
-  void deleteConfigEapMethod(config_eap_method **p);
-  bool deleteProfileConfig(unsigned char config_type, QString &name);
-  bool deleteTrustedServerConfig(unsigned char config_type, QString &name);
-  bool disconnectEventListener();
-  void disconnectXSupplicant();
-  bool disassociateWireless(QString &deviceName, QString &desc);
-  bool logoffWired(QString &deviceName, QString &desc);
+	void getAndDisplayErrors();
+	bool getLiveInterfaceData(QString & Name, QString & description,
+				  QString & mac, bool & bWireless,
+				  bool bDisplayError = false);
+	bool getCertInfo(QString & storetype, QString & location,
+			 cert_info ** certInfo, bool bDisplayError);
+	bool getConfigInterface(QString & interfaceName,
+				config_interfaces ** pInterfaceData,
+				bool bDisplayError = true);
+	bool getConfigGlobals(config_globals ** myglobs, bool bDisplayError =
+			      true);
+	bool getConfigProfile(unsigned char config_type, QString & profileName,
+			      config_profiles ** pProfiles, bool bDisplayError =
+			      true);
+	bool getConfigTrustedServer(unsigned char config_type, QString & server,
+				    config_trusted_server ** pConfig,
+				    bool bDisplayError = true);
+	bool getConfigConnection(unsigned char config_type,
+				 QString & connection,
+				 config_connection ** pConfig,
+				 bool bDisplayError = true);
+	bool getUIEventString(int uiEvent, QString & desc);
+	bool getConfigConnectionName(QString & deviceDescription,
+				     QString & m_deviceName, QString & connName,
+				     bool bDisplayError = false);
+	unsigned char getConnectionType(QString connName);
+	unsigned char getProfileType(QString profName);
+	unsigned char getTSType(QString tsName);
 
-  bool enumCertificates(cert_enum **pCertificates, bool bDisplayError = true);
-  bool enumAndSortConnections(conn_enum **pConn, bool b);
-  bool enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDisplayError = true);
-  bool enumLiveInterfaces(int_enum **mydata, bool bDisplayError = true);
-  bool enumProfiles(unsigned char config_type, profile_enum **pProfiles, bool bDisplayError = true);
-  bool enumTrustedServers(unsigned char config_type, trusted_servers_enum **pServers, bool bDisplayError = true);
+	bool getAssociation(QString & deviceDesc, QString & deviceName,
+			    QString & value, bool bDisplayError);
+	bool getAuthTime(QString & deviceName, long int &timeauthed,
+			 bool bDisplayError);
+	bool getDefaultSettings(config_globals ** p);
+	void getTunnelNames(config_eap_method * pMethod, QString & outer,
+			    QString & inner);
+	void getInnerTunnelName(int innerMethod, void *pMethodData,
+				QString & inner);
 
-  void getAndDisplayErrors();
-  bool getLiveInterfaceData(QString &Name, QString &description, 
-    QString &mac, bool &bWireless, bool bDisplayError = false);
-  bool getCertInfo(QString &storetype, QString &location, cert_info **certInfo, bool bDisplayError);
-  bool getConfigInterface(QString &interfaceName, config_interfaces **pInterfaceData, bool bDisplayError = true);
-  bool getConfigGlobals(config_globals **myglobs, bool bDisplayError = true);
-  bool getConfigProfile(unsigned char config_type, QString &profileName, config_profiles **pProfiles, bool bDisplayError = true);
-  bool getConfigTrustedServer(unsigned char config_type, QString &server, config_trusted_server **pConfig, bool bDisplayError = true);
-  bool getConfigConnection(unsigned char config_type, QString &connection, config_connection **pConfig, bool bDisplayError = true);
-  bool getUIEventString(int uiEvent, QString &desc);
-  bool getConfigConnectionName(QString &deviceDescription, QString &m_deviceName, QString &connName, 
-    bool bDisplayError = false);
-  unsigned char getConnectionType(QString connName);
-  unsigned char getProfileType(QString profName);
-  unsigned char getTSType(QString tsName);
+	bool getConnectionInformation(QString & connectionName, int &authType,
+				      QString & userNameString,
+				      QString & passwordString, bool b);
+	bool getDeviceName(const QString & deviceDescription,
+			   QString & deviceName, bool bDisplayError = true);
+	bool getDeviceDescription(const QString & deviceName,
+				  QString & deviceDescription,
+				  bool bDisplayError = true);
+	bool getEncryption(QString & device, QString & encryptionType,
+			   bool bDisplay);
+	bool getInterfaceData(QString & intName, QString & description,
+			      QString & mac, bool & bWireless);
+	bool getIPInfo(QString & device, IPInfoClass & info, bool b);
+	bool getPhysicalState(QString & deviceDescription,
+			      QString & deviceName,
+			      QString & status, int &state, bool bDisplayError);
+	bool get1xState(QString & deviceDescription,
+			QString & deviceName,
+			QString & status, int &state, bool bDisplayError);
+	bool getSignalStrength(QString & deviceDesc, QString & deviceName,
+			       int &retval, bool bDisplayError = false);
+	bool getSSID(QString & deviceDesc, QString & device,
+		     QString & ssidString, bool bDisplayError = false);
+	bool getBroadcastSSIDs(QString & deviceDesc, QString & deviceName,
+			       ssid_info_enum ** pssids);
+	bool getBroadcastSSIDs(QString & deviceDescription,
+			       ssid_info_enum ** pssids);
+	bool getTextFor1xState(int state, QString & status);
+	bool getAndCheckSupplicantVersion(QString & fullVersion,
+					  QString & numberString,
+					  bool bDisplay = true);
+	void getUserAndPasswordFromProfile(config_profiles * prof,
+					   QString & innerUser,
+					   QString & password);
 
-  bool getAssociation(QString &deviceDesc, QString &deviceName, QString &value, bool bDisplayError);
-  bool getAuthTime(QString &deviceName, long int &timeauthed, bool bDisplayError);
-  bool getDefaultSettings(config_globals **p);
-  void getTunnelNames(config_eap_method *pMethod, QString &outer, QString &inner);
-  void getInnerTunnelName(int innerMethod, void *pMethodData, QString &inner);
+	bool isLiveInterface(const int_enum * pLiveInts,
+			     const char *pConfigInterfaceName);
+	static bool isOnlyInstance(char *executableName);
+	bool isServerUsedInProfile(config_profiles * pProfile,
+				   QString & server);
 
+	bool networkDisconnect(QString & deviceName, bool bWireless);
 
-  bool getConnectionInformation(QString &connectionName, int &authType, 
-    QString &userNameString, QString &passwordString, bool b);
-  bool getDeviceName(const QString &deviceDescription, QString &deviceName, bool bDisplayError = true);
-  bool getDeviceDescription(const QString &deviceName, QString &deviceDescription, bool bDisplayError = true);
-  bool getEncryption(QString &device, QString &encryptionType, bool bDisplay);
-  bool getInterfaceData(QString &intName, QString &description, QString &mac, bool &bWireless);
-  bool getIPInfo(QString &device, IPInfoClass &info, bool b);
-  bool getPhysicalState(QString &deviceDescription, 
-                                 QString &deviceName, 
-                                 QString &status, 
-                                 int &state,
-                                 bool bDisplayError);
-  bool get1xState(QString &deviceDescription, 
-                    QString &deviceName, 
-                    QString &status, 
-                    int &state,
-                    bool bDisplayError);
-  bool getSignalStrength(QString &deviceDesc, QString &deviceName, int &retval, bool bDisplayError = false);
-  bool getSSID(QString &deviceDesc, QString &device, QString &ssidString, bool bDisplayError = false);
-  bool getBroadcastSSIDs(QString &deviceDesc, QString &deviceName, ssid_info_enum **pssids);
-  bool getBroadcastSSIDs(QString &deviceDescription, ssid_info_enum **pssids); 
-  bool getTextFor1xState(int state, QString &status);
-  bool getAndCheckSupplicantVersion(QString &fullVersion, QString &numberString, bool bDisplay = true);
-  void getUserAndPasswordFromProfile(config_profiles *prof, QString &innerUser, QString &password);
+	bool pauseWireless(QString & device, QString & desc);
+	bool renameConnection(unsigned char config_type, QString & oldName,
+			      QString & newName);
+	bool renameProfile(unsigned char config_type, QString & oldName,
+			   QString & newName);
+	bool renameTrustedServer(unsigned char config_type, QString & oldName,
+				 QString & newName);
 
-  bool isLiveInterface(const int_enum *pLiveInts, const char *pConfigInterfaceName);
-  static bool isOnlyInstance(char *executableName);
-  bool isServerUsedInProfile(config_profiles *pProfile, QString &server);
+	void mapPhysicalState(int state, QString & status);
+	void map1XState(int state, QString & status);
+	bool setConnection(QString & deviceName, QString & currentConnection);
+	bool processEvent(Emitter & e, int result);
+	bool applyPriorities(conn_enum * pConns);
 
-  bool networkDisconnect(QString &deviceName, bool bWireless);
+	void sendXStatus(Emitter & e);
+	void sendPStatus(Emitter & e);
 
-  bool pauseWireless(QString &device, QString &desc);
-  bool renameConnection(unsigned char config_type, QString &oldName, QString &newName);
-  bool renameProfile(unsigned char config_type, QString &oldName, QString &newName);
-  bool renameTrustedServer(unsigned char config_type, QString &oldName, QString &newName);
+	bool setConfigConnection(unsigned char config_type,
+				 config_connection * pConfig);
+	bool setConfigGlobals(config_globals * globals);
+	bool setConfigInterface(config_interfaces * pConfig);
+	bool setConfigProfile(unsigned char config_type,
+			      config_profiles * pProfile);
+	void setProfileUserNameAndPassword(char *pProfileName,
+					   const QString & userName,
+					   const QString & password);
+	bool setConfigTrustedServer(unsigned char config_type,
+				    config_trusted_server * pConfig);
+	bool setUserNameAndPassword(const QString & connectionName,
+				    const QString & userName,
+				    const QString & password, int authType);
+	void setUserNameIntoProfile(config_profiles * pProfile,
+				    const QString & userName);
+	void setPasswordIntoProfile(config_profiles * pProfile,
+				    const QString & password);
+	bool startWirelessScan(QString & device);
+	bool waitForEvent();
+	bool waitForEvents(Emitter & e);
+	bool sendPing();
+	void sortPossibleConnections(poss_conn_enum * pConns,
+				     poss_conn_enum ** pSortedConns);
+	void sortConnections(conn_enum * pConns, conn_enum ** pSortedConns);
+	void stateTransition(Emitter & e, bool bDebug, char *intf, int sm,
+			     int oldstate, int newstate, QString & newState,
+			     QString & fullText);
+	//bool TNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t batchType, bool bDisplayError);
+	bool updateAdapters(bool bDisplayError);
 
-  void mapPhysicalState(int state, QString &status);
-  void map1XState(int state, QString &status);
-  bool setConnection(QString &deviceName, QString &currentConnection);
-  bool processEvent(Emitter &e, int result);
-  bool applyPriorities(conn_enum *pConns);
+	// Free functions
+	void freeCertInfo(cert_info ** certInfo);
+	void freeConfigConnection(config_connection ** p);
+	void freeConfigAssociation(struct config_association *p);
+	void freeConfigGlobals(config_globals ** conn);
+	void freeConfigInterface(config_interfaces ** p);
+	void freeConfigProfile(config_profiles ** profile);
+	void freeConfigTrustedServer(config_trusted_server ** conn);
+	void freeEnumConnections(conn_enum ** p);
+	void freeEnumPossibleConnections(poss_conn_enum ** p);
+	void freeEnumStaticInt(int_config_enum ** p);
+	void freeEnumLiveInt(int_enum ** p);
+	void freeEnumProfile(profile_enum ** p);
+	void freeEnumSSID(ssid_info_enum ** pssids);
+	void freeEnumTrustedServer(trusted_servers_enum ** p);
+	void freeEnumCertificates(cert_enum ** pCerts);
+	void freeConfigEAPMethod(struct config_eap_method **method);
 
-  void sendXStatus(Emitter &e);
-  void sendPStatus(Emitter &e);
+	int createTroubleTicket(char *filename, char *scratchdir,
+				int overwrite);
 
-  bool setConfigConnection(unsigned char config_type, config_connection *pConfig);
-  bool setConfigGlobals(config_globals *globals);
-  bool setConfigInterface(config_interfaces *pConfig);
-  bool setConfigProfile(unsigned char config_type, config_profiles *pProfile);
-  void setProfileUserNameAndPassword(char *pProfileName, const QString &userName, const QString &password);
-  bool setConfigTrustedServer(unsigned char config_type, config_trusted_server *pConfig);
-  bool setUserNameAndPassword(const QString &connectionName, const QString &userName, const QString &password, 
-    int authType);
-  void setUserNameIntoProfile(config_profiles *pProfile, const QString &userName);
-  void setPasswordIntoProfile(config_profiles *pProfile, const QString &password);
-  bool startWirelessScan(QString &device);
-  bool waitForEvent();
-  bool waitForEvents(Emitter &e);
-  bool sendPing();
-  void sortPossibleConnections(poss_conn_enum *pConns, poss_conn_enum **pSortedConns);
-  void sortConnections(conn_enum *pConns, conn_enum **pSortedConns);
-  void stateTransition(Emitter &e, bool bDebug, char *intf, int sm, int oldstate, int newstate, QString &newState, QString &fullText);
-  //bool TNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t batchType, bool bDisplayError);
-  bool updateAdapters(bool bDisplayError);
+	bool writeConfig(unsigned char config_type);
 
-  // Free functions
-  void freeCertInfo(cert_info **certInfo);
-  void freeConfigConnection(config_connection **p);
-  void freeConfigAssociation(struct config_association *p);
-  void freeConfigGlobals(config_globals **conn);
-  void freeConfigInterface(config_interfaces **p);
-  void freeConfigProfile(config_profiles **profile);
-  void freeConfigTrustedServer(config_trusted_server **conn);
-  void freeEnumConnections(conn_enum **p);
-  void freeEnumPossibleConnections(poss_conn_enum **p);
-  void freeEnumStaticInt(int_config_enum **p);
-  void freeEnumLiveInt(int_enum **p);
-  void freeEnumProfile(profile_enum **p);
-  void freeEnumSSID(ssid_info_enum **pssids);
-  void freeEnumTrustedServer(trusted_servers_enum **p);
-  void freeEnumCertificates(cert_enum **pCerts);
-  void freeConfigEAPMethod(struct config_eap_method **method);
+	static int CONNECTION_DEFAULT_PRIORITY;
+	// These were static methods, but I've changed them all now to be member methods
+	int config_get_ttls_pwd(struct config_eap_method *meth,
+				char **pPassword);
+	int config_get_pwd(struct config_eap_method *meth, char **pPassword);
 
-  int createTroubleTicket(char *filename, char *scratchdir, int overwrite);
+	int config_get_peap_user(struct config_eap_method *meth, char **pUser);
+	int config_get_ttls_user(struct config_eap_method *meth, char **pUser);
+	int config_get_user(struct config_eap_method *meth, char **pUser);
 
-  bool writeConfig(unsigned char config_type);
-  
-  static int CONNECTION_DEFAULT_PRIORITY;
-  // These were static methods, but I've changed them all now to be member methods
-  int config_get_ttls_pwd(struct config_eap_method *meth, char **pPassword);
-  int config_get_pwd(struct config_eap_method *meth, char **pPassword);
+	int config_set_ttls_user(struct config_eap_method *meth, char *pUser);
+	int config_set_peap_user(struct config_eap_method *meth, char *pUser);
+	int config_set_user(struct config_eap_method *meth, char *pUser);
 
-  int config_get_peap_user(struct config_eap_method *meth, char **pUser);
-  int config_get_ttls_user(struct config_eap_method *meth, char **pUser);
-  int config_get_user(struct config_eap_method *meth, char **pUser);
+	static QString connectionNameFromConnectionID(unsigned int connID);
+	static bool connectionIsWirelessFromConnectionID(unsigned int connID);
+	static unsigned int postureSettingsForConnectionID(unsigned int connID);
 
-  int config_set_ttls_user(struct config_eap_method *meth, char *pUser);
-  int config_set_peap_user(struct config_eap_method *meth, char *pUser);
-  int config_set_user(struct config_eap_method *meth, char *pUser);
-  
-  static QString connectionNameFromConnectionID(unsigned int connID);
-  static bool connectionIsWirelessFromConnectionID(unsigned int connID);
-  static unsigned int postureSettingsForConnectionID(unsigned int connID);
+	 signals:void signalStateChange(QString &, int, int, int, unsigned int);
+	void signalIPAddressSet();
 
-signals:
-  void signalStateChange(QString &, int, int, int, unsigned int);
-  void signalIPAddressSet();
+	public slots:
+	    bool TNCReply(uint32_t imc, uint32_t connID, uint32_t oui,
+			  uint32_t batchType, bool bDisplayError, int answer);
 
-public slots:
-  bool TNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t batchType, bool bDisplayError, int answer);
-  
-private:
-  XSupCalls(const XSupCalls &);
+ private:
+	 XSupCalls(const XSupCalls &);
 
-  MessageClass m_message;
+	MessageClass m_message;
 
-  QMutex m_mutex;
-  QMutex m_adapterMutex;
-  static bool m_bEventsConnected;
-  bool connectXSupplicant(); // only called from within the xsupcalls library
+	QMutex m_mutex;
+	QMutex m_adapterMutex;
+	static bool m_bEventsConnected;
+	bool connectXSupplicant();	// only called from within the xsupcalls library
 };
 
-#endif  // _XSUPCALLS_H_
-
+#endif				// _XSUPCALLS_H_

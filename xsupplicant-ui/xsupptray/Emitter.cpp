@@ -43,12 +43,12 @@ Emitter::Emitter()
 {
 }
 
-void Emitter::sendSupWarningEvent(const QString &warning)
+void Emitter::sendSupWarningEvent(const QString & warning)
 {
 	emit signalSupWarningEvent(warning);
 }
 
-void Emitter::sendSupErrorEvent(const QString &error)
+void Emitter::sendSupErrorEvent(const QString & error)
 {
 	emit signalSupErrorEvent(error);
 }
@@ -59,7 +59,7 @@ void Emitter::sendSupErrorEvent(const QString &error)
   \param [in] str is the string we want to convert to a char *
   \return Nothing
 */
-void Emitter::sendStartLogMessage(const QString &str)
+void Emitter::sendStartLogMessage(const QString & str)
 {
 	emit signalStartLogMessage(str);
 }
@@ -70,17 +70,17 @@ void Emitter::sendStartLogMessage(const QString &str)
   \param [in] str is the string we want to convert to a char *
   \return Nothing
 */
-void Emitter::sendLogMessage(const QString &str)
+void Emitter::sendLogMessage(const QString & str)
 {
 	emit signalLogMessage(str);
 }
 
-void Emitter::sendBadPSK(const QString &intName)
+void Emitter::sendBadPSK(const QString & intName)
 {
 	emit signalBadPSK(intName);
 }
 
-void Emitter::sendBadCreds(const QString &intName, const QString &connName)
+void Emitter::sendBadCreds(const QString & intName, const QString & connName)
 {
 	emit signalBadCreds(intName, connName);
 }
@@ -100,7 +100,7 @@ void Emitter::sendIPAddressSet()
   \param [in] str is the string we are going to send with the signal
   \return Nothing
 */
-void Emitter::sendStateMessage(const QString &str)
+void Emitter::sendStateMessage(const QString & str)
 {
 	emit signalStateMessage(str);
 }
@@ -113,9 +113,11 @@ void Emitter::sendStateMessage(const QString &str)
   \param [in] oldstate is the state that we used to be in
   \param [in] newstate is the state that we are now in
 */
-void Emitter::sendStateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid)
+void Emitter::sendStateChange(const QString & intName, int sm, int oldstate,
+			      int newstate, unsigned int tncconnectionid)
 {
-	emit signalStateChange(intName, sm, oldstate, newstate, tncconnectionid);
+	emit signalStateChange(intName, sm, oldstate, newstate,
+			       tncconnectionid);
 }
 
 //! sendStateMessageToScreen
@@ -125,7 +127,8 @@ void Emitter::sendStateChange(const QString &intName, int sm, int oldstate, int 
   \param [in] str - the string representation of the current state
   \return Nothing
 */
-void Emitter::sendStateMessageToScreen(int machine, int state, const QString &str)
+void Emitter::sendStateMessageToScreen(int machine, int state,
+				       const QString & str)
 {
 	emit signalStateMessageToScreen(machine, state, str);
 }
@@ -138,7 +141,7 @@ void Emitter::sendStateMessageToScreen(int machine, int state, const QString &st
 */
 void Emitter::sendConnConfigUpdate()
 {
-  emit signalConnConfigUpdate();
+	emit signalConnConfigUpdate();
 }
 
 void Emitter::sendProfConfigUpdate()
@@ -151,9 +154,9 @@ void Emitter::sendProfConfigUpdate()
   \brief emit's a logMessage 
   \return Nothing
 */
-void Emitter::sendScanComplete(const QString &s)
+void Emitter::sendScanComplete(const QString & s)
 {
-  emit signalScanCompleteMessage(s);
+	emit signalScanCompleteMessage(s);
 }
 
 //! sendUIMessage
@@ -162,7 +165,7 @@ void Emitter::sendScanComplete(const QString &s)
   \param [in] str is the string we are going to send with the signal
   \return Nothing
 */
-void Emitter::sendUIMessage(const QString &str)
+void Emitter::sendUIMessage(const QString & str)
 {
 	emit signalUIMessage(str);
 }
@@ -172,9 +175,11 @@ void Emitter::sendUIMessage(const QString &str)
   \brief emit's a message that the password needs to be entered
   \return Nothing
 */
-void Emitter::sendRequestPassword(const QString &connName, const QString &eapMethod, const QString &challengeStr)
+void Emitter::sendRequestPassword(const QString & connName,
+				  const QString & eapMethod,
+				  const QString & challengeStr)
 {
-  emit signalRequestPasswordMessage(connName, eapMethod, challengeStr);
+	emit signalRequestPasswordMessage(connName, eapMethod, challengeStr);
 }
 
 //! sendTNCUIEvent
@@ -184,7 +189,7 @@ void Emitter::sendRequestPassword(const QString &connName, const QString &eapMet
 */
 void Emitter::sendTNCUIEvent(int oui, int notification)
 {
-  emit signalTNCUIMessage(oui, notification);
+	emit signalTNCUIMessage(oui, notification);
 }
 
 //! sendTNCUIRequestEvent
@@ -194,7 +199,7 @@ void Emitter::sendTNCUIEvent(int oui, int notification)
 */
 void Emitter::sendTNCUIRequestEvent(int imc, int connID, int oui, int request)
 {
-  emit signalTNCUIRequestMessage(imc, connID, oui, request);
+	emit signalTNCUIRequestMessage(imc, connID, oui, request);
 }
 
 //! sendTNCUIRemediationNeededBatchEvent
@@ -202,9 +207,13 @@ void Emitter::sendTNCUIRequestEvent(int imc, int connID, int oui, int request)
   \brief Notify listeners that a TNC IMC has requested remediation.
   \return Nothing
 */
-void Emitter::sendTNCUIRemediationRequestedBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIRemediationRequestedBatchEvent(int imc, int connID,
+						      int oui, int request,
+						      tnc_msg_batch *
+						      pTNCMessages)
 {
-  emit signalTNCUIRemediationRequestedBatchMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIRemediationRequestedBatchMessage(imc, connID, oui,
+							 request, pTNCMessages);
 }
 
 //! sendTNCUIReconnectBatchEvent
@@ -212,9 +221,12 @@ void Emitter::sendTNCUIRemediationRequestedBatchEvent(int imc, int connID, int o
   \brief Notify listeners that a TNC IMC has requested permission to reconnect the user. 
   \return Nothing
 */
-void Emitter::sendTNCUIReconnectBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIReconnectBatchEvent(int imc, int connID, int oui,
+					   int request,
+					   tnc_msg_batch * pTNCMessages)
 {
-  emit signalTNCUIReconnectBatchMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIReconnectBatchMessage(imc, connID, oui, request,
+					      pTNCMessages);
 }
 
 //! sendTNCUIRemediationWillBeginBatchEvent
@@ -222,9 +234,13 @@ void Emitter::sendTNCUIReconnectBatchEvent(int imc, int connID, int oui, int req
   \brief Notify listeners that remediation will begin.
   \return Nothing
 */
-void Emitter::sendTNCUIRemediationWillBeginBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIRemediationWillBeginBatchEvent(int imc, int connID,
+						      int oui, int request,
+						      tnc_msg_batch *
+						      pTNCMessages)
 {
-  emit signalTNCUIRemediationWillBeginBatchMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIRemediationWillBeginBatchMessage(imc, connID, oui,
+							 request, pTNCMessages);
 }
 
 //! sendTNCUIRemediationStatusItemStartedEvent
@@ -232,42 +248,58 @@ void Emitter::sendTNCUIRemediationWillBeginBatchEvent(int imc, int connID, int o
   \brief An IMC has sent a message indicating that remediation for a specific item has started.
   \return Nothing
 */
-void Emitter::sendTNCUIRemediationStatusItemStartedEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIRemediationStatusItemStartedEvent(int imc, int connID,
+							 int oui, int request,
+							 tnc_msg_batch *
+							 pTNCMessages)
 {
-  emit signalTNCUIRemediationStatusItemStartedMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIRemediationStatusItemStartedMessage(imc, connID, oui,
+							    request,
+							    pTNCMessages);
 }
-
 
 //! sendTNCUIRemediationStatusItemSuccessEvent
 /*!
   \brief An IMC has sent a message indicating that a particular item was successfully remediated. 
   \return Nothing
 */
-void Emitter::sendTNCUIRemediationStatusItemSuccessEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIRemediationStatusItemSuccessEvent(int imc, int connID,
+							 int oui, int request,
+							 tnc_msg_batch *
+							 pTNCMessages)
 {
-  emit signalTNCUIRemediationStatusItemSuccessMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIRemediationStatusItemSuccessMessage(imc, connID, oui,
+							    request,
+							    pTNCMessages);
 }
-
 
 //! sendTNCUIRemediationItemFailureEvent
 /*!
   \brief An IMC has sent a message indicating that a particular item failed to remediate.
   \return Nothing
 */
-void Emitter::sendTNCUIRemediationStatusItemFailureEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIRemediationStatusItemFailureEvent(int imc, int connID,
+							 int oui, int request,
+							 tnc_msg_batch *
+							 pTNCMessages)
 {
-  emit signalTNCUIRemediationStatusItemFailureMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIRemediationStatusItemFailureMessage(imc, connID, oui,
+							    request,
+							    pTNCMessages);
 }
-
 
 //! sendTNCUIRemediationWillEndBatchEvent
 /*!
   \brief An IMC has sent a message indicating that all remediation items have been processed.
   \return Nothing
 */
-void Emitter::sendTNCUIRemediationWillEndBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIRemediationWillEndBatchEvent(int imc, int connID,
+						    int oui, int request,
+						    tnc_msg_batch *
+						    pTNCMessages)
 {
-  emit signalTNCUIRemediationWillEndBatchMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIRemediationWillEndBatchMessage(imc, connID, oui,
+						       request, pTNCMessages);
 }
 
 //! sendTNCUIRemediationEventBatchEvent
@@ -275,9 +307,12 @@ void Emitter::sendTNCUIRemediationWillEndBatchEvent(int imc, int connID, int oui
   \brief An IMC has sent a message indicating that all remediation items have been processed.
   \return Nothing
 */
-void Emitter::sendTNCUIRemediationEventBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIRemediationEventBatchEvent(int imc, int connID, int oui,
+						  int request,
+						  tnc_msg_batch * pTNCMessages)
 {
-  emit signalTNCUIRemediationEventBatchMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIRemediationEventBatchMessage(imc, connID, oui, request,
+						     pTNCMessages);
 }
 
 //! sendTNCUIComplianceFailureBatchEvent
@@ -285,9 +320,12 @@ void Emitter::sendTNCUIRemediationEventBatchEvent(int imc, int connID, int oui, 
   \brief emit's a message from the TNC that DOES require a response
   \return Nothing
 */
-void Emitter::sendTNCUIComplianceFailureBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIComplianceFailureBatchEvent(int imc, int connID, int oui,
+						   int request,
+						   tnc_msg_batch * pTNCMessages)
 {
-  emit signalTNCUIComplianceFailureBatchMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIComplianceFailureBatchMessage(imc, connID, oui, request,
+						      pTNCMessages);
 }
 
 //! sendTNCUIComplianceReportBatchEvent
@@ -295,9 +333,12 @@ void Emitter::sendTNCUIComplianceFailureBatchEvent(int imc, int connID, int oui,
   \brief Notify UI plugins of a TNC compliance report for a given IMC/ConnectionID.
   \return Nothing
 */
-void Emitter::sendTNCUIComplianceReportBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIComplianceReportBatchEvent(int imc, int connID, int oui,
+						  int request,
+						  tnc_msg_batch * pTNCMessages)
 {
-  emit signalTNCUIComplianceReportBatchMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIComplianceReportBatchMessage(imc, connID, oui, request,
+						     pTNCMessages);
 }
 
 //! sendTNCUIPurgeConnectionBatchEvent
@@ -305,12 +346,16 @@ void Emitter::sendTNCUIComplianceReportBatchEvent(int imc, int connID, int oui, 
   \brief Notify UI plugins of a TNC connection that needs to be purged.
   \return Nothing
 */
-void Emitter::sendTNCUIPurgeConnectionBatchEvent(int imc, int connID, int oui, int request, tnc_msg_batch *pTNCMessages)
+void Emitter::sendTNCUIPurgeConnectionBatchEvent(int imc, int connID, int oui,
+						 int request,
+						 tnc_msg_batch * pTNCMessages)
 {
-  emit signalTNCUIPurgeConnectionBatchMessage(imc, connID, oui, request, pTNCMessages);
+	emit signalTNCUIPurgeConnectionBatchMessage(imc, connID, oui, request,
+						    pTNCMessages);
 }
 
-void Emitter::sendTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer)
+void Emitter::sendTNCReply(uint32_t imc, uint32_t connID, uint32_t oui,
+			   uint32_t request, bool bDisplayError, int answer)
 {
 	emit signalTNCReply(imc, connID, oui, request, bDisplayError, answer);
 }
@@ -320,9 +365,13 @@ void Emitter::sendTNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t
     \brief emit's a message that the login window catches to update its TNC status.
     \return Nothing
 */
-void Emitter::sendTNCUILoginWindowStatusUpdateEvent(unsigned int imc, unsigned int connID, unsigned int oui, unsigned int newState)
+void Emitter::sendTNCUILoginWindowStatusUpdateEvent(unsigned int imc,
+						    unsigned int connID,
+						    unsigned int oui,
+						    unsigned int newState)
 {
-    emit signalTNCUILoginWindowStatusUpdateEvent(imc, connID, oui, newState);   
+	emit signalTNCUILoginWindowStatusUpdateEvent(imc, connID, oui,
+						     newState);
 }
 
 //!   void sendTNCUIConnectionStatusRequest
@@ -330,9 +379,9 @@ void Emitter::sendTNCUILoginWindowStatusUpdateEvent(unsigned int imc, unsigned i
     \brief 
     \return Nothing
 */
-void Emitter::sendTNCUIConnectionStatusRequest(unsigned int connID) 
+void Emitter::sendTNCUIConnectionStatusRequest(unsigned int connID)
 {
-    emit signalTNCUIConnectionStatusRequest(connID);
+	emit signalTNCUIConnectionStatusRequest(connID);
 }
 
 //! sendSignalStrength()
@@ -340,9 +389,9 @@ void Emitter::sendTNCUIConnectionStatusRequest(unsigned int connID)
   \brief emit's a signal that the signal strength has changed
   \return Nothing
 */
-void Emitter::sendSignalStrength(const QString &intf, int s)
+void Emitter::sendSignalStrength(const QString & intf, int s)
 {
-  emit signalSignalStrength(intf, s);
+	emit signalSignalStrength(intf, s);
 }
 
 //! sendInterfaceInsertedMessage()
@@ -351,7 +400,7 @@ void Emitter::sendSignalStrength(const QString &intf, int s)
 */
 void Emitter::sendInterfaceInsertedEvent(char *intface)
 {
-  emit signalInterfaceInserted(intface);
+	emit signalInterfaceInserted(intface);
 }
 
 void Emitter::sendLinkDownEvent(char *intface)
@@ -371,7 +420,7 @@ void Emitter::sendLinkUpEvent(char *intface)
 */
 void Emitter::sendXSupplicantShutDownMessage()
 {
-  emit signalXSupplicantShutDown();
+	emit signalXSupplicantShutDown();
 }
 
 void Emitter::sendShowConfig()
@@ -384,63 +433,51 @@ void Emitter::sendInterfaceRemovedEvent(char *interfaces)
 	emit signalInterfaceRemoved(interfaces);
 }
 
-void Emitter::sendPluginLoaded(UIPlugins *plugin)
+void Emitter::sendPluginLoaded(UIPlugins * plugin)
 {
-	if(plugin != NULL)
-	{
+	if (plugin != NULL) {
 		emit signalPluginLoaded(plugin);
 
-//		this->sendUIMessage(tr("Got a 'Plugin Loaded' event for a plugin at %1!").arg((qlonglong)plugin));
-	}
-	else
-	{
-//		this->sendUIMessage(tr("Got a 'Plugin Loaded' event for a NULL plugin!"));
+//              this->sendUIMessage(tr("Got a 'Plugin Loaded' event for a plugin at %1!").arg((qlonglong)plugin));
+	} else {
+//              this->sendUIMessage(tr("Got a 'Plugin Loaded' event for a NULL plugin!"));
 	}
 }
 
-void Emitter::sendPluginUnloading(UIPlugins *plugin)
+void Emitter::sendPluginUnloading(UIPlugins * plugin)
 {
-	if(plugin != NULL)
-	{
+	if (plugin != NULL) {
 		emit signalPluginUnloading(plugin);
-//		this->sendUIMessage(tr("Got a 'Plugin Unloading' event for a plugin at %1!").arg((qlonglong)plugin));
+//              this->sendUIMessage(tr("Got a 'Plugin Unloading' event for a plugin at %1!").arg((qlonglong)plugin));
 
-	}
-	else
-	{
-//		this->sendUIMessage(tr("Got a 'Plugin Unloading' event for a NULL plugin!"));
+	} else {
+//              this->sendUIMessage(tr("Got a 'Plugin Unloading' event for a NULL plugin!"));
 	}
 }
 
-void Emitter::sendPluginObjectInstantiated(UIPlugins *plugin)
+void Emitter::sendPluginObjectInstantiated(UIPlugins * plugin)
 {
-	if(plugin != NULL)
-	{
+	if (plugin != NULL) {
 		emit signalPluginObjectInstantiated(plugin);
 
-//		this->sendUIMessage(tr("Got a 'Plugin Instantiated' event for a plugin at %1!").arg((qlonglong)plugin));
-	}
-	else
-	{
-//		this->sendUIMessage(tr("Got a 'Plugin Instantiated' event for a NULL plugin!"));
+//              this->sendUIMessage(tr("Got a 'Plugin Instantiated' event for a plugin at %1!").arg((qlonglong)plugin));
+	} else {
+//              this->sendUIMessage(tr("Got a 'Plugin Instantiated' event for a NULL plugin!"));
 	}
 }
 
-void Emitter::sendPluginObjectDestroyed(UIPlugins *plugin)
+void Emitter::sendPluginObjectDestroyed(UIPlugins * plugin)
 {
-	if(plugin != NULL)
-	{
+	if (plugin != NULL) {
 		emit signalPluginObjectDestroyed(plugin);
-//		this->sendUIMessage(tr("Got a 'Plugin Destroyed' event for a plugin at %1!").arg((qlonglong)plugin));
+//              this->sendUIMessage(tr("Got a 'Plugin Destroyed' event for a plugin at %1!").arg((qlonglong)plugin));
 
-	}
-	else
-	{
-//		this->sendUIMessage(tr("Got a 'Plugin Destroyed' event for a NULL plugin!"));
+	} else {
+//              this->sendUIMessage(tr("Got a 'Plugin Destroyed' event for a NULL plugin!"));
 	}
 }
 
-void Emitter::sendAuthTimeout(const QString &intName)
+void Emitter::sendAuthTimeout(const QString & intName)
 {
 	emit signalAuthTimeout(intName);
 }
@@ -470,22 +507,23 @@ void Emitter::sendTroubleTicketError()
 	emit signalTroubleTicketError();
 }
 
-void Emitter::sendRequestUPW(const QString &interfaces, const QString &connName)
+void Emitter::sendRequestUPW(const QString & interfaces,
+			     const QString & connName)
 {
 	emit signalRequestUPW(interfaces, connName);
 }
 
-void Emitter::sendPostConnectTimeout(const QString &devName)
+void Emitter::sendPostConnectTimeout(const QString & devName)
 {
 	emit signalPostConnectTimeout(devName);
 }
 
-void Emitter::sendConnectionDisconnected(const QString &devName)
+void Emitter::sendConnectionDisconnected(const QString & devName)
 {
 	emit signalConnectionDisconnected(devName);
 }
 
-void Emitter::sendPSKSuccess(const QString &devName)
+void Emitter::sendPSKSuccess(const QString & devName)
 {
 	emit signalPSKSuccess(devName);
 }

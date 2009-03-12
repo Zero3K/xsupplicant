@@ -44,10 +44,11 @@
     also get the supplicant from the logging window
   \return Nothing
 */
-EventListenerThread::EventListenerThread(XSupCalls *m_pXSCalls, Emitter *e, QWidget *parent):
-  m_supplicant(m_pXSCalls), myEmit(e)
+ EventListenerThread::EventListenerThread(XSupCalls * m_pXSCalls, Emitter * e, QWidget * parent):
+m_supplicant(m_pXSCalls),
+myEmit(e)
 {
-  m_pParent = parent;
+	m_pParent = parent;
 }
 
 //! Destructor
@@ -57,13 +58,13 @@ EventListenerThread::EventListenerThread(XSupCalls *m_pXSCalls, Emitter *e, QWid
 */
 EventListenerThread::~EventListenerThread(void)
 {
-  quit();
-  m_supplicant->disconnectEventListener();
+	quit();
+	m_supplicant->disconnectEventListener();
 }
 
 void EventListenerThread::run()
 {
-  waitForEvents((*myEmit)); // when this returns, the thread will exit - but it never returns currently
+	waitForEvents((*myEmit));	// when this returns, the thread will exit - but it never returns currently
 }
 
 //! connectXSupEventListener
@@ -73,7 +74,7 @@ void EventListenerThread::run()
 */
 bool EventListenerThread::connectXSupEventListener(bool bDisplay)
 {
-  return m_supplicant->connectEventListener(bDisplay); 
+	return m_supplicant->connectEventListener(bDisplay);
 }
 
 //! disconnectXSupEventListener
@@ -83,7 +84,7 @@ bool EventListenerThread::connectXSupEventListener(bool bDisplay)
 */
 void EventListenerThread::disconnectXSupEventListener()
 {
-  m_supplicant->disconnectEventListener();
+	m_supplicant->disconnectEventListener();
 }
 
 //! waitForEvents
@@ -92,10 +93,10 @@ void EventListenerThread::disconnectXSupEventListener()
   \param [in] e the Signal emitter
   \return return code from m_supplicant.waitForEvents()
 */
-bool EventListenerThread::waitForEvents(Emitter &e)
-{ 
-  emit e.sendStartLogMessage(tr("--- Start of log entries ---\n")); 
-  return m_supplicant->waitForEvents(e);
+bool EventListenerThread::waitForEvents(Emitter & e)
+{
+	emit e.sendStartLogMessage(tr("--- Start of log entries ---\n"));
+	return m_supplicant->waitForEvents(e);
 }
 
 //! getErrorText
@@ -105,7 +106,5 @@ bool EventListenerThread::waitForEvents(Emitter &e)
 */
 QString EventListenerThread::getErrorText()
 {
-  return m_errorText;
+	return m_errorText;
 }
-
-

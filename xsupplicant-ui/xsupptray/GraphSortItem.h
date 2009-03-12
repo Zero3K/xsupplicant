@@ -19,23 +19,17 @@
  *  You may also find the license at the following link
  *  http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt .
  *
- **/
-
+ **/  
+    
 #ifndef _GRAPHSORTITEM_H_
 #define _GRAPHSORTITEM_H_
-
+    
 #include <QTableWidgetItem>
+ class GraphSortItem:public QTableWidgetItem  {
+ public:GraphSortItem(int);
+	bool operator <(const QTableWidgetItem &) const;
+ private:int weight_val;
+};
 
-class GraphSortItem : public QTableWidgetItem
-{
-
-public:
-	GraphSortItem(int);
-
-	bool operator <(const QTableWidgetItem &) const;
-
-private:
-	int weight_val;
-};
-
-#endif // _GRAPHSORTITEM_H_
+
+#endif				// _GRAPHSORTITEM_H_

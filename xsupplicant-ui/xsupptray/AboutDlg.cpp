@@ -51,22 +51,20 @@
   \param[in] parent
   \return nothing
 */
-AboutWindow::AboutWindow(QWidget *parent)
-     : QWidget(parent),
-     m_supplicant(this)
+AboutWindow::AboutWindow(QWidget * parent)
+ : QWidget(parent), m_supplicant(this)
 {
-	m_versionString    = VERSION".";
-	m_versionString    += BUILDNUM;
-	m_pRealForm        = NULL;
-	m_pDialog          = NULL;
+	m_versionString = VERSION ".";
+	m_versionString += BUILDNUM;
+	m_pRealForm = NULL;
+	m_pDialog = NULL;
 	m_pTitleImageLabel = NULL;
-	m_pSupVersion      = NULL;
-	m_pGUIVersion      = NULL;
-	m_pbuttonClose     = NULL;
+	m_pSupVersion = NULL;
+	m_pGUIVersion = NULL;
+	m_pbuttonClose = NULL;
 
-	m_postureVersionString = ((TrayApp *)parent)->m_pluginVersionString;
+	m_postureVersionString = ((TrayApp *) parent)->m_pluginVersionString;
 }
-
 
 //! Destructor
 /*!
@@ -75,9 +73,9 @@ AboutWindow::AboutWindow(QWidget *parent)
 */
 AboutWindow::~AboutWindow()
 {
-	if (m_pRealForm != NULL) 
-	{
-		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
+	if (m_pRealForm != NULL) {
+		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this,
+				   SIGNAL(close()));
 		delete m_pRealForm;
 	}
 }
@@ -88,68 +86,84 @@ bool AboutWindow::create()
 
 	m_pRealForm = FormLoader::buildform("AboutWindow.ui");
 
-	if (m_pRealForm == NULL) return false;
+	if (m_pRealForm == NULL)
+		return false;
 
 	// If the user hits the "X" button in the title bar, close us out gracefully.
 	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this, SIGNAL(close()));
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
-	m_pSupVersion = qFindChild<QLabel*>(m_pRealForm, "dataFieldEngineVersion");
+	m_pSupVersion =
+	    qFindChild < QLabel * >(m_pRealForm, "dataFieldEngineVersion");
 
-	if (m_pSupVersion == NULL)
-	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'dataFieldEngineVersion' label.  The engine version will not be displayed properly."));
+	if (m_pSupVersion == NULL) {
+		QMessageBox::critical(this, tr("Form Design Error!"),
+				      tr
+				      ("The form loaded for the 'About Dialog' did not contain the 'dataFieldEngineVersion' label.  The engine version will not be displayed properly."));
 	}
 
-	m_pGUIVersion = qFindChild<QLabel*>(m_pRealForm, "dataFieldGUIVersion");
+	m_pGUIVersion =
+	    qFindChild < QLabel * >(m_pRealForm, "dataFieldGUIVersion");
 
-	if (m_pGUIVersion == NULL)
-	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'dataFieldGUIVersion' label.  The GUI version will not be displayed properly."));
+	if (m_pGUIVersion == NULL) {
+		QMessageBox::critical(this, tr("Form Design Error!"),
+				      tr
+				      ("The form loaded for the 'About Dialog' did not contain the 'dataFieldGUIVersion' label.  The GUI version will not be displayed properly."));
 	}
 
-	m_pLocale = qFindChild<QLabel*>(m_pRealForm, "currentLocale");
+	m_pLocale = qFindChild < QLabel * >(m_pRealForm, "currentLocale");
 
-	m_pdataFieldPostureVersion = qFindChild<QLabel *>(m_pRealForm, "dataFieldPostureVersion");
+	m_pdataFieldPostureVersion =
+	    qFindChild < QLabel * >(m_pRealForm, "dataFieldPostureVersion");
 
-	m_pdataFieldPlugins = qFindChild<QLabel*>(m_pRealForm, "dataFieldPlugins");
+	m_pdataFieldPlugins =
+	    qFindChild < QLabel * >(m_pRealForm, "dataFieldPlugins");
 
-	if (m_pdataFieldPlugins == NULL)
-	{
-		QMessageBox::critical(this, tr("Form Design Error!"), tr("The form loaded for the 'About Dialog' did not contain the 'dataFieldPlugins' label.  The plugins section of the About Dialog will be incorrect."));
+	if (m_pdataFieldPlugins == NULL) {
+		QMessageBox::critical(this, tr("Form Design Error!"),
+				      tr
+				      ("The form loaded for the 'About Dialog' did not contain the 'dataFieldPlugins' label.  The plugins section of the About Dialog will be incorrect."));
 	}
 
-	m_pbuttonClose = qFindChild<QPushButton*>(m_pRealForm, "buttonClose");
+	m_pbuttonClose =
+	    qFindChild < QPushButton * >(m_pRealForm, "buttonClose");
 
 	// If m_pbuttonClose is NULL, then there isn't a close button.  We don't consider that to be a problem, so don't complain.
-	if (m_pbuttonClose != NULL)
-	{
+	if (m_pbuttonClose != NULL) {
 		m_pbuttonClose->setText(tr("Close"));
 
-	    QObject::connect(m_pbuttonClose, SIGNAL(clicked()),
-		                  this, SIGNAL(close()));
+		QObject::connect(m_pbuttonClose, SIGNAL(clicked()),
+				 this, SIGNAL(close()));
 	}
-
 	// We need to attach to the various pieces of text in the form and put the text in so that linguist picks up the strings
 	// as needing to be translated.  (It is okay to acquire a pointer here, and then overwrite it.  Deleting the pointer would
 	// make a mess of the form, and we don't need to update this information later.)
-	pTemp = qFindChild<QLabel*>(m_pRealForm, "headerProductInformation");
-	if (pTemp != NULL) pTemp->setText(tr("Product Information"));
+	pTemp =
+	    qFindChild < QLabel * >(m_pRealForm, "headerProductInformation");
+	if (pTemp != NULL)
+		pTemp->setText(tr("Product Information"));
 
-	pTemp = qFindChild<QLabel*>(m_pRealForm, "headerVersionInformation");
-	if (pTemp != NULL) pTemp->setText(tr("Version Information"));
+	pTemp =
+	    qFindChild < QLabel * >(m_pRealForm, "headerVersionInformation");
+	if (pTemp != NULL)
+		pTemp->setText(tr("Version Information"));
 
-	pTemp = qFindChild<QLabel*>(m_pRealForm, "headerContactInformation");
-	if (pTemp != NULL) pTemp->setText(tr("Contact Information"));
+	pTemp =
+	    qFindChild < QLabel * >(m_pRealForm, "headerContactInformation");
+	if (pTemp != NULL)
+		pTemp->setText(tr("Contact Information"));
 
-	pTemp = qFindChild<QLabel*>(m_pRealForm, "labelMoreInformation");
-	if (pTemp != NULL) pTemp->setText(tr("For more information, please visit :"));
+	pTemp = qFindChild < QLabel * >(m_pRealForm, "labelMoreInformation");
+	if (pTemp != NULL)
+		pTemp->setText(tr("For more information, please visit :"));
 
-	pTemp = qFindChild<QLabel*>(m_pRealForm, "labelGUIVersion");
-	if (pTemp != NULL) pTemp->setText(tr("GUI Version :"));
+	pTemp = qFindChild < QLabel * >(m_pRealForm, "labelGUIVersion");
+	if (pTemp != NULL)
+		pTemp->setText(tr("GUI Version :"));
 
-	pTemp = qFindChild<QLabel*>(m_pRealForm, "labelEngineVersion");
-	if (pTemp != NULL) pTemp->setText(tr("Current Locale :"));
+	pTemp = qFindChild < QLabel * >(m_pRealForm, "labelEngineVersion");
+	if (pTemp != NULL)
+		pTemp->setText(tr("Current Locale :"));
 
 	setupWindow();
 
@@ -178,21 +192,23 @@ void AboutWindow::setupWindow()
 
 void AboutWindow::updateData()
 {
-  QString fullVersion;
-  QString numberString;
-  QString guiVersion;
+	QString fullVersion;
+	QString numberString;
+	QString guiVersion;
 
-  m_supplicant.getAndCheckSupplicantVersion(fullVersion, numberString, false);
-  m_pSupVersion->setText(QString("%1").arg(numberString));
+	m_supplicant.getAndCheckSupplicantVersion(fullVersion, numberString,
+						  false);
+	m_pSupVersion->setText(QString("%1").arg(numberString));
 
-  if (m_pLocale != NULL) m_pLocale->setText(QLocale::system().name());
+	if (m_pLocale != NULL)
+		m_pLocale->setText(QLocale::system().name());
 
-  m_pdataFieldPlugins->setText("");
-  if(m_pdataFieldPostureVersion != NULL) {
-	  m_pdataFieldPostureVersion->setText(QString(tr("No TNC")));
-  }
+	m_pdataFieldPlugins->setText("");
+	if (m_pdataFieldPostureVersion != NULL) {
+		m_pdataFieldPostureVersion->setText(QString(tr("No TNC")));
+	}
 
-  m_pGUIVersion->setText(tr("%1").arg(getGUIVersion()));
+	m_pGUIVersion->setText(tr("%1").arg(getGUIVersion()));
 }
 
 //! Setup the fields prior to displaying the page
@@ -202,7 +218,7 @@ void AboutWindow::updateData()
   \return nothing
   \todo Need to get the data from the supplicant for all of the fields that we need here
 */
-QString &AboutWindow::getGUIVersion()
+QString & AboutWindow::getGUIVersion()
 {
-  return m_versionString;
+	return m_versionString;
 }

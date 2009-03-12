@@ -19,37 +19,32 @@
  *  You may also find the license at the following link
  *  http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt .
  *
- **/
-
+ **/  
+    
 #ifndef _WIFISTANDARDIMAGES_H_
 #define _WIFISTANDARDIMAGES_H_
-
+    
 #include <QPainter>
 #include <QPixmap>
 #include <QMap>
-
-class WifiStandardImages
-{
-public:
-	WifiStandardImages(unsigned char modes);
-	WifiStandardImages();
-
-	void paint(QPainter *painter, const QRect &rect, const QPalette &palette) const;
-	QSize sizeHint() const;
-
-private:
-	// values for network mode bitfield
+    class WifiStandardImages  {
+ public:WifiStandardImages(unsigned char modes);
+	WifiStandardImages();
+	void paint(QPainter * painter, const QRect & rect,
+		     const QPalette & palette) const;
+	QSize sizeHint()const;
+ private:
+	    // values for network mode bitfield
 	static const unsigned char WIRELESS_MODE_A = 0x01;
-	static const unsigned char WIRELESS_MODE_B = 0x02;
-	static const unsigned char WIRELESS_MODE_G = 0x04;
-	static const unsigned char WIRELESS_MODE_N = 0x08;
+	static const unsigned char WIRELESS_MODE_B = 0x02;
+	static const unsigned char WIRELESS_MODE_G = 0x04;
+	static const unsigned char WIRELESS_MODE_N = 0x08;
+	unsigned char m_modes;
+	
+	    // A pixmap cache to make drawing faster.
+	QMap < unsigned char, QPixmap > m_pixmapMap;
+};
 
-	unsigned char m_modes;
-
-	// A pixmap cache to make drawing faster.
-	QMap<unsigned char,QPixmap> m_pixmapMap;
-};
-
-Q_DECLARE_METATYPE(WifiStandardImages);
-
-#endif // _WIFISTANDARDIMAGES_H_
+Q_DECLARE_METATYPE(WifiStandardImages);
+
+#endif				// _WIFISTANDARDIMAGES_H_

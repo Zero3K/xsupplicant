@@ -38,7 +38,8 @@
 #define get_temp(a)			pTemp = qFindChild<QLabel*>(m_pRealForm, a);
 #define xlate_value(a,b)	if (a != NULL) a->setText(b);
 
-PasswordDlg::PasswordDlg(const QString &connection, const QString &eapMethod, const QString &challengeString)
+PasswordDlg::PasswordDlg(const QString & connection, const QString & eapMethod,
+			 const QString & challengeString)
 {
 	m_connName = connection;
 	m_eapType = eapMethod;
@@ -52,18 +53,18 @@ PasswordDlg::PasswordDlg(const QString &connection, const QString &eapMethod, co
 
 PasswordDlg::~PasswordDlg(void)
 {
-	if (m_pOKBtn != NULL)
-	{
-		Util::myDisconnect(m_pOKBtn, SIGNAL(clicked()), this, SIGNAL(signalDone()));
+	if (m_pOKBtn != NULL) {
+		Util::myDisconnect(m_pOKBtn, SIGNAL(clicked()), this,
+				   SIGNAL(signalDone()));
 	}
 
-	if (m_pRealForm != NULL) delete m_pRealForm;
+	if (m_pRealForm != NULL)
+		delete m_pRealForm;
 }
 
 void PasswordDlg::show()
 {
-	if (m_pRealForm != NULL) 
-	{
+	if (m_pRealForm != NULL) {
 		m_pRealForm->show();
 		m_pResponseField->setFocus();
 	}
@@ -76,30 +77,35 @@ bool PasswordDlg::attach()
 
 	m_pRealForm = FormLoader::buildform("GTCWindow.ui");
 
-	if (m_pRealForm == NULL) return false;
+	if (m_pRealForm == NULL)
+		return false;
 
-	m_pOKBtn = qFindChild<QPushButton*>(m_pRealForm, "buttonOK");
-	if (m_pOKBtn == NULL)
-	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QPushButton named 'buttonOK' does not exist!  Please fix the form!"));
+	m_pOKBtn = qFindChild < QPushButton * >(m_pRealForm, "buttonOK");
+	if (m_pOKBtn == NULL) {
+		QMessageBox::critical(this, tr("Form Design Error"),
+				      tr
+				      ("The QPushButton named 'buttonOK' does not exist!  Please fix the form!"));
 		return false;
 	}
 	m_pOKBtn->setText(tr("OK"));
 
-	m_pResponseField = qFindChild<QLineEdit*>(m_pRealForm, "dataFieldYourResponse");
-	if (m_pResponseField == NULL)
-	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QLineEdit named 'dataFieldYourResponse' does not exist!  Please fix the form!"));
+	m_pResponseField =
+	    qFindChild < QLineEdit * >(m_pRealForm, "dataFieldYourResponse");
+	if (m_pResponseField == NULL) {
+		QMessageBox::critical(this, tr("Form Design Error"),
+				      tr
+				      ("The QLineEdit named 'dataFieldYourResponse' does not exist!  Please fix the form!"));
 		return false;
 	}
 
-	m_pServerChallenge = qFindChild<QLabel*>(m_pRealForm, "dataFieldServerRequest");
-	if (m_pServerChallenge == NULL)
-	{
-		QMessageBox::critical(this, tr("Form Design Error"), tr("The QLabel named 'dataFieldServerRequest' does not exist!  Please fix the form!"));
+	m_pServerChallenge =
+	    qFindChild < QLabel * >(m_pRealForm, "dataFieldServerRequest");
+	if (m_pServerChallenge == NULL) {
+		QMessageBox::critical(this, tr("Form Design Error"),
+				      tr
+				      ("The QLabel named 'dataFieldServerRequest' does not exist!  Please fix the form!"));
 		return false;
 	}
-
 	// Make strings translatable
 	get_temp("headerInfoNeeded");
 	xlate_value(pTemp, tr("Additional Information"));
@@ -112,7 +118,8 @@ bool PasswordDlg::attach()
 
 	m_pServerChallenge->setText(m_challenge);
 
-	Util::myConnect(m_pOKBtn, SIGNAL(clicked()), this, SIGNAL(signalDone()));
+	Util::myConnect(m_pOKBtn, SIGNAL(clicked()), this,
+			SIGNAL(signalDone()));
 
 	flags = m_pRealForm->windowFlags();
 	flags &= (~Qt::WindowContextHelpButtonHint);
@@ -130,6 +137,3 @@ QString PasswordDlg::getConnName()
 {
 	return m_connName;
 }
-
-
-

@@ -40,36 +40,32 @@
 //!\class EventListenerThread 
 /*!\brief Listener class - used to convert QString objects to char * 
 */
-class EventListenerThread : public QThread
-{
-    Q_OBJECT 
+class EventListenerThread:public QThread {
+ Q_OBJECT public:
+	EventListenerThread(XSupCalls *, Emitter * e, QWidget * parent);
+ public:
+	virtual ~ EventListenerThread(void);
+	void run();
 
-public:
-  EventListenerThread(XSupCalls *, Emitter *e, QWidget *parent);
-public:
-  virtual ~EventListenerThread(void);
-  void run();
+	bool connectXSupEventListener(bool bDisplay);
+	void disconnectXSupEventListener();
 
-  bool connectXSupEventListener(bool bDisplay);
-  void disconnectXSupEventListener();
+	bool waitForEvents(Emitter & e);
+	QString getErrorText();
 
-  bool waitForEvents(Emitter &e);
-  QString getErrorText();
+	 signals:
+	    // Interface status signals.
+	void signalSignalStrength(int);
 
-signals:
-  // Interface status signals.
-  void signalSignalStrength(int);
-
-private:
+ private:
 	// Windows that may want to get events.
 
-  QWidget *m_pParent;
-  Emitter *myEmit;
+	 QWidget * m_pParent;
+	Emitter *myEmit;
 
-  QString m_errorText;
-  XSupCalls *m_supplicant;
+	QString m_errorText;
+	XSupCalls *m_supplicant;
 
 };
 
-#endif  // _EVENTLISTENERTHREAD_H_
-
+#endif				// _EVENTLISTENERTHREAD_H_

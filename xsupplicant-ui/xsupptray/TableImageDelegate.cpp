@@ -19,38 +19,45 @@
  *  You may also find the license at the following link
  *  http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt .
  *
- **/
-
+ **/  
+    
 #include "stdafx.h"
 #include "WifiStandardImages.h"
 #include "TableImageDelegate.h"
-
-void TableImageDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void TableImageDelegate::paint(QPainter * painter,
+				const QStyleOptionViewItem & option,
+				const QModelIndex & index) const const 
 {
-	if (qVariantCanConvert<WifiStandardImages>(index.data()) == true)
-	{
-		WifiStandardImages wifiImages = qVariantValue<WifiStandardImages>(index.data());
-
-		if (option.state & QStyle::State_Selected)
-			painter->fillRect(option.rect, option.palette.highlight());
-
-		wifiImages.paint(painter, option.rect, option.palette);
-	}
+	if (qVariantCanConvert < WifiStandardImages > (index.data()) == true)
+		 {
+		WifiStandardImages wifiImages =
+		    qVariantValue < WifiStandardImages > (index.data());
+		if (option.state & QStyle::State_Selected)
+			painter->fillRect(option.rect,
+					   option.palette.highlight());
+		wifiImages.paint(painter, option.rect, option.palette);
+		}
+	
 	else
-	{
-		QItemDelegate::paint(painter, option, index);
-	}
-}
+		 {
+		QItemDelegate::paint(painter, option, index);
+		}
+}
 
-QSize TableImageDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize TableImageDelegate::sizeHint(const QStyleOptionViewItem & option,
+				     const QModelIndex & index) const const 
 {
-	if (qVariantCanConvert<WifiStandardImages>(index.data()) == true)
-	{
-		WifiStandardImages wifiImages = qVariantValue<WifiStandardImages>(index.data());
-		return wifiImages.sizeHint();
-	}
+	if (qVariantCanConvert < WifiStandardImages > (index.data()) == true)
+		 {
+		WifiStandardImages wifiImages =
+		    qVariantValue < WifiStandardImages > (index.data());
+		return wifiImages.sizeHint();
+		}
+	
 	else
-	{
-		return QItemDelegate::sizeHint(option, index);
-	}
-}
+		 {
+		return QItemDelegate::sizeHint(option, index);
+		}
+}
+
+

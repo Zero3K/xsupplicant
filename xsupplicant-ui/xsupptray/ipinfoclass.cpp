@@ -39,12 +39,12 @@
   \param [in] info - the structure holding the IP information
   \return nothing
 */
-void IPInfoClass::setInfo(ipinfo_type *info)
-  {
-    m_ipAddress = info->ipaddr;
-    m_gateway = info->gateway;
-    m_mask = info->netmask;
-    m_dns1 = info->dns1;
-    m_dns2 = info->dns2;
-    m_dns2 = info->dns3;
-  }
+void IPInfoClass::setInfo(ipinfo_type * info)
+{
+	m_ipAddress = info->ipaddr;
+	m_gateway = info->gateway;
+	m_mask = info->netmask;
+	m_dns1 = info->dns1;
+	m_dns2 = info->dns2;
+	m_dns2 = info->dns3;
+}

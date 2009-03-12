@@ -37,27 +37,23 @@
 #include <QtUiTools/QUiLoader>
 #include <QFile>
 
-class FormLoader : public QWidget
-{
-    Q_OBJECT 
-
-public:
-  FormLoader();
-  virtual ~FormLoader();
-
+class FormLoader:public QWidget {
+ Q_OBJECT public:
+	FormLoader();
+	virtual ~ FormLoader();
 
 #ifdef WINDOWS
-  static QWidget *FormLoader::buildform(QString formname, QWidget *parent=NULL);
-  static QPixmap *FormLoader::loadicon(QString iconname);
-  static QString FormLoader::skinpath();
-  static QString FormLoader::iconpath();
+	static QWidget *FormLoader::buildform(QString formname,
+					      QWidget * parent = NULL);
+	static QPixmap *FormLoader::loadicon(QString iconname);
+	static QString FormLoader::skinpath();
+	static QString FormLoader::iconpath();
 #else
-  static QWidget *buildform(QString formname, QWidget *parent=NULL);
-  static QPixmap *loadicon(QString iconname);
-  static QString iconpath();
-  static QString skinpath();
+	static QWidget *buildform(QString formname, QWidget * parent = NULL);
+	static QPixmap *loadicon(QString iconname);
+	static QString iconpath();
+	static QString skinpath();
 #endif
 };
 
-#endif // _FORMLOADER_H_
-
+#endif				// _FORMLOADER_H_

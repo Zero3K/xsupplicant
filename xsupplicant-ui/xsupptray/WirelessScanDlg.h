@@ -28,42 +28,31 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef _WIRELESSSCANDLG_H_
 #define _WIRELESSSCANDLG_H_
-
+    
 #include <QPushButton>
 #include <QWidget>
 #include <QProgressBar>
 #include <QTimer>
+ class WirelessScanDlg:public QWidget  {
+ Q_OBJECT  public:WirelessScanDlg(QWidget * parent,
+			 QWidget * parentWindow);
+	~WirelessScanDlg();
+	void show(void);
+	void hide(void);
+ signals:void scanCancelled(void);
+ private:bool initUI(void);
+ private slots:void updateProgress(void);
+ private:QWidget * m_pParent;
+	QWidget * m_pRealForm;
+	QWidget * m_pParentWindow;
+	QPushButton * m_pCancelButton;
+	QTimer * m_pProgressTimer;
+	QProgressBar * m_pProgressBar;
+};
 
-class WirelessScanDlg : public QWidget
-{
-	Q_OBJECT
-
-public:
-	WirelessScanDlg(QWidget *parent, QWidget *parentWindow);
-	~WirelessScanDlg();
-	void show(void);
-	void hide(void);
-	
-signals:
-	void scanCancelled(void);
-		
-private:
-	bool initUI(void);
-
-private slots:
-	void updateProgress(void);
-	
-private:
-	QWidget *m_pParent;
-	QWidget *m_pRealForm;
-	QWidget *m_pParentWindow;
-	QPushButton *m_pCancelButton;
-	QTimer *m_pProgressTimer;
-	QProgressBar *m_pProgressBar;
-};
-
+
 #endif

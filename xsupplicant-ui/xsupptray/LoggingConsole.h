@@ -42,55 +42,50 @@
 //!\class LogWindow
 /*!\brief LogWindow is used to display the log messages from the xsupplicant
 */
-class LogWindow :  public QWidget
-{
-  Q_OBJECT 
-  signals:
-    void signalSupplicantDownRestart();
+class LogWindow:public QWidget {
+	Q_OBJECT signals:void signalSupplicantDownRestart();
 	void close();
 
-  public slots:
-    void slotAddXSupplicantLogMessage(const QString &message);
-    void slotAddUILogMessage(const QString &message);
-    void slotClear();
-    void slotStartLogMessage(const QString &message);
-    void slotXSupplicantShutDown();
-    void slotInterfaceInsertedMessage(char *interface);
-    void slotRemediation(); // temporary
-    void slotRequestPasswordMessage(const QString &m, const QString &q, const QString &s);
+	public slots:
+	    void slotAddXSupplicantLogMessage(const QString & message);
+	void slotAddUILogMessage(const QString & message);
+	void slotClear();
+	void slotStartLogMessage(const QString & message);
+	void slotXSupplicantShutDown();
+	void slotInterfaceInsertedMessage(char *interface);
+	void slotRemediation();	// temporary
+	void slotRequestPasswordMessage(const QString & m, const QString & q,
+					const QString & s);
 	void slotClearGTC();
 
-private slots:
-	void slotCopyToClipboard();
+	private slots: void slotCopyToClipboard();
 	void slotFinishPassword();
 
-public:
-  LogWindow(QWidget *parent = NULL, Emitter *e = NULL);
-  bool isScanComplete();
-  void addMessage(const QString &message);
-  bool create();
-  void hide();
+ public:
+	 LogWindow(QWidget * parent = NULL, Emitter * e = NULL);
+	bool isScanComplete();
+	void addMessage(const QString & message);
+	bool create();
+	void hide();
 
+ private:
+	 QTextEdit * m_pLogEdit;
+	QPushButton *m_pCloseButton;
+	QPushButton *m_pClearButton;
+	QPushButton *m_pUpdateButton;
+	QPushButton *m_pCopyToClipboard;
+	bool m_bUpdateCalled;
+	XSupCalls m_supplicant;
+	QWidget *m_pRealForm;
+	Emitter *m_pEmitter;
+	PasswordDlg *m_pPassword;
 
-private:
-  QTextEdit *m_pLogEdit;
-  QPushButton *m_pCloseButton;
-  QPushButton *m_pClearButton;
-  QPushButton *m_pUpdateButton;
-  QPushButton *m_pCopyToClipboard;
-  bool m_bUpdateCalled;
-  XSupCalls m_supplicant;
-  QWidget *m_pRealForm;
-  Emitter *m_pEmitter;
-  PasswordDlg *m_pPassword;
+ public:
+	 virtual ~ LogWindow(void);
 
-public:
-  virtual ~LogWindow(void);
-  
-  // Static functions to control only one occurrence of this dialog
-  void showLog();
-  XSupCalls &getSupplicant();
+	// Static functions to control only one occurrence of this dialog
+	void showLog();
+	 XSupCalls & getSupplicant();
 };
 
-#endif  // _LOGWINDOW_H_
-
+#endif				// _LOGWINDOW_H_

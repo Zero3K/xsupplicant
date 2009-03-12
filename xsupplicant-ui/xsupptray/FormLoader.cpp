@@ -45,16 +45,18 @@ FormLoader::~FormLoader()
 {
 }
 
-QWidget *FormLoader::buildform(QString formname, QWidget *parent /* = NULL */)
+QWidget *FormLoader::buildform(QString formname, QWidget * parent /* = NULL */ )
 {
-	QUiLoader loader;   // Used to load the .ui file to generate the form.
-	QString shortpath = QApplication::applicationDirPath() + "/Skins/Default/";
+	QUiLoader loader;	// Used to load the .ui file to generate the form.
+	QString shortpath =
+	    QApplication::applicationDirPath() + "/Skins/Default/";
 	QString fullpath = shortpath + formname;
 	QWidget *m_pForm = NULL;
-	
-    QFile file(fullpath);
 
-	if (file.open(QFile::ReadOnly) != true) return false;  // We couldn't load the UI file.
+	QFile file(fullpath);
+
+	if (file.open(QFile::ReadOnly) != true)
+		return false;	// We couldn't load the UI file.
 
 	QDir mydir(shortpath);
 
@@ -68,7 +70,7 @@ QWidget *FormLoader::buildform(QString formname, QWidget *parent /* = NULL */)
 
 QPixmap *FormLoader::loadicon(QString iconname)
 {
-	QString path =  iconpath() + iconname;
+	QString path = iconpath() + iconname;
 	QPixmap *p;
 
 	p = new QPixmap(path);
@@ -78,10 +80,10 @@ QPixmap *FormLoader::loadicon(QString iconname)
 
 QString FormLoader::skinpath()
 {
-    return QApplication::applicationDirPath() + QString("/Skins/Default/");
+	return QApplication::applicationDirPath() + QString("/Skins/Default/");
 }
 
-QString FormLoader::iconpath() 
+QString FormLoader::iconpath()
 {
-    return QString(skinpath() + QString("icons/"));
+	return QString(skinpath() + QString("icons/"));
 }

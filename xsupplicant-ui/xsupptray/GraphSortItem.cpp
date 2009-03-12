@@ -19,20 +19,19 @@
  *  You may also find the license at the following link
  *  http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt .
  *
- **/
-
+ **/  
+    
 #include "stdafx.h"
 #include "GraphSortItem.h"
-
-GraphSortItem::GraphSortItem(int wval)
+    GraphSortItem::GraphSortItem(int wval)
 {
-	weight_val = wval;
-}
-
-bool GraphSortItem::operator <(const QTableWidgetItem &tocomp) const
+	weight_val = wval;
+} bool GraphSortItem::operator <(const QTableWidgetItem & tocomp) const const 
 {
-	GraphSortItem *mycast = (GraphSortItem *)&tocomp;
-	if (weight_val < mycast->weight_val) return true;
+	GraphSortItem * mycast = (GraphSortItem *) & tocomp;
+	if (weight_val < mycast->weight_val)
+		return true;
+	return false;
+}
 
-	return false;
-}
+

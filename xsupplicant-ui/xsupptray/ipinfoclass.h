@@ -33,8 +33,7 @@
 #ifndef _IPINFOCLASS_H_
 #define _IPINFOCLASS_H_
 
-extern "C" 
-{
+extern "C" {
 #include "libxml/parser.h"
 #include "libxsupgui/xsupgui_request.h"
 #include "libxsupgui/xsupgui_xml_common.h"
@@ -43,37 +42,56 @@ extern "C"
 #include "libxsupgui/xsupgui_events.h"
 #include "libxsupgui/xsupgui_events_state.h"
 }
-
 #include <QtGui>
-
-//!\class IpInfoClass
-/*!\brief Class to hold the IP information
-*/
-class IPInfoClass: QObject
+//!\class IpInfoClass/*!\brief Class to hold the IP information
+*/ class IPInfoClass:QObject
 {
-private:
-  QString m_ipAddress;
+ private:
+	QString m_ipAddress;
 	QString m_gateway;
 	QString m_mask;
 	QString m_dns1;
 	QString m_dns2;
 	QString m_dns3;
-public:
-  const QString &getIPAddress() {return m_ipAddress;}
-  const QString &getGateway() {return m_gateway;}
-  const QString &getMask() {return m_mask;}
-  const QString &getDNS1() {return m_dns1;}
-  const QString &getDNS2() {return m_dns2;}
-  const QString &getDNS3() {return m_dns3;}
+ public:
+	const QString & getIPAddress() {
+		return m_ipAddress;
+	} const QString & getGateway() {
+		return m_gateway;
+	}
+	const QString & getMask() {
+		return m_mask;
+	}
+	const QString & getDNS1() {
+		return m_dns1;
+	}
+	const QString & getDNS2() {
+		return m_dns2;
+	}
+	const QString & getDNS3() {
+		return m_dns3;
+	}
 
-  void setInfo(ipinfo_type *info);
+	void setInfo(ipinfo_type * info);
 
-  void setIPAddress(char *value) {m_ipAddress = value;}
-  void setGateway(char *value) {m_gateway = value;}
-  void setMask(char *value) {m_mask = value;}
-  void setDNS1(char *value) {m_dns1 = value;}
-  void setDNS2(char *value) {m_dns2 = value;}
-  void setDNS3(char *value) {m_dns3 = value;}
+	void setIPAddress(char *value) {
+		m_ipAddress = value;
+	}
+	void setGateway(char *value) {
+		m_gateway = value;
+	}
+	void setMask(char *value) {
+		m_mask = value;
+	}
+	void setDNS1(char *value) {
+		m_dns1 = value;
+	}
+	void setDNS2(char *value) {
+		m_dns2 = value;
+	}
+	void setDNS3(char *value) {
+		m_dns3 = value;
+	}
 };
 
-#endif  // _IPINFOCLASS_H_
+#endif				// _IPINFOCLASS_H_

@@ -40,38 +40,34 @@
 #include "MessageClass.h"
 #include "Util.h"
 
-class AboutWindow : public QWidget
-{
-  Q_OBJECT
+class AboutWindow:public QWidget {
+ Q_OBJECT public:
+	AboutWindow(QWidget * parent);
+	bool create();
+	void updateData();
+	void show();
+	 virtual ~ AboutWindow();
 
-public:
-  AboutWindow(QWidget *parent);
-  bool create();
-  void updateData();
-  void show();
-  virtual ~AboutWindow();
+	 signals: void close();
 
-signals:
-  void close();
+ private:
+	 QWidget * m_pRealForm;
+	QDialog *m_pDialog;
 
-private:
-  QWidget *m_pRealForm;
-  QDialog *m_pDialog;
+	QLabel *m_pTitleImageLabel;
+	QLabel *m_pdataFieldPlugins;
+	 QString & getGUIVersion();
 
-  QLabel *m_pTitleImageLabel;
-  QLabel *m_pdataFieldPlugins;
-  QString &getGUIVersion();
+	XSupCalls m_supplicant;
+	QLabel *m_pSupVersion;
+	QLabel *m_pGUIVersion;
+	QLabel *m_pdataFieldPostureVersion;
+	QLabel *m_pLocale;
+	QPushButton *m_pbuttonClose;
+	QString m_versionString;
+	QString m_postureVersionString;
 
-  XSupCalls m_supplicant;
-  QLabel *m_pSupVersion;
-  QLabel *m_pGUIVersion;
-  QLabel *m_pdataFieldPostureVersion;
-  QLabel *m_pLocale;
-  QPushButton *m_pbuttonClose;
-  QString m_versionString;
-  QString m_postureVersionString;
-
-  void setupWindow();
+	void setupWindow();
 };
 
-#endif  // _ABOUTDLG_H_
+#endif				// _ABOUTDLG_H_

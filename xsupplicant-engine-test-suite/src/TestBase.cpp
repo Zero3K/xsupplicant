@@ -3,63 +3,61 @@
  *    The purpose of these implementations is to complain about non-existant test members.
  *    As a result, any derived classes should override ALL of the members (except the constructor and destructor), even if they do nothing
  *    but return true.
- **/
+ **/  
 #include <iostream>
 #include <iomanip>
 #include "TestBase.h"
-
-using std::cout;
-
-TestBase::TestBase()
+    using std::cout;
+TestBase::TestBase() 
 {
-}
-
-TestBase::~TestBase()
+} TestBase::~TestBase() 
 {
-}
-
-bool TestBase::setupTest()
+} bool TestBase::setupTest() 
 {
-	cout << "You didn't override the setupTest() member of the NonNetworkBase class!\n";
-	return false;
-}
+	cout <<
+	    "You didn't override the setupTest() member of the NonNetworkBase class!\n";
+	return false;
+}
 
-bool TestBase::teardownTest()
+bool TestBase::teardownTest() 
 {
-	cout << "You didn't override the teardownTest() member of the NonNetworkBase class!\n";
-	return false;
-}
+	cout <<
+	    "You didn't override the teardownTest() member of the NonNetworkBase class!\n";
+	return false;
+}
 
-bool TestBase::executeTest()
+bool TestBase::executeTest() 
 {
-	cout << "You didn't override the executeTest() member of the NonNetworkBase class!\n";
-	return false;
-}
+	cout <<
+	    "You didn't override the executeTest() member of the NonNetworkBase class!\n";
+	return false;
+}
 
-string TestBase::getTestName()
+string TestBase::getTestName() 
 {
-  return "Unknown test"; 
-}
+	return "Unknown test";
+}
 
-bool TestBase::runInnerTest(string testname, bool testresult)
+bool TestBase::runInnerTest(string testname, bool testresult) 
 {
-	if (testresult)
-	{
-		cout << "\t" << left << setw(60) << testname << setw(10) << "- PASSED\n";
-		return true;
-	}
+	if (testresult)
+		 {
+		cout << "\t" << left << setw(60) << testname << setw(10) <<
+		    "- PASSED\n";
+		return true;
+		}
+	
 	else
-	{
-		cout << "\t" << left << setw(60) << testname << setw(10) << "- FAILED\n\n";
-		all_tests_success = false;
-		return false;
-	}
+		 {
+		cout << "\t" << left << setw(60) << testname << setw(10) <<
+		    "- FAILED\n\n";
+		all_tests_success = false;
+		return false;
+		}
+	return false;
+}
 
-	return false;
-}
-
-void TestBase::innerError(string error)
+void TestBase::innerError(string error) 
 {
-	cout << "\t\t" + error + "\n";
-}
-
+	cout << "\t\t" + error + "\n";
+} 

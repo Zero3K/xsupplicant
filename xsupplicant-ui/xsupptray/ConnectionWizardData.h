@@ -28,143 +28,118 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef _CONNECTIONWIZARDDATA_H_
 #define _CONNECTIONWIZARDDATA_H_
-
+    
 #include <QString>
 #include <QStringList>
-
-extern "C" {
+extern "C" {
+	
 #include "libxsupgui/xsupgui_request.h"
-}
-
-class ConnectionWizardData
-{
-public:
-	ConnectionWizardData();
-	~ConnectionWizardData();
-	
-public:
-	bool toSupplicantProfiles(config_connection **, config_profiles **, config_trusted_server **);
-	bool initFromSupplicantProfiles(unsigned char config_type, config_connection const * const pConfig, config_profiles const * const pProfile, config_trusted_server const * const pServer);	
-	
-private:
-	bool toProfileEAP_PEAPProtocol(config_profiles * const, config_trusted_server const * const);
-	bool toProfileEAP_TLSProtocol(config_profiles * const, config_trusted_server const * const);
-	bool toProfileEAP_MD5Protocol(config_profiles * const);
-	bool toProfileEAP_AKAProtocol(config_profiles * const);
-	bool toProfileEAP_SIMProtocol(config_profiles * const);
-	bool toProfileEAP_TTLSProtocol(config_profiles * const, config_trusted_server const * const);
-	bool toProfileEAP_FASTProtocol(config_profiles * const, config_trusted_server const * const);
-	bool toProfileOuterIdentity(config_profiles * const);
-	bool toServerData(config_trusted_server **);
-	bool toProfileData(config_profiles **, config_trusted_server const * const);
-	bool toConnectionData(config_connection **, config_profiles const * const);
-
-	void initFromEAP_AKAProtocol(config_eap_method *);
-	void initFromEAP_SIMProtocol(config_eap_method *);
-	void initFromEAP_PEAPProtocol(config_eap_method *);
-	void initFromEAP_TTLSProtocol(config_eap_method *);
-	void initFromEAP_FASTProtocol(config_eap_method *);
-	void initFromEAP_MD5Protocol(config_eap_method *);
-	void initFromEAP_TLSProtocol(config_eap_method *);
-
-public:
-
-	bool m_newConnection;
-	
-	// general settings
-	bool m_wireless;
-	bool m_wired;				// Only used for machine authentication settings.
-	bool m_machineAuth;			// Is this a machine authentication connection?
-	bool m_useLogonCreds;		// Should we attempt to use the provided logon credentials?
+}   class ConnectionWizardData  {
+ public:ConnectionWizardData();
+	~ConnectionWizardData();
+ public:bool toSupplicantProfiles(config_connection **, config_profiles **,
+				   config_trusted_server **);
+	bool initFromSupplicantProfiles(unsigned char config_type,
+					 config_connection const *const pConfig,
+					 config_profiles const *const pProfile,
+					 config_trusted_server const *const
+					 pServer);
+ private:bool toProfileEAP_PEAPProtocol(config_profiles * const,
+					config_trusted_server const
+					*const);
+	bool toProfileEAP_TLSProtocol(config_profiles * const,
+				       config_trusted_server const *const);
+	bool toProfileEAP_MD5Protocol(config_profiles * const);
+	bool toProfileEAP_AKAProtocol(config_profiles * const);
+	bool toProfileEAP_SIMProtocol(config_profiles * const);
+	bool toProfileEAP_TTLSProtocol(config_profiles * const,
+					config_trusted_server const *const);
+	bool toProfileEAP_FASTProtocol(config_profiles * const,
+					config_trusted_server const *const);
+	bool toProfileOuterIdentity(config_profiles * const);
+	bool toServerData(config_trusted_server **);
+	bool toProfileData(config_profiles **,
+			    config_trusted_server const *const);
+	bool toConnectionData(config_connection **,
+			       config_profiles const *const);
+	void initFromEAP_AKAProtocol(config_eap_method *);
+	void initFromEAP_SIMProtocol(config_eap_method *);
+	void initFromEAP_PEAPProtocol(config_eap_method *);
+	void initFromEAP_TTLSProtocol(config_eap_method *);
+	void initFromEAP_FASTProtocol(config_eap_method *);
+	void initFromEAP_MD5Protocol(config_eap_method *);
+	void initFromEAP_TLSProtocol(config_eap_method *);
+ public:bool m_newConnection;
+	
+	    // general settings
+	    bool m_wireless;
+	bool m_wired;		// Only used for machine authentication settings.
+	bool m_machineAuth;	// Is this a machine authentication connection?
+	bool m_useLogonCreds;	// Should we attempt to use the provided logon credentials?
 	QString m_connectionName;
-	QString m_serverName;
-	QString m_profileName;	
-	
-	// wireless settings
-	QString m_networkName;
-	
-	typedef enum {
-		assoc_none,
-		assoc_WEP,
-		assoc_WPA_PSK,
-		assoc_WPA_ENT,
-		assoc_WPA2_PSK,
-		assoc_WPA2_ENT
+	QString m_serverName;
+	QString m_profileName;
+	
+	    // wireless settings
+	    QString m_networkName;
+	typedef enum { assoc_none, assoc_WEP, assoc_WPA_PSK,
+		    assoc_WPA_ENT, assoc_WPA2_PSK, assoc_WPA2_ENT 
 	} assocMode;
-	
-	assocMode m_wirelessAssocMode;
-	
-	typedef enum {
-		encrypt_WEP,
-		encrypt_TKIP,
-		encrypt_CCMP
+	assocMode m_wirelessAssocMode;
+	typedef enum { encrypt_WEP, encrypt_TKIP, encrypt_CCMP 
 	} encryptMethod;
-	
-	encryptMethod m_wirelessEncryptMeth;
-	bool m_hiddenNetwork;
-	bool m_otherNetwork;
-	
-	// wired settings
-	bool m_wiredSecurity;
-	
-	// IP settings
-	bool m_renewOnReauth;
-	bool m_staticIP;
-	QString m_IPAddress;
-	QString m_netmask;
-	QString m_gateway;
-	QString m_primaryDNS;
-	QString m_secondaryDNS;
-	
-	// 802.1X settings
-	typedef enum {
-		eap_peap,
-		eap_ttls,
-		eap_tls,
-		eap_aka,
-		eap_sim,
-		eap_fast,
-		eap_md5
+	encryptMethod m_wirelessEncryptMeth;
+	bool m_hiddenNetwork;
+	bool m_otherNetwork;
+	
+	    // wired settings
+	    bool m_wiredSecurity;
+	
+	    // IP settings
+	    bool m_renewOnReauth;
+	bool m_staticIP;
+	QString m_IPAddress;
+	QString m_netmask;
+	QString m_gateway;
+	QString m_primaryDNS;
+	QString m_secondaryDNS;
+	
+	    // 802.1X settings
+	typedef enum { eap_peap, eap_ttls, eap_tls, eap_aka, eap_sim,
+		    eap_fast, eap_md5 
 	} Dot1XProtocol;
-	
-	typedef enum {
-		inner_pap,
-		inner_chap,
-		inner_mschap,
-		inner_mschapv2,
-		inner_eap_md5,
-		inner_eap_mschapv2,
-		inner_eap_gtc
+	typedef enum { inner_pap, inner_chap, inner_mschap,
+		    inner_mschapv2, inner_eap_md5, inner_eap_mschapv2,
+		    inner_eap_gtc 
 	} Dot1XInnerProtocol;
-	
-	Dot1XProtocol m_eapProtocol;
-	QString m_outerIdentity;
-	QString m_SCreader;
-	QString m_username;
-	QString m_password;
-	bool m_autoRealm;
-	bool m_anonymousProvisioning;
-	bool m_authenticatedProvisioning;
-	bool m_validateCert;
-	Dot1XInnerProtocol m_innerPEAPProtocol;
-	Dot1XInnerProtocol m_innerTTLSProtocol;
-	Dot1XInnerProtocol m_innerFASTProtocol;
-	QStringList m_serverCerts;
-	QString m_userCert;
-	bool m_verifyCommonName;
-	QStringList m_commonNames;
-	unsigned char m_config_type;
-	bool m_useSessionResume;
-	
-	// data for bookkeeping
-	bool m_hasProfile;
-	bool m_hasServer;
-
-	bool m_nameChanged; // so we know how to properly turn into profiles
+	Dot1XProtocol m_eapProtocol;
+	QString m_outerIdentity;
+	QString m_SCreader;
+	QString m_username;
+	QString m_password;
+	bool m_autoRealm;
+	bool m_anonymousProvisioning;
+	bool m_authenticatedProvisioning;
+	bool m_validateCert;
+	Dot1XInnerProtocol m_innerPEAPProtocol;
+	Dot1XInnerProtocol m_innerTTLSProtocol;
+	Dot1XInnerProtocol m_innerFASTProtocol;
+	QStringList m_serverCerts;
+	QString m_userCert;
+	bool m_verifyCommonName;
+	QStringList m_commonNames;
+	unsigned char m_config_type;
+	bool m_useSessionResume;
+	
+	    // data for bookkeeping
+	    bool m_hasProfile;
+	bool m_hasServer;
+	bool m_nameChanged;	// so we know how to properly turn into profiles
 };
 
+
 #endif

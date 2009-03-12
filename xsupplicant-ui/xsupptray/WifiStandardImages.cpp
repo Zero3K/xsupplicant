@@ -19,56 +19,47 @@
  *  You may also find the license at the following link
  *  http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt .
  *
- **/
-
+ **/  
+    
 #include "stdafx.h"
 #include "WifiStandardImages.h"
 #include "FormLoader.h"
-
-WifiStandardImages::WifiStandardImages()
+    WifiStandardImages::WifiStandardImages() 
 {
-	m_modes = 0;
-}
-
-WifiStandardImages::WifiStandardImages(unsigned char modes)
+	m_modes = 0;
+} WifiStandardImages::WifiStandardImages(unsigned char modes) 
 {
-	m_modes = modes;
-}
-
-void WifiStandardImages::paint(QPainter *painter, const QRect &rect, const QPalette &) const
+	m_modes = modes;
+} void WifiStandardImages::paint(QPainter * painter, const QRect & rect,
+				    const QPalette &) const const 
 {
-	unsigned char modes = m_modes;
-	unsigned int xpoint, ypoint;
+	unsigned char modes = m_modes;
+	unsigned int xpoint, ypoint;
+	painter->save();
+	QString labelFileName = "802_11_";
+	if ((modes & WIRELESS_MODE_A) != 0)
+		labelFileName.append("a");
+	if ((modes & WIRELESS_MODE_B) != 0)
+		labelFileName.append("b");
+	if ((modes & WIRELESS_MODE_G) != 0)
+		labelFileName.append("g");
+	if ((modes & WIRELESS_MODE_N) != 0)
+		labelFileName.append("n");
+	labelFileName.append(".png");
+	QImage myImage(FormLoader::iconpath() + labelFileName);
+	xpoint = rect.x() + ((rect.width() - myImage.rect().width()) / 2);
+	ypoint = rect.y() + ((rect.height() - myImage.rect().height()) / 2);
+	painter->drawImage(QPoint(xpoint, ypoint), myImage, myImage.rect());
+	
+//      painter->drawText(rect, Qt::AlignHCenter, QString("%1").arg(m_modes), 0);
+	    painter->restore();
+}
 
-	painter->save();
-
-	QString labelFileName = "802_11_";
-	if ((modes & WIRELESS_MODE_A) != 0)
-		labelFileName.append("a");
-	if ((modes & WIRELESS_MODE_B) != 0)
-		labelFileName.append("b");
-	if ((modes & WIRELESS_MODE_G) != 0)
-		labelFileName.append("g");
-	if ((modes & WIRELESS_MODE_N) != 0)
-		labelFileName.append("n");	
-	labelFileName.append(".png");
-
-	QImage myImage(FormLoader::iconpath()+labelFileName);
-
-	xpoint = rect.x() + ((rect.width() - myImage.rect().width())/2);
-	ypoint = rect.y() + ((rect.height() - myImage.rect().height())/2);
-
-	painter->drawImage(QPoint(xpoint, ypoint), myImage, myImage.rect());
-
-//	painter->drawText(rect, Qt::AlignHCenter, QString("%1").arg(m_modes), 0);
-
-	painter->restore();
-}
-
-QSize WifiStandardImages::sizeHint() const
+QSize WifiStandardImages::sizeHint() constconst 
 {
-	// The images are all 68x16.
-	return QSize(68, 16);
-}
+	
+	    // The images are all 68x16.
+	    return QSize(68, 16);
+}
 
-
+

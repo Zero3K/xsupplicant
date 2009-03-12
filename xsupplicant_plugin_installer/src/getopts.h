@@ -28,31 +28,28 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  *
-*/
+*/  
 #ifndef __GET_OPT_H__
 #define __GET_OPT_H__
-
+    
 #ifdef __cplusplus
-extern "C"
-{
-#endif
-
-extern int option_index;
-
-struct options
-{
-  int number;		/* Number, which is returned from getopt() */
-  char *name;		/* Long name */
-  char *description;	/* Description */
-  char *shortName;	/* Short name */
-  int args;		/* Does the option take an argument? */
-};
-
-int getopts(int argc, char **argv, struct options opts[], char **args);
-int getopts_usage(char *progName, struct options opts[]);
-
+extern "C"  {
+	
+#endif	/*  */
+	 extern int option_index;
+	  struct options  {
+		int number;	/* Number, which is returned from getopt() */
+		 char *name;	/* Long name */
+		 char *description;	/* Description */
+		 char *shortName;	/* Short name */
+		 int args;	/* Does the option take an argument? */
+	};
+	  int getopts(int argc, char **argv, struct options opts[],
+			char **args);
+	int getopts_usage(char *progName, struct options opts[]);
+	
 #ifdef __cplusplus
-}
-#endif
+} 
+#endif	/*  */
 
-#endif 		/* __GET_OPT_H__ */
+#endif	/* __GET_OPT_H__ */

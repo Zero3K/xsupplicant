@@ -38,9 +38,9 @@
 PluginWidget::PluginWidget()
 {
 	m_pProfile = NULL;
-	m_pParent  = NULL;
+	m_pParent = NULL;
 	pluginType = PLUGIN_TYPE_UNKNOWN;
-	m_Version  = "";
+	m_Version = "";
 }
 
 PluginWidget::~PluginWidget()
@@ -49,7 +49,9 @@ PluginWidget::~PluginWidget()
 
 bool PluginWidget::save()
 {
-	QMessageBox::critical(this, tr("Code Error"), tr("Either you didn't override the save member of the PluginWidget class, or you forgot to emit the signalDisableSaveBtn() signal!"));
+	QMessageBox::critical(this, tr("Code Error"),
+			      tr
+			      ("Either you didn't override the save member of the PluginWidget class, or you forgot to emit the signalDisableSaveBtn() signal!"));
 	return false;
 }
 
@@ -60,25 +62,29 @@ bool PluginWidget::dataChanged()
 
 void PluginWidget::discard()
 {
-	QMessageBox::critical(this, tr("Code Error"), tr("You didn't override the discard member of the PluginWidget class!"));
+	QMessageBox::critical(this, tr("Code Error"),
+			      tr
+			      ("You didn't override the discard member of the PluginWidget class!"));
 }
 
-void PluginWidget::setProfile(config_profiles *pProfile)
+void PluginWidget::setProfile(config_profiles * pProfile)
 {
 	m_pProfile = pProfile;
 }
 
-void PluginWidget::setParent(QWidget *pParent)
+void PluginWidget::setParent(QWidget * pParent)
 {
 	m_pParent = pParent;
 }
 
 void PluginWidget::pluginDataChanged()
 {
-	QMessageBox::critical(this, tr("Code Error"), tr("You didn't override the discard member of the PluginWidget class!"));
+	QMessageBox::critical(this, tr("Code Error"),
+			      tr
+			      ("You didn't override the discard member of the PluginWidget class!"));
 }
 
-void PluginWidget::setEmitter(Emitter *pEmitter)
+void PluginWidget::setEmitter(Emitter * pEmitter)
 {
 	m_pEmitter = pEmitter;
 }
@@ -94,12 +100,12 @@ void PluginWidget::setEngineVersionString(QString m_version)
 	m_Version = m_version;
 }
 
-QString PluginWidget::getPluginVersionString() 
+QString PluginWidget::getPluginVersionString()
 {
 	return QString("Not Implemented");
 }
 
-PluginCallbacks &PluginWidget::getPluginCallbacks()
+PluginCallbacks & PluginWidget::getPluginCallbacks()
 {
 	return callbacks;
 }
@@ -111,6 +117,7 @@ QString PluginWidget::getWidgetName()
 
 void PluginWidget::showHelp()
 {
-	QMessageBox::critical(this, tr("Code Error"), tr("The plugin didn't override the showHelp() method.  Help for this plugin will not be available!"));
+	QMessageBox::critical(this, tr("Code Error"),
+			      tr
+			      ("The plugin didn't override the showHelp() method.  Help for this plugin will not be available!"));
 }
-

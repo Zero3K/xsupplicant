@@ -35,8 +35,7 @@
 #include "xsupcalls.h"
 #include "Util.h"
 
-extern "C"
-{
+extern "C" {
 #include "xsupconfig.h"
 #include "libxml/parser.h"
 #include "libxsupgui/xsupgui_request.h"
@@ -53,19 +52,17 @@ extern "C"
 #include "supdetect.h"
 #include "eap_types/tnc/tnc_compliance_options.h"
 }
-
 #ifndef WINDOWS
 #define _strdup strdup
-#endif /* WINDOWS */
-
+#endif				/* WINDOWS */
 static int ID_ENGINES_OUI = 25065;
 
 int XSupCalls::CONNECTION_DEFAULT_PRIORITY = DEFAULT_PRIORITY;
 bool XSupCalls::m_bEventsConnected = false;
 
 // parent used to display messages
-XSupCalls::XSupCalls(QWidget *parent):
-  m_message(parent)
+ XSupCalls::XSupCalls(QWidget * parent):
+m_message(parent)
 {
 
 }
@@ -79,7 +76,6 @@ XSupCalls::~XSupCalls(void)
 {
 }
 
-
 //! connectXSupplicant()
 /*!
   \brief Attempt to connect to the XSupplicant
@@ -90,16 +86,14 @@ XSupCalls::~XSupCalls(void)
 */
 bool XSupCalls::connectXSupplicant()
 {
-  int retcode = xsupgui_connect();
-  if (retcode != 0)
-  {
-    return false;
-  }
+	int retcode = xsupgui_connect();
+	if (retcode != 0) {
+		return false;
+	}
+	// Now check for errors from the supplicant
+	getAndDisplayErrors();
 
-  // Now check for errors from the supplicant
-  getAndDisplayErrors();
-
-  return true;
+	return true;
 }
 
 //! disconnectXSupplicant()
@@ -112,18 +106,17 @@ bool XSupCalls::connectXSupplicant()
 */
 void XSupCalls::disconnectXSupplicant()
 {
-  int retcode = 0;
-  retcode = disconnectEventListener();
+	int retcode = 0;
+	retcode = disconnectEventListener();
 
-  retcode = xsupgui_disconnect();
-  if (retcode != 0)
-  {
-    if (QThread::currentThread() == qApp->thread())
-    {
-      QMessageBox::critical(NULL, tr("Error"), 
-        tr("Can't disconnect from xsupplicant."));
-    }
-  }
+	retcode = xsupgui_disconnect();
+	if (retcode != 0) {
+		if (QThread::currentThread() == qApp->thread()) {
+			QMessageBox::critical(NULL, tr("Error"),
+					      tr
+					      ("Can't disconnect from xsupplicant."));
+		}
+	}
 }
 
 /*********************************************************/
@@ -136,61 +129,60 @@ void XSupCalls::disconnectXSupplicant()
   \param[in] defaultDevice - the device used to initially create the connection
   \return true/false
 */
-bool XSupCalls::createNewConnection(QString &name, config_connection **newConnection)
+bool XSupCalls::createNewConnection(QString & name,
+				    config_connection ** newConnection)
 {
-  bool bValue = true;
-  config_connection *pConfig = NULL;
-  int i = 1;
-  QString newName = name;
-  QString deviceName;
+	bool bValue = true;
+	config_connection *pConfig = NULL;
+	int i = 1;
+	QString newName = name;
+	QString deviceName;
 
-  // Need to make sure this connection does not already exist
-  // If it does, add a _1 _2 etc., to the name until a unique name is found
-  do
-  {
-    bValue  = getConfigConnection(CONFIG_LOAD_GLOBAL, newName, &pConfig, false);
-    if (bValue == true)
-    {
-      newName = QString ("%1_%2").arg(name).arg(i);
-      i++;
-    }
+	// Need to make sure this connection does not already exist
+	// If it does, add a _1 _2 etc., to the name until a unique name is found
+	do {
+		bValue =
+		    getConfigConnection(CONFIG_LOAD_GLOBAL, newName, &pConfig,
+					false);
+		if (bValue == true) {
+			newName = QString("%1_%2").arg(name).arg(i);
+			i++;
+		}
 
-	freeConfigConnection(&pConfig);   // Free the memory so it won't leak.
-	pConfig = NULL;
-  }while (bValue);
+		freeConfigConnection(&pConfig);	// Free the memory so it won't leak.
+		pConfig = NULL;
+	} while (bValue);
 
-  do
-  {
-    bValue  = getConfigConnection(CONFIG_LOAD_USER, newName, &pConfig, false);
-    if (bValue == true)
-    {
-      newName = QString ("%1_%2").arg(name).arg(i);
-      i++;
-    }
+	do {
+		bValue =
+		    getConfigConnection(CONFIG_LOAD_USER, newName, &pConfig,
+					false);
+		if (bValue == true) {
+			newName = QString("%1_%2").arg(name).arg(i);
+			i++;
+		}
 
-	freeConfigConnection(&pConfig);   // Free the memory so it won't leak.
-	pConfig = NULL;
-  }while (bValue);
+		freeConfigConnection(&pConfig);	// Free the memory so it won't leak.
+		pConfig = NULL;
+	} while (bValue);
 
-  name = newName;
+	name = newName;
 
-  if (!createNewConnectionDefaults(name, &pConfig) || !pConfig)
-  {
-    return false;
-  }
-  
-  // Now save the new connection, after setting the connection name
-  pConfig->name = Util::myNullStrdup(name.toAscii());
-  pConfig->priority = CONNECTION_DEFAULT_PRIORITY;
+	if (!createNewConnectionDefaults(name, &pConfig) || !pConfig) {
+		return false;
+	}
+	// Now save the new connection, after setting the connection name
+	pConfig->name = Util::myNullStrdup(name.toAscii());
+	pConfig->priority = CONNECTION_DEFAULT_PRIORITY;
 
-  // Start with some defaults, so we can be sure the dialog is drawn properly.  (if the connection ends up being
-  // wired, these settings will get removed anyway.)
-  pConfig->association.association_type = ASSOC_WPA2;
-  pConfig->association.auth_type = AUTH_EAP;
+	// Start with some defaults, so we can be sure the dialog is drawn properly.  (if the connection ends up being
+	// wired, these settings will get removed anyway.)
+	pConfig->association.association_type = ASSOC_WPA2;
+	pConfig->association.auth_type = AUTH_EAP;
 
-  (*newConnection) = pConfig;
+	(*newConnection) = pConfig;
 
-  return true;
+	return true;
 }
 
 //! createNewTrustedServer
@@ -199,56 +191,55 @@ bool XSupCalls::createNewConnection(QString &name, config_connection **newConnec
   \param[in] name - the name of the new trusted server
   \return true/false
 */
-bool XSupCalls::createNewTrustedServer(QString &name, config_trusted_server **pTServer)
+bool XSupCalls::createNewTrustedServer(QString & name,
+				       config_trusted_server ** pTServer)
 {
-  bool bValue = true;
-  config_trusted_server *pConfig = NULL;
-  QString newName = name;
-  int i = 1;
+	bool bValue = true;
+	config_trusted_server *pConfig = NULL;
+	QString newName = name;
+	int i = 1;
 
-  (*pTServer) = NULL;
+	(*pTServer) = NULL;
 
-  // Need to make sure this trusted server does not already exist
-  do
-  {
-    bValue  = getConfigTrustedServer(CONFIG_LOAD_GLOBAL, newName, &pConfig, false);
-    if (bValue == true)
-    {
-      this->freeConfigTrustedServer(&pConfig);
-      newName = QString ("%1_%2").arg(name).arg(i);
-      i++;
-    }
-  }while (bValue);
+	// Need to make sure this trusted server does not already exist
+	do {
+		bValue =
+		    getConfigTrustedServer(CONFIG_LOAD_GLOBAL, newName,
+					   &pConfig, false);
+		if (bValue == true) {
+			this->freeConfigTrustedServer(&pConfig);
+			newName = QString("%1_%2").arg(name).arg(i);
+			i++;
+		}
+	} while (bValue);
 
-  do
-  {
-    bValue  = getConfigTrustedServer(CONFIG_LOAD_USER, newName, &pConfig, false);
-    if (bValue == true)
-    {
-      this->freeConfigTrustedServer(&pConfig);
-      newName = QString ("%1_%2").arg(name).arg(i);
-      i++;
-    }
-  }while (bValue);
+	do {
+		bValue =
+		    getConfigTrustedServer(CONFIG_LOAD_USER, newName, &pConfig,
+					   false);
+		if (bValue == true) {
+			this->freeConfigTrustedServer(&pConfig);
+			newName = QString("%1_%2").arg(name).arg(i);
+			i++;
+		}
+	} while (bValue);
 
-  name = newName;
-  if (!createNewTrustedServerDefaults(name, &pConfig) || pConfig == NULL)
-  {
-    return false;
-  }
-
-  // Now save the new connection, after setting the connection name
-  pConfig->name = Util::myNullStrdup(name.toAscii());
+	name = newName;
+	if (!createNewTrustedServerDefaults(name, &pConfig) || pConfig == NULL) {
+		return false;
+	}
+	// Now save the new connection, after setting the connection name
+	pConfig->name = Util::myNullStrdup(name.toAscii());
 #ifdef WINDOWS
-  pConfig->store_type = Util::myNullStrdup("WINDOWS");
+	pConfig->store_type = Util::myNullStrdup("WINDOWS");
 #else
-  // XXX Need to expand this to support OSes other than Windows and Linux.
-  pConfig->store_type = _strdup("LINUX");
-#endif 
+	// XXX Need to expand this to support OSes other than Windows and Linux.
+	pConfig->store_type = _strdup("LINUX");
+#endif
 
-  (*pTServer) = pConfig;
+	(*pTServer) = pConfig;
 
-  return true;
+	return true;
 }
 
 //! createNewProfile
@@ -257,51 +248,49 @@ bool XSupCalls::createNewTrustedServer(QString &name, config_trusted_server **pT
   \param[in] name - the name of the new profile
   \return true/false
 */
-bool XSupCalls::createNewProfile(QString &name, config_profiles **m_pConfig)
+bool XSupCalls::createNewProfile(QString & name, config_profiles ** m_pConfig)
 {
-  bool bValue = true;
-  config_profiles *pConfig = NULL;
-  QString newName = name;
-  int i = 1;
+	bool bValue = true;
+	config_profiles *pConfig = NULL;
+	QString newName = name;
+	int i = 1;
 
-  (*m_pConfig) = NULL;
+	(*m_pConfig) = NULL;
 
-  // Need to make sure this profile does not already exist
-  do
-  {
-    bValue  = getConfigProfile(CONFIG_LOAD_GLOBAL, newName, &pConfig, false);
-    if (bValue == true)
-    {
-      freeConfigProfile(&pConfig);
-      newName = QString ("%1_%2").arg(name).arg(i);
-      i++;
-    }
-  }while (bValue);
+	// Need to make sure this profile does not already exist
+	do {
+		bValue =
+		    getConfigProfile(CONFIG_LOAD_GLOBAL, newName, &pConfig,
+				     false);
+		if (bValue == true) {
+			freeConfigProfile(&pConfig);
+			newName = QString("%1_%2").arg(name).arg(i);
+			i++;
+		}
+	} while (bValue);
 
-  do
-  {
-    bValue  = getConfigProfile(CONFIG_LOAD_USER, newName, &pConfig, false);
-    if (bValue == true)
-    {
-      freeConfigProfile(&pConfig);
-      newName = QString ("%1_%2").arg(name).arg(i);
-      i++;
-    }
-  }while (bValue);
+	do {
+		bValue =
+		    getConfigProfile(CONFIG_LOAD_USER, newName, &pConfig,
+				     false);
+		if (bValue == true) {
+			freeConfigProfile(&pConfig);
+			newName = QString("%1_%2").arg(name).arg(i);
+			i++;
+		}
+	} while (bValue);
 
-  name = newName;
-  if ((!createNewProfileDefaults(name, &pConfig)) || (pConfig == NULL))
-  {
-    return false;
-  }
+	name = newName;
+	if ((!createNewProfileDefaults(name, &pConfig)) || (pConfig == NULL)) {
+		return false;
+	}
+	// New profiles default to EAP-PEAP 
+	// Now save the new connection, after setting the connection name
+	pConfig->name = Util::myNullStrdup(name.toAscii());
 
-  // New profiles default to EAP-PEAP 
-  // Now save the new connection, after setting the connection name
-  pConfig->name = Util::myNullStrdup(name.toAscii());
+	(*m_pConfig) = pConfig;
 
-  (*m_pConfig) = pConfig;
-
-  return true;
+	return true;
 }
 
 //! createNewInterface
@@ -312,46 +301,43 @@ bool XSupCalls::createNewProfile(QString &name, config_profiles **m_pConfig)
   \param[in] mac - the mac address of the interface
   \return true - interface added, false - not added
 */
-bool XSupCalls::createNewInterface(QString &name, QString &deviceDescription, QString &mac, 
-                                   bool bWireless, bool /*bDisplayError*/)
+bool XSupCalls::createNewInterface(QString & name, QString & deviceDescription,
+				   QString & mac, bool bWireless,
+				   bool /*bDisplayError */ )
 {
-  bool bValue = true;
-  config_interfaces *pConfig = NULL;
-  QString newName = name;
-  int i = 1;
+	bool bValue = true;
+	config_interfaces *pConfig = NULL;
+	QString newName = name;
+	int i = 1;
 
-  // Need to make sure this interface does not already exist
-  do
-  {
-    bValue  = this->getConfigInterface(newName, &pConfig, false);
-    if (bValue == true)
-    {
-      freeConfigInterface(&pConfig);
-      newName = QString ("%1_%2").arg(name).arg(i);
-      i++;
-    }
-  }while (bValue);
-  name = newName;
+	// Need to make sure this interface does not already exist
+	do {
+		bValue = this->getConfigInterface(newName, &pConfig, false);
+		if (bValue == true) {
+			freeConfigInterface(&pConfig);
+			newName = QString("%1_%2").arg(name).arg(i);
+			i++;
+		}
+	} while (bValue);
+	name = newName;
 
-  if (!this->createNewInterfaceDefaults(name, &pConfig))
-  {
-    return false;
-  }
+	if (!this->createNewInterfaceDefaults(name, &pConfig)) {
+		return false;
+	}
+	// Now save the new interface, after device description
+	pConfig->description = Util::myNullStrdup(deviceDescription.toAscii());
 
-  // Now save the new interface, after device description
-  pConfig->description = Util::myNullStrdup(deviceDescription.toAscii());
+	// Convert the one format of mac address to the other one
+	// mac is an array of 6 char's
+	xsupgui_mac_utils_convert_mac(mac.toAscii().data(),
+				      (char *)pConfig->mac);
+	if (bWireless) {
+		pConfig->flags |= CONFIG_INTERFACE_IS_WIRELESS;
+	}
+	bValue = setConfigInterface(pConfig);
+	this->freeConfigInterface(&pConfig);
 
-  // Convert the one format of mac address to the other one
-  // mac is an array of 6 char's
-  xsupgui_mac_utils_convert_mac(mac.toAscii().data(), (char *)pConfig->mac);
-  if (bWireless)
-  {
-    pConfig->flags |= CONFIG_INTERFACE_IS_WIRELESS;
-  }
-  bValue = setConfigInterface(pConfig);
-  this->freeConfigInterface(&pConfig);
-
-  return bValue;
+	return bValue;
 }
 
 //! createNewConnectionDefaults
@@ -361,20 +347,21 @@ bool XSupCalls::createNewInterface(QString &name, QString &deviceDescription, QS
   \param[in] pConfig - the configuration structure
   \return true/false
 */
-bool XSupCalls::createNewConnectionDefaults(QString &name, config_connection **pConfig)
+bool XSupCalls::createNewConnectionDefaults(QString & name,
+					    config_connection ** pConfig)
 {
-  bool bValue = true;
-  Q_ASSERT(pConfig);
+	bool bValue = true;
+	Q_ASSERT(pConfig);
 
-  int retval = xsupconfig_defaults_create_connection(pConfig);
-  if ((retval != 0) || (pConfig == NULL))
-  {
-    QMessageBox::critical(NULL, tr("Status Warning"), 
-      tr("Can't create new connection '%1'.").arg(name));
-    bValue = false;
-  }
+	int retval = xsupconfig_defaults_create_connection(pConfig);
+	if ((retval != 0) || (pConfig == NULL)) {
+		QMessageBox::critical(NULL, tr("Status Warning"),
+				      tr("Can't create new connection '%1'.").
+				      arg(name));
+		bValue = false;
+	}
 
-  return bValue;
+	return bValue;
 }
 
 //! createNewTrustedServerDefaults
@@ -384,20 +371,22 @@ bool XSupCalls::createNewConnectionDefaults(QString &name, config_connection **p
   \param[in] pConfig - the configuration structure
   \return true/false
 */
-bool XSupCalls::createNewTrustedServerDefaults(QString &name, config_trusted_server **pConfig)
+bool XSupCalls::createNewTrustedServerDefaults(QString & name,
+					       config_trusted_server ** pConfig)
 {
-  bool bValue = true;
-  Q_ASSERT(pConfig);
+	bool bValue = true;
+	Q_ASSERT(pConfig);
 
-  int retval = xsupconfig_defaults_create_trusted_server(pConfig);
-  if ((retval != 0) || (pConfig == NULL))
-  {
-    QMessageBox::critical(NULL, tr("Status Warning"), 
-      tr("Can't create new trusted server '%1'").arg(name));
-    bValue = false;
-  }
+	int retval = xsupconfig_defaults_create_trusted_server(pConfig);
+	if ((retval != 0) || (pConfig == NULL)) {
+		QMessageBox::critical(NULL, tr("Status Warning"),
+				      tr
+				      ("Can't create new trusted server '%1'").
+				      arg(name));
+		bValue = false;
+	}
 
-  return bValue;
+	return bValue;
 }
 
 //! createNewProfileDefaults
@@ -407,19 +396,20 @@ bool XSupCalls::createNewTrustedServerDefaults(QString &name, config_trusted_ser
   \param[in] pConfig - the configuration structure
   \return true/false
 */
-bool XSupCalls::createNewProfileDefaults(QString &name, config_profiles **pConfig)
+bool XSupCalls::createNewProfileDefaults(QString & name,
+					 config_profiles ** pConfig)
 {
-  bool bValue = true;
-  Q_ASSERT(pConfig);
+	bool bValue = true;
+	Q_ASSERT(pConfig);
 
-  int retval = xsupconfig_defaults_create_profile(pConfig);
-  if ((retval != 0) || (pConfig == NULL))
-  {
-    QMessageBox::critical(NULL, tr("Status Warning"), 
-			      tr("Can't create new profile '%1'").arg(name));
-    bValue = false;
-  }
-  return bValue;
+	int retval = xsupconfig_defaults_create_profile(pConfig);
+	if ((retval != 0) || (pConfig == NULL)) {
+		QMessageBox::critical(NULL, tr("Status Warning"),
+				      tr("Can't create new profile '%1'").
+				      arg(name));
+		bValue = false;
+	}
+	return bValue;
 }
 
 //! createNewInterfaceDefaults
@@ -429,20 +419,20 @@ bool XSupCalls::createNewProfileDefaults(QString &name, config_profiles **pConfi
   \param[in] pConfig - the configuration structure
   \return true/false
 */
-bool XSupCalls::createNewInterfaceDefaults(QString &name, config_interfaces **pConfig)
+bool XSupCalls::createNewInterfaceDefaults(QString & name,
+					   config_interfaces ** pConfig)
 {
-  Q_ASSERT(pConfig);
-  bool bValue = true;
+	Q_ASSERT(pConfig);
+	bool bValue = true;
 
-  int retval = xsupconfig_defaults_create_interface(pConfig);
-  if ((retval != 0) || (pConfig == NULL))
-  {
-    QMessageBox::critical(NULL, tr("Status Warning"), 
-      tr("Can't create new interface '%1'")
-      .arg(name));
-    bValue = false;
-  }
-  return bValue;
+	int retval = xsupconfig_defaults_create_interface(pConfig);
+	if ((retval != 0) || (pConfig == NULL)) {
+		QMessageBox::critical(NULL, tr("Status Warning"),
+				      tr("Can't create new interface '%1'")
+				      .arg(name));
+		bValue = false;
+	}
+	return bValue;
 }
 
 /*********************************************************/
@@ -456,32 +446,29 @@ bool XSupCalls::createNewInterfaceDefaults(QString &name, config_interfaces **pC
  *  @param[out] password   The password for the passed in profile
  *  \retval XENONE on success
  **/
-void XSupCalls::getUserAndPasswordFromProfile(config_profiles *prof, QString &innerUser, QString &password)
+void XSupCalls::getUserAndPasswordFromProfile(config_profiles * prof,
+					      QString & innerUser,
+					      QString & password)
 {
-  Q_ASSERT(prof);
-  innerUser = "";
-  password = "";
-  char *p = NULL;
+	Q_ASSERT(prof);
+	innerUser = "";
+	password = "";
+	char *p = NULL;
 
-  config_get_pwd(prof->method, &p);
-  if (p)
-  {
-    password = p;
-    delete p;
-  }
-  if (prof->method->method_num == EAP_TYPE_MD5)
-  {
-    innerUser = prof->identity;
-  }
-  else
-  {
-    config_get_user(prof->method, &p);
-    if (p)
-    {
-      innerUser = p;
-      delete p;
-    }
-  }
+	config_get_pwd(prof->method, &p);
+	if (p) {
+		password = p;
+		delete p;
+	}
+	if (prof->method->method_num == EAP_TYPE_MD5) {
+		innerUser = prof->identity;
+	} else {
+		config_get_user(prof->method, &p);
+		if (p) {
+			innerUser = p;
+			delete p;
+		}
+	}
 }
 
 //! getConfigConnectionName
@@ -492,39 +479,37 @@ void XSupCalls::getUserAndPasswordFromProfile(config_profiles *prof, QString &in
   \param[out] connName - the name of the connection configuration that was used to authenticate
   \return true - there was a connection in use /false - there wasn't a connection in use
 */
-bool XSupCalls::getConfigConnectionName(QString &deviceDescription, 
-                                        QString &deviceName, 
-                                        QString &connName,
-                                        bool bDisplayError)
+bool XSupCalls::getConfigConnectionName(QString & deviceDescription,
+					QString & deviceName,
+					QString & connName, bool bDisplayError)
 {
-  bool bValue = true;
-  char *pName = NULL;
+	bool bValue = true;
+	char *pName = NULL;
 
-  int retval = xsupgui_request_get_conn_name_from_int(deviceName.toAscii().data(), &pName);
-  if (retval != 0)
-  {
-    if (retval != IPC_ERROR_NO_CONNECTION) // this means that there is no connection in use
-    {
-      if (bDisplayError)
-      {
-	QMessageBox::critical(NULL, tr("Status Warning"), 
-              tr("Can't get the name of the connection used to connect to device '%1'.\n" 
-              "This means that the device isn't using a connection.\n").arg(deviceDescription));
-      }
-    }
-    bValue = false;
-  }
-  else if (pName)
-  {
-    connName = pName;
-    free (pName);
-  }
-  else
-  {
-    bValue = false;
-  }
+	int retval =
+	    xsupgui_request_get_conn_name_from_int(deviceName.toAscii().data(),
+						   &pName);
+	if (retval != 0) {
+		if (retval != IPC_ERROR_NO_CONNECTION)	// this means that there is no connection in use
+		{
+			if (bDisplayError) {
+				QMessageBox::critical(NULL,
+						      tr("Status Warning"),
+						      tr
+						      ("Can't get the name of the connection used to connect to device '%1'.\n"
+						       "This means that the device isn't using a connection.\n").
+						      arg(deviceDescription));
+			}
+		}
+		bValue = false;
+	} else if (pName) {
+		connName = pName;
+		free(pName);
+	} else {
+		bValue = false;
+	}
 
-  return bValue;
+	return bValue;
 }
 
 //! getSignalStrength
@@ -534,23 +519,25 @@ bool XSupCalls::getConfigConnectionName(QString &deviceDescription,
   \param[out] retVal - the percentage
   \return true/false
 */
-bool XSupCalls::getSignalStrength(QString &deviceDesc, QString &deviceName, int &signal, bool bDisplayError)
+bool XSupCalls::getSignalStrength(QString & deviceDesc, QString & deviceName,
+				  int &signal, bool bDisplayError)
 {
-  bool bValue = true;
-  int retval;
+	bool bValue = true;
+	int retval;
 
-  retval = xsupgui_request_get_signal_strength_percent(deviceName.toAscii().data(), &signal);
-  if (retval != 0)
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Status Warning"), 
-            tr("Can't get signal strength for device '%1'")
-            .arg(deviceDesc));
-    }
-    bValue = false;
+	retval =
+	    xsupgui_request_get_signal_strength_percent(deviceName.toAscii().
+							data(), &signal);
+	if (retval != 0) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Status Warning"),
+					      tr
+					      ("Can't get signal strength for device '%1'")
+					      .arg(deviceDesc));
+		}
+		bValue = false;
 	}
-  return bValue;
+	return bValue;
 }
 
 //! getAssociation
@@ -561,53 +548,54 @@ bool XSupCalls::getSignalStrength(QString &deviceDesc, QString &deviceName, int 
   \param[out] value - the association
   \return true/false
 */
-bool XSupCalls::getAssociation(QString &deviceDesc, QString &deviceName, QString &value, bool bDisplayError)
+bool XSupCalls::getAssociation(QString & deviceDesc, QString & deviceName,
+			       QString & value, bool bDisplayError)
 {
-  bool bValue = true;
-  QString text;
-  int assocType;
+	bool bValue = true;
+	QString text;
+	int assocType;
 
-  int retval = xsupgui_request_get_association_type(deviceName.toAscii().data(), &assocType);
-  if (retval != 0)
-  {
-    bValue = false;
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Status Warning"), 
-          tr("Can't get assocation type for device '%1'.")
-          .arg(deviceDesc));
-    }
-    bValue = false;
-  }
-	switch (assocType)
-	{
-    case ASSOC_TYPE_OPEN:
-      value = tr("Open");
-      break;
+	int retval =
+	    xsupgui_request_get_association_type(deviceName.toAscii().data(),
+						 &assocType);
+	if (retval != 0) {
+		bValue = false;
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Status Warning"),
+					      tr
+					      ("Can't get assocation type for device '%1'.")
+					      .arg(deviceDesc));
+		}
+		bValue = false;
+	}
+	switch (assocType) {
+	case ASSOC_TYPE_OPEN:
+		value = tr("Open");
+		break;
 
-    case ASSOC_TYPE_SHARED:
-      value = tr("Shared");
-      break;
+	case ASSOC_TYPE_SHARED:
+		value = tr("Shared");
+		break;
 
-    case ASSOC_TYPE_LEAP:
-      value = tr("Shared");
-      break;
+	case ASSOC_TYPE_LEAP:
+		value = tr("Shared");
+		break;
 
-    case ASSOC_TYPE_WPA1:
-      value = tr("WPA");
-      break;
+	case ASSOC_TYPE_WPA1:
+		value = tr("WPA");
+		break;
 
-    case ASSOC_TYPE_WPA2:
-      value = tr("WPA2");
-      break;
+	case ASSOC_TYPE_WPA2:
+		value = tr("WPA2");
+		break;
 
-  	default:
-    case ASSOC_TYPE_UNKNOWN:
-      value = tr("Unknown");
-      break;
+	default:
+	case ASSOC_TYPE_UNKNOWN:
+		value = tr("Unknown");
+		break;
 
-  }
-  return bValue;
+	}
+	return bValue;
 }
 
 //! getSSID
@@ -619,26 +607,25 @@ bool XSupCalls::getAssociation(QString &deviceDesc, QString &deviceName, QString
   \param[in] bDisplayError
   \return true/false
 */
-bool XSupCalls::getSSID(QString &deviceDesc, QString &device, QString &ssidString, bool bDisplayError)
+bool XSupCalls::getSSID(QString & deviceDesc, QString & device,
+			QString & ssidString, bool bDisplayError)
 {
-  char *ssid = NULL;
+	char *ssid = NULL;
 
-  int retval = xsupgui_request_get_ssid(device.toAscii().data(), &ssid);
-	if (retval == REQUEST_SUCCESS)
-  {
-    ssidString = ssid;
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Status Warning"), 
-          tr("Can't get the SSID for device '%1'.").arg(deviceDesc));
-    }
-    ssidString = "";
-    return false;
-  }
+	int retval = xsupgui_request_get_ssid(device.toAscii().data(), &ssid);
+	if (retval == REQUEST_SUCCESS) {
+		ssidString = ssid;
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Status Warning"),
+					      tr
+					      ("Can't get the SSID for device '%1'.").
+					      arg(deviceDesc));
+		}
+		ssidString = "";
+		return false;
+	}
 }
 
 //! getLiveInterfaceData()
@@ -650,52 +637,50 @@ bool XSupCalls::getSSID(QString &deviceDesc, QString &device, QString &ssidStrin
  * @param[out] iswireless   TRUE or FALSE indicating if the interface named is wireless.
  * @return true/false - true if it is a new interface, false if it is already bound
  */
-bool XSupCalls::getLiveInterfaceData(QString &intName, QString &description, 
-    QString &mac, bool &bWireless, bool bDisplayError)
+bool XSupCalls::getLiveInterfaceData(QString & intName, QString & description,
+				     QString & mac, bool & bWireless,
+				     bool bDisplayError)
 {
-  bool bValue = false;
-  char *pDescription  = NULL;
-  char *pMac = NULL;
-  int wireless = 0;
+	bool bValue = false;
+	char *pDescription = NULL;
+	char *pMac = NULL;
+	int wireless = 0;
 
-  bWireless = false;
+	bWireless = false;
 
-  int retval = xsupgui_request_get_os_specific_int_data(intName.toAscii().data(), &pDescription, &pMac, &wireless);
-  // If we get an error, it should signify that the interface is already bound
-  // thus no action need occur
-  if (retval)
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Status Warning"), 
-          tr("Can't get OS specific information about adapter '%1'.")
-          .arg(description));
-    }
+	int retval =
+	    xsupgui_request_get_os_specific_int_data(intName.toAscii().data(),
+						     &pDescription, &pMac,
+						     &wireless);
+	// If we get an error, it should signify that the interface is already bound
+	// thus no action need occur
+	if (retval) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Status Warning"),
+					      tr
+					      ("Can't get OS specific information about adapter '%1'.")
+					      .arg(description));
+		}
 
-    bValue = false;
-  }
-  else
-  {
-    if (pDescription)
-    {
-      description = pDescription;
-      free (pDescription);
-    }
+		bValue = false;
+	} else {
+		if (pDescription) {
+			description = pDescription;
+			free(pDescription);
+		}
 
-    if (pMac)
-    {
-      mac = pMac;
-      free (pMac);
-    }
+		if (pMac) {
+			mac = pMac;
+			free(pMac);
+		}
 
-    if (wireless)
-    {
-      bWireless = true;
-    }
+		if (wireless) {
+			bWireless = true;
+		}
 
-    bValue = true;
-  }
-  return bValue;
+		bValue = true;
+	}
+	return bValue;
 }
 
 //! enumAndSortConnections
@@ -707,31 +692,31 @@ bool XSupCalls::getLiveInterfaceData(QString &intName, QString &description,
 
   \return true/false
 */
-bool XSupCalls::enumAndSortConnections(conn_enum **pSortedConns, bool bDisplayMessage)
+bool XSupCalls::enumAndSortConnections(conn_enum ** pSortedConns,
+				       bool bDisplayMessage)
 {
-  Q_ASSERT(pSortedConns);
-  bool bValue = true;
-  conn_enum *pConn = NULL;
-  int retval = 0;
+	Q_ASSERT(pSortedConns);
+	bool bValue = true;
+	conn_enum *pConn = NULL;
+	int retval = 0;
 
-  retval = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
-  if ((retval != REQUEST_SUCCESS) || (pConn == NULL))
-  {
-    if (bDisplayMessage)
-    {
-      QMessageBox::critical(NULL, tr("Get Connections Error"), 
-        tr("Can't get connections."));
-    }
-  	bValue = false;
-  }
-  else
-  {
-    sortConnections(pConn, pSortedConns);
-  }
-  
-  if (pConn != NULL) freeEnumConnections(&pConn);
+	retval =
+	    xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL |
+					      CONFIG_LOAD_USER), &pConn);
+	if ((retval != REQUEST_SUCCESS) || (pConn == NULL)) {
+		if (bDisplayMessage) {
+			QMessageBox::critical(NULL, tr("Get Connections Error"),
+					      tr("Can't get connections."));
+		}
+		bValue = false;
+	} else {
+		sortConnections(pConn, pSortedConns);
+	}
 
-  return bValue;
+	if (pConn != NULL)
+		freeEnumConnections(&pConn);
+
+	return bValue;
 }
 
 //! sortPossibleConnections
@@ -740,72 +725,67 @@ bool XSupCalls::enumAndSortConnections(conn_enum **pSortedConns, bool bDisplayMe
    \return nothing
    \todo Optimize this using qStableSort or qSort - will have to put the data into a class with iterators to do so
 */
-void XSupCalls::sortPossibleConnections(poss_conn_enum *pConns, poss_conn_enum **pSortedConns)
+void XSupCalls::sortPossibleConnections(poss_conn_enum * pConns,
+					poss_conn_enum ** pSortedConns)
 {
-  Q_ASSERT(pSortedConns);
-  QList <int> connList;
-  int count = 0;
-  connList.clear();
-  if (pConns == NULL)
-  {
-    return;
-  }
-  poss_conn_enum *pSConns = NULL; // use this for convenience rather than dereferencing the pointer-to-pointer
+	Q_ASSERT(pSortedConns);
+	QList < int >connList;
+	int count = 0;
+	connList.clear();
+	if (pConns == NULL) {
+		return;
+	}
+	poss_conn_enum *pSConns = NULL;	// use this for convenience rather than dereferencing the pointer-to-pointer
 
-  while (pConns[count].name != NULL)
-  {
-    count++; 
-  }
-  int connIndex = 0;
-  int index = 0;
-  QString currentName;
-  QString newName;
-  bool bAdded = false;
-  while (pConns[connIndex].name != NULL)
-  {
-    newName = pConns[connIndex].name;
-    // Check the name of each entry
-    // If the current one is less than the previous one, insert the index before
-    for (index = 0; index < connList.count(); index++)
-    {
-      bAdded = false;
-      currentName = pConns[connList.at(index)].name;
-      if (newName.compare(currentName, Qt::CaseInsensitive) < 0)
-      {
-        // insert before previous
-        connList.insert(index, connIndex);
-        bAdded = true;
-        break;
-      }
-    }
-    // otherwise - add at the end
-    if (!bAdded)
-    {
-      connList.append(connIndex);
-    }
-    connIndex++; // ends up with the total count
-  }
+	while (pConns[count].name != NULL) {
+		count++;
+	}
+	int connIndex = 0;
+	int index = 0;
+	QString currentName;
+	QString newName;
+	bool bAdded = false;
+	while (pConns[connIndex].name != NULL) {
+		newName = pConns[connIndex].name;
+		// Check the name of each entry
+		// If the current one is less than the previous one, insert the index before
+		for (index = 0; index < connList.count(); index++) {
+			bAdded = false;
+			currentName = pConns[connList.at(index)].name;
+			if (newName.compare(currentName, Qt::CaseInsensitive) <
+			    0) {
+				// insert before previous
+				connList.insert(index, connIndex);
+				bAdded = true;
+				break;
+			}
+		}
+		// otherwise - add at the end
+		if (!bAdded) {
+			connList.append(connIndex);
+		}
+		connIndex++;	// ends up with the total count
+	}
 
-  // Allocate and nullify all of the memory for the connections
-  int size = sizeof(poss_conn_enum) * (connList.count() + 1);
-  pSConns = (poss_conn_enum *)malloc(size);
-  memset(pSConns, 0, size);
-  index = 0;
-  // shuffle the connections into priority order and put them back into the sorted enum array
-  for (int i = 0; i < connList.count(); i++)
-  { 
-    // This is the index of the element in the original array
-    index = connList.at(i);
-    // Now copy the data into the new structure except for strings
-    pSConns[i].auth_type = pConns[index].auth_type;
-    pSConns[i].encryption = pConns[index].encryption;
-    pSConns[i].flags = pConns[index].flags;
-    pSConns[i].name = Util::myNullStrdup(pConns[index].name);
-    pSConns[i].priority = pConns[index].priority;
-    pSConns[i].ssid = Util::myNullStrdup(pConns[index].ssid);
-  }
-  // Debug code
-  (*pSortedConns) = pSConns;
+	// Allocate and nullify all of the memory for the connections
+	int size = sizeof(poss_conn_enum) * (connList.count() + 1);
+	pSConns = (poss_conn_enum *) malloc(size);
+	memset(pSConns, 0, size);
+	index = 0;
+	// shuffle the connections into priority order and put them back into the sorted enum array
+	for (int i = 0; i < connList.count(); i++) {
+		// This is the index of the element in the original array
+		index = connList.at(i);
+		// Now copy the data into the new structure except for strings
+		pSConns[i].auth_type = pConns[index].auth_type;
+		pSConns[i].encryption = pConns[index].encryption;
+		pSConns[i].flags = pConns[index].flags;
+		pSConns[i].name = Util::myNullStrdup(pConns[index].name);
+		pSConns[i].priority = pConns[index].priority;
+		pSConns[i].ssid = Util::myNullStrdup(pConns[index].ssid);
+	}
+	// Debug code
+	(*pSortedConns) = pSConns;
 }
 
 //! sortConnections
@@ -814,100 +794,90 @@ void XSupCalls::sortPossibleConnections(poss_conn_enum *pConns, poss_conn_enum *
    \return nothing
    \todo Optimize this using qStableSort or qSort - will have to put the data into a class with iterators to do so
 */
-void XSupCalls::sortConnections(conn_enum *pConns, conn_enum **pSortedConns)
+void XSupCalls::sortConnections(conn_enum * pConns, conn_enum ** pSortedConns)
 {
-  Q_ASSERT(pSortedConns);
-  QList <int> connList;
-  int count = 0;
-  connList.clear();
-  if (pConns == NULL)
-  {
-    return;
-  }
+	Q_ASSERT(pSortedConns);
+	QList < int >connList;
+	int count = 0;
+	connList.clear();
+	if (pConns == NULL) {
+		return;
+	}
 
-  conn_enum *pSConns = NULL;
+	conn_enum *pSConns = NULL;
 
-  connList.clear();
+	connList.clear();
 
-  while (pConns[count].name != NULL)
-  {
-    count++; 
-  }
+	while (pConns[count].name != NULL) {
+		count++;
+	}
 
-  int connIndex = 0;
-  int index = 0;
-  int nextPriority = 0;
+	int connIndex = 0;
+	int index = 0;
+	int nextPriority = 0;
 
-  while (pConns[connIndex].name != NULL)
-  {
-    int newPriority = pConns[connIndex].priority;
+	while (pConns[connIndex].name != NULL) {
+		int newPriority = pConns[connIndex].priority;
 
-    if (newPriority == XSupCalls::CONNECTION_DEFAULT_PRIORITY)
-    {
-      connList.append(connIndex);
-    }
-    else
-    {
-      // Check the priority of each entry
-      // If the current one is less, insert before
-      bool bAdded = false;
+		if (newPriority == XSupCalls::CONNECTION_DEFAULT_PRIORITY) {
+			connList.append(connIndex);
+		} else {
+			// Check the priority of each entry
+			// If the current one is less, insert before
+			bool bAdded = false;
 
-      for (index = 0; index < connList.count(); index++)
-      {
-        nextPriority = pConns[connList.at(index)].priority;
-        if (newPriority <= nextPriority)
-        {
-          // insert before previous
-          connList.insert(index, connIndex);
-          bAdded = true;
-          break;
-        }
-      }
+			for (index = 0; index < connList.count(); index++) {
+				nextPriority =
+				    pConns[connList.at(index)].priority;
+				if (newPriority <= nextPriority) {
+					// insert before previous
+					connList.insert(index, connIndex);
+					bAdded = true;
+					break;
+				}
+			}
 
-      // Not added - add at the end of the previous list and before the default priority items
-      if (!bAdded)
-      {
-        connList.append(connIndex);
-      }
-    }
+			// Not added - add at the end of the previous list and before the default priority items
+			if (!bAdded) {
+				connList.append(connIndex);
+			}
+		}
 
-    connIndex++; // ends up with the total count
-  }
+		connIndex++;	// ends up with the total count
+	}
 
-  int size = sizeof(conn_enum) * (connIndex + 1);
-  pSConns = (conn_enum *)malloc(size);
-  memset(pSConns, 0, size);
+	int size = sizeof(conn_enum) * (connIndex + 1);
+	pSConns = (conn_enum *) malloc(size);
+	memset(pSConns, 0, size);
 
-  index = 0;
+	index = 0;
 
-  // shuffle the connections into priority order and put them back into the enum array
-  for (int i = 0; i < connIndex; i++)
-  { 
-    index = connList.at(i);
-    memcpy(&pSConns[i], &pConns[index], sizeof(conn_enum));
-    pSConns[i].name = Util::myNullStrdup(pConns[index].name);
-    pSConns[i].ssid = Util::myNullStrdup(pConns[index].ssid);
-  }
+	// shuffle the connections into priority order and put them back into the enum array
+	for (int i = 0; i < connIndex; i++) {
+		index = connList.at(i);
+		memcpy(&pSConns[i], &pConns[index], sizeof(conn_enum));
+		pSConns[i].name = Util::myNullStrdup(pConns[index].name);
+		pSConns[i].ssid = Util::myNullStrdup(pConns[index].ssid);
+	}
 #ifdef _DEBUG
-  // Debug code
-  QString oldNames;
-  QString oldSsids;
-  QString oldDesc;
-  QString newNames;
-  QString newSsids;
-  QString newDesc;
-  for (int i = 0; i < connList.count(); i++)
-  {
-    newNames.append(pSConns[i].name);
-    newSsids.append(pSConns[i].ssid);
-    oldNames.append(pConns[i].name);
-    oldSsids.append(pConns[i].ssid);
-  }
+	// Debug code
+	QString oldNames;
+	QString oldSsids;
+	QString oldDesc;
+	QString newNames;
+	QString newSsids;
+	QString newDesc;
+	for (int i = 0; i < connList.count(); i++) {
+		newNames.append(pSConns[i].name);
+		newSsids.append(pSConns[i].ssid);
+		oldNames.append(pConns[i].name);
+		oldSsids.append(pConns[i].ssid);
+	}
 //  QMessageBox::information(NULL, "Sort By Priority", tr("Before names %1\nssids %2\ndescr %3\nAfter names %4\nssids %5\ndescr %6")
-  //    .arg(oldNames).arg(oldSsids).arg(oldDesc).arg(newNames).arg(newSsids).arg(newDesc));
+	//    .arg(oldNames).arg(oldSsids).arg(oldDesc).arg(newNames).arg(newSsids).arg(newDesc));
 #endif
-  // end debug code
-  (*pSortedConns) = pSConns;
+	// end debug code
+	(*pSortedConns) = pSConns;
 }
 
 //! getBroadcastSSIDs
@@ -917,22 +887,21 @@ void XSupCalls::sortConnections(conn_enum *pConns, conn_enum **pSortedConns)
   \param[out] pssids - a pointer to a pointer of ssid we get back
   \return true/false
 */
-bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, ssid_info_enum **pssids)
+bool XSupCalls::getBroadcastSSIDs(QString & deviceDescription,
+				  ssid_info_enum ** pssids)
 {
-  bool bcode = true;
-  Q_ASSERT(pssids);
-  QString deviceName;
+	bool bcode = true;
+	Q_ASSERT(pssids);
+	QString deviceName;
 
-  if (getDeviceName(deviceDescription, deviceName, false))
-  {
-    bcode = getBroadcastSSIDs(deviceDescription, deviceName, pssids);
-  }
-  else
-  {
-	  return false;
-  }
+	if (getDeviceName(deviceDescription, deviceName, false)) {
+		bcode =
+		    getBroadcastSSIDs(deviceDescription, deviceName, pssids);
+	} else {
+		return false;
+	}
 
-  return bcode;
+	return bcode;
 }
 
 //! getBroadcastSSIDs
@@ -943,20 +912,20 @@ bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, ssid_info_enum **p
   \param[out] pssids - a pointer to a pointer of ssid we get back
   \return true/false
 */
-bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, QString &deviceName, ssid_info_enum **pssids)
+bool XSupCalls::getBroadcastSSIDs(QString & deviceDescription,
+				  QString & deviceName,
+				  ssid_info_enum ** pssids)
 {
-  Q_ASSERT(pssids);
+	Q_ASSERT(pssids);
 
-  int retval = xsupgui_request_enum_ssids(deviceName.toAscii().data(), pssids);
-  if (retval == REQUEST_SUCCESS && *pssids)
-	{
+	int retval =
+	    xsupgui_request_enum_ssids(deviceName.toAscii().data(), pssids);
+	if (retval == REQUEST_SUCCESS && *pssids) {
 		return true;
-	}
-  else
-  {
-    QMessageBox::critical(NULL, tr("Get SSIDs Error"), 
-      tr("Can't get SSIDs for device %1\n")
-      .arg(deviceDescription));
+	} else {
+		QMessageBox::critical(NULL, tr("Get SSIDs Error"),
+				      tr("Can't get SSIDs for device %1\n")
+				      .arg(deviceDescription));
 		return false;
 	}
 }
@@ -967,22 +936,20 @@ bool XSupCalls::getBroadcastSSIDs(QString &deviceDescription, QString &deviceNam
   \param[out] pProfiles - a pointer to a pointer of profile_enums
   \return true/false
 */
-bool XSupCalls::enumProfiles(unsigned char config_type, profile_enum **pProfiles, bool bDisplayError)
+bool XSupCalls::enumProfiles(unsigned char config_type,
+			     profile_enum ** pProfiles, bool bDisplayError)
 {
-  Q_ASSERT(pProfiles);
+	Q_ASSERT(pProfiles);
 
-  int retval = xsupgui_request_enum_profiles(config_type, pProfiles);
-  if (retval == REQUEST_SUCCESS && *pProfiles)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Profiles Error"), 
-        tr("Unable to enumerate profiles."));
-    }
+	int retval = xsupgui_request_enum_profiles(config_type, pProfiles);
+	if (retval == REQUEST_SUCCESS && *pProfiles) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Get Profiles Error"),
+					      tr
+					      ("Unable to enumerate profiles."));
+		}
 		return false;
 	}
 }
@@ -993,24 +960,27 @@ bool XSupCalls::enumProfiles(unsigned char config_type, profile_enum **pProfiles
   \param[out] pProfiles - a pointer to a pointer of profile_enums
   \return true/false
 */
-bool XSupCalls::getConfigProfile(unsigned char config_type, QString &profileName, config_profiles **pConfig, bool bDisplayError)
+bool XSupCalls::getConfigProfile(unsigned char config_type,
+				 QString & profileName,
+				 config_profiles ** pConfig, bool bDisplayError)
 {
-  Q_ASSERT(pConfig);
+	Q_ASSERT(pConfig);
 
-  *pConfig = NULL;
+	*pConfig = NULL;
 
-  int retval = xsupgui_request_get_profile_config(config_type, profileName.toAscii().data(), pConfig);
-  if (retval == REQUEST_SUCCESS && *pConfig)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Profiles Error"), 
-        tr("Can't get profile configuration for profile '%1'.").arg(profileName));
-    }
+	int retval =
+	    xsupgui_request_get_profile_config(config_type,
+					       profileName.toAscii().data(),
+					       pConfig);
+	if (retval == REQUEST_SUCCESS && *pConfig) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Get Profiles Error"),
+					      tr
+					      ("Can't get profile configuration for profile '%1'.").
+					      arg(profileName));
+		}
 		return false;
 	}
 }
@@ -1021,23 +991,23 @@ bool XSupCalls::getConfigProfile(unsigned char config_type, QString &profileName
   \param[out] pServers - a pointer to a pointer of trusted_servers_enum
   \return true/false
 */
-bool XSupCalls::enumTrustedServers(unsigned char config_type, trusted_servers_enum **pServers, bool bDisplayError)
+bool XSupCalls::enumTrustedServers(unsigned char config_type,
+				   trusted_servers_enum ** pServers,
+				   bool bDisplayError)
 {
-  Q_ASSERT(pServers);
+	Q_ASSERT(pServers);
 
-  int retval = xsupgui_request_enum_trusted_servers(config_type, pServers);
-  if (retval == REQUEST_SUCCESS && *pServers)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Servers Error"), 
-        tr("Can't enumerate trusted servers"));
-    }
-    return false;
+	int retval =
+	    xsupgui_request_enum_trusted_servers(config_type, pServers);
+	if (retval == REQUEST_SUCCESS && *pServers) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Get Servers Error"),
+					      tr
+					      ("Can't enumerate trusted servers"));
+		}
+		return false;
 	}
 }
 
@@ -1048,23 +1018,21 @@ bool XSupCalls::enumTrustedServers(unsigned char config_type, trusted_servers_en
   \param[in] bDisplayError - set to true if we want to display from here, the error message, if there is one
   \return true/false
 */
-bool XSupCalls::enumCertificates(cert_enum **pCertificates, bool bDisplayError)
+bool XSupCalls::enumCertificates(cert_enum ** pCertificates, bool bDisplayError)
 {
-  Q_ASSERT(pCertificates);
+	Q_ASSERT(pCertificates);
 
-  int retval = xsupgui_request_enum_root_ca_certs(pCertificates);
-  if (retval == REQUEST_SUCCESS && *pCertificates)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Certificates Error"), 
-        tr("Can't enumerate Root CA Certificates."));
-    }
-    return false;
+	int retval = xsupgui_request_enum_root_ca_certs(pCertificates);
+	if (retval == REQUEST_SUCCESS && *pCertificates) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr("Get Certificates Error"),
+					      tr
+					      ("Can't enumerate Root CA Certificates."));
+		}
+		return false;
 	}
 }
 
@@ -1076,24 +1044,27 @@ bool XSupCalls::enumCertificates(cert_enum **pCertificates, bool bDisplayError)
   \param[in] bDisplayError - set to true if we want to display from here, the error message, if there is one
   \return true/false
 */
-bool XSupCalls::getCertInfo(QString &storetype, QString &location, cert_info **certInfo, bool bDisplayError)
+bool XSupCalls::getCertInfo(QString & storetype, QString & location,
+			    cert_info ** certInfo, bool bDisplayError)
 {
-  if (location.isEmpty())
-    return false;
+	if (location.isEmpty())
+		return false;
 
-  int retval = xsupgui_request_ca_certificate_info(storetype.toAscii().data(), location.toAscii().data(), certInfo);
-  if (retval == REQUEST_SUCCESS)
-	{
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Certificates Error"), 
-        tr("Can't get certificate information for storetype %1 and location '%2'.").arg(storetype).arg(location));
-    }
-    return false;
+	int retval =
+	    xsupgui_request_ca_certificate_info(storetype.toAscii().data(),
+						location.toAscii().data(),
+						certInfo);
+	if (retval == REQUEST_SUCCESS) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr("Get Certificates Error"),
+					      tr
+					      ("Can't get certificate information for storetype %1 and location '%2'.").
+					      arg(storetype).arg(location));
+		}
+		return false;
 	}
 }
 
@@ -1104,29 +1075,34 @@ bool XSupCalls::getCertInfo(QString &storetype, QString &location, cert_info **c
   \param[out] pConfig - a pointer to the configuratio connection information
   \return true/false
 */
-bool XSupCalls::getConfigConnection(unsigned char config_type, QString &connection, config_connection **pConfig, bool bDisplayError)
+bool XSupCalls::getConfigConnection(unsigned char config_type,
+				    QString & connection,
+				    config_connection ** pConfig,
+				    bool bDisplayError)
 {
-  Q_ASSERT(pConfig);
-  *pConfig = NULL;
+	Q_ASSERT(pConfig);
+	*pConfig = NULL;
 
-  if (connection.isEmpty())
-  {
-    Q_ASSERT(!connection.isEmpty());
-    return false;
-  }
+	if (connection.isEmpty()) {
+		Q_ASSERT(!connection.isEmpty());
+		return false;
+	}
 
-  int retval = xsupgui_request_get_connection_config(config_type, connection.toAscii().data(), pConfig);
-  if (retval == REQUEST_SUCCESS && *pConfig)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Connections Config Error"), 
-        tr("Can't get connection configuration for connection '%1'").arg(connection));
-    }
+	int retval =
+	    xsupgui_request_get_connection_config(config_type,
+						  connection.toAscii().data(),
+						  pConfig);
+	if (retval == REQUEST_SUCCESS && *pConfig) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr
+					      ("Get Connections Config Error"),
+					      tr
+					      ("Can't get connection configuration for connection '%1'").
+					      arg(connection));
+		}
 		return false;
 	}
 }
@@ -1138,23 +1114,29 @@ bool XSupCalls::getConfigConnection(unsigned char config_type, QString &connecti
   \param[out] pConfig - a pointer to the configuration server information
   \return true/false
 */
-bool XSupCalls::getConfigTrustedServer(unsigned char config_type, QString &server, config_trusted_server **pConfig, bool bDisplayError)
+bool XSupCalls::getConfigTrustedServer(unsigned char config_type,
+				       QString & server,
+				       config_trusted_server ** pConfig,
+				       bool bDisplayError)
 {
-  Q_ASSERT(pConfig);
-  *pConfig = NULL;
+	Q_ASSERT(pConfig);
+	*pConfig = NULL;
 
-  int retval = xsupgui_request_get_trusted_server_config(config_type, server.toAscii().data(), pConfig);
-  if (retval == REQUEST_SUCCESS && *pConfig)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Connections Config Error"), 
-        tr("Can't get connection configuration for trusted server '%1'.").arg(server));
-    }
+	int retval =
+	    xsupgui_request_get_trusted_server_config(config_type,
+						      server.toAscii().data(),
+						      pConfig);
+	if (retval == REQUEST_SUCCESS && *pConfig) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr
+					      ("Get Connections Config Error"),
+					      tr
+					      ("Can't get connection configuration for trusted server '%1'.").
+					      arg(server));
+		}
 		return false;
 	}
 }
@@ -1167,48 +1149,51 @@ bool XSupCalls::getConfigTrustedServer(unsigned char config_type, QString &serve
   \param[out] passwordString - the password for the connection
   \return true/false
 */
-bool XSupCalls::getConnectionInformation(QString &connectionName, int &authType, QString &userNameString, QString &passwordString, bool bDisplayError)
+bool XSupCalls::getConnectionInformation(QString & connectionName,
+					 int &authType,
+					 QString & userNameString,
+					 QString & passwordString,
+					 bool bDisplayError)
 {
-  bool bValue = true;
-  char *username = NULL;
-  char *password = NULL;
+	bool bValue = true;
+	char *username = NULL;
+	char *password = NULL;
 
-  int retval = xsupgui_request_get_connection_upw(connectionName.toAscii().data(), &username, &password, &authType);
-  if (retval)
-  {
-    if(bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Status Warning"), 
-        tr("Can't get connection information for connection '%1'").arg(connectionName));
-    }
-    bValue = false;
-  }
-  else
-  {
-	  switch (authType)
-	  {
+	int retval =
+	    xsupgui_request_get_connection_upw(connectionName.toAscii().data(),
+					       &username, &password, &authType);
+	if (retval) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Status Warning"),
+					      tr
+					      ("Can't get connection information for connection '%1'").
+					      arg(connectionName));
+		}
+		bValue = false;
+	} else {
+		switch (authType) {
 
-	  case AUTH_NONE:
-	  case AUTH_EAP:
-      userNameString = username;
-      passwordString = password;
-      break;
+		case AUTH_NONE:
+		case AUTH_EAP:
+			userNameString = username;
+			passwordString = password;
+			break;
 
-	  case AUTH_PSK:
-      userNameString = "";
-      passwordString = password;
-      break;
+		case AUTH_PSK:
+			userNameString = "";
+			passwordString = password;
+			break;
 
-	  default:
-      bValue = false;
-		  break;
-    }
+		default:
+			bValue = false;
+			break;
+		}
 
-	  free(username);
-	  free(password);
-	} 
+		free(username);
+		free(password);
+	}
 
-  return bValue;
+	return bValue;
 }
 
 //! getDefaultSettings()
@@ -1218,11 +1203,11 @@ bool XSupCalls::getConnectionInformation(QString &connectionName, int &authType,
   \return true/false
   \todo not coded - just stubbed in
 */
-bool XSupCalls::getDefaultSettings(config_globals **pGlobals)
+bool XSupCalls::getDefaultSettings(config_globals ** pGlobals)
 {
-  Q_ASSERT(pGlobals);
-  initialize_config_globals(pGlobals);
-  return true;
+	Q_ASSERT(pGlobals);
+	initialize_config_globals(pGlobals);
+	return true;
 }
 
 //! getAuthTime
@@ -1232,22 +1217,22 @@ bool XSupCalls::getDefaultSettings(config_globals **pGlobals)
   \param[out] timeauthed - the time, in seconds, that this connection has been connected
   \return true/false
 */
-bool XSupCalls::getAuthTime(QString &deviceName, long int &timeauthed, bool bDisplayError)
+bool XSupCalls::getAuthTime(QString & deviceName, long int &timeauthed,
+			    bool bDisplayError)
 {
-  int retval = xsupgui_request_get_seconds_authenticated(deviceName.toAscii().data(), &timeauthed);
-  if (retval == REQUEST_SUCCESS)
-  {
-    return true;
-  }
-  else
-  {
-    // No message
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Error Getting Time"), 
-        tr("Can't retrieve the authenticated time."));
-    }
-    return false;
+	int retval =
+	    xsupgui_request_get_seconds_authenticated(deviceName.toAscii().
+						      data(), &timeauthed);
+	if (retval == REQUEST_SUCCESS) {
+		return true;
+	} else {
+		// No message
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Error Getting Time"),
+					      tr
+					      ("Can't retrieve the authenticated time."));
+		}
+		return false;
 	}
 }
 
@@ -1258,30 +1243,33 @@ bool XSupCalls::getAuthTime(QString &deviceName, long int &timeauthed, bool bDis
   \param[out] outInfo - the IP Address information
   \return true/false
 */
-bool XSupCalls::getIPInfo(QString &deviceDescription, IPInfoClass &outInfo, bool bDisplayError)
+bool XSupCalls::getIPInfo(QString & deviceDescription, IPInfoClass & outInfo,
+			  bool bDisplayError)
 {
-  ipinfo_type *info = NULL; 
+	ipinfo_type *info = NULL;
 
-  int retval = xsupgui_request_get_ip_info(deviceDescription.toAscii().data(), &info);
-  if (retval == REQUEST_SUCCESS)
-  {
-    outInfo.setInfo(info);
+	int retval =
+	    xsupgui_request_get_ip_info(deviceDescription.toAscii().data(),
+					&info);
+	if (retval == REQUEST_SUCCESS) {
+		outInfo.setInfo(info);
 
-	xsupgui_request_free_ip_info(&info);
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Error getting device info"),
-        tr("An error occurred while gettting the IP info for device '%1'.").arg(deviceDescription));
-    }
+		xsupgui_request_free_ip_info(&info);
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr("Error getting device info"),
+					      tr
+					      ("An error occurred while gettting the IP info for device '%1'.").
+					      arg(deviceDescription));
+		}
 
-	if (info != NULL) xsupgui_request_free_ip_info(&info);
+		if (info != NULL)
+			xsupgui_request_free_ip_info(&info);
 
-    return false;
-  }
+		return false;
+	}
 }
 
 //! getDeviceName
@@ -1291,34 +1279,36 @@ bool XSupCalls::getIPInfo(QString &deviceDescription, IPInfoClass &outInfo, bool
   \param[out] deviceName - the name that the XSupplicant needs for the device
   \return true/false
 */
-bool XSupCalls::getDeviceName(const QString &deviceDescription, QString &deviceName, bool bDisplayError)
+bool XSupCalls::getDeviceName(const QString & deviceDescription,
+			      QString & deviceName, bool bDisplayError)
 {
-  QString text;
-  char *pDeviceName = NULL;
+	QString text;
+	char *pDeviceName = NULL;
 
-  // Using the device description - get the device name
-  int retval = xsupgui_request_get_devname(deviceDescription.toAscii().data(), &pDeviceName);
-	if (retval != REQUEST_SUCCESS)
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get device info"),
-        tr("An error occurred while getting the device name for device '%1'\n"
-		"This has multiple causes:\n"
-		"1. Your network card is disabled.\n"
-		"2. Your configuration file is incorrectly formatted.\n"
-		"3. A device with the associated MAC address isn't available on this computer.\n"
-		"Please select another connection or fix the problem before proceeding.")
-        .arg(deviceDescription));
-    }
-    return false;
+	// Using the device description - get the device name
+	int retval =
+	    xsupgui_request_get_devname(deviceDescription.toAscii().data(),
+					&pDeviceName);
+	if (retval != REQUEST_SUCCESS) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Get device info"),
+					      tr
+					      ("An error occurred while getting the device name for device '%1'\n"
+					       "This has multiple causes:\n"
+					       "1. Your network card is disabled.\n"
+					       "2. Your configuration file is incorrectly formatted.\n"
+					       "3. A device with the associated MAC address isn't available on this computer.\n"
+					       "Please select another connection or fix the problem before proceeding.")
+					      .arg(deviceDescription));
+		}
+		return false;
 	}
 
-  deviceName = pDeviceName;
-  free(pDeviceName);
-  pDeviceName = NULL;
+	deviceName = pDeviceName;
+	free(pDeviceName);
+	pDeviceName = NULL;
 
-  return true;
+	return true;
 }
 
 //! getDeviceDescription
@@ -1329,35 +1319,48 @@ bool XSupCalls::getDeviceName(const QString &deviceDescription, QString &deviceN
 
   \return true/false
 */
-bool XSupCalls::getDeviceDescription(const QString &deviceName, QString &deviceDescription, bool bDisplayError)
+bool XSupCalls::getDeviceDescription(const QString & deviceName,
+				     QString & deviceDescription,
+				     bool bDisplayError)
 {
-  QString text;
-  char *pDeviceDescription = NULL;
+	QString text;
+	char *pDeviceDescription = NULL;
 
-  // Using the device description - get the device name
-  int retval = xsupgui_request_get_devdesc(deviceName.toAscii().data(), &pDeviceDescription);
-	if (retval != REQUEST_SUCCESS)
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get device info"),
-        tr("An error occurred while getting the device description for device '%1'\n%2\n%3\n%4\n%5\n%6\n\n")
-        .arg(deviceName)
-        .arg(tr("This has multiple causes:"))
-        .arg(tr("1. Your network card is disabled."))
-        .arg(tr("2. Your configuration file (*.conf) is incorrectly formatted."))
-        .arg(tr("3. A device with the associated <MAC> address isn't available on this computer."))
-        .arg(tr("Select another connection or fix the problem before proceeding.")));
-    }
-    return false;
+	// Using the device description - get the device name
+	int retval =
+	    xsupgui_request_get_devdesc(deviceName.toAscii().data(),
+					&pDeviceDescription);
+	if (retval != REQUEST_SUCCESS) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Get device info"),
+					      tr
+					      ("An error occurred while getting the device description for device '%1'\n%2\n%3\n%4\n%5\n%6\n\n")
+					      .arg(deviceName)
+					      .
+					      arg(tr
+						  ("This has multiple causes:"))
+					      .
+					      arg(tr
+						  ("1. Your network card is disabled."))
+					      .
+					      arg(tr
+						  ("2. Your configuration file (*.conf) is incorrectly formatted."))
+					      .
+					      arg(tr
+						  ("3. A device with the associated <MAC> address isn't available on this computer."))
+					      .
+					      arg(tr
+						  ("Select another connection or fix the problem before proceeding.")));
+		}
+		return false;
 	}
 
-  deviceDescription = pDeviceDescription;
+	deviceDescription = pDeviceDescription;
 
-  free(pDeviceDescription);
-  pDeviceDescription = NULL;
+	free(pDeviceDescription);
+	pDeviceDescription = NULL;
 
-  return true;
+	return true;
 }
 
 //! getEncryption
@@ -1368,67 +1371,67 @@ bool XSupCalls::getDeviceDescription(const QString &deviceName, QString &deviceD
   \note What if the device is a wired device?  What happens then?
   \return true/false
 */
-bool XSupCalls::getEncryption(QString &device, QString &encryptionType, bool bDisplayError)
+bool XSupCalls::getEncryption(QString & device, QString & encryptionType,
+			      bool bDisplayError)
 {
-  bool bValue = true;
-  int keyType = 0;
+	bool bValue = true;
+	int keyType = 0;
 
-  int retval = xsupgui_request_get_pairwise_key_type(device.toAscii().data(), &keyType);
-  if (retval)
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Pairwise Key Type"),
-          tr("An error occurred while getting the encryption type for device '%1'.\n\n").arg(device));
-    }
-    bValue = false;
-  }
-  else
-  {
-	  switch (keyType)   // keyType contains the value for the encryption method we are using.
-	  {
-	    case CIPHER_NONE:
-        encryptionType = tr("NONE");
-	      break;
+	int retval =
+	    xsupgui_request_get_pairwise_key_type(device.toAscii().data(),
+						  &keyType);
+	if (retval) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Get Pairwise Key Type"),
+					      tr
+					      ("An error occurred while getting the encryption type for device '%1'.\n\n").
+					      arg(device));
+		}
+		bValue = false;
+	} else {
+		switch (keyType)	// keyType contains the value for the encryption method we are using.
+		{
+		case CIPHER_NONE:
+			encryptionType = tr("NONE");
+			break;
 
-      case CIPHER_WEP40:
+		case CIPHER_WEP40:
 #ifdef WINDOWS
-		  encryptionType = tr("WEP");  // Windows doesn't let us tell between WEP40 & WEP104.
+			encryptionType = tr("WEP");	// Windows doesn't let us tell between WEP40 & WEP104.
 #else
-        encryptionType = tr("WEP40");
+			encryptionType = tr("WEP40");
 #endif
-        break;
+			break;
 
-      case CIPHER_TKIP:
-        encryptionType = tr("TKIP");
-        break;
+		case CIPHER_TKIP:
+			encryptionType = tr("TKIP");
+			break;
 
-      case CIPHER_WRAP:
-        // Shouldn't ever get this!
-        encryptionType = tr("WRAP");
-        break;
+		case CIPHER_WRAP:
+			// Shouldn't ever get this!
+			encryptionType = tr("WRAP");
+			break;
 
-      case CIPHER_CCMP:
-        encryptionType = tr("CCMP");
-        break;
+		case CIPHER_CCMP:
+			encryptionType = tr("CCMP");
+			break;
 
-      case CIPHER_WEP104:
+		case CIPHER_WEP104:
 #ifdef WINDOWS
-		  encryptionType = tr("WEP");  // Windows doesn't let us tell between WEP40 & WEP104.
+			encryptionType = tr("WEP");	// Windows doesn't let us tell between WEP40 & WEP104.
 #else
-        encryptionType = tr("WEP104");
+			encryptionType = tr("WEP104");
 #endif
-        break;
+			break;
 
-      default:
-        encryptionType = tr("Unknown");
-	      break;
-    }
+		default:
+			encryptionType = tr("Unknown");
+			break;
+		}
 	}
 
-  return bValue;
+	return bValue;
 }
-
 
 //! getPhysicalState
 /*!
@@ -1441,27 +1444,30 @@ bool XSupCalls::getEncryption(QString &device, QString &encryptionType, bool bDi
   \note What happens if a wired connection is passed in here? What if the device is not using 802.1X?
   \return true/false
 */
-bool XSupCalls::getPhysicalState(QString &deviceDescription, 
-                                 QString &deviceName, 
-                                 QString &status, 
-                                 int &state,
-                                 bool bDisplayError)
+bool XSupCalls::getPhysicalState(QString & deviceDescription,
+				 QString & deviceName,
+				 QString & status,
+				 int &state, bool bDisplayError)
 {
-  bool bValue = true;
+	bool bValue = true;
 
-  int retval = xsupgui_request_get_physical_state(deviceName.toAscii().data(), &state);
-  if (retval)
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Error getting physical device state"),
-          tr("An error was returned while getting the physical state for device '%1'.").arg(deviceDescription));
-    }
-    bValue = false;
-  }
+	int retval =
+	    xsupgui_request_get_physical_state(deviceName.toAscii().data(),
+					       &state);
+	if (retval) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr
+					      ("Error getting physical device state"),
+					      tr
+					      ("An error was returned while getting the physical state for device '%1'.").
+					      arg(deviceDescription));
+		}
+		bValue = false;
+	}
 
-  mapPhysicalState(state, status);
-  return bValue;
+	mapPhysicalState(state, status);
+	return bValue;
 }
 
 //! mapPhysicalState
@@ -1470,62 +1476,61 @@ bool XSupCalls::getPhysicalState(QString &deviceDescription,
   \param[in] state - the physical state
   \param[out] status - the user-readable state
 */
-void XSupCalls::mapPhysicalState(int state, QString &status)
+void XSupCalls::mapPhysicalState(int state, QString & status)
 {
-  switch (state)
-  {
-    case WIRELESS_UNKNOWN_STATE:
-      status = tr("Unknown State");
-	    break;
+	switch (state) {
+	case WIRELESS_UNKNOWN_STATE:
+		status = tr("Unknown State");
+		break;
 
-    case WIRELESS_UNASSOCIATED:
-	    status = tr("Wireless is not associated");
-	    break;
+	case WIRELESS_UNASSOCIATED:
+		status = tr("Wireless is not associated");
+		break;
 
-    case WIRELESS_ASSOCIATED:
-	    status  = tr("Wireless is associated");
-	    break;
+	case WIRELESS_ASSOCIATED:
+		status = tr("Wireless is associated");
+		break;
 
-    case WIRELESS_ACTIVE_SCAN:
-	    status = tr("Scanning for wireless networks...");
-	    break;
+	case WIRELESS_ACTIVE_SCAN:
+		status = tr("Scanning for wireless networks...");
+		break;
 
-    case WIRELESS_ASSOCIATING:
-	    status = tr("Attempting to associate");
-	    break;
+	case WIRELESS_ASSOCIATING:
+		status = tr("Attempting to associate");
+		break;
 
-    case WIRELESS_ASSOCIATION_TIMEOUT_S:
-	    status = tr("Wireless association attempt failed");
-	    break;
+	case WIRELESS_ASSOCIATION_TIMEOUT_S:
+		status = tr("Wireless association attempt failed");
+		break;
 
-    case WIRELESS_PORT_DOWN:
-	    status = tr("The interface is down");
-	    break;
+	case WIRELESS_PORT_DOWN:
+		status = tr("The interface is down");
+		break;
 
-    case WIRELESS_NO_ENC_ASSOCIATION:
-	    status = tr("Associated (No Encryption)");
-	    break;
+	case WIRELESS_NO_ENC_ASSOCIATION:
+		status = tr("Associated (No Encryption)");
+		break;
 
-    case WIRELESS_INT_RESTART:
-	    status = tr("The interface is being restarted");
-	    break;
+	case WIRELESS_INT_RESTART:
+		status = tr("The interface is being restarted");
+		break;
 
-    case WIRELESS_INT_STOPPED:
-	    status = tr("The interface has been stopped");
-	    break;
+	case WIRELESS_INT_STOPPED:
+		status = tr("The interface has been stopped");
+		break;
 
-    case WIRELESS_INT_HELD:
-	    status = tr("Network Unavailable");
-	    break;
+	case WIRELESS_INT_HELD:
+		status = tr("Network Unavailable");
+		break;
 
-    case 255:
-	    status = tr("No information available");
-	    break;
+	case 255:
+		status = tr("No information available");
+		break;
 
-    default:
-	    status = tr("Unknown state value %1.").arg(state);
-	    break;
-  }
+	default:
+		status = tr("Unknown state value %1.").arg(state);
+		break;
+	}
 }
 
 //! get1xState
@@ -1539,29 +1544,27 @@ void XSupCalls::mapPhysicalState(int state, QString &status)
   \note What happens if a wired connection is passed in here? What if the device is not using 802.1X?
   \return true/false
 */
-bool XSupCalls::get1xState(QString &deviceDescription, 
-                           QString &deviceName, 
-                           QString &status, 
-                           int &state, 
-                           bool bDisplayError)
+bool XSupCalls::get1xState(QString & deviceDescription,
+			   QString & deviceName,
+			   QString & status, int &state, bool bDisplayError)
 {
-  bool bValue = true;
+	bool bValue = true;
 
-  int retval = xsupgui_request_get_1x_state(deviceName.toAscii().data(), &state);
-  if (retval)
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Error getting 802.1X state"),
-        tr("An error was returned while getting the 802.1X state for device '%1'.\n").arg(deviceDescription));
-    }
-    bValue = false;
-  }
-  else
-  {
-    map1XState(state, status);
-  }
-  return bValue;
+	int retval =
+	    xsupgui_request_get_1x_state(deviceName.toAscii().data(), &state);
+	if (retval) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr("Error getting 802.1X state"),
+					      tr
+					      ("An error was returned while getting the 802.1X state for device '%1'.\n").
+					      arg(deviceDescription));
+		}
+		bValue = false;
+	} else {
+		map1XState(state, status);
+	}
+	return bValue;
 }
 
 //! map1XState
@@ -1570,54 +1573,52 @@ bool XSupCalls::get1xState(QString &deviceDescription,
   \param[in] state - the 802.1X state
   \param[out] status - the user-readable state
 */
-void XSupCalls::map1XState(int state, QString &status)
+void XSupCalls::map1XState(int state, QString & status)
 {
-  switch (state)
-  {
-    case LOGOFF:
-      status = tr("Logging off the network");
-      break;
+	switch (state) {
+	case LOGOFF:
+		status = tr("Logging off the network");
+		break;
 
-    case DISCONNECTED:
-      status = tr("Network Unavailable");
-      break;
+	case DISCONNECTED:
+		status = tr("Network Unavailable");
+		break;
 
-    case CONNECTING:
-      status = tr("Connecting");
-      break;
+	case CONNECTING:
+		status = tr("Connecting");
+		break;
 
-    case ACQUIRED:
-      status = tr("Acquired");
-      break;
+	case ACQUIRED:
+		status = tr("Acquired");
+		break;
 
-    case AUTHENTICATING:
-      status = tr("Authenticating");
-      break;
+	case AUTHENTICATING:
+		status = tr("Authenticating");
+		break;
 
-    case HELD:
-      status = tr("Authentication Failed");
-      break;
+	case HELD:
+		status = tr("Authentication Failed");
+		break;
 
-    case AUTHENTICATED:
-      status = tr("Authenticated with 802.1X");
-      break;
+	case AUTHENTICATED:
+		status = tr("Authenticated with 802.1X");
+		break;
 
-    case RESTART:
-      status = tr("Restarting the authentication");
-      break;
+	case RESTART:
+		status = tr("Restarting the authentication");
+		break;
 
-    case S_FORCE_AUTH:
-      status = tr("Connected");
-      break;
+	case S_FORCE_AUTH:
+		status = tr("Connected");
+		break;
 
-    default:
-    case S_FORCE_UNAUTH:
-      status = tr("Unauthenticated");
-      break;
+	default:
+	case S_FORCE_UNAUTH:
+		status = tr("Unauthenticated");
+		break;
 
-  }
+	}
 }
-
 
 //! enumConfigInterfaces (adapters)
 /*!
@@ -1625,23 +1626,22 @@ void XSupCalls::map1XState(int state, QString &status)
   \param[out] pInterfaces - a pointer to a pointer of int_enum
   \return true/false
 */
-bool XSupCalls::enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDisplayError)
+bool XSupCalls::enumConfigInterfaces(int_config_enum ** pInterfaceData,
+				     bool bDisplayError)
 {
-  Q_ASSERT(pInterfaceData);
-  int retval = 0;
-	
-  retval = xsupgui_request_enum_ints_config(pInterfaceData);
-  if (retval == REQUEST_SUCCESS && *pInterfaceData)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Enumerate Interfaces Error"), 
-        tr("No interfaces defined in the configuration file."));
-    }
+	Q_ASSERT(pInterfaceData);
+	int retval = 0;
+
+	retval = xsupgui_request_enum_ints_config(pInterfaceData);
+	if (retval == REQUEST_SUCCESS && *pInterfaceData) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr("Enumerate Interfaces Error"),
+					      tr
+					      ("No interfaces defined in the configuration file."));
+		}
 		return false;
 	}
 }
@@ -1652,24 +1652,23 @@ bool XSupCalls::enumConfigInterfaces(int_config_enum **pInterfaceData, bool bDis
   \param[out] pInterfaces - a pointer to a pointer of int_enum
   \return true/false
 */
-bool XSupCalls::enumLiveInterfaces(int_enum **pInterfaceData, bool bDisplayError)
+bool XSupCalls::enumLiveInterfaces(int_enum ** pInterfaceData,
+				   bool bDisplayError)
 {
-  Q_ASSERT(pInterfaceData);
+	Q_ASSERT(pInterfaceData);
 
-  int retval = xsupgui_request_enum_live_ints(pInterfaceData);
-  if (retval == REQUEST_SUCCESS && *pInterfaceData)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Live Interfaces Error"), 
-        tr("Can't get the list of interfaces.\n"));
-    }
+	int retval = xsupgui_request_enum_live_ints(pInterfaceData);
+	if (retval == REQUEST_SUCCESS && *pInterfaceData) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr("Get Live Interfaces Error"),
+					      tr
+					      ("Can't get the list of interfaces.\n"));
+		}
 	}
-  return false;
+	return false;
 }
 
 //! getConfigInterface 
@@ -1680,29 +1679,32 @@ bool XSupCalls::enumLiveInterfaces(int_enum **pInterfaceData, bool bDisplayError
   \param[in] bDisplayError 
   \return true/false
 */
-bool XSupCalls::getConfigInterface(QString &interfaceName, config_interfaces **pInterfaceData, bool bDisplayError)
+bool XSupCalls::getConfigInterface(QString & interfaceName,
+				   config_interfaces ** pInterfaceData,
+				   bool bDisplayError)
 {
-  Q_ASSERT(pInterfaceData);
+	Q_ASSERT(pInterfaceData);
 
-  int retval = 0;
+	int retval = 0;
 
-  retval = xsupgui_request_get_interface_config(interfaceName.toAscii().data(), pInterfaceData);
+	retval =
+	    xsupgui_request_get_interface_config(interfaceName.toAscii().data(),
+						 pInterfaceData);
 
-  if (retval == REQUEST_SUCCESS && *pInterfaceData)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get interface configuration error"), 
-        tr("Can't get the configuration data for interface '%1'.").arg(interfaceName));
-    }
+	if (retval == REQUEST_SUCCESS && *pInterfaceData) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr
+					      ("Get interface configuration error"),
+					      tr
+					      ("Can't get the configuration data for interface '%1'.").
+					      arg(interfaceName));
+		}
 		return false;
 	}
 }
-
 
 //! getConfigGlobals
 /*!
@@ -1710,22 +1712,19 @@ bool XSupCalls::getConfigInterface(QString &interfaceName, config_interfaces **p
   \param[out] globals - a pointer to a pointer of config_globals
   \return true/false
 */
-bool XSupCalls::getConfigGlobals(config_globals **pGlobals, bool bDisplayError)
+bool XSupCalls::getConfigGlobals(config_globals ** pGlobals, bool bDisplayError)
 {
-  Q_ASSERT(pGlobals);
+	Q_ASSERT(pGlobals);
 
-  int retval = xsupgui_request_get_globals_config(pGlobals);
-  if (retval == REQUEST_SUCCESS && *pGlobals)
-  {
-    return true;
-  }
-  else
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Get Globals Error"),
-        tr("Can't get advanced/global settings."));
-    }
+	int retval = xsupgui_request_get_globals_config(pGlobals);
+	if (retval == REQUEST_SUCCESS && *pGlobals) {
+		return true;
+	} else {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL, tr("Get Globals Error"),
+					      tr
+					      ("Can't get advanced/global settings."));
+		}
 		return false;
 	}
 }
@@ -1739,19 +1738,17 @@ bool XSupCalls::getConfigGlobals(config_globals **pGlobals, bool bDisplayError)
   \param[out] globals - a pointer to a pointer of config_globals
   \return true/false
 */
-bool XSupCalls::setConfigGlobals(config_globals *pGlobals)
+bool XSupCalls::setConfigGlobals(config_globals * pGlobals)
 {
-  Q_ASSERT(pGlobals);
+	Q_ASSERT(pGlobals);
 
 	int retval = xsupgui_request_set_globals_config(pGlobals);
-  if (retval == REQUEST_SUCCESS)
-  {
-    return true;
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Set Globals Error"), 
-      tr("Can't set advanced/global settings.\n"));
+	if (retval == REQUEST_SUCCESS) {
+		return true;
+	} else {
+		QMessageBox::critical(NULL, tr("Set Globals Error"),
+				      tr
+				      ("Can't set advanced/global settings.\n"));
 		return false;
 	}
 }
@@ -1762,34 +1759,32 @@ bool XSupCalls::setConfigGlobals(config_globals *pGlobals)
   \param[in] pConns - the connections
   \return true/false
 */
-bool XSupCalls::applyPriorities(conn_enum *pConns)
+bool XSupCalls::applyPriorities(conn_enum * pConns)
 {
-  Q_ASSERT(pConns);
-  config_connection *pConfig = NULL;
-  int i = 0;
-  QString temp;
+	Q_ASSERT(pConns);
+	config_connection *pConfig = NULL;
+	int i = 0;
+	QString temp;
 
-  // Must first read the entire configuration
-  if (pConns)
-  {
-    while (pConns[i].name)
-    {
-      temp = pConns[i].name;
-	  if (!getConfigConnection(pConns[i].config_type, temp, &pConfig))
-      {
-        continue; // no message necessary - already shown in above call
-      }
-      pConfig->priority = pConns[i].priority;
-	  setConfigConnection(pConns[i].config_type, pConfig);
-      freeConfigConnection(&pConfig);
-      i++;
-    }
-    // Now saves it to the configuration file
-    this->writeConfig(CONFIG_LOAD_GLOBAL);
-	this->writeConfig(CONFIG_LOAD_USER);
-  }
+	// Must first read the entire configuration
+	if (pConns) {
+		while (pConns[i].name) {
+			temp = pConns[i].name;
+			if (!getConfigConnection
+			    (pConns[i].config_type, temp, &pConfig)) {
+				continue;	// no message necessary - already shown in above call
+			}
+			pConfig->priority = pConns[i].priority;
+			setConfigConnection(pConns[i].config_type, pConfig);
+			freeConfigConnection(&pConfig);
+			i++;
+		}
+		// Now saves it to the configuration file
+		this->writeConfig(CONFIG_LOAD_GLOBAL);
+		this->writeConfig(CONFIG_LOAD_USER);
+	}
 
-  return true;
+	return true;
 }
 
 //! setConfigConnection
@@ -1798,24 +1793,25 @@ bool XSupCalls::applyPriorities(conn_enum *pConns)
   \param[in] pConfig - the configuration to save
   \return true/false
 */
-bool XSupCalls::setConfigConnection(unsigned char config_type, config_connection *pConfig)
+bool XSupCalls::setConfigConnection(unsigned char config_type,
+				    config_connection * pConfig)
 {
-  Q_ASSERT(pConfig);
-  bool bValue = false;
+	Q_ASSERT(pConfig);
+	bool bValue = false;
 
-  int retval = xsupgui_request_set_connection_config(config_type, pConfig);
+	int retval =
+	    xsupgui_request_set_connection_config(config_type, pConfig);
 
-  if (retval == REQUEST_SUCCESS)
-  {
-    bValue = true;
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Set connection configuration"),
-      tr("An error occurred while setting the connection configuration for connection '%1'.").arg(pConfig->name));
-  }
+	if (retval == REQUEST_SUCCESS) {
+		bValue = true;
+	} else {
+		QMessageBox::critical(NULL, tr("Set connection configuration"),
+				      tr
+				      ("An error occurred while setting the connection configuration for connection '%1'.").
+				      arg(pConfig->name));
+	}
 
-  return bValue;
+	return bValue;
 }
 
 //! setConnection
@@ -1826,29 +1822,27 @@ bool XSupCalls::setConfigConnection(unsigned char config_type, config_connection
   \return true/false
   \todo get the new error and then the list of connections
 */
-bool XSupCalls::setConnection(QString &deviceName, QString &connectionName)
+bool XSupCalls::setConnection(QString & deviceName, QString & connectionName)
 {
-  bool bValue = false;
+	bool bValue = false;
 
-  int retval = xsupgui_request_set_connection(deviceName.toAscii().data(), connectionName.toAscii().data());
-  if (retval == REQUEST_SUCCESS)
-  {
-    bValue = true;
-  }
-  else
-  {
-    if (retval == IPC_ERROR_NEW_ERRORS_IN_QUEUE)
-    {
-      getAndDisplayErrors();
-    }
-    else
-    {
-      QMessageBox::critical(NULL, tr("Set connection info"),
-		  tr("An error occurred while setting the connection information for connection '%1' and device '%2'.  (Error : %3)\n")
-        .arg(connectionName).arg(deviceName).arg(retval));
-    }
-  }
-  return bValue;
+	int retval =
+	    xsupgui_request_set_connection(deviceName.toAscii().data(),
+					   connectionName.toAscii().data());
+	if (retval == REQUEST_SUCCESS) {
+		bValue = true;
+	} else {
+		if (retval == IPC_ERROR_NEW_ERRORS_IN_QUEUE) {
+			getAndDisplayErrors();
+		} else {
+			QMessageBox::critical(NULL, tr("Set connection info"),
+					      tr
+					      ("An error occurred while setting the connection information for connection '%1' and device '%2'.  (Error : %3)\n")
+					      .arg(connectionName).
+					      arg(deviceName).arg(retval));
+		}
+	}
+	return bValue;
 }
 
 //! getAndDisplayErrors()
@@ -1857,35 +1851,34 @@ bool XSupCalls::setConnection(QString &deviceName, QString &connectionName)
 */
 void XSupCalls::getAndDisplayErrors()
 {
-  int i = 0;
-  QString errors;
-  error_messages *msgs = NULL;
+	int i = 0;
+	QString errors;
+	error_messages *msgs = NULL;
 
-  int retval = xsupgui_request_get_error_msgs(&msgs);
-  if (retval == REQUEST_SUCCESS)
-  {
-    if (msgs && msgs[0].errmsgs)
-    {
-      // If we have at least one message, display it here
-      while (msgs[i].errmsgs != NULL)
-      {
-        errors += QString ("- %1\n").arg(msgs[i].errmsgs);
-        i++;
-      }
+	int retval = xsupgui_request_get_error_msgs(&msgs);
+	if (retval == REQUEST_SUCCESS) {
+		if (msgs && msgs[0].errmsgs) {
+			// If we have at least one message, display it here
+			while (msgs[i].errmsgs != NULL) {
+				errors +=
+				    QString("- %1\n").arg(msgs[i].errmsgs);
+				i++;
+			}
 
-      // This box needs to be modeless - I have to create my own dialog box to go modeless
-      QMessageBox::critical(NULL, tr("XSupplicant Error Summary"),
-        tr("The following errors were returned from XSupplicant while starting up or attempting to connect.\n%1")
-        .arg(errors));
-    }
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Get Error Message error"),
-      tr("An error occurred while checking for errors from the XSupplicant."));
-  }
+			// This box needs to be modeless - I have to create my own dialog box to go modeless
+			QMessageBox::critical(NULL,
+					      tr("XSupplicant Error Summary"),
+					      tr
+					      ("The following errors were returned from XSupplicant while starting up or attempting to connect.\n%1")
+					      .arg(errors));
+		}
+	} else {
+		QMessageBox::critical(NULL, tr("Get Error Message error"),
+				      tr
+				      ("An error occurred while checking for errors from the XSupplicant."));
+	}
 
-  xsupgui_request_free_error_msgs(&msgs);
+	xsupgui_request_free_error_msgs(&msgs);
 }
 
 //! setConfigTrustedServer
@@ -1894,23 +1887,24 @@ void XSupCalls::getAndDisplayErrors()
   \param[in] pConfig - the configuration to save
   \return true/false
 */
-bool XSupCalls::setConfigTrustedServer(unsigned char config_type, config_trusted_server *pConfig)
+bool XSupCalls::setConfigTrustedServer(unsigned char config_type,
+				       config_trusted_server * pConfig)
 {
-  Q_ASSERT(pConfig);
-  bool bValue = false;
+	Q_ASSERT(pConfig);
+	bool bValue = false;
 
-  int retval = xsupgui_request_set_trusted_server_config(config_type, pConfig);
-  if (retval == REQUEST_SUCCESS)
-  {
-    bValue = true;
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Set trusted server configuration"),
-      tr("An error occurred while setting the trusted server configuration for server '%1'.\n")
-      .arg(pConfig->name));
-  }
-  return bValue;
+	int retval =
+	    xsupgui_request_set_trusted_server_config(config_type, pConfig);
+	if (retval == REQUEST_SUCCESS) {
+		bValue = true;
+	} else {
+		QMessageBox::critical(NULL,
+				      tr("Set trusted server configuration"),
+				      tr
+				      ("An error occurred while setting the trusted server configuration for server '%1'.\n")
+				      .arg(pConfig->name));
+	}
+	return bValue;
 }
 
 //! setConfigProfile
@@ -1919,23 +1913,22 @@ bool XSupCalls::setConfigTrustedServer(unsigned char config_type, config_trusted
   \param[in] pConfig - the configuration to save
   \return true/false
 */
-bool XSupCalls::setConfigProfile(unsigned char config_type, config_profiles *pConfig)
+bool XSupCalls::setConfigProfile(unsigned char config_type,
+				 config_profiles * pConfig)
 {
-  Q_ASSERT(pConfig);
-  bool bValue = false;
+	Q_ASSERT(pConfig);
+	bool bValue = false;
 
-  int retval = xsupgui_request_set_profile_config(config_type, pConfig);
-  if (retval == REQUEST_SUCCESS)
-  {
-    bValue = true;
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Set profile configuration"),
-      tr("An error occurred while setting the connection configuration for profile '%1'.")
-      .arg(pConfig->name));
-  }
-  return bValue;
+	int retval = xsupgui_request_set_profile_config(config_type, pConfig);
+	if (retval == REQUEST_SUCCESS) {
+		bValue = true;
+	} else {
+		QMessageBox::critical(NULL, tr("Set profile configuration"),
+				      tr
+				      ("An error occurred while setting the connection configuration for profile '%1'.")
+				      .arg(pConfig->name));
+	}
+	return bValue;
 }
 
 //! setConfigInterface
@@ -1944,21 +1937,20 @@ bool XSupCalls::setConfigProfile(unsigned char config_type, config_profiles *pCo
   \param[in] pConfig - the configuration to save
   \return true/false
 */
-bool XSupCalls::setConfigInterface(config_interfaces *pConfig)
+bool XSupCalls::setConfigInterface(config_interfaces * pConfig)
 {
-  Q_ASSERT(pConfig);
-  bool bValue = false;
-  int retval = xsupgui_request_set_interface_config(pConfig);
-  if (retval == REQUEST_SUCCESS)
-  {
-    bValue = true;
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Set interface configuration"),
-      tr("An error occurred while setting the interface configuration for interface '%1'.").arg(pConfig->description));
-  }
-  return bValue;
+	Q_ASSERT(pConfig);
+	bool bValue = false;
+	int retval = xsupgui_request_set_interface_config(pConfig);
+	if (retval == REQUEST_SUCCESS) {
+		bValue = true;
+	} else {
+		QMessageBox::critical(NULL, tr("Set interface configuration"),
+				      tr
+				      ("An error occurred while setting the interface configuration for interface '%1'.").
+				      arg(pConfig->description));
+	}
+	return bValue;
 }
 
 //! setUserNameAndPassword
@@ -1970,45 +1962,43 @@ bool XSupCalls::setConfigInterface(config_interfaces *pConfig)
   \param[in] authType - the authentication type
   \return true/false
 */
-bool XSupCalls::setUserNameAndPassword(const QString &connectionName, const QString &userName, 
-                                       const QString &password, int authType)
+bool XSupCalls::setUserNameAndPassword(const QString & connectionName,
+				       const QString & userName,
+				       const QString & password, int authType)
 {
-  char *pPassword = NULL;
-  char *pUser = NULL;
-  int	retval = REQUEST_SUCCESS;
+	char *pPassword = NULL;
+	char *pUser = NULL;
+	int retval = REQUEST_SUCCESS;
 
-  if (authType != AUTH_NONE)
-  {
-    if (!userName.isEmpty())
-    {
-      pUser = (char *)userName.toAscii().data_ptr();
-    }
-    if (!password.isEmpty())
-    {
-      pPassword = (char *)password.toAscii().data_ptr();
-    }
-    retval = xsupgui_request_set_connection_upw(connectionName.toAscii().data(), pUser, pPassword);
-  }
+	if (authType != AUTH_NONE) {
+		if (!userName.isEmpty()) {
+			pUser = (char *)userName.toAscii().data_ptr();
+		}
+		if (!password.isEmpty()) {
+			pPassword = (char *)password.toAscii().data_ptr();
+		}
+		retval =
+		    xsupgui_request_set_connection_upw(connectionName.toAscii().
+						       data(), pUser,
+						       pPassword);
+	}
 
-  if (retval == REQUEST_SUCCESS)
-  {
-    return true;
-  }
-  else if (retval == IPC_ERROR_INVALID_PROF_NAME)
-  {
-    QMessageBox::critical(NULL, tr("Set connection info"),
-      tr("Unable to locate the profile for this connection.  Please verify that you have a valid profile defined for connection '%1'.")
-      .arg(connectionName));
+	if (retval == REQUEST_SUCCESS) {
+		return true;
+	} else if (retval == IPC_ERROR_INVALID_PROF_NAME) {
+		QMessageBox::critical(NULL, tr("Set connection info"),
+				      tr
+				      ("Unable to locate the profile for this connection.  Please verify that you have a valid profile defined for connection '%1'.")
+				      .arg(connectionName));
 
-	  return false;
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Set connection info"),
-      tr("An error occurred while setting the user name and password for connection '%1'.")
-      .arg(connectionName));
+		return false;
+	} else {
+		QMessageBox::critical(NULL, tr("Set connection info"),
+				      tr
+				      ("An error occurred while setting the user name and password for connection '%1'.")
+				      .arg(connectionName));
 
-    return false;
+		return false;
 	}
 }
 
@@ -2019,16 +2009,18 @@ bool XSupCalls::setUserNameAndPassword(const QString &connectionName, const QStr
   \param[in] password - the password to be set into the profile
   \todo Have Chris review this code
 */
-void XSupCalls::setPasswordIntoProfile(config_profiles *prof, const QString &password)
+void XSupCalls::setPasswordIntoProfile(config_profiles * prof,
+				       const QString & password)
 {
-  Q_ASSERT(prof);
+	Q_ASSERT(prof);
 
-  int retval = config_change_pwd(prof->method, password.toAscii().data());
-  if (retval != XENONE)
-  {
-    QMessageBox::critical(NULL, tr("Set password"),
-				    tr("An error occurred while setting the tunnel password for profile '%1'.\n").arg(prof->name));
-  }
+	int retval = config_change_pwd(prof->method, password.toAscii().data());
+	if (retval != XENONE) {
+		QMessageBox::critical(NULL, tr("Set password"),
+				      tr
+				      ("An error occurred while setting the tunnel password for profile '%1'.\n").
+				      arg(prof->name));
+	}
 }
 
 //! setUserNameIntoProfile
@@ -2038,24 +2030,24 @@ void XSupCalls::setPasswordIntoProfile(config_profiles *prof, const QString &pas
   \param[in] password - the password to be set into the profile
   \todo Have Chris review this code
 */
-void XSupCalls::setUserNameIntoProfile(config_profiles *prof, const QString &userName)
+void XSupCalls::setUserNameIntoProfile(config_profiles * prof,
+				       const QString & userName)
 {
-  Q_ASSERT(prof);
+	Q_ASSERT(prof);
 
-  if (prof->method->method_num == EAP_TYPE_MD5)
-  {
-    Util::myFree(&prof->identity);
-    prof->identity = Util::myNullStrdup(userName.toAscii());
-  }
-  else
-  {
-    int retval = config_set_user(prof->method, userName.toAscii().data());
-    if (retval != XENONE)
-    {
-      QMessageBox::critical(NULL, tr("Set user name"),
-        tr("An error occurred while setting the tunnel user name for profile '%1'.").arg(prof->name));
-    }
-  }
+	if (prof->method->method_num == EAP_TYPE_MD5) {
+		Util::myFree(&prof->identity);
+		prof->identity = Util::myNullStrdup(userName.toAscii());
+	} else {
+		int retval =
+		    config_set_user(prof->method, userName.toAscii().data());
+		if (retval != XENONE) {
+			QMessageBox::critical(NULL, tr("Set user name"),
+					      tr
+					      ("An error occurred while setting the tunnel user name for profile '%1'.").
+					      arg(prof->name));
+		}
+	}
 }
 
 //! logoffWired
@@ -2064,20 +2056,20 @@ void XSupCalls::setUserNameIntoProfile(config_profiles *prof, const QString &use
   \param[in] device - the device that will be disassociated
   \return true/false
 */
-bool XSupCalls::logoffWired(QString &device, QString &description)
+bool XSupCalls::logoffWired(QString & device, QString & description)
 {
-  int retval;
+	int retval;
 
-  retval = xsupgui_request_logoff(device.toAscii().data());
-  if (retval != REQUEST_SUCCESS)
-  {
-    QMessageBox::critical(NULL, tr("Disconnect Wired"),
-      tr("An error occurred while logging off device '%1'.")
-      .arg(description));
+	retval = xsupgui_request_logoff(device.toAscii().data());
+	if (retval != REQUEST_SUCCESS) {
+		QMessageBox::critical(NULL, tr("Disconnect Wired"),
+				      tr
+				      ("An error occurred while logging off device '%1'.")
+				      .arg(description));
 
-    return false;
+		return false;
 	}
-  return true;
+	return true;
 }
 
 //! disassociateWireless
@@ -2087,18 +2079,19 @@ bool XSupCalls::logoffWired(QString &device, QString &description)
   \note What happens if a wired connection is passed in here? Should this be checked.
   \return true/false
 */
-bool XSupCalls::disassociateWireless(QString &device, QString &description)
+bool XSupCalls::disassociateWireless(QString & device, QString & description)
 {
-  int retval;
+	int retval;
 
-  retval = xsupgui_request_set_disassociate(device.toAscii().data(), 0);
-  if (retval != REQUEST_SUCCESS)
-  {
-    QMessageBox::critical(NULL, tr("Disconnect Wireless"),
-      tr("An error occurred while disassociating device '%1'.\n").arg(description));
-    return false;
+	retval = xsupgui_request_set_disassociate(device.toAscii().data(), 0);
+	if (retval != REQUEST_SUCCESS) {
+		QMessageBox::critical(NULL, tr("Disconnect Wireless"),
+				      tr
+				      ("An error occurred while disassociating device '%1'.\n").
+				      arg(description));
+		return false;
 	}
-  return true;
+	return true;
 }
 
 //! pauseWireless
@@ -2108,21 +2101,22 @@ bool XSupCalls::disassociateWireless(QString &device, QString &description)
   \note What does this really do and why would we use it?
   \return true/false
 */
-bool XSupCalls::pauseWireless(QString &device, QString &description)
+bool XSupCalls::pauseWireless(QString & device, QString & description)
 {
-  int retval;
+	int retval;
 
-  retval = xsupgui_request_stop(device.toAscii().data());
-  if (retval != REQUEST_SUCCESS)
-  {
-    QMessageBox::critical(NULL, tr("XSupplicant Pause Wireless Error"),
-      tr("An error occurred while attempting to 'pause' device '%1'.\n").arg(description));
+	retval = xsupgui_request_stop(device.toAscii().data());
+	if (retval != REQUEST_SUCCESS) {
+		QMessageBox::critical(NULL,
+				      tr("XSupplicant Pause Wireless Error"),
+				      tr
+				      ("An error occurred while attempting to 'pause' device '%1'.\n").
+				      arg(description));
 
-    return false;
+		return false;
 	}
-  return true;
+	return true;
 }
-
 
 //! connectEventListener
 /*!
@@ -2131,21 +2125,21 @@ bool XSupCalls::pauseWireless(QString &device, QString &description)
 */
 bool XSupCalls::connectEventListener(bool bDisplayMessage)
 {
-  if (!m_bEventsConnected)
-  {
-    int retval = xsupgui_connect_event_listener();
-    if (retval != REQUEST_SUCCESS)
-    {
-      if (bDisplayMessage)
-      {
-	QMessageBox::critical(NULL, tr("XSupplicant Event System Error"),
-          tr("An error occurred while attempting to connect to the XSupplicant Event system\n"));
-      }
-      return false;
-	  }
-  }
-  m_bEventsConnected = true;
-  return true;
+	if (!m_bEventsConnected) {
+		int retval = xsupgui_connect_event_listener();
+		if (retval != REQUEST_SUCCESS) {
+			if (bDisplayMessage) {
+				QMessageBox::critical(NULL,
+						      tr
+						      ("XSupplicant Event System Error"),
+						      tr
+						      ("An error occurred while attempting to connect to the XSupplicant Event system\n"));
+			}
+			return false;
+		}
+	}
+	m_bEventsConnected = true;
+	return true;
 }
 
 //! disconnectEventListener
@@ -2156,24 +2150,24 @@ bool XSupCalls::connectEventListener(bool bDisplayMessage)
 */
 bool XSupCalls::disconnectEventListener()
 {
-  if (m_bEventsConnected)
-  {
-    // Kill the threads that are waiting on this event listener
-    //
-    int retval = xsupgui_disconnect_event_listener();
-    if (retval != REQUEST_SUCCESS)
-    {
-      if (QThread::currentThread() == qApp->thread())
-      {
-	QMessageBox::critical(NULL, tr("XSupplicant Event Listener Error"),
-          tr("An error occurred while attempting to disconnect from the XSupplicant Event system."
-          "This usually means handle couldn't be closed\n"));
-        return false;
-	    }
-    }
-  }
-  m_bEventsConnected = false;
-  return true;
+	if (m_bEventsConnected) {
+		// Kill the threads that are waiting on this event listener
+		//
+		int retval = xsupgui_disconnect_event_listener();
+		if (retval != REQUEST_SUCCESS) {
+			if (QThread::currentThread() == qApp->thread()) {
+				QMessageBox::critical(NULL,
+						      tr
+						      ("XSupplicant Event Listener Error"),
+						      tr
+						      ("An error occurred while attempting to disconnect from the XSupplicant Event system."
+						       "This usually means handle couldn't be closed\n"));
+				return false;
+			}
+		}
+	}
+	m_bEventsConnected = false;
+	return true;
 }
 
 //! waitForEvents
@@ -2184,41 +2178,38 @@ bool XSupCalls::disconnectEventListener()
   \todo set the cur_debug_level - what should this be set to?  Should this be passed in?
   \todo What other events should this be listening to?
 */
-bool XSupCalls::waitForEvents(Emitter &e)
+bool XSupCalls::waitForEvents(Emitter & e)
 {
-  int eventType = 0;
-  int retval = 0;
-  bool bContinue = true;
-  do
-  {
-    retval = xsupgui_process(&eventType); 
-    if (retval != REQUEST_SUCCESS)
-    {
-      QString errorText = m_message.getMessageString(retval);
-      QString text = tr("Error %1 error occurred while listening for events. API: xsupgui_process - %2")
-        .arg(retval).arg(errorText);
-      e.sendUIMessage(text); 
-	    xsupgui_free_event_doc();
-    }
-    else
-    {
-      bContinue = processEvent(e, eventType);
-  		// Clean up the event memory
-	  	// *DO NOT REMOVE THIS IT WILL CLOG THE IPC!* 
-		  xsupgui_free_event_doc(); 
-    }
-    
-  }while(eventType >= -1 && bContinue);
+	int eventType = 0;
+	int retval = 0;
+	bool bContinue = true;
+	do {
+		retval = xsupgui_process(&eventType);
+		if (retval != REQUEST_SUCCESS) {
+			QString errorText = m_message.getMessageString(retval);
+			QString text =
+			    tr
+			    ("Error %1 error occurred while listening for events. API: xsupgui_process - %2")
+			    .arg(retval).arg(errorText);
+			e.sendUIMessage(text);
+			xsupgui_free_event_doc();
+		} else {
+			bContinue = processEvent(e, eventType);
+			// Clean up the event memory
+			// *DO NOT REMOVE THIS IT WILL CLOG THE IPC!* 
+			xsupgui_free_event_doc();
+		}
 
-   QString text = tr("waitForEvents() exited.");
-   e.sendUIMessage(text); 
+	} while (eventType >= -1 && bContinue);
 
-  // -1 is a parser error
-  if (eventType < -1)
-  {
-    return false;
-  }
-  return true;
+	QString text = tr("waitForEvents() exited.");
+	e.sendUIMessage(text);
+
+	// -1 is a parser error
+	if (eventType < -1) {
+		return false;
+	}
+	return true;
 }
 
 //! processEvent
@@ -2228,413 +2219,447 @@ bool XSupCalls::waitForEvents(Emitter &e)
   \param[in] eventCode - the top-level event code
   \return true - continue the wait loop, false - exit the wait loop upon return
 */
-bool XSupCalls::processEvent(Emitter &e, int eventCode)
+bool XSupCalls::processEvent(Emitter & e, int eventCode)
 {
-  char *logline = NULL;
-  char *ints = NULL;
-  QString text;
-  int ccode = 0;
-  int ecode = 0;
-  bool bCode = true;
-  int sm = 0, oldstate = 0, newstate = 0;
-  unsigned int tncconnectionid = 0xFFFFFFFF;
-  QString temp;
+	char *logline = NULL;
+	char *ints = NULL;
+	QString text;
+	int ccode = 0;
+	int ecode = 0;
+	bool bCode = true;
+	int sm = 0, oldstate = 0, newstate = 0;
+	unsigned int tncconnectionid = 0xFFFFFFFF;
+	QString temp;
 
-  /*
-  text = QString(tr("Event %1")).arg(eventCode);
-  e.sendUIMessage(text); 
-  */
+	/*
+	   text = QString(tr("Event %1")).arg(eventCode);
+	   e.sendUIMessage(text); 
+	 */
 
-	switch (eventCode)
-	{
-    case IPC_EVENT_LOG:
-	    // Process a log message.
-	    ccode = xsupgui_events_generate_log_string(&ints, &logline);
-		if (ccode == REQUEST_SUCCESS)
-		{
-	        e.sendLogMessage(logline); 
-	    }
-	   else
-	    {
-		    text = tr("Can't process an IPC_EVENT_LOG event.  Error: %1").arg(ccode);
-		    e.sendUIMessage(text);
+	switch (eventCode) {
+	case IPC_EVENT_LOG:
+		// Process a log message.
+		ccode = xsupgui_events_generate_log_string(&ints, &logline);
+		if (ccode == REQUEST_SUCCESS) {
+			e.sendLogMessage(logline);
+		} else {
+			text =
+			    tr
+			    ("Can't process an IPC_EVENT_LOG event.  Error: %1").
+			    arg(ccode);
+			e.sendUIMessage(text);
 		}
 
-	    Util::myFree(&ints);
-	    Util::myFree(&logline);			
-	    break;
+		Util::myFree(&ints);
+		Util::myFree(&logline);
+		break;
 
-	  case IPC_EVENT_ERROR:
-	    // Process an error message.
-        // This also needs to throw up an error window in addition to logging it
-        ccode = xsupgui_events_get_error(&ecode, &logline);
-        if (ccode == 0)
-        {
-			switch (ecode)
-			{
+	case IPC_EVENT_ERROR:
+		// Process an error message.
+		// This also needs to throw up an error window in addition to logging it
+		ccode = xsupgui_events_get_error(&ecode, &logline);
+		if (ccode == 0) {
+			switch (ecode) {
 			case IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN:
-			    // We already have a process for notifying the user that the supplicant
-			    // shut down.  So, mute this error message.
+				// We already have a process for notifying the user that the supplicant
+				// shut down.  So, mute this error message.
 				break;
 
 			case IPC_EVENT_ERROR_IES_DONT_MATCH:
 				// We want to change what this error says.  So trap it here.
-				text = QString(tr("There was a problem connecting to this network.  Please try again.  If this problem persists, please talk to your network administrator."));
+				text =
+				    QString(tr
+					    ("There was a problem connecting to this network.  Please try again.  If this problem persists, please talk to your network administrator."));
 				e.sendSupWarningEvent(text);
 				break;
 
 			default:
-			    text = QString(tr("Error : %1")).arg(logline);
-			    e.sendSupErrorEvent(text);
+				text = QString(tr("Error : %1")).arg(logline);
+				e.sendSupErrorEvent(text);
 				break;
 			}
-        }
-        break; 
-
-
-	  case IPC_EVENT_STATEMACHINE:
-		  if (xsupgui_events_get_state_change(&ints, &sm, &oldstate, &newstate, &tncconnectionid) >= 0)
-		  {
-			  // The state change message was valid.
-			  e.sendStateChange(QString(ints), sm, oldstate, newstate, tncconnectionid);
-			  
-			  free(ints);
-			  ints = NULL;
-		  }
-		  // Otherwise ignore it. :-/
-		  break;
-    
-    case IPC_EVENT_SCAN_COMPLETE:
-	  if (xsupgui_events_get_scan_complete_interface(&ints) == REQUEST_SUCCESS)
-	  {
-		  e.sendScanComplete(QString(ints));
-	  }
-	  else
-	  {
-		  e.sendUIMessage(tr("Got a wireless scan complete message from an unknown interface."));
-	  }
-	  free(ints);
-      break;
-
-	  case IPC_EVENT_REQUEST_PWD:
-      {
-    	  char *connname = NULL;
-        char *eapmethod = NULL;
-        char *chalstr = NULL;
-		char *intname = NULL;
-
-		// Process a password request event.
-		ccode = xsupgui_events_get_passwd_challenge(&connname, &intname, &eapmethod, &chalstr);
-        if (ccode == 0)
-        {
-          e.sendRequestPassword(QString(connname), QString(eapmethod), QString(chalstr));
-			free(connname);
-  		    free(eapmethod);
-	  	    free(chalstr);
-			free(intname);
-        }
-        else
-        {
-          text = tr("Can get the password challenge for an IPC_EVENT_REQUEST_PWD event.  Error: %1").arg(eventCode);
-          e.sendUIMessage(text);
-        }
+		}
 		break;
-      }
 
-    case IPC_EVENT_UI:
-      {
-        QString desc;
-      	int uievent = 0;
-        char *value = NULL;
-        char *interfaces = NULL;
-    		int sspercent = 0;
+	case IPC_EVENT_STATEMACHINE:
+		if (xsupgui_events_get_state_change
+		    (&ints, &sm, &oldstate, &newstate, &tncconnectionid) >= 0) {
+			// The state change message was valid.
+			e.sendStateChange(QString(ints), sm, oldstate, newstate,
+					  tncconnectionid);
 
-	      ccode = xsupgui_events_get_ui_event(&uievent, &interfaces, &value);
-	      if (ccode == 0)
-	      {
-          switch (uievent)
-          {
-		        case IPC_EVENT_UI_IP_ADDRESS_SET:
+			free(ints);
+			ints = NULL;
+		}
+		// Otherwise ignore it. :-/
+		break;
+
+	case IPC_EVENT_SCAN_COMPLETE:
+		if (xsupgui_events_get_scan_complete_interface(&ints) ==
+		    REQUEST_SUCCESS) {
+			e.sendScanComplete(QString(ints));
+		} else {
+			e.sendUIMessage(tr
+					("Got a wireless scan complete message from an unknown interface."));
+		}
+		free(ints);
+		break;
+
+	case IPC_EVENT_REQUEST_PWD:
+		{
+			char *connname = NULL;
+			char *eapmethod = NULL;
+			char *chalstr = NULL;
+			char *intname = NULL;
+
+			// Process a password request event.
+			ccode =
+			    xsupgui_events_get_passwd_challenge(&connname,
+								&intname,
+								&eapmethod,
+								&chalstr);
+			if (ccode == 0) {
+				e.sendRequestPassword(QString(connname),
+						      QString(eapmethod),
+						      QString(chalstr));
+				free(connname);
+				free(eapmethod);
+				free(chalstr);
+				free(intname);
+			} else {
+				text =
+				    tr
+				    ("Can get the password challenge for an IPC_EVENT_REQUEST_PWD event.  Error: %1").
+				    arg(eventCode);
+				e.sendUIMessage(text);
+			}
+			break;
+		}
+
+	case IPC_EVENT_UI:
+		{
+			QString desc;
+			int uievent = 0;
+			char *value = NULL;
+			char *interfaces = NULL;
+			int sspercent = 0;
+
+			ccode =
+			    xsupgui_events_get_ui_event(&uievent, &interfaces,
+							&value);
+			if (ccode == 0) {
+				switch (uievent) {
+				case IPC_EVENT_UI_IP_ADDRESS_SET:
 					e.sendIPAddressSet();
-			        break;
+					break;
 
-            case IPC_EVENT_ERROR_CANT_RENEW_DHCP: 
+				case IPC_EVENT_ERROR_CANT_RENEW_DHCP:
 					e.sendIPAddressSet();
-			        break;
+					break;
 
-			case IPC_EVENT_UI_AUTH_TIMEOUT:
-			  temp = interfaces;
-				e.sendAuthTimeout(temp);
-				break;
+				case IPC_EVENT_UI_AUTH_TIMEOUT:
+					temp = interfaces;
+					e.sendAuthTimeout(temp);
+					break;
 
-            case IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN: 
-              e.sendXSupplicantShutDownMessage();
-              bCode = false;
-              break;
+				case IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN:
+					e.sendXSupplicantShutDownMessage();
+					bCode = false;
+					break;
 
-            case IPC_EVENT_SIGNAL_STRENGTH:
-		      sspercent = atoi(value);
-  		      e.sendSignalStrength(QString(interfaces), sspercent);
-              break;
+				case IPC_EVENT_SIGNAL_STRENGTH:
+					sspercent = atoi(value);
+					e.sendSignalStrength(QString
+							     (interfaces),
+							     sspercent);
+					break;
 
-            case IPC_EVENT_INTERFACE_INSERTED:
-              e.sendInterfaceInsertedEvent(value);
-              break;
+				case IPC_EVENT_INTERFACE_INSERTED:
+					e.sendInterfaceInsertedEvent(value);
+					break;
 
-			case IPC_EVENT_INTERFACE_REMOVED:
-				e.sendInterfaceRemovedEvent(value);
-				break;
+				case IPC_EVENT_INTERFACE_REMOVED:
+					e.sendInterfaceRemovedEvent(value);
+					break;
 
-			case IPC_EVENT_BAD_PSK:
-			  temp = value;
-				e.sendBadPSK(temp);
-				break;
+				case IPC_EVENT_BAD_PSK:
+					temp = value;
+					e.sendBadPSK(temp);
+					break;
 
-			case IPC_EVENT_UI_LINK_UP:
-				e.sendLinkUpEvent(value);
-				break;
+				case IPC_EVENT_UI_LINK_UP:
+					e.sendLinkUpEvent(value);
+					break;
 
-			case IPC_EVENT_UI_LINK_DOWN:
-				e.sendLinkDownEvent(value);
-				break;
+				case IPC_EVENT_UI_LINK_DOWN:
+					e.sendLinkDownEvent(value);
+					break;
 
-			case IPC_EVENT_UI_INT_CTRL_CHANGED:
-				sspercent = atoi(value);
+				case IPC_EVENT_UI_INT_CTRL_CHANGED:
+					sspercent = atoi(value);
 
-				if (sspercent == 1)
-				{
-					e.sendInterfaceControl(true);
-				}
-				else
-				{
-					e.sendInterfaceControl(false);
-				}
-				break;
-
-			case IPC_EVENT_UI_TROUBLETICKET_ERROR:
-				e.sendTroubleTicketError();
-				break;
-
-			case IPC_EVENT_UI_TROUBLETICKET_DONE:
-				e.sendTroubleTicketDone();
-				break;
-
-			case IPC_EVENT_UI_NEED_UPW:
-				temp = value;
-				e.sendRequestUPW(interfaces, temp);
-				break;
-
-			case IPC_EVENT_UI_POST_CONNECT_TIMEOUT:
-				temp = value;
-				e.sendPostConnectTimeout(temp);
-				break;
-
-			case IPC_EVENT_UI_CONNECTION_DISCONNECT:
-				temp = value;
-				e.sendConnectionDisconnected(temp);
-				break;
-
-			case IPC_EVENT_PSK_SUCCESS:
-				temp = value;
-				e.sendPSKSuccess(temp);
-				break;
-			
-			case IPC_EVENT_8021X_FAILED:
-				temp = value;
-				e.sendBadCreds(interfaces, temp);
-				break;
-
-			case IPC_EVENT_PSK_TIMEOUT:
-				temp = value;
-				e.sendPSKTimeout(temp);
-				break;
-
-			case IPC_EVENT_CONNECTION_UNBOUND:
-				temp = value;
-				e.sendConnectionUnbound(temp);
-				break;
-
-			case IPC_EVENT_AUTO_SELECTED_CONNECTION:
-				temp = value;
-				e.sendAutoConnectionChange(temp);
-				break;
-
-			case IPC_EVENT_OTHER_SUPPLICANT_POSSIBLE:
-				temp = value;
-				e.sendOtherSupplicantDetected(temp);
-				break;
-
-            default:
-            if (getUIEventString(uievent, desc))
-            {
-              text = QString ("%1").arg(desc);
-              e.sendUIMessage(text); 
-            }
-            break;
-          }
-
-            //free (value);    // XXX Fix later. (Freeing here causes the request to get interface data in LoginMainDlg/slotInterfaceInserted to be NULL.
-		    free(interfaces);  
-	    }
-	    else
-	    {
-          text = tr("Couldn't parse UI event!\n");
-          e.sendUIMessage(text);
-	    }
-        break;
-      }
-
-
-	  case IPC_EVENT_TNC_UI:
-      {
-        uint32_t oui = 0;
-        uint32_t notification = 0;
-		    if ((ccode = xsupgui_events_get_tnc_ui_event(&oui, &notification)) == 0)
-		    {
-          e.sendTNCUIEvent(oui, notification);
-		    }
-        else
-        {
-          text = tr("Can process an IPC_EVENT_TNC_UI event.  Error: %1").arg(ccode);
-          e.sendUIMessage(text);
-        }
-			  break;
-      }
-
-	  case IPC_EVENT_TNC_UI_REQUEST:
-      {
-        uint32_t imc = 0, connID = 0, oui = 0, request = 0;
-		    if ((ccode = xsupgui_events_get_tnc_ui_request_event(&imc, &connID, &oui, &request)) == 0)
-		    {
-          e.sendTNCUIRequestEvent(imc, connID, oui, request);
-		    }
-        else
-        {
-          text = tr("Can't process an IPC_EVENT_TNC_UI_REQUEST event.  Error: %1").arg(ccode);
-          e.sendUIMessage(text);
-        }
-			  break;
-      }
-
-	  case IPC_EVENT_TNC_UI_BATCH_REQUEST:
-      {
-        uint32_t imc = 0; // TNC object making call - GUI stores and passes back only
-        uint32_t connID = 0; // TNC connection id - GUI stores and passes back only
-        uint32_t oui = 0; // Vendor ID from IMC - GUI stores and passes back only
-        uint32_t batchType = 0;  // This IS significant: currently defined types are: 
-        tnc_msg_batch *pTNCMessages = NULL;
-		    if ((ccode = xsupgui_events_get_tnc_ui_batch_request_event(&imc, 
-          &connID, &oui, &batchType, &pTNCMessages)) == 0 
-          && oui == ID_ENGINES_OUI) 
-        {
-			QString eventNum = QString("The UI got a TNC remediation event: %1  (ConnID : %2,  IMC ID : %3)\n").arg(batchType).arg(connID).arg(imc);
-			e.sendUIMessage(eventNum);
-
-          switch (batchType)
-          {
-            case BATCH_OUT_OF_COMPLIANCE:
-			  {
-				e.sendUIMessage(tr("Notifying listeners that a TNC IMC has detected a compliance issue."));
-				e.sendTNCUIComplianceFailureBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-			  }
-			  break;
-            case BATCH_COMPLIANCE_REPORT:
-                {
-                    e.sendUIMessage(tr("Notifying listeners about a TNC IMC compliance report."));
-                    e.sendTNCUIComplianceReportBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-                }
-                break;
-            case BATCH_REMEDIATION_REQUESTED:
-              {
-			    e.sendUIMessage(tr("Notifying listeners that remediation has been requested by a TNC IMC."));
-                e.sendTNCUIRemediationRequestedBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-              }
-              break;
-			case BATCH_REMEDIATION_WILL_BEGIN:
-			  {
-			    e.sendUIMessage(tr("Notifying listeners that remediation will begin."));
-				e.sendTNCUIRemediationWillBeginBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-			  }
-			  break;
-            case BATCH_REMEDIATION_ITEM_STARTED:
-              {
-                e.sendUIMessage(tr("Notifying listeners that an item has begun remediation."));
-                e.sendTNCUIRemediationStatusItemStartedEvent(imc, connID, oui, batchType, pTNCMessages);
-              }
-              break;
-            case BATCH_REMEDIATION_ITEM_SUCCESS:
-              {
-                e.sendUIMessage(tr("Notifying listeners that an item has successful remediated."));
-                e.sendTNCUIRemediationStatusItemSuccessEvent(imc, connID, oui, batchType, pTNCMessages);
-              }
-              break;
-            case BATCH_REMEDIATION_ITEM_FAILURE:
-              {
-                e.sendUIMessage(tr("Notifying listeners that an item has failed remediation."));
-                e.sendTNCUIRemediationStatusItemFailureEvent(imc, connID, oui, batchType, pTNCMessages);
-              }
-              break;
-            case BATCH_REMEDIATION_WILL_END:
-              {
-				e.sendUIMessage(tr("Notifying listeners that remediation will end."));
-                e.sendTNCUIRemediationWillEndBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-              }
-			  break;
-            case BATCH_TNC_STATE_CHANGE:
-                {
-					e.sendUIMessage(tr("Notifying listeners of a TNC state change.  (New State: %1)").arg(pTNCMessages[0].msgid));
-
-					if (pTNCMessages != NULL)
-					{
-						e.sendTNCUILoginWindowStatusUpdateEvent(imc, connID, oui, pTNCMessages[0].msgid);
-						xsupgui_events_free_tnc_msg_batch_data(&pTNCMessages);
+					if (sspercent == 1) {
+						e.sendInterfaceControl(true);
+					} else {
+						e.sendInterfaceControl(false);
 					}
-                }
-                break;
-            case BATCH_REMEDIATION_EVENT:
-                {
-				    e.sendUIMessage(tr("Notifying listeners of a remediation event."));
-                    e.sendTNCUIRemediationEventBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-                }break;
-			case BATCH_RECONNECT_REQUEST:
-				{
-					e.sendUIMessage("Notifying listeners of a reconnect request.");
-					e.sendTNCUIReconnectBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+					break;
+
+				case IPC_EVENT_UI_TROUBLETICKET_ERROR:
+					e.sendTroubleTicketError();
+					break;
+
+				case IPC_EVENT_UI_TROUBLETICKET_DONE:
+					e.sendTroubleTicketDone();
+					break;
+
+				case IPC_EVENT_UI_NEED_UPW:
+					temp = value;
+					e.sendRequestUPW(interfaces, temp);
+					break;
+
+				case IPC_EVENT_UI_POST_CONNECT_TIMEOUT:
+					temp = value;
+					e.sendPostConnectTimeout(temp);
+					break;
+
+				case IPC_EVENT_UI_CONNECTION_DISCONNECT:
+					temp = value;
+					e.sendConnectionDisconnected(temp);
+					break;
+
+				case IPC_EVENT_PSK_SUCCESS:
+					temp = value;
+					e.sendPSKSuccess(temp);
+					break;
+
+				case IPC_EVENT_8021X_FAILED:
+					temp = value;
+					e.sendBadCreds(interfaces, temp);
+					break;
+
+				case IPC_EVENT_PSK_TIMEOUT:
+					temp = value;
+					e.sendPSKTimeout(temp);
+					break;
+
+				case IPC_EVENT_CONNECTION_UNBOUND:
+					temp = value;
+					e.sendConnectionUnbound(temp);
+					break;
+
+				case IPC_EVENT_AUTO_SELECTED_CONNECTION:
+					temp = value;
+					e.sendAutoConnectionChange(temp);
+					break;
+
+				case IPC_EVENT_OTHER_SUPPLICANT_POSSIBLE:
+					temp = value;
+					e.sendOtherSupplicantDetected(temp);
+					break;
+
+				default:
+					if (getUIEventString(uievent, desc)) {
+						text = QString("%1").arg(desc);
+						e.sendUIMessage(text);
+					}
+					break;
 				}
-				break;
-			case BATCH_TNC_CONNECTION_PURGE_EVENT:
-				{
-					e.sendUIMessage(tr("Notifying listeners of a TNC connection purge event."));
-					e.sendTNCUIPurgeConnectionBatchEvent(imc, connID, oui, batchType, pTNCMessages);
-				}break;
-            default: // do nothing
-			  xsupgui_events_free_tnc_msg_batch_data(&pTNCMessages);
-              break;
-          }
 
-//		  xsupgui_events_free_tnc_msg_batch_data(&pTNCMessages);
-        }
-        else
-        {
-          text = tr("Can't process an IPC_EVENT_TNC_UI_REQUEST event.  Error: %1").arg(ccode);
-          e.sendUIMessage(text);
-        }
-		    break;
-      }
+				//free (value);    // XXX Fix later. (Freeing here causes the request to get interface data in LoginMainDlg/slotInterfaceInserted to be NULL.
+				free(interfaces);
+			} else {
+				text = tr("Couldn't parse UI event!\n");
+				e.sendUIMessage(text);
+			}
+			break;
+		}
 
-      // get this when the pipe is broken and most likely, the supplicant has died
-    case IPC_EVENT_COM_BROKEN: 
-      e.sendXSupplicantShutDownMessage();
-      bCode = false; // end the wait loop
-      break;
+	case IPC_EVENT_TNC_UI:
+		{
+			uint32_t oui = 0;
+			uint32_t notification = 0;
+			if ((ccode =
+			     xsupgui_events_get_tnc_ui_event(&oui,
+							     &notification)) ==
+			    0) {
+				e.sendTNCUIEvent(oui, notification);
+			} else {
+				text =
+				    tr
+				    ("Can process an IPC_EVENT_TNC_UI event.  Error: %1").
+				    arg(ccode);
+				e.sendUIMessage(text);
+			}
+			break;
+		}
 
-    default:
-      text = QString(tr("Unknown event received: %1\n")).arg(eventCode);
-      e.sendUIMessage(text); 
-	    break;
+	case IPC_EVENT_TNC_UI_REQUEST:
+		{
+			uint32_t imc = 0, connID = 0, oui = 0, request = 0;
+			if ((ccode =
+			     xsupgui_events_get_tnc_ui_request_event(&imc,
+								     &connID,
+								     &oui,
+								     &request))
+			    == 0) {
+				e.sendTNCUIRequestEvent(imc, connID, oui,
+							request);
+			} else {
+				text =
+				    tr
+				    ("Can't process an IPC_EVENT_TNC_UI_REQUEST event.  Error: %1").
+				    arg(ccode);
+				e.sendUIMessage(text);
+			}
+			break;
+		}
+
+	case IPC_EVENT_TNC_UI_BATCH_REQUEST:
+		{
+			uint32_t imc = 0;	// TNC object making call - GUI stores and passes back only
+			uint32_t connID = 0;	// TNC connection id - GUI stores and passes back only
+			uint32_t oui = 0;	// Vendor ID from IMC - GUI stores and passes back only
+			uint32_t batchType = 0;	// This IS significant: currently defined types are: 
+			tnc_msg_batch *pTNCMessages = NULL;
+			if ((ccode =
+			     xsupgui_events_get_tnc_ui_batch_request_event(&imc,
+									   &connID,
+									   &oui,
+									   &batchType,
+									   &pTNCMessages))
+			    == 0 && oui == ID_ENGINES_OUI) {
+				QString eventNum =
+				    QString
+				    ("The UI got a TNC remediation event: %1  (ConnID : %2,  IMC ID : %3)\n").
+				    arg(batchType).arg(connID).arg(imc);
+				e.sendUIMessage(eventNum);
+
+				switch (batchType) {
+				case BATCH_OUT_OF_COMPLIANCE:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners that a TNC IMC has detected a compliance issue."));
+						e.sendTNCUIComplianceFailureBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_COMPLIANCE_REPORT:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners about a TNC IMC compliance report."));
+						e.sendTNCUIComplianceReportBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_REMEDIATION_REQUESTED:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners that remediation has been requested by a TNC IMC."));
+						e.sendTNCUIRemediationRequestedBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_REMEDIATION_WILL_BEGIN:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners that remediation will begin."));
+						e.sendTNCUIRemediationWillBeginBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_REMEDIATION_ITEM_STARTED:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners that an item has begun remediation."));
+						e.sendTNCUIRemediationStatusItemStartedEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_REMEDIATION_ITEM_SUCCESS:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners that an item has successful remediated."));
+						e.sendTNCUIRemediationStatusItemSuccessEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_REMEDIATION_ITEM_FAILURE:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners that an item has failed remediation."));
+						e.sendTNCUIRemediationStatusItemFailureEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_REMEDIATION_WILL_END:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners that remediation will end."));
+						e.sendTNCUIRemediationWillEndBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_TNC_STATE_CHANGE:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners of a TNC state change.  (New State: %1)").
+								arg(pTNCMessages
+								    [0].msgid));
+
+						if (pTNCMessages != NULL) {
+							e.sendTNCUILoginWindowStatusUpdateEvent(imc, connID, oui, pTNCMessages[0].msgid);
+							xsupgui_events_free_tnc_msg_batch_data
+							    (&pTNCMessages);
+						}
+					}
+					break;
+				case BATCH_REMEDIATION_EVENT:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners of a remediation event."));
+						e.sendTNCUIRemediationEventBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_RECONNECT_REQUEST:
+					{
+						e.sendUIMessage
+						    ("Notifying listeners of a reconnect request.");
+						e.sendTNCUIReconnectBatchEvent
+						    (imc, connID, oui,
+						     batchType, pTNCMessages);
+					}
+					break;
+				case BATCH_TNC_CONNECTION_PURGE_EVENT:
+					{
+						e.sendUIMessage(tr
+								("Notifying listeners of a TNC connection purge event."));
+						e.sendTNCUIPurgeConnectionBatchEvent(imc, connID, oui, batchType, pTNCMessages);
+					}
+					break;
+				default:	// do nothing
+					xsupgui_events_free_tnc_msg_batch_data
+					    (&pTNCMessages);
+					break;
+				}
+
+//                xsupgui_events_free_tnc_msg_batch_data(&pTNCMessages);
+			} else {
+				text =
+				    tr
+				    ("Can't process an IPC_EVENT_TNC_UI_REQUEST event.  Error: %1").
+				    arg(ccode);
+				e.sendUIMessage(text);
+			}
+			break;
+		}
+
+		// get this when the pipe is broken and most likely, the supplicant has died
+	case IPC_EVENT_COM_BROKEN:
+		e.sendXSupplicantShutDownMessage();
+		bCode = false;	// end the wait loop
+		break;
+
+	default:
+		text =
+		    QString(tr("Unknown event received: %1\n")).arg(eventCode);
+		e.sendUIMessage(text);
+		break;
 
 	}
-  return bCode;
+	return bCode;
 }
 
 //! TNCReply
@@ -2645,20 +2670,23 @@ bool XSupCalls::processEvent(Emitter &e, int eventCode)
   \param[out] desc - the description of the event
   \return true/false - display the message or not
 */
-bool XSupCalls::TNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t request, bool bDisplayError, int answer)
+bool XSupCalls::TNCReply(uint32_t imc, uint32_t connID, uint32_t oui,
+			 uint32_t request, bool bDisplayError, int answer)
 {
 	// Tell the IMC that the user has requested remediation
-  int retval = xsupgui_request_answer_tnc_ui_request(imc, connID, oui, request, answer);
-  if (retval)
-  {
-    if (bDisplayError)
-    {
-      QMessageBox::critical(NULL, tr("Remediation Response Error"), 
-        tr("Got an error attempting to remediate this connection."));
-    }
-    return false;
-  }
-  return true;
+	int retval =
+	    xsupgui_request_answer_tnc_ui_request(imc, connID, oui, request,
+						  answer);
+	if (retval) {
+		if (bDisplayError) {
+			QMessageBox::critical(NULL,
+					      tr("Remediation Response Error"),
+					      tr
+					      ("Got an error attempting to remediate this connection."));
+		}
+		return false;
+	}
+	return true;
 }
 
 //! getUIEventString
@@ -2668,71 +2696,72 @@ bool XSupCalls::TNCReply(uint32_t imc, uint32_t connID, uint32_t oui, uint32_t r
   \param[out] desc - the description of the event
   \return true/false - display the message or not
 */
-bool XSupCalls::getUIEventString(int uiEvent, QString &desc)
+bool XSupCalls::getUIEventString(int uiEvent, QString & desc)
 {
-  bool bValue = true;
-	switch (uiEvent)
-	{
+	bool bValue = true;
+	switch (uiEvent) {
 	case IPC_EVENT_UI_IP_ADDRESS_SET:
 		desc = tr("An interface has had it's IP address set!");
-		bValue = false; // I already ask XSupplicant for this information
+		bValue = false;	// I already ask XSupplicant for this information
 		break;
 
-  case IPC_EVENT_INTERFACE_INSERTED:
+	case IPC_EVENT_INTERFACE_INSERTED:
 		desc = tr("A network interface was inserted!");
-    bValue = true; // I want to know about this one and act upon it
-    break;
+		bValue = true;	// I want to know about this one and act upon it
+		break;
 
-  case IPC_EVENT_INTERFACE_REMOVED:
-    desc = tr("A network interface has been removed.");
-    bValue = false; // I don't care about this right now
-    break;
+	case IPC_EVENT_INTERFACE_REMOVED:
+		desc = tr("A network interface has been removed.");
+		bValue = false;	// I don't care about this right now
+		break;
 
-  case IPC_EVENT_SIGNAL_STRENGTH:
-    desc = tr("An interface's signal strength is being updated.");
-    bValue = false; // I already ask XSupplicant for this information
-    break;
+	case IPC_EVENT_SIGNAL_STRENGTH:
+		desc = tr("An interface's signal strength is being updated.");
+		bValue = false;	// I already ask XSupplicant for this information
+		break;
 
-  case IPC_EVENT_UI_GOING_TO_SLEEP:
-	  bValue = false;
-	  break;
+	case IPC_EVENT_UI_GOING_TO_SLEEP:
+		bValue = false;
+		break;
 
-  case IPC_EVENT_UI_SLEEP_CANCELLED:
-	  bValue = false;
-	  break;
+	case IPC_EVENT_UI_SLEEP_CANCELLED:
+		bValue = false;
+		break;
 
-  case IPC_EVENT_UI_WAKING_UP:
-	  bValue = false;
-	  break;
+	case IPC_EVENT_UI_WAKING_UP:
+		bValue = false;
+		break;
 
 	default:
-		desc = tr("An unknown XSupplicant UI event occurred '%1'").arg(uiEvent);
+		desc =
+		    tr("An unknown XSupplicant UI event occurred '%1'").
+		    arg(uiEvent);
 		break;
 	}
-  return bValue;
-}
-
-
-// Test code
-void XSupCalls::sendPStatus(Emitter &e)
-{
-  QString newStateStr;
-  static int newstate = 0;
-  mapPhysicalState(newstate, newStateStr);
-  e.sendStateMessageToScreen(IPC_STATEMACHINE_PHYSICAL, newstate, newStateStr);
-  newstate++;
+	return bValue;
 }
 
 // Test code
-void XSupCalls::sendXStatus(Emitter &e)
+void XSupCalls::sendPStatus(Emitter & e)
 {
-  static int newstate = 0;
-  QString newStateStr;
-  map1XState(newstate, newStateStr);
-  e.sendStateMessageToScreen(IPC_STATEMACHINE_8021X, newstate, newStateStr);
-  newstate++;
+	QString newStateStr;
+	static int newstate = 0;
+	mapPhysicalState(newstate, newStateStr);
+	e.sendStateMessageToScreen(IPC_STATEMACHINE_PHYSICAL, newstate,
+				   newStateStr);
+	newstate++;
 }
 
+// Test code
+void XSupCalls::sendXStatus(Emitter & e)
+{
+	static int newstate = 0;
+	QString newStateStr;
+	map1XState(newstate, newStateStr);
+	e.sendStateMessageToScreen(IPC_STATEMACHINE_8021X, newstate,
+				   newStateStr);
+	newstate++;
+}
 
 //! startWirelessScan
 /*!
@@ -2740,25 +2769,26 @@ void XSupCalls::sendXStatus(Emitter &e)
   \param[in] device - the device with which to scan
   \return true/false
 */
-bool XSupCalls::startWirelessScan(QString &deviceDescription)
+bool XSupCalls::startWirelessScan(QString & deviceDescription)
 {
-  QString deviceName;
+	QString deviceName;
 
-  bool bval = getDeviceName(deviceDescription, deviceName, true);
-  if (!bval)
-    return false;
-
-  int retval = xsupgui_request_wireless_scan(deviceName.toAscii().data(), FALSE);
-  if (retval == REQUEST_SUCCESS)
-  {
-    return true;
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Scan for Wireless Access Points"), 
-      tr("Can't start a scan for wireless access points on adapter '%1'.").arg(deviceDescription));
+	bool bval = getDeviceName(deviceDescription, deviceName, true);
+	if (!bval)
 		return false;
-  }
+
+	int retval =
+	    xsupgui_request_wireless_scan(deviceName.toAscii().data(), FALSE);
+	if (retval == REQUEST_SUCCESS) {
+		return true;
+	} else {
+		QMessageBox::critical(NULL,
+				      tr("Scan for Wireless Access Points"),
+				      tr
+				      ("Can't start a scan for wireless access points on adapter '%1'.").
+				      arg(deviceDescription));
+		return false;
+	}
 }
 
 /*********************************************************/
@@ -2771,31 +2801,33 @@ bool XSupCalls::startWirelessScan(QString &deviceDescription)
   \param[in] bAsk - whether to ask if they want to attempt to disconnect
   \param[out] bDisconnect - if the user has selected to disconnect from this connection - caller needs to take action to disconnect
 */
-bool XSupCalls::deleteConnectionConfig(unsigned char config_type, QString &name)
+bool XSupCalls::deleteConnectionConfig(unsigned char config_type,
+				       QString & name)
 {
-  int retval = xsupgui_request_delete_connection_config(config_type, name.toAscii().data());
-  if (retval == REQUEST_SUCCESS)
-  {
-    writeConfig(config_type);
-    return true;
-  }
-  else
-  {
-    if (retval == IPC_ERROR_CANT_DEL_CONN_IN_USE)
-    {
-      QMessageBox::critical(NULL, tr("Can't delete"), tr("You cannot delete this connection because it is still in use.\nPlease disconnect from the network, and try again."));
+	int retval =
+	    xsupgui_request_delete_connection_config(config_type,
+						     name.toAscii().data());
+	if (retval == REQUEST_SUCCESS) {
+		writeConfig(config_type);
+		return true;
+	} else {
+		if (retval == IPC_ERROR_CANT_DEL_CONN_IN_USE) {
+			QMessageBox::critical(NULL, tr("Can't delete"),
+					      tr
+					      ("You cannot delete this connection because it is still in use.\nPlease disconnect from the network, and try again."));
+			return false;
+		} else {
+			if (retval == IPC_ERROR_INVALID_CONN_NAME)
+				return true;	// This means the configuration wasn't written yet.
+
+			QMessageBox::critical(NULL,
+					      tr("Error Deleting Connection"),
+					      tr
+					      ("Can't delete connection '%1' from the configuration file.")
+					      .arg(name));
+		}
 		return false;
 	}
-    else
-    {
-		if (retval == IPC_ERROR_INVALID_CONN_NAME) return true;  // This means the configuration wasn't written yet.
-
-		QMessageBox::critical(NULL, tr("Error Deleting Connection"), 
-        tr("Can't delete connection '%1' from the configuration file.")
-        .arg(name));
-    }
-		return false;
-  }
 }
 
 //! deleteProfile
@@ -2803,34 +2835,37 @@ bool XSupCalls::deleteConnectionConfig(unsigned char config_type, QString &name)
   \brief Deletes a profile
   \param[in] p - the name of the object
 */
-bool XSupCalls::deleteProfileConfig(unsigned char config_type, QString &name)
-{  
-  int retval = REQUEST_SUCCESS;
+bool XSupCalls::deleteProfileConfig(unsigned char config_type, QString & name)
+{
+	int retval = REQUEST_SUCCESS;
 
-  retval = xsupgui_request_delete_profile_config(config_type, name.toAscii().data(), 0);
+	retval =
+	    xsupgui_request_delete_profile_config(config_type,
+						  name.toAscii().data(), 0);
 
-  if (retval == REQUEST_SUCCESS)
-  {
-	  writeConfig(config_type);
-	  return true;
-  }
+	if (retval == REQUEST_SUCCESS) {
+		writeConfig(config_type);
+		return true;
+	}
 
-  if (retval == IPC_ERROR_STILL_IN_USE)
-  {
-    QMessageBox::critical(NULL, tr("Delete a Profile"),
-		  tr("The profile '%1' is still in use by one or more connections.  Please remove it from any connections and try again.").arg(name));
-	return false;
-  }
-  else
-  {
-	  if (retval == IPC_ERROR_INVALID_PROF_NAME) return true;  // This means the profile wasn't written yet.  (Which means it was deleted. ;)
+	if (retval == IPC_ERROR_STILL_IN_USE) {
+		QMessageBox::critical(NULL, tr("Delete a Profile"),
+				      tr
+				      ("The profile '%1' is still in use by one or more connections.  Please remove it from any connections and try again.").
+				      arg(name));
+		return false;
+	} else {
+		if (retval == IPC_ERROR_INVALID_PROF_NAME)
+			return true;	// This means the profile wasn't written yet.  (Which means it was deleted. ;)
 
-	  QMessageBox::critical(NULL, tr("Delete a Profile"), 
-        tr("Can't delete profile '%1' from the configuration file.\n").arg(name));
-		  return false;
-  }
+		QMessageBox::critical(NULL, tr("Delete a Profile"),
+				      tr
+				      ("Can't delete profile '%1' from the configuration file.\n").
+				      arg(name));
+		return false;
+	}
 
-  return false;  // Should be impossible.
+	return false;		// Should be impossible.
 }
 
 //! deleteTrustedServerConfig
@@ -2838,34 +2873,36 @@ bool XSupCalls::deleteProfileConfig(unsigned char config_type, QString &name)
   \brief Delete a trusted server from the configuration file
   \param[in] p - the name of the object
 */
-bool XSupCalls::deleteTrustedServerConfig(unsigned char config_type, QString &name)
+bool XSupCalls::deleteTrustedServerConfig(unsigned char config_type,
+					  QString & name)
 {
-  int retval = REQUEST_SUCCESS;
+	int retval = REQUEST_SUCCESS;
 
-  retval = xsupgui_request_delete_trusted_server_config(config_type, name.toAscii().data(), 0);
-  if (retval == REQUEST_SUCCESS)
-  {
-    return writeConfig(config_type); // now save it to the configuration file
-  }
-  else if (retval == IPC_ERROR_STILL_IN_USE)
-  {
-    QMessageBox::critical(NULL, tr("Delete a Trusted Server"),
-		  tr("Can't delete trusted server '%1' because it is still in use by one or more profiles.").arg(name));
-	  return false;
-  }
-  else
-  {
-	  if (retval == IPC_ERROR_INVALID_TRUSTED_SVR) return true;  // Means the trusted server wasn't written yet.
+	retval =
+	    xsupgui_request_delete_trusted_server_config(config_type,
+							 name.toAscii().data(),
+							 0);
+	if (retval == REQUEST_SUCCESS) {
+		return writeConfig(config_type);	// now save it to the configuration file
+	} else if (retval == IPC_ERROR_STILL_IN_USE) {
+		QMessageBox::critical(NULL, tr("Delete a Trusted Server"),
+				      tr
+				      ("Can't delete trusted server '%1' because it is still in use by one or more profiles.").
+				      arg(name));
+		return false;
+	} else {
+		if (retval == IPC_ERROR_INVALID_TRUSTED_SVR)
+			return true;	// Means the trusted server wasn't written yet.
 
-	  QMessageBox::critical(NULL, tr("Delete a Trusted Server"), 
-      tr("Can't delete trusted server '%1' from the configuration file.\n").arg(name));
-  return false;
-  }
+		QMessageBox::critical(NULL, tr("Delete a Trusted Server"),
+				      tr
+				      ("Can't delete trusted server '%1' from the configuration file.\n").
+				      arg(name));
+		return false;
+	}
 
-  return false;  // Should be impossible.
+	return false;		// Should be impossible.
 }
-
-
 
 /*********************************************************/
 // Memory freeing routines
@@ -2875,10 +2912,10 @@ bool XSupCalls::deleteTrustedServerConfig(unsigned char config_type, QString &na
   \brief Free the list
   \param[in] p - a pointer to a pointer of conn_enum
 */
-void XSupCalls::freeEnumConnections(conn_enum **p)
+void XSupCalls::freeEnumConnections(conn_enum ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_conn_enum(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_conn_enum(p);
 }
 
 //! freeEnumConn
@@ -2886,10 +2923,10 @@ void XSupCalls::freeEnumConnections(conn_enum **p)
   \brief Free the list
   \param[in] p - a pointer to a pointer of conn_enum
 */
-void XSupCalls::freeEnumPossibleConnections(poss_conn_enum **p)
+void XSupCalls::freeEnumPossibleConnections(poss_conn_enum ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_poss_conn_enum(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_poss_conn_enum(p);
 }
 
 //! freeEnumProfile
@@ -2897,10 +2934,10 @@ void XSupCalls::freeEnumPossibleConnections(poss_conn_enum **p)
   \brief Free the list
   \param[in] p - a pointer to a pointer of profile_enum
 */
-void XSupCalls::freeEnumProfile(profile_enum **p)
+void XSupCalls::freeEnumProfile(profile_enum ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_profile_enum(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_profile_enum(p);
 }
 
 //! freeEnumServer
@@ -2908,10 +2945,10 @@ void XSupCalls::freeEnumProfile(profile_enum **p)
   \brief Free the list
   \param[in] p - a pointer to a pointer of trusted_servers_enum
 */
-void XSupCalls::freeEnumTrustedServer(trusted_servers_enum **p)
+void XSupCalls::freeEnumTrustedServer(trusted_servers_enum ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_trusted_servers_enum(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_trusted_servers_enum(p);
 }
 
 //! freeGlobals
@@ -2920,10 +2957,10 @@ void XSupCalls::freeEnumTrustedServer(trusted_servers_enum **p)
   \param[in] globals - a pointer to a pointer of int_enum
   \todo Need a free function in the supplicant
 */
-void XSupCalls::freeEnumLiveInt(int_enum **p)
+void XSupCalls::freeEnumLiveInt(int_enum ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_int_enum(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_int_enum(p);
 }
 
 //! freeConfigIntEnums
@@ -2932,10 +2969,10 @@ void XSupCalls::freeEnumLiveInt(int_enum **p)
   \param[in] p - a pointer to be freed
   \todo Need a free function in the supplicant
 */
-void XSupCalls::freeEnumStaticInt(int_config_enum **p)
+void XSupCalls::freeEnumStaticInt(int_config_enum ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_int_config_enum(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_int_config_enum(p);
 }
 
 //! freeConfigGlobals
@@ -2943,10 +2980,10 @@ void XSupCalls::freeEnumStaticInt(int_config_enum **p)
   \brief Free the list
   \param[in] globals - a pointer to a pointer of config_globals1
 */
-void XSupCalls::freeConfigGlobals(config_globals **p)
+void XSupCalls::freeConfigGlobals(config_globals ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_config_globals(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_config_globals(p);
 }
 
 //! freeEnumSSID
@@ -2954,9 +2991,9 @@ void XSupCalls::freeConfigGlobals(config_globals **p)
   \brief Free the ssid enums
   \param[in] pssids - the block to free
 */
-void XSupCalls::freeEnumSSID(ssid_info_enum **p)
+void XSupCalls::freeEnumSSID(ssid_info_enum ** p)
 {
-  Q_ASSERT(p);
+	Q_ASSERT(p);
 	xsupgui_request_free_ssid_enum(p);
 }
 
@@ -2965,20 +3002,21 @@ void XSupCalls::freeEnumSSID(ssid_info_enum **p)
   \brief Free the list
   \param[in] p - a pointer to a pointer of trusted_servers_enum
 */
-void XSupCalls::freeEnumCertificates(cert_enum **p)
+void XSupCalls::freeEnumCertificates(cert_enum ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_cert_enum(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_cert_enum(p);
 }
+
 //! freeConfigProfile
 /*!
   \brief Free the configuration block
   \param[in] p - a pointer to a pointer of config_profiles
 */
-void XSupCalls::freeConfigProfile(config_profiles **p)
+void XSupCalls::freeConfigProfile(config_profiles ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_profile_config(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_profile_config(p);
 }
 
 //! freeCertInfo
@@ -2986,7 +3024,7 @@ void XSupCalls::freeConfigProfile(config_profiles **p)
   \brief Free the memory associated with a configuration block
   \param[in] p - a pointer to a pointer of config_connection - this doesn't free the memory allocated for the cert_info - 
 */
-void XSupCalls::freeCertInfo(cert_info **certInfo)
+void XSupCalls::freeCertInfo(cert_info ** certInfo)
 {
 	xsupgui_request_free_cert_info(certInfo);
 }
@@ -2996,10 +3034,10 @@ void XSupCalls::freeCertInfo(cert_info **certInfo)
   \brief Free the configuration block
   \param[in] p - a pointer to a pointer of config_connection
 */
-void XSupCalls::freeConfigConnection(config_connection **p)
+void XSupCalls::freeConfigConnection(config_connection ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_connection_config(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_connection_config(p);
 }
 
 //! freeConfigTrustedServer
@@ -3007,22 +3045,21 @@ void XSupCalls::freeConfigConnection(config_connection **p)
   \brief Free the configuration block
   \param[in] p - a pointer to a pointer of config_trusted_server
 */
-void XSupCalls::freeConfigTrustedServer(config_trusted_server **p)
+void XSupCalls::freeConfigTrustedServer(config_trusted_server ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_trusted_server_config(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_trusted_server_config(p);
 }
-
 
 //! freeConfigInterface
 /*!
   \brief Free the configuration block
   \param[in] p - a pointer to a pointer of config_interfaces
 */
-void XSupCalls::freeConfigInterface(config_interfaces **p)
+void XSupCalls::freeConfigInterface(config_interfaces ** p)
 {
-  Q_ASSERT(p);
-  xsupgui_request_free_interface_config(p);
+	Q_ASSERT(p);
+	xsupgui_request_free_interface_config(p);
 }
 
 //! writeConfig
@@ -3034,51 +3071,48 @@ void XSupCalls::freeConfigInterface(config_interfaces **p)
 */
 bool XSupCalls::writeConfig(unsigned char config_type)
 {
-  int retval = 0;
+	int retval = 0;
 
-  retval = xsupgui_request_write_config(config_type, NULL);
+	retval = xsupgui_request_write_config(config_type, NULL);
 
-  if (retval == REQUEST_SUCCESS)
-  {
-    return true;
-  }
-  else
-  {
-    QMessageBox::critical(NULL, tr("Write Configuration"), 
-      tr("Can't write the supplicant configuration file.\n"));
-    return false;
-  }
+	if (retval == REQUEST_SUCCESS) {
+		return true;
+	} else {
+		QMessageBox::critical(NULL, tr("Write Configuration"),
+				      tr
+				      ("Can't write the supplicant configuration file.\n"));
+		return false;
+	}
 }
 
-bool XSupCalls::getAndCheckSupplicantVersion(QString &fullVersion, QString &numberString, bool bDisplay)
+bool XSupCalls::getAndCheckSupplicantVersion(QString & fullVersion,
+					     QString & numberString,
+					     bool bDisplay)
 {
-  char *pVersion = NULL;
-  bool bValue = true;
+	char *pVersion = NULL;
+	bool bValue = true;
 
-  int retval = xsupgui_request_version_string(&pVersion);
-  if (retval)
-  {
-    if (bDisplay)
-    {
-      QMessageBox::critical(NULL, 
-        tr("XSupplicant Version Info"), 
-        tr("The XSupplicant version information could not be read. You cannot proceed."));
-    }
-    fullVersion = tr("Unknown");
-    numberString = tr("Unknown");
-    bValue = false;
-  }
-  else
-  {
-    // Pull off the number only
-    fullVersion = pVersion;
-    numberString = fullVersion.remove("XSupplicant ");
-    //bValue = checkSupplicantVersion(numberString);
-	bValue = true;
+	int retval = xsupgui_request_version_string(&pVersion);
+	if (retval) {
+		if (bDisplay) {
+			QMessageBox::critical(NULL,
+					      tr("XSupplicant Version Info"),
+					      tr
+					      ("The XSupplicant version information could not be read. You cannot proceed."));
+		}
+		fullVersion = tr("Unknown");
+		numberString = tr("Unknown");
+		bValue = false;
+	} else {
+		// Pull off the number only
+		fullVersion = pVersion;
+		numberString = fullVersion.remove("XSupplicant ");
+		//bValue = checkSupplicantVersion(numberString);
+		bValue = true;
 
-	free(pVersion);
-  }
-  return bValue;
+		free(pVersion);
+	}
+	return bValue;
 }
 
 /*
@@ -3088,26 +3122,26 @@ bool XSupCalls::getAndCheckSupplicantVersion(QString &fullVersion, QString &numb
  *  @param[in] numberString - the number portion of the version
  *
  **/
-bool XSupCalls::checkSupplicantVersion(QString &numberString)
+bool XSupCalls::checkSupplicantVersion(QString & numberString)
 {
-  bool bValue = true;
+	bool bValue = true;
 
-  // Pull the XSupplicant off the version string
-  QString temp = numberString.right(numberString.length() - QString("XSupplicant ").length());
-  QStringList versionInfo = temp.split(".");
-  if (versionInfo.size() != 4)
-  {
-    QMessageBox::critical(NULL, 
-      tr("XSupplicant Version Info"), 
-      tr("The XSupplicant version information could not be parsed. The version string is invalid: %1\nYou cannot proceed.")
-      .arg(numberString));
-    bValue = false;
-  }
+	// Pull the XSupplicant off the version string
+	QString temp =
+	    numberString.right(numberString.length() -
+			       QString("XSupplicant ").length());
+	QStringList versionInfo = temp.split(".");
+	if (versionInfo.size() != 4) {
+		QMessageBox::critical(NULL,
+				      tr("XSupplicant Version Info"),
+				      tr
+				      ("The XSupplicant version information could not be parsed. The version string is invalid: %1\nYou cannot proceed.")
+				      .arg(numberString));
+		bValue = false;
+	}
 
-  return true;
+	return true;
 }
-
-
 
 /**
  *  sendPing()
@@ -3119,11 +3153,10 @@ bool XSupCalls::sendPing()
 {
 	int err = xsupgui_request_ping();
 
-  if (err != REQUEST_SUCCESS)
-  {
-    return false;
-  }
-  return true;
+	if (err != REQUEST_SUCCESS) {
+		return false;
+	}
+	return true;
 }
 
 /**
@@ -3134,145 +3167,148 @@ bool XSupCalls::sendPing()
  *  \param [out] inner - the inner tunnel name
  *  \returns nothing
  **/
-void XSupCalls::getTunnelNames(config_eap_method *pMethod, QString &outer, QString &inner)
+void XSupCalls::getTunnelNames(config_eap_method * pMethod, QString & outer,
+			       QString & inner)
 {
-  inner = "None";
-  outer = "";
-  switch (pMethod->method_num)
-  {
-    case EAP_TYPE_MD5:
-    {
-      outer = "EAP-MD5";
-      break;
-    }
-    case EAP_TYPE_GTC: 
-    {
-      outer = "EAP-GTC";
-      break;
-    }
-    case EAP_TYPE_LEAP:
-    {
-      outer = "EAP-LEAP";
-      break;
-    }
+	inner = "None";
+	outer = "";
+	switch (pMethod->method_num) {
+	case EAP_TYPE_MD5:
+		{
+			outer = "EAP-MD5";
+			break;
+		}
+	case EAP_TYPE_GTC:
+		{
+			outer = "EAP-GTC";
+			break;
+		}
+	case EAP_TYPE_LEAP:
+		{
+			outer = "EAP-LEAP";
+			break;
+		}
 
-	  case EAP_TYPE_AKA:
-    {
-      outer = "EAP-AKA";
-		  break;
-    }
+	case EAP_TYPE_AKA:
+		{
+			outer = "EAP-AKA";
+			break;
+		}
 
-	  case EAP_TYPE_SIM:
-    {
-      outer = "EAP-SIM";
-      break;
-    }
+	case EAP_TYPE_SIM:
+		{
+			outer = "EAP-SIM";
+			break;
+		}
 
-    case EAP_TYPE_OTP:
-    {
-      outer = "EAP-OTP";
-      break;
-    }
+	case EAP_TYPE_OTP:
+		{
+			outer = "EAP-OTP";
+			break;
+		}
 
-    case EAP_TYPE_TLS:
-    {
-      outer = "EAP-TLS";
-      break;
-    }
+	case EAP_TYPE_TLS:
+		{
+			outer = "EAP-TLS";
+			break;
+		}
 
-    case EAP_TYPE_TTLS: //! This method has an inner-protocol as well
-    {
-      outer = "EAP-TTLS";
-      // Does have inner - need to enable the tab and populate it
-      config_eap_ttls *p = (config_eap_ttls *)pMethod->method_data;
-      if (p)
-      {
-        getInnerTunnelName(p->phase2_type, p->phase2_data, inner);
-      }
-      break;
-    }
+	case EAP_TYPE_TTLS:	//! This method has an inner-protocol as well
+		{
+			outer = "EAP-TTLS";
+			// Does have inner - need to enable the tab and populate it
+			config_eap_ttls *p =
+			    (config_eap_ttls *) pMethod->method_data;
+			if (p) {
+				getInnerTunnelName(p->phase2_type,
+						   p->phase2_data, inner);
+			}
+			break;
+		}
 
-    case EAP_TYPE_PEAP: //! This method has an inner-protocol as well
-    {
-      outer = "EAP-PEAP";
-      // Does have inner - need to enable the tab and populate it
-      // Need to check all of these pointers
-      config_eap_peap *p = (config_eap_peap *)pMethod->method_data;
-      if (p && p->phase2)
-      {
-        getInnerTunnelName(p->phase2->method_num, p->phase2->method_data, inner);
-      }
-      break;
-    }
+	case EAP_TYPE_PEAP:	//! This method has an inner-protocol as well
+		{
+			outer = "EAP-PEAP";
+			// Does have inner - need to enable the tab and populate it
+			// Need to check all of these pointers
+			config_eap_peap *p =
+			    (config_eap_peap *) pMethod->method_data;
+			if (p && p->phase2) {
+				getInnerTunnelName(p->phase2->method_num,
+						   p->phase2->method_data,
+						   inner);
+			}
+			break;
+		}
 
-    case EAP_TYPE_MSCHAPV2:
-    {
-      outer = "EAP-MSCHAPv2";
-      break;
-    }
- 	  case EAP_TYPE_FAST:
-    {
-      outer = "EAP-FAST";
-      config_eap_fast *p = (config_eap_fast*)pMethod->method_data;
-      if (p && p->phase2)
-      {
-        getInnerTunnelName(p->phase2->method_num, p->phase2->method_data, inner);
-      }
-	    break;
-    }
-    default:
-    {
-      outer = "Unknown";
-      break;
-    }
-  }
+	case EAP_TYPE_MSCHAPV2:
+		{
+			outer = "EAP-MSCHAPv2";
+			break;
+		}
+	case EAP_TYPE_FAST:
+		{
+			outer = "EAP-FAST";
+			config_eap_fast *p =
+			    (config_eap_fast *) pMethod->method_data;
+			if (p && p->phase2) {
+				getInnerTunnelName(p->phase2->method_num,
+						   p->phase2->method_data,
+						   inner);
+			}
+			break;
+		}
+	default:
+		{
+			outer = "Unknown";
+			break;
+		}
+	}
 }
 
-void XSupCalls::getInnerTunnelName(int innerMethod, void *pMethodData, QString &inner)
+void XSupCalls::getInnerTunnelName(int innerMethod, void *pMethodData,
+				   QString & inner)
 {
-  switch (innerMethod)
-  {
-  case EAP_TYPE_MSCHAPV2:
-    inner = tr("EAP-MSCHAPv2");
-    break;
-  case EAP_TYPE_GTC:
-    inner = tr("EAP-GTC");
-    break;
-  case TTLS_PHASE2_PAP:
-    inner = tr("PAP");
-    break;
-  case TTLS_PHASE2_CHAP:
-    inner = tr("CHAP");
-    break;
-  case TTLS_PHASE2_MSCHAP:
-    inner = tr("MSCHAP");
-    break;
-  case TTLS_PHASE2_MSCHAPV2:
-    inner = tr("MSCHAPv2");
-    break;
-  case TTLS_PHASE2_EAP:
-    {
-      config_eap_method *pMethod = (config_eap_method *)pMethodData;
-      if ( pMethod && pMethod->method_num == EAP_TYPE_MD5)
-      {
-        inner = tr("EAP-MD5");
-      }
-      else
-      {
-        inner = tr("Invalid");
-      }
-    }
-    break;
-  default:
-    inner = tr("Unknown");
-      break;
-  }
+	switch (innerMethod) {
+	case EAP_TYPE_MSCHAPV2:
+		inner = tr("EAP-MSCHAPv2");
+		break;
+	case EAP_TYPE_GTC:
+		inner = tr("EAP-GTC");
+		break;
+	case TTLS_PHASE2_PAP:
+		inner = tr("PAP");
+		break;
+	case TTLS_PHASE2_CHAP:
+		inner = tr("CHAP");
+		break;
+	case TTLS_PHASE2_MSCHAP:
+		inner = tr("MSCHAP");
+		break;
+	case TTLS_PHASE2_MSCHAPV2:
+		inner = tr("MSCHAPv2");
+		break;
+	case TTLS_PHASE2_EAP:
+		{
+			config_eap_method *pMethod =
+			    (config_eap_method *) pMethodData;
+			if (pMethod && pMethod->method_num == EAP_TYPE_MD5) {
+				inner = tr("EAP-MD5");
+			} else {
+				inner = tr("Invalid");
+			}
+		}
+		break;
+	default:
+		inner = tr("Unknown");
+		break;
+	}
 }
 
-void XSupCalls::deleteConfigEapMethod(config_eap_method **p)
+void XSupCalls::deleteConfigEapMethod(config_eap_method ** p)
 {
-  Q_ASSERT(p);
-  delete_config_eap_method(p);
+	Q_ASSERT(p);
+	delete_config_eap_method(p);
 }
 
 /**
@@ -3282,49 +3318,49 @@ void XSupCalls::deleteConfigEapMethod(config_eap_method **p)
  **/
 bool XSupCalls::connectToSupplicant()
 {
-  // Make sure we can load the supplicant - if not - don't go on
-  disconnectXSupplicant();
-  return connectXSupplicant();
+	// Make sure we can load the supplicant - if not - don't go on
+	disconnectXSupplicant();
+	return connectXSupplicant();
 }
 
 //! checkProfileUse
 /*!
    \brief Checks to see if this profile is being used in any of the connections.
    Asks the user if they want to proceed or not.
-   \return true/false
+     \return true/false
 *//*
-bool XSupCalls::checkProfileUse(QString &profileToDelete)
-{
-  bool bValue = true;
-  int i = 0;
-  config_connection *pConfig  = NULL;
-  conn_enum *pConns = NULL;
-  bValue = enumAndSortConnections(&pConns, false);
-  // If can't read them or no connections - OK to delete
-  if (!bValue || pConns == NULL)
-  {
-    return true;
-  }
-  
-  while(pConns[i].name)
-  {
-    if (getConfigConnection(QString(pConns[i].name), &pConfig, false))
-    {
-      if (profileToDelete == pConfig->profile)
-      {
-        m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Can't Delete Object"),
-          tr("Because profile '%1' is used in connection '%2' it can't be deleted.  Before you can delete this profile, you will have to use another profile in connection '%2' (and any other connections that use this profile).")
-          .arg(profileToDelete)
-          .arg(pConfig->name));
-        bValue = false;
-        break;
-      }
-    }
-    i++;
-  }
-  this->freeEnumConnections(&pConns);
-  return bValue;
-}*/
+     bool XSupCalls::checkProfileUse(QString &profileToDelete)
+     {
+     bool bValue = true;
+     int i = 0;
+     config_connection *pConfig  = NULL;
+     conn_enum *pConns = NULL;
+     bValue = enumAndSortConnections(&pConns, false);
+     // If can't read them or no connections - OK to delete
+     if (!bValue || pConns == NULL)
+     {
+     return true;
+     }
+
+     while(pConns[i].name)
+     {
+     if (getConfigConnection(QString(pConns[i].name), &pConfig, false))
+     {
+     if (profileToDelete == pConfig->profile)
+     {
+     m_message.DisplayMessage( m_message.ERROR_TYPE, tr("Can't Delete Object"),
+     tr("Because profile '%1' is used in connection '%2' it can't be deleted.  Before you can delete this profile, you will have to use another profile in connection '%2' (and any other connections that use this profile).")
+     .arg(profileToDelete)
+     .arg(pConfig->name));
+     bValue = false;
+     break;
+     }
+     }
+     i++;
+     }
+     this->freeEnumConnections(&pConns);
+     return bValue;
+     } */
 
 //! checkServerUse
 /*!
@@ -3367,72 +3403,71 @@ bool XSupCalls::checkServerUse(QString &serverToDelete)
 }
 */
 
-bool XSupCalls::isServerUsedInProfile(config_profiles *pProfile, QString &server)
+bool XSupCalls::isServerUsedInProfile(config_profiles * pProfile,
+				      QString & server)
 {
-  bool bFound = false;
-  switch (pProfile->method->method_num)
-  {
-    case EAP_TYPE_MD5:
-      break;
+	bool bFound = false;
+	switch (pProfile->method->method_num) {
+	case EAP_TYPE_MD5:
+		break;
 
-    case EAP_TYPE_GTC: // not supported with version 1
-      break;
+	case EAP_TYPE_GTC:	// not supported with version 1
+		break;
 
-    case EAP_TYPE_LEAP:
-      break;
+	case EAP_TYPE_LEAP:
+		break;
 
-	  case EAP_TYPE_AKA:
-		  break;
+	case EAP_TYPE_AKA:
+		break;
 
-	  case EAP_TYPE_SIM:
-      break;
+	case EAP_TYPE_SIM:
+		break;
 
-    case EAP_TYPE_OTP:
-      break;
+	case EAP_TYPE_OTP:
+		break;
 
-    case EAP_TYPE_TLS:
-      {
-        config_eap_tls *p = (config_eap_tls *)pProfile->method->method_data;
-        if (server == p->trusted_server)
-        {
-          bFound = true;
-        }
-      }
-      // No inner
-      break;
+	case EAP_TYPE_TLS:
+		{
+			config_eap_tls *p =
+			    (config_eap_tls *) pProfile->method->method_data;
+			if (server == p->trusted_server) {
+				bFound = true;
+			}
+		}
+		// No inner
+		break;
 
-    case EAP_TYPE_TTLS: //! This method has an inner-protocol as well
-      {
-        config_eap_ttls *p = (config_eap_ttls *)pProfile->method->method_data;
-        if (server == p->trusted_server)
-        {
-          bFound= true;
-        }
-      }
-      break;
+	case EAP_TYPE_TTLS:	//! This method has an inner-protocol as well
+		{
+			config_eap_ttls *p =
+			    (config_eap_ttls *) pProfile->method->method_data;
+			if (server == p->trusted_server) {
+				bFound = true;
+			}
+		}
+		break;
 
-    case EAP_TYPE_PEAP: //! This method has an inner-protocol as well
-      {
-        config_eap_peap *p = (config_eap_peap *)pProfile->method->method_data;
-        if (server == p->trusted_server)
-        {
-          bFound = true;
-        }
-      }
-      break;
+	case EAP_TYPE_PEAP:	//! This method has an inner-protocol as well
+		{
+			config_eap_peap *p =
+			    (config_eap_peap *) pProfile->method->method_data;
+			if (server == p->trusted_server) {
+				bFound = true;
+			}
+		}
+		break;
 
-    case EAP_TYPE_MSCHAPV2:
-      break;
+	case EAP_TYPE_MSCHAPV2:
+		break;
 
- 	  case EAP_TYPE_FAST:
-	    break;
+	case EAP_TYPE_FAST:
+		break;
 
-    default:
-      break;
-  }
-  return bFound;
+	default:
+		break;
+	}
+	return bFound;
 }
-
 
 //! isOnlyInstance
 /*!
@@ -3444,22 +3479,21 @@ bool XSupCalls::isOnlyInstance(char *exeName)
 {
 
 #ifdef WINDOWS
-  QString fullName = QString ("%1.exe").arg(exeName);
+	QString fullName = QString("%1.exe").arg(exeName);
 
-  if (supdetect_numinstances(fullName.toAscii().data()) >= 2)
-  {
-    return false;
-  }
+	if (supdetect_numinstances(fullName.toAscii().data()) >= 2) {
+		return false;
+	}
 #else
 #warning FIX!
-  /*
-  if (supdetect_numinstance(exeName) >= 2)
-  {
-    return false;
-  }
-  */
+	/*
+	   if (supdetect_numinstance(exeName) >= 2)
+	   {
+	   return false;
+	   }
+	 */
 #endif
-  return true;
+	return true;
 }
 
 //! updateAdapters
@@ -3470,53 +3504,53 @@ bool XSupCalls::isOnlyInstance(char *exeName)
 */
 bool XSupCalls::updateAdapters(bool bDisplayError)
 {
-  bool bAdded = false; 
-  int_enum *liveInts;
-  QString deviceDescription;
-  QString deviceName;
-  QString mac;
-  bool bWireless = false;
-  int i = 0;
+	bool bAdded = false;
+	int_enum *liveInts;
+	QString deviceDescription;
+	QString deviceName;
+	QString mac;
+	bool bWireless = false;
+	int i = 0;
 
-  do
-  {
-    if (!m_adapterMutex.tryLock())
-    {
-      i++;
-      continue;
-    }
+	do {
+		if (!m_adapterMutex.tryLock()) {
+			i++;
+			continue;
+		}
 
-    bool bValue = enumLiveInterfaces(&liveInts, bDisplayError);
-    if ((!bValue) || (liveInts == NULL))
-    {
-      return false;
-    }
+		bool bValue = enumLiveInterfaces(&liveInts, bDisplayError);
+		if ((!bValue) || (liveInts == NULL)) {
+			return false;
+		}
 
-    while (liveInts[i].name)
-    {
-      deviceName = liveInts[i].name;
+		while (liveInts[i].name) {
+			deviceName = liveInts[i].name;
 
-      // If we can get the liveInterfaceData then it means it isn't in the config file
-      // Therefore, add it 
-      if (getLiveInterfaceData(deviceName, deviceDescription, mac, bWireless, bDisplayError) == true)
-      {
-        bAdded |= createNewInterface(deviceName, deviceDescription, mac, bWireless, bDisplayError);
-      }
-      i++;
-    }
+			// If we can get the liveInterfaceData then it means it isn't in the config file
+			// Therefore, add it 
+			if (getLiveInterfaceData
+			    (deviceName, deviceDescription, mac, bWireless,
+			     bDisplayError) == true) {
+				bAdded |=
+				    createNewInterface(deviceName,
+						       deviceDescription, mac,
+						       bWireless,
+						       bDisplayError);
+			}
+			i++;
+		}
 
-    // If we found a new interface, make sure we save the config file.
-    if (bAdded)
-    {
-      writeConfig(CONFIG_LOAD_GLOBAL);
-    }
+		// If we found a new interface, make sure we save the config file.
+		if (bAdded) {
+			writeConfig(CONFIG_LOAD_GLOBAL);
+		}
 
-    freeEnumLiveInt(&liveInts);
-    m_adapterMutex.unlock();
-    i = 11;
-  }while(i < 10);
+		freeEnumLiveInt(&liveInts);
+		m_adapterMutex.unlock();
+		i = 11;
+	} while (i < 10);
 
-  return bAdded;
+	return bAdded;
 }
 
 //! isLiveAdapters
@@ -3526,24 +3560,21 @@ bool XSupCalls::updateAdapters(bool bDisplayError)
    \param [in] configInterfaceName
    \return true/false
 */
-bool XSupCalls::isLiveInterface(const int_enum *pLiveInts, const char *pConfigInterfaceName)
+bool XSupCalls::isLiveInterface(const int_enum * pLiveInts,
+				const char *pConfigInterfaceName)
 {
-  int i = 0;
-  if (!pLiveInts || !pConfigInterfaceName)
-  {
-    return false;
-  }
-  while (pLiveInts[i].name)
-  {
-    if (strcmp(pLiveInts[i].desc, pConfigInterfaceName) == 0)
-    {
-      return true;
-    }
-    i++;
-  }
-  return false;
+	int i = 0;
+	if (!pLiveInts || !pConfigInterfaceName) {
+		return false;
+	}
+	while (pLiveInts[i].name) {
+		if (strcmp(pLiveInts[i].desc, pConfigInterfaceName) == 0) {
+			return true;
+		}
+		i++;
+	}
+	return false;
 }
-
 
 //! networkDisconnect
 /*!
@@ -3553,27 +3584,25 @@ bool XSupCalls::isLiveInterface(const int_enum *pLiveInts, const char *pConfigIn
    \param [in] bWireless - true or false
    \return true/false
 */
-bool XSupCalls::networkDisconnect(QString &deviceName, bool)
+bool XSupCalls::networkDisconnect(QString & deviceName, bool)
 {
-  bool bValue = true;
+	bool bValue = true;
 
-  if (xsupgui_request_disconnect_connection(deviceName.toAscii().data()) == REQUEST_SUCCESS)
-  {
-	  bValue = true;
-  }
-  else
-  {
-	  bValue = false;
-  }
+	if (xsupgui_request_disconnect_connection(deviceName.toAscii().data())
+	    == REQUEST_SUCCESS) {
+		bValue = true;
+	} else {
+		bValue = false;
+	}
 
-  // Unbind the connection so that the user can delete or change the config.
-  if (bValue == true)
-  {
-	  if (xsupgui_request_unbind_connection(deviceName.toAscii().data()) != REQUEST_SUCCESS)
-		  bValue = false;
-  }
+	// Unbind the connection so that the user can delete or change the config.
+	if (bValue == true) {
+		if (xsupgui_request_unbind_connection
+		    (deviceName.toAscii().data()) != REQUEST_SUCCESS)
+			bValue = false;
+	}
 
-  return bValue;
+	return bValue;
 }
 
 //! renameConnection
@@ -3583,16 +3612,20 @@ bool XSupCalls::networkDisconnect(QString &deviceName, bool)
    \param [in] newName
    \return true/false
 */
-bool XSupCalls::renameConnection(unsigned char config_type, QString &oldName, QString &newName)
+bool XSupCalls::renameConnection(unsigned char config_type, QString & oldName,
+				 QString & newName)
 {
-  int retval = xsupgui_request_rename_connection(config_type, oldName.toAscii().data(), newName.toAscii().data());
-  if (retval != REQUEST_SUCCESS)
-  {
-    QMessageBox::critical(NULL, tr("Can't Rename Connection"),
-      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName));
-    return false;
-  }
-  return true;
+	int retval =
+	    xsupgui_request_rename_connection(config_type,
+					      oldName.toAscii().data(),
+					      newName.toAscii().data());
+	if (retval != REQUEST_SUCCESS) {
+		QMessageBox::critical(NULL, tr("Can't Rename Connection"),
+				      tr("Old name: %1\nNew name: %2").
+				      arg(oldName).arg(newName));
+		return false;
+	}
+	return true;
 }
 
 //! renameProfile
@@ -3602,17 +3635,22 @@ bool XSupCalls::renameConnection(unsigned char config_type, QString &oldName, QS
    \param [in] newName
    \return true/false
 */
-bool XSupCalls::renameProfile(unsigned char config_type, QString &oldName, QString &newName)
+bool XSupCalls::renameProfile(unsigned char config_type, QString & oldName,
+			      QString & newName)
 {
-  int retval = xsupgui_request_rename_profile(config_type, oldName.toAscii().data(), newName.toAscii().data());
-  if (retval != REQUEST_SUCCESS)
-  {
-    QMessageBox::critical(NULL, tr("Can't Rename Profile"),
-      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName));
-    return false;
-  }
-  return true;
+	int retval =
+	    xsupgui_request_rename_profile(config_type,
+					   oldName.toAscii().data(),
+					   newName.toAscii().data());
+	if (retval != REQUEST_SUCCESS) {
+		QMessageBox::critical(NULL, tr("Can't Rename Profile"),
+				      tr("Old name: %1\nNew name: %2").
+				      arg(oldName).arg(newName));
+		return false;
+	}
+	return true;
 }
+
 //! renameTrustedServer
 /*!
    \brief Renames a trusted server
@@ -3620,18 +3658,22 @@ bool XSupCalls::renameProfile(unsigned char config_type, QString &oldName, QStri
    \param [in] newName
    \return true/false
 */
-bool XSupCalls::renameTrustedServer(unsigned char config_type, QString &oldName, QString &newName)
+bool XSupCalls::renameTrustedServer(unsigned char config_type,
+				    QString & oldName, QString & newName)
 {
-  int retval = xsupgui_request_rename_trusted_server(config_type, oldName.toAscii().data(), newName.toAscii().data());
-  if (retval != REQUEST_SUCCESS)
-  {
-    QMessageBox::critical(NULL, tr("Can't Rename Trusted Server"),
-      tr("Old name: %1\nNew name: %2").arg(oldName).arg(newName));
-    return false;
-  }
-  return true;
+	int retval =
+	    xsupgui_request_rename_trusted_server(config_type,
+						  oldName.toAscii().data(),
+						  newName.toAscii().data());
+	if (retval != REQUEST_SUCCESS) {
+		QMessageBox::critical(NULL, tr("Can't Rename Trusted Server"),
+				      tr("Old name: %1\nNew name: %2").
+				      arg(oldName).arg(newName));
+		return false;
+	}
+	return true;
 }
-    
+
 // The following code came from xsupconfig.c - need to get the password from these structures
 // It was setting the password, these routines now get the password
 // I would propose that we move this code to the supplicant
@@ -3646,36 +3688,45 @@ bool XSupCalls::renameTrustedServer(unsigned char config_type, QString &oldName,
  *
  *  \retval XENONE on success
  **/
-int XSupCalls::config_get_ttls_pwd(struct config_eap_method *meth, char **pPassword)
+int XSupCalls::config_get_ttls_pwd(struct config_eap_method *meth,
+				   char **pPassword)
 {
 	struct config_eap_ttls *ttls = NULL;
-  *pPassword = NULL;
+	*pPassword = NULL;
 	ttls = (struct config_eap_ttls *)meth->method_data;
-	if (ttls == NULL) return -1;
+	if (ttls == NULL)
+		return -1;
 
-	if (ttls->phase2_data == NULL) return -1;
+	if (ttls->phase2_data == NULL)
+		return -1;
 
-	switch (ttls->phase2_type)
-	{
-	  case TTLS_PHASE2_PAP:
-	  case TTLS_PHASE2_CHAP:
-	  case TTLS_PHASE2_MSCHAP:
-	  case TTLS_PHASE2_MSCHAPV2:
-  	  *pPassword = Util::myNullStrdup(((struct config_pwd_only *)(ttls->phase2_data))->password);
-		  break;
+	switch (ttls->phase2_type) {
+	case TTLS_PHASE2_PAP:
+	case TTLS_PHASE2_CHAP:
+	case TTLS_PHASE2_MSCHAP:
+	case TTLS_PHASE2_MSCHAPV2:
+		*pPassword =
+		    Util::
+		    myNullStrdup(((struct config_pwd_only *)(ttls->
+							     phase2_data))->
+				 password);
+		break;
 
-	  case TTLS_PHASE2_EAP:
-		  return config_get_pwd((struct config_eap_method *)ttls->phase2_data, pPassword);
-		  break;
+	case TTLS_PHASE2_EAP:
+		return config_get_pwd((struct config_eap_method *)ttls->
+				      phase2_data, pPassword);
+		break;
 
-	  default:
-	    QMessageBox::critical(NULL, tr("Error Getting Password")
-        ,tr("Invalid EAP method requested: %1\n(config_get_ttls_pwd)")
-        .arg(meth->method_num));
-		  break;
+	default:
+		QMessageBox::critical(NULL, tr("Error Getting Password")
+				      ,
+				      tr
+				      ("Invalid EAP method requested: %1\n(config_get_ttls_pwd)")
+				      .arg(meth->method_num));
+		break;
 	}
 
-	return 0; // XENONE;
+	return 0;		// XENONE;
 }
 
 /**
@@ -3689,35 +3740,57 @@ int XSupCalls::config_get_ttls_pwd(struct config_eap_method *meth, char **pPassw
  *
  *  \retval XENONE on success
  **/
- int XSupCalls::config_get_pwd(struct config_eap_method *meth, char **pPassword)
+int XSupCalls::config_get_pwd(struct config_eap_method *meth, char **pPassword)
 {
-  *pPassword = NULL;
-	switch (meth->method_num)
-	{
+	*pPassword = NULL;
+	switch (meth->method_num) {
 	case EAP_TYPE_MD5:
 	case EAP_TYPE_LEAP:
 	case EAP_TYPE_GTC:
-    *pPassword = Util::myNullStrdup(((struct config_pwd_only *)(meth->method_data))->password);
+		*pPassword =
+		    Util::
+		    myNullStrdup(((struct config_pwd_only *)(meth->
+							     method_data))->
+				 password);
 		break;
 
 	case EAP_TYPE_TLS:
-	  *pPassword = Util::myNullStrdup(((struct config_eap_tls *)(meth->method_data))->user_key_pass);
+		*pPassword =
+		    Util::
+		    myNullStrdup(((struct config_eap_tls *)(meth->
+							    method_data))->
+				 user_key_pass);
 		break;
 
 	case EAP_TYPE_SIM:
-	  *pPassword = Util::myNullStrdup(((struct config_eap_sim *)(meth->method_data))->password);
+		*pPassword =
+		    Util::
+		    myNullStrdup(((struct config_eap_sim *)(meth->
+							    method_data))->
+				 password);
 		break;
 
 	case EAP_TYPE_AKA:
- 		*pPassword = Util::myNullStrdup(((struct config_eap_aka *)(meth->method_data))->password);
+		*pPassword =
+		    Util::
+		    myNullStrdup(((struct config_eap_aka *)(meth->
+							    method_data))->
+				 password);
 		break;
 
 	case EAP_TYPE_MSCHAPV2:
-    *pPassword = Util::myNullStrdup(((struct config_eap_mschapv2 *)(meth->method_data))->password);
+		*pPassword =
+		    Util::
+		    myNullStrdup(((struct config_eap_mschapv2 *)(meth->
+								 method_data))->
+				 password);
 		break;
 
 	case EAP_TYPE_PEAP:
-		return config_get_pwd(((struct config_eap_peap *)(meth->method_data))->phase2, pPassword);
+		return
+		    config_get_pwd(((struct config_eap_peap *)(meth->
+							       method_data))->
+				   phase2, pPassword);
 		break;
 
 	case EAP_TYPE_TTLS:
@@ -3726,17 +3799,22 @@ int XSupCalls::config_get_ttls_pwd(struct config_eap_method *meth, char **pPassw
 		break;
 
 	case EAP_TYPE_FAST:
-		return config_get_pwd(((struct config_eap_fast *)(meth->method_data))->phase2, pPassword);
+		return
+		    config_get_pwd(((struct config_eap_fast *)(meth->
+							       method_data))->
+				   phase2, pPassword);
 		break;
 
 	default:
-	  QMessageBox::critical(NULL, tr("Error Getting Password")
-      ,tr("Invalid EAP method requested: %1\n(config_get_pwd)")
-      .arg(meth->method_num));
+		QMessageBox::critical(NULL, tr("Error Getting Password")
+				      ,
+				      tr
+				      ("Invalid EAP method requested: %1\n(config_get_pwd)")
+				      .arg(meth->method_num));
 		break;
 	}
 
-	return 0; //XENONE;
+	return 0;		//XENONE;
 }
 
 /**
@@ -3750,35 +3828,39 @@ int XSupCalls::config_get_ttls_pwd(struct config_eap_method *meth, char **pPassw
  *
  *  \retval XENONE on success
  **/
-int XSupCalls::config_get_ttls_user(struct config_eap_method *meth, char **pUser)
+int XSupCalls::config_get_ttls_user(struct config_eap_method *meth,
+				    char **pUser)
 {
 	struct config_eap_ttls *ttls;
-  *pUser = NULL;
+	*pUser = NULL;
 
 	ttls = (struct config_eap_ttls *)meth->method_data;
-	if (ttls == NULL) return -1;
+	if (ttls == NULL)
+		return -1;
 
-	switch (ttls->phase2_type)
-	{
-	  case TTLS_PHASE2_PAP:
-	  case TTLS_PHASE2_CHAP:
-	  case TTLS_PHASE2_MSCHAP:
-	  case TTLS_PHASE2_MSCHAPV2:
-      *pUser = Util::myNullStrdup(ttls->inner_id);
-		  break;
+	switch (ttls->phase2_type) {
+	case TTLS_PHASE2_PAP:
+	case TTLS_PHASE2_CHAP:
+	case TTLS_PHASE2_MSCHAP:
+	case TTLS_PHASE2_MSCHAPV2:
+		*pUser = Util::myNullStrdup(ttls->inner_id);
+		break;
 
-	  case TTLS_PHASE2_EAP:
-		  return config_get_user((struct config_eap_method *)ttls->phase2_data, pUser);
-		  break;
+	case TTLS_PHASE2_EAP:
+		return config_get_user((struct config_eap_method *)ttls->
+				       phase2_data, pUser);
+		break;
 
-	  default:
-	    QMessageBox::critical(NULL, tr("Error Getting TTLS User")
-        ,tr("Invalid EAP method requested: %1\n(config_get_ttls_user)")
-        .arg(ttls->phase2_type));
-		  break;
+	default:
+		QMessageBox::critical(NULL, tr("Error Getting TTLS User")
+				      ,
+				      tr
+				      ("Invalid EAP method requested: %1\n(config_get_ttls_user)")
+				      .arg(ttls->phase2_type));
+		break;
 	}
 
-	return 0; // XENONE;
+	return 0;		// XENONE;
 }
 
 /**
@@ -3794,10 +3876,9 @@ int XSupCalls::config_get_ttls_user(struct config_eap_method *meth, char **pUser
  **/
 int XSupCalls::config_get_user(struct config_eap_method *meth, char **pUser)
 {
-  *pUser = NULL;
-  int retval = 0;
-	switch (meth->method_num)
-	{
+	*pUser = NULL;
+	int retval = 0;
+	switch (meth->method_num) {
 	case EAP_TYPE_MD5:
 	case EAP_TYPE_LEAP:
 	case EAP_TYPE_GTC:
@@ -3809,7 +3890,7 @@ int XSupCalls::config_get_user(struct config_eap_method *meth, char **pUser)
 
 	case EAP_TYPE_PEAP:
 		//retval = config_get_peap_user(((struct config_eap_peap *)(meth->method_data))->phase2, pUser);
-    retval = config_get_peap_user(meth, pUser);
+		retval = config_get_peap_user(meth, pUser);
 		break;
 
 	case EAP_TYPE_TTLS:
@@ -3817,17 +3898,22 @@ int XSupCalls::config_get_user(struct config_eap_method *meth, char **pUser)
 		break;
 
 	case EAP_TYPE_FAST:
-		retval = config_get_user(((struct config_eap_fast *)(meth->method_data))->phase2, pUser);
+		retval =
+		    config_get_user(((struct config_eap_fast *)(meth->
+								method_data))->
+				    phase2, pUser);
 		break;
 
 	default:
-	  QMessageBox::critical(NULL, tr("Error Getting User")
-      ,tr("Invalid EAP method requested: %1\n(config_get_user)")
-      .arg(meth->method_num));
+		QMessageBox::critical(NULL, tr("Error Getting User")
+				      ,
+				      tr
+				      ("Invalid EAP method requested: %1\n(config_get_user)")
+				      .arg(meth->method_num));
 		break;
 	}
 
-	return retval; //XENONE;
+	return retval;		//XENONE;
 }
 
 /**
@@ -3843,34 +3929,38 @@ int XSupCalls::config_get_user(struct config_eap_method *meth, char **pUser)
  **/
 int XSupCalls::config_set_ttls_user(struct config_eap_method *meth, char *pUser)
 {
-  int retval = 0;
+	int retval = 0;
 	struct config_eap_ttls *ttls;
 
 	ttls = (struct config_eap_ttls *)meth->method_data;
-	if (ttls == NULL) return -1;
+	if (ttls == NULL)
+		return -1;
 
-	switch (ttls->phase2_type)
-	{
-	  case TTLS_PHASE2_PAP:
-	  case TTLS_PHASE2_CHAP:
-	  case TTLS_PHASE2_MSCHAP:
-	  case TTLS_PHASE2_MSCHAPV2:
-      Util::myFree(&ttls->inner_id);
-      ttls->inner_id = Util::myNullStrdup(pUser);
-		  break;
+	switch (ttls->phase2_type) {
+	case TTLS_PHASE2_PAP:
+	case TTLS_PHASE2_CHAP:
+	case TTLS_PHASE2_MSCHAP:
+	case TTLS_PHASE2_MSCHAPV2:
+		Util::myFree(&ttls->inner_id);
+		ttls->inner_id = Util::myNullStrdup(pUser);
+		break;
 
-	  case TTLS_PHASE2_EAP:
-		  retval = config_set_user((struct config_eap_method *)ttls->phase2_data, pUser);
-		  break;
+	case TTLS_PHASE2_EAP:
+		retval =
+		    config_set_user((struct config_eap_method *)ttls->
+				    phase2_data, pUser);
+		break;
 
-	  default:
-	    QMessageBox::critical(NULL, tr("Error Getting Password")
-        ,tr("Invalid EAP method requested: %1\n(config_set_ttls_user)")
-        .arg(meth->method_num));
-		  break;
+	default:
+		QMessageBox::critical(NULL, tr("Error Getting Password")
+				      ,
+				      tr
+				      ("Invalid EAP method requested: %1\n(config_set_ttls_user)")
+				      .arg(meth->method_num));
+		break;
 	}
 
-	return retval; // XENONE;
+	return retval;		// XENONE;
 }
 
 /**
@@ -3886,14 +3976,16 @@ int XSupCalls::config_set_ttls_user(struct config_eap_method *meth, char *pUser)
  **/
 int XSupCalls::config_set_peap_user(struct config_eap_method *meth, char *pUser)
 {
-  int retval = 0;
-	struct config_eap_peap *peap = (struct config_eap_peap *)meth->method_data;
-	if (peap == NULL) return -1;
+	int retval = 0;
+	struct config_eap_peap *peap =
+	    (struct config_eap_peap *)meth->method_data;
+	if (peap == NULL)
+		return -1;
 
-  Util::myFree(&peap->identity);
-  peap->identity = Util::myNullStrdup(pUser);
+	Util::myFree(&peap->identity);
+	peap->identity = Util::myNullStrdup(pUser);
 
-	return retval; // XENONE;
+	return retval;		// XENONE;
 }
 
 /**
@@ -3907,16 +3999,19 @@ int XSupCalls::config_set_peap_user(struct config_eap_method *meth, char *pUser)
  *
  *  \retval XENONE on success
  **/
-int XSupCalls::config_get_peap_user(struct config_eap_method *meth, char **pUser)
+int XSupCalls::config_get_peap_user(struct config_eap_method *meth,
+				    char **pUser)
 {
-  int retval = 0;
-  *pUser = NULL;
-	struct config_eap_peap *peap = (struct config_eap_peap *)meth->method_data;
-	if (peap == NULL) return -1;
+	int retval = 0;
+	*pUser = NULL;
+	struct config_eap_peap *peap =
+	    (struct config_eap_peap *)meth->method_data;
+	if (peap == NULL)
+		return -1;
 
-  *pUser = Util::myNullStrdup(peap->identity);
+	*pUser = Util::myNullStrdup(peap->identity);
 
-	return retval; // XENONE;
+	return retval;		// XENONE;
 }
 
 /**
@@ -3932,9 +4027,8 @@ int XSupCalls::config_get_peap_user(struct config_eap_method *meth, char **pUser
  **/
 int XSupCalls::config_set_user(struct config_eap_method *meth, char *pUser)
 {
-  int retval = 0;
-	switch (meth->method_num)
-	{
+	int retval = 0;
+	switch (meth->method_num) {
 	case EAP_TYPE_MD5:
 	case EAP_TYPE_LEAP:
 	case EAP_TYPE_GTC:
@@ -3953,17 +4047,22 @@ int XSupCalls::config_set_user(struct config_eap_method *meth, char *pUser)
 		break;
 
 	case EAP_TYPE_FAST:
-		retval = config_set_user(((struct config_eap_fast *)(meth->method_data))->phase2, pUser);
+		retval =
+		    config_set_user(((struct config_eap_fast *)(meth->
+								method_data))->
+				    phase2, pUser);
 		break;
 
 	default:
-	  QMessageBox::critical(NULL,  tr("Error Getting Password")
-      ,tr("Invalid EAP method requested: %1\n(config_set_user)")
-      .arg(meth->method_num));
+		QMessageBox::critical(NULL, tr("Error Getting Password")
+				      ,
+				      tr
+				      ("Invalid EAP method requested: %1\n(config_set_user)")
+				      .arg(meth->method_num));
 		break;
 	}
 
-	return retval; //XENONE;
+	return retval;		//XENONE;
 }
 
 /**
@@ -3985,26 +4084,23 @@ void XSupCalls::freeConfigAssociation(struct config_association *p)
 
 	myassoc = p;
 
-	for (i=0; i<5; i++)
-	{
-		if (myassoc->keys[i] != NULL)
-		{
+	for (i = 0; i < 5; i++) {
+		if (myassoc->keys[i] != NULL) {
 			free(myassoc->keys[i]);
 			// No need to NULL it here, it will get taken care of in the memset below.
 		}
 	}
 
-	if (myassoc->psk != NULL)
-	{
+	if (myassoc->psk != NULL) {
 		free(myassoc->psk);
 	}
 
-	if (myassoc->psk_hex != NULL)
-	{
+	if (myassoc->psk_hex != NULL) {
 		free(myassoc->psk_hex);
 	}
 
-	memset((struct config_association *)myassoc, 0x00, sizeof(struct config_association));
+	memset((struct config_association *)myassoc, 0x00,
+	       sizeof(struct config_association));
 }
 
 /**
@@ -4014,9 +4110,11 @@ void XSupCalls::freeConfigAssociation(struct config_association *p)
  * @param[in] scratchdir A temporary scratch directory where log files can be created.
  * @param[in] overwrite A flag indicating whether the file should be overwritten if it already exists.
  **/
-int XSupCalls::createTroubleTicket(char *filename, char *scratchdir, int overwrite)
+int XSupCalls::createTroubleTicket(char *filename, char *scratchdir,
+				   int overwrite)
 {
-	return xsupgui_request_create_trouble_ticket_file(filename, scratchdir, overwrite);
+	return xsupgui_request_create_trouble_ticket_file(filename, scratchdir,
+							  overwrite);
 }
 
 QString XSupCalls::connectionNameFromConnectionID(unsigned int connID)
@@ -4024,59 +4122,60 @@ QString XSupCalls::connectionNameFromConnectionID(unsigned int connID)
 	QString connName = "";
 	int retVal;
 	char *pIntName;
-	
+
 	retVal = xsupgui_request_intname_from_tnc_conn_id(connID, &pIntName);
-	if (retVal == REQUEST_SUCCESS && pIntName != NULL)
-	{
+	if (retVal == REQUEST_SUCCESS && pIntName != NULL) {
 		char *pConnName = NULL;
-		retVal = xsupgui_request_get_conn_name_from_int(pIntName, &pConnName);
+		retVal =
+		    xsupgui_request_get_conn_name_from_int(pIntName,
+							   &pConnName);
 		if (retVal == REQUEST_SUCCESS && pConnName != NULL)
 			connName = pConnName;
-			
+
 		if (pConnName != NULL)
 			free(pConnName);
 	}
 	if (pIntName != NULL)
 		free(pIntName);
-	
+
 	return connName;
 }
 
 bool XSupCalls::connectionIsWirelessFromConnectionID(unsigned int connID)
 {
-	bool isWireless = false; // default to wired
+	bool isWireless = false;	// default to wired
 	int retVal;
 	char *pIntName = NULL;
-	
+
 	retVal = xsupgui_request_intname_from_tnc_conn_id(connID, &pIntName);
-	if (retVal == REQUEST_SUCCESS && pIntName != NULL)
-	{
+	if (retVal == REQUEST_SUCCESS && pIntName != NULL) {
 		char *pIntDesc = NULL;
-		
+
 		retVal = xsupgui_request_get_devdesc(pIntName, &pIntDesc);
-		if (retVal == REQUEST_SUCCESS && pIntDesc != NULL)
-		{
+		if (retVal == REQUEST_SUCCESS && pIntDesc != NULL) {
 			config_interfaces *pConfig = NULL;
-			retVal = xsupgui_request_get_interface_config(pIntDesc, &pConfig);
-			if (retVal == REQUEST_SUCCESS && pConfig != NULL)
-			{
-				if ((pConfig->flags & CONFIG_INTERFACE_IS_WIRELESS) == CONFIG_INTERFACE_IS_WIRELESS)
+			retVal =
+			    xsupgui_request_get_interface_config(pIntDesc,
+								 &pConfig);
+			if (retVal == REQUEST_SUCCESS && pConfig != NULL) {
+				if ((pConfig->
+				     flags & CONFIG_INTERFACE_IS_WIRELESS) ==
+				    CONFIG_INTERFACE_IS_WIRELESS)
 					isWireless = true;
 			}
-				
-			if (pConfig != NULL)
-			{
+
+			if (pConfig != NULL) {
 				xsupgui_request_free_interface_config(&pConfig);
 				pConfig = NULL;
 			}
 		}
-		
+
 		if (pIntDesc != NULL)
 			free(pIntDesc);
 	}
 	if (pIntName != NULL)
 		free(pIntName);
-	
+
 	return isWireless;
 }
 
@@ -4088,32 +4187,34 @@ unsigned int XSupCalls::postureSettingsForConnectionID(unsigned int connID)
 	config_profiles *profile = NULL;
 	unsigned int settings = 0;
 
-	if (xsupgui_request_intname_from_tnc_conn_id(connID, &intname) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_intname_from_tnc_conn_id(connID, &intname) !=
+	    REQUEST_SUCCESS) {
 		return 0;
 	}
 
-	if (xsupgui_request_get_conn_name_from_int(intname, &conname) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_conn_name_from_int(intname, &conname) !=
+	    REQUEST_SUCCESS) {
 		free(intname);
 		return 0;
 	}
 	free(intname);
 
-	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, conname, &config) != REQUEST_SUCCESS)
-	{
-		if (xsupgui_request_get_connection_config(CONFIG_LOAD_USER, conname, &config) != REQUEST_SUCCESS)
-		{
+	if (xsupgui_request_get_connection_config
+	    (CONFIG_LOAD_GLOBAL, conname, &config) != REQUEST_SUCCESS) {
+		if (xsupgui_request_get_connection_config
+		    (CONFIG_LOAD_USER, conname, &config) != REQUEST_SUCCESS) {
 			free(conname);
 			return 0;
 		}
 	}
 	free(conname);
 
-	if (xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, config->profile, &profile) != REQUEST_SUCCESS)
-	{
-		if (xsupgui_request_get_profile_config(CONFIG_LOAD_USER, config->profile, &profile) != REQUEST_SUCCESS)
-		{
+	if (xsupgui_request_get_profile_config
+	    (CONFIG_LOAD_GLOBAL, config->profile,
+	     &profile) != REQUEST_SUCCESS) {
+		if (xsupgui_request_get_profile_config
+		    (CONFIG_LOAD_USER, config->profile,
+		     &profile) != REQUEST_SUCCESS) {
 			xsupgui_request_free_connection_config(&config);
 			return 0;
 		}
@@ -4131,16 +4232,17 @@ unsigned char XSupCalls::getConnectionType(QString connName)
 {
 	config_connection *pConf = NULL;
 
-	if (connName == "") return 0;
+	if (connName == "")
+		return 0;
 
-	if (getConfigConnection(CONFIG_LOAD_USER, connName, &pConf, false) == true)
-	{
+	if (getConfigConnection(CONFIG_LOAD_USER, connName, &pConf, false) ==
+	    true) {
 		freeConfigConnection(&pConf);
 		return CONFIG_LOAD_USER;
 	}
 
-	if (getConfigConnection(CONFIG_LOAD_GLOBAL, connName, &pConf, false) == true)
-	{
+	if (getConfigConnection(CONFIG_LOAD_GLOBAL, connName, &pConf, false) ==
+	    true) {
 		freeConfigConnection(&pConf);
 		return CONFIG_LOAD_GLOBAL;
 	}
@@ -4152,16 +4254,16 @@ unsigned char XSupCalls::getProfileType(QString profName)
 {
 	config_profiles *pProf = NULL;
 
-	if (profName == "") return 0;
+	if (profName == "")
+		return 0;
 
-	if (getConfigProfile(CONFIG_LOAD_USER, profName, &pProf, false) == true)
-	{
+	if (getConfigProfile(CONFIG_LOAD_USER, profName, &pProf, false) == true) {
 		freeConfigProfile(&pProf);
 		return CONFIG_LOAD_USER;
 	}
 
-	if (getConfigProfile(CONFIG_LOAD_GLOBAL, profName, &pProf, false) == true)
-	{
+	if (getConfigProfile(CONFIG_LOAD_GLOBAL, profName, &pProf, false) ==
+	    true) {
 		freeConfigProfile(&pProf);
 		return CONFIG_LOAD_GLOBAL;
 	}
@@ -4173,21 +4275,20 @@ unsigned char XSupCalls::getTSType(QString tsName)
 {
 	config_trusted_server *pTS = NULL;
 
-	if (tsName == "") return 0;
+	if (tsName == "")
+		return 0;
 
-	if (getConfigTrustedServer(CONFIG_LOAD_USER, tsName, &pTS, false) == true)
-	{
+	if (getConfigTrustedServer(CONFIG_LOAD_USER, tsName, &pTS, false) ==
+	    true) {
 		freeConfigTrustedServer(&pTS);
 		return CONFIG_LOAD_USER;
 	}
 
-	if (getConfigTrustedServer(CONFIG_LOAD_GLOBAL, tsName, &pTS, false) == true)
-	{
+	if (getConfigTrustedServer(CONFIG_LOAD_GLOBAL, tsName, &pTS, false) ==
+	    true) {
 		freeConfigTrustedServer(&pTS);
 		return CONFIG_LOAD_GLOBAL;
 	}
 
 	return 0;
 }
-
-

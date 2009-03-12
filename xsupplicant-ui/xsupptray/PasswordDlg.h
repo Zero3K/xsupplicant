@@ -38,30 +38,28 @@
 #include <QLabel>
 #include <QPushButton>
 
-class PasswordDlg : public QWidget
-{
-  Q_OBJECT 
-public:
-  PasswordDlg(const QString &conn, const QString &eap, const QString &challengeString);
-public:
-  ~PasswordDlg(void);
-  bool attach();
-  void show();
-  QString getPassword();
-  QString getConnName();
+class PasswordDlg:public QWidget {
+ Q_OBJECT public:
+	PasswordDlg(const QString & conn, const QString & eap,
+		    const QString & challengeString);
+ public:
+	~PasswordDlg(void);
+	bool attach();
+	void show();
+	QString getPassword();
+	QString getConnName();
 
-signals:
-  void signalDone();
+	 signals: void signalDone();
 
-private:
-  QString   m_connName;
-  QString   m_eapType;
-  QString   m_challenge;
+ private:
+	 QString m_connName;
+	QString m_eapType;
+	QString m_challenge;
 
-  QWidget     *m_pRealForm;
-  QPushButton *m_pOKBtn;
-  QLineEdit   *m_pResponseField;
-  QLabel      *m_pServerChallenge;
+	QWidget *m_pRealForm;
+	QPushButton *m_pOKBtn;
+	QLineEdit *m_pResponseField;
+	QLabel *m_pServerChallenge;
 };
 
-#endif  // _PASSWORDDLG_H_
+#endif				// _PASSWORDDLG_H_

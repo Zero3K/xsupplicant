@@ -36,125 +36,135 @@
 #include "Util.h"
 
 #ifndef WINDOWS
-extern "C"{
+extern "C" {
 #include "xsupgui_request.h"
 };
 #endif
 
-bool Util::myConnect(const QObject *from, const char *signal, const QObject *to, const char *slot)
+bool Util::myConnect(const QObject * from, const char *signal,
+		     const QObject * to, const char *slot)
 {
-  if (!connect(from, signal, to, slot))
-  {
-    QString text = QString (tr("QT connect() API failed\nFrom class: %1\n\tSIGNAL: '%2\nTo class: %3\n\tSLOT: '%4'\n"))
-      .arg(from->metaObject()->className())
-      .arg(signal)
-      .arg(to->metaObject()->className())
-      .arg(slot);
+	if (!connect(from, signal, to, slot)) {
+		QString text =
+		    QString(tr
+			    ("QT connect() API failed\nFrom class: %1\n\tSIGNAL: '%2\nTo class: %3\n\tSLOT: '%4'\n"))
+		    .arg(from->metaObject()->className())
+		    .arg(signal)
+		    .arg(to->metaObject()->className())
+		    .arg(slot);
 
-    // This doesn't work if we are not in the main GUI thread
-    if (QThread::currentThread() == qApp->thread())
-    {
-      QMessageBox::critical(NULL, tr("Run-time coding API Error"), text);
-    }
+		// This doesn't work if we are not in the main GUI thread
+		if (QThread::currentThread() == qApp->thread()) {
+			QMessageBox::critical(NULL,
+					      tr("Run-time coding API Error"),
+					      text);
+		}
 
-    return false;
-  }
-  return true;
+		return false;
+	}
+	return true;
 }
 
-bool Util::myDisconnect(const QObject *from, const char *signal, const QObject *to, const char *slot)
+bool Util::myDisconnect(const QObject * from, const char *signal,
+			const QObject * to, const char *slot)
 {
-  if (!disconnect(from, signal, to, slot))
-  {
-    QString text = QString (tr("QT disconnect() API failed\nFrom class: %1\n\tSLOT: '%2\nTo class: %3\n\tSIGNAL: '%4'\n"))
-      .arg(from->metaObject()->className())
-      .arg(signal)
-      .arg(to->metaObject()->className())
-      .arg(slot);
-    QMessageBox::critical(NULL, tr("Run-time coding API Error"), text);
-    return false;
-  }
-  return true;
+	if (!disconnect(from, signal, to, slot)) {
+		QString text =
+		    QString(tr
+			    ("QT disconnect() API failed\nFrom class: %1\n\tSLOT: '%2\nTo class: %3\n\tSIGNAL: '%4'\n"))
+		    .arg(from->metaObject()->className())
+		    .arg(signal)
+		    .arg(to->metaObject()->className())
+		    .arg(slot);
+		QMessageBox::critical(NULL, tr("Run-time coding API Error"),
+				      text);
+		return false;
+	}
+	return true;
 }
 
-QPushButton *Util::createButton(const QString &text, QObject *thisPtr, const char *slot, const QString &toolTip)
+QPushButton *Util::createButton(const QString & text, QObject * thisPtr,
+				const char *slot, const QString & toolTip)
 {
-    QPushButton *item = new QPushButton(text);
-    Util::myConnect(item, SIGNAL(clicked()), thisPtr, slot);
-    item->setToolTip(toolTip);
-    return item;
+	QPushButton *item = new QPushButton(text);
+	Util::myConnect(item, SIGNAL(clicked()), thisPtr, slot);
+	item->setToolTip(toolTip);
+	return item;
 }
 
-QRadioButton *Util::createRadioButton(const QString &text, QObject *thisPtr, const char *slot, const QString &toolTip)
+QRadioButton *Util::createRadioButton(const QString & text, QObject * thisPtr,
+				      const char *slot, const QString & toolTip)
 {
-    QRadioButton *item = new QRadioButton(text);
-    Util::myConnect(item, SIGNAL(clicked()), thisPtr, slot);
-    item->setToolTip(toolTip);
-    return item;
+	QRadioButton *item = new QRadioButton(text);
+	Util::myConnect(item, SIGNAL(clicked()), thisPtr, slot);
+	item->setToolTip(toolTip);
+	return item;
 }
 
-QComboBox *Util::createComboBox(const QString &whatsThis)
+QComboBox *Util::createComboBox(const QString & whatsThis)
 {
-    QComboBox * item = new QComboBox();
-    item->setWhatsThis(whatsThis);
-    item->setToolTip(whatsThis);
-    return item;
+	QComboBox *item = new QComboBox();
+	item->setWhatsThis(whatsThis);
+	item->setToolTip(whatsThis);
+	return item;
 }
 
-QLineEdit *Util::createLineEdit(const QString &text, const QString &whatsThis)
+QLineEdit *Util::createLineEdit(const QString & text, const QString & whatsThis)
 {
-    QLineEdit *item = new QLineEdit(text);
-    item->setWhatsThis(whatsThis);
-    item->setToolTip(whatsThis);
-    return item;
+	QLineEdit *item = new QLineEdit(text);
+	item->setWhatsThis(whatsThis);
+	item->setToolTip(whatsThis);
+	return item;
 }
 
-QTextEdit *Util::createTextEdit(const QString &text, const QString &whatsThis)
+QTextEdit *Util::createTextEdit(const QString & text, const QString & whatsThis)
 {
-    QTextEdit *item = new QTextEdit(text);
-    item->setWhatsThis(whatsThis);
-    item->setToolTip(whatsThis);
-    return item;
+	QTextEdit *item = new QTextEdit(text);
+	item->setWhatsThis(whatsThis);
+	item->setToolTip(whatsThis);
+	return item;
 }
 
-QListWidget *Util::createListWidget(const QString &whatsThis)
+QListWidget *Util::createListWidget(const QString & whatsThis)
 {
-    QListWidget *item = new QListWidget();
-    item->setWhatsThis(whatsThis);
-    item->setToolTip(whatsThis);
-    return item;
+	QListWidget *item = new QListWidget();
+	item->setWhatsThis(whatsThis);
+	item->setToolTip(whatsThis);
+	return item;
 }
 
-QCheckBox *Util::createCheckBox(const QString &text, const QString &whatsThis)
+QCheckBox *Util::createCheckBox(const QString & text, const QString & whatsThis)
 {
-    QCheckBox *item = new QCheckBox(text);
-    item->setWhatsThis(whatsThis);
-    item->setToolTip(whatsThis);
-    return item;
+	QCheckBox *item = new QCheckBox(text);
+	item->setWhatsThis(whatsThis);
+	item->setToolTip(whatsThis);
+	return item;
 }
 
-QRadioButton *Util::createRadioButton(const QString &text, const QString &whatsThis)
+QRadioButton *Util::createRadioButton(const QString & text,
+				      const QString & whatsThis)
 {
-    QRadioButton *item = new QRadioButton(text);
-    item->setWhatsThis(whatsThis);
-    item->setToolTip(whatsThis);
-    return item;
+	QRadioButton *item = new QRadioButton(text);
+	item->setWhatsThis(whatsThis);
+	item->setToolTip(whatsThis);
+	return item;
 }
 
-QLabel *Util::createLabel(const QString &text, const QString &whatsThis)
+QLabel *Util::createLabel(const QString & text, const QString & whatsThis)
 {
-    QLabel *item = new QLabel(text);
-    item->setWhatsThis(whatsThis);
-    item->setToolTip(whatsThis);
-    return item;
+	QLabel *item = new QLabel(text);
+	item->setWhatsThis(whatsThis);
+	item->setToolTip(whatsThis);
+	return item;
 }
 
-void Util::setWidgetWidth(QWidget *pWidget, char *text)
+void Util::setWidgetWidth(QWidget * pWidget, char *text)
 {
-    QFontMetrics f = pWidget->fontMetrics();
-    int width = f.width(text);
-    pWidget->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    pWidget->setFixedWidth(width);
+	QFontMetrics f = pWidget->fontMetrics();
+	int width = f.width(text);
+	pWidget->
+	    setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+	pWidget->setFixedWidth(width);
 }
 
 //! isValidIPAddress
@@ -163,61 +173,54 @@ void Util::setWidgetWidth(QWidget *pWidget, char *text)
   \param[in] b  - not used
   \return Nothing
 */
-bool Util::isValidIPAddress(QString &ipaddr)
+bool Util::isValidIPAddress(QString & ipaddr)
 {
-  int ipAddress[4];
-  int i = 0;
-  bool ok = false;
-  QStringList ipAddressList = ipaddr.split(".", QString::KeepEmptyParts);
-  i = ipAddressList.count();
-  if (ipAddressList.count() < 4)
-  {
-    return false;
-  }
+	int ipAddress[4];
+	int i = 0;
+	bool ok = false;
+	QStringList ipAddressList = ipaddr.split(".", QString::KeepEmptyParts);
+	i = ipAddressList.count();
+	if (ipAddressList.count() < 4) {
+		return false;
+	}
 
-  for (i = 0; i < 4; i++)
-  {
-    ipAddress[i] = ipAddressList[i].toInt(&ok);
-    if (!ok)
-    {
-      return false;
-    }
-  }
+	for (i = 0; i < 4; i++) {
+		ipAddress[i] = ipAddressList[i].toInt(&ok);
+		if (!ok) {
+			return false;
+		}
+	}
 
-  // If they are all 0's then leave it
-  if (ipAddress[0] == 0 &&  ipAddress[1] == 0 && ipAddress[2] == 0 && ipAddress[3] == 0)
-  {
-    return true;
-  }
+	// If they are all 0's then leave it
+	if (ipAddress[0] == 0 && ipAddress[1] == 0 && ipAddress[2] == 0
+	    && ipAddress[3] == 0) {
+		return true;
+	}
 
-  for (i = 0; i < 4; i++)
-  {
-    if (ipAddress[i] < 1 || ipAddress[i] > 255)
-    {
-      return false;
-    }
-  }
-  return true;
+	for (i = 0; i < 4; i++) {
+		if (ipAddress[i] < 1 || ipAddress[i] > 255) {
+			return false;
+		}
+	}
+	return true;
 }
-
 
 void Util::myFree(char **p)
 {
-  if (p && (*p))  
-  {
-    free((*p));
-  }
-  (*p)=NULL;
+	if (p && (*p)) {
+		free((*p));
+	}
+	(*p) = NULL;
 }
 
 void Util::myFree(void **p)
 {
-  if (p && (*p))
-  {
-    free((*p));
-  }
-  (*p)=NULL;
+	if (p && (*p)) {
+		free((*p));
+	}
+	(*p) = NULL;
 }
+
 //! createPixmapLabel
 /*!
    \brief Opens the help file
@@ -226,42 +229,39 @@ void Util::myFree(void **p)
    \return nothing
    \note (none)
 */
-QLabel *Util::createPixmapLabel(QString &URLPath) // , int height, int width)
+QLabel *Util::createPixmapLabel(QString & URLPath)	// , int height, int width)
 {
-  QPixmap pixMap;
-  QLabel *pLabel = new QLabel();
-  if (pixMap.load(URLPath))
-  {
+	QPixmap pixMap;
+	QLabel *pLabel = new QLabel();
+	if (pixMap.load(URLPath)) {
 //    QPixmap scaledPixMap = pixMap.scaled(width, height,Qt::IgnoreAspectRatio);
-    pLabel->setPixmap(pixMap); // scaledPixMap);
-  }
-  return pLabel;
+		pLabel->setPixmap(pixMap);	// scaledPixMap);
+	}
+	return pLabel;
 }
 
 QString Util::removePacketSchedulerFromName(char *fullName)
 {
-  // Remove the stuff after the '-' to show to the user
-  // Add the full name in the data
-  QString partialName = fullName;
-  int pos = partialName.indexOf(" - Packet Scheduler Miniport", 0);
-  if (pos >= 0)
-  {
-    partialName.truncate(pos);
-  }
-  return partialName;
+	// Remove the stuff after the '-' to show to the user
+	// Add the full name in the data
+	QString partialName = fullName;
+	int pos = partialName.indexOf(" - Packet Scheduler Miniport", 0);
+	if (pos >= 0) {
+		partialName.truncate(pos);
+	}
+	return partialName;
 }
 
-QString Util::removePacketSchedulerFromName(const QString &fullName)
+QString Util::removePacketSchedulerFromName(const QString & fullName)
 {
-  // Remove the stuff after the '-' to show to the user
-  // Add the full name in the data
-  QString partialName = fullName;
-  int pos = partialName.indexOf(" - Packet Scheduler Miniport", 0);
-  if (pos >= 0)
-  {
-    partialName.truncate(pos);
-  }
-  return partialName;
+	// Remove the stuff after the '-' to show to the user
+	// Add the full name in the data
+	QString partialName = fullName;
+	int pos = partialName.indexOf(" - Packet Scheduler Miniport", 0);
+	if (pos >= 0) {
+		partialName.truncate(pos);
+	}
+	return partialName;
 }
 
 //! myStrdup()
@@ -273,24 +273,19 @@ QString Util::removePacketSchedulerFromName(const QString &fullName)
 */
 char *Util::myNullStrdup(const char *p)
 {
-  if (p && *p)
-  {
-    return _strdup(p);
-  }
-  else
-  {
-    return NULL;
-  }
+	if (p && *p) {
+		return _strdup(p);
+	} else {
+		return NULL;
+	}
 }
- 
+
 void Util::useBackslash(char *str)
 {
 	unsigned int i;
 
-	for (i=0; i<strlen(str); i++)
-	{
-		if (str[i] == '/')
-		{
+	for (i = 0; i < strlen(str); i++) {
+		if (str[i] == '/') {
 			str[i] = '\\';
 		}
 	}
@@ -299,34 +294,33 @@ void Util::useBackslash(char *str)
 Util::ConnectionStatus Util::getConnectionStatusFromPhysicalState(int state)
 {
 	Util::ConnectionStatus connStatus;
-	switch (state)
-	{
-		case WIRELESS_UNKNOWN_STATE:
-		case WIRELESS_UNASSOCIATED:
-		case WIRELESS_ACTIVE_SCAN:
-		case WIRELESS_PORT_DOWN:
-		case WIRELESS_INT_STOPPED:
-		case WIRELESS_INT_HELD:
-		case WIRELESS_INT_RESTART:
-			connStatus = Util::status_idle;
-			break;
+	switch (state) {
+	case WIRELESS_UNKNOWN_STATE:
+	case WIRELESS_UNASSOCIATED:
+	case WIRELESS_ACTIVE_SCAN:
+	case WIRELESS_PORT_DOWN:
+	case WIRELESS_INT_STOPPED:
+	case WIRELESS_INT_HELD:
+	case WIRELESS_INT_RESTART:
+		connStatus = Util::status_idle;
+		break;
 
-		case WIRELESS_ASSOCIATING:
-		case WIRELESS_ASSOCIATION_TIMEOUT_S:
-			connStatus = Util::status_connecting;
-			break;
+	case WIRELESS_ASSOCIATING:
+	case WIRELESS_ASSOCIATION_TIMEOUT_S:
+		connStatus = Util::status_connecting;
+		break;
 
-		case WIRELESS_NO_ENC_ASSOCIATION:
-			connStatus = Util::status_connected;
-			break;
+	case WIRELESS_NO_ENC_ASSOCIATION:
+		connStatus = Util::status_connected;
+		break;
 
-		case WIRELESS_ASSOCIATED:
-			connStatus = Util::status_connected;
-			break;
+	case WIRELESS_ASSOCIATED:
+		connStatus = Util::status_connected;
+		break;
 
-		default:
-			connStatus = Util::status_unknown;
-			break;
+	default:
+		connStatus = Util::status_unknown;
+		break;
 	}
 	return connStatus;
 }
@@ -334,34 +328,33 @@ Util::ConnectionStatus Util::getConnectionStatusFromPhysicalState(int state)
 Util::ConnectionStatus Util::getConnectionStatusFromDot1XState(int state)
 {
 	Util::ConnectionStatus connStatus;
-	
-	switch (state)
-	{
-		case LOGOFF:
-		case DISCONNECTED:
-		case S_FORCE_UNAUTH:
-			connStatus = Util::status_idle;
-			break;
 
-		case CONNECTING:
-		case ACQUIRED:
-		case AUTHENTICATING:
-		case RESTART:
-			connStatus = Util::status_connecting;
-			break;
+	switch (state) {
+	case LOGOFF:
+	case DISCONNECTED:
+	case S_FORCE_UNAUTH:
+		connStatus = Util::status_idle;
+		break;
 
-		case HELD:
-			connStatus = Util::status_authFailed;
-			break;
+	case CONNECTING:
+	case ACQUIRED:
+	case AUTHENTICATING:
+	case RESTART:
+		connStatus = Util::status_connecting;
+		break;
 
-		case AUTHENTICATED:
-		case S_FORCE_AUTH:
-			connStatus = Util::status_connected;
-			break;
+	case HELD:
+		connStatus = Util::status_authFailed;
+		break;
 
-		default:
-			connStatus = Util::status_unknown;  // This should be impossible!
-			break;
+	case AUTHENTICATED:
+	case S_FORCE_AUTH:
+		connStatus = Util::status_connected;
+		break;
+
+	default:
+		connStatus = Util::status_unknown;	// This should be impossible!
+		break;
 	}
 	return connStatus;
 }
@@ -369,30 +362,30 @@ Util::ConnectionStatus Util::getConnectionStatusFromDot1XState(int state)
 QString Util::getConnectionTextFromConnectionState(Util::ConnectionStatus state)
 {
 	QString text = QWidget::tr("Unknown");
-	switch (state)
-	{
-		case Util::status_unknown:
-			text = QWidget::tr("Unknown");
-			break;
-		case Util::status_idle:
-			text = QWidget::tr("Idle");
-			break;
-		case Util::status_connecting:
-			text = QWidget::tr("Connecting...");
-			break;
-		case Util::status_connected:
-			text = QWidget::tr("Connected");
-			break;	
-		case Util::status_authFailed:
-			text = QWidget::tr("Authentication Failed");
-			break;					
+	switch (state) {
+	case Util::status_unknown:
+		text = QWidget::tr("Unknown");
+		break;
+	case Util::status_idle:
+		text = QWidget::tr("Idle");
+		break;
+	case Util::status_connecting:
+		text = QWidget::tr("Connecting...");
+		break;
+	case Util::status_connected:
+		text = QWidget::tr("Connected");
+		break;
+	case Util::status_authFailed:
+		text = QWidget::tr("Authentication Failed");
+		break;
 	}
 	return text;
 }
 
 bool Util::isIPAddrValid(QString addr)
 {
-	if ((addr == "0.0.0.0") || (addr == "255.255.255.255")) return false;
+	if ((addr == "0.0.0.0") || (addr == "255.255.255.255"))
+		return false;
 
 	return true;
 }
@@ -404,22 +397,27 @@ unsigned int Util::ipToInt(QString addr, unsigned int failure)
 	bool ok;
 
 	regex.indexIn(addr);
-	if (regex.exactMatch(addr) == false) return failure;   // return all Fs, so that any tests done fail.
+	if (regex.exactMatch(addr) == false)
+		return failure;	// return all Fs, so that any tests done fail.
 
 	result = regex.cap(1).toInt(&ok);
-	if (!ok) return failure;
+	if (!ok)
+		return failure;
 	result = result << 24;
 
 	temp = regex.cap(2).toInt(&ok);
-	if (!ok) return failure;
+	if (!ok)
+		return failure;
 	result |= (temp << 16);
 
 	temp = regex.cap(3).toInt(&ok);
-	if (!ok) return failure;
+	if (!ok)
+		return failure;
 	result |= (temp << 8);
 
 	temp = regex.cap(4).toInt(&ok);
-	if (!ok) return failure;
+	if (!ok)
+		return failure;
 	result |= temp;
 
 	return result;
@@ -432,30 +430,27 @@ bool Util::isNetmaskValid(QString netmask)
 	int i = 0;
 	int x = 0;
 
-	if (netmask == "") return false;
+	if (netmask == "")
+		return false;
 
 	addr = ipToInt(netmask, 0);
-	if (addr == 0) return false;
+	if (addr == 0)
+		return false;
 
-	if ((addr & 0x80000000) != 0x80000000)
-	{
+	if ((addr & 0x80000000) != 0x80000000) {
 		// Our first bit isn't 1, this mask is invalid.
 		return false;
 	}
 
-	for (i=31; i>=0; i--)
-	{
+	for (i = 31; i >= 0; i--) {
 		x = 0;
 		x = (1 << i);
-		if ((x & addr) == x)
-		{
-			if (ones != true) return false;   // We got an "out of place" 1.
-		}
-		else
-		{
-			if (ones == true)
-			{
-				ones = false;   // From here on out, everything should be a 0.
+		if ((x & addr) == x) {
+			if (ones != true)
+				return false;	// We got an "out of place" 1.
+		} else {
+			if (ones == true) {
+				ones = false;	// From here on out, everything should be a 0.
 			}
 		}
 	}
@@ -469,18 +464,21 @@ bool Util::isGWinSubnet(QString addr, QString netmask, QString gateway)
 	uint32_t addr_net_part = 0;
 	uint32_t gw_net_part = 0;
 
-	if ((addr == "") || (netmask == "") || (gateway == "")) return FALSE;
+	if ((addr == "") || (netmask == "") || (gateway == ""))
+		return FALSE;
 
 	addr_n = ipToInt(addr, 0);
 	netmask_n = ipToInt(netmask, 0);
 	gateway_n = ipToInt(gateway, 0);
 
-	if ((addr_n == 0) || (netmask_n == 0) || (gateway_n == 0)) return FALSE;
+	if ((addr_n == 0) || (netmask_n == 0) || (gateway_n == 0))
+		return FALSE;
 
 	addr_net_part = addr_n & netmask_n;
 	gw_net_part = gateway_n & netmask_n;
 
-	if (addr_net_part != gw_net_part) return false;  // They are in different subnets.
+	if (addr_net_part != gw_net_part)
+		return false;	// They are in different subnets.
 
 	return true;
 }
@@ -490,19 +488,20 @@ bool Util::ipIsBroadcast(QString addr, QString netmask)
 	uint32_t addr_n = 0, netmask_n = 0;
 	uint32_t addr_host_part = 0;
 
-	if ((addr == "") || (netmask == "")) return false;
+	if ((addr == "") || (netmask == ""))
+		return false;
 
 	addr_n = ipToInt(addr, 0);
 	netmask_n = ipToInt(netmask, 0);
 
-	if ((addr_n == 0) || (netmask_n == 0)) return false;
+	if ((addr_n == 0) || (netmask_n == 0))
+		return false;
 
 	netmask_n = ~netmask_n;
 	addr_host_part = addr_n & netmask_n;
 
-	if ((addr_host_part == 0) || (addr_host_part == netmask_n)) return true;
+	if ((addr_host_part == 0) || (addr_host_part == netmask_n))
+		return true;
 
 	return false;
 }
-
-

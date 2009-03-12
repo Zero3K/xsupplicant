@@ -28,32 +28,26 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef CREATETT_H
 #define CREATETT_H
-
+    
 #include <QObject>
 #include <QDialog>
 #include <QLabel>
-
+    
 #include "Emitter.h"
 #include "xsupcalls.h"
+ class CreateTT:public QDialog  {
+ Q_OBJECT  public:CreateTT(Emitter * pEmitter, XSupCalls * pSupplicant,
+		  QWidget * parent);
+	~CreateTT();
+ private:XSupCalls * m_pSupplicant;
+	Emitter * m_pEmitter;
+	QLabel * m_pText;
+	QVBoxLayout * m_pLayout;
+};
 
-class CreateTT : public QDialog
-{
-	Q_OBJECT
-
-public:
-	CreateTT(Emitter *pEmitter, XSupCalls *pSupplicant, QWidget *parent);
-	~CreateTT();
-
-private:
-	XSupCalls *m_pSupplicant;
-	Emitter *m_pEmitter;
-
-	QLabel *m_pText;
-	QVBoxLayout *m_pLayout;
-};
-
-#endif // CREATETT_H
+
+#endif				// CREATETT_H

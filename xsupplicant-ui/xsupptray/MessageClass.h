@@ -38,33 +38,28 @@
 class QObject;
 class QString;
 
-void myMsgHandler(QtMsgType type , const char *msg);
+void myMsgHandler(QtMsgType type, const char *msg);
 
-typedef struct messages
-{
-  int messageNumber;
-  QString text;
-}MessageS;
+typedef struct messages {
+	int messageNumber;
+	QString text;
+} MessageS;
 
 //!\class MessageClass
 /*!\brief The messaging class to be throughout.
 */
-class MessageClass :
-  public QObject
-{
-  Q_OBJECT
-public:
-  MessageClass(QWidget *pParent);
-public:
-  virtual ~MessageClass(void);
-  static MessageS m_xSupCalls[];
+class MessageClass: public QObject {
+ Q_OBJECT public:
+	MessageClass(QWidget * pParent);
+ public:
+	virtual ~ MessageClass(void);
+	static MessageS m_xSupCalls[];
 
-private:
-  QWidget *m_pParent;
+ private:
+	 QWidget * m_pParent;
 
-public:
-  QString getMessageString(int errorNumber);
+ public:
+	 QString getMessageString(int errorNumber);
 };
 
-#endif // _MESSAGECLASS_H_
-
+#endif				// _MESSAGECLASS_H_

@@ -58,44 +58,40 @@
 #define PLUGIN_LOAD_SUCCESS        3
 #define PLUGIN_DESTROY_SUCCESS     4
 
-
-class UIPlugins : public QObject
-{
-	Q_OBJECT
-
-private:
-protected:
-	PluginWidget *plugin; // The widget for this plugin
+class UIPlugins:public QObject {
+ Q_OBJECT private:
+ protected:
+	PluginWidget * plugin;	// The widget for this plugin
 
 	int type;
-	int index;         // The index of this plugin's widget (for those that can be added/removed from parents)
-	bool initialized;  // Is the plugin's widget object instantiated?
-	bool loaded;       // Is the DLL loaded?
-	config_profiles *m_pProfile; // The configuration profile
-	Emitter *m_pEmitter;         // The signal emitter from our parent.
+	int index;		// The index of this plugin's widget (for those that can be added/removed from parents)
+	bool initialized;	// Is the plugin's widget object instantiated?
+	bool loaded;		// Is the DLL loaded?
+	config_profiles *m_pProfile;	// The configuration profile
+	Emitter *m_pEmitter;	// The signal emitter from our parent.
 	XSupCalls *m_pSupplicant;
 #ifdef WIN32
 	HINSTANCE hdll;
-#endif // WIN32
-public:
-	UIPlugins *next;
+#endif				// WIN32
+ public:
+	 UIPlugins * next;
 
-	UIPlugins();
-	UIPlugins(Emitter *pEmitter, XSupCalls *pSupplicant);
+	 UIPlugins();
+	 UIPlugins(Emitter * pEmitter, XSupCalls * pSupplicant);
 	~UIPlugins();
 	int loadPlugin(char *location);
 	void unloadPlugin();
 	void setType(int newType);
 	int getType();
 	bool isType(int pluginType);
-	int addToParent(QWidget *parent);
-	int removeFromParent(QWidget *parent);
+	int addToParent(QWidget * parent);
+	int removeFromParent(QWidget * parent);
 	bool isInitialized();
 	bool isLoaded();
 	int instantiateWidget();
 	int destroyWidget();
-	void setProfile(config_profiles *pProfile);
-	virtual void setEmitter(Emitter *pEmitter);
+	void setProfile(config_profiles * pProfile);
+	virtual void setEmitter(Emitter * pEmitter);
 	virtual void setCallbacks(UICallbacks uiCallbacks);
 	QString getPluginVersionString();
 	void updateEngineVersionString(QString m_newVersion);
@@ -105,7 +101,7 @@ public:
 	void showHelp();
 #ifdef WIN32
 	HINSTANCE getPlugin();
-#endif //WIN32
+#endif				//WIN32
 };
 
-#endif // XSUPPLICANT_UI_PLUGINS_H
+#endif				// XSUPPLICANT_UI_PLUGINS_H

@@ -28,85 +28,71 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef _SSIDLISTDLG_H_
 #define _SSIDLISTDLG_H_
-
+    
 #include <QPushButton>
 #include <QWidget>
 #include <QTableWidget>
 #include <QLabel>
 #include <QTimer>
 #include "SSIDList.h"
-
-class Emitter;
-class WirelessScanDlg;
-class TrayApp;
-class ConnectionWizard;
-class ConnectionSelectDlg;
-
-class SSIDListDlg : public QWidget
-{
-	Q_OBJECT
-
-public:
-	SSIDListDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, TrayApp *supplicant);
-	~SSIDListDlg();
-	bool create(void);
-	void show(void);
-	void refreshList(const QString &adapterName);
-	
-private:
-	typedef struct networkInfo {
-		QString name;
-		int signal;
-		int security;
-	};
-	
-private:
-	bool initUI(void);
-	void connectToNetwork(const WirelessNetworkInfo &);
-	void promptConnectionSelection(const QStringList &connList, QString adapterDesc);	
-	
-private slots:
-	void slotShowHelp(void);
-	void rescanNetworks(void);
-	void wirelessScanComplete(const QString&);
-	void cancelScan(void);
-	void handleSSIDListSelectionChange(const WirelessNetworkInfo &);
-	void handleSSIDListDoubleClick(const WirelessNetworkInfo &);
-	void connectToSelectedNetwork(void);
-	void cleanupConnectionWizard(void);
-	void finishConnectionWizard(bool, const QString &, const QString &);
-	void cleanupConnSelDialog(void);
-	void refreshScanTimeout(void);
-
-private:
-
-	Emitter *m_pEmitter;
-	QWidget *m_pRealForm;
-	QWidget *m_pParent;
-	QWidget *m_pParentWindow;
-  
-	// cached pointers to UI objects
-	QPushButton *m_pCloseButton;
-	QPushButton *m_pHelpButton; 
-	QPushButton *m_pRefreshButton;
-	QPushButton *m_pConnectButton;
-	QLabel * m_pHeaderLabel;
-	QTableWidget *m_pSSIDTable;
-	
-	ConnectionWizard *m_pConnWizard;
-	WirelessScanDlg *m_pRescanDialog;
-	SSIDList *m_pSSIDList;
-	QString m_curAdapter;
-	WirelessNetworkInfo m_selectedNetwork;
-	TrayApp *m_pSupplicant;
-	ConnectionSelectDlg *m_pConnSelDlg;
-	
-	QTimer m_refreshTimer;
-	static const int refreshTimeout = 30; // number of seconds before timing out when rescanning for networks
+    class Emitter;
+class WirelessScanDlg;
+class TrayApp;
+class ConnectionWizard;
+class ConnectionSelectDlg;
+ class SSIDListDlg:public QWidget  {
+ Q_OBJECT  public:SSIDListDlg(QWidget * parent, QWidget * parentWindow, Emitter * e,
+		     TrayApp * supplicant);
+	~SSIDListDlg();
+	bool create(void);
+	void show(void);
+	void refreshList(const QString & adapterName);
+ private:typedef struct networkInfo {
+		QString name;
+		int signal;
+		 int security;
+	};
+ private:bool initUI(void);
+	void connectToNetwork(const WirelessNetworkInfo &);
+	void promptConnectionSelection(const QStringList & connList,
+					QString adapterDesc);
+ private slots:void slotShowHelp(void);
+	void rescanNetworks(void);
+	void wirelessScanComplete(const QString &);
+	void cancelScan(void);
+	void handleSSIDListSelectionChange(const WirelessNetworkInfo &);
+	void handleSSIDListDoubleClick(const WirelessNetworkInfo &);
+	void connectToSelectedNetwork(void);
+	void cleanupConnectionWizard(void);
+	void finishConnectionWizard(bool, const QString &, const QString &);
+	void cleanupConnSelDialog(void);
+	void refreshScanTimeout(void);
+ private:Emitter * m_pEmitter;
+	QWidget * m_pRealForm;
+	QWidget * m_pParent;
+	QWidget * m_pParentWindow;
+	
+	    // cached pointers to UI objects
+	    QPushButton * m_pCloseButton;
+	QPushButton * m_pHelpButton;
+	QPushButton * m_pRefreshButton;
+	QPushButton * m_pConnectButton;
+	QLabel * m_pHeaderLabel;
+	QTableWidget * m_pSSIDTable;
+	ConnectionWizard * m_pConnWizard;
+	WirelessScanDlg * m_pRescanDialog;
+	SSIDList * m_pSSIDList;
+	QString m_curAdapter;
+	WirelessNetworkInfo m_selectedNetwork;
+	TrayApp * m_pSupplicant;
+	ConnectionSelectDlg * m_pConnSelDlg;
+	QTimer m_refreshTimer;
+	static const int refreshTimeout = 30;	// number of seconds before timing out when rescanning for networks
 };
 
+
 #endif

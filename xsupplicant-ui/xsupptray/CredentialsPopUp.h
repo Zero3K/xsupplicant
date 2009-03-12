@@ -28,11 +28,11 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef _CREDENTIALSPOPUP_H_
 #define _CREDENTIALSPOPUP_H_
-
+    
 #include <QLabel>
 #include <QPushButton>
 #include <QWidget>
@@ -41,63 +41,46 @@
 #include "xsupcalls.h"
 #include "MessageClass.h"
 #include "Util.h"
+    class Emitter;
+class CredentialsManager;
+ class CredentialsPopUp:public QWidget  {
+ Q_OBJECT  public:CredentialsPopUp(QString connName, QString deviceName,
+			  QWidget * parent, Emitter * e);
+	~CredentialsPopUp();
+	bool create();
+	void updateData();
+	void show();
+	static void clearCredentialsManager();
+ signals:void close();
+ private slots:void slotOkayBtn();
+	void slotDisconnectBtn();
+	void slotWEPComboChange(int);
+ private:bool createUPW();
+	bool createPSK();
+	bool createWEP();
+	bool createPIN();
+	bool isPINType();
+	void setupWindow();
+ private:QWidget * m_pRealForm;
+	QDialog * m_pDialog;
+	XSupCalls m_supplicant;
+	Emitter * m_pEmitter;
+	QDialogButtonBox * m_pButtonBox;
+	QLineEdit * m_pUsername;
+	QLineEdit * m_pPassword;
+	QLabel * m_pDialogMsg;
+	QString m_connName;
+	QString m_deviceName;
+	QCheckBox * m_pRememberCreds;
+	QComboBox * m_pWEPCombo;
+	bool m_doingPsk;
+	bool m_doingWEP;
+	bool m_ignoreNoPwd;
+	char *p_user;
+	char *p_pass;
+	unsigned char conn_type;
+	static CredentialsManager *m_pCredManager;
+};
 
-class Emitter;
-class CredentialsManager;
-
-class CredentialsPopUp : public QWidget
-{
-	Q_OBJECT
-
-public:
-	CredentialsPopUp(QString connName, QString deviceName, QWidget *parent, Emitter *e);
-	~CredentialsPopUp();
-	bool create();
-	void updateData();
-	void show();
-
-	static void clearCredentialsManager();
-
-signals:
-	void close();
-
-private slots:
-	void slotOkayBtn();
-	void slotDisconnectBtn();
-	void slotWEPComboChange(int);
-
-private:
-	bool createUPW();
-	bool createPSK();
-	bool createWEP();
-	bool createPIN();
-	bool isPINType();
-	void setupWindow();
-	
-private:
-
-	QWidget *m_pRealForm;
-	QDialog *m_pDialog;
-
-	XSupCalls m_supplicant;
-	Emitter *m_pEmitter;
-	QDialogButtonBox *m_pButtonBox;
-	QLineEdit *m_pUsername;
-	QLineEdit *m_pPassword;
-	QLabel *m_pDialogMsg;
-	QString m_connName;
-	QString m_deviceName;
-	QCheckBox *m_pRememberCreds;
-	QComboBox *m_pWEPCombo;
-	bool m_doingPsk;
-	bool m_doingWEP;
-	bool m_ignoreNoPwd;
-
-	char *p_user;
-	char *p_pass;
-	unsigned char conn_type;
-	
-	static CredentialsManager *m_pCredManager;
-};
-
-#endif  // _CREDENTIALSPOPUP_H_
+
+#endif				// _CREDENTIALSPOPUP_H_

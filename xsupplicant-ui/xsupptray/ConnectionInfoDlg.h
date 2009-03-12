@@ -28,77 +28,67 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef _CONNECTIONINFODLG_H_
 #define _CONNECTIONINFODLG_H_
-
+    
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
 #include <QTimer>
 #include <QTime>
 #include <QPixmap>
-
-class Emitter;
-
-class ConnectionInfoDlg : public QWidget
-{
-	Q_OBJECT
-
-public:
-	ConnectionInfoDlg(QWidget *parent, QWidget *parentWindow, Emitter *e, QTime *parentTime);
-	~ConnectionInfoDlg();
-	bool create(void);
-	void show(void);
-	void setAdapter(const QString &adapterDesc);
-	void showTime(void);
-	
-private:
-	bool initUI(void);
-	void startConnectedTimer(void);
-	void stopAndClearTimer(void);
-	void updateWirelessState(void);
-	void updateWiredState(void);
-	void clearUI(void);
-	void updateElapsedTime(void);
-
-private slots:
-	void disconnect(void);
-	void renewIP(void);
-	void timerUpdate(void);
-	void stateChange(const QString &intName, int sm, int oldstate, int newstate, unsigned int tncconnectionid);
-	void updateIPAddress(void);
-	void updateWirelessSignalStrength(void);
-	void slotSignalUpdate(const QString &intName, int sigStrength);
-
-private:
-	QWidget *m_pParent;
-	QWidget *m_pRealForm;
-	Emitter *m_pEmitter;
-	QWidget *m_pParentWindow;
-	
-	// top-level form objects
-	QPushButton *m_pCloseButton;
-	QPushButton *m_pDisconnectButton;
-	QPushButton *m_pRenewIPButton;
-	QLabel *m_pAdapterNameLabel;
-	QLabel *m_pIPAddressLabel;
-	QLabel *m_pStatusLabel;
-	QLabel *m_pTimerLabel;
-	QLabel *m_pSSIDLabel;
-	QLabel *m_pSignalLabel;
-	QLabel *m_pSignalIcon;
-	QLabel *m_pSecurityLabel;
-	QLabel *m_pEncryptionLabel;
-	
-	QString m_curAdapter; // description of current adapter
+    class Emitter;
+ class ConnectionInfoDlg:public QWidget  {
+ Q_OBJECT  public:ConnectionInfoDlg(QWidget * parent, QWidget * parentWindow,
+			   Emitter * e,
+			   QTime * parentTime);
+	~ConnectionInfoDlg();
+	bool create(void);
+	void show(void);
+	void setAdapter(const QString & adapterDesc);
+	void showTime(void);
+ private:bool initUI(void);
+	void startConnectedTimer(void);
+	void stopAndClearTimer(void);
+	void updateWirelessState(void);
+	void updateWiredState(void);
+	void clearUI(void);
+	void updateElapsedTime(void);
+ private slots:void disconnect(void);
+	void renewIP(void);
+	void timerUpdate(void);
+	void stateChange(const QString & intName, int sm, int oldstate,
+			  int newstate, unsigned int tncconnectionid);
+	void updateIPAddress(void);
+	void updateWirelessSignalStrength(void);
+	void slotSignalUpdate(const QString & intName, int sigStrength);
+ private:QWidget * m_pParent;
+	QWidget * m_pRealForm;
+	Emitter * m_pEmitter;
+	QWidget * m_pParentWindow;
+	
+	    // top-level form objects
+	    QPushButton * m_pCloseButton;
+	QPushButton * m_pDisconnectButton;
+	QPushButton * m_pRenewIPButton;
+	QLabel * m_pAdapterNameLabel;
+	QLabel * m_pIPAddressLabel;
+	QLabel * m_pStatusLabel;
+	QLabel * m_pTimerLabel;
+	QLabel * m_pSSIDLabel;
+	QLabel * m_pSignalLabel;
+	QLabel * m_pSignalIcon;
+	QLabel * m_pSecurityLabel;
+	QLabel * m_pEncryptionLabel;
+	QString m_curAdapter;	// description of current adapter
 	QString m_curAdapterName;
-	bool m_wirelessAdapter;
-	QTime  *m_time;
-	unsigned int m_days;
-	
-	QPixmap m_signalIcons[5];
-};
+	bool m_wirelessAdapter;
+	QTime * m_time;
+	unsigned int m_days;
+	QPixmap m_signalIcons[5];
+};
 
+
 #endif

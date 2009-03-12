@@ -28,36 +28,29 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
-
+ **/  
+    
 #ifndef _WIRELESSNETWORKMENU_H_
 #define _WIRELESSNETWORKMENU_H_
-
+    
 #include <QWidget>
 #include <QMenu>
 #include <QString>
 #include <QAction>
+    class TrayApp;
+ class WirelessNetworkMenu:public QWidget  {
+ Q_OBJECT  public:WirelessNetworkMenu(const QString & adapterDesc,
+			     const QString & menuTitle,
+			     TrayApp * trayApp);
+	~WirelessNetworkMenu();
+	void populate(void);
+	QMenu * menu(void);
+ private slots:void handleMenuSelection(QAction *);
+ private:QMenu * m_pMenu;
+	QString m_adapterDesc;
+	TrayApp * m_pTrayApp;
+	QIcon m_lockIcon;
+};
 
-class TrayApp;
-
-class WirelessNetworkMenu : public QWidget
-{
-	Q_OBJECT
-	
-public:
-	WirelessNetworkMenu(const QString &adapterDesc, const QString &menuTitle, TrayApp *trayApp);
-	~WirelessNetworkMenu();
-	void populate(void);
-	QMenu *menu(void);
-	
-private slots:
-	void handleMenuSelection(QAction *);
-	
-private:
-	QMenu *m_pMenu;
-	QString m_adapterDesc;
-	TrayApp *m_pTrayApp;
-	QIcon m_lockIcon;
-};
-
+
 #endif

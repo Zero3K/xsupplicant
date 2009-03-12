@@ -38,44 +38,38 @@
 #include "Emitter.h"
 #include "PluginCallbacks.h"
 
-class PluginWidget : public QWidget
- {
-     Q_OBJECT
-
- private:
+class PluginWidget:public QWidget {
+ Q_OBJECT private:
  protected:
- 	 config_profiles *m_pProfile;
-	 QWidget         *m_pParent;
-	 int              pluginType;
+	config_profiles * m_pProfile;
+	QWidget *m_pParent;
+	int pluginType;
 
-	 Emitter *m_pEmitter;
-	 QString m_Version;
-	 PluginCallbacks callbacks;
+	Emitter *m_pEmitter;
+	QString m_Version;
+	PluginCallbacks callbacks;
 
  public:
 	 PluginWidget();
-	 ~PluginWidget();
+	~PluginWidget();
 
-	 virtual void setParent(QWidget *pParent);
-	 virtual bool save();
-	 virtual bool dataChanged();
-	 virtual void discard();
-	 virtual void setProfile(config_profiles *pProfile);
-	 virtual void setEmitter(Emitter *pEmitter);
-	 virtual void setCallbacks(UICallbacks uiCallbacks);
-	 virtual void setEngineVersionString(QString m_version);
-	 virtual QString getPluginVersionString();
-	 virtual QString getWidgetName();
-	 virtual void showHelp();
+	virtual void setParent(QWidget * pParent);
+	virtual bool save();
+	virtual bool dataChanged();
+	virtual void discard();
+	virtual void setProfile(config_profiles * pProfile);
+	virtual void setEmitter(Emitter * pEmitter);
+	virtual void setCallbacks(UICallbacks uiCallbacks);
+	virtual void setEngineVersionString(QString m_version);
+	virtual QString getPluginVersionString();
+	virtual QString getWidgetName();
+	virtual void showHelp();
 
-	 PluginCallbacks &getPluginCallbacks();
+	 PluginCallbacks & getPluginCallbacks();
 
-signals:
-	 void signalDataChanged();
+	 signals: void signalDataChanged();
 
-protected slots:
-	 virtual void pluginDataChanged();
+	protected slots: virtual void pluginDataChanged();
 };
 
-
-#endif // PLUGIN_WIDGET_H
+#endif				// PLUGIN_WIDGET_H

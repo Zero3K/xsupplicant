@@ -28,56 +28,57 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
+ **/  
 #include "stdafx.h"
-
+    
 #include <QString>
 #include "UICallbacks.h"
-
-UICallbacks::UICallbacks() 
+    UICallbacks::UICallbacks() 
 {
-	launchHelpP                     = NULL;
-	connectionNameForConnectionIDP  = NULL;
-	postureSettingsForConnectionIDP = NULL;
-}
+	launchHelpP = NULL;
+	connectionNameForConnectionIDP = NULL;
+	postureSettingsForConnectionIDP = NULL;
+}
 
-UICallbacks::~UICallbacks()
+UICallbacks::~UICallbacks() 
 {
-}
+}
 
-void UICallbacks::launchHelp(const QString &file, const QString &anchor)
+void UICallbacks::launchHelp(const QString & file, const QString & anchor) 
 {
-	if(launchHelpP != NULL) 
-	{
-		launchHelpP(file, anchor);
-	}
-}
+	if (launchHelpP != NULL)
+		 {
+		launchHelpP(file, anchor);
+		}
+}
 
-QString UICallbacks::connectionNameForConnectionID(unsigned int connectionID)
+QString UICallbacks::
+connectionNameForConnectionID(unsigned int connectionID) 
 {
-	if(connectionNameForConnectionIDP != NULL) 
-	{
-		return connectionNameForConnectionIDP(connectionID);
-	}
+	if (connectionNameForConnectionIDP != NULL)
+		 {
+		return connectionNameForConnectionIDP(connectionID);
+		}
+	return QString("Not Available");
+}
 
-	return QString("Not Available");
-}
-
-bool UICallbacks::connectionAdapterIsWireless(unsigned int connectionID)
+bool UICallbacks::connectionAdapterIsWireless(unsigned int connectionID)
 {
-	if (connectionAdapterIsWirelessP != NULL)
-		return connectionAdapterIsWirelessP(connectionID);
-		
-	// default to wired connection
-	return false;
-}
+	if (connectionAdapterIsWirelessP != NULL)
+		return connectionAdapterIsWirelessP(connectionID);
+	
+	    // default to wired connection
+	    return false;
+}
 
-unsigned int UICallbacks::postureSettingsForConnectionID(unsigned int connectionID)
+unsigned int UICallbacks::
+postureSettingsForConnectionID(unsigned int connectionID) 
 {
-	if (postureSettingsForConnectionIDP != NULL)
-		return postureSettingsForConnectionIDP(connectionID);
+	if (postureSettingsForConnectionIDP != NULL)
+		return postureSettingsForConnectionIDP(connectionID);
+	
+	    // default to no posture information
+	    return 0;
+}
 
-	// default to no posture information
-	return 0;
-}
-
+

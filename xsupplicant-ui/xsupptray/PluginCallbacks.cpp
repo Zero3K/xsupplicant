@@ -28,28 +28,28 @@
  *   incorporate the XSupplicant User Interface with your products and do not license
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
- **/
+ **/  
 #include "stdafx.h"
-
+    
 #include <QString>
-
+    
 #include "PluginCallbacks.h"
-
-PluginCallbacks::PluginCallbacks()
+    PluginCallbacks::PluginCallbacks() 
 {
-	pluginVersionStringP = NULL;
-}
+	pluginVersionStringP = NULL;
+}
 
-PluginCallbacks::~PluginCallbacks()
+PluginCallbacks::~PluginCallbacks() 
 {
-}
+}
 
-QString PluginCallbacks::pluginVersionString()
+QString PluginCallbacks::pluginVersionString() 
 {
-	if(pluginVersionStringP != NULL) 
-	{
-		return pluginVersionString();
-	}
+	if (pluginVersionStringP != NULL)
+		 {
+		return pluginVersionString();
+		}
+	return QString("");
+}
 
-	return QString("");
-}
+

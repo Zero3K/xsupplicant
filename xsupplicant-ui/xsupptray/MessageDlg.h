@@ -35,31 +35,25 @@
 
 #include <QtGui>
 
-class MessageDlg :
-  public QDialog
-{
-  Q_OBJECT 
+class MessageDlg:public QDialog {
+ Q_OBJECT public:
+	MessageDlg(QWidget * parent = NULL);
+	virtual ~ MessageDlg(void);
+	void setInfo(QString & title, QString & text, QString & helpFile,
+		     QString & helpLocation);
 
-public:
-  MessageDlg(QWidget *parent = NULL);
-  virtual ~MessageDlg(void);
-  void setInfo(QString &title, QString &text, QString &helpFile, QString &helpLocation);
-  
-  private slots:
-    void slotHelp();
+	private slots: void slotHelp();
 
-private:
-  QLabel *m_pMessageTitle;
-  QTextEdit *m_pMessageEdit;
-  QString m_helpFile;
-  QString m_helpLocation;
+ private:
+	 QLabel * m_pMessageTitle;
+	QTextEdit *m_pMessageEdit;
+	QString m_helpFile;
+	QString m_helpLocation;
 
-  void setupFields();
+	void setupFields();
 
-  private slots:
-    void slotCopy(bool bCopy);
+	private slots: void slotCopy(bool bCopy);
 
 };
 
-#endif  // _MESSAGEDLG_H_
-
+#endif				// _MESSAGEDLG_H_

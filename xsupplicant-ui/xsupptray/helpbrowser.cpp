@@ -42,23 +42,22 @@ HelpWindow *HelpWindow::Instance(void)
 {
 	if (m_pInstance == NULL) {
 		m_pInstance = new HelpWindow();
-		if (m_pInstance->create() == false)
-		{
+		if (m_pInstance->create() == false) {
 			delete m_pInstance;
 			m_pInstance = NULL;
 		}
 	}
-	
+
 	return m_pInstance;
 }
 
 HelpWindow::HelpWindow()
-	:QWidget(NULL)
+ : QWidget(NULL)
 {
 }
 
 HelpWindow::HelpWindow(const HelpWindow &)
-	:QWidget(NULL)
+ : QWidget(NULL)
 {
 }
 
@@ -72,21 +71,24 @@ bool HelpWindow::create()
 		return false;
 
 	// At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
-	m_pTextBrowser = qFindChild<QTextBrowser*>(m_pRealForm, "dataFieldHelpWindow");
+	m_pTextBrowser =
+	    qFindChild < QTextBrowser * >(m_pRealForm, "dataFieldHelpWindow");
 
-	if (m_pTextBrowser == NULL)
-	{
-		QMessageBox::critical(m_pRealForm, tr("Form Design Error!"), tr("The form loaded for the 'Help Dialog' did not contain the 'dataFieldHelpWindow' text box."));
+	if (m_pTextBrowser == NULL) {
+		QMessageBox::critical(m_pRealForm, tr("Form Design Error!"),
+				      tr
+				      ("The form loaded for the 'Help Dialog' did not contain the 'dataFieldHelpWindow' text box."));
 		return false;
 	}
 
-	m_pCloseButton = qFindChild<QPushButton*>(m_pRealForm, "buttonClose");
+	m_pCloseButton =
+	    qFindChild < QPushButton * >(m_pRealForm, "buttonClose");
 
 	// We don't care if the button is there or not, but if it is make it work.
-	if (m_pCloseButton != NULL)
-	{
+	if (m_pCloseButton != NULL) {
 		m_pCloseButton->setText(tr("Close"));
-		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm, SLOT(hide()));
+		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm,
+				SLOT(hide()));
 	}
 
 	flags = m_pRealForm->windowFlags();
@@ -99,8 +101,7 @@ bool HelpWindow::create()
 
 void HelpWindow::show()
 {
-	if (m_pRealForm != NULL)
-	{
+	if (m_pRealForm != NULL) {
 		// show, bring to front, and activate
 		m_pRealForm->show();
 		m_pRealForm->raise();
@@ -108,32 +109,31 @@ void HelpWindow::show()
 	}
 }
 
-void HelpWindow::setSource(const QString &path, const QString &file, const QString &page)
+void HelpWindow::setSource(const QString & path, const QString & file,
+			   const QString & page)
 {
-	QString fullPath = QString ("%1/%2").arg(path).arg(file);
-	QString fullPage = QString ("%1#%2").arg(file).arg(page);
+	QString fullPath = QString("%1/%2").arg(path).arg(file);
+	QString fullPage = QString("%1#%2").arg(file).arg(page);
 
-	if (QFile::exists(fullPath))
-	{
-		m_pTextBrowser->setSearchPaths(QStringList() << path << ":/images");
+	if (QFile::exists(fullPath)) {
+		m_pTextBrowser->
+		    setSearchPaths(QStringList() << path << ":/images");
 		m_pTextBrowser->setSource(fullPage);
-	}
-	else
-	{
-		QMessageBox::information(m_pRealForm, tr("Help Not Available"), tr("The help file '%1' was not found.  You may need to reinstall the application.").arg(fullPath));
+	} else {
+		QMessageBox::information(m_pRealForm, tr("Help Not Available"),
+					 tr
+					 ("The help file '%1' was not found.  You may need to reinstall the application.").
+					 arg(fullPath));
 	}
 }
 
 // This is the singleton use and also the display of the page
-void HelpWindow::showPage(const QString &file, const QString &page)
+void HelpWindow::showPage(const QString & file, const QString & page)
 {
 	HelpWindow *pInstance = HelpWindow::Instance();
-	if (pInstance != NULL)
-	{
+	if (pInstance != NULL) {
 		QString path = QApplication::applicationDirPath() + "/Docs";
 		pInstance->setSource(path, file, page);
 		pInstance->show();
 	}
 }
-
-
