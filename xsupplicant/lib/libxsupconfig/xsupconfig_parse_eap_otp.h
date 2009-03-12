@@ -15,4 +15,4 @@ extern parser eap_otp[];
 
 void *xsupconfig_parse_eap_otp(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_EAP_OTP_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_OTP_H__

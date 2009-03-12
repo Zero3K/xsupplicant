@@ -17,21 +17,21 @@
 
 //#define TRACELOG   1        ///< Comment this out to disable library level tracing.  (Normally you want this commented out!!)
 
-#define MAXBUF   4096   ///< 4k is the MTU for our IPC messages.
+#define MAXBUF   4096		///< 4k is the MTU for our IPC messages.
 
-HANDLE pipehdl = INVALID_HANDLE_VALUE;         ///< The read/write handle to our pipe request/response pipe.
-HANDLE eventhdl = INVALID_HANDLE_VALUE;        ///< The handle to the windows event we bind to our request/response pipe.
-HANDLE eventpipe = INVALID_HANDLE_VALUE;       ///< Handle to the IPC event generation pipe.
-HANDLE eventevent = INVALID_HANDLE_VALUE;      ///< The handle to the windows event we bind to our event pipe.
-OVERLAPPED ovr;         ///< Overlapped structure used for non-blocking access to \ref pipehdl.
-OVERLAPPED eovr;        ///< Overlapped structure used for non-blocking access to \ref eventpipe.
+HANDLE pipehdl = INVALID_HANDLE_VALUE;	///< The read/write handle to our pipe request/response pipe.
+HANDLE eventhdl = INVALID_HANDLE_VALUE;	///< The handle to the windows event we bind to our request/response pipe.
+HANDLE eventpipe = INVALID_HANDLE_VALUE;	///< Handle to the IPC event generation pipe.
+HANDLE eventevent = INVALID_HANDLE_VALUE;	///< The handle to the windows event we bind to our event pipe.
+OVERLAPPED ovr;			///< Overlapped structure used for non-blocking access to \ref pipehdl.
+OVERLAPPED eovr;		///< Overlapped structure used for non-blocking access to \ref eventpipe.
 
-xmlDocPtr recvmsg = NULL;      ///< XML Document that represents an async event that we receiqved.
+xmlDocPtr recvmsg = NULL;	///< XML Document that represents an async event that we receiqved.
 
 int ctrl_connected = FALSE;
 int evt_connected = FALSE;
 
-LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\open1x_ctrl");  ///< Path to Windows pipe used for IPC.
+LPTSTR lpszPipename = TEXT("\\\\.\\pipe\\open1x_ctrl");	///< Path to Windows pipe used for IPC.
 
 // Uncomment to see printf() debug messages.
 #define DEBUG_WINDOWS_GUI  1
@@ -60,34 +60,41 @@ int xsupgui_windows_connect()
 	DWORD dwMode;
 
 	// Make sure we aren't already connected.
-	if (ctrl_connected == TRUE) return IPC_ERROR_CTRL_ALREADY_CONNECTED;
+	if (ctrl_connected == TRUE)
+		return IPC_ERROR_CTRL_ALREADY_CONNECTED;
 
 #ifdef TRACELOG
 	xsup_gui_trace_enable("c:\\guitrace.log");
 #endif
 
 	// Establish an event handle.
-	if (eventhdl != INVALID_HANDLE_VALUE) return -1;
+	if (eventhdl != INVALID_HANDLE_VALUE)
+		return -1;
 
 	eventhdl = CreateEvent(NULL, TRUE, FALSE, NULL);
-	if (eventhdl == INVALID_HANDLE_VALUE) return -1;
+	if (eventhdl == INVALID_HANDLE_VALUE)
+		return -1;
 
 	ovr.hEvent = eventhdl;
 
 	pipehdl = CreateFile(lpszPipename, GENERIC_READ | GENERIC_WRITE,
-				0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL); 
+			     0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED,
+			     NULL);
 
-	if (pipehdl == INVALID_HANDLE_VALUE) return -1;
+	if (pipehdl == INVALID_HANDLE_VALUE)
+		return -1;
 
-	xsup_gui_trace("Connected control handle %d, event %d\n", pipehdl, eventhdl);
+	xsup_gui_trace("Connected control handle %d, event %d\n", pipehdl,
+		       eventhdl);
 
 	dwMode = PIPE_READMODE_MESSAGE;
-	if (SetNamedPipeHandleState(pipehdl, &dwMode, NULL, NULL) == FALSE) return -1;
+	if (SetNamedPipeHandleState(pipehdl, &dwMode, NULL, NULL) == FALSE)
+		return -1;
 	xsup_gui_trace("After state change : %d\n", pipehdl);
 
 	ctrl_connected = TRUE;
 
-	return 0;  // We have a valid handle now.
+	return 0;		// We have a valid handle now.
 }
 
 /**
@@ -105,33 +112,38 @@ int xsupgui_windows_connect_event_listener()
 	int ressize = 0;
 	DWORD dwMode;
 
-	if (evt_connected == TRUE) return IPC_ERROR_EVT_ALREADY_CONNECTED;
+	if (evt_connected == TRUE)
+		return IPC_ERROR_EVT_ALREADY_CONNECTED;
 
 	recvmsg = NULL;
 
 	// Establish an event handle.
 	eventevent = CreateEvent(NULL, TRUE, FALSE, NULL);
-	if (eventevent == INVALID_HANDLE_VALUE) return -1;
+	if (eventevent == INVALID_HANDLE_VALUE)
+		return -1;
 
 	eovr.hEvent = eventevent;
 
 	eventpipe = CreateFile(lpszPipename, GENERIC_READ | GENERIC_WRITE,
-				0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL); 
+			       0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED,
+			       NULL);
 
-	if (eventpipe == INVALID_HANDLE_VALUE) return -1;
+	if (eventpipe == INVALID_HANDLE_VALUE)
+		return -1;
 
-	xsup_gui_trace("Connected event handle %d, event %d\n", eventpipe, eventevent);
+	xsup_gui_trace("Connected event handle %d, event %d\n", eventpipe,
+		       eventevent);
 
 	dwMode = PIPE_READMODE_MESSAGE;
-	if (SetNamedPipeHandleState(eventpipe, &dwMode, NULL, NULL) == FALSE) return -1;
+	if (SetNamedPipeHandleState(eventpipe, &dwMode, NULL, NULL) == FALSE)
+		return -1;
 
 	evt_connected = TRUE;
 
 	if (xsupgui_request_set_as_event(&result, &ressize) == REQUEST_FAILURE)
 		return -1;
 
-	if (xsupgui_windows_send_to_event(result, ressize) == REQUEST_FAILURE)
-	{
+	if (xsupgui_windows_send_to_event(result, ressize) == REQUEST_FAILURE) {
 		free(result);
 		result = NULL;
 		return -1;
@@ -139,7 +151,7 @@ int xsupgui_windows_connect_event_listener()
 
 	free(result);
 
-	return 0;  // We have a valid handle now.
+	return 0;		// We have a valid handle now.
 }
 
 /**
@@ -150,14 +162,17 @@ int xsupgui_windows_connect_event_listener()
  **/
 int xsupgui_windows_disconnect()
 {
-	xsup_gui_trace("Disconnect control pipe %d, event %d.\n", pipehdl, eventhdl);
-	if (eventhdl != INVALID_HANDLE_VALUE) CloseHandle(eventhdl);
-	if (pipehdl != INVALID_HANDLE_VALUE) CloseHandle(pipehdl);
-  eventhdl = INVALID_HANDLE_VALUE;
-  pipehdl = INVALID_HANDLE_VALUE;
+	xsup_gui_trace("Disconnect control pipe %d, event %d.\n", pipehdl,
+		       eventhdl);
+	if (eventhdl != INVALID_HANDLE_VALUE)
+		CloseHandle(eventhdl);
+	if (pipehdl != INVALID_HANDLE_VALUE)
+		CloseHandle(pipehdl);
+	eventhdl = INVALID_HANDLE_VALUE;
+	pipehdl = INVALID_HANDLE_VALUE;
 
 #ifdef TRACELOG
-  xsup_gui_trace_disable();
+	xsup_gui_trace_disable();
 #endif
 
 	ctrl_connected = FALSE;
@@ -173,15 +188,18 @@ int xsupgui_windows_disconnect()
 int xsupgui_windows_disconnect_event_listener()
 {
 	xmlFreeDoc(recvmsg);
-    recvmsg = NULL; 
+	recvmsg = NULL;
 
-	xsup_gui_trace("Disconnect control pipe %d, event %d.\n", eventpipe, eventevent);
-	if (eventevent != INVALID_HANDLE_VALUE) CloseHandle(eventevent);
-	if (eventpipe != INVALID_HANDLE_VALUE) CloseHandle(eventpipe);
-  eventevent = INVALID_HANDLE_VALUE;
-  eventpipe = INVALID_HANDLE_VALUE;
+	xsup_gui_trace("Disconnect control pipe %d, event %d.\n", eventpipe,
+		       eventevent);
+	if (eventevent != INVALID_HANDLE_VALUE)
+		CloseHandle(eventevent);
+	if (eventpipe != INVALID_HANDLE_VALUE)
+		CloseHandle(eventpipe);
+	eventevent = INVALID_HANDLE_VALUE;
+	eventpipe = INVALID_HANDLE_VALUE;
 
-  evt_connected = FALSE;
+	evt_connected = FALSE;
 	return 0;
 }
 
@@ -199,34 +217,34 @@ void xsupgui_windows_flush_ctrl_pipe()
 	OVERLAPPED ovr;
 	HANDLE hevent;
 
-	
-	if (!PeekNamedPipe(pipehdl, NULL, 0, NULL, &bread, NULL)) return;  // ACK!
+	if (!PeekNamedPipe(pipehdl, NULL, 0, NULL, &bread, NULL))
+		return;		// ACK!
 	xsup_gui_trace("(%s) Control pipe handle %d\n", __FUNCTION__, pipehdl);
 
-	while (bread > 0)
-	{
+	while (bread > 0) {
 		hevent = CreateEvent(NULL, 0, 0, NULL);
-		if (hevent == INVALID_HANDLE_VALUE) return;   // ACK!  This should't ever happen.
+		if (hevent == INVALID_HANDLE_VALUE)
+			return;	// ACK!  This should't ever happen.
 
 		ovr.hEvent = hevent;
-		
+
 		// There is some data in the buffer.  Read it out and throw it away.
-		if (ReadFile(pipehdl, (LPVOID)&buffer, 4096, &bread, (LPOVERLAPPED)&ovr) == FALSE)
-		{
+		if (ReadFile
+		    (pipehdl, (LPVOID) & buffer, 4096, &bread,
+		     (LPOVERLAPPED) & ovr) == FALSE) {
 			// It may be an overlapped read (which would be weird, but possible).
-			if (GetLastError() != ERROR_IO_PENDING)
-			{
+			if (GetLastError() != ERROR_IO_PENDING) {
 				// ACK!  We are not in a good place.  Bail out.
 				return;
 			}
 
-			if (WaitForSingleObject(ovr.hEvent, INFINITE) != WAIT_OBJECT_0)
-			{
+			if (WaitForSingleObject(ovr.hEvent, INFINITE) !=
+			    WAIT_OBJECT_0) {
 				// ACK!  This shouldn't happen!
 				return;
 			}
 
-			if (!GetOverlappedResult(pipehdl, &ovr, &bread, TRUE))  // TRUE should be safe because we know there is something ready.
+			if (!GetOverlappedResult(pipehdl, &ovr, &bread, TRUE))	// TRUE should be safe because we know there is something ready.
 			{
 				// ACK!  Shouldn't happen!
 				return;
@@ -235,7 +253,8 @@ void xsupgui_windows_flush_ctrl_pipe()
 
 		CloseHandle(hevent);
 
-		if (!PeekNamedPipe(pipehdl, NULL, 0, NULL, &bread, NULL)) return;  // ACK!
+		if (!PeekNamedPipe(pipehdl, NULL, 0, NULL, &bread, NULL))
+			return;	// ACK!
 		xsup_gui_trace("(In loop) Control pipe handle %d\n", pipehdl);
 	}
 }
@@ -262,18 +281,17 @@ long int xsupgui_windows_process(int *evttype)
 	char *eventbuf = NULL;
 	int eventbufressize = 0;
 
-	if (evttype == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (evttype == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	// If eventbuf points to something, we have a problem.
-	if (recvmsg != NULL) 
+	if (recvmsg != NULL)
 		return IPC_ERROR_STALE_BUFFER_DATA;
 
 	retval = xsupgui_windows_recv_event(&eventbuf, &eventbufressize);
 
-	if (retval != REQUEST_SUCCESS)
-	{
-		if (retval == IPC_EVENT_COM_BROKEN)
-		{
+	if (retval != REQUEST_SUCCESS) {
+		if (retval == IPC_EVENT_COM_BROKEN) {
 			(*evttype) = IPC_EVENT_COM_BROKEN;
 			return REQUEST_SUCCESS;
 		}
@@ -281,27 +299,29 @@ long int xsupgui_windows_process(int *evttype)
 		return retval;
 	}
 
-	if ((eventbuf == NULL) || ((eventbufressize-5) < 0))
-	{
+	if ((eventbuf == NULL) || ((eventbufressize - 5) < 0)) {
 		recvmsg = NULL;
-		if (eventbuf != NULL) free(eventbuf);
+		if (eventbuf != NULL)
+			free(eventbuf);
 		return IPC_ERROR_RUNT_RESPONSE;
 	}
 
-	recvmsg = xmlReadMemory(&eventbuf[5], (eventbufressize-5), "ipc_event.xml", NULL, 0);
-	if (recvmsg == NULL) 
-	{
+	recvmsg =
+	    xmlReadMemory(&eventbuf[5], (eventbufressize - 5), "ipc_event.xml",
+			  NULL, 0);
+	if (recvmsg == NULL) {
 		retval = GetLastError();
 
-//		xsup_gui_trace("XML Dump :\n");
-//		xsup_gui_trace("%s\n", &eventbuf[5]);
-//		xsup_gui_trace("------  Windows Error : %d\n", retval);
+//              xsup_gui_trace("XML Dump :\n");
+//              xsup_gui_trace("%s\n", &eventbuf[5]);
+//              xsup_gui_trace("------  Windows Error : %d\n", retval);
 
 		free(eventbuf);
 		return IPC_ERROR_BAD_RESPONSE;
 	}
 
-	if (eventbuf != NULL) free(eventbuf);
+	if (eventbuf != NULL)
+		free(eventbuf);
 	eventbuf = NULL;
 
 	(*evttype) = xsupgui_events_get_event_num(recvmsg);
@@ -338,11 +358,11 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 	(*result) = NULL;
 	(*resultsize) = 0;
 
-	if (ctrl_connected != TRUE) return IPC_ERROR_CTRL_NOT_CONNECTED;
+	if (ctrl_connected != TRUE)
+		return IPC_ERROR_CTRL_NOT_CONNECTED;
 
 	resdata = malloc(MAXBUF);
-	if (resdata == NULL) 
-	{
+	if (resdata == NULL) {
 #ifdef DEBUG_WINDOWS_GUI
 		printf("Couldn't allocate memory!\n");
 #endif
@@ -352,69 +372,73 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 
 	memset(resdata, 0x00, MAXBUF);
 
-	while (done == FALSE)
-	{
-		SetLastError(0);  // Reset the system error code.
-		xsup_gui_trace("(%s) Pipe : %d   Event : %d  Connected : %d   Error : %d\n",__FUNCTION__, pipehdl, ovr.hEvent, ctrl_connected, GetLastError());
+	while (done == FALSE) {
+		SetLastError(0);	// Reset the system error code.
+		xsup_gui_trace
+		    ("(%s) Pipe : %d   Event : %d  Connected : %d   Error : %d\n",
+		     __FUNCTION__, pipehdl, ovr.hEvent, ctrl_connected,
+		     GetLastError());
 
-		if (HasOverlappedIoCompleted(&ovr) == TRUE)
-		{
-			xsup_gui_trace("Error before calling ReadFile : %d\n", GetLastError());
-			if (ReadFile(pipehdl, resdata, MAXBUF, &size, &ovr) != 0) 
-			{
+		if (HasOverlappedIoCompleted(&ovr) == TRUE) {
+			xsup_gui_trace("Error before calling ReadFile : %d\n",
+				       GetLastError());
+			if (ReadFile(pipehdl, resdata, MAXBUF, &size, &ovr) !=
+			    0) {
 				retval = GetLastError();
 
-				if ((retval != 0) && (retval != 997))
-				{
-					xsup_gui_trace("Couldn't read data!  Error : %d\n", retval);
-					xsup_gui_trace("Pipe : %d   Event : %d   Size in : %d    Size out : %d\n",eventpipe, eovr.hEvent, MAXBUF, resultsize);
+				if ((retval != 0) && (retval != 997)) {
+					xsup_gui_trace
+					    ("Couldn't read data!  Error : %d\n",
+					     retval);
+					xsup_gui_trace
+					    ("Pipe : %d   Event : %d   Size in : %d    Size out : %d\n",
+					     eventpipe, eovr.hEvent, MAXBUF,
+					     resultsize);
 					free(resdata);
 					return IPC_ERROR_UNABLE_TO_READ;
 				}
 			}
 		}
 
-		switch (WaitForSingleObject(eventhdl, 30000))
-		{	
+		switch (WaitForSingleObject(eventhdl, 30000)) {
 		case WAIT_OBJECT_0:
-			if (GetOverlappedResult(pipehdl, &ovr, &size, FALSE) != 0)
-			{
+			if (GetOverlappedResult(pipehdl, &ovr, &size, FALSE) !=
+			    0) {
 				ResetEvent(eventhdl);
 
 #ifdef TRACELOG
-				xsup_gui_trace("Overlapped result code : %d\n", GetLastError());
+				xsup_gui_trace("Overlapped result code : %d\n",
+					       GetLastError());
 #endif
-				if (size < sizeof(ipc_header))
-				{
+				if (size < sizeof(ipc_header)) {
 #ifdef TRACELOG
 					xsup_gui_trace("Size = %d\n", size);
 #endif
 					return IPC_ERROR_UNABLE_TO_READ;
 				}
 
-				if (resdata[0] == 0x00)
-				{
+				if (resdata[0] == 0x00) {
 					size = (size - sizeof(ipc_header));
 
-					if (size <= 0)
-					{
+					if (size <= 0) {
 						free(resdata);
 						return IPC_ERROR_RECV_IPC_RUNT;
 					}
 
-					if (data == NULL)
-					{
+					if (data == NULL) {
 						data = malloc(size);
-						if (data == NULL)
-						{
+						if (data == NULL) {
 							free(resdata);
-							return IPC_ERROR_CANT_MALLOC_LOCAL;
+							return
+							    IPC_ERROR_CANT_MALLOC_LOCAL;
 						}
 
 						memset(data, 0x00, size);
 					}
 
-					memcpy(&data[offset], &resdata[sizeof(ipc_header)], size);
+					memcpy(&data[offset],
+					       &resdata[sizeof(ipc_header)],
+					       size);
 					free(resdata);
 
 					(*resultsize) = offset + size;
@@ -422,28 +446,29 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 					return REQUEST_SUCCESS;
 				}
 
-				if ((resdata[0] & IPC_MSG_TOTAL_SIZE) == IPC_MSG_TOTAL_SIZE)
-				{
+				if ((resdata[0] & IPC_MSG_TOTAL_SIZE) ==
+				    IPC_MSG_TOTAL_SIZE) {
 					// We need to allocate memory.
-					if (data != NULL)
-					{
-						return IPC_ERROR_NOT_INITIALIZED;
+					if (data != NULL) {
+						return
+						    IPC_ERROR_NOT_INITIALIZED;
 					}
 
-					hdr = (ipc_header *)&resdata[0];
+					hdr = (ipc_header *) & resdata[0];
 					value32 = ntohl(hdr->length);
 
 					data = malloc(value32);
-					if (data == NULL)
-					{
+					if (data == NULL) {
 						free(resdata);
-						return IPC_ERROR_CANT_MALLOC_LOCAL;
+						return
+						    IPC_ERROR_CANT_MALLOC_LOCAL;
 					}
 					memset(data, 0x00, value32);
 				}
-
 				// Copy the data.
-				memcpy(&data[offset], &resdata[sizeof(ipc_header)], (size - sizeof(ipc_header)));
+				memcpy(&data[offset],
+				       &resdata[sizeof(ipc_header)],
+				       (size - sizeof(ipc_header)));
 				offset += (size - sizeof(ipc_header));
 			}
 			break;
@@ -464,7 +489,7 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 		}
 	}
 
-	return REQUEST_TIMEOUT;   // Timeout waiting for response.  (Shouldn't ever get here!)
+	return REQUEST_TIMEOUT;	// Timeout waiting for response.  (Shouldn't ever get here!)
 }
 
 /**
@@ -488,51 +513,51 @@ int xsupgui_windows_recv_event(unsigned char **result, int *resultsize)
 	(*result) = NULL;
 	(*resultsize) = 0;
 
-	if (evt_connected != TRUE) return IPC_ERROR_EVT_NOT_CONNECTED;
+	if (evt_connected != TRUE)
+		return IPC_ERROR_EVT_NOT_CONNECTED;
 
 	resdata = malloc(MAXBUF);
-	if (resdata == NULL) 
-	{
+	if (resdata == NULL) {
 #ifdef DEBUG_WINDOWS_GUI
 		printf("Couldn't allocate memory!\n");
 #endif
 		return IPC_ERROR_CANT_MALLOC_LOCAL;
 	}
 
-	if (HasOverlappedIoCompleted(&eovr) == TRUE)
-	{
-		if (ReadFile(eventpipe, resdata, MAXBUF, resultsize, &eovr) != 0) 
-		{
-				retval = GetLastError();
+	if (HasOverlappedIoCompleted(&eovr) == TRUE) {
+		if (ReadFile(eventpipe, resdata, MAXBUF, resultsize, &eovr) !=
+		    0) {
+			retval = GetLastError();
 
-				if ((retval != ERROR_SUCCESS) && (retval != ERROR_IO_PENDING))  // 997 = Overlapped I/O in progress, means that we already have a read handle going.
-				{
-#ifdef DEBUG_WINDOWS_GUI
-					printf("Read failed!!!!\n");
-#endif
-					xsup_gui_trace("Couldn't read data!  Error : %d\n", retval);
-					xsup_gui_trace("Pipe : %d   Event : %d   Size in : %d    Size out : %d\n",eventpipe, eovr.hEvent, MAXBUF, resultsize);
-					free(resdata);
-					return IPC_ERROR_UNABLE_TO_READ;
-				}
-		}
-		else
-		{
-			errval = GetLastError();
-			if (errval == ERROR_BROKEN_PIPE) 
+			if ((retval != ERROR_SUCCESS) && (retval != ERROR_IO_PENDING))	// 997 = Overlapped I/O in progress, means that we already have a read handle going.
 			{
+#ifdef DEBUG_WINDOWS_GUI
+				printf("Read failed!!!!\n");
+#endif
+				xsup_gui_trace
+				    ("Couldn't read data!  Error : %d\n",
+				     retval);
+				xsup_gui_trace
+				    ("Pipe : %d   Event : %d   Size in : %d    Size out : %d\n",
+				     eventpipe, eovr.hEvent, MAXBUF,
+				     resultsize);
+				free(resdata);
+				return IPC_ERROR_UNABLE_TO_READ;
+			}
+		} else {
+			errval = GetLastError();
+			if (errval == ERROR_BROKEN_PIPE) {
 				free(resdata);
 				return IPC_EVENT_COM_BROKEN;
 			}
 		}
 	}
 
-	switch (WaitForSingleObject(eventevent, INFINITE))
-	{	
+	switch (WaitForSingleObject(eventevent, INFINITE)) {
 	case WAIT_OBJECT_0:
-		retval = GetOverlappedResult(eventpipe, &eovr, resultsize, FALSE);
-		if (retval != 0)
-		{
+		retval =
+		    GetOverlappedResult(eventpipe, &eovr, resultsize, FALSE);
+		if (retval != 0) {
 			(*result) = resdata;
 			return REQUEST_SUCCESS;
 		}
@@ -545,7 +570,8 @@ int xsupgui_windows_recv_event(unsigned char **result, int *resultsize)
 		ResetEvent(eventevent);
 		free(resdata);
 		retval = GetLastError();
-		xsup_gui_trace("WAIT_TIMEOUT case Windows error : %d\n", retval);
+		xsup_gui_trace("WAIT_TIMEOUT case Windows error : %d\n",
+			       retval);
 		return REQUEST_TIMEOUT;
 		break;
 
@@ -567,7 +593,7 @@ int xsupgui_windows_recv_event(unsigned char **result, int *resultsize)
 	CancelIo(eventpipe);
 	ResetEvent(eventevent);
 	free(resdata);
-	return REQUEST_TIMEOUT;   // Timeout waiting for response.  (Shouldn't ever get here!)
+	return REQUEST_TIMEOUT;	// Timeout waiting for response.  (Shouldn't ever get here!)
 }
 
 /**
@@ -585,7 +611,8 @@ int xsupgui_windows_recv_event(unsigned char **result, int *resultsize)
  *  \retval REQUEST_FAILURE for error 
  *  \retval REQUEST_TIMEOUT for timeout waiting for a response.
  **/
-int xsupgui_windows_send(unsigned char *tosend, int sendsize, unsigned char **result, int *resultsize)
+int xsupgui_windows_send(unsigned char *tosend, int sendsize,
+			 unsigned char **result, int *resultsize)
 {
 	DWORD totalbytes = 0;
 	DWORD error = 0;
@@ -593,24 +620,24 @@ int xsupgui_windows_send(unsigned char *tosend, int sendsize, unsigned char **re
 	(*result) = NULL;
 	(*resultsize) = 0;
 
-	if (ctrl_connected != TRUE) return IPC_ERROR_CTRL_NOT_CONNECTED;
+	if (ctrl_connected != TRUE)
+		return IPC_ERROR_CTRL_NOT_CONNECTED;
 
 	xsupgui_windows_flush_ctrl_pipe();
 
 	xsup_gui_trace("Sending data!  Pipe : %d\n", pipehdl);
-	if (WriteFile(pipehdl, tosend, sendsize, &totalbytes, &ovr) == 0)  
-	{
+	if (WriteFile(pipehdl, tosend, sendsize, &totalbytes, &ovr) == 0) {
 #ifdef DEBUG_WINDOWS_GUI
 		error = GetLastError();
 		printf("Error sending! %d\n", error);
-		if (error == 109) exit(1);
+		if (error == 109)
+			exit(1);
 #endif
 		xsup_gui_trace("Error writing data : %d\n", GetLastError());
 		return IPC_ERROR_CANT_SEND_IPC_MSG;
 	}
 
-	if (totalbytes != sendsize) 
-	{
+	if (totalbytes != sendsize) {
 #ifdef DEBUG_WINDOWS_GUI
 		printf("Sent size mismatch!\n");
 #endif
@@ -645,29 +672,30 @@ int xsupgui_windows_send_to_event(char *buffer, int bufsize)
 	int retval = 0;
 	xmlDocPtr indoc = NULL;
 
-	if (evt_connected != TRUE) return IPC_ERROR_EVT_NOT_CONNECTED;
+	if (evt_connected != TRUE)
+		return IPC_ERROR_EVT_NOT_CONNECTED;
 
-	if (WriteFile(eventpipe, buffer, bufsize, &totalbytes, &eovr) == 0)  
-	{
+	if (WriteFile(eventpipe, buffer, bufsize, &totalbytes, &eovr) == 0) {
 #ifdef DEBUG_WINDOWS_GUI
 		printf("Error sending!\n");
 #endif
 		return IPC_ERROR_CANT_SEND_IPC_MSG;
 	}
 
-	if (totalbytes != bufsize) 
-	{
+	if (totalbytes != bufsize) {
 #ifdef DEBUG_WINDOWS_GUI
 		printf("Sent size mismatch!\n");
 #endif
-		return IPC_ERROR_SEND_SIZE_MISMATCH; 
+		return IPC_ERROR_SEND_SIZE_MISMATCH;
 	}
 
 	retval = xsupgui_windows_recv_event(&result, &resultsize);
-	if (retval != 0) return retval;
+	if (retval != 0)
+		return retval;
 
-	indoc = xsupgui_xml_common_validate_msg(&result[5], (resultsize-5));
-	if (indoc == NULL) return IPC_ERROR_BAD_RESPONSE_DATA;
+	indoc = xsupgui_xml_common_validate_msg(&result[5], (resultsize - 5));
+	if (indoc == NULL)
+		return IPC_ERROR_BAD_RESPONSE_DATA;
 
 	free(result);
 
@@ -675,7 +703,7 @@ int xsupgui_windows_send_to_event(char *buffer, int bufsize)
 	retval = xsupgui_request_is_ack(indoc);
 
 	xmlFreeDoc(indoc);
-	
+
 	return retval;
 }
 
@@ -684,10 +712,9 @@ int xsupgui_windows_send_to_event(char *buffer, int bufsize)
  **/
 void xsupgui_windows_free_event_doc()
 {
-  if (recvmsg != NULL)
-  {
-	  xmlFreeDoc(recvmsg);
-  	recvmsg = NULL;
-  }
+	if (recvmsg != NULL) {
+		xmlFreeDoc(recvmsg);
+		recvmsg = NULL;
+	}
 }
-#endif /* WINDOWS */
+#endif				/* WINDOWS */

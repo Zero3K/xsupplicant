@@ -15,11 +15,10 @@
  *
  *******************************************************************/
 
-
 #ifndef SIMD11_H_
 #define SIMD11_H_
 
-int do_v1_at_mac(eap_type_data *, char *, char *, int, int, char *, char *, int, uint16_t, char *);
+int do_v1_at_mac(eap_type_data *, char *, char *, int, int, char *, char *, int,
+		 uint16_t, char *);
 
 #endif
-

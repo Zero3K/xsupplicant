@@ -22,4 +22,4 @@ int xsupconfwrite_write_user_config(char *);
 #define XSUPCONFWRITE_ERRNONE        0
 #define XSUPCONFWRITE_FAILED        -1
 
-#endif /* _XSUPCONFWRITE_H_ */
+#endif				/* _XSUPCONFWRITE_H_ */

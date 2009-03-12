@@ -26,26 +26,28 @@ int cardif_linux_wext_scan(context *, char);
 void cardif_linux_wext_associate(context *);
 void cardif_linux_wext_use_temp_keys(char);
 int cardif_linux_wext_enc_open(context *);
-int cardif_linux_wext_enc_disable(context *thisint);
+int cardif_linux_wext_enc_disable(context * thisint);
 void cardif_linux_wext_set_zero_keys(context *);
 void cardif_linux_wext_zero_keys(context *);
 int cardif_linux_wext_wpa_state(context *, char);
 int cardif_linux_wext_set_wpa_ie(context *, unsigned char *, unsigned int);
 int cardif_linux_wext_set_iwauth(context *, int, uint32_t, char *);
-int cardif_linux_wext_set_key_ext(context *, int, 
+int cardif_linux_wext_set_key_ext(context *, int,
 				  unsigned char *, int, int, char *, int,
 				  char *, int);
-double cardif_linux_wext_set_freq(context* );
+double cardif_linux_wext_set_freq(context *);
 void cardif_linux_wext_enc_capabilities(context *);
 
-int cardif_linux_wext_set_tkip_key(context *,unsigned char *,int,int,char *,int);
-int cardif_linux_wext_set_ccmp_key(context *,unsigned char *,int,int,char *,int);
-int cardif_linux_wext_delete_key(context *,int,int);
+int cardif_linux_wext_set_tkip_key(context *, unsigned char *, int, int, char *,
+				   int);
+int cardif_linux_wext_set_ccmp_key(context *, unsigned char *, int, int, char *,
+				   int);
+int cardif_linux_wext_delete_key(context *, int, int);
 int cardif_linux_wext_wpa(context *, char);
-int cardif_linux_wext_countermeasures(context *,char);
-int cardif_linux_wext_drop_unencrypted(context *,char);
+int cardif_linux_wext_countermeasures(context *, char);
+int cardif_linux_wext_drop_unencrypted(context *, char);
 int cardif_linux_wext_get_wpa2_ie(context *, unsigned char *, uint16_t *);
 int cardif_linux_wext_disassociate(context *, int);
-int cardif_linux_wext_get_wpa_ie(context *,char *,int *);
+int cardif_linux_wext_get_wpa_ie(context *, char *, int *);
 
 #endif

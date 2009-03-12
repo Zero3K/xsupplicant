@@ -36,15 +36,15 @@
 
 typedef struct {
 	char *filename;
-	char unlink;     ///< 0 if we should leave it, 1 if we should delete it.
+	char unlink;		///< 0 if we should leave it, 1 if we should delete it.
 } cfiles;
 
-cfiles *crashfiles;   ///< This will be allocated as an array of values that we will want to add to our crash zip file if we crash.
-int num_crashfiles; ///< The number of crash files that we have listed in the array above.
+cfiles *crashfiles;		///< This will be allocated as an array of values that we will want to add to our crash zip file if we crash.
+int num_crashfiles;		///< The number of crash files that we have listed in the array above.
 
 char *curuser_conf = NULL;
 
-char *zipdumppath;  ///< The full path (including filename) to where we want the zipped dump file to land.
+char *zipdumppath;		///< The full path (including filename) to where we want the zipped dump file to land.
 
 /**
  * \brief Init the crashdump library by setting any variable state that we need to set.
@@ -70,8 +70,7 @@ void crashdump_add_curuser_conf(char *conf_path)
  **/
 void crashdump_remove_curuser_conf()
 {
-	if (curuser_conf != NULL)
-	{
+	if (curuser_conf != NULL) {
 		free(curuser_conf);
 		curuser_conf = NULL;
 	}
@@ -93,11 +92,10 @@ int crashdump_add_file(char *filename, char unlink)
 	void *oldptr = NULL;
 	int i;
 
-	for (i=0; i < num_crashfiles; i++)
-	{
-		if (strcmp(filename, crashfiles[i].filename) == 0) 
-		{
-			fprintf(stderr, "File %s == %s!  Skipping!\n", filename, crashfiles[i].filename);
+	for (i = 0; i < num_crashfiles; i++) {
+		if (strcmp(filename, crashfiles[i].filename) == 0) {
+			fprintf(stderr, "File %s == %s!  Skipping!\n", filename,
+				crashfiles[i].filename);
 			return CRASHDUMP_ALREADY_EXISTS;
 		}
 	}
@@ -105,9 +103,9 @@ int crashdump_add_file(char *filename, char unlink)
 	num_crashfiles++;
 
 	oldptr = crashfiles;
-	crashfiles = realloc(crashfiles, ((sizeof(cfiles)+1)*(num_crashfiles)));
-	if (crashfiles == NULL)
-	{
+	crashfiles =
+	    realloc(crashfiles, ((sizeof(cfiles) + 1) * (num_crashfiles)));
+	if (crashfiles == NULL) {
 		// ACK!  We couldn't allocate more memory!
 		num_crashfiles--;
 		fprintf(stderr, "Couldn't realloc memory!\n");
@@ -115,15 +113,14 @@ int crashdump_add_file(char *filename, char unlink)
 		return CRASHDUMP_CANT_ADD;
 	}
 
-	crashfiles[num_crashfiles-1].filename = _strdup(filename);
-	if (crashfiles[num_crashfiles-1].filename == NULL)
-	{
+	crashfiles[num_crashfiles - 1].filename = _strdup(filename);
+	if (crashfiles[num_crashfiles - 1].filename == NULL) {
 		num_crashfiles--;
 		fprintf(stderr, "Couldn't copy filename!\n");
 		return CRASHDUMP_CANT_ADD;
 	}
 
-	crashfiles[num_crashfiles-1].unlink = unlink;
+	crashfiles[num_crashfiles - 1].unlink = unlink;
 
 	return CRASHDUMP_NO_ERROR;
 }
@@ -133,26 +130,27 @@ int crashdump_add_file(char *filename, char unlink)
  * \brief A helper function (for Windows) to get the data and time for a file.
  **/
 uLong filetime(f, tmzip, dt)
-    char *f;                /* name of file to get info on */
-    tm_zip *tmzip;             /* return value: access, modific. and creation times */
-    uLong *dt;             /* dostime */
+char *f;			/* name of file to get info on */
+tm_zip *tmzip;			/* return value: access, modific. and creation times */
+uLong *dt;			/* dostime */
 {
-  int ret = 0;
-  {
-      FILETIME ftLocal;
-      HANDLE hFind;
-      WIN32_FIND_DATA  ff32;
+	int ret = 0;
+	{
+		FILETIME ftLocal;
+		HANDLE hFind;
+		WIN32_FIND_DATA ff32;
 
-      hFind = FindFirstFile(f,&ff32);
-      if (hFind != INVALID_HANDLE_VALUE)
-      {
-        FileTimeToLocalFileTime(&(ff32.ftLastWriteTime),&ftLocal);
-        FileTimeToDosDateTime(&ftLocal,((LPWORD)dt)+1,((LPWORD)dt)+0);
-        FindClose(hFind);
-        ret = 1;
-      }
-  }
-  return ret;
+		hFind = FindFirstFile(f, &ff32);
+		if (hFind != INVALID_HANDLE_VALUE) {
+			FileTimeToLocalFileTime(&(ff32.ftLastWriteTime),
+						&ftLocal);
+			FileTimeToDosDateTime(&ftLocal, ((LPWORD) dt) + 1,
+					      ((LPWORD) dt) + 0);
+			FindClose(hFind);
+			ret = 1;
+		}
+	}
+	return ret;
 }
 #endif
 
@@ -165,7 +163,7 @@ uLong filetime(f, tmzip, dt)
  * \retval 0 on success
  * \retval -1 on error.
  **/
-int crashdump_store_file_in_zip(char *filename, zipFile *zf)
+int crashdump_store_file_in_zip(char *filename, zipFile * zf)
 {
 	FILE *fin = NULL;
 	int size_read;
@@ -174,66 +172,62 @@ int crashdump_store_file_in_zip(char *filename, zipFile *zf)
 	char buf[16384];
 	int size_buf = 16384;
 	int x = 0;
-	char *shortfname=NULL;        // The filename part of a file to add to the zip.
+	char *shortfname = NULL;	// The filename part of a file to add to the zip.
 
 	fin = fopen(filename, "rb");
-	if (fin == NULL)
-	{
+	if (fin == NULL) {
 		printf("Error opening %s for reading! (Skipping)\n", filename);
 #ifdef DEBUG
-		fprintf(tempf, "Error opening %s for reading!  (Skipping)\n", filename);
+		fprintf(tempf, "Error opening %s for reading!  (Skipping)\n",
+			filename);
 		fflush(tempf);
 #endif
 		return 0;
 	}
-		
+
 	memset(&zi, 0x00, sizeof(zi));
-	filetime(filename, &zi.tmz_date, &zi.dosDate);  // Get the date/time of the file.
+	filetime(filename, &zi.tmz_date, &zi.dosDate);	// Get the date/time of the file.
 
 	// Find the filename part of the file in the list.
 	x = (int)strlen(filename);
-	while ((x >= 0) && (filename[x] != '\\')) x--;
+	while ((x >= 0) && (filename[x] != '\\'))
+		x--;
 
-	if (x < 0)
-	{
+	if (x < 0) {
 		// This will probably fail, but give it a shot anyway.
 		shortfname = filename;
-	}
-	else
-	{
-		shortfname = (char *)&filename[x+1];
+	} else {
+		shortfname = (char *)&filename[x + 1];
 	}
 
-	err = zipOpenNewFileInZip3(zf, shortfname, &zi, NULL, 0, NULL, 0, NULL, Z_DEFLATED, 9, 0, -MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, NULL, 0);
-	if (err != ZIP_OK)
-	{
+	err =
+	    zipOpenNewFileInZip3(zf, shortfname, &zi, NULL, 0, NULL, 0, NULL,
+				 Z_DEFLATED, 9, 0, -MAX_WBITS, DEF_MEM_LEVEL,
+				 Z_DEFAULT_STRATEGY, NULL, 0);
+	if (err != ZIP_OK) {
 		printf("Error creating file in zip file!\n");
 #ifdef DEBUG
-		fprintf(tempf, "Error creating file '%s' in zip file!\n", shortfname);
+		fprintf(tempf, "Error creating file '%s' in zip file!\n",
+			shortfname);
 		fflush(tempf);
 #endif
 		return -1;
 	}
 
-	do
-	{
+	do {
 		err = ZIP_OK;
 
 		size_read = (int)fread(buf, 1, size_buf, fin);
-		if (size_read < size_buf)
-		{
-			if (feof(fin) == 0)
-			{
+		if (size_read < size_buf) {
+			if (feof(fin) == 0) {
 				printf("Error reading file!\n");
 				err = ZIP_ERRNO;
 			}
 		}
 
-		if (size_read > 0)
-		{
+		if (size_read > 0) {
 			err = zipWriteInFileInZip(zf, buf, size_read);
-			if (err < 0)
-			{
+			if (err < 0) {
 				printf("Error writing in zip file!\n");
 				return -1;
 			}
@@ -243,15 +237,13 @@ int crashdump_store_file_in_zip(char *filename, zipFile *zf)
 	if (fin)
 		fclose(fin);
 
-	if (err < 0)
-	{
+	if (err < 0) {
 		printf("Error writing zip file!\n");
 		return -1;
 	}
 
 	err = zipCloseFileInZip(zf);
-	if (err != ZIP_OK)
-	{
+	if (err != ZIP_OK) {
 		printf("Error closing file in zip!\n");
 		return -1;
 	}
@@ -287,12 +279,9 @@ void crashdump_gather_files(char *destoverride)
 	fflush(tempf);
 #endif
 
-	if (destoverride != NULL)
-	{
+	if (destoverride != NULL) {
 		path_to_use = destoverride;
-	}
-	else
-	{
+	} else {
 		path_to_use = zipdumppath;
 	}
 
@@ -304,9 +293,8 @@ void crashdump_gather_files(char *destoverride)
 	fflush(tempf);
 #endif
 
-	zf = zipOpen2(path_to_use, 0, NULL, &ffunc); 
-	if (zf == NULL)
-	{
+	zf = zipOpen2(path_to_use, 0, NULL, &ffunc);
+	if (zf == NULL) {
 		printf("Couldn't create zip file!\n");
 #ifdef DEBUG
 		fprintf(tempf, "Couldn't create zip file.\n");
@@ -320,20 +308,22 @@ void crashdump_gather_files(char *destoverride)
 	fprintf(tempf, "i = %d  num_crashfiles = %d\n", i, num_crashfiles);
 	fflush(tempf);
 #endif
-	while (i < num_crashfiles)
-	{
+	while (i < num_crashfiles) {
 		// If we aren't successful, then just bail out.
-		if (crashdump_store_file_in_zip(crashfiles[i].filename, zf) != 0) return;
+		if (crashdump_store_file_in_zip(crashfiles[i].filename, zf) !=
+		    0)
+			return;
 
-		if (crashfiles[i].unlink == 1) unlink(crashfiles[i].filename);   // We are done with it.
+		if (crashfiles[i].unlink == 1)
+			unlink(crashfiles[i].filename);	// We are done with it.
 		i++;
 	}
 
-	if (curuser_conf != NULL) crashdump_store_file_in_zip(curuser_conf, zf);
+	if (curuser_conf != NULL)
+		crashdump_store_file_in_zip(curuser_conf, zf);
 
 	err = zipClose(zf, NULL);
-	if (err != ZIP_OK)
-	{
+	if (err != ZIP_OK) {
 		printf("Error closing zip file!\n");
 		return;
 	}
@@ -349,13 +339,11 @@ void crashdump_deinit()
 
 	crash_handler_cleanup();
 
-	for (i=0; i < num_crashfiles; i++)
-	{
-		if (crashfiles[i].filename != NULL) free(crashfiles[i].filename);
+	for (i = 0; i < num_crashfiles; i++) {
+		if (crashfiles[i].filename != NULL)
+			free(crashfiles[i].filename);
 	}
 
 	free(crashfiles);
 	free(zipdumppath);
 }
-
-

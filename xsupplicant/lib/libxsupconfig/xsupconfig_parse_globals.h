@@ -15,4 +15,4 @@ extern parser globals[];
 
 void *xsupconfig_parse_build_globals(void **, uint8_t, xmlNodePtr);
 
-#endif // __XSUPCONFIG_PARSE_GLOBALS_H__
+#endif				// __XSUPCONFIG_PARSE_GLOBALS_H__

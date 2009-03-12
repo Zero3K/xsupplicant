@@ -24,60 +24,59 @@ HANDLE m_hProcess;
 FILE *fh = NULL;
 char *dumploc = NULL;
 
-typedef enum   // Stolen from CVCONST.H in the DIA 2.0 SDK
+typedef enum			// Stolen from CVCONST.H in the DIA 2.0 SDK
 {
-    btNoType = 0,
-    btVoid = 1,
-    btChar = 2,
-    btWChar = 3,
-    btInt = 6,
-    btUInt = 7,
-    btFloat = 8,
-    btBCD = 9,
-    btBool = 10,
-    btLong = 13,
-    btULong = 14,
-    btCurrency = 25,
-    btDate = 26,
-    btVariant = 27,
-    btComplex = 28,
-    btBit = 29,
-    btBSTR = 30,
-    btHresult = 31
+	btNoType = 0,
+	btVoid = 1,
+	btChar = 2,
+	btWChar = 3,
+	btInt = 6,
+	btUInt = 7,
+	btFloat = 8,
+	btBCD = 9,
+	btBool = 10,
+	btLong = 13,
+	btULong = 14,
+	btCurrency = 25,
+	btDate = 26,
+	btVariant = 27,
+	btComplex = 28,
+	btBit = 29,
+	btBSTR = 30,
+	btHresult = 31
 } BasicType;
 
 // A lot of the code below was taken from an MSDN Magazine article from
 // March of 2002. (Fairly heavily modified) It can be found at :
 //    http://msdn.microsoft.com/msdnmag/issues/02/03/hood/default.aspx
 //
-char *GetExceptionString( DWORD code)
+char *GetExceptionString(DWORD code)
 {
 #define EXCEPTION(x)  case EXCEPTION_##x: return _strdup(#x);
 
-	switch (code)
-	{
-        EXCEPTION( ACCESS_VIOLATION )
-        EXCEPTION( DATATYPE_MISALIGNMENT )
-        EXCEPTION( BREAKPOINT )
-        EXCEPTION( SINGLE_STEP )
-        EXCEPTION( ARRAY_BOUNDS_EXCEEDED )
-        EXCEPTION( FLT_DENORMAL_OPERAND )
-        EXCEPTION( FLT_DIVIDE_BY_ZERO )
-        EXCEPTION( FLT_INEXACT_RESULT )
-        EXCEPTION( FLT_INVALID_OPERATION )
-        EXCEPTION( FLT_OVERFLOW )
-        EXCEPTION( FLT_STACK_CHECK )
-        EXCEPTION( FLT_UNDERFLOW )
-        EXCEPTION( INT_DIVIDE_BY_ZERO )
-        EXCEPTION( INT_OVERFLOW )
-        EXCEPTION( PRIV_INSTRUCTION )
-        EXCEPTION( IN_PAGE_ERROR )
-        EXCEPTION( ILLEGAL_INSTRUCTION )
-        EXCEPTION( NONCONTINUABLE_EXCEPTION )
-        EXCEPTION( STACK_OVERFLOW )
-        EXCEPTION( INVALID_DISPOSITION )
-        EXCEPTION( GUARD_PAGE )
-		EXCEPTION( INVALID_HANDLE )
+	switch (code) {
+		EXCEPTION(ACCESS_VIOLATION)
+		    EXCEPTION(DATATYPE_MISALIGNMENT)
+		    EXCEPTION(BREAKPOINT)
+		    EXCEPTION(SINGLE_STEP)
+		    EXCEPTION(ARRAY_BOUNDS_EXCEEDED)
+		    EXCEPTION(FLT_DENORMAL_OPERAND)
+		    EXCEPTION(FLT_DIVIDE_BY_ZERO)
+		    EXCEPTION(FLT_INEXACT_RESULT)
+		    EXCEPTION(FLT_INVALID_OPERATION)
+		    EXCEPTION(FLT_OVERFLOW)
+		    EXCEPTION(FLT_STACK_CHECK)
+		    EXCEPTION(FLT_UNDERFLOW)
+		    EXCEPTION(INT_DIVIDE_BY_ZERO)
+		    EXCEPTION(INT_OVERFLOW)
+		    EXCEPTION(PRIV_INSTRUCTION)
+		    EXCEPTION(IN_PAGE_ERROR)
+		    EXCEPTION(ILLEGAL_INSTRUCTION)
+		    EXCEPTION(NONCONTINUABLE_EXCEPTION)
+		    EXCEPTION(STACK_OVERFLOW)
+		    EXCEPTION(INVALID_DISPOSITION)
+		    EXCEPTION(GUARD_PAGE)
+		    EXCEPTION(INVALID_HANDLE)
 
 	default:
 		return _strdup("Unknown");
@@ -87,8 +86,8 @@ char *GetExceptionString( DWORD code)
 /**
  * \brief Determine the address of the modules that we crashed in.
  **/
-void GetLogicalAddress(void *addr, char *fModule, DWORD buflen, DWORD *section,
-					   DWORD *offset)
+void GetLogicalAddress(void *addr, char *fModule, DWORD buflen, DWORD * section,
+		       DWORD * offset)
 {
 	MEMORY_BASIC_INFORMATION mbi;
 	HMODULE hMod;
@@ -103,30 +102,32 @@ void GetLogicalAddress(void *addr, char *fModule, DWORD buflen, DWORD *section,
 	(*section) = 0;
 	(*offset) = 0;
 
-	if (!VirtualQuery( addr, &mbi, sizeof(mbi))) return;
+	if (!VirtualQuery(addr, &mbi, sizeof(mbi)))
+		return;
 
-	hMod = (HMODULE)mbi.AllocationBase;
+	hMod = (HMODULE) mbi.AllocationBase;
 
-	if (!GetModuleFileName(hMod, fModule, buflen)) return;
+	if (!GetModuleFileName(hMod, fModule, buflen))
+		return;
 
-	pDosHdr = (PIMAGE_DOS_HEADER)mbi.AllocationBase;
+	pDosHdr = (PIMAGE_DOS_HEADER) mbi.AllocationBase;
 
-	pNtHdr = (PIMAGE_NT_HEADERS)(hMod + pDosHdr->e_lfanew);
+	pNtHdr = (PIMAGE_NT_HEADERS) (hMod + pDosHdr->e_lfanew);
 
 	pSection = IMAGE_FIRST_SECTION(pNtHdr);
 
-	rva = (DWORD)addr - (DWORD)mbi.AllocationBase;  
+	rva = (DWORD) addr - (DWORD) mbi.AllocationBase;
 
 	// Locate the section that holds our address.
-	for (i = 0; i < pNtHdr->FileHeader.NumberOfSections; i++, pSection++)
-	{
+	for (i = 0; i < pNtHdr->FileHeader.NumberOfSections; i++, pSection++) {
 		sectionStart = pSection->VirtualAddress;
-		sectionEnd = sectionStart + max(pSection->SizeOfRawData, pSection->Misc.VirtualSize);
+		sectionEnd =
+		    sectionStart + max(pSection->SizeOfRawData,
+				       pSection->Misc.VirtualSize);
 
-		if ((rva >= sectionStart) && (rva <= sectionEnd))
-		{
+		if ((rva >= sectionStart) && (rva <= sectionEnd)) {
 			// Found it.
-			(*section) = i+1;
+			(*section) = i + 1;
 			(*offset) = rva - sectionStart;
 			return;
 		}
@@ -140,74 +141,64 @@ void GetLogicalAddress(void *addr, char *fModule, DWORD buflen, DWORD *section,
     } children;
 */
 
-char *FormatOutputValue(   char * pszCurrBuffer,
-                           BasicType basicType,
-                           DWORD64 length,
-                           PVOID pAddress )
+char *FormatOutputValue(char *pszCurrBuffer,
+			BasicType basicType, DWORD64 length, PVOID pAddress)
 {
-    // Format appropriately (assuming it's a 1, 2, or 4 bytes (!!!)
-    if ( length == 1 )
-        pszCurrBuffer += sprintf( pszCurrBuffer, " = %X", *(PBYTE)pAddress );
-    else if ( length == 2 )
-        pszCurrBuffer += sprintf( pszCurrBuffer, " = %X", *(PWORD)pAddress );
-    else if ( length == 4 )
-    {
-        if ( basicType == btFloat )
-        {
-            pszCurrBuffer += sprintf(pszCurrBuffer," = %f", *(PFLOAT)pAddress);
-        }
-        else if ( basicType == btChar )
-        {
-            if ( !IsBadStringPtr( *(PSTR*)pAddress, 32) )
-            {
-                pszCurrBuffer += sprintf( pszCurrBuffer, " = \"%.31s\"",
-                                            *(PDWORD)pAddress );
-            }
-            else
-                pszCurrBuffer += sprintf( pszCurrBuffer, " = %X",
-                                            *(PDWORD)pAddress );
-        }
-        else
-            pszCurrBuffer += sprintf(pszCurrBuffer," = %X", *(PDWORD)pAddress);
-    }
-    else if ( length == 8 )
-    {
-        if ( basicType == btFloat )
-        {
-            pszCurrBuffer += sprintf( pszCurrBuffer, " = %lf",
-                                        *(double *)pAddress );
-        }
-        else
-            pszCurrBuffer += sprintf( pszCurrBuffer, " = %I64X",
-                                        *(DWORD64*)pAddress );
-    }
+	// Format appropriately (assuming it's a 1, 2, or 4 bytes (!!!)
+	if (length == 1)
+		pszCurrBuffer +=
+		    sprintf(pszCurrBuffer, " = %X", *(PBYTE) pAddress);
+	else if (length == 2)
+		pszCurrBuffer +=
+		    sprintf(pszCurrBuffer, " = %X", *(PWORD) pAddress);
+	else if (length == 4) {
+		if (basicType == btFloat) {
+			pszCurrBuffer +=
+			    sprintf(pszCurrBuffer, " = %f", *(PFLOAT) pAddress);
+		} else if (basicType == btChar) {
+			if (!IsBadStringPtr(*(PSTR *) pAddress, 32)) {
+				pszCurrBuffer +=
+				    sprintf(pszCurrBuffer, " = \"%.31s\"",
+					    *(PDWORD) pAddress);
+			} else
+				pszCurrBuffer += sprintf(pszCurrBuffer, " = %X",
+							 *(PDWORD) pAddress);
+		} else
+			pszCurrBuffer +=
+			    sprintf(pszCurrBuffer, " = %X", *(PDWORD) pAddress);
+	} else if (length == 8) {
+		if (basicType == btFloat) {
+			pszCurrBuffer += sprintf(pszCurrBuffer, " = %lf",
+						 *(double *)pAddress);
+		} else
+			pszCurrBuffer += sprintf(pszCurrBuffer, " = %I64X",
+						 *(DWORD64 *) pAddress);
+	}
 
-    return pszCurrBuffer;
+	return pszCurrBuffer;
 }
 
-BasicType GetBasicType( DWORD typeIndex, DWORD64 modBase )
+BasicType GetBasicType(DWORD typeIndex, DWORD64 modBase)
 {
-    BasicType basicType;
-    DWORD typeId;
+	BasicType basicType;
+	DWORD typeId;
 
-    if ( SymGetTypeInfo( m_hProcess, modBase, typeIndex,
-                        TI_GET_BASETYPE, &basicType ) )
-    {
-        return basicType;
-    }
+	if (SymGetTypeInfo(m_hProcess, modBase, typeIndex,
+			   TI_GET_BASETYPE, &basicType)) {
+		return basicType;
+	}
+	// Get the real "TypeId" of the child.  We need this for the
+	// SymGetTypeInfo( TI_GET_TYPEID ) call below.
+	if (SymGetTypeInfo
+	    (m_hProcess, modBase, typeIndex, TI_GET_TYPEID, &typeId)) {
+		if (SymGetTypeInfo
+		    (m_hProcess, modBase, typeId, TI_GET_BASETYPE,
+		     &basicType)) {
+			return basicType;
+		}
+	}
 
-    // Get the real "TypeId" of the child.  We need this for the
-    // SymGetTypeInfo( TI_GET_TYPEID ) call below.
-    if (SymGetTypeInfo(m_hProcess,modBase, typeIndex, TI_GET_TYPEID, &typeId))
-    {
-        if ( SymGetTypeInfo( m_hProcess, modBase, typeId, TI_GET_BASETYPE,
-                            &basicType ) )
-        {
-            return basicType;
-        }
-    }
-
-    return btNoType;
+	return btNoType;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -215,101 +206,95 @@ BasicType GetBasicType( DWORD typeIndex, DWORD64 modBase )
 // at fundamental types.  When he hit fundamental types, return
 // bHandled = false, so that FormatSymbolValue() will format them.
 //////////////////////////////////////////////////////////////////////////////
-char * DumpTypeIndex(
-        char * pszCurrBuffer,
-        DWORD64 modBase,
-        DWORD dwTypeIndex,
-        unsigned nestingLevel,
-        DWORD_PTR offset,
-        BOOL *bHandled )
+char *DumpTypeIndex(char *pszCurrBuffer,
+		    DWORD64 modBase,
+		    DWORD dwTypeIndex,
+		    unsigned nestingLevel, DWORD_PTR offset, BOOL * bHandled)
 {
 
-    WCHAR * pwszTypeName;
-    DWORD dwChildrenCount = 0;
+	WCHAR *pwszTypeName;
+	DWORD dwChildrenCount = 0;
 	TI_FINDCHILDREN_PARAMS children;
 	unsigned i, j;
-    BOOL bHandled2;
-    DWORD typeId;
-    ULONG64 length;
+	BOOL bHandled2;
+	DWORD typeId;
+	ULONG64 length;
 	DWORD_PTR dwFinalOffset;
 	BasicType basicType;
 
-    bHandled = 0;
+	bHandled = 0;
 
-    // Get the name of the symbol.  This will either be a Type name (if a UDT),
-    // or the structure member name.
-    if ( SymGetTypeInfo( m_hProcess, modBase, dwTypeIndex, TI_GET_SYMNAME,
-                        &pwszTypeName ) )
-    {
-        pszCurrBuffer += sprintf( pszCurrBuffer, " %ls", pwszTypeName );
-        LocalFree( pwszTypeName );
-    }
+	// Get the name of the symbol.  This will either be a Type name (if a UDT),
+	// or the structure member name.
+	if (SymGetTypeInfo(m_hProcess, modBase, dwTypeIndex, TI_GET_SYMNAME,
+			   &pwszTypeName)) {
+		pszCurrBuffer += sprintf(pszCurrBuffer, " %ls", pwszTypeName);
+		LocalFree(pwszTypeName);
+	}
+	// Determine how many children this type has.
+	SymGetTypeInfo(m_hProcess, modBase, dwTypeIndex, TI_GET_CHILDRENCOUNT,
+		       &dwChildrenCount);
 
-    // Determine how many children this type has.
-    SymGetTypeInfo( m_hProcess, modBase, dwTypeIndex, TI_GET_CHILDRENCOUNT,
-                    &dwChildrenCount );
+	if (!dwChildrenCount)	// If no children, we're done
+		return pszCurrBuffer;
 
-    if ( !dwChildrenCount )     // If no children, we're done
-        return pszCurrBuffer;
+	// Prepare to get an array of "TypeIds", representing each of the children.
+	// SymGetTypeInfo(TI_FINDCHILDREN) expects more memory than just a
+	// TI_FINDCHILDREN_PARAMS struct has.  Use derivation to accomplish this.
+	children.Count = dwChildrenCount;
+	children.Start = 0;
 
-    // Prepare to get an array of "TypeIds", representing each of the children.
-    // SymGetTypeInfo(TI_FINDCHILDREN) expects more memory than just a
-    // TI_FINDCHILDREN_PARAMS struct has.  Use derivation to accomplish this.
-    children.Count = dwChildrenCount;
-    children.Start= 0;
+	// Get the array of TypeIds, one for each child type
+	if (!SymGetTypeInfo(m_hProcess, modBase, dwTypeIndex, TI_FINDCHILDREN,
+			    &children)) {
+		return pszCurrBuffer;
+	}
+	// Append a line feed
+	pszCurrBuffer += sprintf(pszCurrBuffer, "\r\n");
 
-    // Get the array of TypeIds, one for each child type
-    if ( !SymGetTypeInfo( m_hProcess, modBase, dwTypeIndex, TI_FINDCHILDREN,
-                            &children ) )
-    {
-        return pszCurrBuffer;
-    }
+	// Iterate through each of the children
+	for (i = 0; i < dwChildrenCount; i++) {
+		// Add appropriate indentation level (since this routine is recursive)
+		for (j = 0; j <= nestingLevel + 1; j++)
+			pszCurrBuffer += sprintf(pszCurrBuffer, "\t");
 
-    // Append a line feed
-    pszCurrBuffer += sprintf( pszCurrBuffer, "\r\n" );
+		// Recurse for each of the child types
+		pszCurrBuffer = DumpTypeIndex(pszCurrBuffer, modBase,
+					      children.ChildId[i],
+					      nestingLevel + 1, offset,
+					      &bHandled2);
 
-    // Iterate through each of the children
-    for ( i = 0; i < dwChildrenCount; i++ )
-    {
-        // Add appropriate indentation level (since this routine is recursive)
-        for ( j = 0; j <= nestingLevel+1; j++ )
-            pszCurrBuffer += sprintf( pszCurrBuffer, "\t" );
+		// If the child wasn't a UDT, format it appropriately
+		if (!bHandled2) {
+			// Get the offset of the child member, relative to its parent
+			DWORD dwMemberOffset;
+			SymGetTypeInfo(m_hProcess, modBase, children.ChildId[i],
+				       TI_GET_OFFSET, &dwMemberOffset);
 
-        // Recurse for each of the child types
-        pszCurrBuffer = DumpTypeIndex( pszCurrBuffer, modBase,
-                                        children.ChildId[i], nestingLevel+1,
-                                        offset, &bHandled2 );
+			// Get the real "TypeId" of the child.  We need this for the
+			// SymGetTypeInfo( TI_GET_TYPEID ) call below.
+			SymGetTypeInfo(m_hProcess, modBase, children.ChildId[i],
+				       TI_GET_TYPEID, &typeId);
 
-        // If the child wasn't a UDT, format it appropriately
-        if ( !bHandled2 )
-        {
-            // Get the offset of the child member, relative to its parent
-            DWORD dwMemberOffset;
-            SymGetTypeInfo( m_hProcess, modBase, children.ChildId[i],
-                            TI_GET_OFFSET, &dwMemberOffset );
+			// Get the size of the child member
+			SymGetTypeInfo(m_hProcess, modBase, typeId,
+				       TI_GET_LENGTH, &length);
 
-            // Get the real "TypeId" of the child.  We need this for the
-            // SymGetTypeInfo( TI_GET_TYPEID ) call below.
-            SymGetTypeInfo( m_hProcess, modBase, children.ChildId[i],
-                            TI_GET_TYPEID, &typeId );
+			// Calculate the address of the member
+			dwFinalOffset = offset + dwMemberOffset;
 
-            // Get the size of the child member
-            SymGetTypeInfo(m_hProcess, modBase, typeId, TI_GET_LENGTH,&length);
+			basicType = GetBasicType(children.ChildId[i], modBase);
 
-            // Calculate the address of the member
-            dwFinalOffset = offset + dwMemberOffset;
+			pszCurrBuffer =
+			    FormatOutputValue(pszCurrBuffer, basicType, length,
+					      (PVOID) dwFinalOffset);
 
-            basicType = GetBasicType(children.ChildId[i], modBase );
+			pszCurrBuffer += sprintf(pszCurrBuffer, "\r\n");
+		}
+	}
 
-            pszCurrBuffer = FormatOutputValue( pszCurrBuffer, basicType,
-                                                length, (PVOID)dwFinalOffset ); 
-
-            pszCurrBuffer += sprintf( pszCurrBuffer, "\r\n" );
-        }
-    }
-
-    (*bHandled) = 1;
-    return pszCurrBuffer;
+	(*bHandled) = 1;
+	return pszCurrBuffer;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -317,97 +302,85 @@ char * DumpTypeIndex(
 // contents.  If it's a user defined type, display the members and their
 // values.
 //////////////////////////////////////////////////////////////////////////////
-BOOL FormatSymbolValue(
-            PSYMBOL_INFO pSym,
-            STACKFRAME * sf,
-            char * pszBuffer,
-            unsigned cbBuffer )
+BOOL FormatSymbolValue(PSYMBOL_INFO pSym,
+		       STACKFRAME * sf, char *pszBuffer, unsigned cbBuffer)
 {
-    char * pszCurrBuffer = pszBuffer;
-    DWORD_PTR pVariable = 0;    // Will point to the variable's data in memory
+	char *pszCurrBuffer = pszBuffer;
+	DWORD_PTR pVariable = 0;	// Will point to the variable's data in memory
 	BOOL bHandled;
 	BasicType basicType;
 
-    // Indicate if the variable is a local or parameter
-    if ( pSym->Flags & IMAGEHLP_SYMBOL_INFO_PARAMETER )
-        pszCurrBuffer += sprintf( pszCurrBuffer, "Parameter " );
-    else if ( pSym->Flags & IMAGEHLP_SYMBOL_INFO_LOCAL )
-        pszCurrBuffer += sprintf( pszCurrBuffer, "Local " );
+	// Indicate if the variable is a local or parameter
+	if (pSym->Flags & IMAGEHLP_SYMBOL_INFO_PARAMETER)
+		pszCurrBuffer += sprintf(pszCurrBuffer, "Parameter ");
+	else if (pSym->Flags & IMAGEHLP_SYMBOL_INFO_LOCAL)
+		pszCurrBuffer += sprintf(pszCurrBuffer, "Local ");
 
-    // If it's a function, don't do anything.
-    if ( pSym->Tag == 5 )   // SymTagFunction from CVCONST.H from the DIA SDK
-        return 0;
+	// If it's a function, don't do anything.
+	if (pSym->Tag == 5)	// SymTagFunction from CVCONST.H from the DIA SDK
+		return 0;
 
-    // Emit the variable name
-    pszCurrBuffer += sprintf( pszCurrBuffer, "\'%s\'", pSym->Name );
+	// Emit the variable name
+	pszCurrBuffer += sprintf(pszCurrBuffer, "\'%s\'", pSym->Name);
 
-    if ( pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGRELATIVE )
-    {
-        // if ( pSym->Register == 8 )   // EBP is the value 8 (in DBGHELP 5.1)
-        {                               //  This may change!!!
-            pVariable = sf->AddrFrame.Offset;
-            pVariable += (DWORD_PTR)pSym->Address;
-        }
-        // else
-        //  return false;
-    }
-    else if ( pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGISTER )
-    {
-        return 0;   // Don't try to report register variable
-    }
-    else
-    {
-        pVariable = (DWORD_PTR)pSym->Address;   // It must be a global variable
-    }
+	if (pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGRELATIVE) {
+		// if ( pSym->Register == 8 )   // EBP is the value 8 (in DBGHELP 5.1)
+		{		//  This may change!!!
+			pVariable = sf->AddrFrame.Offset;
+			pVariable += (DWORD_PTR) pSym->Address;
+		}
+		// else
+		//  return false;
+	} else if (pSym->Flags & IMAGEHLP_SYMBOL_INFO_REGISTER) {
+		return 0;	// Don't try to report register variable
+	} else {
+		pVariable = (DWORD_PTR) pSym->Address;	// It must be a global variable
+	}
 
-    // Determine if the variable is a user defined type (UDT).  IF so, bHandled
-    // will return true.
-    pszCurrBuffer = DumpTypeIndex(pszCurrBuffer,pSym->ModBase, pSym->TypeIndex,
-                                    0, pVariable, &bHandled );
+	// Determine if the variable is a user defined type (UDT).  IF so, bHandled
+	// will return true.
+	pszCurrBuffer =
+	    DumpTypeIndex(pszCurrBuffer, pSym->ModBase, pSym->TypeIndex, 0,
+			  pVariable, &bHandled);
 
-    if ( !bHandled )
-    {
-        // The symbol wasn't a UDT, so do basic, stupid formatting of the
-        // variable.  Based on the size, we're assuming it's a char, WORD, or
-        // DWORD.
-        basicType = GetBasicType( pSym->TypeIndex, pSym->ModBase );
-        
-        pszCurrBuffer = FormatOutputValue(pszCurrBuffer, basicType, pSym->Size,
-                                            (PVOID)pVariable ); 
-    }
+	if (!bHandled) {
+		// The symbol wasn't a UDT, so do basic, stupid formatting of the
+		// variable.  Based on the size, we're assuming it's a char, WORD, or
+		// DWORD.
+		basicType = GetBasicType(pSym->TypeIndex, pSym->ModBase);
 
+		pszCurrBuffer =
+		    FormatOutputValue(pszCurrBuffer, basicType, pSym->Size,
+				      (PVOID) pVariable);
+	}
 
-    return 1;
+	return 1;
 }
 
 BOOL CALLBACK
-EnumerateSymbolsCallback(
-    PSYMBOL_INFO  pSymInfo,
-    ULONG         SymbolSize,
-    PVOID         UserContext )
+EnumerateSymbolsCallback(PSYMBOL_INFO pSymInfo,
+			 ULONG SymbolSize, PVOID UserContext)
 {
 
-    char szBuffer[2048];
+	char szBuffer[2048];
 
-    __try
-    {
-        if ( FormatSymbolValue( pSymInfo, (STACKFRAME*)UserContext,
-                                szBuffer, sizeof(szBuffer) ) )  
-            fprintf(fh, "\t%s\r\n", szBuffer );
-    }
-    __except( 1 )
-    {
-        fprintf(fh, "punting on symbol %s\r\n", pSymInfo->Name );
-    }
+	__try {
+		if (FormatSymbolValue(pSymInfo, (STACKFRAME *) UserContext,
+				      szBuffer, sizeof(szBuffer)))
+			fprintf(fh, "\t%s\r\n", szBuffer);
+	}
+	__except(1) {
+		fprintf(fh, "punting on symbol %s\r\n", pSymInfo->Name);
+	}
 
-    return TRUE;
+	return TRUE;
 }
 
 void WriteStackDetails(PCONTEXT pContext, int writevars)
 {
 	DWORD dwMachineType = 0;
 	STACKFRAME sf;
-	unsigned char symbolBuffer[ sizeof(SYMBOL_INFO) + 1024 ];
+	unsigned char symbolBuffer[sizeof(SYMBOL_INFO) + 1024];
 	PSYMBOL_INFO pSymbol;
 	DWORD64 symDisplacement = 0;
 	char fModule[MAX_PATH];
@@ -417,8 +390,10 @@ void WriteStackDetails(PCONTEXT pContext, int writevars)
 	IMAGEHLP_STACK_FRAME imagehlpStackFrame;
 
 	fprintf(fh, "\nCall stack:\n");
-	fprintf(fh, "Address    Frame    Function                    Source File\n");
-	fprintf(fh, "===============================================================\n");
+	fprintf(fh,
+		"Address    Frame    Function                    Source File\n");
+	fprintf(fh,
+		"===============================================================\n");
 
 	memset(&sf, 0x00, sizeof(sf));
 
@@ -432,47 +407,50 @@ void WriteStackDetails(PCONTEXT pContext, int writevars)
 	dwMachineType = IMAGE_FILE_MACHINE_I386;
 #endif
 
-	while (1)
-	{
-		if (!StackWalk( dwMachineType, m_hProcess, GetCurrentThread(), &sf, pContext,
-			0, SymFunctionTableAccess, SymGetModuleBase, 0))
+	while (1) {
+		if (!StackWalk
+		    (dwMachineType, m_hProcess, GetCurrentThread(), &sf,
+		     pContext, 0, SymFunctionTableAccess, SymGetModuleBase, 0))
 			break;
 
-		if ( 0 == sf.AddrFrame.Offset)
+		if (0 == sf.AddrFrame.Offset)
 			break;
 
-		fprintf(fh, "%08X  %08X  ", sf.AddrPC.Offset, sf.AddrFrame.Offset);
+		fprintf(fh, "%08X  %08X  ", sf.AddrPC.Offset,
+			sf.AddrFrame.Offset);
 
-		pSymbol = (PSYMBOL_INFO)symbolBuffer;
+		pSymbol = (PSYMBOL_INFO) symbolBuffer;
 		pSymbol->SizeOfStruct = sizeof(symbolBuffer);
 		pSymbol->MaxNameLen = 1024;
 
 		symDisplacement = 0;
 
-		if (SymFromAddr(m_hProcess, sf.AddrPC.Offset, &symDisplacement, pSymbol))
-		{
-			fprintf(fh, "%hs+%I64X", pSymbol->Name, symDisplacement);
-		}
-		else
-		{
-			GetLogicalAddress( (void *)sf.AddrPC.Offset, fModule, sizeof(fModule), &section, &offset);
+		if (SymFromAddr
+		    (m_hProcess, sf.AddrPC.Offset, &symDisplacement, pSymbol)) {
+			fprintf(fh, "%hs+%I64X", pSymbol->Name,
+				symDisplacement);
+		} else {
+			GetLogicalAddress((void *)sf.AddrPC.Offset, fModule,
+					  sizeof(fModule), &section, &offset);
 
 			fprintf(fh, "%04X:%08X %s", section, offset, fModule);
 		}
 
-		if (SymGetLineFromAddr( m_hProcess, sf.AddrPC.Offset, &dwLineDisplacement, &lineInfo))
-		{
-			fprintf(fh, "  %s line %u", lineInfo.FileName, lineInfo.LineNumber);
+		if (SymGetLineFromAddr
+		    (m_hProcess, sf.AddrPC.Offset, &dwLineDisplacement,
+		     &lineInfo)) {
+			fprintf(fh, "  %s line %u", lineInfo.FileName,
+				lineInfo.LineNumber);
 		}
 		fprintf(fh, "\n");
 
 		// Consider adding the stuff below at a later date, if it makes sense.
-		if (writevars == 1)
-		{
+		if (writevars == 1) {
 			imagehlpStackFrame.InstructionOffset = sf.AddrPC.Offset;
-			SymSetContext( m_hProcess, &imagehlpStackFrame, 0 );
+			SymSetContext(m_hProcess, &imagehlpStackFrame, 0);
 
-			SymEnumSymbols( m_hProcess, 0, 0, EnumerateSymbolsCallback, &sf );
+			SymEnumSymbols(m_hProcess, 0, 0,
+				       EnumerateSymbolsCallback, &sf);
 
 			fprintf(fh, "\n");
 		}
@@ -492,16 +470,16 @@ void GenerateTextDump(PEXCEPTION_POINTERS pExceptionInfo)
 	PCONTEXT pCtx = NULL;
 	CONTEXT trashableContext;
 
-	temp = (char *)malloc(strlen(dumploc)+10);
-	if (temp == NULL) return;   // ACK!  Can't do anything!
+	temp = (char *)malloc(strlen(dumploc) + 10);
+	if (temp == NULL)
+		return;		// ACK!  Can't do anything!
 	strcpy(temp, dumploc);
 	strcat(temp, ".log");
 
 	fh = fopen(temp, "w");
-	if (fh == NULL)
-	{
+	if (fh == NULL) {
 		free(temp);
-		return;  // Nothing we can do.
+		return;		// Nothing we can do.
 	}
 
 	free(temp);
@@ -511,20 +489,22 @@ void GenerateTextDump(PEXCEPTION_POINTERS pExceptionInfo)
 
 	temp = GetExceptionString(pExceptionRecord->ExceptionCode);
 
-	fprintf(fh, "Exception code : %08X -- %s\n", pExceptionRecord->ExceptionCode,
-		temp);
+	fprintf(fh, "Exception code : %08X -- %s\n",
+		pExceptionRecord->ExceptionCode, temp);
 
 	free(temp);
 	temp = NULL;
 
-	GetLogicalAddress( pExceptionRecord->ExceptionAddress,
-		faultingModule, sizeof(faultingModule), &section, &offset);
+	GetLogicalAddress(pExceptionRecord->ExceptionAddress,
+			  faultingModule, sizeof(faultingModule), &section,
+			  &offset);
 
-	fprintf(fh, "Fault Address: %02X:%08X %s\n", section, offset, faultingModule);
+	fprintf(fh, "Fault Address: %02X:%08X %s\n", section, offset,
+		faultingModule);
 
 	pCtx = pExceptionInfo->ContextRecord;
 
-#ifdef _M_IX86   // Only do this if we are running in an X86 machine.
+#ifdef _M_IX86			// Only do this if we are running in an X86 machine.
 	fprintf(fh, "\nRegisters :\n");
 
 	fprintf(fh, "EAX:%08X\n", pCtx->Eax);
@@ -537,42 +517,41 @@ void GenerateTextDump(PEXCEPTION_POINTERS pExceptionInfo)
 	fprintf(fh, "CS:EIP:%04X:%08X\n", pCtx->SegCs, pCtx->Eip);
 	fprintf(fh, "SS:ESP:%04X:%08X  EBP:%08X\n", pCtx->SegSs, pCtx->Esp,
 		pCtx->Ebp);
-	fprintf(fh, "DS:%04X  ES:%04X  FS:%04X  GS:%04X\n", pCtx->SegDs, pCtx->SegEs,
-		pCtx->SegFs, pCtx->SegGs);
+	fprintf(fh, "DS:%04X  ES:%04X  FS:%04X  GS:%04X\n", pCtx->SegDs,
+		pCtx->SegEs, pCtx->SegFs, pCtx->SegGs);
 	fprintf(fh, "Flags:%08X\n", pCtx->EFlags);
 #endif
 
-	SymSetOptions( SYMOPT_DEFERRED_LOADS );
+	SymSetOptions(SYMOPT_DEFERRED_LOADS);
 
-	if (!SymInitialize( GetCurrentProcess(), 0, TRUE ))
-	{
+	if (!SymInitialize(GetCurrentProcess(), 0, TRUE)) {
 		fclose(fh);
 		return;
 	}
 
 	trashableContext = *pCtx;
 
-	WriteStackDetails(&trashableContext, 0 );
+	WriteStackDetails(&trashableContext, 0);
 
-    #ifdef _M_IX86  // X86 Only!
+#ifdef _M_IX86			// X86 Only!
 
-    fprintf(fh, "========================\r\n");
-    fprintf(fh, "Local Variables And Parameters\r\n");
+	fprintf(fh, "========================\r\n");
+	fprintf(fh, "Local Variables And Parameters\r\n");
 
-    trashableContext = *pCtx;
-    WriteStackDetails( &trashableContext, 1 );
+	trashableContext = *pCtx;
+	WriteStackDetails(&trashableContext, 1);
 
 #if 0
-    fprintf(fh, "========================\r\n");
-    fprintf(fh, "Global Variables\r\n");
+	fprintf(fh, "========================\r\n");
+	fprintf(fh, "Global Variables\r\n");
 
-    SymEnumSymbols( GetCurrentProcess(),
-                    (DWORD64)GetModuleHandle(faultingModule),
-                    0, EnumerateSymbolsCallback, 0 );
+	SymEnumSymbols(GetCurrentProcess(),
+		       (DWORD64) GetModuleHandle(faultingModule),
+		       0, EnumerateSymbolsCallback, 0);
 #endif
-    #endif      // X86 Only!
+#endif				// X86 Only!
 
-    SymCleanup( GetCurrentProcess() );
+	SymCleanup(GetCurrentProcess());
 
 	fclose(fh);
 }
@@ -589,12 +568,14 @@ LONG WINAPI crash_handler_callback(PEXCEPTION_POINTERS pExceptionInfo)
 	HANDLE hFile;
 	MINIDUMP_EXCEPTION_INFORMATION eInfo;
 
-	if (pExceptionInfo == NULL) return EXCEPTION_CONTINUE_SEARCH;
+	if (pExceptionInfo == NULL)
+		return EXCEPTION_CONTINUE_SEARCH;
 
 	// Note: BUILDNUM is a quoted string.
-	hFile = CreateFileA( dumploc, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (hFile != INVALID_HANDLE_VALUE)
-	{
+	hFile =
+	    CreateFileA(dumploc, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS,
+			FILE_ATTRIBUTE_NORMAL, NULL);
+	if (hFile != INVALID_HANDLE_VALUE) {
 		m_hProcess = GetCurrentProcess();
 		eInfo.ThreadId = GetCurrentThreadId();
 		eInfo.ClientPointers = FALSE;
@@ -602,7 +583,8 @@ LONG WINAPI crash_handler_callback(PEXCEPTION_POINTERS pExceptionInfo)
 
 		GenerateTextDump(pExceptionInfo);
 
-		MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpNormal, &eInfo, NULL, NULL);
+		MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(),
+				  hFile, MiniDumpNormal, &eInfo, NULL, NULL);
 	}
 
 	CloseHandle(hFile);
@@ -610,7 +592,7 @@ LONG WINAPI crash_handler_callback(PEXCEPTION_POINTERS pExceptionInfo)
 	crashdump_gather_files();
 
 	if (previousFilter)
-		return previousFilter( pExceptionInfo );
+		return previousFilter(pExceptionInfo);
 	else
 		return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -621,7 +603,8 @@ LONG WINAPI crash_handler_callback(PEXCEPTION_POINTERS pExceptionInfo)
  **/
 void crash_handler_install(char *dumpname)
 {
-	if (dumploc != NULL) free(dumploc);
+	if (dumploc != NULL)
+		free(dumploc);
 
 	dumploc = _strdup(dumpname);
 	previousFilter = SetUnhandledExceptionFilter(crash_handler_callback);

@@ -46,25 +46,40 @@
 #define MAX_EAPOL_VER		2
 
 multichoice crypto_choices[] = {
-  { 1, "WEP40"},
-  { 1, "wep40"},
-  { 2, "TKIP"},
-  { 2, "tkip"},
-  { 3, "WRAP"},
-  { 3, "wrap"},
-  { 4, "CCMP"},
-  { 4, "ccmp"},
-  { 5, "wep104"},
-  { 5, "WEP105"}};
+	{1, "WEP40"}
+	,
+	{1, "wep40"}
+	,
+	{2, "TKIP"}
+	,
+	{2, "tkip"}
+	,
+	{3, "WRAP"}
+	,
+	{3, "wrap"}
+	,
+	{4, "CCMP"}
+	,
+	{4, "ccmp"}
+	,
+	{5, "wep104"}
+	,
+	{5, "WEP105"}
+};
 
 multichoice assoc_choices[] = {
-  { 0, "open"},
-  { 0, "OPEN"},
-  { 1, "shared"},
-  { 1, "SHARED"},
-  { 2, "leap"},
-  { 2, "LEAP"}};
-
+	{0, "open"}
+	,
+	{0, "OPEN"}
+	,
+	{1, "shared"}
+	,
+	{1, "SHARED"}
+	,
+	{2, "leap"}
+	,
+	{2, "LEAP"}
+};
 
 /**
  * \brief Create a new connection node when the parser reaches a <Connection>
@@ -80,13 +95,13 @@ void *xsupconfig_parse_connection_generic(struct config_connection **conn)
 	struct config_connection *newconn = NULL;
 
 #ifdef PARSE_DEBUG
-  printf("Parsing connection.\n");
+	printf("Parsing connection.\n");
 #endif
 
 	if (xsupconfig_defaults_create_connection(&newconn) != XENONE)
 		exit(2);
 
-	liblist_add_to_tail((genlist **)conn, (genlist *)newconn);
+	liblist_add_to_tail((genlist **) conn, (genlist *) newconn);
 
 	return newconn;
 }
@@ -96,7 +111,8 @@ void *xsupconfig_parse_connection_generic(struct config_connection **conn)
  *  information.  It should start at the top of the list of connections,
  *  find the last node in the list, and allocate memory for the new node.
  **/
-void *xsupconfig_parse_connection(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection(void **attr, uint8_t config_type,
+				  xmlNodePtr node)
 {
 	return xsupconfig_parse_connection_generic(&conf_connections);
 }
@@ -106,371 +122,370 @@ void *xsupconfig_parse_connection(void **attr, uint8_t config_type, xmlNodePtr n
  *  information.  It should start at the top of the list of connections,
  *  find the last node in the list, and allocate memory for the new node.
  **/
-void *xsupconfig_parse_user_connection(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_user_connection(void **attr, uint8_t config_type,
+				       xmlNodePtr node)
 {
 	return xsupconfig_parse_connection_generic(&conf_user_connections);
 }
 
-void *xsupconfig_parse_connection_priority(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_priority(void **attr, uint8_t config_type,
+					   xmlNodePtr node)
 {
-  struct config_connection *conn = NULL;
-  char *value = NULL;
+	struct config_connection *conn = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  conn = (struct config_connection *)(*attr);
-  if (conn == NULL)
-    {
-      fprintf(stderr, "Configuration data is invalid!  Cannot continue!  (Line %ld)\n",
-	     xsupconfig_parse_get_line_num());
-      exit(2);
-    }
-
+	conn = (struct config_connection *)(*attr);
+	if (conn == NULL) {
+		fprintf(stderr,
+			"Configuration data is invalid!  Cannot continue!  (Line %ld)\n",
+			xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 #ifdef PARSE_DEBUG
-  printf("Network has a priority value of %s\n", value);
+	printf("Network has a priority value of %s\n", value);
 #endif
 
-  if (xsupconfig_common_is_number(value) == 0)
-    {
-		xsupconfig_common_log("Priority value setting at line %ld isn't valid.  Using default.",
-			xsupconfig_parse_get_line_num());
-    }
-  else
-    {
-      conn->priority = atoi(value);
-    }
+	if (xsupconfig_common_is_number(value) == 0) {
+		xsupconfig_common_log
+		    ("Priority value setting at line %ld isn't valid.  Using default.",
+		     xsupconfig_parse_get_line_num());
+	} else {
+		conn->priority = atoi(value);
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return conn;
+	return conn;
 }
 
-void *xsupconfig_parse_connection_eapol_ver(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_eapol_ver(void **attr, uint8_t config_type,
+					    xmlNodePtr node)
 {
-  struct config_connection *conn = NULL;
-  char *value = NULL;
-  uint8_t vval = 0;
+	struct config_connection *conn = NULL;
+	char *value = NULL;
+	uint8_t vval = 0;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  conn = (*attr);
+	conn = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Network wants EAPoL version value of %s\n", value);
+	printf("Network wants EAPoL version value of %s\n", value);
 #endif
 
-  if (xsupconfig_common_is_number(value) == 0)
-    {
-		xsupconfig_common_log("Value assigned to Force_EAPoL_Version at line %ld is not a number! "
-				"Using default.", xsupconfig_parse_get_line_num());
-		conn->force_eapol_ver = 0;    // Set it to the default.
-    }
-  else
-    {
+	if (xsupconfig_common_is_number(value) == 0) {
+		xsupconfig_common_log
+		    ("Value assigned to Force_EAPoL_Version at line %ld is not a number! "
+		     "Using default.", xsupconfig_parse_get_line_num());
+		conn->force_eapol_ver = 0;	// Set it to the default.
+	} else {
 		vval = atoi(value);
-		if (vval > MAX_EAPOL_VER)
-		{
-			xsupconfig_common_log("Value assigned to Force_EAPoL_Version at line %ld is invalid! "
-					"Using default.", xsupconfig_parse_get_line_num());
+		if (vval > MAX_EAPOL_VER) {
+			xsupconfig_common_log
+			    ("Value assigned to Force_EAPoL_Version at line %ld is invalid! "
+			     "Using default.", xsupconfig_parse_get_line_num());
 
 			conn->force_eapol_ver = 0;
-		}
-		else
-		{
+		} else {
 			conn->force_eapol_ver = atoi(value);
 		}
-    }
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return conn;
+	return conn;
 }
 
-void *xsupconfig_parse_connection_name(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_name(void **attr, uint8_t config_type,
+				       xmlNodePtr node)
 {
-  struct config_connection *conn = NULL;
-  struct config_connection *check = NULL;
-  char *value = NULL;
-  char *original = NULL;
-  char *newname = NULL;
-  int done = 0, len = 0;
-  xmlChar *content = NULL;
+	struct config_connection *conn = NULL;
+	struct config_connection *check = NULL;
+	char *value = NULL;
+	char *original = NULL;
+	char *newname = NULL;
+	int done = 0, len = 0;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
-  conn = (*attr);
+	conn = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Connection has a name of %s\n", value);
+	printf("Connection has a name of %s\n", value);
 #endif
 
-	if (xsup_common_in_startup() == TRUE)
-	{
-	  original = _strdup(value);
+	if (xsup_common_in_startup() == TRUE) {
+		original = _strdup(value);
 
-	  while (done == 0)
-	  {
-		  check = conf_connections;
-		  if (check != NULL)
-			{
-			  // Make sure we don't already have it.
-			  while (check != NULL)
-			  {
-				  if (check->name != NULL)
-				  {
-					  if (strcmp(check->name, value) == 0) break;
-				  }		
+		while (done == 0) {
+			check = conf_connections;
+			if (check != NULL) {
+				// Make sure we don't already have it.
+				while (check != NULL) {
+					if (check->name != NULL) {
+						if (strcmp(check->name, value)
+						    == 0)
+							break;
+					}
 
-				  check = check->next;
-			  }	
+					check = check->next;
+				}
 
-			  if (check != NULL)
-			  {
-				  if (newname != NULL)
-				  {
-					  free(newname);
-					  newname = NULL;
-				  }
+				if (check != NULL) {
+					if (newname != NULL) {
+						free(newname);
+						newname = NULL;
+					}
 
-				  len = strlen(value) + strlen(" (dup)") + 1;
-				  newname = malloc(strlen(value) + strlen(" (dup)") + 1);
-				  if (newname == NULL)
-				  {
-					 xsupconfig_common_log("Couldn't allocate memory to store duplicate connection!\n");
-				  }
-				  else
-				  {
-					  memset(newname, 0x00, len);
-					  strcpy(newname, value);
-					  strcat(newname, " (dup)");
+					len =
+					    strlen(value) + strlen(" (dup)") +
+					    1;
+					newname =
+					    malloc(strlen(value) +
+						   strlen(" (dup)") + 1);
+					if (newname == NULL) {
+						xsupconfig_common_log
+						    ("Couldn't allocate memory to store duplicate connection!\n");
+					} else {
+						memset(newname, 0x00, len);
+						strcpy(newname, value);
+						strcat(newname, " (dup)");
 
-					  // Then, replace value.
-					  free(value);
-					  value = newname;
-					  newname = NULL;
-				  }
-			  }
-			  else
-			  {
-				  // We have a valid name.
-				  done = 1;
-			  }
-		  }
-		  else
-		  {
-			  // There is nothing to check, so it must be legit.
-			  done = 1;
-		  }
+						// Then, replace value.
+						free(value);
+						value = newname;
+						newname = NULL;
+					}
+				} else {
+					// We have a valid name.
+					done = 1;
+				}
+			} else {
+				// There is nothing to check, so it must be legit.
+				done = 1;
+			}
+		}
+
+		if (strcmp(original, value) != 0) {
+			xsupconfig_common_log
+			    ("There was a duplicate connection named '%s'.  The duplicate has been renamed '%s'.",
+			     original, value);
+		}
+
+		free(original);
 	}
 
-	  if (strcmp(original, value) != 0)
-	  {
-		  xsupconfig_common_log("There was a duplicate connection named '%s'.  The duplicate has been renamed '%s'.", original, value);
-	  }
-
-	  free(original);
-	}
-
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->name = NULL;
-	}
-	else
-	{
+	} else {
 		conn->name = value;
 	}
 
-  return conn;
+	return conn;
 }
 
-void *xsupconfig_parse_connection_profile(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_profile(void **attr, uint8_t config_type,
+					  xmlNodePtr node)
 {
-  struct config_connection *conn = NULL;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_connection *conn = NULL;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
-  conn = (*attr);
+	conn = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Profile is named %s\n", value);
+	printf("Profile is named %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->profile = NULL;
-	}
-	else
-	{
+	} else {
 		conn->profile = value;
 	}
 
-  return conn;
+	return conn;
 }
 
-void *xsupconfig_parse_connection_ssid(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_ssid(void **attr, uint8_t config_type,
+				       xmlNodePtr node)
 {
-  struct config_connection *conn = NULL;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_connection *conn = NULL;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
-  conn = (*attr);
+	conn = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("SSID is %s\n", value);
+	printf("SSID is %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->ssid = NULL;
-	}
-	else
-	{
+	} else {
 		conn->ssid = value;
 	}
 
-  return conn;
+	return conn;
 }
 
-void *xsupconfig_parse_connection_mac_addr(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_mac_addr(void **attr, uint8_t config_type,
+					   xmlNodePtr node)
 {
-  struct config_connection *conn = NULL;
-  char *mystr = NULL;
-  char *value = NULL;
+	struct config_connection *conn = NULL;
+	char *mystr = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
-
-#ifdef PARSE_DEBUG
-  printf("MAC address is : %s\n", value);
-#endif
-
-  conn = (struct config_connection *)(*attr);
-  mystr = value;
-
-  if (xsupconfig_common_is_valid_mac(mystr) == FALSE) 
-  {
-	  xsupconfig_common_log("Invalid MAC address at line %ld.  Ignoring.",
-		  xsupconfig_parse_get_line_num());
-	  free(value);
-	  return conn;
-  }
-
-  xsupconfig_common_convert_mac(mystr, (char *)&conn->dest_mac);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Result : %02X:%02X:%02X:%02X:%02X:%02X\n", conn->dest_mac[0], conn->dest_mac[1], conn->dest_mac[2],
-	 conn->dest_mac[3], conn->dest_mac[4], conn->dest_mac[5]);
+	printf("MAC address is : %s\n", value);
 #endif
 
-  SET_FLAG(conn->flags, CONFIG_NET_DEST_MAC);
-  xmlFree(value);
+	conn = (struct config_connection *)(*attr);
+	mystr = value;
 
-  return conn;
+	if (xsupconfig_common_is_valid_mac(mystr) == FALSE) {
+		xsupconfig_common_log
+		    ("Invalid MAC address at line %ld.  Ignoring.",
+		     xsupconfig_parse_get_line_num());
+		free(value);
+		return conn;
+	}
+
+	xsupconfig_common_convert_mac(mystr, (char *)&conn->dest_mac);
+
+#ifdef PARSE_DEBUG
+	printf("Result : %02X:%02X:%02X:%02X:%02X:%02X\n", conn->dest_mac[0],
+	       conn->dest_mac[1], conn->dest_mac[2], conn->dest_mac[3],
+	       conn->dest_mac[4], conn->dest_mac[5]);
+#endif
+
+	SET_FLAG(conn->flags, CONFIG_NET_DEST_MAC);
+	xmlFree(value);
+
+	return conn;
 }
 
-void *xsupconfig_parse_connection_hidden_ssid(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_hidden_ssid(void **attr, uint8_t config_type,
+					      xmlNodePtr node)
 {
-  char *value = NULL;
-  struct config_connection *conn = NULL;
-  uint8_t result = 0;
+	char *value = NULL;
+	struct config_connection *conn = NULL;
+	uint8_t result = 0;
 
-  conn = (struct config_connection *)(*attr);
+	conn = (struct config_connection *)(*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Hidden SSID : %s\n", value);
+	printf("Hidden SSID : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
- 
-    if (result == 1)
-    {
-      SET_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN);
-    }
-  else
-    {
-		xsupconfig_common_log("Unknown value for Hidden_SSID at line %ld.  Using default of NO.",
-			xsupconfig_parse_get_line_num());
-      UNSET_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		SET_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN);
+	} else if (result == 0) {
+		UNSET_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN);
+	} else {
+		xsupconfig_common_log
+		    ("Unknown value for Hidden_SSID at line %ld.  Using default of NO.",
+		     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN);
+	}
 
-  return conn;
+	xmlFree(value);
+
+	return conn;
 }
 
-void *xsupconfig_parse_connection_volatile(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_volatile(void **attr, uint8_t config_type,
+					   xmlNodePtr node)
 {
-  char *value = NULL;
-  struct config_connection *conn = NULL;
-  uint8_t result = 0;
+	char *value = NULL;
+	struct config_connection *conn = NULL;
+	uint8_t result = 0;
 
-  conn = (struct config_connection *)(*attr);
+	conn = (struct config_connection *)(*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Volatile : %s\n", value);
+	printf("Volatile : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
- 
-    if (result == 1)
-    {
-      SET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
-    }
-  else
-    {
-		xsupconfig_common_log("Unknown value for Volatile at line %ld.  Using default of NO.",
-			xsupconfig_parse_get_line_num());
-      UNSET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		SET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
+	} else if (result == 0) {
+		UNSET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
+	} else {
+		xsupconfig_common_log
+		    ("Unknown value for Volatile at line %ld.  Using default of NO.",
+		     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(conn->flags, CONFIG_VOLATILE_CONN);
+	}
 
-  return conn;
+	xmlFree(value);
+
+	return conn;
 }
 
-void *xsupconfig_parse_connection_do_nothing(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connection_do_nothing(void **attr, uint8_t config_type,
+					     xmlNodePtr node)
 {
 	// Don't do anything.
 	return (*attr);
 }
 
 parser connection[] = {
-  {"Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_name},
-  {"Priority", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_priority},
-  {"Profile", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_profile},
-  {"Force_EAPoL_Version", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_eapol_ver},
-  {"SSID", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_ssid},
-  {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_connection_volatile},
-  {"Association", (struct conf_parse_struct *)&conn_association, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_association},
-  {"Destination_MAC", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_mac_addr},
-  {"Hidden_SSID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_hidden_ssid},
-  {"IPv4_Configuration", (struct conf_parse_struct *)&conn_ip, TRUE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip},
+	{"Name", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_connection_name}
+	,
+	{"Priority", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_connection_priority}
+	,
+	{"Profile", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_connection_profile}
+	,
+	{"Force_EAPoL_Version", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_connection_eapol_ver}
+	,
+	{"SSID", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_connection_ssid}
+	,
+	{"Volatile", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_connection_volatile}
+	,
+	{"Association", (struct conf_parse_struct *)&conn_association, TRUE,
+	 OPTION_ANY_CONFIG, xsupconfig_parse_conn_association},
+	{"Destination_MAC", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_connection_mac_addr},
+	{"Hidden_SSID", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_connection_hidden_ssid},
+	{"IPv4_Configuration", (struct conf_parse_struct *)&conn_ip, TRUE,
+	 OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip},
 
-  // Config items no longer used, but we want to parse to avoid throwing errors.
-  {"Interface", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_connection_do_nothing},
+	// Config items no longer used, but we want to parse to avoid throwing errors.
+	{"Interface", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_connection_do_nothing},
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

@@ -48,21 +48,26 @@ void state_transition(char *intf, int sm, int oldstate, int newstate)
 
 	state = xsupgui_events_state_get_statemachine_str(sm);
 
-	switch (sm)
-	{
+	switch (sm) {
 	case IPC_STATEMACHINE_PHYSICAL:
-		oldstatestr = xsupgui_events_state_get_wireless_state_str(oldstate);
-		newstatestr = xsupgui_events_state_get_wireless_state_str(newstate);
+		oldstatestr =
+		    xsupgui_events_state_get_wireless_state_str(oldstate);
+		newstatestr =
+		    xsupgui_events_state_get_wireless_state_str(newstate);
 		break;
 
 	case IPC_STATEMACHINE_8021X:
-		oldstatestr = xsupgui_events_state_get_8021X_state_str(oldstate);
-		newstatestr = xsupgui_events_state_get_8021X_state_str(newstate);
+		oldstatestr =
+		    xsupgui_events_state_get_8021X_state_str(oldstate);
+		newstatestr =
+		    xsupgui_events_state_get_8021X_state_str(newstate);
 		break;
 
 	case IPC_STATEMACHINE_8021X_BACKEND:
-		oldstatestr = xsupgui_events_state_get_8021Xbe_state_str(oldstate);
-		newstatestr = xsupgui_events_state_get_8021Xbe_state_str(newstate);
+		oldstatestr =
+		    xsupgui_events_state_get_8021Xbe_state_str(oldstate);
+		newstatestr =
+		    xsupgui_events_state_get_8021Xbe_state_str(newstate);
 		break;
 
 	case IPC_STATEMACHINE_EAP:
@@ -76,8 +81,9 @@ void state_transition(char *intf, int sm, int oldstate, int newstate)
 		break;
 	}
 
-	printf("%s state machine transitioned from %s to %s on interface %s.\n\n", 
-		state, oldstatestr, newstatestr, intf);
+	printf
+	    ("%s state machine transitioned from %s to %s on interface %s.\n\n",
+	     state, oldstatestr, newstatestr, intf);
 
 	free(state);
 	free(oldstatestr);
@@ -93,18 +99,17 @@ void ipcevents_parse_tnc_ui_batch_request_event()
 	tnc_msg_batch *data;
 	int i = 0;
 
-	if (xsupgui_events_get_tnc_ui_batch_request_event(&imcID, &connID, &oui, &msgid, &data) == 0)
-	{
-		printf("Got a message from OUI %d with message ID of %d.\n", oui, msgid);
+	if (xsupgui_events_get_tnc_ui_batch_request_event
+	    (&imcID, &connID, &oui, &msgid, &data) == 0) {
+		printf("Got a message from OUI %d with message ID of %d.\n",
+		       oui, msgid);
 
-		if (data == NULL)
-		{
+		if (data == NULL) {
 			printf("Didn't get an data!?\n");
 			return;
 		}
 
-		while (data[i].oui != 0)
-		{
+		while (data[i].oui != 0) {
 			printf("\tIMC ID        : %d\n", data[i].imcID);
 			printf("\tConnection ID : %d\n", data[i].connectionID);
 			printf("\tMessage OUI   : %d\n", data[i].oui);
@@ -131,8 +136,7 @@ void ipcevents_parse_tnc_ui_batch_request_event()
  **/
 int ipcevents_get_ui_string(int uievt, char **desc)
 {
-	switch (uievt)
-	{
+	switch (uievt) {
 	case IPC_EVENT_UI_IP_ADDRESS_SET:
 		(*desc) = strdup("An interface has had it's IP address set!\n");
 		break;
@@ -162,7 +166,8 @@ int ipcevents_get_ui_string(int uievt, char **desc)
 		break;
 
 	case IPC_EVENT_UI_SLEEP_CANCELLED:
-		(*desc) = strdup("The machine's sleep attempt was cancelled.\n");
+		(*desc) =
+		    strdup("The machine's sleep attempt was cancelled.\n");
 		break;
 
 	case IPC_EVENT_UI_WAKING_UP:
@@ -194,11 +199,14 @@ int ipcevents_get_ui_string(int uievt, char **desc)
 		break;
 
 	case IPC_EVENT_UI_POST_CONNECT_TIMEOUT:
-		(*desc) = strdup("Connection has been lost.  Ask the user if they want to connect to something else.\n");
+		(*desc) =
+		    strdup
+		    ("Connection has been lost.  Ask the user if they want to connect to something else.\n");
 		break;
 
 	case IPC_EVENT_UI_CONNECTION_DISCONNECT:
-		(*desc) = strdup("A connection was disconnected by UI request.\n");
+		(*desc) =
+		    strdup("A connection was disconnected by UI request.\n");
 		break;
 
 	case IPC_EVENT_PSK_SUCCESS:
@@ -218,13 +226,12 @@ int ipcevents_get_ui_string(int uievt, char **desc)
 	return 0;
 }
 
-
 int main()
 {
 	long int result = 0;
 	char *logline, *ints, *connname, *eapmethod, *chalstr, *arg;
 	char *intname;
-	int cur_debug_level = 10;   ///< The user defined debug level in use.
+	int cur_debug_level = 10;	///< The user defined debug level in use.
 	int sm = 0, oldstate = 0, newstate = 0, evttype = 0;
 	uint32_t value321, value322, value323, value324, tncconnectionid;
 	int uievt;
@@ -234,9 +241,9 @@ int main()
 
 	// Attempt to connect to the supplicant's event pipe.  Try once a second so
 	// that we don't overload the CPU by spinning.
-	while (xsupgui_connect_event_listener() != 0)
-	{
-		printf("Supplicant doesn't appear to be alive.  Will check again in 1 second.\n");
+	while (xsupgui_connect_event_listener() != 0) {
+		printf
+		    ("Supplicant doesn't appear to be alive.  Will check again in 1 second.\n");
 #ifdef WINDOWS
 		Sleep(1000);
 #else
@@ -249,79 +256,89 @@ int main()
 
 	// Loop as long as we believe that we have a chance of getting an event.
 	// -1 is a parser error, -2 means the connection was terminated.
-	while (result >= -1)
-	{
+	while (result >= -1) {
 		// Request the next event that comes across the channel.
 		// NOTE : THIS CALL *WILL* BLOCK!
 		result = xsupgui_process(&evttype);
 
-		if (result != REQUEST_SUCCESS)
-		{
+		if (result != REQUEST_SUCCESS) {
 			printf("Error getting data : %ld\n", result);
 		}
 
-		if (result == REQUEST_SUCCESS)
-		{
+		if (result == REQUEST_SUCCESS) {
 			// We got an event.  So we need to look at the type it is, and
 			// request that it be processed properly.
-			switch (evttype)
-			{
+			switch (evttype) {
 			case IPC_EVENT_LOG:
 				// Process a log message.
-				result = xsupgui_events_generate_log_string(&ints, &logline);
-				if ((result <= cur_debug_level) && (result == REQUEST_SUCCESS))
-				{
-					printf("Log event for interface %s :\n", ints);
+				result =
+				    xsupgui_events_generate_log_string(&ints,
+								       &logline);
+				if ((result <= cur_debug_level)
+				    && (result == REQUEST_SUCCESS)) {
+					printf("Log event for interface %s :\n",
+					       ints);
 					printf("\t%s\n\n", logline);
 				}
 
-				if (ints != NULL) free(ints);
-				if (logline != NULL) free(logline);			
+				if (ints != NULL)
+					free(ints);
+				if (logline != NULL)
+					free(logline);
 				break;
 
 			case IPC_EVENT_ERROR:
 				// Process an error message.
-				result = xsupgui_events_get_error(&uievt, &logline);
-				if (result == 0)
-				{
-					printf("Error (%d) : %s\n", uievt, logline);
+				result =
+				    xsupgui_events_get_error(&uievt, &logline);
+				if (result == 0) {
+					printf("Error (%d) : %s\n", uievt,
+					       logline);
 					free(logline);
 				}
 				break;
 
 			case IPC_EVENT_UI:
 				// Process a UI event.
-				result = xsupgui_events_get_ui_event(&uievt, &ints, &arg); 
-				if (result == 0)
-				{
-					result = ipcevents_get_ui_string(uievt, &logline);
-					if (result == 0)
-					{
-						printf("Got UI Event : %s\n", logline);
-						if (uievt == IPC_EVENT_SIGNAL_STRENGTH)
-						{
-							printf("\tSignal Strength : %s%%\n", arg);
-						}	
+				result =
+				    xsupgui_events_get_ui_event(&uievt, &ints,
+								&arg);
+				if (result == 0) {
+					result =
+					    ipcevents_get_ui_string(uievt,
+								    &logline);
+					if (result == 0) {
+						printf("Got UI Event : %s\n",
+						       logline);
+						if (uievt ==
+						    IPC_EVENT_SIGNAL_STRENGTH) {
+							printf
+							    ("\tSignal Strength : %s%%\n",
+							     arg);
+						}
 
 						free(logline);
-					}
-					else
-					{
-						printf("Couldn't get UI event string!\n");
+					} else {
+						printf
+						    ("Couldn't get UI event string!\n");
 					}
 
-					if (ints != NULL) free(ints);
-					if (arg != NULL) free(arg);
-				}
-				else
-				{
+					if (ints != NULL)
+						free(ints);
+					if (arg != NULL)
+						free(arg);
+				} else {
 					printf("Couldn't parse UI event!\n");
 				}
 				break;
 
 			case IPC_EVENT_STATEMACHINE:
 				// Process a state machine message.
-				result = xsupgui_events_get_state_change(&ints, &sm, &oldstate, &newstate, &tncconnectionid);
+				result =
+				    xsupgui_events_get_state_change(&ints, &sm,
+								    &oldstate,
+								    &newstate,
+								    &tncconnectionid);
 				state_transition(ints, sm, oldstate, newstate);
 				free(ints);
 				ints = NULL;
@@ -329,16 +346,23 @@ int main()
 
 			case IPC_EVENT_SCAN_COMPLETE:
 				// Process a scan complete event.
-				result = xsupgui_events_get_scan_complete_interface(&ints);
-				printf("Scan complete on interface %s.\n", ints);
+				result =
+				    xsupgui_events_get_scan_complete_interface
+				    (&ints);
+				printf("Scan complete on interface %s.\n",
+				       ints);
 				free(ints);
 				ints = NULL;
 				break;
 
 			case IPC_EVENT_REQUEST_PWD:
 				// Process a password request event.
-				result = xsupgui_events_get_passwd_challenge(&connname, &intname, &eapmethod, &chalstr);
-				printf("Password requested for connection '%s'!\n", connname);
+				result =
+				    xsupgui_events_get_passwd_challenge
+				    (&connname, &intname, &eapmethod, &chalstr);
+				printf
+				    ("Password requested for connection '%s'!\n",
+				     connname);
 				printf("\tEAP method       : %s\n", eapmethod);
 				printf("\tChallenge String : %s\n", chalstr);
 				free(connname);
@@ -349,11 +373,13 @@ int main()
 			case IPC_EVENT_TNC_UI:
 				// Process a TNC UI event.  (This event is basically a TNC IMC
 				// sending some sort of status of notification to a UI component.)
-				if (xsupgui_events_get_tnc_ui_event(&value321, &value322) == 0)
-				{
+				if (xsupgui_events_get_tnc_ui_event
+				    (&value321, &value322) == 0) {
 					printf("Got a TNC UI event.\n");
-					printf("\tOUI          : %d\n", value321);
-					printf("\tNotification : %d\n", value322);
+					printf("\tOUI          : %d\n",
+					       value321);
+					printf("\tNotification : %d\n",
+					       value322);
 				}
 				break;
 
@@ -361,13 +387,19 @@ int main()
 				// Process a TNC UI request.  This is triggered when an IMC asks
 				// the UI to do something.  In general, the UI should respond, but
 				// since this program isn't interactive, we can't. ;)
-				if (xsupgui_events_get_tnc_ui_request_event(&value321, &value322, &value323, &value324) == 0)
-				{
-					printf("Got a TNC UI request response event.\n");
-					printf("IMC ID          : %d\n", value321);
-					printf("Connection ID   : %d\n", value322);
-					printf("OUI             : %d\n", value323);
-					printf("Request         : %d\n", value324);
+				if (xsupgui_events_get_tnc_ui_request_event
+				    (&value321, &value322, &value323,
+				     &value324) == 0) {
+					printf
+					    ("Got a TNC UI request response event.\n");
+					printf("IMC ID          : %d\n",
+					       value321);
+					printf("Connection ID   : %d\n",
+					       value322);
+					printf("OUI             : %d\n",
+					       value323);
+					printf("Request         : %d\n",
+					       value324);
 				}
 				break;
 
@@ -383,12 +415,15 @@ int main()
 				// has been broken.  This is the right way to determine when the
 				// supplicant isn't going to send us more data, since it isn't
 				// platform specific.
-				printf("Communication with the supplicant has been broken.\n");
-				result = -2;  // To break out of the loop.
+				printf
+				    ("Communication with the supplicant has been broken.\n");
+				result = -2;	// To break out of the loop.
 				break;
 
 			default:
-				printf("Unknown event received!  (Event : %ld)\n", result);
+				printf
+				    ("Unknown event received!  (Event : %ld)\n",
+				     result);
 				break;
 			}
 

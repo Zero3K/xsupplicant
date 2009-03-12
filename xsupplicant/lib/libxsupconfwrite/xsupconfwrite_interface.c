@@ -49,30 +49,31 @@
  * \retval xmlNodePtr containing the <Interface> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_interface_create_tree(struct xsup_interfaces *conf_int,
-									           char write_all)
+xmlNodePtr xsupconfwrite_interface_create_tree(struct xsup_interfaces *
+					       conf_int, char write_all)
 {
 	xmlNodePtr intnode = NULL;
 	char *mac_str = NULL;
 	char *temp = NULL;
 
-	if (conf_int == NULL) return NULL;
+	if (conf_int == NULL)
+		return NULL;
 
 	// Create the root node for the <Interface> block.
-	intnode = xmlNewNode(NULL, (xmlChar *)"Interface");
-	if (intnode == NULL)
-	{
+	intnode = xmlNewNode(NULL, (xmlChar *) "Interface");
+	if (intnode == NULL) {
 #ifdef WRITE_INTERFACE_DEBUG
-		printf("Couldn't allocate memory to create <Interface> tree!\n");
-#endif  
+		printf
+		    ("Couldn't allocate memory to create <Interface> tree!\n");
+#endif
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (conf_int->description != NULL))
-	{
+	if ((write_all == TRUE) || (conf_int->description != NULL)) {
 		xsupconfwrite_convert_amp(conf_int->description, &temp);
-		if (xmlNewChild(intnode, NULL, (xmlChar *)"Description", (xmlChar *)temp) == NULL)
-		{
+		if (xmlNewChild
+		    (intnode, NULL, (xmlChar *) "Description",
+		     (xmlChar *) temp) == NULL) {
 #ifdef WRITE_INTERFACE_DEBUG
 			printf("Couldn't create <Description> node!\n");
 #endif
@@ -84,10 +85,10 @@ xmlNodePtr xsupconfwrite_interface_create_tree(struct xsup_interfaces *conf_int,
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (conf_int->driver_type != NULL))
-	{
-		if (xmlNewChild(intnode, NULL, (xmlChar *)"Type", (xmlChar *)conf_int->driver_type) == NULL)
-		{
+	if ((write_all == TRUE) || (conf_int->driver_type != NULL)) {
+		if (xmlNewChild
+		    (intnode, NULL, (xmlChar *) "Type",
+		     (xmlChar *) conf_int->driver_type) == NULL) {
 #ifdef WRITE_INTERFACE_DEBUG
 			printf("Couldn't create <Type> node!\n");
 #endif
@@ -97,33 +98,37 @@ xmlNodePtr xsupconfwrite_interface_create_tree(struct xsup_interfaces *conf_int,
 	}
 
 	if (xsupconfwrite_common_write_bool(intnode, "Wireless",
-		TEST_FLAG(conf_int->flags, CONFIG_INTERFACE_IS_WIRELESS), FALSE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(conf_int->flags,
+						      CONFIG_INTERFACE_IS_WIRELESS),
+					    FALSE, write_all, FALSE) == NULL) {
 		xmlFreeNode(intnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(intnode, "Manage",
-		TEST_FLAG(conf_int->flags, CONFIG_INTERFACE_DONT_MANAGE), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(conf_int->flags,
+						      CONFIG_INTERFACE_DONT_MANAGE),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(intnode);
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (memcmp(conf_int->mac, "\0x00\0x00\0x00\0x00\0x00\0x00", 6) != 0))
-	{
+	if ((write_all == TRUE)
+	    || (memcmp(conf_int->mac, "\0x00\0x00\0x00\0x00\0x00\0x00", 6) !=
+		0)) {
 		mac_str = mac2str((char *)conf_int->mac);
-		if (mac_str == NULL)
-		{
+		if (mac_str == NULL) {
 #ifdef WRITE_INTERFACE_DEBUG
-			printf("Failed to convert a MAC address to a string!\n");
+			printf
+			    ("Failed to convert a MAC address to a string!\n");
 #endif
 			xmlFreeNode(intnode);
 			return NULL;
 		}
 
-		if (xmlNewChild(intnode, NULL, (xmlChar *)"MAC", (xmlChar *)mac_str) == NULL)
-		{
+		if (xmlNewChild
+		    (intnode, NULL, (xmlChar *) "MAC",
+		     (xmlChar *) mac_str) == NULL) {
 #ifdef WRITE_INTERFACE_DEBUG
 			printf("Couldn't create <MAC> node!\n");
 #endif

@@ -18,20 +18,20 @@
 #define MAX_EVENTS       20
 
 context *event_core_get_active_ctx();
-void event_core_set_active_ctx(context *ctx);
+void event_core_set_active_ctx(context * ctx);
 context *event_core_get_next_context();
 void event_core_init();
 void event_core_deinit();
 int event_core_terminate();
 void event_core();
-int event_core_register(int, context *, int(*)(context *, int), int, char *);
+int event_core_register(int, context *, int (*)(context *, int), int, char *);
 void event_core_deregister(int);
 context *event_core_locate(char *);
 void event_core_reset_locator();
 context *events_core_get_next_context();
 context *event_core_locate_by_desc(char *);
 void event_core_load_user_config();
-void event_core_change_wireless(config_globals *newsettings);
+void event_core_change_wireless(config_globals * newsettings);
 context *event_core_locate_by_connection(char *matchstr);
 
 #endif

@@ -16,7 +16,7 @@
 #include <openssl/ssl.h>
 #else
 #include <gnutls/gnutls.h>
-#endif 
+#endif
 
 #ifndef WINDOWS
 #include <netinet/in.h>
@@ -32,7 +32,7 @@
 
 #define TLS_SESSION_KEY_CONST       "client EAP encryption"
 #define TLS_SESSION_KEY_CONST_SIZE  21
-#define TLS_SESSION_KEY_SIZE        512  //192
+#define TLS_SESSION_KEY_SIZE        512	//192
 
 // This could be 1398, but some authenticators are stupid, and won't handle
 // anything larger.
@@ -41,8 +41,6 @@
 #define ROOT_CERTS_LOADED           0x01
 #define USER_CERTS_LOADED           0x02
 #define RANDOM_LOADED               0x04
-
-
 
 int eaptls_setup(eap_type_data *);
 void eaptls_process(eap_type_data *);

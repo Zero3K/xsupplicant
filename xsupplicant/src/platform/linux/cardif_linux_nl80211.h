@@ -21,18 +21,18 @@
 
 extern struct cardif_funcs cardif_linux_nl80211_driver;
 
-typedef enum { 	DRV_ALG_NONE,
-		DRV_ALG_WEP,
-		DRV_ALG_TKIP,
-		DRV_ALG_CCMP
-	} drv_alg;
+typedef enum { DRV_ALG_NONE,
+	DRV_ALG_WEP,
+	DRV_ALG_TKIP,
+	DRV_ALG_CCMP
+} drv_alg;
 
 struct lin_nl80211_drv_handle {
 	struct nl_handle *nl_handle;
 	struct nl_cache *nl_cache;
 	struct nl_cb *nl_cb;
-	struct genl_family *nl80211;	
-	};
+	struct genl_family *nl80211;
+};
 
 #ifndef ETH_ALEN
 #define ETH_ALEN 6
@@ -43,9 +43,9 @@ struct lin_nl80211_drv_handle {
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 #endif
 
-int driver_nl80211_init(context *ctx);
-unsigned int driver_nl80211_deinit(context *ctx);
+int driver_nl80211_init(context * ctx);
+unsigned int driver_nl80211_deinit(context * ctx);
 
 #endif
 
-#endif // DISABLE_LIBNL
+#endif				// DISABLE_LIBNL

@@ -8,8 +8,7 @@
 #ifndef __XSUPCONFWRITE_TRUSTED_SERVER_H__
 #define __XSUPCONFWRITE_TRUSTED_SERVER_H__
 
-xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server *, char);
+xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
+						    *, char);
 
-#endif // __XSUPCONFWRITE_TRUSTED_SERVER_H__
-
-
+#endif				// __XSUPCONFWRITE_TRUSTED_SERVER_H__

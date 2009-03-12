@@ -48,8 +48,8 @@
 #ifndef _FIPS_H
 #define _FIPS_H
 
-void fips186_2_prng(unsigned char *XKEY, int XKEYlen, 
+void fips186_2_prng(unsigned char *XKEY, int XKEYlen,
 		    unsigned char *XSEEDj, int xseedjlen,
 		    unsigned char *x, int xlen);
 
-#endif  /* !_FIPS_H */
+#endif				/* !_FIPS_H */

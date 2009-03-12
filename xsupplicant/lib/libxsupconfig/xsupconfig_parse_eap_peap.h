@@ -15,4 +15,4 @@ extern parser eap_peap[];
 
 void *xsupconfig_parse_eap_peap(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_EAP_PEAP_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_PEAP_H__

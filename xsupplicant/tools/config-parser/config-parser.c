@@ -90,12 +90,11 @@
 
 void usage(char *prog)
 {
-  printf("Usage: %s [-v] [-h] [-f file] [-o file]"
+	printf("Usage: %s [-v] [-h] [-f file] [-o file]"
 	       "\n\t-f  file to parse (required)"
 	       "\n\t-h  print this message"
 	       "\n\t-v  verbose"
-	       "\n\t-o  rewrite the config to file"
-	       "\n", prog);
+	       "\n\t-o  rewrite the config to file" "\n", prog);
 }
 
 /***************************************
@@ -106,88 +105,78 @@ void usage(char *prog)
  ***************************************/
 int main(int argc, char *argv[])
 {
-  struct options opts[] =
-  {
-	  { 1, "file",  "Load a specific config file", "f", 1 },
-	  { 2, "output", "Rewrite the configuration file", "o", 1 },
-	  { 3, "verbose", "Verbose output", "v", 0 },
-	  { 4, "help", "Display help", "h", 0 },
+	struct options opts[] = {
+		{1, "file", "Load a specific config file", "f", 1},
+		{2, "output", "Rewrite the configuration file", "o", 1},
+		{3, "verbose", "Verbose output", "v", 0},
+		{4, "help", "Display help", "h", 0},
 
-	  { 0, NULL, NULL, NULL, 0 }
-  };
+		{0, NULL, NULL, NULL, 0}
+	};
 
-  int op;
-  char *args = NULL;
-  char *config_fname = NULL, *config_ofname = NULL;
-  int flags = 0x00000000;
-  int retval = 0;
+	int op;
+	char *args = NULL;
+	char *config_fname = NULL, *config_ofname = NULL;
+	int flags = 0x00000000;
+	int retval = 0;
 
-  // We should have at least one argument passed in!
-  if (argc<2)
-    {
-      usage(argv[0]);
-      exit(0);
-    }
-
-  // Process any arguments we were passed in.
-
-  while ((op = getopts(argc, argv, opts, &args)) != 0) 
-    {
-      switch (op)
-	{
-	case 1:
-	  config_fname = args;
-	  flags |= CONFIG_PARSE_HAVE_FILE;
-	  break;
-	case 3:
-	  flags |= CONFIG_PARSE_VERBOSE;
-	  break;
-	case 4:
-	  usage(argv[0]);
-	  exit(0);
-	  break;
-	case 2:
-	  config_ofname = args;
-	  flags |= CONFIG_PARSE_WRITE_FILE;
-	  break;
-	default:
-	  usage(argv[0]);
-	  exit(0);
-	  break;
+	// We should have at least one argument passed in!
+	if (argc < 2) {
+		usage(argv[0]);
+		exit(0);
 	}
-    }
-  if (config_fname == NULL) {
-    printf("No filename given!\n");
-    usage(argv[0]);
-    exit(0);
-  }
-  
-  if (config_load_user_config(config_fname) == XENONE) {
-    if (flags & CONFIG_PARSE_VERBOSE)
-      {
-	printf("Dumping config.\n");
-	dump_config_data();
-      }
-    printf("Parsed successfully.\n");
+	// Process any arguments we were passed in.
 
-    if (flags & CONFIG_PARSE_WRITE_FILE)
-      {
-		retval = xsupconfwrite_write_config(config_ofname);
-		if (retval != XSUPCONFWRITE_ERRNONE)
-		{
-			debug_printf(DEBUG_NORMAL, "Error writing config file.\n");
-		} else {
-			debug_printf(DEBUG_NORMAL, "File written.\n");
-		} 
-      }
-    printf("Exiting.\n");
-    config_destroy();
-  }
-  else {
-    printf("Failed to Parse \"%s\". Exiting.\n", 
-		 config_fname);
-  }
-  
-  
-  return XENONE;
+	while ((op = getopts(argc, argv, opts, &args)) != 0) {
+		switch (op) {
+		case 1:
+			config_fname = args;
+			flags |= CONFIG_PARSE_HAVE_FILE;
+			break;
+		case 3:
+			flags |= CONFIG_PARSE_VERBOSE;
+			break;
+		case 4:
+			usage(argv[0]);
+			exit(0);
+			break;
+		case 2:
+			config_ofname = args;
+			flags |= CONFIG_PARSE_WRITE_FILE;
+			break;
+		default:
+			usage(argv[0]);
+			exit(0);
+			break;
+		}
+	}
+	if (config_fname == NULL) {
+		printf("No filename given!\n");
+		usage(argv[0]);
+		exit(0);
+	}
+
+	if (config_load_user_config(config_fname) == XENONE) {
+		if (flags & CONFIG_PARSE_VERBOSE) {
+			printf("Dumping config.\n");
+			dump_config_data();
+		}
+		printf("Parsed successfully.\n");
+
+		if (flags & CONFIG_PARSE_WRITE_FILE) {
+			retval = xsupconfwrite_write_config(config_ofname);
+			if (retval != XSUPCONFWRITE_ERRNONE) {
+				debug_printf(DEBUG_NORMAL,
+					     "Error writing config file.\n");
+			} else {
+				debug_printf(DEBUG_NORMAL, "File written.\n");
+			}
+		}
+		printf("Exiting.\n");
+		config_destroy();
+	} else {
+		printf("Failed to Parse \"%s\". Exiting.\n", config_fname);
+	}
+
+	return XENONE;
 }

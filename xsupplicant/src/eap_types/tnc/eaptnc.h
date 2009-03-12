@@ -48,6 +48,6 @@ uint8_t eaptnc_isKeyAvailable(eap_type_data *);
 uint8_t *eaptnc_getKey(eap_type_data *);
 void eaptnc_deinit(eap_type_data *);
 
-#endif // HAVE_TNC
+#endif				// HAVE_TNC
 
 #endif

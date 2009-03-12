@@ -15,4 +15,4 @@ extern parser eap_mschapv2[];
 
 void *xsupconfig_parse_eap_mschapv2(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_EAP_MSCHAPV2_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_MSCHAPV2_H__

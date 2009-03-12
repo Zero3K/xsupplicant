@@ -41,27 +41,27 @@
  * \retval ptr to the newly created node on success
  **/
 xmlNodePtr xsupconfwrite_common_newSibling(xmlNodePtr sibling, char *name,
-										   char *content)
+					   char *content)
 {
 	xmlNodePtr retnode = NULL;
 
-	if (name == NULL) return NULL;
+	if (name == NULL)
+		return NULL;
 
-	retnode = xmlNewNode(NULL, (xmlChar *)name);
-	if (retnode == NULL)
-	{
+	retnode = xmlNewNode(NULL, (xmlChar *) name);
+	if (retnode == NULL) {
 #ifdef XSUPCONFWRITE_COMMON_DEBUG
 		printf("Couldn't create new node node for <%s>!\n", name);
 #endif
 		return NULL;
 	}
 
-	xmlNodeAddContent(retnode, (xmlChar *)content);
+	xmlNodeAddContent(retnode, (xmlChar *) content);
 
-	if (sibling == NULL) return retnode;
+	if (sibling == NULL)
+		return retnode;
 
-	if (xmlAddSibling(sibling, retnode) == NULL)
-	{
+	if (xmlAddSibling(sibling, retnode) == NULL) {
 #ifdef XSUPCONFWRITE_COMMON_DEBUG
 		printf("Couldn't add new node as a sibling!\n");
 #endif
@@ -90,40 +90,32 @@ int xsupconfwrite_convert_amp(char *instr, char **outstr)
 	char *newstr = NULL;
 	int newi = 0;
 
-	if (instr == NULL)
-	{
+	if (instr == NULL) {
 		(*outstr) = NULL;
 		return 0;
 	}
 
-	for (i = 0; i < strlen(instr); i++)
-	{
-		if (instr[i] == '&') numamps++;
+	for (i = 0; i < strlen(instr); i++) {
+		if (instr[i] == '&')
+			numamps++;
 	}
 
-	if (numamps == 0) 
-	{
+	if (numamps == 0) {
 		(*outstr) = _strdup(instr);
 		return 0;
 	}
-
 	// Otherwise, we need to do some conversion, and add some extra space.
-	newstr = Malloc(strlen(instr) + (numamps * 5));  // Will result in more than we need.
-	if (newstr == NULL)
-	{
+	newstr = Malloc(strlen(instr) + (numamps * 5));	// Will result in more than we need.
+	if (newstr == NULL) {
 		outstr = NULL;
 		return -1;
 	}
 
-	for (i = 0; i < strlen(instr); i++)
-	{
-		if (instr[i] != '&')
-		{
+	for (i = 0; i < strlen(instr); i++) {
+		if (instr[i] != '&') {
 			newstr[newi] = instr[i];
 			newi++;
-		}
-		else
-		{
+		} else {
 			// Put in the &amp;
 			strcpy(&newstr[newi], "&amp;");
 			newi += strlen("&amp;");
@@ -147,37 +139,36 @@ int xsupconfwrite_convert_amp(char *instr, char **outstr)
  *
  * \retval NULL on error otherwise an updated xmlNodePtr value.
  **/
-xmlNodePtr xsupconfwrite_common_write_bool(xmlNodePtr xmlNode, char *nodeName, int yesno, int defaultval, int forcewrite, int sibling)
+xmlNodePtr xsupconfwrite_common_write_bool(xmlNodePtr xmlNode, char *nodeName,
+					   int yesno, int defaultval,
+					   int forcewrite, int sibling)
 {
-	if (yesno > 0) yesno = TRUE;
+	if (yesno > 0)
+		yesno = TRUE;
 
-	if ((forcewrite != FALSE) || (yesno != defaultval))
-	{
-		if (yesno != FALSE)		// This needs to be a test against FALSE since TRUE is any value > 0.
+	if ((forcewrite != FALSE) || (yesno != defaultval)) {
+		if (yesno != FALSE)	// This needs to be a test against FALSE since TRUE is any value > 0.
 		{
-			if (sibling == TRUE)
-			{
-				if (xsupconfwrite_common_newSibling(xmlNode, nodeName, "yes") == NULL)
+			if (sibling == TRUE) {
+				if (xsupconfwrite_common_newSibling
+				    (xmlNode, nodeName, "yes") == NULL)
+					return NULL;
+			} else {
+				if (xmlNewChild
+				    (xmlNode, NULL, (xmlChar *) nodeName,
+				     (xmlChar *) "yes") == NULL)
 					return NULL;
 			}
-			else
-			{
-				if (xmlNewChild(xmlNode, NULL, (xmlChar *)nodeName, (xmlChar *)"yes") == NULL)
-					return NULL;
-			}
-		}
-		else
-		{
-			if (sibling == TRUE)
-			{
-				if (xsupconfwrite_common_newSibling(xmlNode, nodeName, "no") == NULL)
-				{
+		} else {
+			if (sibling == TRUE) {
+				if (xsupconfwrite_common_newSibling
+				    (xmlNode, nodeName, "no") == NULL) {
 					return NULL;
 				}
-			}
-			else
-			{
-				if (xmlNewChild(xmlNode, NULL, (xmlChar *)nodeName, (xmlChar *)"no") == NULL)
+			} else {
+				if (xmlNewChild
+				    (xmlNode, NULL, (xmlChar *) nodeName,
+				     (xmlChar *) "no") == NULL)
 					return NULL;
 			}
 		}

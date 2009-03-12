@@ -14,8 +14,8 @@
 #include "../../context.h"
 
 struct md5_values {
-  uint8_t length;
-  uint8_t randval[16];
+	uint8_t length;
+	uint8_t randval[16];
 };
 
 void eapmd5_check(eap_type_data *);

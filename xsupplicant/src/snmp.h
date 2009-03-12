@@ -23,28 +23,28 @@
  *
  *************************************/
 struct snmp_data {
-  // The configuration pieces of the SNMP defined in section 9.5.1 are stored
-  // in our main structure, and not replicated here.
+	// The configuration pieces of the SNMP defined in section 9.5.1 are stored
+	// in our main structure, and not replicated here.
 
-  // Port number is stored in the main structure, and not replicated here.
-  unsigned int dot1xSuppEapolFramesRx;
-  unsigned int dot1xSuppEapolFramesTx;
-  unsigned int dot1xSuppEapolStartFramesTx;
-  unsigned int dot1xSuppEapolLogoffFramesTx;
-  unsigned int dot1xSuppEapolRespIdFramesTx;
-  unsigned int dot1xSuppEapolRespFramesTx;
-  unsigned int dot1xSuppEapolReqIdFramesRx;
-  unsigned int dot1xSuppEapolReqFramesRx;
-  unsigned int dot1xSuppInvalidEapolFramesRx;
-  unsigned int dot1xSuppEapLengthErrorFramesRx;
-  unsigned char dot1xSuppLastEapolFrameVersion;
-  unsigned char dot1xSuppLastEapolFrameSource[6];
+	// Port number is stored in the main structure, and not replicated here.
+	unsigned int dot1xSuppEapolFramesRx;
+	unsigned int dot1xSuppEapolFramesTx;
+	unsigned int dot1xSuppEapolStartFramesTx;
+	unsigned int dot1xSuppEapolLogoffFramesTx;
+	unsigned int dot1xSuppEapolRespIdFramesTx;
+	unsigned int dot1xSuppEapolRespFramesTx;
+	unsigned int dot1xSuppEapolReqIdFramesRx;
+	unsigned int dot1xSuppEapolReqFramesRx;
+	unsigned int dot1xSuppInvalidEapolFramesRx;
+	unsigned int dot1xSuppEapLengthErrorFramesRx;
+	unsigned char dot1xSuppLastEapolFrameVersion;
+	unsigned char dot1xSuppLastEapolFrameSource[6];
 
-  // These are not defined in the 802.1X-2001 document, but may be interesting
-  // anyway.
-  unsigned int eapol_success_rx;
-  unsigned int eapol_fail_rx;
-  unsigned int backend_timeout;
+	// These are not defined in the 802.1X-2001 document, but may be interesting
+	// anyway.
+	unsigned int eapol_success_rx;
+	unsigned int eapol_fail_rx;
+	unsigned int backend_timeout;
 };
 
 void snmp_init();

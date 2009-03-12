@@ -32,15 +32,15 @@ int cardif_windows_dot11_scan(context *, char);
 void cardif_windows_dot11_associate(context *);
 void cardif_windows_dot11_use_temp_keys(char);
 int cardif_windows_dot11_enc_open(context *);
-int cardif_windows_dot11_enc_disable(context *thisint);
+int cardif_windows_dot11_enc_disable(context * thisint);
 void cardif_windows_dot11_set_zero_keys(context *);
 void cardif_windows_dot11_zero_keys(context *);
 int cardif_windows_dot11_wpa_state(context *, char);
 int cardif_windows_dot11_set_wpa_ie(context *, unsigned char *, unsigned int);
 int cardif_windows_dot11_set_iwauth(context *, int, uint32_t, char *);
-int cardif_windows_dot11_set_key_ext(context *, int, 
-				  unsigned char *, int, int, char *, int,
-				  char *, int);
+int cardif_windows_dot11_set_key_ext(context *, int,
+				     unsigned char *, int, int, char *, int,
+				     char *, int);
 
 void cardif_windows_dot11_enc_capabilities(context *);
 

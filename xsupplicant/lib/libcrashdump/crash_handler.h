@@ -14,4 +14,4 @@
 void crash_handler_install(char *);
 void crash_handler_cleanup();
 
-#endif // __CRASH_HANDLER_H__
+#endif				// __CRASH_HANDLER_H__

@@ -33,12 +33,14 @@ struct interfaces *xsupconfcheck_common_is_live_int(char *devdesc)
 	struct interfaces *cur = NULL;
 
 	cur = interfaces_get_cache_head();
-	if (cur == NULL) return NULL;
+	if (cur == NULL)
+		return NULL;
 
 	while ((cur != NULL) && (strcmp(cur->desc, devdesc) != 0))
 		cur = cur->next;
 
-	if (cur == NULL) return NULL;
+	if (cur == NULL)
+		return NULL;
 
 	// Otherwise, it should be a live one.
 	return cur;

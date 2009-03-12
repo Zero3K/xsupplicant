@@ -15,7 +15,6 @@
 void pap_check(eap_type_data *);
 void pap_process(eap_type_data *, uint8_t *, uint16_t);
 void pap_buildResp(eap_type_data *, uint8_t *, uint16_t *);
-void pap_deinit(eap_type_data *eapdata);
+void pap_deinit(eap_type_data * eapdata);
 
 #endif
-

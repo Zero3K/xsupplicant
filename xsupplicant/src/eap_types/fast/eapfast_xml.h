@@ -24,4 +24,3 @@ xmlDocPtr eapfast_xml_open_pac(char *);
 int eapfast_xml_find_pac_data(xmlDocPtr, char *, struct pac_values *);
 
 #endif
-

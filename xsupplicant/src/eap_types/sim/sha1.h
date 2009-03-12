@@ -16,12 +16,10 @@
 #endif
 #endif
 
-
 #define SHA1Transform		SHA1_Transform
 
-extern void nossl_SHA1_Transform(unsigned long state[5], 
+extern void nossl_SHA1_Transform(unsigned long state[5],
 				 const unsigned char buffer[64]);
 
 #define __SHA1_INCLUDE_
-#endif /* __SHA1_INCLUDE_ */
-
+#endif				/* __SHA1_INCLUDE_ */

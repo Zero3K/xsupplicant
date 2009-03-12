@@ -15,7 +15,6 @@
 #include "src/xsup_debug.h"
 #include "supdetect_private.h"
 
-
 /**
  * \brief Look in the linux process list to see if a process is running.
  *
@@ -24,10 +23,10 @@
  * \retval >0 number of times the fingerprint was matched.
  * \retval 0 process not found.
  **/
-int supdetect_check_process_list(sup_fingerprints *search)
+int supdetect_check_process_list(sup_fingerprints * search)
 {
 #warning IMPLEMENT!
-  return 0;
+	return 0;
 }
 
 /**
@@ -43,5 +42,4 @@ int os_strange_checks()
 	return 0;
 }
 
-
-#endif // LINUX
+#endif				// LINUX

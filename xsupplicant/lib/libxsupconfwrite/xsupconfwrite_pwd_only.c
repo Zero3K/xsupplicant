@@ -35,7 +35,6 @@
 // Uncomment the #define below to enable textual debug output.
 // #define WRITE_PWD_ONLY_DEBUG 1
 
-
 /**
  * \brief Create a password only block for the configuration file in a format
  *        that libxml2 can understand.
@@ -50,46 +49,50 @@
  * \retval xmlNodePtr containing the password only tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_pwd_only_create_tree(char *tagname, 
-											  struct config_pwd_only *pwdonly, uint8_t config_type,
-										      char write_all)
+xmlNodePtr xsupconfwrite_pwd_only_create_tree(char *tagname,
+					      struct config_pwd_only * pwdonly,
+					      uint8_t config_type,
+					      char write_all)
 {
 	xmlNodePtr pwdnode = NULL;
 	char *temp = NULL;
 	uint16_t ressize = 0;
 
-		
-	if ((tagname == NULL) || (pwdonly == NULL)) return NULL;
+	if ((tagname == NULL) || (pwdonly == NULL))
+		return NULL;
 
 	pwdnode = xsupconfwrite_common_newSibling(NULL, "Type", tagname);
-	if (pwdnode == NULL)
-	{
+	if (pwdnode == NULL) {
 #ifdef WRITE_PWD_ONLY_CONFIG
-		printf("Couldn't allocate memory to store <%s> block!\n", tagname);
+		printf("Couldn't allocate memory to store <%s> block!\n",
+		       tagname);
 #endif
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(pwdnode, "Use_Logon_Credentials",
-		TEST_FLAG(pwdonly->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS), FALSE, write_all, TRUE) == NULL)
-	{
+					    TEST_FLAG(pwdonly->flags,
+						      CONFIG_PWD_ONLY_USE_LOGON_CREDS),
+					    FALSE, write_all, TRUE) == NULL) {
 		xmlFreeNode(pwdnode);
 		return NULL;
 	}
-	
-	if (pwdonly->password != NULL)
-	{
-		if (pwcrypt_funcs_available() == TRUE)
-		{
+
+	if (pwdonly->password != NULL) {
+		if (pwcrypt_funcs_available() == TRUE) {
 			// Write the encrypted version.
-			if (pwcrypt_encrypt(config_type, (uint8_t *)pwdonly->password, strlen(pwdonly->password), (uint8_t **)&temp, &ressize) != 0)
-			{
+			if (pwcrypt_encrypt
+			    (config_type, (uint8_t *) pwdonly->password,
+			     strlen(pwdonly->password), (uint8_t **) & temp,
+			     &ressize) != 0) {
 				// Couldn't encrypt the data.  So write the cleartext version.
-				xsupconfwrite_convert_amp(pwdonly->password, &temp);
-				if (xsupconfwrite_common_newSibling(pwdnode, "Password", temp) == NULL)
-				{
+				xsupconfwrite_convert_amp(pwdonly->password,
+							  &temp);
+				if (xsupconfwrite_common_newSibling
+				    (pwdnode, "Password", temp) == NULL) {
 #ifdef WRITE_PWD_ONLY_CONFIG
-					printf("Couldn't allocate memory to store <Password> node!\n");
+					printf
+					    ("Couldn't allocate memory to store <Password> node!\n");
 #endif
 					xmlFreeNode(pwdnode);
 					free(temp);
@@ -97,13 +100,13 @@ xmlNodePtr xsupconfwrite_pwd_only_create_tree(char *tagname,
 				}
 
 				free(temp);
-			}
-			else
-			{
-				if (xsupconfwrite_common_newSibling(pwdnode, "Encrypted_Password", temp) == NULL)
-				{
+			} else {
+				if (xsupconfwrite_common_newSibling
+				    (pwdnode, "Encrypted_Password",
+				     temp) == NULL) {
 #ifdef WRITE_PWD_ONLY_CONFIG
-					printf("Couldn't create <Encrypted_Password> node.\n");
+					printf
+					    ("Couldn't create <Encrypted_Password> node.\n");
 #endif
 					xmlFreeNode(pwdnode);
 					free(temp);
@@ -111,14 +114,13 @@ xmlNodePtr xsupconfwrite_pwd_only_create_tree(char *tagname,
 				}
 				free(temp);
 			}
-		}
-		else
-		{
+		} else {
 			xsupconfwrite_convert_amp(pwdonly->password, &temp);
-			if (xsupconfwrite_common_newSibling(pwdnode, "Password", temp) == NULL)
-			{
+			if (xsupconfwrite_common_newSibling
+			    (pwdnode, "Password", temp) == NULL) {
 #ifdef WRITE_PWD_ONLY_CONFIG
-				printf("Couldn't allocate memory to store <Password> node!\n");
+				printf
+				    ("Couldn't allocate memory to store <Password> node!\n");
 #endif
 				xmlFreeNode(pwdnode);
 				free(temp);
@@ -131,4 +133,3 @@ xmlNodePtr xsupconfwrite_pwd_only_create_tree(char *tagname,
 
 	return pwdnode;
 }
-

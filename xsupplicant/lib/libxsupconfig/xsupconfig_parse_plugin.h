@@ -15,4 +15,4 @@ extern parser plugin[];
 
 void *xsupconfig_parse_plugin(void **, uint8_t, xmlNodePtr);
 
-#endif // __XSUPCONFIG_PARSE_PLUGIN_H__
+#endif				// __XSUPCONFIG_PARSE_PLUGIN_H__

@@ -15,4 +15,4 @@ extern parser eap_aka[];
 
 void *xsupconfig_parse_eap_aka(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_EAP_AKA_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_AKA_H__

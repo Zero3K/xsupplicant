@@ -28,7 +28,8 @@
 /**
  * Stub to allow the parser to be more logical.
  **/
-void *xsupconfig_parse_plugins(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_plugins(void **attr, uint8_t config_type,
+			       xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
 	printf("Parsing plugins..\n");
@@ -40,5 +41,7 @@ void *xsupconfig_parse_plugins(void **attr, uint8_t config_type, xmlNodePtr node
 }
 
 parser plugins[] = {
-	{"Plugin", (struct conf_parse_struct *)&plugin, TRUE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin},
-	{NULL, NULL, FALSE, 0, NULL}};
+	{"Plugin", (struct conf_parse_struct *)&plugin, TRUE,
+	 OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_plugin},
+	{NULL, NULL, FALSE, 0, NULL}
+};

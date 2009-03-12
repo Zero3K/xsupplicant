@@ -25,47 +25,47 @@
 #define MS_CHAPV2_CHANGE_PWD    7
 
 struct mschapv2_vars {
-  uint8_t *AuthenticatorChallenge;
-  uint8_t *PeerChallenge;
-  uint8_t *NtResponse;
-  uint8_t *keyingMaterial;
-  uint8_t MS_CHAPv2_ID;
-  uint8_t eap_fast_mode;
-  char *password;
+	uint8_t *AuthenticatorChallenge;
+	uint8_t *PeerChallenge;
+	uint8_t *NtResponse;
+	uint8_t *keyingMaterial;
+	uint8_t MS_CHAPv2_ID;
+	uint8_t eap_fast_mode;
+	char *password;
 };
 
 struct mschapv2_challenge {
-  uint8_t OpCode;
-  uint8_t MS_CHAPv2_ID;
-  uint16_t MS_Length;
-  uint8_t Value_Size;
-  uint8_t Challenge[16];
-  // Everything else in the packet should be the name of the RADIUS server.
+	uint8_t OpCode;
+	uint8_t MS_CHAPv2_ID;
+	uint16_t MS_Length;
+	uint8_t Value_Size;
+	uint8_t Challenge[16];
+	// Everything else in the packet should be the name of the RADIUS server.
 };
 
 struct mschapv2_response {
-  uint8_t OpCode;
-  uint8_t MS_CHAPv2_ID;
-  uint16_t MS_Length;
-  uint8_t Value_Size;
-  uint8_t Peer_Challenge[16];
-  uint8_t Reserved[8];
-  uint8_t NT_Response[24];
-  uint8_t Flags;
+	uint8_t OpCode;
+	uint8_t MS_CHAPv2_ID;
+	uint16_t MS_Length;
+	uint8_t Value_Size;
+	uint8_t Peer_Challenge[16];
+	uint8_t Reserved[8];
+	uint8_t NT_Response[24];
+	uint8_t Flags;
 };
 
 struct mschapv2_success_request {
-  uint8_t OpCode;
-  uint8_t MS_CHAPv2_ID;
-  uint16_t MS_Length;
-  uint8_t MsgField[42];   // S=<auth_string>
+	uint8_t OpCode;
+	uint8_t MS_CHAPv2_ID;
+	uint16_t MS_Length;
+	uint8_t MsgField[42];	// S=<auth_string>
 };
 
 struct mschapv2_fail_request {
-  uint8_t OpCode;
-  uint8_t MS_CHAPv2_ID;
-  uint16_t MS_Length;
-  uint8_t MsgField[0];
+	uint8_t OpCode;
+	uint8_t MS_CHAPv2_ID;
+	uint16_t MS_Length;
+	uint8_t MsgField[0];
 };
 
 struct eap_mschapv2_stored_frame {

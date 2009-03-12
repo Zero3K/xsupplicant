@@ -30,11 +30,11 @@
 #define ABIL_WPA_PSK	  0x0020
 #define ABIL_RSN_DOT1X	  0x0040
 #define ABIL_RSN_PSK	  0x0080
-#define ABIL_DOT11_STD	  0x0100		// Straight 802.11  (1 or 2 MBps, DSS or FH)
-#define ABIL_DOT11_A	  0x0200		// 802.11a (54Mbps (max) 5.8 Ghz, OFDM)
-#define	ABIL_DOT11_B	  0x0400		// 802.11b (11Mbps (max) 2.4 Ghz, DSS)
-#define ABIL_DOT11_G	  0x0800		// 802.11g (54Mbps (max) 2.4 Ghz, OFDM)
-#define ABIL_DOT11_N	  0x1000		// 802.11n (???Mbps (max) 2.4 or 5.8 Ghz, MIMO)
+#define ABIL_DOT11_STD	  0x0100	// Straight 802.11  (1 or 2 MBps, DSS or FH)
+#define ABIL_DOT11_A	  0x0200	// 802.11a (54Mbps (max) 5.8 Ghz, OFDM)
+#define	ABIL_DOT11_B	  0x0400	// 802.11b (11Mbps (max) 2.4 Ghz, DSS)
+#define ABIL_DOT11_G	  0x0800	// 802.11g (54Mbps (max) 2.4 Ghz, OFDM)
+#define ABIL_DOT11_N	  0x1000	// 802.11n (???Mbps (max) 2.4 or 5.8 Ghz, MIMO)
 
 #define DRIVER_NONE        0
 #define DRIVER_WEXT        1
@@ -45,19 +45,19 @@
 
 // Reasons for a disassociation.
 // Valid sections include 7.3.1.7 in 802.11i-2004.
-#define DISASSOC_UNSPECIFIED          1     // Unspecified reason
-#define DISASSOC_INVALID_IE           13    // Invalid information element
-#define DISASSOC_MIC_FAILURE          14    // MIC failure
-#define DISASSOC_4WAY_TIMEOUT         15    // 4-way handshake timeout
-#define DISASSOC_GROUPKEY_TIMEOUT     16    // group key handshake timeout
-#define DISASSOC_DIFF_IE              17    // IEs in assoc, and 4-way differ.
-#define DISASSOC_INVALID_GROUP_CIPHER 18    // Invalid group cipher
-#define DISASSOC_INVALID_PAIR_CIPHER  19    // Invalid pairwise cipher
-#define DISASSOC_INVALID_AKMP         20    // Invalid AKMP
-#define DISASSOC_BAD_RSN_VERSION      21    // Unsupported RSN version
-#define DISASSOC_INVALID_RSN_CAPS     22    // Invalid RSN capabilities
-#define DISASSOC_DOT1X_FAILURE        23    // 802.1X authentication failure.
-#define DISASSOC_CIPHER_REJECT        24    // Cipher suite rejected.
+#define DISASSOC_UNSPECIFIED          1	// Unspecified reason
+#define DISASSOC_INVALID_IE           13	// Invalid information element
+#define DISASSOC_MIC_FAILURE          14	// MIC failure
+#define DISASSOC_4WAY_TIMEOUT         15	// 4-way handshake timeout
+#define DISASSOC_GROUPKEY_TIMEOUT     16	// group key handshake timeout
+#define DISASSOC_DIFF_IE              17	// IEs in assoc, and 4-way differ.
+#define DISASSOC_INVALID_GROUP_CIPHER 18	// Invalid group cipher
+#define DISASSOC_INVALID_PAIR_CIPHER  19	// Invalid pairwise cipher
+#define DISASSOC_INVALID_AKMP         20	// Invalid AKMP
+#define DISASSOC_BAD_RSN_VERSION      21	// Unsupported RSN version
+#define DISASSOC_INVALID_RSN_CAPS     22	// Invalid RSN capabilities
+#define DISASSOC_DOT1X_FAILURE        23	// 802.1X authentication failure.
+#define DISASSOC_CIPHER_REJECT        24	// Cipher suite rejected.
 
 // Return values for associated, and unassociated.
 #define IS_ASSOCIATED                 1
@@ -74,99 +74,97 @@
 
 /* RFC 2863 operational status (using different names to avoid compile problems) */
 enum {
-  XIF_OPER_UNKNOWN,
-  XIF_OPER_NOTPRESENT,
-  XIF_OPER_DOWN,
-  XIF_OPER_LOWERLAYERDOWN,
-  XIF_OPER_TESTING,
-  XIF_OPER_DORMANT,
-  XIF_OPER_UP,
+	XIF_OPER_UNKNOWN,
+	XIF_OPER_NOTPRESENT,
+	XIF_OPER_DOWN,
+	XIF_OPER_LOWERLAYERDOWN,
+	XIF_OPER_TESTING,
+	XIF_OPER_DORMANT,
+	XIF_OPER_UP,
 };
 
 enum {
-  XIF_LINK_MODE_DEFAULT,
-  XIF_LINK_MODE_DORMANT,
+	XIF_LINK_MODE_DEFAULT,
+	XIF_LINK_MODE_DORMANT,
 };
 
 struct cardif_funcs {
 
-  // Issue a scan request.
-  int (*scan)(context *, char);
+	// Issue a scan request.
+	int (*scan) (context *, char);
 
-  // Send a disassociate message to the AP
-  int (*disassociate)(context *, int);
+	// Send a disassociate message to the AP
+	int (*disassociate) (context *, int);
 
-  // Set a WEP key
-  int (*set_wep_key)(context *, uint8_t *, int, int);
+	// Set a WEP key
+	int (*set_wep_key) (context *, uint8_t *, int, int);
 
-  // Set a TKIP key.
-  int (*set_tkip_key)(context *, unsigned char *, int, int, 
-		      char *, int);
+	// Set a TKIP key.
+	int (*set_tkip_key) (context *, unsigned char *, int, int, char *, int);
 
-  // Set a CCMP (AES) key.
-  int (*set_ccmp_key)(context *, unsigned char *, int, int,
-		      char *, int);
+	// Set a CCMP (AES) key.
+	int (*set_ccmp_key) (context *, unsigned char *, int, int, char *, int);
 
-  // Delete a key.
-  int (*delete_key)(context *, int, int);
+	// Delete a key.
+	int (*delete_key) (context *, int, int);
 
-  // Tell the card to associate to a specific SSID.
-  void (*associate)(context *);
+	// Tell the card to associate to a specific SSID.
+	void (*associate) (context *);
 
-  // Request the SSID for this card.
-  int (*get_ssid)(context *, char *, unsigned int);
+	// Request the SSID for this card.
+	int (*get_ssid) (context *, char *, unsigned int);
 
-  // Request the BSSID.
-  int (*get_bssid)(context *, char *);
+	// Request the BSSID.
+	int (*get_bssid) (context *, char *);
 
-  // Enable the WPA state.  (Set the IEs, etc.)
-  int (*wpa_state)(context *, char);
+	// Enable the WPA state.  (Set the IEs, etc.)
+	int (*wpa_state) (context *, char);
 
-  // Enable WPA in the card.
-  int (*wpa)(context *, char);
+	// Enable WPA in the card.
+	int (*wpa) (context *, char);
 
-  // Set WEP keys needed to connect to a new AP.
-  int (*wep_associate)(context *, int);
+	// Set WEP keys needed to connect to a new AP.
+	int (*wep_associate) (context *, int);
 
-  // Tell the driver to enable countermeasures.
-  int (*countermeasures)(context *, char);
+	// Tell the driver to enable countermeasures.
+	int (*countermeasures) (context *, char);
 
-  // Tell the driver to drop all unencrypted frames.
-  int (*drop_unencrypted)(context *, char);
+	// Tell the driver to drop all unencrypted frames.
+	int (*drop_unencrypted) (context *, char);
 
-  // Return the WPA IE we need for this driver.
-  int (*get_wpa_ie)(context *, char *, int *);
+	// Return the WPA IE we need for this driver.
+	int (*get_wpa_ie) (context *, char *, int *);
 
-  // Return the WPA2 IE we need for this driver.
-  int (*get_wpa2_ie)(context *, unsigned char *, uint16_t *);
+	// Return the WPA2 IE we need for this driver.
+	int (*get_wpa2_ie) (context *, unsigned char *, uint16_t *);
 
-  // Disable encryption.
-  int (*enc_disable)(context *);
+	// Disable encryption.
+	int (*enc_disable) (context *);
 
-  // Get the encryption capabilities of the card. (WEP, WPA, WPA2, TKIP, CCMP)
-  void (*enc_capabilities)(context *);
+	// Get the encryption capabilities of the card. (WEP, WPA, WPA2, TKIP, CCMP)
+	void (*enc_capabilities) (context *);
 
-  // Change the bssid that we are connected to.
-  int (*setbssid)(context *, uint8_t *);
+	// Change the bssid that we are connected to.
+	int (*setbssid) (context *, uint8_t *);
 
-  // Notify the kernel (and any listeners) of the RFC2863 state of the 
-  // interface.
-  void (*set_operstate)(context *, uint8_t);
+	// Notify the kernel (and any listeners) of the RFC2863 state of the 
+	// interface.
+	void (*set_operstate) (context *, uint8_t);
 
-  // Notify the kernel that the link should start in dormant.
-  void (*set_linkmode)(context *, uint8_t);
+	// Notify the kernel that the link should start in dormant.
+	void (*set_linkmode) (context *, uint8_t);
 
-  // Get the percentage of the signal strength.
-  int (*get_signal_percent)(context *);
+	// Get the percentage of the signal strength.
+	int (*get_signal_percent) (context *);
 
-  // Set the PMKID data on the interface.
-  int (*apply_pmkid_data)(context *, pmksa_list *);
+	// Set the PMKID data on the interface.
+	int (*apply_pmkid_data) (context *, pmksa_list *);
 
-  // Get the frequency of the current connection
-  int (*get_freq)(context *, uint32_t *);
+	// Get the frequency of the current connection
+	int (*get_freq) (context *, uint32_t *);
 
-  // Set the frequency of the current connection
-  double (*set_freq)(context *);
+	// Set the frequency of the current connection
+	double (*set_freq) (context *);
 };
 
 // Stuff needed by both wired, and wireless interfaces.
@@ -207,10 +205,8 @@ int cardif_set_freq(context *);
 int cardif_enable_wpa(context *);
 int cardif_do_wireless_scan(context *, char);
 int cardif_set_wep_key(context *, uint8_t *, int, int);
-int cardif_set_tkip_key(context *, char *, int, int, char *, 
-			int);
-int cardif_set_ccmp_key(context *, char *, int, int, char *, 
-			int);
+int cardif_set_tkip_key(context *, char *, int, int, char *, int);
+int cardif_set_ccmp_key(context *, char *, int, int, char *, int);
 int cardif_delete_key(context *, int, int);
 void cardif_associate(context *);
 int cardif_disassociate(context *, int);

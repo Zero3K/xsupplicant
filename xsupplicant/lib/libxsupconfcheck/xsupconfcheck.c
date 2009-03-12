@@ -45,11 +45,13 @@
  *
  * \retval NULL if the cert isn't found.
  **/
-struct config_trusted_server *xsupconfcheck_find_trusted_server(uint8_t config_type, char *tsname)
+struct config_trusted_server *xsupconfcheck_find_trusted_server(uint8_t
+								config_type,
+								char *tsname)
 {
 	struct config_trusted_servers *tss = NULL;
 	struct config_trusted_server *ts = NULL;
-	
+
 	tss = config_get_trusted_servers(config_type);
 	if (tss == NULL)
 		return NULL;
@@ -75,18 +77,18 @@ int xsupconfcheck_trusted_server(char *tsname, int log)
 	struct config_trusted_server *ts = NULL;
 
 	ts = xsupconfcheck_find_trusted_server(CONFIG_LOAD_USER, tsname);
-	if (ts == NULL)
-	{
-		ts = xsupconfcheck_find_trusted_server(CONFIG_LOAD_GLOBAL, tsname);
-		if (ts == NULL)
-		{
-			if (log == TRUE) error_prequeue_add("Couldn't find the trusted server requested.");
+	if (ts == NULL) {
+		ts = xsupconfcheck_find_trusted_server(CONFIG_LOAD_GLOBAL,
+						       tsname);
+		if (ts == NULL) {
+			if (log == TRUE)
+				error_prequeue_add
+				    ("Couldn't find the trusted server requested.");
 			return -1;
 		}
 	}
 
-	if (xsupconfcheck_ts_check(ts, log) != 0)
-	{
+	if (xsupconfcheck_ts_check(ts, log) != 0) {
 		// Found errors are already in the queue, so we don't need to create any here.
 		return -1;
 	}
@@ -108,19 +110,18 @@ int xsupconfcheck_check_profile(char *profname, int log)
 	int retval = 0;
 
 	myprof = config_find_profile(CONFIG_LOAD_GLOBAL, profname);
-	if (myprof == NULL)
-	{
+	if (myprof == NULL) {
 		myprof = config_find_profile(CONFIG_LOAD_USER, profname);
-		if (myprof == NULL)
-		{
-			if (log == TRUE) error_prequeue_add("Couldn't find requested profile!");
+		if (myprof == NULL) {
+			if (log == TRUE)
+				error_prequeue_add
+				    ("Couldn't find requested profile!");
 			return -1;
 		}
 	}
 
 	retval = xsupconfcheck_profile_check(myprof, log);
-	if (retval != 0)
-	{
+	if (retval != 0) {
 		// No need to put a error_prequeue call here since the call above should have already
 		// added the needed information.
 		return retval;
@@ -140,25 +141,26 @@ int xsupconfcheck_check_profile(char *profname, int log)
 int xsupconfcheck_check_interface(char *intdesc, int log)
 {
 	struct xsup_interfaces *myints = NULL;
-	
+
 	myints = config_get_config_ints();
-	if (myints == NULL)
-	{
-		if (log == TRUE) error_prequeue_add("Couldn't find any interfaces in the configuration file!");
+	if (myints == NULL) {
+		if (log == TRUE)
+			error_prequeue_add
+			    ("Couldn't find any interfaces in the configuration file!");
 		return -1;
 	}
 
 	while ((myints != NULL) && (strcmp(myints->description, intdesc) != 0))
 		myints = myints->next;
 
-	if (myints == NULL)
-	{
-		if (log == TRUE) error_prequeue_add("Couldn't find the interface needed.");
+	if (myints == NULL) {
+		if (log == TRUE)
+			error_prequeue_add
+			    ("Couldn't find the interface needed.");
 		return -1;
 	}
 
-	if (xsupconfcheck_int_check(myints, log) != 0)
-	{
+	if (xsupconfcheck_int_check(myints, log) != 0) {
 		// No need to log anything here.  The previous call should have filled the queue with errors already.
 		return -1;
 	}
@@ -174,20 +176,21 @@ int xsupconfcheck_check_interface(char *intdesc, int log)
  * \retval 0 on success
  * \retval -1 on failure
  **/
-int xsupconfcheck_check_connection(context *ctx, char *connname, int log)
+int xsupconfcheck_check_connection(context * ctx, char *connname, int log)
 {
 	struct config_connection *conn = NULL;
 
-	if (connname == NULL) return -1;
+	if (connname == NULL)
+		return -1;
 
 	conn = config_find_connection(CONFIG_LOAD_GLOBAL, connname);
-	if (conn == NULL) 
-	{
+	if (conn == NULL) {
 		// Didn't find it in the global configuration, look in the user config.
 		conn = config_find_connection(CONFIG_LOAD_USER, connname);
-		if (conn == NULL)
-		{
-			if (log == TRUE) error_prequeue_add("Couldn't find the connection in the configuration file!  (How did you get here!?)");
+		if (conn == NULL) {
+			if (log == TRUE)
+				error_prequeue_add
+				    ("Couldn't find the connection in the configuration file!  (How did you get here!?)");
 			return -1;
 		}
 	}

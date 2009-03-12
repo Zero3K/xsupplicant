@@ -68,254 +68,252 @@
 #include <efence.h>
 #endif
 
-uint8_t *tls_crypt_gen_keyblock(struct generic_eap_data *thisint, char *sesskey,
-			      int sesskeylen)
+uint8_t *tls_crypt_gen_keyblock(struct generic_eap_data * thisint,
+				char *sesskey, int sesskeylen)
 {
-  uint8_t seed[SSL3_RANDOM_SIZE*2];
-  uint8_t *p = seed;
-  struct tls_vars *mytls_vars;
-  uint8_t *retblock;
+	uint8_t seed[SSL3_RANDOM_SIZE * 2];
+	uint8_t *p = seed;
+	struct tls_vars *mytls_vars;
+	uint8_t *retblock;
 
-  debug_printf(DEBUG_EVERYTHING, "Generating key block!\n");
+	debug_printf(DEBUG_EVERYTHING, "Generating key block!\n");
 
-  if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+		return NULL;
 
-  if (sesskey == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "No keying material is available!  It is "
-		   "unlikely that your session will work properly.\n");
-      return NULL;
-    }
+	if (sesskey == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "No keying material is available!  It is "
+			     "unlikely that your session will work properly.\n");
+		return NULL;
+	}
 
-  mytls_vars = (struct tls_vars *)thisint->eap_data;
+	mytls_vars = (struct tls_vars *)thisint->eap_data;
 
-  if (!mytls_vars->ssl)
-    {
-      debug_printf(DEBUG_NORMAL, "No valid SSL context found!\n");
-      return NULL;
-    }
+	if (!mytls_vars->ssl) {
+		debug_printf(DEBUG_NORMAL, "No valid SSL context found!\n");
+		return NULL;
+	}
 
-  debug_printf(DEBUG_EVERYTHING, "Using session key const of : %s\n",
-	       sesskey);
+	debug_printf(DEBUG_EVERYTHING, "Using session key const of : %s\n",
+		     sesskey);
 
-  retblock = (uint8_t *)malloc(TLS_SESSION_KEY_SIZE);
-  if (!retblock)
-    return NULL;
+	retblock = (uint8_t *) malloc(TLS_SESSION_KEY_SIZE);
+	if (!retblock)
+		return NULL;
 
-  memcpy(p, mytls_vars->ssl->s3->client_random, SSL3_RANDOM_SIZE);
-  p+= SSL3_RANDOM_SIZE;
-  memcpy(p, mytls_vars->ssl->s3->server_random, SSL3_RANDOM_SIZE);
-  tls_funcs_PRF(SSL_get_session(mytls_vars->ssl)->master_key, 
-		SSL_get_session(mytls_vars->ssl)->master_key_length,
-		(uint8_t *) sesskey, sesskeylen, seed, 
-		SSL3_RANDOM_SIZE * 2, retblock, 
-		TLS_SESSION_KEY_SIZE);
+	memcpy(p, mytls_vars->ssl->s3->client_random, SSL3_RANDOM_SIZE);
+	p += SSL3_RANDOM_SIZE;
+	memcpy(p, mytls_vars->ssl->s3->server_random, SSL3_RANDOM_SIZE);
+	tls_funcs_PRF(SSL_get_session(mytls_vars->ssl)->master_key,
+		      SSL_get_session(mytls_vars->ssl)->master_key_length,
+		      (uint8_t *) sesskey, sesskeylen, seed,
+		      SSL3_RANDOM_SIZE * 2, retblock, TLS_SESSION_KEY_SIZE);
 
-  return retblock;
+	return retblock;
 }
 
 /* This function written by Danielle Brevi  */
-int tls_crypt_decrypt(struct generic_eap_data *thisint, uint8_t *in_data, 
-		      int in_size, uint8_t *out_data, int *out_size)
+int tls_crypt_decrypt(struct generic_eap_data *thisint, uint8_t * in_data,
+		      int in_size, uint8_t * out_data, int *out_size)
 {
-  struct tls_vars *mytls_vars;
-  int rc = 0;
+	struct tls_vars *mytls_vars;
+	int rc = 0;
 
-  if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((in_data != NULL), "in_data != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((in_data != NULL), "in_data != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((out_data != NULL), "out_data != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((out_data != NULL), "out_data != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((out_size != NULL), "out_size != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((out_size != NULL), "out_size != NULL", FALSE))
+		return XEMALLOC;
 
-  mytls_vars = (struct tls_vars *)thisint->eap_data;
+	mytls_vars = (struct tls_vars *)thisint->eap_data;
 
-  if (BIO_reset(mytls_vars->ssl_in) <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt.c, BIO_reset(mytls_vars->ssl_in) failed.\n");
-      tls_funcs_process_error();
+	if (BIO_reset(mytls_vars->ssl_in) <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt.c, BIO_reset(mytls_vars->ssl_in) failed.\n");
+		tls_funcs_process_error();
 
-      return XETLSCRYPTFAIL;
-    }
+		return XETLSCRYPTFAIL;
+	}
 
-  rc=BIO_write(mytls_vars->ssl_in, in_data, in_size);
+	rc = BIO_write(mytls_vars->ssl_in, in_data, in_size);
 
-  if (BIO_reset(mytls_vars->ssl_out) <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt.c, BIO_reset(mytls_vars->ssl_out) failed.\n");
-      tls_funcs_process_error();
+	if (BIO_reset(mytls_vars->ssl_out) <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt.c, BIO_reset(mytls_vars->ssl_out) failed.\n");
+		tls_funcs_process_error();
 
-      return XETLSCRYPTFAIL;
-    }
+		return XETLSCRYPTFAIL;
+	}
 
-  rc=SSL_read(mytls_vars->ssl, out_data, 1000);
-  if (rc <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt.c, SSL_read(mytls_vars->ssl, out_data, 1000) failed.\n");
-      tls_funcs_process_error();
+	rc = SSL_read(mytls_vars->ssl, out_data, 1000);
+	if (rc <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt.c, SSL_read(mytls_vars->ssl, out_data, 1000) failed.\n");
+		tls_funcs_process_error();
 
-      return XETLSCRYPTFAIL;
-    }
+		return XETLSCRYPTFAIL;
+	}
 
-  *out_size = rc;
+	*out_size = rc;
 
-  return XENONE;
+	return XENONE;
 }
 
-
-int tls_crypt_encrypt(struct generic_eap_data *thisint, uint8_t *in_data, int in_size, uint8_t *out_data, int *out_size)
+int tls_crypt_encrypt(struct generic_eap_data *thisint, uint8_t * in_data,
+		      int in_size, uint8_t * out_data, int *out_size)
 {
-  struct tls_vars *mytls_vars;
-  int rc = 0;
-  uint8_t *p = NULL;
-  int to_send_size = 0;
-  uint64_t length;
+	struct tls_vars *mytls_vars;
+	int rc = 0;
+	uint8_t *p = NULL;
+	int to_send_size = 0;
+	uint64_t length;
 
-  if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((in_data != NULL), "in_data != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((in_data != NULL), "in_data != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((out_data != NULL), "out_data != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((out_data != NULL), "out_data != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((thisint->eap_data != NULL), "thisint->eap_data != NULL",
-		   FALSE))
-    return XEMALLOC;
+	if (!xsup_assert
+	    ((thisint->eap_data != NULL), "thisint->eap_data != NULL", FALSE))
+		return XEMALLOC;
 
-  mytls_vars = (struct tls_vars *)thisint->eap_data;
+	mytls_vars = (struct tls_vars *)thisint->eap_data;
 
-  /* XXX We need to modify this, to read more when there is more to be returned. */
-  p = (uint8_t *)Malloc(1000);
-  if (p == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Error with malloc of \"p\" in tls_crypt_encrypt().\n");
-      return XEMALLOC;
-    }
+	/* XXX We need to modify this, to read more when there is more to be returned. */
+	p = (uint8_t *) Malloc(1000);
+	if (p == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Error with malloc of \"p\" in tls_crypt_encrypt().\n");
+		return XEMALLOC;
+	}
 
-  if (BIO_reset(mytls_vars->ssl_in) <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt.c, BIO_reset(mytls_vars->ssl_in) failed.\n");
-      tls_funcs_process_error();
-      FREE(p);
-      return -1;
-    }
+	if (BIO_reset(mytls_vars->ssl_in) <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt.c, BIO_reset(mytls_vars->ssl_in) failed.\n");
+		tls_funcs_process_error();
+		FREE(p);
+		return -1;
+	}
 
-  if (BIO_reset(mytls_vars->ssl_out) <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt.c, BIO_reset(mytls_vars->ssl_out) failed.\n");
-      tls_funcs_process_error();
-      FREE(p);
-      return -1;
-    }
+	if (BIO_reset(mytls_vars->ssl_out) <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt.c, BIO_reset(mytls_vars->ssl_out) failed.\n");
+		tls_funcs_process_error();
+		FREE(p);
+		return -1;
+	}
 
-  rc=SSL_write(mytls_vars->ssl, in_data, in_size);
-  if (rc <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt.c, SSL_write in encrypt failed!\n");
-      tls_funcs_process_error();
-      FREE(p);
-      return -1;
-    }
+	rc = SSL_write(mytls_vars->ssl, in_data, in_size);
+	if (rc <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt.c, SSL_write in encrypt failed!\n");
+		tls_funcs_process_error();
+		FREE(p);
+		return -1;
+	}
 
-  rc = BIO_read(mytls_vars->ssl_out, p, 1000);   /* Allow largest possible read. */
-  if (rc <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt.c, BIO_read in encrypt failed!\n");
-      tls_funcs_process_error();
-      FREE(p)
-      return -1;
-    }
+	rc = BIO_read(mytls_vars->ssl_out, p, 1000);	/* Allow largest possible read. */
+	if (rc <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt.c, BIO_read in encrypt failed!\n");
+		tls_funcs_process_error();
+		FREE(p)
+		    return -1;
+	}
 
-  to_send_size = rc;
+	to_send_size = rc;
 
-  out_data[0] = EAPTLS_LENGTH_INCL;  // No more to send.
-  length = ntohl(to_send_size+5);
-  memcpy(&out_data[1], &length, 4);
-  memcpy(&out_data[5], p, to_send_size);
+	out_data[0] = EAPTLS_LENGTH_INCL;	// No more to send.
+	length = ntohl(to_send_size + 5);
+	memcpy(&out_data[1], &length, 4);
+	memcpy(&out_data[5], p, to_send_size);
 
-  *out_size = to_send_size+5;
+	*out_size = to_send_size + 5;
 
-  FREE(p);
-  return XENONE;
+	FREE(p);
+	return XENONE;
 }
 
-int tls_crypt_encrypt_nolen(struct generic_eap_data *thisint, uint8_t *in_data,
-			    int in_size, uint8_t *out_data, int *out_size)
+int tls_crypt_encrypt_nolen(struct generic_eap_data *thisint, uint8_t * in_data,
+			    int in_size, uint8_t * out_data, int *out_size)
 {
-  struct tls_vars *mytls_vars;
-  int rc = 0;
-  uint8_t *p = NULL;
-  int to_send_size = 0;
+	struct tls_vars *mytls_vars;
+	int rc = 0;
+	uint8_t *p = NULL;
+	int to_send_size = 0;
 
-  if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((thisint->eap_data != NULL), "thisint->eap_data != NULL",
-		   FALSE))
-    return XEMALLOC;
+	if (!xsup_assert
+	    ((thisint->eap_data != NULL), "thisint->eap_data != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((in_data != NULL), "in_data != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((in_data != NULL), "in_data != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((out_data != NULL), "out_data != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((out_data != NULL), "out_data != NULL", FALSE))
+		return XEMALLOC;
 
-  mytls_vars = (struct tls_vars *)thisint->eap_data;
+	mytls_vars = (struct tls_vars *)thisint->eap_data;
 
-  /* We need to modify this, to read more when there is more to be returned. */
-  p = (uint8_t *)Malloc(1000);
-  if (p == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Error with malloc of \"p\" in tls_crypt_encrypt().\n");
-      return XEMALLOC;
-    }
+	/* We need to modify this, to read more when there is more to be returned. */
+	p = (uint8_t *) Malloc(1000);
+	if (p == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Error with malloc of \"p\" in tls_crypt_encrypt().\n");
+		return XEMALLOC;
+	}
 
-  if (BIO_reset(mytls_vars->ssl_in) <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt (nolen), BIO_reset failed in encrypt!\n");
-      tls_funcs_process_error();
-      FREE(p);
-      return -1;
-    }
+	if (BIO_reset(mytls_vars->ssl_in) <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt (nolen), BIO_reset failed in encrypt!\n");
+		tls_funcs_process_error();
+		FREE(p);
+		return -1;
+	}
 
-  if (BIO_reset(mytls_vars->ssl_out) <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt (nolen), BIO_reset (2) failed in encrypt!\n");
-      tls_funcs_process_error();
-      FREE(p);
-      return -1;
-    }
+	if (BIO_reset(mytls_vars->ssl_out) <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt (nolen), BIO_reset (2) failed in encrypt!\n");
+		tls_funcs_process_error();
+		FREE(p);
+		return -1;
+	}
 
-  rc=SSL_write(mytls_vars->ssl, in_data, in_size);
-  if (rc <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt (nolen), SSL_write failed in encrypt!\n");
-      tls_funcs_process_error();
-    }
+	rc = SSL_write(mytls_vars->ssl, in_data, in_size);
+	if (rc <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt (nolen), SSL_write failed in encrypt!\n");
+		tls_funcs_process_error();
+	}
 
-  rc = BIO_read(mytls_vars->ssl_out, p, 1000);   // Allow largest possible read.
-  if (rc <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "In tls_crypt (nolen), BIO_read failed in encrypt!\n");
-      tls_funcs_process_error();
-      FREE(p);
-      return -1;
-    }
+	rc = BIO_read(mytls_vars->ssl_out, p, 1000);	// Allow largest possible read.
+	if (rc <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "In tls_crypt (nolen), BIO_read failed in encrypt!\n");
+		tls_funcs_process_error();
+		FREE(p);
+		return -1;
+	}
 
-  to_send_size = rc;
+	to_send_size = rc;
 
-  out_data[0] = 0x00;  // No more to send.
-  memcpy(&out_data[1], p, to_send_size);
+	out_data[0] = 0x00;	// No more to send.
+	memcpy(&out_data[1], p, to_send_size);
 
-  *out_size = to_send_size+1;
-  FREE(p);
-  return XENONE;
+	*out_size = to_send_size + 1;
+	FREE(p);
+	return XENONE;
 }

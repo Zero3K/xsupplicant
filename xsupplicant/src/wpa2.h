@@ -21,24 +21,24 @@
 
 #ifdef WINDOWS
 struct wpa2_ie_struct {
-  unsigned char wpaid;
-  unsigned char wpalen;
-  uint16_t rsn_ver;
-  unsigned char group_cipher[4];
-  uint16_t pk_suite_cnt;
+	unsigned char wpaid;
+	unsigned char wpalen;
+	uint16_t rsn_ver;
+	unsigned char group_cipher[4];
+	uint16_t pk_suite_cnt;
 
-  // The rest of the IE is variable, and can't be structured here.
+	// The rest of the IE is variable, and can't be structured here.
 };
 #else
 struct wpa2_ie_struct {
-  unsigned char wpaid;
-  unsigned char wpalen;
-  uint16_t rsn_ver;
-  unsigned char group_cipher[4];
-  uint16_t pk_suite_cnt;
+	unsigned char wpaid;
+	unsigned char wpalen;
+	uint16_t rsn_ver;
+	unsigned char group_cipher[4];
+	uint16_t pk_suite_cnt;
 
-  // The rest of the IE is variable, and can't be structured here.
-} __attribute__((__packed__));
+	// The rest of the IE is variable, and can't be structured here.
+} __attribute__ ((__packed__));
 #endif
 
 #ifdef WINDOWS

@@ -16,4 +16,4 @@ extern parser eap_gtc[];
 void *xsupconfig_parse_eap_gtc(void **, uint8_t, xmlNodePtr);
 void *xsupconfig_parse_phase2_gtc(void **, void **, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_EAP_GTC_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_GTC_H__

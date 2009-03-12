@@ -59,58 +59,58 @@
 #define EAPSIM_MAX_SUPPORTED_VER     1
 
 struct triplets {
-  unsigned char random[16];
-  unsigned char response[4];
-  unsigned char ckey[8];
+	unsigned char random[16];
+	unsigned char response[4];
+	unsigned char ckey[8];
 };
 
 struct eaptypedata {
-  int workingversion;
-  int numrands;
-  char *nonce_mt;
-  char *verlist;
-  int verlistlen;
-  struct triplets triplet[3];
-  char *keyingMaterial;
-  SCARDCONTEXT scntx;
-  SCARDHANDLE shdl;
-  char card_mode;
-  char *readers;
-  uint8_t *response_data;
-  uint16_t response_size;
-};  
+	int workingversion;
+	int numrands;
+	char *nonce_mt;
+	char *verlist;
+	int verlistlen;
+	struct triplets triplet[3];
+	char *keyingMaterial;
+	SCARDCONTEXT scntx;
+	SCARDHANDLE shdl;
+	char card_mode;
+	char *readers;
+	uint8_t *response_data;
+	uint16_t response_size;
+};
 
 #ifdef WINDOWS
 #pragma pack(1)
 
 struct typelength {
-  uint8_t type;
-  uint8_t length;
+	uint8_t type;
+	uint8_t length;
 };
 
 struct typelengthres {
-  uint8_t type;
-  uint8_t length;
-  uint16_t reserved;
+	uint8_t type;
+	uint8_t length;
+	uint16_t reserved;
 };
 
 #pragma pack()
 #else
 
 struct typelength {
-  uint8_t type;
-  uint8_t length;
-}  __attribute__((__packed__));
+	uint8_t type;
+	uint8_t length;
+} __attribute__ ((__packed__));
 
 struct typelengthres {
-  uint8_t type;
-  uint8_t length;
-  uint16_t reserved;
-}  __attribute__((__packed__));
+	uint8_t type;
+	uint8_t length;
+	uint16_t reserved;
+} __attribute__ ((__packed__));
 
 #endif
 
-int eapsim_is_pin_needed(context *ctx, struct config_eap_sim *userdata);
+int eapsim_is_pin_needed(context * ctx, struct config_eap_sim *userdata);
 
 void eapsim_check(eap_type_data *);
 void eapsim_process(eap_type_data *);

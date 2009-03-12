@@ -54,8 +54,7 @@ void doping()
 	printf("Sending a ping..\n\n");
 	err = xsupgui_request_ping();
 
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Ping success!\n");
 		break;
@@ -82,9 +81,9 @@ void build_tt()
 	int err = 0;
 
 	printf("Requesting a trouble ticket be built...\n");
-	err = xsupgui_request_create_trouble_ticket_file("c:\\tt.zip", "c:\\", 1);
-	switch(err)
-	{
+	err =
+	    xsupgui_request_create_trouble_ticket_file("c:\\tt.zip", "c:\\", 1);
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Success!\n");
 		break;
@@ -104,7 +103,7 @@ void build_tt()
 		die();
 		break;
 	}
-	printf("\n");	
+	printf("\n");
 }
 
 void add_cert()
@@ -113,8 +112,7 @@ void add_cert()
 
 	printf("Requesting a new root CA cert be added...\n");
 	err = xsupgui_request_add_root_ca_certificate("c:\\root.der");
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Success!\n");
 		break;
@@ -134,7 +132,7 @@ void add_cert()
 		die();
 		break;
 	}
-	printf("\n");	
+	printf("\n");
 }
 
 /**
@@ -147,8 +145,7 @@ void doreload()
 	printf("Requesting a config reload...");
 	err = xsupgui_request_reload_config();
 
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Success!\n");
 		break;
@@ -181,8 +178,7 @@ void doterminate()
 	printf("Requesting the supplicant terminate...");
 	err = xsupgui_request_terminate();
 
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Success!\n");
 		break;
@@ -209,18 +205,16 @@ void doterminate()
 /**
  * \brief Display all of the fields that are returned for each trusted server.
  **/
-void docerts_list(trusted_servers_enum *data)
+void docerts_list(trusted_servers_enum * data)
 {
 	int i = 0;
 
-	if (data == NULL)
-	{
+	if (data == NULL) {
 		printf("NONE!\n");
 		return;
 	}
 
-	while (data[i].name != NULL)
-	{
+	while (data[i].name != NULL) {
 		printf("%s\n", data[i].name);
 		i++;
 	}
@@ -239,8 +233,7 @@ void docerts_enum_helper(uint8_t config_type)
 	printf("Requesting a list of trusted servers..\n\n");
 	err = xsupgui_request_enum_trusted_servers(config_type, &mydata);
 
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Trusted Server(s) are :\n");
 		docerts_list(mydata);
@@ -256,7 +249,7 @@ void docerts_enum_helper(uint8_t config_type)
 		printf("Error getting trusted servers list!\n");
 		die();
 		break;
-		
+
 	default:
 		printf("Error : %d\n", err);
 		//die();
@@ -278,25 +271,20 @@ void docerts_enum()
  * \brief Display all of the fields that are returned for each interface
  *        when we enumerate all interfaces.
  **/
-void doint_list(int_enum *data)
+void doint_list(int_enum * data)
 {
 	int i = 0;
 
-	if (data == NULL)
-	{
+	if (data == NULL) {
 		printf("NONE!\n");
 		return;
 	}
 
-	while (data[i].name != NULL)
-	{
-		printf("(%d) %s\n\t%s\n", i+1, data[i].desc, data[i].name);
-		if (data[i].is_wireless == 1)
-		{
+	while (data[i].name != NULL) {
+		printf("(%d) %s\n\t%s\n", i + 1, data[i].desc, data[i].name);
+		if (data[i].is_wireless == 1) {
 			printf("\t\tInterface is Wireless!\n");
-		}
-		else
-		{
+		} else {
 			printf("\t\tInterface is NOT wireless!\n");
 		}
 		i++;
@@ -316,8 +304,7 @@ void doint_enum()
 	printf("Requesting a list of interfaces..\n\n");
 	err = xsupgui_request_enum_live_ints(&mydata);
 
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Interfaces are :\n");
 		doint_list(mydata);
@@ -332,7 +319,7 @@ void doint_enum()
 		printf("Error getting interface list!\n");
 		die();
 		break;
-		
+
 	default:
 		printf("Error : %d\n", err);
 		die();
@@ -346,19 +333,17 @@ void doint_enum()
  * \brief Display all of the fields that are returned for each interface
  *        when we enumerate all interfaces.
  **/
-void doint_conf_list(int_config_enum *data)
+void doint_conf_list(int_config_enum * data)
 {
 	int i = 0;
 
-	if (data == NULL)
-	{
+	if (data == NULL) {
 		printf("NONE!\n");
 		return;
 	}
 
-	while (data[i].desc != NULL)
-	{
-		printf("(%d) %s -- %s\n", i+1, data[i].desc, data[i].mac);
+	while (data[i].desc != NULL) {
+		printf("(%d) %s -- %s\n", i + 1, data[i].desc, data[i].mac);
 		i++;
 	}
 	printf("\n");
@@ -373,11 +358,11 @@ void doint_conf_enum()
 	int_config_enum *mydata = NULL;
 	int err = 0;
 
-	printf("Requesting a list of interfaces (from the configuration)..\n\n");
+	printf
+	    ("Requesting a list of interfaces (from the configuration)..\n\n");
 	err = xsupgui_request_enum_ints_config(&mydata);
 
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Interfaces are :\n");
 		doint_conf_list(mydata);
@@ -392,7 +377,7 @@ void doint_conf_enum()
 		printf("Error getting interface list!\n");
 		die();
 		break;
-		
+
 	default:
 		printf("Error : %d\n", err);
 		die();
@@ -402,13 +387,11 @@ void doint_conf_enum()
 	xsupgui_request_free_int_config_enum(&mydata);
 }
 
-
-void doprof_list(profile_enum *profs)
+void doprof_list(profile_enum * profs)
 {
 	int i = 0;
 
-	while (profs[i].name != NULL)
-	{
+	while (profs[i].name != NULL) {
 		printf("\tProfile : %s\n", profs[i].name);
 		i++;
 	}
@@ -427,8 +410,7 @@ void doprof_enum_helper(uint8_t config_type)
 	printf("Requesting a list of profiles..\n\n");
 	err = xsupgui_request_enum_profiles(config_type, &mydata);
 
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("Profiles are :\n");
 		doprof_list(mydata);
@@ -443,7 +425,7 @@ void doprof_enum_helper(uint8_t config_type)
 		printf("Error getting interface list!\n");
 		die();
 		break;
-		
+
 	default:
 		printf("Error : %d\n", err);
 		die();
@@ -469,19 +451,17 @@ void doprof_enum()
  * \brief  Display information about each EAP type that came from the request to
  *         enumerate known EAP types.
  **/
-void doeap_list(eap_enum *data)
+void doeap_list(eap_enum * data)
 {
 	int i = 0;
 
-	if (data == NULL)
-	{
+	if (data == NULL) {
 		printf("NONE!\n");
 		return;
 	}
 
-	while (data[i].name != NULL)
-	{
-		printf("(%d) %s - Type %d\n", i+1, data[i].name, data[i].num);
+	while (data[i].name != NULL) {
+		printf("(%d) %s - Type %d\n", i + 1, data[i].name, data[i].num);
 		i++;
 	}
 	printf("\n");
@@ -499,8 +479,7 @@ void doeap_enum()
 	printf("Requesting a list of EAP methods..\n\n");
 	err = xsupgui_request_enum_eap_methods(&mydata);
 
-	switch(err)
-	{
+	switch (err) {
 	case REQUEST_SUCCESS:
 		printf("EAP methods are :\n");
 		doeap_list(mydata);
@@ -515,7 +494,7 @@ void doeap_enum()
 		printf("Error getting EAP method list!\n");
 		die();
 		break;
-		
+
 	default:
 		printf("Error : %d\n", err);
 		die();
@@ -536,15 +515,13 @@ void doget1xstate(char *intname)
 	int result;
 
 	printf("802.1X state for test interface : ");
-	if (xsupgui_request_get_1x_state(intname, &result) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_1x_state(intname, &result) != REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
 
-	switch (result)
-	{
+	switch (result) {
 	case LOGOFF:
 		printf("LOGOFF\n");
 		break;
@@ -601,15 +578,13 @@ void dogeteapstate(char *device)
 	int retval = 0;
 
 	printf("EAP state for test interface : ");
-	if (xsupgui_request_get_eap_state(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_eap_state(device, &retval) != REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
 
-	switch (retval)
-	{
+	switch (retval) {
 	case EAP_UNKNOWN:
 		printf("UNKNOWN\n");
 		break;
@@ -684,14 +659,13 @@ void dogetbackendstate(char *device)
 	int retval = 0;
 
 	printf("802.1X backend state for test interface : ");
-	if (xsupgui_request_get_backend_state(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_backend_state(device, &retval) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed\n");
 		die();
 	}
 
-	switch (retval)
-	{
+	switch (retval) {
 	case 255:
 		printf("Hasn't run!\n");
 		break;
@@ -754,15 +728,14 @@ void dogetphysicalstate(char *device)
 	int retval = 0;
 
 	printf("Physical state for test interface : ");
-	if (xsupgui_request_get_physical_state(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_physical_state(device, &retval) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
 
-	switch (retval)
-	{
+	switch (retval) {
 	case WIRELESS_UNKNOWN_STATE:
 		printf("UNKNOWN_STATE\n");
 		break;
@@ -831,15 +804,14 @@ void dogetpairwisetype(char *device)
 	int retval = 0;
 
 	printf("Pairwise Key Type for test interface : ");
-	if (xsupgui_request_get_pairwise_key_type(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_pairwise_key_type(device, &retval) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed\n");
 		die();
 		return;
 	}
 
-	switch (retval)
-	{
+	switch (retval) {
 	case CIPHER_NONE:
 		printf("NONE\n");
 		break;
@@ -886,15 +858,14 @@ void dogetgrouptype(char *device)
 	int retval = 0;
 
 	printf("Group Key Type for test interface : ");
-	if (xsupgui_request_get_group_key_type(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_group_key_type(device, &retval) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed\n");
 		die();
 		return;
 	}
 
-	switch (retval)
-	{
+	switch (retval) {
 	case CIPHER_NONE:
 		printf("NONE\n");
 		break;
@@ -942,11 +913,10 @@ void dogetssid(char *device)
 {
 	int retval = 0;
 	char *ssid = NULL;
-	
+
 	printf("SSID : ");
 	retval = xsupgui_request_get_ssid(device, &ssid);
-	switch (retval)
-	{
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("Request timed out!\n");
 		die();
@@ -981,11 +951,10 @@ void dogetbssid(char *device)
 {
 	int retval = 0;
 	char *bssid = NULL;
-	
+
 	printf("BSSID : ");
 	retval = xsupgui_request_get_bssid(device, &bssid);
-	switch (retval)
-	{
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("Request timed out!\n");
 		die();
@@ -1002,7 +971,8 @@ void dogetbssid(char *device)
 
 	default:
 		printf("Error : %d\n", retval);
-		if (retval != IPC_ERROR_INVALID_BSSID) die();   // Invalid BSSID probably means we aren't associated.
+		if (retval != IPC_ERROR_INVALID_BSSID)
+			die();	// Invalid BSSID probably means we aren't associated.
 		break;
 	}
 	printf("\n");
@@ -1020,11 +990,10 @@ void dogettimeauthed(char *device)
 {
 	int retval = 0;
 	long int timeauthed = 0;
-	
+
 	printf("Time authenticated : ");
 	retval = xsupgui_request_get_seconds_authenticated(device, &timeauthed);
-	switch (retval)
-	{
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("Request timed out!\n");
 		die();
@@ -1055,24 +1024,21 @@ void dogettimeauthed(char *device)
 void dogetsignal(char *device)
 {
 	int retval = 0;
-	
+
 	printf("Signal Strength : ");
-	if (xsupgui_request_get_signal_strength_percent(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_signal_strength_percent(device, &retval) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
 
-		if (retval > 100)
-		{
-			printf("Error : %d\n", retval);
-			die();
-		}
-		else
-		{
-			printf("%d percent\n", retval);
-		}
+	if (retval > 100) {
+		printf("Error : %d\n", retval);
+		die();
+	} else {
+		printf("%d percent\n", retval);
+	}
 	printf("\n");
 }
 
@@ -1087,15 +1053,14 @@ void dogeteaptype(char *device)
 	int retval = 0;
 
 	printf("EAP Type for test interface : ");
-	if (xsupgui_request_get_eap_type_in_use(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_eap_type_in_use(device, &retval) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
 
-	switch (retval)
-	{
+	switch (retval) {
 	case 0:
 		printf("EAP hasn't started yet!\n");
 		break;
@@ -1111,21 +1076,19 @@ void dogeteaptype(char *device)
 /**
  * \brief Display information about possible connections to use.
  **/
-void show_poss_conns(poss_conn_enum *conn)
+void show_poss_conns(poss_conn_enum * conn)
 {
-        int i = 0;
+	int i = 0;
 
 	printf("\n");
-	while (conn[i].name != NULL)
-	{
+	while (conn[i].name != NULL) {
 		printf("Connection : %s\n", conn[i].name);
 		printf("\tPriority : %d\n", conn[i].priority);
 		printf("\tSSID: %s\n", conn[i].ssid);
 		printf("\tFlags : %04X\n", conn[i].flags);
 		printf("\tAuth  : %d\n", conn[i].auth_type);
 		printf("\tEncryption Enabled : ");
-		switch(conn[i].encryption)
-		{
+		switch (conn[i].encryption) {
 		case CONNECTION_ENC_NONE:
 			printf("NONE\n");
 			break;
@@ -1148,19 +1111,17 @@ void show_poss_conns(poss_conn_enum *conn)
 /**
  * \brief Display information about all of the connections in use.
  **/
-void show_conns(conn_enum *conn)
+void show_conns(conn_enum * conn)
 {
-        int i = 0;
+	int i = 0;
 
 	printf("\n");
-	while (conn[i].name != NULL)
-	{
+	while (conn[i].name != NULL) {
 		printf("Connection : %s\n", conn[i].name);
 		printf("\tPriority : %d\n", conn[i].priority);
 		printf("\tSSID: %s\n", conn[i].ssid);
 		printf("\tEncryption Enabled : ");
-		switch(conn[i].encryption)
-		{
+		switch (conn[i].encryption) {
 		case CONNECTION_ENC_NONE:
 			printf("NONE\n");
 			break;
@@ -1191,8 +1152,7 @@ void dogetconnections_help(uint8_t config_type)
 
 	printf("Known connections : ");
 	retval = xsupgui_request_enum_connections(config_type, &connections);
-	switch (retval)
-	{
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("timed out.\n");
 		die();
@@ -1242,16 +1202,16 @@ void getupwd(char *conn_name)
 	int err = 0;
 
 	printf("Requested credentials for connection '%s'...", conn_name);
-	err = xsupgui_request_get_connection_upw(conn_name, &username, &password, &retval);
-	if (err != REQUEST_SUCCESS)
-	{
+	err =
+	    xsupgui_request_get_connection_upw(conn_name, &username, &password,
+					       &retval);
+	if (err != REQUEST_SUCCESS) {
 		printf("Failed   (Error : %d)\n", err);
 		die();
 		return;
 	}
 
-	switch (retval)
-	{
+	switch (retval) {
 	case AUTH_NONE:
 	case AUTH_EAP:
 		printf("\n\n Authentication Type : EAP\n");
@@ -1278,8 +1238,8 @@ void getcapabilities(char *device)
 	int retval = 0;
 
 	printf("Capabilities : ");
-	if (xsupgui_request_get_interface_capabilities(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_interface_capabilities(device, &retval) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
@@ -1298,15 +1258,14 @@ void getassoctype(char *device)
 	int retval = 0;
 
 	printf("Association Type : ");
-	if (xsupgui_request_get_association_type(device, &retval) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_association_type(device, &retval) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
 
-	switch (retval)
-	{
+	switch (retval) {
 	case ASSOC_TYPE_UNKNOWN:
 		printf("Unknown\n");
 		break;
@@ -1353,9 +1312,9 @@ void setupwd(char *conn_name, char *username, char *password)
 	int retval = 0;
 
 	printf("Setting username/password...");
-	retval = xsupgui_request_set_connection_upw(conn_name, username, password);
-	switch (retval)
-	{
+	retval =
+	    xsupgui_request_set_connection_upw(conn_name, username, password);
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("timed out.\n");
 		die();
@@ -1390,8 +1349,7 @@ void dochangeconn(char *device, char *conn)
 
 	printf("Requesting connection change to '%s'...", conn);
 	retval = xsupgui_request_set_connection(device, conn);
-	switch (retval)
-	{
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("timed out.\n");
 		die();
@@ -1426,8 +1384,7 @@ void setdisassoc(char *device)
 
 	printf("Disassociating....");
 	retval = xsupgui_request_set_disassociate(device, 0);
-	switch (retval)
-	{
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("timed out.\n");
 		die();
@@ -1462,8 +1419,7 @@ void setpause(char *device)
 
 	printf("Pausing....");
 	retval = xsupgui_request_stop(device);
-	switch (retval)
-	{
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("timed out.\n");
 		die();
@@ -1502,8 +1458,7 @@ void getipaddr(char *device)
 
 	printf("Requesting IP information.\n\n");
 	retval = xsupgui_request_get_ip_info(device, &ipi);
-	switch (retval)
-	{
+	switch (retval) {
 	case REQUEST_TIMEOUT:
 		printf("timed out.\n");
 		die();
@@ -1541,13 +1496,11 @@ void dowrite_conf(char *filename)
 {
 	printf("Writing configuration file....");
 
-	if (xsupgui_request_write_config(CONFIG_LOAD_GLOBAL, filename) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_write_config(CONFIG_LOAD_GLOBAL, filename) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
-	}
-	else
-	{
+	} else {
 		printf("Success.\n");
 	}
 }
@@ -1561,13 +1514,12 @@ void doget_globals()
 
 	printf("Getting global settings...");
 
-	if (xsupgui_request_get_globals_config(&myglobs) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_globals_config(&myglobs) != REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
-	
+
 	printf("Success...\n\n");
 
 	printf("Setting for logging is : %s\n", myglobs->logpath);
@@ -1585,8 +1537,8 @@ void doget_profile()
 
 	printf("Getting profile settings...");
 
-	if (xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, "House_TTLS", &myprof) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_profile_config
+	    (CONFIG_LOAD_GLOBAL, "House_TTLS", &myprof) != REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
@@ -1606,8 +1558,9 @@ void doget_connection()
 
 	printf("Getting connection settings...");
 
-	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, "Home WPA 2 PSK Network", &mycon) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_connection_config
+	    (CONFIG_LOAD_GLOBAL, "Home WPA 2 PSK Network",
+	     &mycon) != REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
@@ -1624,12 +1577,12 @@ void doget_connection()
 void doget_ts()
 {
 	struct config_trusted_server *ts = NULL;
-	int i =0;
+	int i = 0;
 
 	printf("Getting trusted server settings...");
 
-	if (xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_trusted_server_config
+	    (CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts) != REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		//die();
 		return;
@@ -1637,8 +1590,7 @@ void doget_ts()
 
 	printf("Success... (Found %d locations.)\n\n", ts->num_locations);
 
-	for (i = 0; i<ts->num_locations; i++)
-	{
+	for (i = 0; i < ts->num_locations; i++) {
 		printf("Location %d = %s\n", i, ts->location[i]);
 	}
 }
@@ -1652,15 +1604,15 @@ void doget_int()
 
 	printf("Getting interface settings...");
 
-	if (xsupgui_request_get_interface_config("Intel IPW3945", &ints) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_interface_config("Intel IPW3945", &ints) !=
+	    REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
 
 	printf("Success...\n\n");
-	
+
 	printf("Description = %s\n", ints->description);
 }
 
@@ -1669,16 +1621,14 @@ void doget_int()
  **/
 void del_profile()
 {
-  if (xsupgui_request_delete_profile_config(CONFIG_LOAD_GLOBAL, "Beat me!", TRUE) != REQUEST_SUCCESS)
-    {
-      printf("Couldn't delete 'Beat me!' from the profiles list!\n");
-	  die();
-      return;
-    }
-  else
-    {
-      printf("Delete 'Beat me!' from the profiles list.\n");
-    }
+	if (xsupgui_request_delete_profile_config
+	    (CONFIG_LOAD_GLOBAL, "Beat me!", TRUE) != REQUEST_SUCCESS) {
+		printf("Couldn't delete 'Beat me!' from the profiles list!\n");
+		die();
+		return;
+	} else {
+		printf("Delete 'Beat me!' from the profiles list.\n");
+	}
 }
 
 /**
@@ -1686,16 +1636,15 @@ void del_profile()
  **/
 void del_connection()
 {
-  if (xsupgui_request_delete_connection_config(CONFIG_LOAD_GLOBAL, "RSA Test") != REQUEST_SUCCESS)
-    {
-      printf("Couldn't delete 'RSA Test' from the connections list!\n");
-	  die();
-      return;
-    }
-  else
-    {
-      printf("Delete 'RSA Test' from the connections list.\n");
-    }
+	if (xsupgui_request_delete_connection_config
+	    (CONFIG_LOAD_GLOBAL, "RSA Test") != REQUEST_SUCCESS) {
+		printf
+		    ("Couldn't delete 'RSA Test' from the connections list!\n");
+		die();
+		return;
+	} else {
+		printf("Delete 'RSA Test' from the connections list.\n");
+	}
 }
 
 /**
@@ -1703,16 +1652,15 @@ void del_connection()
  **/
 void del_interface()
 {
-  if (xsupgui_request_delete_interface_config("Intel IPW3945") != REQUEST_SUCCESS)
-    {
-      printf("Couldn't delete 'Intel IPW3945' from the interfaces list!\n");
-	  die();
-      return;
-    }
-  else
-    {
-      printf("Delete 'Intel IPW3945' from the interfaces list.\n");
-    }
+	if (xsupgui_request_delete_interface_config("Intel IPW3945") !=
+	    REQUEST_SUCCESS) {
+		printf
+		    ("Couldn't delete 'Intel IPW3945' from the interfaces list!\n");
+		die();
+		return;
+	} else {
+		printf("Delete 'Intel IPW3945' from the interfaces list.\n");
+	}
 }
 
 /**
@@ -1720,16 +1668,16 @@ void del_interface()
  **/
 void del_trusted_server()
 {
-  if (xsupgui_request_delete_trusted_server_config(CONFIG_LOAD_GLOBAL, "Test Server 1", TRUE) != REQUEST_SUCCESS)
-    {
-      printf("Couldn't delete 'Test Server 1' from the trusted servers list!\n");
-	  die();
-      return;
-    }
-  else
-    {
-      printf("Delete 'Test Server 1' from the trusted servers list.\n");
-    }
+	if (xsupgui_request_delete_trusted_server_config
+	    (CONFIG_LOAD_GLOBAL, "Test Server 1", TRUE) != REQUEST_SUCCESS) {
+		printf
+		    ("Couldn't delete 'Test Server 1' from the trusted servers list!\n");
+		die();
+		return;
+	} else {
+		printf
+		    ("Delete 'Test Server 1' from the trusted servers list.\n");
+	}
 }
 
 /**
@@ -1740,8 +1688,7 @@ void change_globals()
 	struct config_globals *globs = NULL;
 	char *val = NULL;
 
-	if (xsupgui_request_get_globals_config(&globs) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_globals_config(&globs) != REQUEST_SUCCESS) {
 		printf("Couldn't get global settings.\n");
 		die();
 		return;
@@ -1751,20 +1698,19 @@ void change_globals()
 	globs->logpath = "c:\\newpath\\";
 	printf("Globals->flags = %x\n", globs->flags);
 
-	if ((globs->flags & CONFIG_GLOBALS_ASSOC_AUTO) == CONFIG_GLOBALS_ASSOC_AUTO)
+	if ((globs->flags & CONFIG_GLOBALS_ASSOC_AUTO) ==
+	    CONFIG_GLOBALS_ASSOC_AUTO)
 		globs->flags &= (~CONFIG_GLOBALS_ASSOC_AUTO);
 	else
 		globs->flags |= CONFIG_GLOBALS_ASSOC_AUTO;
 
-	if (xsupgui_request_set_globals_config(globs) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_set_globals_config(globs) != REQUEST_SUCCESS) {
 		printf("Couldn't set global settings.\n");
 		die();
 		return;
 	}
 
-	if (xsupgui_request_get_globals_config(&globs)  != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_globals_config(&globs) != REQUEST_SUCCESS) {
 		printf("Couldn't get global settings the second time!\n");
 		die();
 		return;
@@ -1779,14 +1725,18 @@ void create_conn()
 	struct config_connection *conn = NULL;
 	int result = 0;
 
-	conn = (struct config_connection *)malloc(sizeof(struct config_connection));
-	
+	conn =
+	    (struct config_connection *)
+	    malloc(sizeof(struct config_connection));
+
 	conn->name = _strdup("Test User Connection");
 	conn->profile = _strdup("Test Profile");
 
-	if ((result = xsupgui_request_set_connection_config(CONFIG_LOAD_USER, conn)) != REQUEST_SUCCESS)
-	{
-		printf("Couldn't set connection settings.  (Error : %d)\n", result);
+	if ((result =
+	     xsupgui_request_set_connection_config(CONFIG_LOAD_USER,
+						   conn)) != REQUEST_SUCCESS) {
+		printf("Couldn't set connection settings.  (Error : %d)\n",
+		       result);
 		die();
 		return;
 	}
@@ -1795,13 +1745,12 @@ void create_conn()
 
 	printf("Writing user configuration file....");
 
-	if ((result = xsupgui_request_write_config(CONFIG_LOAD_USER, NULL)) != REQUEST_SUCCESS)
-	{
+	if ((result =
+	     xsupgui_request_write_config(CONFIG_LOAD_USER,
+					  NULL)) != REQUEST_SUCCESS) {
 		printf("Failed!  (Error : %d)\n", result);
 		die();
-	}
-	else
-	{
+	} else {
 		printf("Success.\n");
 	}
 }
@@ -1813,22 +1762,22 @@ void change_conn()
 {
 	struct config_connection *conn = NULL;
 
-	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, "Ignition Test", &conn) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_connection_config
+	    (CONFIG_LOAD_GLOBAL, "Ignition Test", &conn) != REQUEST_SUCCESS) {
 		printf("Couldn't get connection settings.\n");
 		die();
 		return;
 	}
 
-	if (xsupgui_request_set_connection_config(CONFIG_LOAD_GLOBAL, conn) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_set_connection_config(CONFIG_LOAD_GLOBAL, conn) !=
+	    REQUEST_SUCCESS) {
 		printf("Couldn't set connection settings.\n");
 		die();
 		return;
 	}
 
-	if (xsupgui_request_get_connection_config(CONFIG_LOAD_GLOBAL, "Ignition Test", &conn)  != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_connection_config
+	    (CONFIG_LOAD_GLOBAL, "Ignition Test", &conn) != REQUEST_SUCCESS) {
 		printf("Couldn't get connection settings the second time!\n");
 		die();
 		return;
@@ -1843,8 +1792,8 @@ void change_prof()
 	struct config_profiles *prof = NULL;
 	char *val = NULL;
 
-	if (xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, "House_TTLS", &prof) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_profile_config
+	    (CONFIG_LOAD_GLOBAL, "House_TTLS", &prof) != REQUEST_SUCCESS) {
 		printf("Couldn't get profile settings.\n");
 		die();
 		return;
@@ -1854,15 +1803,15 @@ void change_prof()
 	free(prof->identity);
 	prof->identity = _strdup("some id");
 
-	if (xsupgui_request_set_profile_config(CONFIG_LOAD_GLOBAL, prof) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_set_profile_config(CONFIG_LOAD_GLOBAL, prof) !=
+	    REQUEST_SUCCESS) {
 		printf("Couldn't set profile settings.\n");
 		die();
 		return;
 	}
 
-	if (xsupgui_request_get_profile_config(CONFIG_LOAD_GLOBAL, "House_TTLS", &prof)  != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_profile_config
+	    (CONFIG_LOAD_GLOBAL, "House_TTLS", &prof) != REQUEST_SUCCESS) {
 		printf("Couldn't get profile settings the second time!\n");
 		die();
 		return;
@@ -1879,8 +1828,8 @@ void change_ts()
 	struct config_trusted_server *ts = NULL;
 	char *val = NULL;
 
-	if (xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_trusted_server_config
+	    (CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts) != REQUEST_SUCCESS) {
 		printf("Couldn't get trusted server settings.\n");
 		die();
 		return;
@@ -1891,19 +1840,22 @@ void change_ts()
 	ts->store_type = _strdup("Mac OS X Store");
 
 	ts->num_locations++;
-	ts->location = realloc(ts->location, ts->num_locations*(sizeof(ts->location)));
-	ts->location[ts->num_locations-1] = _strdup("This won't work!  (But is an okay test. ;)");
+	ts->location =
+	    realloc(ts->location, ts->num_locations * (sizeof(ts->location)));
+	ts->location[ts->num_locations - 1] =
+	    _strdup("This won't work!  (But is an okay test. ;)");
 
-	if (xsupgui_request_set_trusted_server_config(CONFIG_LOAD_GLOBAL, ts) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_set_trusted_server_config(CONFIG_LOAD_GLOBAL, ts) !=
+	    REQUEST_SUCCESS) {
 		printf("Couldn't set trusted server settings.\n");
 		die();
 		return;
 	}
 
-	if (xsupgui_request_get_trusted_server_config(CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts)  != REQUEST_SUCCESS)
-	{
-		printf("Couldn't get trusted server settings the second time!\n");
+	if (xsupgui_request_get_trusted_server_config
+	    (CONFIG_LOAD_GLOBAL, "Equifax Cert Test", &ts) != REQUEST_SUCCESS) {
+		printf
+		    ("Couldn't get trusted server settings the second time!\n");
 		die();
 		return;
 	}
@@ -1919,28 +1871,38 @@ void doget_ssids(char *devname)
 	ssid_info_enum *ssids = NULL;
 	int i = 0;
 
-	if (xsupgui_request_enum_ssids(devname, &ssids) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_enum_ssids(devname, &ssids) != REQUEST_SUCCESS) {
 		printf("Couldn't get supplicant's SSID cache!\n");
 		die();
 		return;
 	}
 
-	while (ssids[i].ssidname != NULL)
-	{
+	while (ssids[i].ssidname != NULL) {
 		printf("SSID : %s\t", ssids[i].ssidname);
-		if (ssids[i].abil & ABILITY_ENC) printf("Encrypted ");
-		if (ssids[i].abil & ABILITY_WPA_IE) printf("WPA1 ");
-		if (ssids[i].abil & ABILITY_RSN_IE) printf("WPA2 ");
-		if (ssids[i].abil & ABILITY_WPA_DOT1X) printf("WPA1-Enterprise ");
-		if (ssids[i].abil & ABILITY_WPA_PSK) printf("WPA1-PSK ");
-		if (ssids[i].abil & ABILITY_RSN_DOT1X) printf("WPA2-Enterprise ");
-		if (ssids[i].abil & ABILITY_RSN_PSK) printf("WPA2-PSK ");
-		if (ssids[i].abil & ABILITY_DOT11_STD) printf("802.11std ");
-		if (ssids[i].abil & ABILITY_DOT11_A) printf("802.11a ");
-		if (ssids[i].abil & ABILITY_DOT11_B) printf("802.11b ");
-		if (ssids[i].abil & ABILITY_DOT11_G) printf("802.11g ");
-		if (ssids[i].abil & ABILITY_DOT11_N) printf("802.11n ");
+		if (ssids[i].abil & ABILITY_ENC)
+			printf("Encrypted ");
+		if (ssids[i].abil & ABILITY_WPA_IE)
+			printf("WPA1 ");
+		if (ssids[i].abil & ABILITY_RSN_IE)
+			printf("WPA2 ");
+		if (ssids[i].abil & ABILITY_WPA_DOT1X)
+			printf("WPA1-Enterprise ");
+		if (ssids[i].abil & ABILITY_WPA_PSK)
+			printf("WPA1-PSK ");
+		if (ssids[i].abil & ABILITY_RSN_DOT1X)
+			printf("WPA2-Enterprise ");
+		if (ssids[i].abil & ABILITY_RSN_PSK)
+			printf("WPA2-PSK ");
+		if (ssids[i].abil & ABILITY_DOT11_STD)
+			printf("802.11std ");
+		if (ssids[i].abil & ABILITY_DOT11_A)
+			printf("802.11a ");
+		if (ssids[i].abil & ABILITY_DOT11_B)
+			printf("802.11b ");
+		if (ssids[i].abil & ABILITY_DOT11_G)
+			printf("802.11g ");
+		if (ssids[i].abil & ABILITY_DOT11_N)
+			printf("802.11n ");
 		printf("\n");
 
 		i++;
@@ -1955,17 +1917,14 @@ void doget_ssids(char *devname)
  **/
 void doscan(char *devname)
 {
-	if (xsupgui_request_wireless_scan(devname, TRUE) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_wireless_scan(devname, TRUE) != REQUEST_SUCCESS) {
 		printf("Failed passive scan... trying an active one..\n");
-		if (xsupgui_request_wireless_scan(devname, FALSE) != REQUEST_SUCCESS)
-		{
+		if (xsupgui_request_wireless_scan(devname, FALSE) !=
+		    REQUEST_SUCCESS) {
 			printf("Failed active scan!\n");
 			die();
 			return;
-		}
-		else
-		{
+		} else {
 			printf("Requested active scan.\n");
 			return;
 		}
@@ -1978,13 +1937,10 @@ void getvername()
 {
 	char *version;
 
-	if (xsupgui_request_version_string(&version) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_version_string(&version) != REQUEST_SUCCESS) {
 		printf("Failed to get version string!\n");
 		die();
-	}
-	else
-	{
+	} else {
 		printf("Version : %s\n", version);
 		free(version);
 	}
@@ -1995,20 +1951,17 @@ void getrootcacerts()
 	cert_enum *casa;
 	int i = 0;
 
-	if (xsupgui_request_enum_root_ca_certs(&casa) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_enum_root_ca_certs(&casa) != REQUEST_SUCCESS) {
 		printf("Failed to get root CA certificates.\n");
 		die();
-	}
-	else
-	{
-		while (casa[i].certname != NULL)
-		{
+	} else {
+		while (casa[i].certname != NULL) {
 			printf("Certificate : %s\n", casa[i].certname);
 			printf("\tStore Type    : %s\n", casa[i].storetype);
 			printf("\tFriendly Name : %s\n", casa[i].friendlyname);
 			printf("\tIssuer        : %s\n", casa[i].issuer);
-			printf("\tExpires       : %d/%d/%d\n", casa[i].month, casa[i].day, casa[i].year);
+			printf("\tExpires       : %d/%d/%d\n", casa[i].month,
+			       casa[i].day, casa[i].year);
 			printf("\tCommon Name   : %s\n", casa[i].commonname);
 			printf("\tLocation      : %s\n", casa[i].location);
 			printf("\n");
@@ -2025,21 +1978,18 @@ void getusercerts()
 	cert_enum *casa;
 	int i = 0;
 
-	if (xsupgui_request_enum_user_certs(&casa) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_enum_user_certs(&casa) != REQUEST_SUCCESS) {
 		printf("Failed to get user certificates.\n");
 		die();
-	}
-	else
-	{
-		printf("Certs found :\n"); 
-		while (casa[i].certname != NULL)
-		{
+	} else {
+		printf("Certs found :\n");
+		while (casa[i].certname != NULL) {
 			printf("Certificate : %s\n", casa[i].certname);
 			printf("\tStore Type    : %s\n", casa[i].storetype);
 			printf("\tFriendly Name : %s\n", casa[i].friendlyname);
 			printf("\tIssuer        : %s\n", casa[i].issuer);
-			printf("\tExpires       : %d/%d/%d\n", casa[i].month, casa[i].day, casa[i].year);
+			printf("\tExpires       : %d/%d/%d\n", casa[i].month,
+			       casa[i].day, casa[i].year);
 			printf("\tCommon Name   : %s\n", casa[i].commonname);
 			printf("\tLocation      : %s\n", casa[i].location);
 			printf("\n");
@@ -2055,8 +2005,9 @@ void getrootcainfo()
 {
 	cert_info *cinfo = NULL;
 
-	if (xsupgui_request_ca_certificate_info("WINDOWS", "0048F8D37B153F6EA2798C323EF4F318A5624A9E", &cinfo) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_ca_certificate_info
+	    ("WINDOWS", "0048F8D37B153F6EA2798C323EF4F318A5624A9E",
+	     &cinfo) != REQUEST_SUCCESS) {
 		printf("Couldn't get certificate information!\n");
 		die();
 		return;
@@ -2079,9 +2030,13 @@ void getintdata(char *intname)
 	int wireless = 0;
 	int result;
 
-	if ((result = xsupgui_request_get_os_specific_int_data(intname, &desc, &mac, &wireless)) != REQUEST_SUCCESS)
-	{
-		printf("Couldn't get interface information for interface '%s'.  (Reason : %d)\n", intname, result);
+	if ((result =
+	     xsupgui_request_get_os_specific_int_data(intname, &desc, &mac,
+						      &wireless)) !=
+	    REQUEST_SUCCESS) {
+		printf
+		    ("Couldn't get interface information for interface '%s'.  (Reason : %d)\n",
+		     intname, result);
 		die();
 		return;
 	}
@@ -2098,8 +2053,8 @@ void getconn_name(char *intname)
 {
 	char *name = NULL;
 
-	if (xsupgui_request_get_conn_name_from_int(intname, &name) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_conn_name_from_int(intname, &name) !=
+	    REQUEST_SUCCESS) {
 		printf("Couldn't get connection information for interface!\n");
 		return;
 	}
@@ -2113,14 +2068,13 @@ void getqueuederrors()
 	error_messages *msgs = NULL;
 	int i = 0;
 
-	if (xsupgui_request_get_error_msgs(&msgs) != REQUEST_SUCCESS)
-	{
-		printf("Couldn't get queued errors.  (Perhaps there were none?)\n");
+	if (xsupgui_request_get_error_msgs(&msgs) != REQUEST_SUCCESS) {
+		printf
+		    ("Couldn't get queued errors.  (Perhaps there were none?)\n");
 		return;
 	}
 
-	while (msgs[i].errmsgs != NULL)
-	{
+	while (msgs[i].errmsgs != NULL) {
 		printf("Error : %s\n", msgs[i].errmsgs);
 		i++;
 	}
@@ -2130,8 +2084,8 @@ void getqueuederrors()
 
 void renameconnection(char *oldname, char *newname)
 {
-	if (xsupgui_request_rename_connection(CONFIG_LOAD_GLOBAL, oldname, newname) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_rename_connection
+	    (CONFIG_LOAD_GLOBAL, oldname, newname) != REQUEST_SUCCESS) {
 		printf("Failed to rename the connection!\n");
 		return;
 	}
@@ -2139,8 +2093,8 @@ void renameconnection(char *oldname, char *newname)
 
 void renameprofile(char *oldname, char *newname)
 {
-	if (xsupgui_request_rename_profile(CONFIG_LOAD_GLOBAL, oldname, newname) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_rename_profile(CONFIG_LOAD_GLOBAL, oldname, newname)
+	    != REQUEST_SUCCESS) {
 		printf("Failed to rename the profile!\n");
 		return;
 	}
@@ -2149,14 +2103,15 @@ void renameprofile(char *oldname, char *newname)
 void renametrusted_server(char *oldname, char *newname)
 {
 	int retval = 0;
-	retval = xsupgui_request_rename_trusted_server(CONFIG_LOAD_GLOBAL, oldname, newname);
-	if (retval != REQUEST_SUCCESS)
-	{
-		printf("Failed to rename the trusted server!  (Error : %d)\n", retval);
+	retval =
+	    xsupgui_request_rename_trusted_server(CONFIG_LOAD_GLOBAL, oldname,
+						  newname);
+	if (retval != REQUEST_SUCCESS) {
+		printf("Failed to rename the trusted server!  (Error : %d)\n",
+		       retval);
 		return;
 	}
 }
-
 
 /**
  * \brief Ask the supplicant for the current global settings.
@@ -2167,13 +2122,12 @@ void dochange_logpath()
 
 	printf("Getting global settings...");
 
-	if (xsupgui_request_get_globals_config(&myglobs) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_globals_config(&myglobs) != REQUEST_SUCCESS) {
 		printf("Failed!\n");
 		die();
 		return;
 	}
-	
+
 	printf("Success...\n\n");
 
 	printf("Setting for logging is : %s\n", myglobs->logpath);
@@ -2184,8 +2138,7 @@ void dochange_logpath()
 
 	printf("New setting for logging is : %s\n", myglobs->logpath);
 
-	if (xsupgui_request_set_globals_config(myglobs) != REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_set_globals_config(myglobs) != REQUEST_SUCCESS) {
 		printf("failed!\n");
 		die();
 		return;
@@ -2198,20 +2151,16 @@ void doget_freq(char *intname)
 {
 	uint32_t freq;
 
-	if (xsupgui_request_get_freq(intname, &freq) == REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_get_freq(intname, &freq) == REQUEST_SUCCESS) {
 		printf("Frequency : %d\n", freq);
 	}
 }
 
 void do_disconnect_connection(char *intname)
 {
-	if (xsupgui_request_disconnect_connection(intname) == REQUEST_SUCCESS)
-	{
+	if (xsupgui_request_disconnect_connection(intname) == REQUEST_SUCCESS) {
 		printf("Disconnected successfully!\n");
-	}
-	else
-	{
+	} else {
 		printf("FAILED to disconnect!\n");
 	}
 }
@@ -2222,20 +2171,16 @@ void do_get_user_is_admin()
 	int retval = 0;
 
 	retval = xsupgui_request_get_are_administrator(&admin);
-	if (retval == REQUEST_SUCCESS)
-	{
-		if (admin == TRUE)
-		{
+	if (retval == REQUEST_SUCCESS) {
+		if (admin == TRUE) {
 			printf("User *IS* an administrator\n");
-		}
-		else
-		{
+		} else {
 			printf("User *IS NOT* an administrator\n");
 		}
-	}
-	else
-	{
-		printf("Get admin state request failed or timed out. (Error : %d)\n", retval);
+	} else {
+		printf
+		    ("Get admin state request failed or timed out. (Error : %d)\n",
+		     retval);
 	}
 }
 
@@ -2246,14 +2191,13 @@ void enum_sc_readers()
 	int count = 0;
 
 	retval = xsupgui_request_enum_smartcard_readers(&list);
-	if (retval != REQUEST_SUCCESS)
-	{
-		printf("Failed to enumerate smart cards!  (Error : %d)\n", retval);
+	if (retval != REQUEST_SUCCESS) {
+		printf("Failed to enumerate smart cards!  (Error : %d)\n",
+		       retval);
 		return;
 	}
 
-	while (list[count] != NULL)
-	{
+	while (list[count] != NULL) {
 		printf("Reader : %s\n", list[count]);
 		count++;
 	}
@@ -2266,82 +2210,74 @@ void enum_sc_readers()
  **/
 void nt(char *test)
 {
-	if (test != NULL)
-	{
+	if (test != NULL) {
 		printf("-----------------(%s)--------------------\n", test);
-	}
-	else
-	{
+	} else {
 		printf("----------------------------------------\n");
 	}
 }
 
 int main(int argc, char *argv[])
 {
-  struct options opts[] = 
-    {
-      { 1, "connection", "Force the connection to use", "C", 1},
-      { 2, "interface", "Use this interface", "i", 1}
-    };
+	struct options opts[] = {
+		{1, "connection", "Force the connection to use", "C", 1},
+		{2, "interface", "Use this interface", "i", 1}
+	};
 
-  int op = 0; 
-  char *args = NULL;
-  char *conn = NULL;
-  char *intface = NULL;
+	int op = 0;
+	char *args = NULL;
+	char *conn = NULL;
+	char *intface = NULL;
 
-  while((op = getopts(argc, argv, opts, &args)) != 0)
-    {
-      switch(op)
-	{
-	case 1:
-	  {
-	    printf("Connection: %s\n", args);
-	    conn = args;
-	  }
-	case 2:
-	  {
-	    printf("Interface: %s\n", args);
-	    intface = args;
-	  }
+	while ((op = getopts(argc, argv, opts, &args)) != 0) {
+		switch (op) {
+		case 1:
+			{
+				printf("Connection: %s\n", args);
+				conn = args;
+			}
+		case 2:
+			{
+				printf("Interface: %s\n", args);
+				intface = args;
+			}
+		}
 	}
-    }
 
-	if (argc < 2)
-	{
+	if (argc < 2) {
 		printf("ipctest  <OS Device Name>\n");
 		printf("\n");
 		return 1;
 	}
 
 	printf("Connecting to xsupplicant..\n");
-	if (xsupgui_connect() != 0)
-	{
+	if (xsupgui_connect() != 0) {
 		printf("Error connecting socket/pipe!\n");
 		return 1;
 	}
-
 #if 0
 	doget_ssids("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
 	return 0;
 #endif
 
 #if 1
-//	do_get_user_is_admin();
-//	enum_sc_readers();
-//	create_conn();
+//      do_get_user_is_admin();
+//      enum_sc_readers();
+//      create_conn();
 	getusercerts();
 	nt("Terminate Supplicant");
-	doterminate(); 
+	doterminate();
 
 	return 0;
 #endif
 
 #if 0
-//	dochangeconn("\\DEVICE\\{4DACA2DF-2701-4B9A-81EC-27FA9EADF721}", "New Connection");
-//	change_globals();
-//	dowrite_conf(NULL);
+//      dochangeconn("\\DEVICE\\{4DACA2DF-2701-4B9A-81EC-27FA9EADF721}", "New Connection");
+//      change_globals();
+//      dowrite_conf(NULL);
 
-	do_disconnect_connection("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
+	do_disconnect_connection
+	    ("\\DEVICE\\{10F7F3B7-3D0D-47A4-B765-DB8795551F97}");
 	return 0;
 #endif
 
@@ -2377,7 +2313,7 @@ int main(int argc, char *argv[])
 	dochangeconn(intface, conn);
 
 	return 0;
-#endif 
+#endif
 
 #if 0
 	nt("Renaming a trusted server");
@@ -2405,12 +2341,12 @@ int main(int argc, char *argv[])
 #if 1
 	nt("Requesting Version String");
 	getvername();
-#endif 
+#endif
 
 #if 1
 	nt("Enumerating Certificates");
 	getrootcacerts();
-	
+
 	nt("Getting data on one Root CA");
 	getrootcainfo();
 #endif
@@ -2427,7 +2363,7 @@ int main(int argc, char *argv[])
 
 #if 1
 	nt("Get Physical State");
-	dogetphysicalstate(argv[1]);  
+	dogetphysicalstate(argv[1]);
 #endif
 
 #if 0
@@ -2468,7 +2404,7 @@ int main(int argc, char *argv[])
 	doping();
 
 	nt("Get Time Authenticated");
-	dogettimeauthed(argv[1]);  
+	dogettimeauthed(argv[1]);
 
 	nt("Getting queued errors");
 	getqueuederrors();
@@ -2477,32 +2413,32 @@ int main(int argc, char *argv[])
 	doint_enum();
 	nt("Enumerate EAP Methods");
 	doeap_enum();
-//	nt("Reload Config Test");     // Need to fix this on the supplicant side! (The contexts need to be updated following the reload.)
-//	doreload();
+//      nt("Reload Config Test");     // Need to fix this on the supplicant side! (The contexts need to be updated following the reload.)
+//      doreload();
 	nt("Get 802.1X state");
-	doget1xstate(argv[1]);  
+	doget1xstate(argv[1]);
 	nt("Get EAP state");
-	dogeteapstate(argv[1]);  
+	dogeteapstate(argv[1]);
 	nt("Get Backend State");
-	dogetbackendstate(argv[1]);  
+	dogetbackendstate(argv[1]);
 	nt("Get Physical State");
-	dogetphysicalstate(argv[1]);  
+	dogetphysicalstate(argv[1]);
 	nt("Get Pairwise Key Type");
-	dogetpairwisetype(argv[1]);  
+	dogetpairwisetype(argv[1]);
 	nt("Get Group Key Type");
-	dogetgrouptype(argv[1]); 
+	dogetgrouptype(argv[1]);
 	nt("Get EAP Type");
 	dogeteaptype(argv[1]);
 	nt("Get SSID");
-	dogetssid(argv[1]); 
+	dogetssid(argv[1]);
 	nt("Get BSSID");
-	dogetbssid(argv[1]); 
+	dogetbssid(argv[1]);
 	nt("Get Time Authenticated");
-	dogettimeauthed(argv[1]);  
+	dogettimeauthed(argv[1]);
 	nt("Get Signal");
-	dogetsignal(argv[1]);  
+	dogetsignal(argv[1]);
 	nt("Get Connections");
-	dogetconnections(argv[1]);  
+	dogetconnections(argv[1]);
 	nt("Get Credentials from 'Home WPA 2 PSK Network'");
 	getupwd("Home WPA 2 PSK Network");
 	nt("Get Credentials from 'Home WPA EAP-TTLS Network'");
@@ -2512,9 +2448,9 @@ int main(int argc, char *argv[])
 	nt("Changing Username/Password for 'Home WPA 2 PSK Network'");
 	setupwd("Home WPA 2 PSK Network", NULL, "newpassword");
 	/*
-	nt("Changing Username/Password for 'Home WPA EAP-TTLS Network'");
-	setupwd("Home WPA EAP-TTLS Network", "foo", "bar");
-	*/
+	   nt("Changing Username/Password for 'Home WPA EAP-TTLS Network'");
+	   setupwd("Home WPA EAP-TTLS Network", "foo", "bar");
+	 */
 	nt("Get Credentials from 'Home WPA 2 PSK Network'");
 	getupwd("Home WPA 2 PSK Network");
 
@@ -2522,14 +2458,14 @@ int main(int argc, char *argv[])
 	getupwd("Home WPA EAP-TTLS Network");
 
 	/*
-	nt("Force Changing the Connection on an Interface");
-	dochangeconn(argv[1], "Office Wired Test");
+	   nt("Force Changing the Connection on an Interface");
+	   dochangeconn(argv[1], "Office Wired Test");
 
-	nt("Disassociating...");
-	setdisassoc("\\DEVICE\\{57FB2BD9-E1F7-47EE-813A-64FF1B4B65F0}");
-	nt("Pausing...");
-	setpause("\\DEVICE\\{57FB2BD9-E1F7-47EE-813A-64FF1B4B65F0}");
-*/
+	   nt("Disassociating...");
+	   setdisassoc("\\DEVICE\\{57FB2BD9-E1F7-47EE-813A-64FF1B4B65F0}");
+	   nt("Pausing...");
+	   setpause("\\DEVICE\\{57FB2BD9-E1F7-47EE-813A-64FF1B4B65F0}");
+	 */
 
 	nt("Get IP Address information...");
 	getipaddr(argv[1]);

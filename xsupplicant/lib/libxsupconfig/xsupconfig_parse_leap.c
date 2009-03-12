@@ -29,104 +29,106 @@
 
 void *xsupconfig_parse_leap(void **attr, uint8_t config_type, xmlNodePtr node)
 {
-  struct config_eap_method *meth = NULL;
+	struct config_eap_method *meth = NULL;
 
-  meth = (*attr);
+	meth = (*attr);
 
-  if (meth == NULL)
-  {
-	meth = xsupconfig_alloc_method(meth, "LEAP");
-	(*attr) = meth;
-  }
-  else
-  {
-	  meth = xsupconfig_alloc_method(meth, "LEAP");
-  }
+	if (meth == NULL) {
+		meth = xsupconfig_alloc_method(meth, "LEAP");
+		(*attr) = meth;
+	} else {
+		meth = xsupconfig_alloc_method(meth, "LEAP");
+	}
 
-  if (meth == NULL) return NULL;
+	if (meth == NULL)
+		return NULL;
 
 #ifdef PARSE_DEBUG
-  printf("Parsing method 'LEAP'.\n");
+	printf("Parsing method 'LEAP'.\n");
 #endif
 
-  meth->method_num = EAP_TYPE_LEAP;
-  meth->method_data = malloc(sizeof(struct config_pwd_only));
-  if (meth->method_data == NULL)
-    {
-      printf("Couldn't allocate memory to store LEAP data.  "
-	     "(Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	meth->method_num = EAP_TYPE_LEAP;
+	meth->method_data = malloc(sizeof(struct config_pwd_only));
+	if (meth->method_data == NULL) {
+		printf("Couldn't allocate memory to store LEAP data.  "
+		       "(Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  memset(meth->method_data, 0x00, sizeof(struct config_pwd_only));
-  
-  return meth->method_data;
+	memset(meth->method_data, 0x00, sizeof(struct config_pwd_only));
+
+	return meth->method_data;
 }
 
-void *xsupconfig_parse_leap_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_leap_password(void **attr, uint8_t config_type,
+				     xmlNodePtr node)
 {
-  struct config_pwd_only *leap = NULL;
-  char *value = NULL;
+	struct config_pwd_only *leap = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  leap = (*attr);
+	leap = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Password for LEAP is '%s'!\n", value);
+	printf("Password for LEAP is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		leap->password = NULL;
-	}
-	else
-	{
+	} else {
 		leap->password = _strdup(value);
 		xmlFree(value);
 	}
 
-  return leap;
+	return leap;
 }
 
-void *xsupconfig_parse_leap_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_leap_enc_password(void **attr, uint8_t config_type,
+					 xmlNodePtr node)
 {
-  struct config_pwd_only *leap = NULL;
-  char *value = NULL;
-  uint16_t size = 0;
+	struct config_pwd_only *leap = NULL;
+	char *value = NULL;
+	uint16_t size = 0;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  leap = (*attr);
+	leap = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Password for LEAP is '%s'!\n", value);
+	printf("Password for LEAP is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		return leap;
 	}
 
-  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&leap->password, &size) != 0)
-  {
-	  xmlFree(value);
-	  leap->password = NULL;
-	  return leap;
-  }
+	if (pwcrypt_decrypt
+	    (config_type, (uint8_t *) value, strlen(value),
+	     (uint8_t **) & leap->password, &size) != 0) {
+		xmlFree(value);
+		leap->password = NULL;
+		return leap;
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return leap;
+	return leap;
 }
 
 parser leap[] = {
-  {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_leap_password},
-  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_leap_enc_password},
-  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
+	{"Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_leap_password}
+	,
+	{"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_leap_enc_password}
+	,
+	{"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing}
+	,
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};
 
-#endif  // ENABLE_LEAP
+#endif				// ENABLE_LEAP

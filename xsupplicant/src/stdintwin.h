@@ -20,4 +20,4 @@
 #define int32_t __int32
 #endif
 
-#endif // __STDINTWIN_H__
+#endif				// __STDINTWIN_H__

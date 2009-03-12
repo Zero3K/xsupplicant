@@ -34,9 +34,9 @@ typedef unsigned long uint32;
 #endif
 
 struct MD5Context {
-        uint32 buf[4];
-        uint32 bits[2];
-        unsigned char in[64];
+	uint32 buf[4];
+	uint32 bits[2];
+	unsigned char in[64];
 };
 
 void MD5Init(struct MD5Context *);
@@ -53,4 +53,4 @@ typedef struct MD5Context MD5_CTX;
     byte order and uint32 settings.  */
 #define CHECK_HARDWARE_PROPERTIES
 
-#endif /* !MD5_H */
+#endif				/* !MD5_H */

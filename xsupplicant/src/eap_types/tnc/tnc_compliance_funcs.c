@@ -48,7 +48,8 @@ tnc_msg_batch *batch_ptr = NULL;
  * \retval uint32_t A 32 bit value that indicates the current settings for the 
  *                  posture set.  The flags are identified in tnc_compliance_options.h.
  **/
-TNC_UInt32 TNC_28383_TNCC_Get_Posture_Preferences(TNC_IMCID imcID, TNC_ConnectionID connectionID)
+TNC_UInt32 TNC_28383_TNCC_Get_Posture_Preferences(TNC_IMCID imcID,
+						  TNC_ConnectionID connectionID)
 {
 	context *ctx = NULL;
 
@@ -67,7 +68,10 @@ TNC_UInt32 TNC_28383_TNCC_Get_Posture_Preferences(TNC_IMCID imcID, TNC_Connectio
  * @param[in] notification   The notification number that will allow the UI to look
  *                           in a message catalog to find the proper string to display.
  **/
-void TNC_28383_TNCC_Send_UI_Notification_by_ID(TNC_IMCID imcID, TNC_ConnectionID connectionID, TNC_UInt32 oui, TNC_UInt32 notification)
+void TNC_28383_TNCC_Send_UI_Notification_by_ID(TNC_IMCID imcID,
+					       TNC_ConnectionID connectionID,
+					       TNC_UInt32 oui,
+					       TNC_UInt32 notification)
 {
 	ipc_events_imc_event(oui, notification);
 }
@@ -88,19 +92,22 @@ void TNC_28383_TNCC_Send_UI_Notification_by_ID(TNC_IMCID imcID, TNC_ConnectionID
  * \retval 0 on success.
  * \retval !=0 on failure
  **/
-TNC_UInt32 TNC_28383_TNCC_Request_Answer_From_UI_by_ID(TNC_IMCID imcID, 
-						TNC_ConnectionID connectionID, TNC_UInt32 oui, TNC_UInt32 request, 
-						void *callback)
+TNC_UInt32 TNC_28383_TNCC_Request_Answer_From_UI_by_ID(TNC_IMCID imcID,
+						       TNC_ConnectionID
+						       connectionID,
+						       TNC_UInt32 oui,
+						       TNC_UInt32 request,
+						       void *callback)
 {
-	if (tnc_compliance_callbacks_add(imcID, connectionID, oui, request, callback) != 0)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't request a TNC answer from the UI!\n");
+	if (tnc_compliance_callbacks_add
+	    (imcID, connectionID, oui, request, callback) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't request a TNC answer from the UI!\n");
 		return TNC_RESULT_FATAL;
 	}
 
 	return TNC_RESULT_SUCCESS;
 }
-
 
 /** 
  * \brief Stub call that maps to TNC_28383_TNCC_debug_log.
@@ -111,7 +118,7 @@ TNC_UInt32 TNC_28383_TNCC_Request_Answer_From_UI_by_ID(TNC_IMCID imcID,
  **/
 TNC_Result TNC_9048_LogMessage(
 /*in*/ TNC_UInt32 severity,
-/*in*/ const char * message) 
+/*in*/ const char *message)
 {
 	TNC_28383_TNCC_debug_log(-1, severity, (char *)message);
 	return TNC_RESULT_SUCCESS;
@@ -120,12 +127,11 @@ TNC_Result TNC_9048_LogMessage(
 TNC_Result TNC_9048_UserMessage(
 /*in*/ TNC_IMCID imcID,
 /*in*/ TNC_ConnectionID connectionID,
-/*in*/ const char * message) 
+/*in*/ const char *message)
 {
 	TNC_28383_TNCC_debug_log(imcID, connectionID, (char *)message);
 	return TNC_RESULT_SUCCESS;
 }
-
 
 /**
  * \brief Write a log string to the supplicant's log file.  This string will *NOT* be
@@ -136,7 +142,8 @@ TNC_Result TNC_9048_UserMessage(
  * @param[in] logline   An ASCII string that will be written to the debug log.
  * @param[in] severity The TNC severity level which is used to determine how to log the message.
  **/
-void TNC_28383_TNCC_debug_log(TNC_IMCID imcID, TNC_UInt32 severity, char *logline)
+void TNC_28383_TNCC_debug_log(TNC_IMCID imcID, TNC_UInt32 severity,
+			      char *logline)
 {
 	char *temp = NULL;
 	char imcn[100];
@@ -144,29 +151,31 @@ void TNC_28383_TNCC_debug_log(TNC_IMCID imcID, TNC_UInt32 severity, char *loglin
 	sprintf((char *)&imcn, "%d", imcID);
 
 	temp = Malloc(strlen(imcn) + strlen(logline) + 100);
-	if (temp == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "IMC attempted to send us a log line, but we couldn't "
-				"allocate memory to store it!\n");
+	if (temp == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "IMC attempted to send us a log line, but we couldn't "
+			     "allocate memory to store it!\n");
 		return;
 	}
 
-	sprintf(temp, "IMC ID : %s  Log Message : %s\n", imcn,
-		logline);
+	sprintf(temp, "IMC ID : %s  Log Message : %s\n", imcn, logline);
 
-	switch(severity)
-	{
+	switch (severity) {
 	case TNC_LOG_SEVERITY_ERR:
 	case TNC_LOG_SEVERITY_WARNING:
-	case TNC_LOG_SEVERITY_NOTICE: 
+	case TNC_LOG_SEVERITY_NOTICE:
 		{
-			debug_printf(DEBUG_NORMAL | DEBUG_TNC_IMC | DEBUG_VERBOSE, "%s", logline);
-		}break;
+			debug_printf(DEBUG_NORMAL | DEBUG_TNC_IMC |
+				     DEBUG_VERBOSE, "%s", logline);
+		}
+		break;
 	case TNC_LOG_SEVERITY_INFO:
-        {
-            // Only send INFO level information into the debug plugins.
-            debug_printf(DEBUG_TNC_IMC | DEBUG_VERBOSE, "%s", logline);
-        }break;
+		{
+			// Only send INFO level information into the debug plugins.
+			debug_printf(DEBUG_TNC_IMC | DEBUG_VERBOSE, "%s",
+				     logline);
+		}
+		break;
 	case TNC_LOG_SEVERITY_DEBUG:
 	default:
 		debug_printf(DEBUG_TNC_IMC, "%s", logline);
@@ -188,15 +197,17 @@ void TNC_28383_TNCC_debug_log(TNC_IMCID imcID, TNC_UInt32 severity, char *loglin
  * \retval 0 on success
  * \retval >0 on failure
  **/
-TNC_UInt32 TNC_28383_TNCC_Add_To_Batch(TNC_IMCID imcID, TNC_ConnectionID connectionID, TNC_UInt32 oui, 
-									  TNC_UInt32 msgID, TNC_BufferReference attr)
+TNC_UInt32 TNC_28383_TNCC_Add_To_Batch(TNC_IMCID imcID,
+				       TNC_ConnectionID connectionID,
+				       TNC_UInt32 oui, TNC_UInt32 msgID,
+				       TNC_BufferReference attr)
 {
 	tnc_msg_batch *cur = NULL;
 
 	cur = Malloc(sizeof(tnc_msg_batch));
-	if (cur == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store new TNC UI message batch node.\n");
+	if (cur == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store new TNC UI message batch node.\n");
 		return TNC_RESULT_FATAL;
 	}
 
@@ -207,7 +218,7 @@ TNC_UInt32 TNC_28383_TNCC_Add_To_Batch(TNC_IMCID imcID, TNC_ConnectionID connect
 	cur->parameter = _strdup(attr);
 	cur->next = NULL;
 
-	liblist_add_to_head((genlist **)&batch_ptr, (genlist *)cur);
+	liblist_add_to_head((genlist **) & batch_ptr, (genlist *) cur);
 
 	return TNC_RESULT_SUCCESS;
 }
@@ -245,19 +256,24 @@ node_delete_func tnc_compliance_funcs_delete_node(void **node)
  * \retval 0 on success
  * \retval !=0 on failure
  **/
-TNC_UInt32 TNC_28383_TNCC_Send_Batch(TNC_IMCID imcID, TNC_ConnectionID connectionID, TNC_UInt32 oui,
-							   TNC_UInt32 msg, callback *cb)
+TNC_UInt32 TNC_28383_TNCC_Send_Batch(TNC_IMCID imcID,
+				     TNC_ConnectionID connectionID,
+				     TNC_UInt32 oui, TNC_UInt32 msg,
+				     callback * cb)
 {
-	if (tnc_compliance_callbacks_add(imcID, connectionID, oui, msg, cb) != 0)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't add the callback needed to get an answer from the TNC "
-				"batch message.\n");
-		return TNC_RESULT_FATAL;	
+	if (tnc_compliance_callbacks_add(imcID, connectionID, oui, msg, cb) !=
+	    0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't add the callback needed to get an answer from the TNC "
+			     "batch message.\n");
+		return TNC_RESULT_FATAL;
 	}
 
 	ipc_events_send_tnc_batch(batch_ptr, imcID, connectionID, oui, msg);
 
-	liblist_delete_list((genlist **)&batch_ptr, (node_delete_func)&tnc_compliance_funcs_delete_node);
+	liblist_delete_list((genlist **) & batch_ptr,
+			    (node_delete_func) &
+			    tnc_compliance_funcs_delete_node);
 
 	return TNC_RESULT_SUCCESS;
 }
@@ -279,16 +295,21 @@ TNC_UInt32 TNC_28383_TNCC_Send_Batch(TNC_IMCID imcID, TNC_ConnectionID connectio
  * \retval 0 on success
  * \retval !=0 on failure
  **/
-TNC_UInt32 TNC_28383_TNCC_Single_Shot_Batch(TNC_IMCID imcID, TNC_ConnectionID connectionID, TNC_UInt32 oui,
-											TNC_UInt32 parent_msg, TNC_UInt32 msg, TNC_BufferReference attr, callback *cb)
+TNC_UInt32 TNC_28383_TNCC_Single_Shot_Batch(TNC_IMCID imcID,
+					    TNC_ConnectionID connectionID,
+					    TNC_UInt32 oui,
+					    TNC_UInt32 parent_msg,
+					    TNC_UInt32 msg,
+					    TNC_BufferReference attr,
+					    callback * cb)
 {
 	tnc_msg_batch *ss_batch = NULL;
 	tnc_msg_batch *cur = NULL;
 
 	cur = Malloc(sizeof(tnc_msg_batch));
-	if (cur == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store new TNC UI message batch node.\n");
+	if (cur == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store new TNC UI message batch node.\n");
 		return TNC_RESULT_FATAL;
 	}
 
@@ -299,18 +320,22 @@ TNC_UInt32 TNC_28383_TNCC_Single_Shot_Batch(TNC_IMCID imcID, TNC_ConnectionID co
 	cur->parameter = _strdup(attr);
 	cur->next = NULL;
 
-	liblist_add_to_head((genlist **)&ss_batch, (genlist *)cur);
+	liblist_add_to_head((genlist **) & ss_batch, (genlist *) cur);
 
-	if (tnc_compliance_callbacks_add(imcID, connectionID, oui, parent_msg, cb) != 0)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't add the callback needed to get an answer from the TNC "
-				"batch message.\n");
-		return TNC_RESULT_FATAL;	
+	if (tnc_compliance_callbacks_add
+	    (imcID, connectionID, oui, parent_msg, cb) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't add the callback needed to get an answer from the TNC "
+			     "batch message.\n");
+		return TNC_RESULT_FATAL;
 	}
 
-	ipc_events_send_tnc_batch(ss_batch, imcID, connectionID, oui, parent_msg);
+	ipc_events_send_tnc_batch(ss_batch, imcID, connectionID, oui,
+				  parent_msg);
 
-	liblist_delete_list((genlist **)&ss_batch, (node_delete_func)&tnc_compliance_funcs_delete_node);
+	liblist_delete_list((genlist **) & ss_batch,
+			    (node_delete_func) &
+			    tnc_compliance_funcs_delete_node);
 
 	return TNC_RESULT_SUCCESS;
 }
@@ -325,7 +350,9 @@ TNC_UInt32 TNC_28383_TNCC_Single_Shot_Batch(TNC_IMCID imcID, TNC_ConnectionID co
  * @param[in] errMsg   A string that contains the error message that we want to pass up to the UI.
  *
  **/
-void TNC_28383_TNCC_Send_Error_Message(TNC_IMCID imcID, TNC_ConnectionID connectionID, char *errMsg)
+void TNC_28383_TNCC_Send_Error_Message(TNC_IMCID imcID,
+				       TNC_ConnectionID connectionID,
+				       char *errMsg)
 {
 	ipc_events_error(NULL, IPC_EVENT_ERROR_TEXT, errMsg);
 }
@@ -337,22 +364,22 @@ void TNC_28383_TNCC_Send_Error_Message(TNC_IMCID imcID, TNC_ConnectionID connect
  * @param[in] connectionID The ID of the connection in question.
  *
  **/
-TNC_UInt32 find_context_for_imc_id_and_connection(context **ctx, TNC_IMCID imcID, TNC_ConnectionID connectionID)
+TNC_UInt32 find_context_for_imc_id_and_connection(context ** ctx,
+						  TNC_IMCID imcID,
+						  TNC_ConnectionID connectionID)
 {
 	event_core_reset_locator();
 
 	(*ctx) = event_core_get_next_context();
-	while ((*ctx) != NULL)
-	{
-		if ((*ctx)->tnc_data && (*ctx)->tnc_data->connectionID == connectionID)
-		{
+	while ((*ctx) != NULL) {
+		if ((*ctx)->tnc_data
+		    && (*ctx)->tnc_data->connectionID == connectionID) {
 			break;
 		}
 		(*ctx) = event_core_get_next_context();
 	}
 
-	if((*ctx) == NULL)
-	{
+	if ((*ctx) == NULL) {
 		return TNC_RESULT_OTHER;
 	}
 
@@ -368,32 +395,31 @@ TNC_UInt32 find_context_for_imc_id_and_connection(context **ctx, TNC_IMCID imcID
  *
  * \retval TNC_UInt32 success/failure of the request to reset.
  **/
-TNC_UInt32 TNC_28383_TNCC_Reset_Connection(TNC_IMCID imcID, TNC_ConnectionID connectionID)
+TNC_UInt32 TNC_28383_TNCC_Reset_Connection(TNC_IMCID imcID,
+					   TNC_ConnectionID connectionID)
 {
 	context *ctx = NULL;
 
-	debug_printf(DEBUG_NORMAL, "IMC %d has requested that we reset the connection for ID %d.\n", imcID, connectionID);
+	debug_printf(DEBUG_NORMAL,
+		     "IMC %d has requested that we reset the connection for ID %d.\n",
+		     imcID, connectionID);
 
-	if (find_context_for_imc_id_and_connection(&ctx, imcID, connectionID) == TNC_RESULT_SUCCESS)
-	{
+	if (find_context_for_imc_id_and_connection(&ctx, imcID, connectionID) ==
+	    TNC_RESULT_SUCCESS) {
 		// We found it!
-		if (ctx->intType == ETH_802_11_INT)
-		{
+		if (ctx->intType == ETH_802_11_INT) {
 			// Send a logoff, and disassociate.
 			txLogoff(ctx);
 
 			// If we are going to sleep, skip this part since the interface may not be 
 			// able to process it.
-			if (event_core_get_sleep_state() != TRUE)
-			{
-				cardif_disassociate(ctx, 0);  
+			if (event_core_get_sleep_state() != TRUE) {
+				cardif_disassociate(ctx, 0);
 
 				//debug_printf(DEBUG_PHYSICAL_STATE, "!!!!! Bypassing scanning phase!\n");
 				wireless_sm_change_state(ASSOCIATING, ctx);
 			}
-		}
-		else
-		{
+		} else {
 			// It is wired, so just send a logoff.
 			txLogoff(ctx);
 		}
@@ -405,10 +431,9 @@ TNC_UInt32 TNC_28383_TNCC_Reset_Connection(TNC_IMCID imcID, TNC_ConnectionID con
 		// the user is likely to be placed on a new VLAN
 		// in the cases where a TNC IMC requests a connection reset
 		ctx->auths = 0;
-	}
-	else
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to reset connection because we couldn't find the context!\n");
+	} else {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to reset connection because we couldn't find the context!\n");
 		return TNC_RESULT_OTHER;
 	}
 
@@ -423,29 +448,30 @@ TNC_UInt32 TNC_28383_TNCC_Reset_Connection(TNC_IMCID imcID, TNC_ConnectionID con
  *
  * \retval TNC_UInt32 success/failure of the request to renew DHCP.
  **/
-XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Renew_DHCP(TNC_IMCID imcID, TNC_ConnectionID connectionID)
+XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Renew_DHCP(TNC_IMCID imcID,
+						  TNC_ConnectionID connectionID)
 {
 	context *ctx = NULL;
 
-	debug_printf(DEBUG_NORMAL, "IMC %d has requested DHCP renew for connection ID %d.\n", imcID, connectionID);
+	debug_printf(DEBUG_NORMAL,
+		     "IMC %d has requested DHCP renew for connection ID %d.\n",
+		     imcID, connectionID);
 
-	if(find_context_for_imc_id_and_connection(&ctx, imcID, connectionID) == TNC_RESULT_SUCCESS)
-	{
+	if (find_context_for_imc_id_and_connection(&ctx, imcID, connectionID) ==
+	    TNC_RESULT_SUCCESS) {
 		// Set the authentication counter back to 0.
 		// This causes a DHCP release/renew to happen
 		// on the next successful authentication
 		// Which is probably what is desired since
 		// the user is likely to be placed on a new VLAN
 		// in the cases where a TNC IMC requests a DHCP renew
-		if (ctx->conn->ip.type != CONFIG_IP_USE_STATIC)
-		{
+		if (ctx->conn->ip.type != CONFIG_IP_USE_STATIC) {
 			ctx->auths = 0;
 			ctx->flags |= DHCP_RELEASE_RENEW;
 		}
-	}
-	else
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to renew DHCP because we couldn't find the context!\n");
+	} else {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to renew DHCP because we couldn't find the context!\n");
 		return TNC_RESULT_OTHER;
 	}
 
@@ -463,7 +489,10 @@ XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Renew_DHCP(TNC_IMCID imcID, TNC_Connectio
 XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Set_User_Logon_Callback(void *callback)
 {
 	//debug_printf(DEBUG_NORMAL, ">>* Setting user callback function!\n");
-	if (callback == NULL) debug_printf(DEBUG_NORMAL, "An IMC attempted to set a NULL callback function in %s!\n", __FUNCTION__);
+	if (callback == NULL)
+		debug_printf(DEBUG_NORMAL,
+			     "An IMC attempted to set a NULL callback function in %s!\n",
+			     __FUNCTION__);
 	return event_core_register_imc_logon_callback(callback);
 }
 
@@ -478,7 +507,10 @@ XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Set_User_Logon_Callback(void *callback)
 XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Set_Disconnect_Callback(void *callback)
 {
 	//debug_printf(DEBUG_NORMAL, ">>* Setting user callback function!\n");
-	if (callback == NULL) debug_printf(DEBUG_NORMAL, "An IMC attempted to set a NULL callback function in %s!\n", __FUNCTION__);
+	if (callback == NULL)
+		debug_printf(DEBUG_NORMAL,
+			     "An IMC attempted to set a NULL callback function in %s!\n",
+			     __FUNCTION__);
 	return event_core_register_disconnect_callback(callback);
 }
 
@@ -493,9 +525,11 @@ XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Set_Disconnect_Callback(void *callback)
 XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Set_UI_Connect_Callback(void *callback)
 {
 	debug_printf(DEBUG_NORMAL, ">>* Setting UI Connect function!\n");
-	if (callback == NULL) debug_printf(DEBUG_NORMAL, "An IMC attempted to set a NULL callback function in %s!\n", __FUNCTION__);
+	if (callback == NULL)
+		debug_printf(DEBUG_NORMAL,
+			     "An IMC attempted to set a NULL callback function in %s!\n",
+			     __FUNCTION__);
 	return event_core_register_ui_connect_callback(callback);
 }
 
-#endif //HAVE_TNC
-
+#endif				//HAVE_TNC

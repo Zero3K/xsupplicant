@@ -15,4 +15,4 @@ extern parser interf[];
 
 void *xsupconfig_parse_interface(void **, uint8_t, xmlNodePtr);
 
-#endif // __XSUPCONFIG_PARSE_INTERFACE_H__
+#endif				// __XSUPCONFIG_PARSE_INTERFACE_H__

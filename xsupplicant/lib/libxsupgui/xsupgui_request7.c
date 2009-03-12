@@ -34,9 +34,9 @@
  * \retval REQUEST_TIMEOUT the request timed out
  * \retval REQUEST_SUCCESS the request succeeded.
  **/
-int xsupgui_request_answer_tnc_ui_request(uint32_t imcID, uint32_t connID, 
-										  uint32_t oui, uint32_t notification, 
-										  uint32_t response)
+int xsupgui_request_answer_tnc_ui_request(uint32_t imcID, uint32_t connID,
+					  uint32_t oui, uint32_t notification,
+					  uint32_t response)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -46,75 +46,73 @@ int xsupgui_request_answer_tnc_ui_request(uint32_t imcID, uint32_t connID,
 	int err = 0;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"TNC_Request_Event_Response", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "TNC_Request_Event_Response",
+			NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	sprintf((char *)&tempstatic, "%d", imcID);
-	if (xmlNewChild(t, NULL, (xmlChar *)"imcID", (xmlChar *)tempstatic) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "imcID", (xmlChar *) tempstatic) ==
+	    NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	sprintf((char *)&tempstatic, "%d", connID);
-	if (xmlNewChild(t, NULL, (xmlChar *)"connID", (xmlChar *)tempstatic) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "connID", (xmlChar *) tempstatic)
+	    == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	sprintf((char *)&tempstatic, "%d", oui);
-	if (xmlNewChild(t, NULL, (xmlChar *)"OUI", (xmlChar *)tempstatic) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "OUI", (xmlChar *) tempstatic) ==
+	    NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	sprintf((char *)&tempstatic, "%d", response);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Response", (xmlChar *)tempstatic) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Response", (xmlChar *) tempstatic)
+	    == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	sprintf((char *)&tempstatic, "%d", notification);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Notification", (xmlChar *)tempstatic) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Notification",
+	     (xmlChar *) tempstatic) == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		retval = err;
 		goto done;
 	}
 
 	retval = xsupgui_request_is_ack(retdoc);
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -135,8 +133,8 @@ done:
  * \retval REQUEST_TIMEOUT the request timed out
  * \retval REQUEST_SUCCESS the request succeeded.
  **/
-int xsupgui_request_get_os_specific_int_data(char *intname, char **intdesc, char **mac, 
-											 int *iswireless)
+int xsupgui_request_get_os_specific_int_data(char *intname, char **intdesc,
+					     char **mac, int *iswireless)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -146,32 +144,32 @@ int xsupgui_request_get_os_specific_int_data(char *intname, char **intdesc, char
 	int err = 0;
 	char *temp = NULL;
 
-	if ((intname == NULL) || (intdesc == NULL) || (mac == NULL) || (iswireless == NULL))
+	if ((intname == NULL) || (intdesc == NULL) || (mac == NULL)
+	    || (iswireless == NULL))
 		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*intdesc) = NULL;
 	(*mac) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Get_OS_Specific_Int_Data", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Get_OS_Specific_Int_Data", NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	xsupgui_xml_common_convert_amp(intname, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
 		goto done;
@@ -179,37 +177,32 @@ int xsupgui_request_get_os_specific_int_data(char *intname, char **intdesc, char
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
 	n = xsupgui_request_find_node(n->children, "OS_Specific_Int_Data");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
 	n = n->children;
 	t = xsupgui_request_find_node(n, "Description");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -217,8 +210,7 @@ int xsupgui_request_get_os_specific_int_data(char *intname, char **intdesc, char
 	(*intdesc) = (char *)xmlNodeGetContent(t);
 
 	t = xsupgui_request_find_node(n, "MAC");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -226,8 +218,7 @@ int xsupgui_request_get_os_specific_int_data(char *intname, char **intdesc, char
 	(*mac) = (char *)xmlNodeGetContent(t);
 
 	t = xsupgui_request_find_node(n, "Wireless");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -236,7 +227,7 @@ int xsupgui_request_get_os_specific_int_data(char *intname, char **intdesc, char
 
 	(*iswireless) = atoi(value);
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -263,30 +254,31 @@ int xsupgui_request_get_conn_name_from_int(char *intname, char **connname)
 	int err = 0;
 	char *temp = NULL;
 
-	if ((intname == NULL) || (connname == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
+	if ((intname == NULL) || (connname == NULL))
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*connname) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Get_Connection_From_Interface", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Get_Connection_From_Interface",
+			NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	xsupgui_xml_common_convert_amp(intname, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
 		goto done;
@@ -294,45 +286,40 @@ int xsupgui_request_get_conn_name_from_int(char *intname, char **connname)
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
 	n = xsupgui_request_find_node(n->children, "Connection_From_Interface");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
 	n = n->children;
- 
+
 	t = xsupgui_request_find_node(n, "Connection");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
 
 	(*connname) = (char *)xmlNodeGetContent(t);
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -350,8 +337,8 @@ done:
  * \retval >299 the request to the supplicant failed.
  * \retval REQUEST_TIMEOUT the request timed out
  * \retval REQUEST_SUCCESS the request succeeded.
- **/ 
-int xsupgui_request_get_error_msgs(error_messages **emsg_enum)
+ **/
+int xsupgui_request_get_error_msgs(error_messages ** emsg_enum)
 {
 	int retval = REQUEST_SUCCESS;
 	int err = 0, numevents = 0, i = 0;
@@ -361,66 +348,60 @@ int xsupgui_request_get_error_msgs(error_messages **emsg_enum)
 	char *value = NULL;
 	error_messages *msgs = NULL;
 
-	if (emsg_enum == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (emsg_enum == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*emsg_enum) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Get_Error_Queue", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Get_Error_Queue", NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
 	n = xsupgui_request_find_node(n->children, "Error_Queue");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "Number_Of_Events");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
 	value = (char *)xmlNodeGetContent(t);
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		retval = IPC_ERROR_INVALID_NUMBER_OF_EVENTS;
 		goto done;
 	}
@@ -430,26 +411,24 @@ int xsupgui_request_get_error_msgs(error_messages **emsg_enum)
 	value = NULL;
 
 	t = xsupgui_request_find_node(n->children, "Errors");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
-	msgs = (error_messages *)Malloc((sizeof(error_messages) * (numevents + 1)));
-	if (msgs == NULL)
-	{
+	msgs =
+	    (error_messages *)
+	    Malloc((sizeof(error_messages) * (numevents + 1)));
+	if (msgs == NULL) {
 		retval = IPC_ERROR_CANT_ALLOCATE_MEMORY;
 		goto done;
 	}
 
 	t = t->children;
 
-	for (i = 0; i<numevents; i++)
-	{
+	for (i = 0; i < numevents; i++) {
 		t = xsupgui_request_find_node(t, "Message");
-		if (t == NULL)
-		{
+		if (t == NULL) {
 			retval = IPC_ERROR_BAD_RESPONSE;
 			free(msgs);
 			goto done;
@@ -462,7 +441,7 @@ int xsupgui_request_get_error_msgs(error_messages **emsg_enum)
 
 	(*emsg_enum) = msgs;
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -474,19 +453,18 @@ done:
  *
  * @param[in] errmsg_enum   The error message enum that was returned from xsupgui_request_get_error_msgs().
  **/
-void xsupgui_request_free_error_msgs(error_messages **errmsg_enum)
+void xsupgui_request_free_error_msgs(error_messages ** errmsg_enum)
 {
 	error_messages *cur = NULL;
 	int i = 0;
 
-	if (errmsg_enum == NULL) return;   // Nothing to free.
+	if (errmsg_enum == NULL)
+		return;		// Nothing to free.
 
 	cur = (*errmsg_enum);
 
-	if(cur != NULL)
-	{
-		while (cur[i].errmsgs != NULL)
-		{
+	if (cur != NULL) {
+		while (cur[i].errmsgs != NULL) {
 			free(cur[i].errmsgs);
 			i++;
 		}
@@ -505,20 +483,22 @@ void xsupgui_request_free_error_msgs(error_messages **errmsg_enum)
  * \retval REQUEST_SUCCESS on success
  * \retval REQUEST_FAILURE on failure
  **/
-int xsupgui_request_free_poss_conn_enum(poss_conn_enum **data)
+int xsupgui_request_free_poss_conn_enum(poss_conn_enum ** data)
 {
 	int i = 0;
 	poss_conn_enum *cenum = NULL;
 
 	cenum = (*data);
-	if (cenum == NULL) return REQUEST_SUCCESS;
+	if (cenum == NULL)
+		return REQUEST_SUCCESS;
 
 	i = 0;
 
-	while (cenum[i].name != NULL)
-	{
-		if (cenum[i].name != NULL) free(cenum[i].name);
-		if (cenum[i].ssid != NULL) free(cenum[i].ssid);
+	while (cenum[i].name != NULL) {
+		if (cenum[i].name != NULL)
+			free(cenum[i].name);
+		if (cenum[i].ssid != NULL)
+			free(cenum[i].ssid);
 		i++;
 	}
 
@@ -550,25 +530,24 @@ int xsupgui_request_unbind_connection(char *device)
 	char *temp = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) 
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto cdone;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Unbind_Connection", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Unbind_Connection", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto cdone;
 	}
 
 	xsupgui_xml_common_convert_amp(device, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_INVALID_PARAMETERS;
 		free(temp);
 		goto cdone;
@@ -576,43 +555,37 @@ int xsupgui_request_unbind_connection(char *device)
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto cdone;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto cdone;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto cdone;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = n->children;
-	if (xsupgui_request_find_node(n, "ACK") != NULL)
-	{
+	if (xsupgui_request_find_node(n, "ACK") != NULL) {
 		done = REQUEST_SUCCESS;
-	}
-	else
-	{
+	} else {
 		done = IPC_ERROR_NOT_ACK;
 	}
 
-cdone:
-	if (doc != NULL) xmlFreeDoc(doc);
-	if (retdoc != NULL) xmlFreeDoc(retdoc);
+ cdone:
+	if (doc != NULL)
+		xmlFreeDoc(doc);
+	if (retdoc != NULL)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -628,7 +601,8 @@ cdone:
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error
  **/
-int xsupgui_request_rename_something(char *itemtype, uint8_t config_type, char *oldname, char *newname)
+int xsupgui_request_rename_something(char *itemtype, uint8_t config_type,
+				     char *oldname, char *newname)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -641,32 +615,31 @@ int xsupgui_request_rename_something(char *itemtype, uint8_t config_type, char *
 		return IPC_ERROR_INVALID_PARAMETERS;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) 
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto cdone;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)itemtype, NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) itemtype, NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto cdone;
 	}
 
 	sprintf(res, "%d", config_type);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Config_Type", (xmlChar *) res) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto cdone;
 	}
 
 	xsupgui_xml_common_convert_amp(oldname, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Old_Name", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Old_Name", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_INVALID_PARAMETERS;
 		free(temp);
 		goto cdone;
@@ -674,8 +647,8 @@ int xsupgui_request_rename_something(char *itemtype, uint8_t config_type, char *
 	free(temp);
 
 	xsupgui_xml_common_convert_amp(newname, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"New_Name", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "New_Name", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_INVALID_PARAMETERS;
 		free(temp);
 		goto cdone;
@@ -683,43 +656,37 @@ int xsupgui_request_rename_something(char *itemtype, uint8_t config_type, char *
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto cdone;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto cdone;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto cdone;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = n->children;
-	if (xsupgui_request_find_node(n, "ACK") != NULL)
-	{
+	if (xsupgui_request_find_node(n, "ACK") != NULL) {
 		done = REQUEST_SUCCESS;
-	}
-	else
-	{
+	} else {
 		done = IPC_ERROR_NOT_ACK;
 	}
 
-cdone:
-	if (doc != NULL) xmlFreeDoc(doc);
-	if (retdoc != NULL) xmlFreeDoc(retdoc);
+ cdone:
+	if (doc != NULL)
+		xmlFreeDoc(doc);
+	if (retdoc != NULL)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -735,9 +702,11 @@ cdone:
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error
  **/
-int xsupgui_request_rename_connection(uint8_t config_type, char *oldname, char *newname)
+int xsupgui_request_rename_connection(uint8_t config_type, char *oldname,
+				      char *newname)
 {
-	return xsupgui_request_rename_something("Rename_Connection", config_type, oldname, newname);
+	return xsupgui_request_rename_something("Rename_Connection",
+						config_type, oldname, newname);
 }
 
 /**
@@ -750,9 +719,11 @@ int xsupgui_request_rename_connection(uint8_t config_type, char *oldname, char *
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error
  **/
-int xsupgui_request_rename_profile(uint8_t config_type, char *oldname, char *newname)
+int xsupgui_request_rename_profile(uint8_t config_type, char *oldname,
+				   char *newname)
 {
-	return xsupgui_request_rename_something("Rename_Profile", config_type, oldname, newname);
+	return xsupgui_request_rename_something("Rename_Profile", config_type,
+						oldname, newname);
 }
 
 /**
@@ -765,9 +736,11 @@ int xsupgui_request_rename_profile(uint8_t config_type, char *oldname, char *new
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error
  **/
-int xsupgui_request_rename_trusted_server(uint8_t config_type, char *oldname, char *newname)
+int xsupgui_request_rename_trusted_server(uint8_t config_type, char *oldname,
+					  char *newname)
 {
-	return xsupgui_request_rename_something("Rename_Trusted_Server", config_type, oldname, newname);
+	return xsupgui_request_rename_something("Rename_Trusted_Server",
+						config_type, oldname, newname);
 }
 
 /**
@@ -791,30 +764,31 @@ int xsupgui_request_get_link_state_from_int(char *intname, int *state)
 	int err = 0;
 	char *temp = NULL;
 
-	if ((intname == NULL) || (state == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
+	if ((intname == NULL) || (state == NULL))
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*state) = 0;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Get_Link_State_From_Interface", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Get_Link_State_From_Interface",
+			NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	xsupgui_xml_common_convert_amp(intname, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
 		goto done;
@@ -822,38 +796,33 @@ int xsupgui_request_get_link_state_from_int(char *intname, int *state)
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
 	n = xsupgui_request_find_node(n->children, "Link_State_From_Interface");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
 	n = n->children;
- 
+
 	t = xsupgui_request_find_node(n, "Link_State");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -864,7 +833,7 @@ int xsupgui_request_get_link_state_from_int(char *intname, int *state)
 
 	xmlFree(value);
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -882,7 +851,8 @@ done:
  * \retval REQUEST_TIMEOUT the request timed out
  * \retval REQUEST_SUCCESS the request succeeded.
  **/
-int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir, int overwrite)
+int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir,
+					       int overwrite)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -893,25 +863,24 @@ int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir,
 	int err = 0;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Create_Trouble_Ticket", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Create_Trouble_Ticket", NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	xsupgui_xml_common_convert_amp(scratchdir, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Temp_Data_Path", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Temp_Data_Path", (xmlChar *) temp)
+	    == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
 		goto done;
@@ -919,8 +888,9 @@ int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir,
 	free(temp);
 
 	xsupgui_xml_common_convert_amp(filename, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Trouble_Ticket_File", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Trouble_Ticket_File",
+	     (xmlChar *) temp) == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
 		goto done;
@@ -928,30 +898,28 @@ int xsupgui_request_create_trouble_ticket_file(char *filename, char *scratchdir,
 	free(temp);
 
 	sprintf((char *)&tempstatic, "%d", overwrite);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Overwrite", (xmlChar *)tempstatic) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Overwrite",
+	     (xmlChar *) tempstatic) == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		retval = err;
 		goto done;
 	}
 
 	retval = xsupgui_request_is_ack(retdoc);
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -971,8 +939,10 @@ done:
  **/
 int xsupgui_request_get_interface_capabilities(char *device, int *capabilities)
 {
-	return xsupgui_request_get_some_value(device, "Get_Interface_Capabilities", "Interface_Capabilities", 
-			"Capabilities", capabilities);
+	return xsupgui_request_get_some_value(device,
+					      "Get_Interface_Capabilities",
+					      "Interface_Capabilities",
+					      "Capabilities", capabilities);
 }
 
 /**
@@ -994,25 +964,24 @@ int xsupgui_request_add_root_ca_certificate(char *filename)
 	int err = 0;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Add_Cert_to_Store", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Add_Cert_to_Store", NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	xsupgui_xml_common_convert_amp(filename, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Cert_Path", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Cert_Path", (xmlChar *) temp) ==
+	    NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
 		goto done;
@@ -1020,23 +989,20 @@ int xsupgui_request_add_root_ca_certificate(char *filename)
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		retval = err;
 		goto done;
 	}
 
 	retval = xsupgui_request_is_ack(retdoc);
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -1056,8 +1022,9 @@ done:
  **/
 int xsupgui_request_get_tnc_conn_id(char *device, unsigned int *tnc_conn_id)
 {
-	return xsupgui_request_get_some_value(device, "Get_TNC_Conn_ID", "TNC_Conn_ID", 
-					      "Conn_ID", (int *)tnc_conn_id);
+	return xsupgui_request_get_some_value(device, "Get_TNC_Conn_ID",
+					      "TNC_Conn_ID", "Conn_ID",
+					      (int *)tnc_conn_id);
 }
 
 /**
@@ -1082,28 +1049,28 @@ int xsupgui_request_set_connection_lock(char *intname, int endis)
 	char *temp = NULL;
 	char temp_static[10];
 
-	if (intname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (intname == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) 
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto request_lock;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Set_Connection_Lock", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Set_Connection_Lock", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto request_lock;
 	}
 
 	xsupgui_xml_common_convert_amp(intname, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
 		goto request_lock;
@@ -1113,50 +1080,45 @@ int xsupgui_request_set_connection_lock(char *intname, int endis)
 	memset(&temp_static, 0x00, sizeof(temp_static));
 	sprintf((char *)&temp_static, "%d", endis);
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"Connection_Lock", (xmlChar*)&temp_static) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Connection_Lock",
+	     (xmlChar *) & temp_static) == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto request_lock;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto request_lock;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto request_lock;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto request_lock;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = n->children;
-	if (xsupgui_request_find_node(n, "ACK") != NULL)
-	{
+	if (xsupgui_request_find_node(n, "ACK") != NULL) {
 		done = REQUEST_SUCCESS;
-	}
-	else
-	{
+	} else {
 		done = IPC_ERROR_NOT_ACK;
 	}
 
-request_lock:
-	if (doc != NULL) xmlFreeDoc(doc);
-	if (retdoc != NULL) xmlFreeDoc(retdoc);
+ request_lock:
+	if (doc != NULL)
+		xmlFreeDoc(doc);
+	if (retdoc != NULL)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -1176,7 +1138,8 @@ request_lock:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on other error
  **/
-int xsupgui_request_intname_from_tnc_conn_id(unsigned int tnc_conn_id, char **intname)
+int xsupgui_request_intname_from_tnc_conn_id(unsigned int tnc_conn_id,
+					     char **intname)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -1186,68 +1149,66 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int tnc_conn_id, char **in
 	int err = 0;
 	char tempint[10];
 
-	if (intname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
-	
+	if (intname == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
+
 	*intname = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Get_Interface_From_TNC_Conn_ID", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Get_Interface_From_TNC_Conn_ID",
+			NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	memset(&tempint, 0x00, sizeof(tempint));
 	sprintf((char *)&tempint, "%d", tnc_conn_id);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Connection_ID", (xmlChar *)tempint) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Connection_ID",
+	     (xmlChar *) tempint) == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
 		goto done;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	n = xsupgui_request_find_node(n->children, "Interface_From_TNC_Conn_ID");
-	if (n == NULL)
-	{
+	n = xsupgui_request_find_node(n->children,
+				      "Interface_From_TNC_Conn_ID");
+	if (n == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
 	n = n->children;
- 
+
 	t = xsupgui_request_find_node(n, "Interface_Name");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -1258,7 +1219,7 @@ int xsupgui_request_intname_from_tnc_conn_id(unsigned int tnc_conn_id, char **in
 
 	xmlFree(value);
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -1282,28 +1243,28 @@ int xsupgui_request_dhcp_release_renew(char *intname)
 	int done = 0, err = 0;
 	char *temp = NULL;
 
-	if (intname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (intname == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) 
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto request_done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"DHCP_Release_Renew", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "DHCP_Release_Renew", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto request_done;
 	}
 
 	xsupgui_xml_common_convert_amp(intname, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
 		goto request_done;
@@ -1311,43 +1272,37 @@ int xsupgui_request_dhcp_release_renew(char *intname)
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto request_done;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto request_done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto request_done;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = n->children;
-	if (xsupgui_request_find_node(n, "ACK") != NULL)
-	{
+	if (xsupgui_request_find_node(n, "ACK") != NULL) {
 		done = REQUEST_SUCCESS;
-	}
-	else
-	{
+	} else {
 		done = IPC_ERROR_NOT_ACK;
 	}
 
-request_done:
-	if (doc != NULL) xmlFreeDoc(doc);
-	if (retdoc != NULL) xmlFreeDoc(retdoc);
+ request_done:
+	if (doc != NULL)
+		xmlFreeDoc(doc);
+	if (retdoc != NULL)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -1365,8 +1320,8 @@ request_done:
  **/
 int xsupgui_request_get_freq(char *device, unsigned int *freq)
 {
-	return xsupgui_request_get_some_value(device, "Get_Frequency", "Frequency", 
-					      "Freq", (int *)freq);
+	return xsupgui_request_get_some_value(device, "Get_Frequency",
+					      "Frequency", "Freq", (int *)freq);
 }
 
 /**
@@ -1386,28 +1341,28 @@ int xsupgui_request_disconnect_connection(char *device)
 	int done = 0, err = 0;
 	char *temp = NULL;
 
-	if (device == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (device == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) 
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto request_done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Disconnect_Connection", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Disconnect_Connection", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto request_done;
 	}
 
 	xsupgui_xml_common_convert_amp(device, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
 		goto request_done;
@@ -1415,43 +1370,37 @@ int xsupgui_request_disconnect_connection(char *device)
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto request_done;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto request_done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto request_done;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = n->children;
-	if (xsupgui_request_find_node(n, "ACK") != NULL)
-	{
+	if (xsupgui_request_find_node(n, "ACK") != NULL) {
 		done = REQUEST_SUCCESS;
-	}
-	else
-	{
+	} else {
 		done = IPC_ERROR_NOT_ACK;
 	}
 
-request_done:
-	if (doc != NULL) xmlFreeDoc(doc);
-	if (retdoc != NULL) xmlFreeDoc(retdoc);
+ request_done:
+	if (doc != NULL)
+		xmlFreeDoc(doc);
+	if (retdoc != NULL)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -1469,7 +1418,9 @@ request_done:
  **/
 int xsupgui_request_get_are_doing_psk(char *device, int *state)
 {
-	return xsupgui_request_get_some_value(device, "Get_Are_Doing_PSK", "Are_Doing_PSK", "Doing_PSK", state);
+	return xsupgui_request_get_some_value(device, "Get_Are_Doing_PSK",
+					      "Are_Doing_PSK", "Doing_PSK",
+					      state);
 }
 
 /**
@@ -1486,8 +1437,9 @@ int xsupgui_request_get_are_doing_psk(char *device, int *state)
  *  \retval REQUEST_TIMEOUT on timeout
  *  \retval >299 on other error  
  **/
-int xsupgui_request_get_in_use_state(char *root_cmd, char *child_cmd, char *value, 
-									 char *resp_root, char *resp_child, int *state)
+int xsupgui_request_get_in_use_state(char *root_cmd, char *child_cmd,
+				     char *value, char *resp_root,
+				     char *resp_child, int *state)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -1496,66 +1448,62 @@ int xsupgui_request_get_in_use_state(char *root_cmd, char *child_cmd, char *valu
 	int retval = REQUEST_SUCCESS;
 	int err = 0;
 
-	if ((root_cmd == NULL) || (child_cmd == NULL) || (value == NULL) || (state == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
+	if ((root_cmd == NULL) || (child_cmd == NULL) || (value == NULL)
+	    || (state == NULL))
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*state) = FALSE;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)root_cmd, NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) root_cmd, NULL);
+	if (t == NULL) {
 		retval = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)child_cmd, (xmlChar *)value) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) child_cmd, (xmlChar *) value) ==
+	    NULL) {
 		retval = IPC_ERROR_CANT_CREATE_INT_NODE;
 		goto done;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		retval = err;
 		goto done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
 	n = xsupgui_request_find_node(n->children, resp_root);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
 	n = n->children;
- 
+
 	t = xsupgui_request_find_node(n, resp_child);
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -1564,7 +1512,7 @@ int xsupgui_request_get_in_use_state(char *root_cmd, char *child_cmd, char *valu
 	(*state) = atoi((char *)content);
 	xmlFree(content);
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -1584,8 +1532,10 @@ done:
  **/
 int xsupgui_request_get_is_connection_in_use(char *conname, int *inuse)
 {
-	return xsupgui_request_get_in_use_state("Get_Is_Connection_In_Use", "Connection_Name", conname,
-		"Is_Connection_In_Use", "Use_State", inuse);
+	return xsupgui_request_get_in_use_state("Get_Is_Connection_In_Use",
+						"Connection_Name", conname,
+						"Is_Connection_In_Use",
+						"Use_State", inuse);
 }
 
 /**
@@ -1601,8 +1551,10 @@ int xsupgui_request_get_is_connection_in_use(char *conname, int *inuse)
  **/
 int xsupgui_request_get_is_profile_in_use(char *profname, int *inuse)
 {
-	return xsupgui_request_get_in_use_state("Get_Is_Profile_In_Use", "Profile_Name", profname,
-		"Is_Profile_In_Use", "Use_State", inuse);
+	return xsupgui_request_get_in_use_state("Get_Is_Profile_In_Use",
+						"Profile_Name", profname,
+						"Is_Profile_In_Use",
+						"Use_State", inuse);
 }
 
 /**
@@ -1618,8 +1570,10 @@ int xsupgui_request_get_is_profile_in_use(char *profname, int *inuse)
  **/
 int xsupgui_request_get_is_trusted_server_in_use(char *tsname, int *inuse)
 {
-	return xsupgui_request_get_in_use_state("Get_Is_Trusted_Server_In_Use", "Trusted_Server_Name", tsname,
-		"Is_Trusted_Server_In_Use", "Use_State", inuse);
+	return xsupgui_request_get_in_use_state("Get_Is_Trusted_Server_In_Use",
+						"Trusted_Server_Name", tsname,
+						"Is_Trusted_Server_In_Use",
+						"Use_State", inuse);
 }
 
 /**
@@ -1633,7 +1587,9 @@ int xsupgui_request_get_is_trusted_server_in_use(char *tsname, int *inuse)
  **/
 int xsupgui_request_get_are_administrator(int *admin)
 {
-	return xsupgui_request_get_some_value(NULL, "Get_Are_Administrator", "Are_Administrator", "Administrator", admin);
+	return xsupgui_request_get_some_value(NULL, "Get_Are_Administrator",
+					      "Are_Administrator",
+					      "Administrator", admin);
 }
 
 /**
@@ -1658,91 +1614,85 @@ int xsupgui_request_enum_smartcard_readers(char ***readers)
 	int done = 0, err = 0;
 	int count = 0;
 
-	if (readers == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (readers == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) 
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto request_done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Enum_Smartcard_Readers", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Enum_Smartcard_Readers", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto request_done;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto request_done;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto request_done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto request_done;
 	}
 
 	n = xsupgui_request_find_node(n->children, "Smartcard_Readers");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto request_done;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	t = n->children;
-	
-	while (t != NULL)
-	{
+
+	while (t != NULL) {
 		t = xsupgui_request_find_node(t, "Reader");
 
-		if (t != NULL)
-		{
-			count ++;
+		if (t != NULL) {
+			count++;
 
-			readerlist = realloc(readerlist, count * (sizeof(char *)));
-			if (readerlist == NULL) 
-			{
+			readerlist =
+			    realloc(readerlist, count * (sizeof(char *)));
+			if (readerlist == NULL) {
 				done = IPC_ERROR_REQUEST_FAILED;
 				goto request_done;
 			}
 
 			value = (char *)xmlNodeGetContent(t);
 
-			readerlist[(count-1)] = _strdup(value);
+			readerlist[(count - 1)] = _strdup(value);
 			xmlFree(value);
 			t = t->next;
 		}
 	}
 
-	count ++;
+	count++;
 	readerlist = realloc(readerlist, count * (sizeof(char *)));
-	readerlist[(count-1)] = NULL;   // Our terminator.
+	readerlist[(count - 1)] = NULL;	// Our terminator.
 
 	(*readers) = readerlist;
 
-request_done:
-	if (doc != NULL) xmlFreeDoc(doc);
-	if (retdoc != NULL) xmlFreeDoc(retdoc);
+ request_done:
+	if (doc != NULL)
+		xmlFreeDoc(doc);
+	if (retdoc != NULL)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -1754,8 +1704,7 @@ int xsupgui_request_free_enum_smartcard_readers(char ***readers)
 
 	readerlist = (*readers);
 
-	while (readerlist[i] != NULL)
-	{
+	while (readerlist[i] != NULL) {
 		free(readerlist[i]);
 		i++;
 	}
@@ -1765,7 +1714,6 @@ int xsupgui_request_free_enum_smartcard_readers(char ***readers)
 
 	return 0;
 }
-
 
 /**
  * \brief Store the logon username and password.  (Usually used with something like GINA or PAM.)
@@ -1786,25 +1734,24 @@ int xsupgui_request_set_logon_upw(char *username, char *password)
 	char *temp = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) 
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto request_set_upw_done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Store_Logon_Creds", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Store_Logon_Creds", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto request_set_upw_done;
 	}
 
 	xsupgui_xml_common_convert_amp(username, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Username", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Username", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
 		goto request_set_upw_done;
@@ -1812,8 +1759,8 @@ int xsupgui_request_set_logon_upw(char *username, char *password)
 	free(temp);
 
 	xsupgui_xml_common_convert_amp(password, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Password", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Password", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
 		goto request_set_upw_done;
@@ -1821,32 +1768,30 @@ int xsupgui_request_set_logon_upw(char *username, char *password)
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto request_set_upw_done;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto request_set_upw_done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto request_set_upw_done;
 	}
 
 	done = xsupgui_request_is_ack(retdoc);
 
-request_set_upw_done:
-	if (doc != NULL) xmlFreeDoc(doc);
-	if (retdoc != NULL) xmlFreeDoc(retdoc);
+ request_set_upw_done:
+	if (doc != NULL)
+		xmlFreeDoc(doc);
+	if (retdoc != NULL)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }

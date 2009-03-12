@@ -21,4 +21,4 @@ int xsupconfig_defaults_create_connection(config_connection **);
 int xsupconfig_defaults_create_profile(config_profiles **);
 int xsupconfig_defaults_create_plugin(config_plugins **);
 
-#endif // __XSUPCONFIG_DEFAULTS_H__
+#endif				// __XSUPCONFIG_DEFAULTS_H__

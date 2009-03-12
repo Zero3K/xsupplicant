@@ -12,7 +12,7 @@
 
 #ifndef WINDOWS
 #include <stdint.h>
-#endif // WINDOWS
+#endif				// WINDOWS
 
 #include "xsupgui_xml_common.h"
 #include "src/xsup_common.h"
@@ -42,16 +42,16 @@ xmlDocPtr xsupgui_xml_common_build_msg()
 	xmlNodePtr n = NULL;
 
 	doc = xmlNewDoc(BAD_CAST "1.0");
-	if (doc == NULL) return NULL;
+	if (doc == NULL)
+		return NULL;
 
 	n = xmlNewNode(NULL, BAD_CAST "xsup_ipc");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		xmlFreeDoc(doc);
 		return NULL;
 	}
 
-	xmlNewProp(n, (xmlChar *)"Version", (xmlChar *)CMD_VERSION);
+	xmlNewProp(n, (xmlChar *) "Version", (xmlChar *) CMD_VERSION);
 	xmlDocSetRootElement(doc, n);
 
 	return doc;
@@ -68,7 +68,7 @@ xmlDocPtr xsupgui_xml_common_build_msg()
  *               pointed to by xmlbuf.
  * \retval NULL   An error.
  **/
-xmlDocPtr xsupgui_xml_common_validate_msg(xmlChar *xmlbuf, int buffersize)
+xmlDocPtr xsupgui_xml_common_validate_msg(xmlChar * xmlbuf, int buffersize)
 {
 	xmlDocPtr doc;
 	xmlNodePtr n;
@@ -77,8 +77,7 @@ xmlDocPtr xsupgui_xml_common_validate_msg(xmlChar *xmlbuf, int buffersize)
 	// Note: We're building a tree from an xmlChar * here... maybe it's better to use
 	// xmlRecoverDoc instead?
 	doc = xmlReadMemory((char *)xmlbuf, buffersize, "ipc.xml", NULL, 0);
-	if (doc == NULL) 
-	{
+	if (doc == NULL) {
 #ifdef XML_COMMON_DEBUG
 		printf("Bad document!\n");
 #endif
@@ -86,8 +85,7 @@ xmlDocPtr xsupgui_xml_common_validate_msg(xmlChar *xmlbuf, int buffersize)
 	}
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) 
-	{
+	if (n == NULL) {
 #ifdef XML_COMMON_DEBUG
 		printf("Couldn't find root node!\n");
 #endif
@@ -95,9 +93,8 @@ xmlDocPtr xsupgui_xml_common_validate_msg(xmlChar *xmlbuf, int buffersize)
 		return NULL;
 	}
 
-	prop = xmlGetProp(n, (xmlChar *)"Version");
-	if (prop == NULL)
-	{
+	prop = xmlGetProp(n, (xmlChar *) "Version");
+	if (prop == NULL) {
 #ifdef XML_COMMON_DEBUG
 		printf("No version property found!\n");
 #endif
@@ -105,8 +102,7 @@ xmlDocPtr xsupgui_xml_common_validate_msg(xmlChar *xmlbuf, int buffersize)
 		return NULL;
 	}
 
-	if (strcmp((char *)prop, CMD_VERSION) != 0)
-	{
+	if (strcmp((char *)prop, CMD_VERSION) != 0) {
 		xmlFreeDoc(doc);
 #ifdef XML_COMMON_DEBUG
 		printf("Invalid version!  %s != %s!\n", CMD_VERSION, prop);
@@ -137,40 +133,32 @@ int xsupgui_xml_common_convert_amp(char *instr, char **outstr)
 	char *newstr = NULL;
 	int newi = 0;
 
-	if (instr == NULL)
-	{
+	if (instr == NULL) {
 		(*outstr) = NULL;
 		return 0;
 	}
 
-	for (i = 0; i < strlen(instr); i++)
-	{
-		if (instr[i] == '&') numamps++;
+	for (i = 0; i < strlen(instr); i++) {
+		if (instr[i] == '&')
+			numamps++;
 	}
 
-	if (numamps == 0) 
-	{
+	if (numamps == 0) {
 		(*outstr) = _strdup(instr);
 		return 0;
 	}
-
 	// Otherwise, we need to do some conversion, and add some extra space.
-	newstr = Malloc(strlen(instr) + (numamps * 5));  // Will result in more than we need.
-	if (newstr == NULL)
-	{
+	newstr = Malloc(strlen(instr) + (numamps * 5));	// Will result in more than we need.
+	if (newstr == NULL) {
 		outstr = NULL;
 		return -1;
 	}
 
-	for (i = 0; i < strlen(instr); i++)
-	{
-		if (instr[i] != '&')
-		{
+	for (i = 0; i < strlen(instr); i++) {
+		if (instr[i] != '&') {
 			newstr[newi] = instr[i];
 			newi++;
-		}
-		else
-		{
+		} else {
 			// Put in the &amp;
 			strcpy(&newstr[newi], "&amp;");
 			newi += strlen("&amp;");

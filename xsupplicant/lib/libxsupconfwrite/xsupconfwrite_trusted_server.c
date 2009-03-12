@@ -34,7 +34,6 @@
 // Uncomment the #define below to enable textual debug output.
 // #define WRITE_TS_DEBUG 1
 
-
 /**
  * \brief Take the variables that are part of the config_trusted_server structure, and
  *        convert them to be a tree of XML nodes that libxml2 can work with.
@@ -49,32 +48,34 @@
  * \retval xmlNodePtr containing the <Trusted_Server> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server *cts, 
-													 char write_all)
+xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
+						    * cts, char write_all)
 {
 	xmlNodePtr tsnode = NULL;
 	char *temp = NULL;
 	int i = 0;
-	
-	if (cts == NULL) return NULL;
+
+	if (cts == NULL)
+		return NULL;
 
 	// Create the root node for the <Trusted_Server> block.
-	tsnode = xmlNewNode(NULL, (xmlChar *)"Trusted_Server");
-	if (tsnode == NULL)
-	{
+	tsnode = xmlNewNode(NULL, (xmlChar *) "Trusted_Server");
+	if (tsnode == NULL) {
 #ifdef WRITE_TS_CONFIG
-		printf("Couldn't allocate memory to store <Trusted_Server> block!\n");
+		printf
+		    ("Couldn't allocate memory to store <Trusted_Server> block!\n");
 #endif
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (cts->name != NULL))
-	{
+	if ((write_all == TRUE) || (cts->name != NULL)) {
 		xsupconfwrite_convert_amp(cts->name, &temp);
-		if (xmlNewChild(tsnode, NULL, (xmlChar *)"Name", (xmlChar *)temp) == NULL)
-		{
+		if (xmlNewChild
+		    (tsnode, NULL, (xmlChar *) "Name",
+		     (xmlChar *) temp) == NULL) {
 #ifdef WRITE_TS_CONFIG
-			printf("Couldn't allocate memory to store <Name> node!\n");
+			printf
+			    ("Couldn't allocate memory to store <Name> node!\n");
 #endif
 			xmlFreeNode(tsnode);
 			free(temp);
@@ -84,13 +85,14 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (cts->common_name != NULL))
-	{
+	if ((write_all == TRUE) || (cts->common_name != NULL)) {
 		xsupconfwrite_convert_amp(cts->common_name, &temp);
-		if (xmlNewChild(tsnode, NULL, (xmlChar *)"Common_Name", (xmlChar *)temp) == NULL)
-		{
+		if (xmlNewChild
+		    (tsnode, NULL, (xmlChar *) "Common_Name",
+		     (xmlChar *) temp) == NULL) {
 #ifdef WRITE_TS_CONFIG
-			printf("Couldn't allocate memory to store <Common_Name> node!\n");
+			printf
+			    ("Couldn't allocate memory to store <Common_Name> node!\n");
 #endif
 			xmlFreeNode(tsnode);
 			free(temp);
@@ -100,13 +102,14 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (cts->store_type != NULL))
-	{
+	if ((write_all == TRUE) || (cts->store_type != NULL)) {
 		xsupconfwrite_convert_amp(cts->store_type, &temp);
-		if (xmlNewChild(tsnode, NULL, (xmlChar *)"Store_Type", (xmlChar *)temp) == NULL)
-		{
+		if (xmlNewChild
+		    (tsnode, NULL, (xmlChar *) "Store_Type",
+		     (xmlChar *) temp) == NULL) {
 #ifdef WRITE_TS_CONFIG
-			printf("Couldn't allocate memory to store <Store_Type> node!\n");
+			printf
+			    ("Couldn't allocate memory to store <Store_Type> node!\n");
 #endif
 			free(temp);
 			xmlFreeNode(tsnode);
@@ -116,15 +119,15 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 		free(temp);
 	}
 
-	for (i = 0; i < cts->num_locations; i++)
-	{
-		if ((write_all == TRUE) || (cts->location[i] != NULL))
-		{
+	for (i = 0; i < cts->num_locations; i++) {
+		if ((write_all == TRUE) || (cts->location[i] != NULL)) {
 			xsupconfwrite_convert_amp(cts->location[i], &temp);
-			if (xmlNewChild(tsnode, NULL, (xmlChar *)"Location", (xmlChar *)temp) == NULL)
-			{
+			if (xmlNewChild
+			    (tsnode, NULL, (xmlChar *) "Location",
+			     (xmlChar *) temp) == NULL) {
 #ifdef WRITE_TS_CONFIG
-				printf("Couldn't allocate memory to store <Location> node!\n");
+				printf
+				    ("Couldn't allocate memory to store <Location> node!\n");
 #endif
 				free(temp);
 				xmlFreeNode(tsnode);
@@ -136,15 +139,17 @@ xmlNodePtr xsupconfwrite_trusted_server_create_tree(struct config_trusted_server
 	}
 
 	if (xsupconfwrite_common_write_bool(tsnode, "Volatile",
-		TEST_FLAG(cts->flags, CONFIG_VOLATILE_SERVER), FALSE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(cts->flags,
+						      CONFIG_VOLATILE_SERVER),
+					    FALSE, write_all, FALSE) == NULL) {
 		xmlFreeNode(tsnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(tsnode, "Exact_Common_Name",
-		TEST_FLAG(cts->flags, CONFIG_EXACT_COMMON_NAME), FALSE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(cts->flags,
+						      CONFIG_EXACT_COMMON_NAME),
+					    FALSE, write_all, FALSE) == NULL) {
 		xmlFreeNode(tsnode);
 		return NULL;
 	}

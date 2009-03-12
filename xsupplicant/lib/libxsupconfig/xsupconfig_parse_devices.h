@@ -15,4 +15,4 @@ extern parser devices[];
 
 void *xsupconfig_parse_devices(void **, uint8_t, xmlNodePtr);
 
-#endif // __XSUPCONFIG_PARSE_DEVICES_H__
+#endif				// __XSUPCONFIG_PARSE_DEVICES_H__

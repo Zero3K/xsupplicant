@@ -21,10 +21,10 @@
 #define PEAPv1_SESSION_KEY_CONST_SIZE  22
 
 struct phase2_data {
-  eap_sm *sm;
-  uint8_t *result_data;
-  uint16_t result_size;
-  int peap_version;
+	eap_sm *sm;
+	uint8_t *result_data;
+	uint16_t result_size;
+	int peap_version;
 };
 
 uint8_t peap_phase2_init(eap_type_data *);

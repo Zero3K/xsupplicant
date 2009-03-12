@@ -12,11 +12,10 @@
  *
  * \author chris@open1x.org
  *
- **/
+ **/  
 #ifndef XSUPPLUGIN_LOGGING_TYPE_H_
 #define XSUPPLUGIN_LOGGING_TYPE_H_
-
-void log_hook_full_debug(char *msg);
-
-#endif // XSUPPLUGIN_LOGGING_TYPE_H_
-
+void log_hook_full_debug(char *msg);
+
+#endif				// XSUPPLUGIN_LOGGING_TYPE_H_
+    

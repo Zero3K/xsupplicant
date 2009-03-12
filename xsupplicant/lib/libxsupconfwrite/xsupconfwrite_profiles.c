@@ -50,66 +50,77 @@
  * \retval xmlNodePtr containing the <Profile> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_profile_compliance_create_tree(struct config_profiles *profs, 
-														xmlNodePtr parent, char write_all)
+xmlNodePtr xsupconfwrite_profile_compliance_create_tree(struct config_profiles *
+							profs,
+							xmlNodePtr parent,
+							char write_all)
 {
 	xmlNodePtr compliance = NULL;
 
-	compliance = xmlNewChild(parent, NULL, (xmlChar *)"Compliance", NULL);
-	if (compliance == NULL) return NULL;   //ACK!
+	compliance = xmlNewChild(parent, NULL, (xmlChar *) "Compliance", NULL);
+	if (compliance == NULL)
+		return NULL;	//ACK!
 
 	if (xsupconfwrite_common_write_bool(compliance, "Enable",
-		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ENABLE), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->compliance,
+						      TNC_COMPLIANCE_ENABLE),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(compliance);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(compliance, "Personality_Check",
-		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_PERSONALITY_CHECK), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->compliance,
+						      TNC_COMPLIANCE_PERSONALITY_CHECK),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(compliance);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(compliance, "Firewall_Check",
-		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_FIREWALL_CHECK), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->compliance,
+						      TNC_COMPLIANCE_FIREWALL_CHECK),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(compliance);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(compliance, "Anti_Spyware_Check",
-		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_SPYWARE_CHECK), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->compliance,
+						      TNC_COMPLIANCE_ANTI_SPYWARE_CHECK),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(compliance);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(compliance, "Anti_Virus_Check",
-		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_VIRUS_CHECK), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->compliance,
+						      TNC_COMPLIANCE_ANTI_VIRUS_CHECK),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(compliance);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(compliance, "Anti_Phishing_Check",
-		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ANTI_PHISHING_CHECK), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->compliance,
+						      TNC_COMPLIANCE_ANTI_PHISHING_CHECK),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(compliance);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(compliance, "Allow_Full_Scan",
-		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->compliance,
+						      TNC_COMPLIANCE_ALLOW_FULL_SCAN),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(compliance);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(compliance, "Allow_Auto_Update",
-		TEST_FLAG(profs->compliance, TNC_COMPLIANCE_ALLOW_AUTO_UPDATE), TRUE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->compliance,
+						      TNC_COMPLIANCE_ALLOW_AUTO_UPDATE),
+					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(compliance);
 		return NULL;
 	}
@@ -131,32 +142,34 @@ xmlNodePtr xsupconfwrite_profile_compliance_create_tree(struct config_profiles *
  * \retval xmlNodePtr containing the <Profile> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, uint8_t config_type, 
-											 char write_all)
+xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles * profs,
+					     uint8_t config_type,
+					     char write_all)
 {
 	xmlNodePtr profnode = NULL;
 	xmlNodePtr eapnode = NULL;
 	char *temp = NULL;
-	
-	if (profs == NULL) return NULL;
+
+	if (profs == NULL)
+		return NULL;
 
 	// Create the root node for the <Profiles> block.
-	profnode = xmlNewNode(NULL, (xmlChar *)"Profile");
-	if (profnode == NULL)
-	{
+	profnode = xmlNewNode(NULL, (xmlChar *) "Profile");
+	if (profnode == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
 		printf("Couldn't allocate memory to store <Profile> block!\n");
 #endif
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (profs->name != NULL))
-	{
+	if ((write_all == TRUE) || (profs->name != NULL)) {
 		xsupconfwrite_convert_amp(profs->name, &temp);
-		if (xmlNewChild(profnode, NULL, (xmlChar *)"Name", (xmlChar *)temp) == NULL)
-		{
+		if (xmlNewChild
+		    (profnode, NULL, (xmlChar *) "Name",
+		     (xmlChar *) temp) == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
-			printf("Couldn't allocate memory to store <Name> node!\n");
+			printf
+			    ("Couldn't allocate memory to store <Name> node!\n");
 #endif
 			xmlFreeNode(profnode);
 			free(temp);
@@ -166,13 +179,14 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, uint
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (profs->identity != NULL))
-	{
+	if ((write_all == TRUE) || (profs->identity != NULL)) {
 		xsupconfwrite_convert_amp(profs->identity, &temp);
-		if (xmlNewChild(profnode, NULL, (xmlChar *)"Identity", (xmlChar *)temp) == NULL)
-		{
+		if (xmlNewChild
+		    (profnode, NULL, (xmlChar *) "Identity",
+		     (xmlChar *) temp) == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
-			printf("Couldn't allocate memory to store <Identity> node!\n");
+			printf
+			    ("Couldn't allocate memory to store <Identity> node!\n");
 #endif
 			xmlFreeNode(profnode);
 			free(temp);
@@ -183,15 +197,17 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, uint
 	}
 
 	if (xsupconfwrite_common_write_bool(profnode, "Volatile",
-		TEST_FLAG(profs->flags, CONFIG_VOLATILE_PROFILE), FALSE, write_all, FALSE) == NULL)
-	{
+					    TEST_FLAG(profs->flags,
+						      CONFIG_VOLATILE_PROFILE),
+					    FALSE, write_all, FALSE) == NULL) {
 		xmlFreeNode(profnode);
 		return NULL;
 	}
 
-	eapnode = xsupconfwrite_eap_create_tree(profs->method, config_type, write_all);
-	if (eapnode == NULL)
-	{
+	eapnode =
+	    xsupconfwrite_eap_create_tree(profs->method, config_type,
+					  write_all);
+	if (eapnode == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
 		printf("Couldn't allocate memory to store <EAP> node(s)!\n");
 #endif
@@ -199,19 +215,20 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, uint
 		return NULL;
 	}
 
-	if (xmlAddChild(profnode, eapnode) == NULL)
-	{
+	if (xmlAddChild(profnode, eapnode) == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
-		printf("Couldn't add <EAP> node as a child to <Profile> node!\n");
+		printf
+		    ("Couldn't add <EAP> node as a child to <Profile> node!\n");
 #endif
 		xmlFreeNode(profnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_profile_compliance_create_tree(profs, profnode, write_all) == NULL)
-	{
+	if (xsupconfwrite_profile_compliance_create_tree
+	    (profs, profnode, write_all) == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
-		printf("Couldn't add <Compliance> node as a child to <Profiles> node!\n");
+		printf
+		    ("Couldn't add <Compliance> node as a child to <Profiles> node!\n");
 #endif
 		xmlFreeNode(profnode);
 		return NULL;
@@ -234,19 +251,21 @@ xmlNodePtr xsupconfwrite_profile_create_tree(struct config_profiles *profs, uint
  * \retval xmlNodePtr containing the <Profiles> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles *profs, uint8_t config_type,
-													 char write_all, char write_to_disk)
+xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles * profs,
+					      uint8_t config_type,
+					      char write_all,
+					      char write_to_disk)
 {
 	xmlNodePtr profsnode = NULL;
 	xmlNodePtr profnode = NULL;
 	struct config_profiles *cur = NULL;
-	
-	if (profs == NULL) return NULL;
+
+	if (profs == NULL)
+		return NULL;
 
 	// Create the root node for the <Profiles> block.
-	profsnode = xmlNewNode(NULL, (xmlChar *)"Profiles");
-	if (profsnode == NULL)
-	{
+	profsnode = xmlNewNode(NULL, (xmlChar *) "Profiles");
+	if (profsnode == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
 		printf("Couldn't allocate memory to store <Profiles> block!\n");
 #endif
@@ -255,13 +274,13 @@ xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles *profs, uin
 
 	cur = profs;
 
-	while (cur != NULL)
-	{
-		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_PROFILE)) || (write_to_disk == FALSE))
-		{
-			profnode = xsupconfwrite_profile_create_tree(cur, config_type, write_all);
-			if (profnode == NULL)
-			{
+	while (cur != NULL) {
+		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_PROFILE))
+		    || (write_to_disk == FALSE)) {
+			profnode =
+			    xsupconfwrite_profile_create_tree(cur, config_type,
+							      write_all);
+			if (profnode == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
 				printf("Couldn't create <Profile> block!\n");
 #endif
@@ -269,8 +288,7 @@ xmlNodePtr xsupconfwrite_profiles_create_tree(struct config_profiles *profs, uin
 				return NULL;
 			}
 
-			if (xmlAddChild(profsnode, profnode) == NULL)
-			{
+			if (xmlAddChild(profsnode, profnode) == NULL) {
 #ifdef WRITE_PROFILES_CONFIG
 				printf("Couldn't add <Profile> child node!\n");
 #endif

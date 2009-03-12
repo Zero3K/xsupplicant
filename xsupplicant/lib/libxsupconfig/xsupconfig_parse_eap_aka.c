@@ -25,170 +25,173 @@
 #include "xsupconfig_parse_eap_aka.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_aka(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka(void **attr, uint8_t config_type,
+			       xmlNodePtr node)
 {
-  struct config_eap_method *meth = NULL;
+	struct config_eap_method *meth = NULL;
 
-  meth = (*attr);
+	meth = (*attr);
 
-  if (meth == NULL)
-  {
-	meth = xsupconfig_alloc_method(meth, "EAP-AKA");
-	(*attr) = meth;
-  }
-  else
-  {
-	  meth = xsupconfig_alloc_method(meth, "EAP-AKA");
-  }
+	if (meth == NULL) {
+		meth = xsupconfig_alloc_method(meth, "EAP-AKA");
+		(*attr) = meth;
+	} else {
+		meth = xsupconfig_alloc_method(meth, "EAP-AKA");
+	}
 
-  if (meth == NULL) return NULL;
+	if (meth == NULL)
+		return NULL;
 
 #ifdef PARSE_DEBUG
-  printf("Parsing method 'EAP-AKA'.\n");
+	printf("Parsing method 'EAP-AKA'.\n");
 #endif
 
-  meth->method_num = EAP_TYPE_AKA;
-  meth->method_data = malloc(sizeof(struct config_eap_aka));
-  if (meth->method_data == NULL)
-    {
-      printf("Couldn't allocate memory to store EAP-AKA!"
-	     " (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	meth->method_num = EAP_TYPE_AKA;
+	meth->method_data = malloc(sizeof(struct config_eap_aka));
+	if (meth->method_data == NULL) {
+		printf("Couldn't allocate memory to store EAP-AKA!"
+		       " (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  memset(meth->method_data, 0x00, sizeof(struct config_eap_aka));
-  
-  return meth->method_data;
+	memset(meth->method_data, 0x00, sizeof(struct config_eap_aka));
+
+	return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_aka_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_password(void **attr, uint8_t config_type,
+					xmlNodePtr node)
 {
-  struct config_eap_aka *aka = NULL;
-  char *value = NULL;
+	struct config_eap_aka *aka = NULL;
+	char *value = NULL;
 
-  aka = (*attr);
+	aka = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Password for EAP-AKA is '%s'!\n", value);
+	printf("Password for EAP-AKA is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		aka->password = NULL;
-	}
-	else
-	{
+	} else {
 		aka->password = _strdup(value);
 		xmlFree(value);
 	}
 
-  return aka;
+	return aka;
 }
 
-void *xsupconfig_parse_eap_aka_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_enc_password(void **attr, uint8_t config_type,
+					    xmlNodePtr node)
 {
-  struct config_eap_aka *aka = NULL;
-  char *value = NULL;
-  uint16_t size = 0;
+	struct config_eap_aka *aka = NULL;
+	char *value = NULL;
+	uint16_t size = 0;
 
-  aka = (*attr);
+	aka = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Password for EAP-AKA is '%s'!\n", value);
+	printf("Password for EAP-AKA is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		return aka;
 	}
 
-  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&aka->password, &size) != 0)
-  {
-	  xmlFree(value);
-	  aka->password = NULL;
-	  return aka;
-  }
+	if (pwcrypt_decrypt
+	    (config_type, (uint8_t *) value, strlen(value),
+	     (uint8_t **) & aka->password, &size) != 0) {
+		xmlFree(value);
+		aka->password = NULL;
+		return aka;
+	}
 
-  if ((aka->password != NULL) && (strlen(aka->password) == 0))
-  {
-	  FREE(aka->password);
-  }
+	if ((aka->password != NULL) && (strlen(aka->password) == 0)) {
+		FREE(aka->password);
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return aka;
+	return aka;
 }
 
-void *xsupconfig_parse_eap_aka_reader(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_reader(void **attr, uint8_t config_type,
+				      xmlNodePtr node)
 {
-  struct config_eap_aka *aka = NULL;
-  char *value = NULL;
+	struct config_eap_aka *aka = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  aka = (*attr);
+	aka = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Reader for EAP-AKA  is '%s'!\n", value);
+	printf("Reader for EAP-AKA  is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		aka->reader = NULL;
-	}
-	else
-	{
+	} else {
 		aka->reader = _strdup(value);
 		xmlFree(value);
 	}
 
-  return aka;
+	return aka;
 }
 
-void *xsupconfig_parse_eap_aka_auto_realm(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_aka_auto_realm(void **attr, uint8_t config_type,
+					  xmlNodePtr node)
 {
-  struct config_eap_aka *aka = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
+	struct config_eap_aka *aka = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
 
-  aka = (*attr);
+	aka = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Auto Realm for EAP-AKA is '%s'!\n", value);
+	printf("Auto Realm for EAP-AKA is '%s'!\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result > 1)
-    {
-      xsupconfig_common_log("Invalid value for 'Auto_Realm', (Line %ld) using default of "
-	     "no.\n", xsupconfig_parse_get_line_num());
-      aka->auto_realm = FALSE;
-    }
-  else
-    {
-      aka->auto_realm = result;
-    }
+	if (result > 1) {
+		xsupconfig_common_log
+		    ("Invalid value for 'Auto_Realm', (Line %ld) using default of "
+		     "no.\n", xsupconfig_parse_get_line_num());
+		aka->auto_realm = FALSE;
+	} else {
+		aka->auto_realm = result;
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return aka;
+	return aka;
 }
 
 parser eap_aka[] = {
-  {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_password},
-  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_enc_password},
-  {"Auto_Realm", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_auto_realm},
-  {"Reader", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_aka_reader},
-  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
+	{"Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_aka_password}
+	,
+	{"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_aka_enc_password}
+	,
+	{"Auto_Realm", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_aka_auto_realm}
+	,
+	{"Reader", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_aka_reader}
+	,
+	{"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing}
+	,
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

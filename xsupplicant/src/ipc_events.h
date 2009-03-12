@@ -26,4 +26,4 @@ int ipc_events_scan_complete(context *);
 // "Quicker" version of the malloc failure error.
 #define ipc_events_malloc_failed(ctx) ipc_events_error(ctx, IPC_EVENT_ERROR_MALLOC, (char *)__FUNCTION__)
 
-#endif // __IPC_EVENTS_H__
+#endif				// __IPC_EVENTS_H__

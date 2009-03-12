@@ -14,10 +14,10 @@
 /* Error codes that we can get for various pieces of xsupplicant. */
 
 // If we return >=0 then there wasn't an error.
-#define XDATACHANGED       9    // We updated config data, instead of adding new data.
-#define XPROMPT            2    // We asked the GUI to prompt for something.
-#define XDATA              1    // There is data to return.
-#define XNEWESSID          3    // We have a new ESSID.
+#define XDATACHANGED       9	// We updated config data, instead of adding new data.
+#define XPROMPT            2	// We asked the GUI to prompt for something.
+#define XDATA              1	// There is data to return.
+#define XNEWESSID          3	// We have a new ESSID.
 #define XENONE             0
 
 // Error numbers -1 to -10 are socket related errors.
@@ -30,13 +30,13 @@
 #define XGOODKEYFRAME      6
 #define XEBADKEY          -7
 #define XNOMOREINTS        2
-#define XINVALIDINT        3  // This isn't an error.  It is for situations
-                              // where an interface index of 0 is invalid.
-#define XECANTPASSIVE     -8  ///< Can't do a passive scan.
+#define XINVALIDINT        3	// This isn't an error.  It is for situations
+			      // where an interface index of 0 is invalid.
+#define XECANTPASSIVE     -8	///< Can't do a passive scan.
 
 // Error numbers -11 through -20 are for misc. errors.
 #define XECONFIGFILEFAIL  -11
-#define XECONFIGPARSEFAIL -12 
+#define XECONFIGPARSEFAIL -12
 #define XENOTHING_TO_DO   -13
 #define XEBADCONFIG       -14
 #define XEBADPACKETSIZE   -15
@@ -47,11 +47,11 @@
 #define XEINNERDONE       -20
 
 // Error numbers -21 through -30 are memory related errors.
-#define XEMALLOC          -21   // Malloc error.
-#define XENOBUFFER        -22   // There was a buffer that was empty when it
-                                // shouldn't have been!
-#define XENOUSERDATA      -23   // Our userdata structure was NULL!
-#define XECACHEMISS       -24   // We had a PMK cache miss.
+#define XEMALLOC          -21	// Malloc error.
+#define XENOBUFFER        -22	// There was a buffer that was empty when it
+				// shouldn't have been!
+#define XENOUSERDATA      -23	// Our userdata structure was NULL!
+#define XECACHEMISS       -24	// We had a PMK cache miss.
 
 // Error numbers -31 through -40 are additional general errors.
 #define XECANTFINDSERVER   -31
@@ -99,5 +99,4 @@
 // Special type for Windows to know the timer expired.
 #define XEWINTIMEREXPIRED -254
 
-
-#endif // __XSUP_ERR_H__
+#endif				// __XSUP_ERR_H__

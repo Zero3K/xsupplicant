@@ -15,4 +15,4 @@ extern parser eap_fast[];
 
 void *xsupconfig_parse_eap_fast(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_EAP_FAST_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_FAST_H__

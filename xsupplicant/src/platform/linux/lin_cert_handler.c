@@ -34,7 +34,6 @@
 #include "src/xsup_debug.h"
 #include "../cert_handler.h"
 
-
 ////////////////////// Macros ////////////////////////
 #define XENONE 0
 #define S_IAMB  0x1FF
@@ -57,27 +56,26 @@
 #define ERROR_X509_WRITE (-1)
 #define ERROR_FILE_OPEN (-1)
 //////////////// Data Structures /////////////////////
-typedef struct _pemfl_list
-{
-        int fl_index;
-        char * filename;
-        struct _pemfl_list *next;
+typedef struct _pemfl_list {
+	int fl_index;
+	char *filename;
+	struct _pemfl_list *next;
 
-}PEMFL_LIST;
+} PEMFL_LIST;
 ///////////////////////////////////////////////////////
 /////////////////////// GLOBALS ///////////////////////
 char gStorePath[300];
-PEMFL_LIST * pl_ca_list;
+PEMFL_LIST *pl_ca_list;
 X509 *cur_X509_Obj = NULL;
 ///////////////////////////////////////////////////////
 /////////////// Utils /////////////////////////////////
-char * X509_NAME_to_str(X509_NAME *name,int fmt);
-char * getToken(char *s_str,char * lbuff);
-int get_pemfl_count(const char * pathname);
-time_t ASN1_UTCTIME_get(const ASN1_UTCTIME *s);
-char *getFriendlyname(char *sO,int iI);
-char *getIssuername(char * location);
-int get_pemfl_count_and_build_list(const char * pathname);
+char *X509_NAME_to_str(X509_NAME * name, int fmt);
+char *getToken(char *s_str, char *lbuff);
+int get_pemfl_count(const char *pathname);
+time_t ASN1_UTCTIME_get(const ASN1_UTCTIME * s);
+char *getFriendlyname(char *sO, int iI);
+char *getIssuername(char *location);
+int get_pemfl_count_and_build_list(const char *pathname);
 ///////////////////////////////////////////////////////
 
 /**
@@ -90,39 +88,33 @@ int get_pemfl_count_and_build_list(const char * pathname);
 
 int cert_handler_init()
 {
-        DIR * dirp = NULL;
+	DIR *dirp = NULL;
 
-        dirp = opendir("/root/xsupplicant");
+	dirp = opendir("/root/xsupplicant");
 
-        if(dirp)
-        {
-                closedir(dirp);
-                dirp = NULL;
-                dirp = opendir("/root/xsupplicant/certs");
-                if(dirp)
-                {
-                        closedir(dirp);
-                        dirp = NULL;
-                }
-                else
-                {
-                        if(mkdir("/root/xsupplicant/certs",MODE_WR_UNMASKED))
-                                return XEGENERROR;
-                }
-
- 	    }
-        else if(!mkdir("/root/xsupplicant",MODE_WR_UNMASKED))
-        {
-                if(mkdir("/root/xsupplicant/certs",MODE_WR_UNMASKED))
-		               	return XEGENERROR;
+	if (dirp) {
+		closedir(dirp);
+		dirp = NULL;
+		dirp = opendir("/root/xsupplicant/certs");
+		if (dirp) {
+			closedir(dirp);
+			dirp = NULL;
+		} else {
+			if (mkdir("/root/xsupplicant/certs", MODE_WR_UNMASKED))
+				return XEGENERROR;
 		}
-        else return XEGENERROR;
 
-		strcpy(gStorePath,"/root/xsupplicant/certs");
-        SSL_library_init();
-        SSL_load_error_strings();
+	} else if (!mkdir("/root/xsupplicant", MODE_WR_UNMASKED)) {
+		if (mkdir("/root/xsupplicant/certs", MODE_WR_UNMASKED))
+			return XEGENERROR;
+	} else
+		return XEGENERROR;
 
-        return XENONE;
+	strcpy(gStorePath, "/root/xsupplicant/certs");
+	SSL_library_init();
+	SSL_load_error_strings();
+
+	return XENONE;
 }
 
 /**
@@ -130,12 +122,11 @@ int cert_handler_init()
  **/
 void cert_handler_deinit()
 {
-	PEMFL_LIST * t = NULL;
-	
-	while(pl_ca_list)	
-	{
+	PEMFL_LIST *t = NULL;
+
+	while (pl_ca_list) {
 		t = pl_ca_list->next;
-		if(pl_ca_list->filename)
+		if (pl_ca_list->filename)
 			FREE(pl_ca_list->filename);
 		FREE(pl_ca_list);
 		pl_ca_list = t;
@@ -159,9 +150,9 @@ void cert_handler_deinit()
  * \retval -1 on failure
  **/
 #if 0
-int cert_handler_get_info(PCCERT_CONTEXT  pCertContext, cert_info *certinfo)
+int cert_handler_get_info(PCCERT_CONTEXT pCertContext, cert_info * certinfo)
 {
-  return -1;
+	return -1;
 }
 #endif
 
@@ -176,11 +167,11 @@ int cert_handler_get_info(PCCERT_CONTEXT  pCertContext, cert_info *certinfo)
  * \retval -1 on error
  **/
 /////////////////////////////////////////////////////////////////////////
-//  	THIS FUNCTION IS NOT USED
+//      THIS FUNCTION IS NOT USED
 /////////////////////////////////////////////////////////////////////////
-int cert_handler_get_info_from_name(char *certname, cert_info *certinfo)
+int cert_handler_get_info_from_name(char *certname, cert_info * certinfo)
 {
-  return -1;
+	return -1;
 }
 
 /**
@@ -188,16 +179,21 @@ int cert_handler_get_info_from_name(char *certname, cert_info *certinfo)
  *
  * @param[in] cinfo   A pointer to the structure that we want to free the members of.
  **/
-void cert_handler_free_cert_info(cert_info *cinfo)
+void cert_handler_free_cert_info(cert_info * cinfo)
 {
-	if(cinfo)
-	{
-		if(cinfo->C)	FREE(cinfo->C);
-		if(cinfo->CN) FREE(cinfo->CN);
-		if(cinfo->O) FREE(cinfo->O);
-		if(cinfo->L) FREE(cinfo->L);
-		if(cinfo->OU) FREE(cinfo->OU);
-		if(cinfo->S) FREE(cinfo->S);
+	if (cinfo) {
+		if (cinfo->C)
+			FREE(cinfo->C);
+		if (cinfo->CN)
+			FREE(cinfo->CN);
+		if (cinfo->O)
+			FREE(cinfo->O);
+		if (cinfo->L)
+			FREE(cinfo->L);
+		if (cinfo->OU)
+			FREE(cinfo->OU);
+		if (cinfo->S)
+			FREE(cinfo->S);
 	}
 	cinfo = NULL;
 }
@@ -212,10 +208,10 @@ void cert_handler_free_cert_info(cert_info *cinfo)
 int cert_handler_num_root_ca_certs()
 {
 	int cnt = 0;
-	debug_printf(DEBUG_INT,"NUM_ROOT_CA_CERTS:cnt[%s]\n",gStorePath);
+	debug_printf(DEBUG_INT, "NUM_ROOT_CA_CERTS:cnt[%s]\n", gStorePath);
 	cnt = get_pemfl_count(gStorePath);
-	debug_printf(DEBUG_INT,"NUM_ROOT_CA_CERTS:cnt[%d]\n",cnt);
-  	return cnt;
+	debug_printf(DEBUG_INT, "NUM_ROOT_CA_CERTS:cnt[%d]\n", cnt);
+	return cnt;
 }
 
 /**
@@ -224,24 +220,25 @@ int cert_handler_num_root_ca_certs()
  * @param[in] numcas   The number of CAs that are represented in the enumeration.
  * @param[in] cas   The array of CA names.
  **/
-void cert_handler_free_cert_enum(int numcas, cert_enum **cas)
+void cert_handler_free_cert_enum(int numcas, cert_enum ** cas)
 {
 	cert_enum *casa = NULL;
 	int i = 0;
 
 	casa = (*cas);
 
-	for (i = 0; i < numcas; i++)
-	{
-		if(casa)
-		{
-			if (casa[i].certname != NULL) FREE(casa[i].certname);
-                	if (casa[i].friendlyname != NULL) FREE(casa[i].friendlyname);
-                	if (casa[i].issuer != NULL) FREE(casa[i].issuer);
-		}
-		else casa = NULL;
+	for (i = 0; i < numcas; i++) {
+		if (casa) {
+			if (casa[i].certname != NULL)
+				FREE(casa[i].certname);
+			if (casa[i].friendlyname != NULL)
+				FREE(casa[i].friendlyname);
+			if (casa[i].issuer != NULL)
+				FREE(casa[i].issuer);
+		} else
+			casa = NULL;
 	}
-	if(*cas)
+	if (*cas)
 		FREE((*cas));
 	(*cas) = NULL;
 }
@@ -261,55 +258,62 @@ void cert_handler_free_cert_enum(int numcas, cert_enum **cas)
  * \retval -1 on error
  * \retval 0 on success
  **/
-int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
+int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 {
 	cert_enum *casa = NULL;
-	PEMFL_LIST * tmp_ca_list = NULL;;
-	int cert_index = 0,sz = 0,i = 0;
+	PEMFL_LIST *tmp_ca_list = NULL;;
+	int cert_index = 0, sz = 0, i = 0;
 	char tmp_str[300];
- 	cert_info ci;
+	cert_info ci;
 
-	
-	debug_printf(DEBUG_INT,"TRACE-1:numcas[%d]\n",*numcas);
-	if(!(*numcas)) 	return NO_CERTS_IN_STORE;	// No certs in store
+	debug_printf(DEBUG_INT, "TRACE-1:numcas[%d]\n", *numcas);
+	if (!(*numcas))
+		return NO_CERTS_IN_STORE;	// No certs in store
 
-	get_pemfl_count_and_build_list(gStorePath);	
-	debug_printf(DEBUG_INT,"TRACE-2:gStorePath[%s]\n",gStorePath);
-	if(!pl_ca_list) return EMPTY_CERT_LIST;
+	get_pemfl_count_and_build_list(gStorePath);
+	debug_printf(DEBUG_INT, "TRACE-2:gStorePath[%s]\n", gStorePath);
+	if (!pl_ca_list)
+		return EMPTY_CERT_LIST;
 	tmp_ca_list = pl_ca_list;
-	casa = (cert_enum*)malloc(sizeof(cert_enum)*(*numcas + 1));
-	if(!casa) return ERROR_ALLOC;		// Unable to allocate memory.
-	
-	while(tmp_ca_list && cert_index <= *numcas)
-	{
+	casa = (cert_enum *) malloc(sizeof(cert_enum) * (*numcas + 1));
+	if (!casa)
+		return ERROR_ALLOC;	// Unable to allocate memory.
+
+	while (tmp_ca_list && cert_index <= *numcas) {
 		i = 0;
 		time_t ctm;
-       		struct tm *tm_local;
+		struct tm *tm_local;
 
 		casa[cert_index].storetype = strdup("LINUX");
 		casa[cert_index].location = tmp_ca_list->filename;
 		strcpy(tmp_str, tmp_ca_list->filename);
-		sz = strlen( tmp_ca_list->filename);
-		while(tmp_str[sz-1]!= '/') sz--;
-		casa[cert_index].certname = (char*)malloc(sizeof(char)* (strlen(tmp_ca_list->filename)-sz+1));
-		while(tmp_str[sz]) casa[cert_index].certname[i++] = tmp_str[sz++];
+		sz = strlen(tmp_ca_list->filename);
+		while (tmp_str[sz - 1] != '/')
+			sz--;
+		casa[cert_index].certname =
+		    (char *)malloc(sizeof(char) *
+				   (strlen(tmp_ca_list->filename) - sz + 1));
+		while (tmp_str[sz])
+			casa[cert_index].certname[i++] = tmp_str[sz++];
 		casa[cert_index].certname[i] = '\0';
-		cert_handler_get_info_from_store(NULL,tmp_ca_list->filename, &ci);
-		casa[cert_index].friendlyname = getFriendlyname(ci.O,tmp_ca_list->fl_index);				
+		cert_handler_get_info_from_store(NULL, tmp_ca_list->filename,
+						 &ci);
+		casa[cert_index].friendlyname =
+		    getFriendlyname(ci.O, tmp_ca_list->fl_index);
 		casa[cert_index].commonname = ci.CN;
 		casa[cert_index].issuer = getIssuername(tmp_ca_list->filename);
 		ctm = time(NULL);
-       	ctm -= ctm%(60*60*24);
-       	ctm = ASN1_UTCTIME_get(X509_get_notAfter(cur_X509_Obj));
-       	tm_local = localtime(&ctm);
+		ctm -= ctm % (60 * 60 * 24);
+		ctm = ASN1_UTCTIME_get(X509_get_notAfter(cur_X509_Obj));
+		tm_local = localtime(&ctm);
 		casa[cert_index].day = tm_local->tm_mday;
-		casa[cert_index].month = tm_local->tm_mon+1; // Add 1, as month count starts from 0.
-		casa[cert_index].year = tm_local->tm_year+1900; // Add 1900, as year count starts from 1900.
+		casa[cert_index].month = tm_local->tm_mon + 1;	// Add 1, as month count starts from 0.
+		casa[cert_index].year = tm_local->tm_year + 1900;	// Add 1900, as year count starts from 1900.
 		cert_index++;
 		tmp_ca_list = tmp_ca_list->next;
 	}
-	*cas = casa;	
-  	return 0;
+	*cas = casa;
+	return 0;
 }
 
 /**
@@ -325,39 +329,40 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
  ** \retval 0 on success
  ***/
 
-int cert_handler_get_info_from_store(char *storetype, char *location, cert_info *certinfo) 
+int cert_handler_get_info_from_store(char *storetype, char *location,
+				     cert_info * certinfo)
 {
-	X509* cert = NULL;
-        BIO* bio_cert = NULL;
-	X509_NAME *name=NULL;
-	char * cert_buff = NULL;
+	X509 *cert = NULL;
+	BIO *bio_cert = NULL;
+	X509_NAME *name = NULL;
+	char *cert_buff = NULL;
 
-	debug_printf(DEBUG_INT,"TRACE-3:location[%s]\n",location);
+	debug_printf(DEBUG_INT, "TRACE-3:location[%s]\n", location);
 	bio_cert = BIO_new_file(location, "rb");
 
-	if(bio_cert)
-    {
+	if (bio_cert) {
 		PEM_read_bio_X509(bio_cert, &cert, NULL, NULL);
-		if(!cert) return INVALID_CERT;
-	}
-    else return ERROR_BIO_READ;	//Error:cannot read bio_cert.
-	
+		if (!cert)
+			return INVALID_CERT;
+	} else
+		return ERROR_BIO_READ;	//Error:cannot read bio_cert.
+
 	name = X509_get_subject_name(cert);
 
-    if(name) 
-	{
-		cert_buff = X509_NAME_to_str(name,SUBJECT);
-		if(!cert_buff) return INVALID_CERT;
-	}
-    else return ERROR_X509_READ; //Error:Unable to fetch App-Data.
+	if (name) {
+		cert_buff = X509_NAME_to_str(name, SUBJECT);
+		if (!cert_buff)
+			return INVALID_CERT;
+	} else
+		return ERROR_X509_READ;	//Error:Unable to fetch App-Data.
 
-	certinfo->C = getToken("C",cert_buff);
-	certinfo->O = getToken("O",cert_buff);
-	certinfo->OU = getToken("OU",cert_buff);
-	certinfo->CN = getToken("CN",cert_buff);
-	certinfo->S = getToken("ST",cert_buff);
-	certinfo->L = getToken("L",cert_buff);
-	
+	certinfo->C = getToken("C", cert_buff);
+	certinfo->O = getToken("O", cert_buff);
+	certinfo->OU = getToken("OU", cert_buff);
+	certinfo->CN = getToken("CN", cert_buff);
+	certinfo->S = getToken("ST", cert_buff);
+	certinfo->L = getToken("L", cert_buff);
+
 	cur_X509_Obj = cert;
 	return 0;
 }
@@ -373,73 +378,82 @@ int cert_handler_get_info_from_store(char *storetype, char *location, cert_info 
 
 int cert_handler_add_cert_to_store(char *path_to_cert)
 {
-	char new_cert_name[80],path_to_store[300];
-	char * tmp_str = strdup(path_to_cert);
-	int sz = 0,i = 0;
-	X509* cert = NULL;
-    BIO* bio_cert = NULL;
-	FILE * outfl = NULL;
+	char new_cert_name[80], path_to_store[300];
+	char *tmp_str = strdup(path_to_cert);
+	int sz = 0, i = 0;
+	X509 *cert = NULL;
+	BIO *bio_cert = NULL;
+	FILE *outfl = NULL;
 
-	
-	debug_printf(DEBUG_INT,"TRACE-4_0:path_to_cert[%s]\n",path_to_cert);
-	if(path_to_cert)
-	{
-	    bio_cert = BIO_new_file(path_to_cert, "rb");
+	debug_printf(DEBUG_INT, "TRACE-4_0:path_to_cert[%s]\n", path_to_cert);
+	if (path_to_cert) {
+		bio_cert = BIO_new_file(path_to_cert, "rb");
 
-	debug_printf(DEBUG_INT,"TRACE-4_1:BIO_open\n");
-        if(bio_cert)
-        {
+		debug_printf(DEBUG_INT, "TRACE-4_1:BIO_open\n");
+		if (bio_cert) {
 			PEM_read_bio_X509(bio_cert, &cert, NULL, NULL);
-	debug_printf(DEBUG_INT,"TRACE-4_2:BIO_read\n");
-	        if(!cert) return INVALID_CERT;
+			debug_printf(DEBUG_INT, "TRACE-4_2:BIO_read\n");
+			if (!cert)
+				return INVALID_CERT;
 			sz = strlen(tmp_str);
-            while(tmp_str[sz]!='/' && sz>0) sz--;
-            while(tmp_str[sz]) new_cert_name[i++]=tmp_str[sz++];
-            new_cert_name[i]='\0';
-            i = 0;
-            strcpy(path_to_store,gStorePath);
-            strcat(path_to_store,new_cert_name);
-	debug_printf(DEBUG_INT,"TRACE-4_3:path_to_store[%s]\n",path_to_store);
-			outfl = fopen(path_to_store,"w+");
-			if(outfl)			
-			{
-	debug_printf(DEBUG_INT,"TRACE-4_4:[%s] opened\n",path_to_store);
-				if(!PEM_write_X509(outfl,cert))
-				{
-	debug_printf(DEBUG_INT,"TRACE-4_5:ERROR\n");
-					if(tmp_str) FREE(tmp_str);
-					if(outfl) fclose(outfl);
+			while (tmp_str[sz] != '/' && sz > 0)
+				sz--;
+			while (tmp_str[sz])
+				new_cert_name[i++] = tmp_str[sz++];
+			new_cert_name[i] = '\0';
+			i = 0;
+			strcpy(path_to_store, gStorePath);
+			strcat(path_to_store, new_cert_name);
+			debug_printf(DEBUG_INT, "TRACE-4_3:path_to_store[%s]\n",
+				     path_to_store);
+			outfl = fopen(path_to_store, "w+");
+			if (outfl) {
+				debug_printf(DEBUG_INT,
+					     "TRACE-4_4:[%s] opened\n",
+					     path_to_store);
+				if (!PEM_write_X509(outfl, cert)) {
+					debug_printf(DEBUG_INT,
+						     "TRACE-4_5:ERROR\n");
+					if (tmp_str)
+						FREE(tmp_str);
+					if (outfl)
+						fclose(outfl);
 					return ERROR_X509_WRITE;
 				}
-			}
-			else 
-			{
-	debug_printf(DEBUG_INT,"TRACE-4_6:ERROR:Unable to open %s\n",path_to_store);
-				if(tmp_str) FREE(tmp_str);
-				if(outfl) fclose(outfl);
+			} else {
+				debug_printf(DEBUG_INT,
+					     "TRACE-4_6:ERROR:Unable to open %s\n",
+					     path_to_store);
+				if (tmp_str)
+					FREE(tmp_str);
+				if (outfl)
+					fclose(outfl);
 				return ERROR_FILE_OPEN;
 			}
-        }
-	    else
-		{
-	debug_printf(DEBUG_INT,"TRACE-4_7:ERROR:BIO failed\n");
-			if(tmp_str) FREE(tmp_str);
-			if(outfl) fclose(outfl);
-			return ERROR_BIO_READ; //Error:cannot read bio_cert.
+		} else {
+			debug_printf(DEBUG_INT, "TRACE-4_7:ERROR:BIO failed\n");
+			if (tmp_str)
+				FREE(tmp_str);
+			if (outfl)
+				fclose(outfl);
+			return ERROR_BIO_READ;	//Error:cannot read bio_cert.
 		}
-	}
-	else 
-	{
-	debug_printf(DEBUG_INT,"TRACE-4_8:Invalid path to cert[%s]\n",path_to_cert);
-		if(tmp_str) FREE(tmp_str);
-		if(outfl) fclose(outfl);
-		return NO_CERT_PATH; // ERROR:NO cert path
+	} else {
+		debug_printf(DEBUG_INT, "TRACE-4_8:Invalid path to cert[%s]\n",
+			     path_to_cert);
+		if (tmp_str)
+			FREE(tmp_str);
+		if (outfl)
+			fclose(outfl);
+		return NO_CERT_PATH;	// ERROR:NO cert path
 	}
 
-	debug_printf(DEBUG_INT,"TRACE-4_9:ALL DONE.\n");
-	if(tmp_str) FREE(tmp_str);
-	if(outfl) fclose(outfl);
-return 0;
+	debug_printf(DEBUG_INT, "TRACE-4_9:ALL DONE.\n");
+	if (tmp_str)
+		FREE(tmp_str);
+	if (outfl)
+		fclose(outfl);
+	return 0;
 }
 
 ////////////////////////// Utils /////////////////////////////
@@ -455,46 +469,47 @@ return 0;
  ** \retval a valid string on success
  **/
 
-char * X509_NAME_to_str(X509_NAME *name, int fmt)
+char *X509_NAME_to_str(X509_NAME * name, int fmt)
 {
-        BIO     *membuf = BIO_new(BIO_s_mem());
-        int i=0,nid=0,count = X509_NAME_entry_count(name);
-        X509_NAME_ENTRY *e;
-        const char *field_name;
-        char       *sp;
-        ASN1_STRING *v;
-        size_t     size;
-		int do_once = 1;
+	BIO *membuf = BIO_new(BIO_s_mem());
+	int i = 0, nid = 0, count = X509_NAME_entry_count(name);
+	X509_NAME_ENTRY *e;
+	const char *field_name;
+	char *sp;
+	ASN1_STRING *v;
+	size_t size;
+	int do_once = 1;
 
-        (void) BIO_set_close(membuf, BIO_CLOSE);
-        for (i = 0; i < count; i++)
-        {
-                e = X509_NAME_get_entry(name, i);
-                nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(e));
-                v = X509_NAME_ENTRY_get_data(e);
-                field_name = OBJ_nid2sn(nid);
-                if (!field_name)
-                        field_name = OBJ_nid2ln(nid);
-		if(fmt == SUBJECT)
-                	BIO_printf(membuf, "/%s=", field_name);
-		else if(fmt == ISSUER)
-		{
-			if(do_once) {BIO_printf(membuf, " %s=", field_name); do_once = 0;}
-			else BIO_printf(membuf, ", %s=", field_name);
+	(void)BIO_set_close(membuf, BIO_CLOSE);
+	for (i = 0; i < count; i++) {
+		e = X509_NAME_get_entry(name, i);
+		nid = OBJ_obj2nid(X509_NAME_ENTRY_get_object(e));
+		v = X509_NAME_ENTRY_get_data(e);
+		field_name = OBJ_nid2sn(nid);
+		if (!field_name)
+			field_name = OBJ_nid2ln(nid);
+		if (fmt == SUBJECT)
+			BIO_printf(membuf, "/%s=", field_name);
+		else if (fmt == ISSUER) {
+			if (do_once) {
+				BIO_printf(membuf, " %s=", field_name);
+				do_once = 0;
+			} else
+				BIO_printf(membuf, ", %s=", field_name);
 		}
-                ASN1_STRING_print_ex(membuf, v,
-                                 ((ASN1_STRFLGS_RFC2253 & ~ASN1_STRFLGS_ESC_MSB)
-                                  | ASN1_STRFLGS_UTF8_CONVERT));
-        }
+		ASN1_STRING_print_ex(membuf, v,
+				     ((ASN1_STRFLGS_RFC2253 &
+				       ~ASN1_STRFLGS_ESC_MSB)
+				      | ASN1_STRFLGS_UTF8_CONVERT));
+	}
 
-        i = 0;
-        BIO_write(membuf, &i, 1);
-        size = BIO_get_mem_data(membuf, &sp);
+	i = 0;
+	BIO_write(membuf, &i, 1);
+	size = BIO_get_mem_data(membuf, &sp);
 
-        //BIO_free(membuf);
+	//BIO_free(membuf);
 
-
-        return sp;
+	return sp;
 }
 
 /**
@@ -508,32 +523,36 @@ char * X509_NAME_to_str(X509_NAME *name, int fmt)
  ** \retval a valid string on success
  **/
 
-char * getToken(char *s_str,char * lbuff)
+char *getToken(char *s_str, char *lbuff)
 {
-	char tag_str[20],sarg[50];
-	int not_done = 1,i = 0;
+	char tag_str[20], sarg[50];
+	int not_done = 1, i = 0;
 	char *sContent = NULL;
 
-	sContent = (char*)malloc(50);
-	while(not_done)
-	{
-		while(*lbuff && *lbuff != '/') lbuff++;
+	sContent = (char *)malloc(50);
+	while (not_done) {
+		while (*lbuff && *lbuff != '/')
+			lbuff++;
 		lbuff++;
-		while(*lbuff && *lbuff != '=')
-		{ tag_str[i++] = *lbuff; lbuff++; }
-		tag_str[i] = '\0';
-		if(!strcmp(tag_str,s_str)) 
-		{
-			not_done = 0;
-			lbuff++; 
-			i = 0;	
-			while(*lbuff && *lbuff != '/') 
-			{ 
-			sarg[i++] = *lbuff; lbuff++; }
-			sarg[i]='\0';
-			strcpy(sContent,sarg);
+		while (*lbuff && *lbuff != '=') {
+			tag_str[i++] = *lbuff;
+			lbuff++;
 		}
-		else {memset(&tag_str,'\0',20); i = 0;}
+		tag_str[i] = '\0';
+		if (!strcmp(tag_str, s_str)) {
+			not_done = 0;
+			lbuff++;
+			i = 0;
+			while (*lbuff && *lbuff != '/') {
+				sarg[i++] = *lbuff;
+				lbuff++;
+			}
+			sarg[i] = '\0';
+			strcpy(sContent, sarg);
+		} else {
+			memset(&tag_str, '\0', 20);
+			i = 0;
+		}
 	}
 	return sContent;
 }
@@ -547,60 +566,68 @@ char * getToken(char *s_str,char * lbuff)
  ** \retval count of files on success
  **/
 
-int get_pemfl_count(const char * pathname)
+int get_pemfl_count(const char *pathname)
 {
-        struct dirent* d;
-        struct stat f_info;
-        char abs_flpath[100];
-        int pemcnt = 0;
-		X509* cert = NULL;
-        BIO* bio_cert = NULL;
-        char *tmp_str;
+	struct dirent *d;
+	struct stat f_info;
+	char abs_flpath[100];
+	int pemcnt = 0;
+	X509 *cert = NULL;
+	BIO *bio_cert = NULL;
+	char *tmp_str;
 
-	debug_printf(DEBUG_INT,"Store pathname is [%s]\n",pathname);
-        DIR* dirp = opendir(pathname);
-        if(dirp)
-        {
-	    debug_printf(DEBUG_INT,"Store pathname is opened[%s]\n",pathname);
-            for (d = readdir(dirp) ; d!=NULL ; d = readdir(dirp))
-            {
-	        //Don't consider '.' and '..'
-                if (strcmp(".", d->d_name) && strcmp("..", d->d_name))
-                {
-					strcpy(abs_flpath,pathname);
-                    if(abs_flpath[strlen(abs_flpath)-1]!= '/') strcat(abs_flpath,"/");
-                    strcat(abs_flpath,d->d_name);
-                    if (!stat(abs_flpath, &f_info))
-                    {
-						// Exclude directories, consider only files.
-                        if (S_ISREG(f_info.st_mode))
-                        {
-							tmp_str = strdup(d->d_name);
-                            while(*tmp_str && *tmp_str != '.') tmp_str++;
-                            // Count only files with .pem extension.
-                            if(!strcmp(tmp_str,".pem")) 
-							{
-	debug_printf(DEBUG_INT,"TRACE-6:PEM file[%s]\n",abs_flpath);
-								bio_cert = NULL;
-								cert = NULL;
-								bio_cert = BIO_new_file(abs_flpath, "rb");
-					            if(bio_cert)
-								{
-	debug_printf(DEBUG_INT,"TRACE-7:Valid PEM cert\n");
-                        			PEM_read_bio_X509(bio_cert, &cert, NULL, NULL);
-									if(cert)
-									{
-	debug_printf(DEBUG_INT,"TRACE-8:Valid PEM cert\n");
-									  pemcnt++;
-									}
+	debug_printf(DEBUG_INT, "Store pathname is [%s]\n", pathname);
+	DIR *dirp = opendir(pathname);
+	if (dirp) {
+		debug_printf(DEBUG_INT, "Store pathname is opened[%s]\n",
+			     pathname);
+		for (d = readdir(dirp); d != NULL; d = readdir(dirp)) {
+			//Don't consider '.' and '..'
+			if (strcmp(".", d->d_name) && strcmp("..", d->d_name)) {
+				strcpy(abs_flpath, pathname);
+				if (abs_flpath[strlen(abs_flpath) - 1] != '/')
+					strcat(abs_flpath, "/");
+				strcat(abs_flpath, d->d_name);
+				if (!stat(abs_flpath, &f_info)) {
+					// Exclude directories, consider only files.
+					if (S_ISREG(f_info.st_mode)) {
+						tmp_str = strdup(d->d_name);
+						while (*tmp_str
+						       && *tmp_str != '.')
+							tmp_str++;
+						// Count only files with .pem extension.
+						if (!strcmp(tmp_str, ".pem")) {
+							debug_printf(DEBUG_INT,
+								     "TRACE-6:PEM file[%s]\n",
+								     abs_flpath);
+							bio_cert = NULL;
+							cert = NULL;
+							bio_cert =
+							    BIO_new_file
+							    (abs_flpath, "rb");
+							if (bio_cert) {
+								debug_printf
+								    (DEBUG_INT,
+								     "TRACE-7:Valid PEM cert\n");
+								PEM_read_bio_X509
+								    (bio_cert,
+								     &cert,
+								     NULL,
+								     NULL);
+								if (cert) {
+									debug_printf
+									    (DEBUG_INT,
+									     "TRACE-8:Valid PEM cert\n");
+									pemcnt++;
 								}
 							}
 						}
 					}
-                	}
+				}
+			}
 		}
 	}
-        return pemcnt;
+	return pemcnt;
 }
 
 /**
@@ -612,82 +639,123 @@ int get_pemfl_count(const char * pathname)
  ** \retval count of files on success
  **/
 
-int get_pemfl_count_and_build_list(const char * pathname)
+int get_pemfl_count_and_build_list(const char *pathname)
 {
 
-    struct dirent* d;
-    struct stat f_info;
-    char abs_flpath[100];
-    DIR* dirp = opendir(pathname);
-    char *tmp_str;
-    int pemcnt = 0;
-    PEMFL_LIST * new_pemfl = NULL, *tmp_pl = NULL;
-	X509* cert = NULL;
-    BIO* bio_cert = NULL;
+	struct dirent *d;
+	struct stat f_info;
+	char abs_flpath[100];
+	DIR *dirp = opendir(pathname);
+	char *tmp_str;
+	int pemcnt = 0;
+	PEMFL_LIST *new_pemfl = NULL, *tmp_pl = NULL;
+	X509 *cert = NULL;
+	BIO *bio_cert = NULL;
 
 	// We need to build list afresh
-    if(pl_ca_list)
-    {
+	if (pl_ca_list) {
 		free(pl_ca_list);
-        pl_ca_list = NULL;
-    }
+		pl_ca_list = NULL;
+	}
 
-    if(dirp)
-    {
-		for (d = readdir(dirp) ; d!=NULL ; d = readdir(dirp))
-        {
-			if ((0 != strcmp(".", d->d_name)) && (0 != strcmp("..", d->d_name)))
-            {
-				strcpy(abs_flpath,pathname);
-                if(abs_flpath[strlen(abs_flpath)-1]!= '/') strcat(abs_flpath,"/");
-                strcat(abs_flpath,d->d_name);
+	if (dirp) {
+		for (d = readdir(dirp); d != NULL; d = readdir(dirp)) {
+			if ((0 != strcmp(".", d->d_name))
+			    && (0 != strcmp("..", d->d_name))) {
+				strcpy(abs_flpath, pathname);
+				if (abs_flpath[strlen(abs_flpath) - 1] != '/')
+					strcat(abs_flpath, "/");
+				strcat(abs_flpath, d->d_name);
 
-				if (!stat(abs_flpath, &f_info))
-                {
-					if (S_ISREG(f_info.st_mode))
-                    {
+				if (!stat(abs_flpath, &f_info)) {
+					if (S_ISREG(f_info.st_mode)) {
 						tmp_str = strdup(d->d_name);
-                        while(*tmp_str && *tmp_str != '.') tmp_str++;
-                        if(!strcmp(tmp_str,".pem"))
-                        {
+						while (*tmp_str
+						       && *tmp_str != '.')
+							tmp_str++;
+						if (!strcmp(tmp_str, ".pem")) {
 							bio_cert = NULL;
 							cert = NULL;
-							bio_cert = BIO_new_file(abs_flpath, "rb");
-                            if(bio_cert)
-                            {
-								PEM_read_bio_X509(bio_cert, &cert, NULL, NULL);
-                                if(cert) 
-								{
+							bio_cert =
+							    BIO_new_file
+							    (abs_flpath, "rb");
+							if (bio_cert) {
+								PEM_read_bio_X509
+								    (bio_cert,
+								     &cert,
+								     NULL,
+								     NULL);
+								if (cert) {
 									pemcnt++;
-                                	tmp_pl = pl_ca_list;
-	                               	if(!tmp_pl)
-        	                       	{
-                	                   	pl_ca_list = (PEMFL_LIST*)malloc(sizeof(PEMFL_LIST));
-	                	                pl_ca_list->filename = strdup(abs_flpath);
-										pl_ca_list->fl_index = pemcnt;
-                	                    pl_ca_list->next = NULL;
-                        			}
-                                	else
-                                    {
-										while(tmp_pl->next) tmp_pl = tmp_pl->next;
-	                                    new_pemfl = (PEMFL_LIST*)malloc(sizeof(PEMFL_LIST));
-        	                            new_pemfl->filename = strdup(abs_flpath);
-	        	                        new_pemfl->fl_index = pemcnt;
-        	        	                new_pemfl->next = NULL;
-                	        	        tmp_pl->next = new_pemfl;
-                        	        }
-								}
-								else cert = NULL;
-							}
-							else bio_cert = NULL;
+									tmp_pl =
+									    pl_ca_list;
+									if (!tmp_pl) {
+										pl_ca_list
+										    =
+										    (PEMFL_LIST
+										     *)
+										    malloc
+										    (sizeof
+										     (PEMFL_LIST));
+										pl_ca_list->
+										    filename
+										    =
+										    strdup
+										    (abs_flpath);
+										pl_ca_list->
+										    fl_index
+										    =
+										    pemcnt;
+										pl_ca_list->
+										    next
+										    =
+										    NULL;
+									} else {
+										while
+										    (tmp_pl->
+										     next)
+											tmp_pl
+											    =
+											    tmp_pl->
+											    next;
+										new_pemfl
+										    =
+										    (PEMFL_LIST
+										     *)
+										    malloc
+										    (sizeof
+										     (PEMFL_LIST));
+										new_pemfl->
+										    filename
+										    =
+										    strdup
+										    (abs_flpath);
+										new_pemfl->
+										    fl_index
+										    =
+										    pemcnt;
+										new_pemfl->
+										    next
+										    =
+										    NULL;
+										tmp_pl->
+										    next
+										    =
+										    new_pemfl;
+									}
+								} else
+									cert =
+									    NULL;
+							} else
+								bio_cert = NULL;
 						}
 					}
 				}
 			}
 		}
-	}
-    else return 0; 	//ERROR:Unable to open dir.
-    return pemcnt;
+	} else
+		return 0;	//ERROR:Unable to open dir.
+	return pemcnt;
 }
 
 /**
@@ -699,31 +767,30 @@ int get_pemfl_count_and_build_list(const char * pathname)
  ** \retval time in time_t format on success
  **/
 
-time_t ASN1_UTCTIME_get(const ASN1_UTCTIME *s)
+time_t ASN1_UTCTIME_get(const ASN1_UTCTIME * s)
 {
-        struct tm tm;
-        int offset;
+	struct tm tm;
+	int offset;
 
-        memset(&tm,'\0',sizeof tm);
+	memset(&tm, '\0', sizeof tm);
 
-        tm.tm_year=g2(s->data);
-        if(tm.tm_year < 50)
-                tm.tm_year+=100;
-        tm.tm_mon=g2(s->data+2)-1;
-        tm.tm_mday=g2(s->data+4);
-        tm.tm_hour=g2(s->data+6);
-        tm.tm_min=g2(s->data+8);
-        tm.tm_sec=g2(s->data+10);
-        if(s->data[12] == 'Z')
-                offset=0;
-        else
-        {
-                offset=g2(s->data+13)*60+g2(s->data+15);
-                if(s->data[12] == '-')
-                        offset= -offset;
-        }
+	tm.tm_year = g2(s->data);
+	if (tm.tm_year < 50)
+		tm.tm_year += 100;
+	tm.tm_mon = g2(s->data + 2) - 1;
+	tm.tm_mday = g2(s->data + 4);
+	tm.tm_hour = g2(s->data + 6);
+	tm.tm_min = g2(s->data + 8);
+	tm.tm_sec = g2(s->data + 10);
+	if (s->data[12] == 'Z')
+		offset = 0;
+	else {
+		offset = g2(s->data + 13) * 60 + g2(s->data + 15);
+		if (s->data[12] == '-')
+			offset = -offset;
+	}
 
-        return mktime(&tm)-offset*60;
+	return mktime(&tm) - offset * 60;
 }
 
 /**
@@ -735,29 +802,30 @@ time_t ASN1_UTCTIME_get(const ASN1_UTCTIME *s)
  ** \retval Valid string on success
  **/
 
-char *getIssuername(char * location)
+char *getIssuername(char *location)
 {
-	X509* cert = NULL;
-        BIO* bio_cert;
-        X509_NAME *name=NULL;
-        char * cert_buff = NULL;
+	X509 *cert = NULL;
+	BIO *bio_cert;
+	X509_NAME *name = NULL;
+	char *cert_buff = NULL;
 
-        bio_cert = BIO_new_file(location, "rb");
+	bio_cert = BIO_new_file(location, "rb");
 
-        if(bio_cert)
-                PEM_read_bio_X509(bio_cert, &cert, NULL, NULL);
-        else
-        //Error:cannot read bio_cert.
-         return NULL;
+	if (bio_cert)
+		PEM_read_bio_X509(bio_cert, &cert, NULL, NULL);
+	else
+		//Error:cannot read bio_cert.
+		return NULL;
 
-        name = X509_get_subject_name(cert);
+	name = X509_get_subject_name(cert);
 
-        if(name) cert_buff = X509_NAME_to_str(name,ISSUER);
-        else
-        //Error:Unable to fetch App-Data.
-        return NULL;
+	if (name)
+		cert_buff = X509_NAME_to_str(name, ISSUER);
+	else
+		//Error:Unable to fetch App-Data.
+		return NULL;
 
-	return cert_buff;		
+	return cert_buff;
 }
 
 /**
@@ -772,20 +840,19 @@ char *getIssuername(char * location)
  ** \retval Valid string on success
  **/
 
-char *getFriendlyname(char *sO,int iI)
+char *getFriendlyname(char *sO, int iI)
 {
-	char * sFN = NULL;
-	char * sI = NULL;
-	
-	sFN = (char*)malloc(strlen(sO)+6);
-	sI = (char*)malloc(6);
-	sprintf(sI,"_%d",iI);
-	strcpy(sFN,sO);
-	strcat(sFN,sI);
-	
+	char *sFN = NULL;
+	char *sI = NULL;
+
+	sFN = (char *)malloc(strlen(sO) + 6);
+	sI = (char *)malloc(6);
+	sprintf(sI, "_%d", iI);
+	strcpy(sFN, sO);
+	strcat(sFN, sI);
+
 	return sFN;
 }
-
 
 /**
  * \brief Return the number of user certificates in our store.
@@ -796,11 +863,11 @@ char *getFriendlyname(char *sO,int iI)
 int cert_handler_num_user_certs()
 {
 #warning Implement!
-  return 0;
+	return 0;
 }
 
-int cert_handler_enum_user_certs(int *numcer, cert_enum **cer)
+int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 {
 #warning Implement!
-  return -1;
+	return -1;
 }

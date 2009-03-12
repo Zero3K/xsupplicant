@@ -42,25 +42,27 @@ int in_startup = TRUE;
  **/
 char Strncpy(char *dest, unsigned int destsize, const char *src, size_t n)
 {
-  if (dest == NULL) return -1;
-  if (src == NULL) return -1;
+	if (dest == NULL)
+		return -1;
+	if (src == NULL)
+		return -1;
 
-  if (n > destsize)
-  {
+	if (n > destsize) {
 #ifndef EXTERNAL_USE
-    debug_printf(DEBUG_NORMAL, "Attempt to overflow the destination buffer!\n");
+		debug_printf(DEBUG_NORMAL,
+			     "Attempt to overflow the destination buffer!\n");
 #endif
-    return -1;
-  }
-
+		return -1;
+	}
 #ifdef WINDOWS
-  if (strncpy_s(dest, destsize, src, n) != 0) return -1;
+	if (strncpy_s(dest, destsize, src, n) != 0)
+		return -1;
 #else
-  strncpy(dest, src, n);
+	strncpy(dest, src, n);
 #endif
 
-  dest[n-1] = 0x00;
-  return 0;
+	dest[n - 1] = 0x00;
+	return 0;
 }
 
 /**
@@ -71,17 +73,16 @@ char Strncpy(char *dest, unsigned int destsize, const char *src, size_t n)
  * \retval NULL on error
  * \retval ptr to the allocated memory on success
  **/
-void* Malloc(size_t size)
+void *Malloc(size_t size)
 {
-  void* ptr = NULL;
+	void *ptr = NULL;
 
-  ptr = malloc(size);
-  if (ptr != NULL)
-    {
-    memset(ptr, 0x00, size);
-    }
+	ptr = malloc(size);
+	if (ptr != NULL) {
+		memset(ptr, 0x00, size);
+	}
 
-  return ptr;
+	return ptr;
 }
 
 /**
@@ -99,13 +100,11 @@ char *xsup_common_is_tf(uint8_t tf)
 {
 	char *retval = NULL;
 
-	if (tf == FALSE)
-	{
+	if (tf == FALSE) {
 		retval = _strdup("FALSE");
 	}
 
-	if (tf == TRUE)
-	{
+	if (tf == TRUE) {
 		retval = _strdup("TRUE");
 	}
 
@@ -123,10 +122,10 @@ char *xsup_common_is_tf(uint8_t tf)
  * \retval 0 on success
  * \retval -1 on failure
  **/
-char xsup_common_strcpy(char *deststr, unsigned int deststr_len,
-						char *srcstr)
+char xsup_common_strcpy(char *deststr, unsigned int deststr_len, char *srcstr)
 {
-	if (strlen(srcstr)+1 > deststr_len) return -1;
+	if (strlen(srcstr) + 1 > deststr_len)
+		return -1;
 
 	memset(deststr, 0x00, deststr_len);
 
@@ -134,7 +133,8 @@ char xsup_common_strcpy(char *deststr, unsigned int deststr_len,
 	// Use the safer string copy for Windows.
 	return strcpy_s(deststr, deststr_len, srcstr);
 #else
-	if (strcpy(deststr, srcstr) == NULL) return -1;
+	if (strcpy(deststr, srcstr) == NULL)
+		return -1;
 
 	return 0;
 #endif
@@ -155,26 +155,27 @@ char xsup_common_strcpy(char *deststr, unsigned int deststr_len,
  **/
 int Strcat(char *result, unsigned int ressize, char *append)
 {
-  if (result == NULL) return -1;
-  if (append == NULL) return 0;    // We appended NULL. ;)
+	if (result == NULL)
+		return -1;
+	if (append == NULL)
+		return 0;	// We appended NULL. ;)
 
-  if (ressize == 0) return -1;     // Gotta have some kind of buffer.
+	if (ressize == 0)
+		return -1;	// Gotta have some kind of buffer.
 
-  if (strlen(append)+1 > (ressize - strlen(result)))
-    {
+	if (strlen(append) + 1 > (ressize - strlen(result))) {
 #ifndef EXTERNAL_USE
-      debug_printf(DEBUG_NORMAL, "Would overflow the string!\n");
+		debug_printf(DEBUG_NORMAL, "Would overflow the string!\n");
 #endif
-      return -1;
-    }
-
+		return -1;
+	}
 #ifdef WINDOWS
-	strncat_s(result, ressize, append, ressize - strlen(result) -1);
+	strncat_s(result, ressize, append, ressize - strlen(result) - 1);
 #else
-    strncat(result, append, ressize - strlen(result) - 1);
+	strncat(result, append, ressize - strlen(result) - 1);
 #endif
 
-    return 0;
+	return 0;
 }
 
 /**
@@ -204,14 +205,14 @@ void xsup_common_startup_complete()
  **/
 void xsup_common_upcase(char *strtoconvert)
 {
-  int i;
+	int i;
 
-  if (strtoconvert == NULL) return;  // If there is nothing to convert, then don't convert it! ;)
+	if (strtoconvert == NULL)
+		return;		// If there is nothing to convert, then don't convert it! ;)
 
-  for (i=0;i<strlen(strtoconvert);i++)
-    {
-      strtoconvert[i] = toupper(strtoconvert[i]);
-    }
+	for (i = 0; i < strlen(strtoconvert); i++) {
+		strtoconvert[i] = toupper(strtoconvert[i]);
+	}
 }
 
 /**
@@ -223,7 +224,8 @@ void xsup_common_upcase(char *strtoconvert)
  **/
 size_t Strlen(const char *str)
 {
-	if (str == NULL) return 0;
+	if (str == NULL)
+		return 0;
 
 	return strlen(str);
 }

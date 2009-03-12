@@ -38,19 +38,18 @@ char *sm_handler_get_readers(SCARDCONTEXT *);
 long sm_handler_card_connect(SCARDCONTEXT *, SCARDHANDLE *, char *);
 int sm_handler_wait_card_ready(SCARDHANDLE *, int);
 int sm_handler_2g_imsi(SCARDHANDLE *, char, char *, char **);
-int sm_handler_do_2g_auth(SCARDHANDLE *, char, unsigned char *, 
+int sm_handler_do_2g_auth(SCARDHANDLE *, char, unsigned char *,
 			  unsigned char *, unsigned char *);
 
 int sm_handler_3g_imsi(SCARDHANDLE *, char, char *, char **);
 int sm_handler_do_3g_auth(SCARDHANDLE *, char reader_mode,
 			  unsigned char *, unsigned char *,
 			  unsigned char *, char *, unsigned char *,
-			  unsigned char *, unsigned char *,
-			  unsigned char *);
+			  unsigned char *, unsigned char *, unsigned char *);
 
 int sm_handler_card_disconnect(SCARDHANDLE *);
-int sm_handler_3g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode);
-int sm_handler_2g_pin_needed(SCARDHANDLE *card_hdl, char reader_mode);
+int sm_handler_3g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode);
+int sm_handler_2g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode);
 
 int sm_handler_close_sc(SCARDHANDLE *, SCARDCONTEXT *);
 #endif

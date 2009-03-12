@@ -41,25 +41,25 @@ tnc_callbacks *callback_start = NULL;
  * \retval -1 on error
  * \retval 0 on success
  **/
-int tnc_compliance_callbacks_add(TNC_IMCID imcID, TNC_ConnectionID connID, uint32_t oui,
-								 uint32_t notification, void *callback)
+int tnc_compliance_callbacks_add(TNC_IMCID imcID, TNC_ConnectionID connID,
+				 uint32_t oui, uint32_t notification,
+				 void *callback)
 {
 	tnc_callbacks *cur = NULL;
 
-    if(callback == NULL)
-        return 0;
+	if (callback == NULL)
+		return 0;
 
 	// Make sure the callback isn't already registered.
-	if (tnc_compliance_callbacks_locate(imcID, connID, oui, notification) != NULL) 
-	{
-		debug_printf(DEBUG_VERBOSE, "IMC callback already registered, ignoring.\n");
+	if (tnc_compliance_callbacks_locate(imcID, connID, oui, notification) !=
+	    NULL) {
+		debug_printf(DEBUG_VERBOSE,
+			     "IMC callback already registered, ignoring.\n");
 		return 0;
 	}
 
-
-	cur = (tnc_callbacks *)Malloc(sizeof(tnc_callbacks));
-	if (cur == NULL)
-	{
+	cur = (tnc_callbacks *) Malloc(sizeof(tnc_callbacks));
+	if (cur == NULL) {
 		return -1;
 	}
 
@@ -86,23 +86,20 @@ int tnc_compliance_callbacks_add(TNC_IMCID imcID, TNC_ConnectionID connID, uint3
  * \retval ptr if the callback is found
  * \retval NULL if the callback is not found
  **/
-tnc_callbacks *tnc_compliance_callbacks_locate(TNC_IMCID imcID, TNC_ConnectionID connID, uint32_t oui,
-									uint32_t notification)
+tnc_callbacks *tnc_compliance_callbacks_locate(TNC_IMCID imcID,
+					       TNC_ConnectionID connID,
+					       uint32_t oui,
+					       uint32_t notification)
 {
 	tnc_callbacks *cur = NULL;
 
 	cur = callback_start;
 
-	while (cur != NULL)
-	{
-		if (cur->connID == connID) 
-		{
-			if (cur->imcID == imcID)
-			{
-				if (cur->oui == oui)
-				{
-					if (cur->notification == notification)
-					{
+	while (cur != NULL) {
+		if (cur->connID == connID) {
+			if (cur->imcID == imcID) {
+				if (cur->oui == oui) {
+					if (cur->notification == notification) {
 						break;
 					}
 				}
@@ -127,60 +124,56 @@ tnc_callbacks *tnc_compliance_callbacks_locate(TNC_IMCID imcID, TNC_ConnectionID
  * \retval -1 on error
  * \retval 0 on success
  **/
-int tnc_compliance_callbacks_call(TNC_IMCID imcID, TNC_ConnectionID connID, uint32_t oui,
-								  uint32_t notification, int result)
+int tnc_compliance_callbacks_call(TNC_IMCID imcID, TNC_ConnectionID connID,
+				  uint32_t oui, uint32_t notification,
+				  int result)
 {
 	tnc_callbacks *cur = NULL;
 	tnc_callbacks *last = NULL;
-	void (*mycall)(TNC_IMCID, TNC_ConnectionID, int);
+	void (*mycall) (TNC_IMCID, TNC_ConnectionID, int);
 
 	cur = callback_start;
 
-	while (cur != NULL)
-	{
-		if (cur->connID == connID) 
-		{
-			if (cur->imcID == imcID)
-			{
-				if (cur->oui == oui)
-				{
-					if (cur->notification == notification)
-					{
+	while (cur != NULL) {
+		if (cur->connID == connID) {
+			if (cur->imcID == imcID) {
+				if (cur->oui == oui) {
+					if (cur->notification == notification) {
 						break;
 					}
 				}
 			}
 		}
 
-		debug_printf(DEBUG_VERBOSE, "Checked %d, %d, %d, %d\n", cur->connID, cur->imcID, cur->oui, cur->notification);
+		debug_printf(DEBUG_VERBOSE, "Checked %d, %d, %d, %d\n",
+			     cur->connID, cur->imcID, cur->oui,
+			     cur->notification);
 		last = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL) 
-	{
-		debug_printf(DEBUG_VERBOSE, "Unable to locate callback for %d, %d, %d, %d.\n", imcID, connID, oui, notification);
+	if (cur == NULL) {
+		debug_printf(DEBUG_VERBOSE,
+			     "Unable to locate callback for %d, %d, %d, %d.\n",
+			     imcID, connID, oui, notification);
 		return -1;
 	}
 
-	if (cur->callback != NULL)
-	{
+	if (cur->callback != NULL) {
 		mycall = cur->callback;
 	}
 
-	if (last == NULL)
-	{
+	if (last == NULL) {
 		// It was the first node.
 		callback_start = cur->next;
 		FREE(cur);
-	}
-	else
-	{
+	} else {
 		last->next = cur->next;
 		FREE(cur);
 	}
 
-	if (mycall != NULL) (mycall)(imcID, connID, result);
+	if (mycall != NULL)
+		(mycall) (imcID, connID, result);
 
 	return 0;
 }
@@ -195,8 +188,7 @@ void tnc_compliance_callbacks_cleanup()
 
 	cur = callback_start;
 
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		next = cur->next;
 		FREE(cur);
 		cur = next;
@@ -216,46 +208,56 @@ void tnc_compliance_callbacks_cleanup()
  *
  * \retval TNC_Result A TNC_Result value.
  **/
-TNC_Result libtnc_tncc_BindFunction(
-    TNC_IMCID imcID,
-    char *functionName,
-    void **pOutfunctionPointer)
+TNC_Result libtnc_tncc_BindFunction(TNC_IMCID imcID,
+				    char *functionName,
+				    void **pOutfunctionPointer)
 {
 	if (!strcmp(functionName, "TNC_28383_TNCC_Get_Posture_Preferences"))
-		*pOutfunctionPointer = (void*)TNC_28383_TNCC_Get_Posture_Preferences;
-	else if (!strcmp(functionName, "TNC_28383_TNCC_Send_UI_Notification_by_ID"))
-		*pOutfunctionPointer = (void*)TNC_28383_TNCC_Send_UI_Notification_by_ID;
-	else if (!strcmp(functionName, "TNC_28383_TNCC_Request_Answer_From_UI_by_ID"))
-		*pOutfunctionPointer = (void*)TNC_28383_TNCC_Request_Answer_From_UI_by_ID;
+		*pOutfunctionPointer =
+		    (void *)TNC_28383_TNCC_Get_Posture_Preferences;
+	else if (!strcmp
+		 (functionName, "TNC_28383_TNCC_Send_UI_Notification_by_ID"))
+		*pOutfunctionPointer =
+		    (void *)TNC_28383_TNCC_Send_UI_Notification_by_ID;
+	else if (!strcmp
+		 (functionName, "TNC_28383_TNCC_Request_Answer_From_UI_by_ID"))
+		*pOutfunctionPointer =
+		    (void *)TNC_28383_TNCC_Request_Answer_From_UI_by_ID;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_debug_log"))
-		*pOutfunctionPointer = (void*)TNC_28383_TNCC_debug_log;
+		*pOutfunctionPointer = (void *)TNC_28383_TNCC_debug_log;
 	else if (!strcmp(functionName, "TNC_9048_LogMessage"))
-		*pOutfunctionPointer = (void*)TNC_9048_LogMessage;
+		*pOutfunctionPointer = (void *)TNC_9048_LogMessage;
 	else if (!strcmp(functionName, "TNC_9048_UserMessage"))
-		*pOutfunctionPointer = (void*)TNC_9048_UserMessage;
+		*pOutfunctionPointer = (void *)TNC_9048_UserMessage;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_Add_To_Batch"))
-		*pOutfunctionPointer = (void*)TNC_28383_TNCC_Add_To_Batch;
+		*pOutfunctionPointer = (void *)TNC_28383_TNCC_Add_To_Batch;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_Send_Batch"))
-		*pOutfunctionPointer = (void*)TNC_28383_TNCC_Send_Batch;
+		*pOutfunctionPointer = (void *)TNC_28383_TNCC_Send_Batch;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_Reset_Connection"))
 		*pOutfunctionPointer = (void *)TNC_28383_TNCC_Reset_Connection;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_Renew_DHCP"))
 		*pOutfunctionPointer = (void *)TNC_28383_TNCC_Renew_DHCP;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_Send_Error_Message"))
-		*pOutfunctionPointer = (void *)TNC_28383_TNCC_Send_Error_Message;
-	else if (!strcmp(functionName, "TNC_28383_TNCC_Set_User_Logon_Callback"))
-		*pOutfunctionPointer = (void *)TNC_28383_TNCC_Set_User_Logon_Callback;
-	else if (!strcmp(functionName, "TNC_28383_TNCC_Set_Disconnect_Callback"))
-		*pOutfunctionPointer = (void *)TNC_28383_TNCC_Set_Disconnect_Callback;
+		*pOutfunctionPointer =
+		    (void *)TNC_28383_TNCC_Send_Error_Message;
+	else if (!strcmp
+		 (functionName, "TNC_28383_TNCC_Set_User_Logon_Callback"))
+		*pOutfunctionPointer =
+		    (void *)TNC_28383_TNCC_Set_User_Logon_Callback;
+	else if (!strcmp
+		 (functionName, "TNC_28383_TNCC_Set_Disconnect_Callback"))
+		*pOutfunctionPointer =
+		    (void *)TNC_28383_TNCC_Set_Disconnect_Callback;
 	else if (!strcmp(functionName, "TNC_28383_TNCC_Single_Shot_Batch"))
 		*pOutfunctionPointer = (void *)TNC_28383_TNCC_Single_Shot_Batch;
-    else if(!strcmp(functionName, "TNC_28383_TNCC_Set_UI_Connect_Callback"))
-        *pOutfunctionPointer = (void *)TNC_28383_TNCC_Set_UI_Connect_Callback;
+	else if (!strcmp
+		 (functionName, "TNC_28383_TNCC_Set_UI_Connect_Callback"))
+		*pOutfunctionPointer =
+		    (void *)TNC_28383_TNCC_Set_UI_Connect_Callback;
 	else
 		return TNC_RESULT_INVALID_PARAMETER;
 
 	return TNC_RESULT_SUCCESS;
 }
 
-#endif // HAVE_TNC
-
+#endif				// HAVE_TNC

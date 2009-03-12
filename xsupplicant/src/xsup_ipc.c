@@ -12,7 +12,7 @@
 
 #ifdef __APPLE__
 #include <AvailabilityMacros.h>
-#endif // __APPLE__
+#endif				// __APPLE__
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -47,13 +47,12 @@
 
 #define XSUP_SOCKET "/tmp/xsupplicant.sock"
 
-#define INSTANCES  5  ///< Maximum # of IPC sockets we will allow connected.
+#define INSTANCES  5		///< Maximum # of IPC sockets we will allow connected.
 #define BUFSIZE 4096
 
-typedef struct
-{
-  int sock;
-  uint8_t flags;
+typedef struct {
+	int sock;
+	uint8_t flags;
 } ipcstruct;
 
 ipcstruct ipcs[INSTANCES];
@@ -77,56 +76,54 @@ char socknamestr[256];
  **/
 int xsup_ipc_get_group_num(char *grp_name)
 {
-  struct group grp;
-  struct group *grdata = &grp;
-  struct group *tmpGrp;
-  char *buffer = NULL;
-  long buflen = 0;
-  int retval;
+	struct group grp;
+	struct group *grdata = &grp;
+	struct group *tmpGrp;
+	char *buffer = NULL;
+	long buflen = 0;
+	int retval;
 
-#ifdef __APPLE__    
-  // We need to find something to replace the below sysconf call with
-  #if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_4
-    #warning Mac OS X 10.3 and earlier do not define _SC_GETGR_R_SIZE_MAX.
-  #else 
-    buflen = sysconf(_SC_GETGR_R_SIZE_MAX);
-  #endif
+#ifdef __APPLE__
+	// We need to find something to replace the below sysconf call with
+#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_4
+#warning Mac OS X 10.3 and earlier do not define _SC_GETGR_R_SIZE_MAX.
 #else
-    buflen = sysconf(_SC_GETGR_R_SIZE_MAX);
+	buflen = sysconf(_SC_GETGR_R_SIZE_MAX);
+#endif
+#else
+	buflen = sysconf(_SC_GETGR_R_SIZE_MAX);
 #endif
 
-  if (buflen < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't determine the maximum buffer "
-		   "size needed from getgrnam_r()\n");
-      return -1;
-    }
+	if (buflen < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't determine the maximum buffer "
+			     "size needed from getgrnam_r()\n");
+		return -1;
+	}
 
-  buffer = (char *)Malloc(buflen);
-  if (buffer == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory needed to "
-		   "obtain IPC group information!\n");
-      return -1;
-    }
-  
-  if (getgrnam_r(grp_name, grdata, buffer, buflen, &tmpGrp) != 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Unable to obtain the group index needed"
-		   " to enable IPC functionality.  IPC will not be "
-		   "available.\n");
-      FREE(buffer);
-      return -1;
-    }
-  
-  retval = grp.gr_gid;
+	buffer = (char *)Malloc(buflen);
+	if (buffer == NULL) {
+		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory needed to "
+			     "obtain IPC group information!\n");
+		return -1;
+	}
 
-  if (buffer != NULL)
-    {
-      FREE(buffer);
-    }
+	if (getgrnam_r(grp_name, grdata, buffer, buflen, &tmpGrp) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to obtain the group index needed"
+			     " to enable IPC functionality.  IPC will not be "
+			     "available.\n");
+		FREE(buffer);
+		return -1;
+	}
 
-  return retval;
+	retval = grp.gr_gid;
+
+	if (buffer != NULL) {
+		FREE(buffer);
+	}
+
+	return retval;
 }
 
 /**
@@ -138,105 +135,104 @@ int xsup_ipc_get_group_num(char *grp_name)
  **/
 int xsup_ipc_init(uint8_t clear)
 {
-  int sockErr = 0, ipc_gid = 0;
-  char *error = NULL;
-  struct sockaddr_un sa;
-  struct config_globals *globals;
-  int i;
+	int sockErr = 0, ipc_gid = 0;
+	char *error = NULL;
+	struct sockaddr_un sa;
+	struct config_globals *globals;
+	int i;
 
-  globals = config_get_globals();
+	globals = config_get_globals();
 
-  if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
-    return XEGENERROR;
+	if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
+		return XEGENERROR;
 
-  sa.sun_family = AF_LOCAL;
-  memset(socknamestr, 0x00, 256);
-  Strncpy(socknamestr, sizeof(socknamestr), XSUP_SOCKET, 256);
-  Strncpy(sa.sun_path, sizeof(socknamestr), socknamestr, sizeof(sa.sun_path));
+	sa.sun_family = AF_LOCAL;
+	memset(socknamestr, 0x00, 256);
+	Strncpy(socknamestr, sizeof(socknamestr), XSUP_SOCKET, 256);
+	Strncpy(sa.sun_path, sizeof(socknamestr), socknamestr,
+		sizeof(sa.sun_path));
 
-  if (clear == TRUE)
-    {
-      // We need to clear the socket file if it exists.
+	if (clear == TRUE) {
+		// We need to clear the socket file if it exists.
 
-      debug_printf(DEBUG_INT, "Clearing control socket %s.\n", socknamestr);
-      remove(socknamestr);
-    }
-
-  // Socket we will be using to communicate.
-  ipc_sock = socket(PF_UNIX, SOCK_STREAM, 0);
-
-  if (ipc_sock == -1) {
-    debug_printf(DEBUG_NORMAL, "Couldn't establish handler to daemon "
-		    "socket!\n");
-    return XENOSOCK;
-  } 
-
-  debug_printf(DEBUG_INT, "Opened socket descriptor #%d for IPC listener.\n", 
-	       ipc_sock);
-
-  sockErr = bind(ipc_sock, (struct sockaddr *)&sa, sizeof(sa));
-  if (sockErr == -1) 
-    {
-      error = strerror(errno);
-      debug_printf(DEBUG_NORMAL, "An error occured binding to socket.  "
-		      "(Error : %s)\n", error);
-      close(ipc_sock);
-      return XENOSOCK;
-    }
-
-  sockErr = listen(ipc_sock, 10);
-  if (sockErr < 0)
-    {
-      error = strerror(errno);
-      debug_printf(DEBUG_NORMAL, "An error occured listening on the socket! "
-		   "(Error : %s)\n", error);
-      close(ipc_sock);
-      return XENOSOCK;
-    }
-
-  // Set the rights on the file.
-  if (chmod(socknamestr, S_IREAD | S_IWRITE | S_IEXEC | S_IRGRP | S_IWGRP |
-	     S_IXGRP | S_IROTH | S_IXOTH) != 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Can't set rights on socket file %s! (Error"
-		   " : %s)\n", socknamestr, strerror(errno));
-    }
-
-  // Set the correct group ownership. 
-  if (globals->ipc_group_name != NULL)
-    {
-      ipc_gid = xsup_ipc_get_group_num(globals->ipc_group_name);
-
-      if (ipc_gid < 0)
-	{
-	  /* If we didn't get a valid response, then set the group to root. */
-	  ipc_gid = 0;
+		debug_printf(DEBUG_INT, "Clearing control socket %s.\n",
+			     socknamestr);
+		remove(socknamestr);
 	}
-    } else {
-      ipc_gid = xsup_ipc_get_group_num("users");
-      if (ipc_gid < 0) ipc_gid = 0;               // If it isn't found, use root.
-    }
+	// Socket we will be using to communicate.
+	ipc_sock = socket(PF_UNIX, SOCK_STREAM, 0);
 
-  if (ipc_gid >= 0)
-    {
-      if (chown(socknamestr, -1, ipc_gid) != 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Can't set group ownership on socket "
-                       "file %s! (Error : %s)\n", socknamestr, strerror(errno));
+	if (ipc_sock == -1) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't establish handler to daemon "
+			     "socket!\n");
+		return XENOSOCK;
 	}
-    }
 
-  // And register our connection handler.
-  event_core_register(ipc_sock, NULL, xsup_ipc_new_socket, LOW_PRIORITY,
-		      "IPC master socket");
+	debug_printf(DEBUG_INT,
+		     "Opened socket descriptor #%d for IPC listener.\n",
+		     ipc_sock);
 
-  for (i=0;i<INSTANCES;i++)
-    {
-      ipcs[i].sock = 0;
-      ipcs[i].flags = 0;
-    }
+	sockErr = bind(ipc_sock, (struct sockaddr *)&sa, sizeof(sa));
+	if (sockErr == -1) {
+		error = strerror(errno);
+		debug_printf(DEBUG_NORMAL,
+			     "An error occured binding to socket.  "
+			     "(Error : %s)\n", error);
+		close(ipc_sock);
+		return XENOSOCK;
+	}
 
-  return XENONE;
+	sockErr = listen(ipc_sock, 10);
+	if (sockErr < 0) {
+		error = strerror(errno);
+		debug_printf(DEBUG_NORMAL,
+			     "An error occured listening on the socket! "
+			     "(Error : %s)\n", error);
+		close(ipc_sock);
+		return XENOSOCK;
+	}
+	// Set the rights on the file.
+	if (chmod
+	    (socknamestr,
+	     S_IREAD | S_IWRITE | S_IEXEC | S_IRGRP | S_IWGRP | S_IXGRP |
+	     S_IROTH | S_IXOTH) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Can't set rights on socket file %s! (Error"
+			     " : %s)\n", socknamestr, strerror(errno));
+	}
+	// Set the correct group ownership. 
+	if (globals->ipc_group_name != NULL) {
+		ipc_gid = xsup_ipc_get_group_num(globals->ipc_group_name);
+
+		if (ipc_gid < 0) {
+			/* If we didn't get a valid response, then set the group to root. */
+			ipc_gid = 0;
+		}
+	} else {
+		ipc_gid = xsup_ipc_get_group_num("users");
+		if (ipc_gid < 0)
+			ipc_gid = 0;	// If it isn't found, use root.
+	}
+
+	if (ipc_gid >= 0) {
+		if (chown(socknamestr, -1, ipc_gid) != 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Can't set group ownership on socket "
+				     "file %s! (Error : %s)\n", socknamestr,
+				     strerror(errno));
+		}
+	}
+	// And register our connection handler.
+	event_core_register(ipc_sock, NULL, xsup_ipc_new_socket, LOW_PRIORITY,
+			    "IPC master socket");
+
+	for (i = 0; i < INSTANCES; i++) {
+		ipcs[i].sock = 0;
+		ipcs[i].flags = 0;
+	}
+
+	return XENONE;
 }
 
 /**
@@ -278,108 +274,109 @@ int xsup_ipc_init(uint8_t clear)
  **/
 void xsup_ipc_send_message(int skfd, char *tosend, int tolen)
 {
-  uint8_t *frag = NULL;
-  ipc_header *hdr = NULL;
-  uint32_t offset = 0;
-  uint32_t frag_size = 0;
+	uint8_t *frag = NULL;
+	ipc_header *hdr = NULL;
+	uint32_t offset = 0;
+	uint32_t frag_size = 0;
 
-  if ((!tosend) || (tolen <= 0))
-    {
-      debug_printf(DEBUG_NORMAL, "(IPC) Invalid data passed into "
-		      "xsup_ipc_send_message()!\n");
-      return;
-    }
-
-  debug_printf(DEBUG_IPC, "(IPC) Sending %d byte(s) total.\n", tolen);
-
-  if (tolen < BUFSIZE)
-    {
-      // We can send thiss in a single message.
-      frag = Malloc(tolen + sizeof(ipc_header));
-      if (frag == NULL)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store "
-		       "an IPC fragment to be sent!\n");
-	  return;
+	if ((!tosend) || (tolen <= 0)) {
+		debug_printf(DEBUG_NORMAL, "(IPC) Invalid data passed into "
+			     "xsup_ipc_send_message()!\n");
+		return;
 	}
 
-      hdr = (ipc_header *)&frag[0];
+	debug_printf(DEBUG_IPC, "(IPC) Sending %d byte(s) total.\n", tolen);
 
-      hdr->flag_byte = IPC_MSG_COMPLETE;
-      hdr->length = (uint32_t)htonl(tolen);
+	if (tolen < BUFSIZE) {
+		// We can send thiss in a single message.
+		frag = Malloc(tolen + sizeof(ipc_header));
+		if (frag == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't allocate memory to store "
+				     "an IPC fragment to be sent!\n");
+			return;
+		}
 
-      debug_printf(DEBUG_IPC, "Sending complete packet of %d byte(s).\n",
-		   (tolen + sizeof(ipc_header)));
-      memcpy(&frag[sizeof(ipc_header)], tosend, tolen);
+		hdr = (ipc_header *) & frag[0];
 
-      debug_hex_dump(DEBUG_IPC, (uint8_t *)frag, (tolen + sizeof(ipc_header)));
+		hdr->flag_byte = IPC_MSG_COMPLETE;
+		hdr->length = (uint32_t) htonl(tolen);
 
-      if (send(skfd, frag, (tolen + sizeof(ipc_header)), 0) < 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't send response document to the "
-		       "IPC client!\n");
-          FREE(frag);
-	  return;
+		debug_printf(DEBUG_IPC,
+			     "Sending complete packet of %d byte(s).\n",
+			     (tolen + sizeof(ipc_header)));
+		memcpy(&frag[sizeof(ipc_header)], tosend, tolen);
+
+		debug_hex_dump(DEBUG_IPC, (uint8_t *) frag,
+			       (tolen + sizeof(ipc_header)));
+
+		if (send(skfd, frag, (tolen + sizeof(ipc_header)), 0) < 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't send response document to the "
+				     "IPC client!\n");
+			FREE(frag);
+			return;
+		}
+
+		FREE(frag);
+	} else {
+		// We need to send multiple fragments.
+		frag = Malloc(BUFSIZE);
+		if (frag == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't allocate the buffer needed to "
+				     "send IPC fragments!\n");
+			return;
+		}
+
+		while (offset < tolen) {
+			hdr = (ipc_header *) & frag[0];
+
+			if (offset == 0)	// This is the first packet in a fragment chain.
+			{
+				// This is our first fragment, so include the length.
+				hdr->flag_byte =
+				    (IPC_MSG_TOTAL_SIZE | IPC_MSG_MORE_FRAGS);
+				frag_size = (BUFSIZE - sizeof(ipc_header));
+				hdr->length = htonl(tolen);
+			} else if ((tolen - offset) >
+				   (BUFSIZE - sizeof(ipc_header))) {
+				// We have more fragments.
+				hdr->flag_byte =
+				    (IPC_MSG_MORE_FRAGS | IPC_MSG_FRAG_SIZE);
+				frag_size = (BUFSIZE - sizeof(ipc_header));
+				hdr->length = htonl(frag_size);
+			} else {
+				// This is the last fragment.
+				hdr->flag_byte = IPC_MSG_COMPLETE;
+				hdr->length = 0;
+				frag_size = (tolen - offset);
+			}
+
+			debug_printf(DEBUG_IPC,
+				     "Sending fragment of %d byte(s).\n",
+				     (frag_size + sizeof(ipc_header)));
+
+			memcpy(&frag[sizeof(ipc_header)], &tosend[offset],
+			       frag_size);
+
+			debug_hex_dump(DEBUG_IPC, frag,
+				       (frag_size + sizeof(ipc_header)));
+
+			if (send
+			    (skfd, frag, (frag_size + sizeof(ipc_header)),
+			     0) <= 0) {
+				debug_printf(DEBUG_NORMAL,
+					     "Couldn't send response document "
+					     "to the IPC client!\n");
+				FREE(frag);
+				return;
+			}
+
+			offset += frag_size;
+		}
+		FREE(frag);
 	}
-
-      FREE(frag);
-    }
-  else
-    {
-      // We need to send multiple fragments.
-      frag = Malloc(BUFSIZE);
-      if (frag == NULL)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate the buffer needed to "
-		       "send IPC fragments!\n");
-	  return;
-	}
-
-      while (offset < tolen)
-	{
-	  hdr = (ipc_header *)&frag[0];
-
-	  if (offset == 0)  // This is the first packet in a fragment chain.
-	    {
-	      // This is our first fragment, so include the length.
-	      hdr->flag_byte = (IPC_MSG_TOTAL_SIZE | IPC_MSG_MORE_FRAGS);
-	      frag_size = (BUFSIZE - sizeof(ipc_header));
-	      hdr->length = htonl(tolen);
-	    }
-	  else if ((tolen - offset) > (BUFSIZE - sizeof(ipc_header)))
-	    {
-	      // We have more fragments.
-	      hdr->flag_byte = (IPC_MSG_MORE_FRAGS | IPC_MSG_FRAG_SIZE);
-	      frag_size = (BUFSIZE - sizeof(ipc_header));
-	      hdr->length = htonl(frag_size);
-	    }
-	  else
-	    {
-	      // This is the last fragment.
-	      hdr->flag_byte = IPC_MSG_COMPLETE;
-	      hdr->length = 0;
-	      frag_size = (tolen - offset);
-	    }
-
-	  debug_printf(DEBUG_IPC, "Sending fragment of %d byte(s).\n",
-		       (frag_size + sizeof(ipc_header)));
-
-	  memcpy(&frag[sizeof(ipc_header)], &tosend[offset], frag_size);
-
-	  debug_hex_dump(DEBUG_IPC, frag, (frag_size + sizeof(ipc_header)));
-
-	  if (send(skfd, frag, (frag_size + sizeof(ipc_header)), 0) <= 0)
-	    {
-	      debug_printf(DEBUG_NORMAL, "Couldn't send response document "
-			   "to the IPC client!\n");
-	      FREE(frag);
-	      return;
-	    }
-
-	  offset += frag_size;
-	}
-      FREE(frag);
-    }
 }
 
 /**
@@ -393,21 +390,21 @@ void xsup_ipc_send_message(int skfd, char *tosend, int tolen)
  **/
 int xsup_ipc_send_all(char *message, int msglen)
 {
-  int i = 0;
+	int i = 0;
 
-  if (!xsup_assert((msglen > 0), "msglen > 0", FALSE)) return -1;
-  if (!xsup_assert((message != NULL), "message != NULL", FALSE)) return -1;
+	if (!xsup_assert((msglen > 0), "msglen > 0", FALSE))
+		return -1;
+	if (!xsup_assert((message != NULL), "message != NULL", FALSE))
+		return -1;
 
-  for (i=0; i < INSTANCES; i++)
-    {
-      if ((TEST_FLAG(ipcs[i].flags, IPC_CONNECTED)) &&
-	  (TEST_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY)))
-	{
-	  xsup_ipc_send_message(ipcs[i].sock, message, msglen);
+	for (i = 0; i < INSTANCES; i++) {
+		if ((TEST_FLAG(ipcs[i].flags, IPC_CONNECTED)) &&
+		    (TEST_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY))) {
+			xsup_ipc_send_message(ipcs[i].sock, message, msglen);
+		}
 	}
-    }
 
-  return 0;
+	return 0;
 }
 
 /***********************************************************
@@ -429,82 +426,82 @@ void xsup_ipc_send_eap_notify(char *notify)
  *  as quickly as possible, so we can get on to other interesting things. ;)
  *
  **************************************************************************/
-int xsup_ipc_event(context *ctx, int sock)
+int xsup_ipc_event(context * ctx, int sock)
 {
-  int i = 0;
-  uint8_t *buf = NULL;
-  uint8_t *resbuf = NULL;
-  int resbufsize = 0;
-  ssize_t result = 0;
-  int retval = 0;
+	int i = 0;
+	uint8_t *buf = NULL;
+	uint8_t *resbuf = NULL;
+	int resbufsize = 0;
+	ssize_t result = 0;
+	int retval = 0;
 
-  debug_printf(DEBUG_INT, "(IPC) Processing an event for socket %d!\n", sock);
+	debug_printf(DEBUG_INT, "(IPC) Processing an event for socket %d!\n",
+		     sock);
 
-  for (i=0; i< INSTANCES;i++)
-    {
-      if (ipcs[i].sock == sock) break;
-    }
+	for (i = 0; i < INSTANCES; i++) {
+		if (ipcs[i].sock == sock)
+			break;
+	}
 
-  if (i >= INSTANCES)
-    {
-      debug_printf(DEBUG_NORMAL, "Event was triggered on a handle we know "
-		   "nothing about!?  (This shouldn't happen!)\n");
-      exit(1);
-    }
+	if (i >= INSTANCES) {
+		debug_printf(DEBUG_NORMAL,
+			     "Event was triggered on a handle we know "
+			     "nothing about!?  (This shouldn't happen!)\n");
+		exit(1);
+	}
 
-  buf = Malloc(BUFSIZE);
-  if (buf == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Insufficient memory to create temporary IPC "
-		   "buffer!\n");
-      return -1;
-    }
+	buf = Malloc(BUFSIZE);
+	if (buf == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Insufficient memory to create temporary IPC "
+			     "buffer!\n");
+		return -1;
+	}
 
-  result = recvfrom(ipcs[i].sock, buf, BUFSIZE, 0, 0, 0);
-  if ((result <= 0) || (errno == EPIPE))
-    {
-      debug_printf(DEBUG_INT, "Connection broken.\n");
-      close(ipcs[i].sock);
-      event_core_deregister(ipcs[i].sock);
-      ipcs[i].sock = 0;
-      ipcs[i].flags = 0;
-      FREE(buf);
-      return -1;
-    }
+	result = recvfrom(ipcs[i].sock, buf, BUFSIZE, 0, 0, 0);
+	if ((result <= 0) || (errno == EPIPE)) {
+		debug_printf(DEBUG_INT, "Connection broken.\n");
+		close(ipcs[i].sock);
+		event_core_deregister(ipcs[i].sock);
+		ipcs[i].sock = 0;
+		ipcs[i].flags = 0;
+		FREE(buf);
+		return -1;
+	}
 
-  retval = ipc_callout_process(buf, result, &resbuf, &resbufsize);
-  
-  switch (retval)
-    {
-    case IPC_CHANGE_TO_EVENT_ONLY:
-      // Change this handle to only send out events.
-      SET_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY);
-      debug_printf(DEBUG_INT, "Changed IPC pipe %d to be events only!\n",
-		   ipcs[i].sock);
-      break;
+	retval = ipc_callout_process(buf, result, &resbuf, &resbufsize);
 
-    case IPC_CHANGE_TO_SYNC_ONLY:
-      // Need to change this handle to only do request/response.
-      UNSET_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY);
-      debug_printf(DEBUG_INT, "Changed IPC pipe %d to be request/response "
-		   "only.\n", ipcs[i].sock);
-      break;
+	switch (retval) {
+	case IPC_CHANGE_TO_EVENT_ONLY:
+		// Change this handle to only send out events.
+		SET_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY);
+		debug_printf(DEBUG_INT,
+			     "Changed IPC pipe %d to be events only!\n",
+			     ipcs[i].sock);
+		break;
 
-    default:
-      // Do nothing.
-      break;
-    }
+	case IPC_CHANGE_TO_SYNC_ONLY:
+		// Need to change this handle to only do request/response.
+		UNSET_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY);
+		debug_printf(DEBUG_INT,
+			     "Changed IPC pipe %d to be request/response "
+			     "only.\n", ipcs[i].sock);
+		break;
 
-  // Make sure we have something to send.
-  if ((resbuf != NULL) && (resbufsize > 0))
-    {
-      xsup_ipc_send_message(ipcs[i].sock, (char *)resbuf, resbufsize);
-    }
+	default:
+		// Do nothing.
+		break;
+	}
 
-  FREE(resbuf);
-  FREE(buf);
+	// Make sure we have something to send.
+	if ((resbuf != NULL) && (resbufsize > 0)) {
+		xsup_ipc_send_message(ipcs[i].sock, (char *)resbuf, resbufsize);
+	}
 
-  return XENONE;
+	FREE(resbuf);
+	FREE(buf);
+
+	return XENONE;
 }
 
 /**********************************************************************
@@ -514,58 +511,59 @@ int xsup_ipc_event(context *ctx, int sock)
  *  handler to handle communication with the client.
  *
  **********************************************************************/
-int xsup_ipc_new_socket(context *ctx, int sock)
+int xsup_ipc_new_socket(context * ctx, int sock)
 {
-  int newsock, len, i;
-  struct sockaddr sa;
+	int newsock, len, i;
+	struct sockaddr sa;
 
-  // We got a request for a new IPC client connection.
-  debug_printf(DEBUG_INT, "(IPC) Got a request to connect a new "
-	       "client.\n");
+	// We got a request for a new IPC client connection.
+	debug_printf(DEBUG_INT, "(IPC) Got a request to connect a new "
+		     "client.\n");
 
-  // See if we have an open slot.
-  i = 0;
-  while (i<INSTANCES)
-    {
-      if (ipcs[i].sock == 0) break;
-      i++;
-    }
-
-  if (i >= INSTANCES) 
-    {
-      debug_printf(DEBUG_NORMAL, "No available IPC sockets!\n");
-      return -1;
-    }
-
-  memset(&sa, 0x00, sizeof(sa));
-  len = sizeof(sa);
-  newsock = accept(ipc_sock, (struct sockaddr *)&sa, (unsigned int *)&len);
-  if (newsock <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Got a request for a new IPC "
-		   "client connection.  But, accept() returned"
-		   " an error!\n");
-      debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno, 
-		   strerror(errno));
-    } else {
-      debug_printf(DEBUG_INT, "Registering a new socket handler.\n");
-
-      // Record the socket number we want to listen to.
-      ipcs[i].sock = newsock;
-      ipcs[i].flags = IPC_CONNECTED;
- 
-      if (event_core_register(newsock, NULL, xsup_ipc_event, 
-			      LOW_PRIORITY, "client msg socket") < 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "No available socket handlers!\n");
-	  close(newsock);
+	// See if we have an open slot.
+	i = 0;
+	while (i < INSTANCES) {
+		if (ipcs[i].sock == 0)
+			break;
+		i++;
 	}
 
-      debug_printf(DEBUG_NORMAL, "Xsupplicant %s has connected a new client."
-		   "\n", VERSION);
-    }
+	if (i >= INSTANCES) {
+		debug_printf(DEBUG_NORMAL, "No available IPC sockets!\n");
+		return -1;
+	}
 
-  return XENONE;
+	memset(&sa, 0x00, sizeof(sa));
+	len = sizeof(sa);
+	newsock =
+	    accept(ipc_sock, (struct sockaddr *)&sa, (unsigned int *)&len);
+	if (newsock <= 0) {
+		debug_printf(DEBUG_NORMAL, "Got a request for a new IPC "
+			     "client connection.  But, accept() returned"
+			     " an error!\n");
+		debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno,
+			     strerror(errno));
+	} else {
+		debug_printf(DEBUG_INT, "Registering a new socket handler.\n");
+
+		// Record the socket number we want to listen to.
+		ipcs[i].sock = newsock;
+		ipcs[i].flags = IPC_CONNECTED;
+
+		if (event_core_register(newsock, NULL, xsup_ipc_event,
+					LOW_PRIORITY, "client msg socket") < 0)
+		{
+			debug_printf(DEBUG_NORMAL,
+				     "No available socket handlers!\n");
+			close(newsock);
+		}
+
+		debug_printf(DEBUG_NORMAL,
+			     "Xsupplicant %s has connected a new client." "\n",
+			     VERSION);
+	}
+
+	return XENONE;
 }
 
 /**
@@ -574,20 +572,19 @@ int xsup_ipc_new_socket(context *ctx, int sock)
  **/
 void xsup_ipc_cleanup()
 {
-  char *error;
+	char *error;
 
-  debug_printf(DEBUG_DEINIT | DEBUG_IPC, "Shutting down IPC socket!\n");
-  debug_printf(DEBUG_INT, "Closing socket descriptor #%d\n", ipc_sock);
+	debug_printf(DEBUG_DEINIT | DEBUG_IPC, "Shutting down IPC socket!\n");
+	debug_printf(DEBUG_INT, "Closing socket descriptor #%d\n", ipc_sock);
 
-  if (ipc_sock < 0) return;   // Nothing to do.
+	if (ipc_sock < 0)
+		return;		// Nothing to do.
 
-  if (close(ipc_sock) < 0)
-    {
-      error = strerror(errno);
-      debug_printf(DEBUG_NORMAL, "Error closing socket!  (Error : %s)\n",
-		   error);
-    }
+	if (close(ipc_sock) < 0) {
+		error = strerror(errno);
+		debug_printf(DEBUG_NORMAL,
+			     "Error closing socket!  (Error : %s)\n", error);
+	}
 
-  unlink(socknamestr);
+	unlink(socknamestr);
 }
-

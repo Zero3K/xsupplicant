@@ -64,7 +64,7 @@
 #define _XSUPGUI_XML_COMMON_H_
 
 xmlDocPtr xsupgui_xml_common_build_msg();
-xmlDocPtr xsupgui_xml_common_validate_msg(xmlChar *xmlbuf, int bufsize);
+xmlDocPtr xsupgui_xml_common_validate_msg(xmlChar * xmlbuf, int bufsize);
 int xsupgui_xml_common_convert_amp(char *instr, char **outstr);
 
-#endif  // _XSUPGUI_XML_COMMON_H_
+#endif				// _XSUPGUI_XML_COMMON_H_

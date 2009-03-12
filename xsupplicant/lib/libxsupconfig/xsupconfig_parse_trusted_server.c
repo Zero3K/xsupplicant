@@ -29,160 +29,151 @@
 #include "src/xsup_err.h"
 #include "liblist/liblist.h"
 
-void *xsupconfig_parse_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server(void **attr, uint8_t config_type,
+				      xmlNodePtr node)
 {
-  struct config_trusted_servers *myservers = NULL;
-  struct config_trusted_server *newserver = NULL;
+	struct config_trusted_servers *myservers = NULL;
+	struct config_trusted_server *newserver = NULL;
 
-  myservers = (*attr);
+	myservers = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Building trusted server config.\n");
+	printf("Building trusted server config.\n");
 #endif
 
-  if (xsupconfig_defaults_create_trusted_server(&newserver) != XENONE)
-  {
-	printf("Couldn't allocate memory to store a trusted server configuration!"
-			"  (Line %ld)\n", xsupconfig_parse_get_line_num());
-	exit(1);
-  }
+	if (xsupconfig_defaults_create_trusted_server(&newserver) != XENONE) {
+		printf
+		    ("Couldn't allocate memory to store a trusted server configuration!"
+		     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(1);
+	}
 
-  liblist_add_to_tail((genlist **)&myservers->servers, (genlist *)newserver);
+	liblist_add_to_tail((genlist **) & myservers->servers,
+			    (genlist *) newserver);
 
-  return newserver;
+	return newserver;
 }
 
-void *xsupconfig_parse_trusted_server_name(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_name(void **attr, uint8_t config_type,
+					   xmlNodePtr node)
 {
-  struct config_trusted_server *myserver = NULL;
-  struct config_trusted_server *check = NULL;
-  char *value = NULL;
-  char *original = NULL;
-  char *newname = NULL;
-  int done = 0, len = 0;
+	struct config_trusted_server *myserver = NULL;
+	struct config_trusted_server *check = NULL;
+	char *value = NULL;
+	char *original = NULL;
+	char *newname = NULL;
+	int done = 0, len = 0;
 
-  value = (char *)xmlNodeGetContent(node);
-  original = _strdup(value);
-  xmlFree(value);
-  value = original;
-  original = NULL;
+	value = (char *)xmlNodeGetContent(node);
+	original = _strdup(value);
+	xmlFree(value);
+	value = original;
+	original = NULL;
 
-  myserver = (*attr);
+	myserver = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Trusted server name is '%s'!\n", value);
+	printf("Trusted server name is '%s'!\n", value);
 #endif
 
-	if (xsup_common_in_startup() == TRUE)
-	{
-	  original = _strdup(value);
+	if (xsup_common_in_startup() == TRUE) {
+		original = _strdup(value);
 
-	  while (done == 0)
-	  {
-		  check = NULL;
-		  if (conf_trusted_servers != NULL)
-		  {
-			check = conf_trusted_servers->servers;
-		  }
+		while (done == 0) {
+			check = NULL;
+			if (conf_trusted_servers != NULL) {
+				check = conf_trusted_servers->servers;
+			}
 
-		  if (check != NULL)
-			{
-			  // Make sure we don't already have it.
-			  while (check != NULL)
-			  {
-				  if (check->name != NULL)
-				  {
-					  if (strcmp(check->name, value) == 0) break;
-				  }
+			if (check != NULL) {
+				// Make sure we don't already have it.
+				while (check != NULL) {
+					if (check->name != NULL) {
+						if (strcmp(check->name, value)
+						    == 0)
+							break;
+					}
 
-				  check = check->next;
-			  }
+					check = check->next;
+				}
 
-			  if (check != NULL)
-			  {
-				  if (newname != NULL)
-				  {
-					  free(newname);
-					  newname = NULL;
-				  }
+				if (check != NULL) {
+					if (newname != NULL) {
+						free(newname);
+						newname = NULL;
+					}
 
-				  len = strlen(value) + strlen(" (dup)") + 1;
-				  newname = malloc(strlen(value) + strlen(" (dup)") + 1);
-				  if (newname == NULL)
-				  {
-					 xsupconfig_common_log("Couldn't allocate memory to store duplicate trusted server!\n");
-				  }
-				  else
-				  {
-					  memset(newname, 0x00, len);
-					  strcpy(newname, value);
-					  strcat(newname, " (dup)");
+					len =
+					    strlen(value) + strlen(" (dup)") +
+					    1;
+					newname =
+					    malloc(strlen(value) +
+						   strlen(" (dup)") + 1);
+					if (newname == NULL) {
+						xsupconfig_common_log
+						    ("Couldn't allocate memory to store duplicate trusted server!\n");
+					} else {
+						memset(newname, 0x00, len);
+						strcpy(newname, value);
+						strcat(newname, " (dup)");
 
-					  // Then, replace "value".
-					  free(value);
-					  value = newname;
-					  newname = NULL;
-				  }
-			  }
-			  else
-			  {
-				  // We have a valid name.
-				  done = 1;
-			  }
-		  }
-		  else
-		  {
-			  // There is nothing to check, so it must be legit.
-			  done = 1;
-		  }
-	  }
+						// Then, replace "value".
+						free(value);
+						value = newname;
+						newname = NULL;
+					}
+				} else {
+					// We have a valid name.
+					done = 1;
+				}
+			} else {
+				// There is nothing to check, so it must be legit.
+				done = 1;
+			}
+		}
 
-	  if (strcmp(original, value) != 0)
-	  {
-		  xsupconfig_common_log("There was a duplicate trusted server named '%s'.  The duplicate has been renamed '%s'.  Any connections that use this trusted server may not work as expected.  You should verify those connections.", original, value);
-	  }
+		if (strcmp(original, value) != 0) {
+			xsupconfig_common_log
+			    ("There was a duplicate trusted server named '%s'.  The duplicate has been renamed '%s'.  Any connections that use this trusted server may not work as expected.  You should verify those connections.",
+			     original, value);
+		}
 
-	  free(original);
+		free(original);
 	}
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		myserver->name = NULL;
-	}
-	else
-	{
+	} else {
 		myserver->name = value;
 	}
 
-  return myserver;
+	return myserver;
 }
 
-void *xsupconfig_parse_trusted_server_type(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_type(void **attr, uint8_t config_type,
+					   xmlNodePtr node)
 {
-  struct config_trusted_server *myserver = NULL;
-  char *value = NULL;
+	struct config_trusted_server *myserver = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  myserver = (*attr);
+	myserver = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Trusted server store type is '%s'!\n", value);
+	printf("Trusted server store type is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		myserver->store_type = NULL;
-	}
-	else
-	{
+	} else {
 		myserver->store_type = _strdup(value);
 		xmlFree(value);
 	}
 
-  return myserver;
+	return myserver;
 }
 
 /**
@@ -197,142 +188,151 @@ void *xsupconfig_parse_trusted_server_type(void **attr, uint8_t config_type, xml
  *
  * \retval ptr to the active configuration structure that we are populating in memory.
  **/
-void *xsupconfig_parse_trusted_server_location(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_location(void **attr, uint8_t config_type,
+					       xmlNodePtr node)
 {
-  struct config_trusted_server *myserver = NULL;
-  char *value = NULL;
+	struct config_trusted_server *myserver = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  myserver = (*attr);
+	myserver = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Trusted server store location is '%s'!\n", value);
+	printf("Trusted server store location is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		// Since we can have more than one location in a trusted server, we should just free the
 		// "value" variable.  If we set myserver->location to NULL, then we would end up leaking memory
 		// and making a big mess.  ;)
 		xmlFree(value);
-	}
-	else
-	{
+	} else {
 		myserver->num_locations++;
-		myserver->location = realloc(myserver->location, myserver->num_locations*(sizeof(myserver->location)));
-		myserver->location[myserver->num_locations-1] = _strdup(value);
+		myserver->location =
+		    realloc(myserver->location,
+			    myserver->num_locations *
+			    (sizeof(myserver->location)));
+		myserver->location[myserver->num_locations - 1] =
+		    _strdup(value);
 		xmlFree(value);
 	}
 
-  return myserver;
+	return myserver;
 }
 
-void *xsupconfig_parse_trusted_server_cn(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_cn(void **attr, uint8_t config_type,
+					 xmlNodePtr node)
 {
-  struct config_trusted_server *myserver = NULL;
-  char *value = NULL;
+	struct config_trusted_server *myserver = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  myserver = (*attr);
+	myserver = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Trusted server CN is '%s'!\n", value);
+	printf("Trusted server CN is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		myserver->common_name = NULL;
-	}
-	else
-	{
+	} else {
 		myserver->common_name = _strdup(value);
 		xmlFree(value);
 	}
 
-  return myserver;
+	return myserver;
 }
 
-void *xsupconfig_parse_trusted_server_ecn(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_trusted_server_ecn(void **attr, uint8_t config_type,
+					  xmlNodePtr node)
 {
-  struct config_trusted_server *myserver = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
+	struct config_trusted_server *myserver = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
 
-  myserver = (*attr);
+	myserver = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Trusted server Exact Common Name : %s\n", value);
+	printf("Trusted server Exact Common Name : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result > 1)
-    {
-      printf("Invalid value was passed for 'Exact_Common_Name'!  Will use the "
-             "default value of no.  (Line %ld)\n",
-	     xsupconfig_parse_get_line_num());
-	  UNSET_FLAG(myserver->flags, CONFIG_EXACT_COMMON_NAME);
-    }
-  else
-    {
+	if (result > 1) {
+		printf
+		    ("Invalid value was passed for 'Exact_Common_Name'!  Will use the "
+		     "default value of no.  (Line %ld)\n",
+		     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(myserver->flags, CONFIG_EXACT_COMMON_NAME);
+	} else {
 		if (result == 1)
 			SET_FLAG(myserver->flags, CONFIG_EXACT_COMMON_NAME);
 		else
 			UNSET_FLAG(myserver->flags, CONFIG_EXACT_COMMON_NAME);
-    }
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return myserver;
+	return myserver;
 }
 
-void *xsupconfig_parse_volatile(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_volatile(void **attr, uint8_t config_type,
+				xmlNodePtr node)
 {
-  struct config_trusted_server *myserver = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
+	struct config_trusted_server *myserver = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
 
-  myserver = (*attr);
+	myserver = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Volatile : %s\n", value);
+	printf("Volatile : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result > 1)
-    {
-      printf("Invalid value was passed for 'Volatile'!  Will use the "
-             "default value of no.  (Line %ld)\n",
-	     xsupconfig_parse_get_line_num());
-	  UNSET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
-    }
-  else
-    {
+	if (result > 1) {
+		printf("Invalid value was passed for 'Volatile'!  Will use the "
+		       "default value of no.  (Line %ld)\n",
+		       xsupconfig_parse_get_line_num());
+		UNSET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
+	} else {
 		if (result == 1)
 			SET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
 		else
 			UNSET_FLAG(myserver->flags, CONFIG_VOLATILE_SERVER);
-    }
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return myserver;
+	return myserver;
 }
 
 parser trusted_server[] = {
-  {"Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_name},
-  {"Store_Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_type},
-  {"Location", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_location},
-  {"Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_cn},
-  {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_volatile},
-  {"Exact_Common_Name", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_trusted_server_ecn},
+	{"Name", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_trusted_server_name}
+	,
+	{"Store_Type", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_trusted_server_type}
+	,
+	{"Location", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_trusted_server_location}
+	,
+	{"Common_Name", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_trusted_server_cn}
+	,
+	{"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_volatile}
+	,
+	{"Exact_Common_Name", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_trusted_server_ecn}
+	,
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

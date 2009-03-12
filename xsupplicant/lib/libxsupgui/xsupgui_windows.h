@@ -63,7 +63,6 @@
 #ifndef _XSUPGUI_WINDOWS_H_
 #define _XSUPGUI_WINDOWS_H_
 
-
 int xsupgui_windows_connect();
 int xsupgui_windows_connect_event_listener();
 int xsupgui_windows_disconnect();
@@ -73,4 +72,4 @@ int xsupgui_windows_send(unsigned char *, int, unsigned char **, int *);
 int xsupgui_windows_send_to_event(unsigned char *, int);
 xmlDocPtr xsupgui_windows_get_event_doc();
 
-#endif // _XSUPGUI_WINDOWS_H_
+#endif				// _XSUPGUI_WINDOWS_H_

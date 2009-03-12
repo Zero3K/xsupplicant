@@ -11,4 +11,4 @@
 
 struct interfaces *xsupconfcheck_common_is_live_int(char *);
 
-#endif // _XSUPCONFCHECK_COMMON_H_
+#endif				// _XSUPCONFCHECK_COMMON_H_

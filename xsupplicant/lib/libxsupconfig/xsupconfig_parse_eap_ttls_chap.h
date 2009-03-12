@@ -15,4 +15,4 @@ extern parser eap_ttls_chap[];
 
 void *xsupconfig_parse_eap_ttls_chap(void **, uint8_t, xmlNodePtr node);
 
-#endif // __XSUPCONFIG_PARSE_EAP_TTLS_CHAP_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_TTLS_CHAP_H__

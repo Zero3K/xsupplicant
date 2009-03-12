@@ -25,7 +25,6 @@
 #include "libxsupconfwrite/xsupconfwrite_interface.h"
 #include "libxsupconfwrite/xsupconfwrite_trusted_server.h"
 
-
 /**
  * \brief Set the profile configuration for a single profile.
  *
@@ -37,74 +36,72 @@
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on failure
  **/
-int xsupgui_request_set_profile_config(uint8_t config_type, config_profiles *prof_config)
+int xsupgui_request_set_profile_config(uint8_t config_type,
+				       config_profiles * prof_config)
 {
-  xmlDocPtr doc = NULL;
-  xmlDocPtr retdoc = NULL;
-  xmlNodePtr n = NULL, t = NULL;
-  int done = REQUEST_SUCCESS;
-  int err = 0;
-  char res[5];
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int done = REQUEST_SUCCESS;
+	int err = 0;
+	char res[5];
 
-  if (prof_config == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (prof_config == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
-  doc = xsupgui_xml_common_build_msg();
-  if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
-  n = xmlDocGetRootElement(doc);
-  if (n == NULL)
-    {
-      done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
-      goto finish_set_profile_config;
-    }
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) {
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto finish_set_profile_config;
+	}
 
-  n = xmlNewChild(n, NULL, (xmlChar *)"Set_Profile_Config", NULL);
-  if (n == NULL)
-    {
-      done = IPC_ERROR_CANT_CREATE_REQUEST;
-      goto finish_set_profile_config;
-    }
+	n = xmlNewChild(n, NULL, (xmlChar *) "Set_Profile_Config", NULL);
+	if (n == NULL) {
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_set_profile_config;
+	}
 
-  sprintf(res, "%d", config_type);
-  if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
-  {
-	  done = IPC_ERROR_CANT_CREATE_REQUEST;
-	  goto finish_set_profile_config;
-  }
+	sprintf(res, "%d", config_type);
+	if (xmlNewChild(n, NULL, (xmlChar *) "Config_Type", (xmlChar *) res) ==
+	    NULL) {
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_set_profile_config;
+	}
 
-  t = xsupconfwrite_profile_create_tree(prof_config, config_type, TRUE);
-  if (t == NULL)
-  {
-	  done = IPC_ERROR_CANT_CREATE_REQUEST;
-	  goto finish_set_profile_config;
-  }
+	t = xsupconfwrite_profile_create_tree(prof_config, config_type, TRUE);
+	if (t == NULL) {
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_set_profile_config;
+	}
 
-  if (xmlAddChild(n, t) == NULL)
-  {
-	  done = IPC_ERROR_CANT_ADD_NODE;
-	  goto finish_set_profile_config;
-  }
+	if (xmlAddChild(n, t) == NULL) {
+		done = IPC_ERROR_CANT_ADD_NODE;
+		goto finish_set_profile_config;
+	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_set_profile_config;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_set_profile_config;
 	}
 
-	done = xsupgui_request_is_ack(retdoc); 
+	done = xsupgui_request_is_ack(retdoc);
 
-finish_set_profile_config:
-	if (doc) xmlFreeDoc(doc);
-	if (retdoc) xmlFreeDoc(retdoc);
+ finish_set_profile_config:
+	if (doc)
+		xmlFreeDoc(doc);
+	if (retdoc)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -119,66 +116,63 @@ finish_set_profile_config:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on failure
  **/
-int xsupgui_request_set_interface_config(config_interfaces *int_config)
+int xsupgui_request_set_interface_config(config_interfaces * int_config)
 {
-  xmlDocPtr doc = NULL;
-  xmlDocPtr retdoc = NULL;
-  xmlNodePtr n = NULL, t = NULL;
-  int done = REQUEST_SUCCESS;
-  int err = 0;
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int done = REQUEST_SUCCESS;
+	int err = 0;
 
-  if (int_config == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (int_config == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
-  doc = xsupgui_xml_common_build_msg();
-  if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
-  n = xmlDocGetRootElement(doc);
-  if (n == NULL)
-    {
-      done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
-      goto finish_set_interface_config;
-    }
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) {
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto finish_set_interface_config;
+	}
 
-  n = xmlNewChild(n, NULL, (xmlChar *)"Set_Interface_Config", NULL);
-  if (n == NULL)
-    {
-      done = IPC_ERROR_CANT_CREATE_REQUEST;
-      goto finish_set_interface_config;
-    }
+	n = xmlNewChild(n, NULL, (xmlChar *) "Set_Interface_Config", NULL);
+	if (n == NULL) {
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_set_interface_config;
+	}
 
-  t = xsupconfwrite_interface_create_tree(int_config, TRUE);
-  if (t == NULL)
-  {
-	  done = IPC_ERROR_UNSPEC_REQ_FAILURE;
-	  goto finish_set_interface_config;
-  }
+	t = xsupconfwrite_interface_create_tree(int_config, TRUE);
+	if (t == NULL) {
+		done = IPC_ERROR_UNSPEC_REQ_FAILURE;
+		goto finish_set_interface_config;
+	}
 
-  if (xmlAddChild(n, t) == NULL)
-  {
-	  done = IPC_ERROR_CANT_ADD_NODE;
-	  goto finish_set_interface_config;
-  }
+	if (xmlAddChild(n, t) == NULL) {
+		done = IPC_ERROR_CANT_ADD_NODE;
+		goto finish_set_interface_config;
+	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_set_interface_config;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_set_interface_config;
 	}
 
-	done = xsupgui_request_is_ack(retdoc); 
+	done = xsupgui_request_is_ack(retdoc);
 
-finish_set_interface_config:
-	if (doc) xmlFreeDoc(doc);
-	if (retdoc) xmlFreeDoc(retdoc);
+ finish_set_interface_config:
+	if (doc)
+		xmlFreeDoc(doc);
+	if (retdoc)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -194,66 +188,63 @@ finish_set_interface_config:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval >299 on failure
  **/
-int xsupgui_request_set_globals_config(config_globals *globals)
+int xsupgui_request_set_globals_config(config_globals * globals)
 {
-  xmlDocPtr doc = NULL;
-  xmlDocPtr retdoc = NULL;
-  xmlNodePtr n = NULL, t = NULL;
-  int done = REQUEST_SUCCESS;
-  int err = 0;
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int done = REQUEST_SUCCESS;
+	int err = 0;
 
-  if (globals == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (globals == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
-  doc = xsupgui_xml_common_build_msg();
-  if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
-  n = xmlDocGetRootElement(doc);
-  if (n == NULL)
-    {
-      done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
-      goto finish_set_globals_config;
-    }
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) {
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto finish_set_globals_config;
+	}
 
-  n = xmlNewChild(n, NULL, (xmlChar *)"Set_Globals_Config", NULL);
-  if (n == NULL)
-    {
-      done = IPC_ERROR_CANT_CREATE_REQUEST;
-      goto finish_set_globals_config;
-    }
+	n = xmlNewChild(n, NULL, (xmlChar *) "Set_Globals_Config", NULL);
+	if (n == NULL) {
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_set_globals_config;
+	}
 
-  t = xsupconfwrite_globals_create_tree(globals, TRUE);
-  if (t == NULL)
-  {
-	  done = IPC_ERROR_UNSPEC_REQ_FAILURE;
-	  goto finish_set_globals_config;
-  }
+	t = xsupconfwrite_globals_create_tree(globals, TRUE);
+	if (t == NULL) {
+		done = IPC_ERROR_UNSPEC_REQ_FAILURE;
+		goto finish_set_globals_config;
+	}
 
-  if (xmlAddChild(n, t) == NULL)
-  {
-	  done = IPC_ERROR_CANT_ADD_NODE;
-	  goto finish_set_globals_config;
-  }
+	if (xmlAddChild(n, t) == NULL) {
+		done = IPC_ERROR_CANT_ADD_NODE;
+		goto finish_set_globals_config;
+	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_set_globals_config;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_set_globals_config;
 	}
 
-	done = xsupgui_request_is_ack(retdoc); 
+	done = xsupgui_request_is_ack(retdoc);
 
-finish_set_globals_config:
-	if (doc) xmlFreeDoc(doc);
-	if (retdoc) xmlFreeDoc(retdoc);
+ finish_set_globals_config:
+	if (doc)
+		xmlFreeDoc(doc);
+	if (retdoc)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -268,7 +259,8 @@ finish_set_globals_config:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_enum **servers)
+int xsupgui_request_enum_trusted_servers(uint8_t config_type,
+					 trusted_servers_enum ** servers)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -279,126 +271,113 @@ int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_en
 	trusted_servers_enum *svrs = NULL;
 	char temp[5];
 
-	if (servers == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (servers == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*servers) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto finish_enum_trusted_servers;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Enum_Trusted_Servers", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Enum_Trusted_Servers", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_trusted_servers;
 	}
 
 	sprintf((char *)&temp, "%d", config_type);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Config_Type", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_trusted_servers;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_enum_trusted_servers;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_enum_trusted_servers;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto finish_enum_trusted_servers;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = xsupgui_request_find_node(n->children, "Trusted_Servers_List");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE;
 		goto finish_enum_trusted_servers;
 	}
 
 	t = xsupgui_request_find_node(n->children, "Trusted_Servers_Count");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_trusted_servers;
 	}
 
 	content = xmlNodeGetContent(t);
-	if ((content == NULL) || (strlen((char *)content) == 0))
-	{
+	if ((content == NULL) || (strlen((char *)content) == 0)) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_trusted_servers;
 	}
-
 #ifdef REQUEST_DEBUG
 	printf("%s trusted server(s) found!\n", content);
 #endif
-	if (content != NULL)
-	{
+	if (content != NULL) {
 		numsvrs = atoi((char *)content);
 
-		if (content != NULL) xmlFree(content);
-	}
-	else
-	{
+		if (content != NULL)
+			xmlFree(content);
+	} else {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_trusted_servers;
 	}
 
 	// Allocate memory for our return structure.
-	svrs = malloc(sizeof(trusted_servers_enum)*(numsvrs+1));
-	if (svrs == NULL) 
-	{
+	svrs = malloc(sizeof(trusted_servers_enum) * (numsvrs + 1));
+	if (svrs == NULL) {
 #ifdef REQUEST_DEBUG
-		printf("Couldn't allocate memory to return trusted servers data!\n");
+		printf
+		    ("Couldn't allocate memory to return trusted servers data!\n");
 #endif
 		done = IPC_ERROR_CANT_ALLOCATE_MEMORY;
 		goto finish_enum_trusted_servers;
 	}
-
 	// Clear the memory.
-	memset(svrs, 0x00, (sizeof(trusted_servers_enum)*(numsvrs+1)));
+	memset(svrs, 0x00, (sizeof(trusted_servers_enum) * (numsvrs + 1)));
 
 	n = n->children;
-	for (i=0; i <numsvrs; i++)
-	{
+	for (i = 0; i < numsvrs; i++) {
 		n = xsupgui_request_find_node(n, "Server");
-		if (n == NULL)
-		{
-			if (svrs != NULL) free(svrs);
+		if (n == NULL) {
+			if (svrs != NULL)
+				free(svrs);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_trusted_servers;
 		}
 
 		x = xsupgui_request_find_node(n->children, "Server_Name");
-		if (x == NULL) 
-		{
-			if (svrs != NULL) free(svrs);
+		if (x == NULL) {
+			if (svrs != NULL)
+				free(svrs);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_trusted_servers;
 		}
@@ -406,9 +385,9 @@ int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_en
 		svrs[i].name = (char *)xmlNodeGetContent(x);
 
 		x = xsupgui_request_find_node(n->children, "Config_Type");
-		if (x == NULL)
-		{
-			if (svrs != NULL) free(svrs);
+		if (x == NULL) {
+			if (svrs != NULL)
+				free(svrs);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_trusted_servers;
 		}
@@ -423,11 +402,13 @@ int xsupgui_request_enum_trusted_servers(uint8_t config_type, trusted_servers_en
 	(*servers) = svrs;
 	done = REQUEST_SUCCESS;
 
-finish_enum_trusted_servers:
-	if (doc) xmlFreeDoc(doc);
-	if (retdoc) xmlFreeDoc(retdoc);
+ finish_enum_trusted_servers:
+	if (doc)
+		xmlFreeDoc(doc);
+	if (retdoc)
+		xmlFreeDoc(retdoc);
 
-	return done;  
+	return done;
 }
 
 /**
@@ -439,17 +420,17 @@ finish_enum_trusted_servers:
  * \retval >299 on failure
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_free_trusted_servers_enum(trusted_servers_enum **servers)
+int xsupgui_request_free_trusted_servers_enum(trusted_servers_enum ** servers)
 {
 	int i = 0;
 	trusted_servers_enum *svrs;
 
 	svrs = (*servers);
 
-	if (svrs == NULL) return REQUEST_SUCCESS;
+	if (svrs == NULL)
+		return REQUEST_SUCCESS;
 
-	while (svrs[i].name != NULL)
-	{
+	while (svrs[i].name != NULL) {
 		free(svrs[i].name);
 		svrs[i].name = NULL;
 		i++;
@@ -459,7 +440,7 @@ int xsupgui_request_free_trusted_servers_enum(trusted_servers_enum **servers)
 
 	(*servers) = NULL;
 
-  return REQUEST_SUCCESS;
+	return REQUEST_SUCCESS;
 }
 
 /**
@@ -485,53 +466,49 @@ int xsupgui_request_write_config(uint8_t config_type, char *filename)
 	char temp[5];
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto finish_write_config;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Write_Config", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Write_Config", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_write_config;
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"Filename", (xmlChar *)filename) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Filename", (xmlChar *) filename)
+	    == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_write_config;
 	}
 
 	sprintf((char *)&temp, "%d", config_type);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Config_Type", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Config_Type", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_ADD_NODE;
 		goto finish_write_config;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_write_config;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_write_config;
 	}
 
 	done = xsupgui_request_is_ack(retdoc);
 
-finish_write_config:
+ finish_write_config:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -552,9 +529,11 @@ finish_write_config:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_delete_profile_config(uint8_t config_type, char *prof_name, int force)
+int xsupgui_request_delete_profile_config(uint8_t config_type, char *prof_name,
+					  int force)
 {
-	return xsupgui_request_delete_some_conf("Delete_Profile_Config", "Name", prof_name, config_type, force);
+	return xsupgui_request_delete_some_conf("Delete_Profile_Config", "Name",
+						prof_name, config_type, force);
 }
 
 /**
@@ -571,9 +550,12 @@ int xsupgui_request_delete_profile_config(uint8_t config_type, char *prof_name, 
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_delete_connection_config(uint8_t config_type, char *conn_name)
+int xsupgui_request_delete_connection_config(uint8_t config_type,
+					     char *conn_name)
 {
-	return xsupgui_request_delete_some_conf("Delete_Connection_Config", "Name", conn_name, config_type, -1);
+	return xsupgui_request_delete_some_conf("Delete_Connection_Config",
+						"Name", conn_name, config_type,
+						-1);
 }
 
 /**
@@ -592,7 +574,9 @@ int xsupgui_request_delete_connection_config(uint8_t config_type, char *conn_nam
  **/
 int xsupgui_request_delete_interface_config(char *intname)
 {
-	return xsupgui_request_delete_some_conf("Delete_Interface_Config", "Description", intname, CONFIG_LOAD_GLOBAL, -1);
+	return xsupgui_request_delete_some_conf("Delete_Interface_Config",
+						"Description", intname,
+						CONFIG_LOAD_GLOBAL, -1);
 }
 
 /**
@@ -611,74 +595,72 @@ int xsupgui_request_delete_interface_config(char *intname)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_set_trusted_server_config(uint8_t config_type, config_trusted_server *tserver)
+int xsupgui_request_set_trusted_server_config(uint8_t config_type,
+					      config_trusted_server * tserver)
 {
-  xmlDocPtr doc = NULL;
-  xmlDocPtr retdoc = NULL;
-  xmlNodePtr n = NULL, t = NULL;
-  int done = REQUEST_SUCCESS;
-  int err = 0;
-  char res[5];
+	xmlDocPtr doc = NULL;
+	xmlDocPtr retdoc = NULL;
+	xmlNodePtr n = NULL, t = NULL;
+	int done = REQUEST_SUCCESS;
+	int err = 0;
+	char res[5];
 
-  if (tserver == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (tserver == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
-  doc = xsupgui_xml_common_build_msg();
-  if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	doc = xsupgui_xml_common_build_msg();
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
-  n = xmlDocGetRootElement(doc);
-  if (n == NULL)
-    {
-      done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
-      goto finish_set_trusted_server_config;
-    }
+	n = xmlDocGetRootElement(doc);
+	if (n == NULL) {
+		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
+		goto finish_set_trusted_server_config;
+	}
 
-  n = xmlNewChild(n, NULL, (xmlChar *)"Set_Trusted_Server_Config", NULL);
-  if (n == NULL)
-    {
-      done = IPC_ERROR_CANT_CREATE_REQUEST;
-      goto finish_set_trusted_server_config;
-    }
+	n = xmlNewChild(n, NULL, (xmlChar *) "Set_Trusted_Server_Config", NULL);
+	if (n == NULL) {
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_set_trusted_server_config;
+	}
 
-  sprintf(res, "%d", config_type);
-  if (xmlNewChild(n, NULL, (xmlChar *)"Config_Type", (xmlChar *)res) == NULL)
-  {
-	  done = IPC_ERROR_CANT_CREATE_REQUEST;
-	  goto finish_set_trusted_server_config;
-  }
+	sprintf(res, "%d", config_type);
+	if (xmlNewChild(n, NULL, (xmlChar *) "Config_Type", (xmlChar *) res) ==
+	    NULL) {
+		done = IPC_ERROR_CANT_CREATE_REQUEST;
+		goto finish_set_trusted_server_config;
+	}
 
-  t = xsupconfwrite_trusted_server_create_tree(tserver, TRUE);
-  if (t == NULL)
-  {
-	  done = IPC_ERROR_UNSPEC_REQ_FAILURE;
-	  goto finish_set_trusted_server_config;
-  }
+	t = xsupconfwrite_trusted_server_create_tree(tserver, TRUE);
+	if (t == NULL) {
+		done = IPC_ERROR_UNSPEC_REQ_FAILURE;
+		goto finish_set_trusted_server_config;
+	}
 
-  if (xmlAddChild(n, t) == NULL)
-  {
-	  done = IPC_ERROR_CANT_ADD_NODE;
-	  goto finish_set_trusted_server_config;
-  }
+	if (xmlAddChild(n, t) == NULL) {
+		done = IPC_ERROR_CANT_ADD_NODE;
+		goto finish_set_trusted_server_config;
+	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_set_trusted_server_config;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_set_trusted_server_config;
 	}
 
-	done = xsupgui_request_is_ack(retdoc); 
+	done = xsupgui_request_is_ack(retdoc);
 
-finish_set_trusted_server_config:
-	if (doc) xmlFreeDoc(doc);
-	if (retdoc) xmlFreeDoc(retdoc);
+ finish_set_trusted_server_config:
+	if (doc)
+		xmlFreeDoc(doc);
+	if (retdoc)
+		xmlFreeDoc(retdoc);
 
 	return done;
 }
@@ -694,11 +676,11 @@ finish_set_trusted_server_config:
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_free_config_globals(config_globals **globals)
+int xsupgui_request_free_config_globals(config_globals ** globals)
 {
 	delete_config_globals(globals);
 
-  return REQUEST_SUCCESS;
+	return REQUEST_SUCCESS;
 }
 
 /**
@@ -712,11 +694,11 @@ int xsupgui_request_free_config_globals(config_globals **globals)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_free_profile_config(config_profiles **profile)
+int xsupgui_request_free_profile_config(config_profiles ** profile)
 {
 	delete_config_profiles(profile);
 
-  return REQUEST_SUCCESS;
+	return REQUEST_SUCCESS;
 }
 
 /**
@@ -730,11 +712,11 @@ int xsupgui_request_free_profile_config(config_profiles **profile)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_free_connection_config(config_connection **conn)
+int xsupgui_request_free_connection_config(config_connection ** conn)
 {
 	delete_config_connections(conn);
 
-  return REQUEST_SUCCESS;
+	return REQUEST_SUCCESS;
 }
 
 /**
@@ -748,11 +730,11 @@ int xsupgui_request_free_connection_config(config_connection **conn)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_free_interface_config(config_interfaces **intf)
+int xsupgui_request_free_interface_config(config_interfaces ** intf)
 {
-  delete_config_interface((void **)intf);
+	delete_config_interface((void **)intf);
 
-  return REQUEST_SUCCESS;
+	return REQUEST_SUCCESS;
 }
 
 /**
@@ -768,11 +750,11 @@ int xsupgui_request_free_interface_config(config_interfaces **intf)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_free_trusted_server_config(config_trusted_server **tserver)
+int xsupgui_request_free_trusted_server_config(config_trusted_server ** tserver)
 {
-  delete_config_trusted_server((void **)tserver);
+	delete_config_trusted_server((void **)tserver);
 
-  return REQUEST_SUCCESS;
+	return REQUEST_SUCCESS;
 }
 
 /**
@@ -788,9 +770,10 @@ int xsupgui_request_free_trusted_server_config(config_trusted_server **tserver)
  * \retval REQUEST_TIMEOUT on timeout
  * \retval REQUEST_SUCCESS on success
  **/
-int xsupgui_request_delete_trusted_server_config(uint8_t config_type, char *servname, int force)
+int xsupgui_request_delete_trusted_server_config(uint8_t config_type,
+						 char *servname, int force)
 {
-	return xsupgui_request_delete_some_conf("Delete_Trusted_Server_Config", "Name", servname, config_type, force);
+	return xsupgui_request_delete_some_conf("Delete_Trusted_Server_Config",
+						"Name", servname, config_type,
+						force);
 }
-
-

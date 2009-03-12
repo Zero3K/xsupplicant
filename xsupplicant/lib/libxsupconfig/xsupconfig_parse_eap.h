@@ -17,10 +17,10 @@ typedef struct {
 	char *name;
 	int eap_num;
 	parser *parsedata;
-	void *(*init_method)(void **, uint8_t, xmlNodePtr);
+	void *(*init_method) (void **, uint8_t, xmlNodePtr);
 } eap_methods;
 
 void *xsupconfig_parse_eap(void **, uint8_t, xmlNodePtr);
 eap_methods *xsupconfig_parse_eap_get_method(eap_methods *, char *);
 
-#endif // __XSUPCONFIG_PARSE_EAP_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_H__

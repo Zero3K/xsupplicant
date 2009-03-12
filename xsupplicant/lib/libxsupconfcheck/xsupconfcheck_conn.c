@@ -31,7 +31,6 @@
 #include "xsupconfcheck_conn.h"
 #include "xsupconfcheck_common.h"
 
-
 /**
  * \brief Check the connection to be sure that it is valid.
  *
@@ -41,7 +40,8 @@
  * \retval 0 on success
  * \retval CONNECTION_NEED_* if something more is needed.
  **/
-int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int log)
+int xsupconfcheck_conn_check(context * ctx, struct config_connection *conn,
+			     int log)
 {
 	int retval = 0;
 	wireless_ctx *wctx = NULL;
@@ -50,48 +50,46 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 	// name.  So don't bother checking that. ;)
 
 	// If the interface is wireless, then we need to check association and SSID settings.
-	if (ctx->intType == ETH_802_11_INT)
-	{
+	if (ctx->intType == ETH_802_11_INT) {
 		// Make sure we have an SSID
-		if (conn->ssid == NULL)
-		{
-			if (log == TRUE) error_prequeue_add("The interface being used is wireless, but the connection configuration doesn't have an SSID defined.");
+		if (conn->ssid == NULL) {
+			if (log == TRUE)
+				error_prequeue_add
+				    ("The interface being used is wireless, but the connection configuration doesn't have an SSID defined.");
 			retval = -1;
 		}
-
 		// Make sure that if authentication is set to NONE or PSK that we don't have a profile defined
-		if ((conn->association.auth_type == AUTH_NONE) || (conn->association.auth_type == AUTH_PSK))
-		{
-			if (conn->profile != NULL)
-			{
-				if (log == TRUE) error_prequeue_add("The connection configuration has a profile defined when a profile can't be used in this configuration.");
+		if ((conn->association.auth_type == AUTH_NONE)
+		    || (conn->association.auth_type == AUTH_PSK)) {
+			if (conn->profile != NULL) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("The connection configuration has a profile defined when a profile can't be used in this configuration.");
 				retval = -1;
 			}
 		}
-
 		// Make sure that if authentication is set to PSK that we have either 'psk' or 'psk_hex' defined.
-		if (conn->association.auth_type == AUTH_PSK)
-		{
-			if ((conn->association.psk == NULL) && (conn->association.psk_hex == NULL) && (conn->association.temp_psk == NULL))
-			{
-				if (log == TRUE) error_prequeue_add("The connection configuration is set to PSK, but there is no pre-shared key configured.");
+		if (conn->association.auth_type == AUTH_PSK) {
+			if ((conn->association.psk == NULL)
+			    && (conn->association.psk_hex == NULL)
+			    && (conn->association.temp_psk == NULL)) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("The connection configuration is set to PSK, but there is no pre-shared key configured.");
 				retval = CONNECTION_NEED_PSK;
 			}
 		}
-
 		// Make sure that if authentication is set to EAP that we DO have a profile set, and that it is valid.
-		if (conn->association.auth_type == AUTH_EAP)
-		{
-			if (conn->profile == NULL)
-			{
-				if (log == TRUE) error_prequeue_add("The connection configuration is set to use EAP, but there is no profile configured.");
+		if (conn->association.auth_type == AUTH_EAP) {
+			if (conn->profile == NULL) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("The connection configuration is set to use EAP, but there is no profile configured.");
 				retval = -1;
-			}
-			else
-			{
+			} else {
 				// Check to see that the profile is valid.
-				switch (xsupconfcheck_check_profile(conn->profile, log))
-				{
+				switch (xsupconfcheck_check_profile
+					(conn->profile, log)) {
 				case PROFILE_NEED_PIN:
 					retval = CONNECTION_NEED_PIN;
 					break;
@@ -111,12 +109,10 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 			}
 		}
 
-		if (conn->association.auth_type == AUTH_UNKNOWN)
-		{
-			if (conn->profile != NULL)
-			{
-				switch (xsupconfcheck_check_profile(conn->profile, log))
-				{
+		if (conn->association.auth_type == AUTH_UNKNOWN) {
+			if (conn->profile != NULL) {
+				switch (xsupconfcheck_check_profile
+					(conn->profile, log)) {
 				case PROFILE_NEED_PIN:
 					retval = CONNECTION_NEED_PIN;
 					break;
@@ -134,22 +130,27 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 				}
 			}
 		}
-
 		// If txkey is set to something other than 0, make sure there is key data in that slot.
-		if (conn->association.txkey != 0)
-		{
-			if ((conn->association.keys[conn->association.txkey] == NULL) ||
-				(strlen(conn->association.keys[conn->association.txkey]) <= 0) ||
-				((strlen(conn->association.keys[conn->association.txkey]) != 10) &&
-				(strlen(conn->association.keys[conn->association.txkey]) != 26)))
-			{
+		if (conn->association.txkey != 0) {
+			if ((conn->association.keys[conn->association.txkey] ==
+			     NULL)
+			    ||
+			    (strlen
+			     (conn->association.
+			      keys[conn->association.txkey]) <= 0)
+			    ||
+			    ((strlen
+			      (conn->association.
+			       keys[conn->association.txkey]) != 10)
+			     &&
+			     (strlen
+			      (conn->association.
+			       keys[conn->association.txkey]) != 26))) {
 				retval = CONNECTION_NEED_UPW;
 			}
 		}
-
 		// Make sure that pairwise and group keys a valid for the association method being used.
-		switch (conn->association.association_type)
-		{
+		switch (conn->association.association_type) {
 		case ASSOC_AUTO:
 			// For auto association, we can't be sure of the key types.  So, anything goes.
 			break;
@@ -159,18 +160,23 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 		case ASSOC_LEAP:
 			// For Open/Shared/LEAP, only WEP will do.
 			if ((conn->association.pairwise_keys != 0) &&
-				(conn->association.pairwise_keys != CRYPT_WEP40) &&
-				(conn->association.pairwise_keys != CRYPT_WEP104))
-			{
-				if (log == TRUE) error_prequeue_add("Connection attempted to use a pairwise (unicast) key type other than NONE, or WEP with Open, Shared, or LEAP association.");
+			    (conn->association.pairwise_keys != CRYPT_WEP40) &&
+			    (conn->association.pairwise_keys != CRYPT_WEP104)) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Connection attempted to use a pairwise (unicast) key type other than NONE, or WEP with Open, Shared, or LEAP association.");
 				retval = -1;
 			}
 
 			if ((conn->association.group_keys != 0) &&
-				(!(conn->association.group_keys & CRYPT_FLAGS_WEP40)) &&
-				(!(conn->association.group_keys & CRYPT_FLAGS_WEP104)))
-			{
-				if (log == TRUE) error_prequeue_add("Connection attempted to use a group (multicast/broadcast) key type other than NONE, or WEP with Open, Shared, or LEAP association.");
+			    (!(conn->association.
+			       group_keys & CRYPT_FLAGS_WEP40))
+			    &&
+			    (!(conn->association.
+			       group_keys & CRYPT_FLAGS_WEP104))) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Connection attempted to use a group (multicast/broadcast) key type other than NONE, or WEP with Open, Shared, or LEAP association.");
 				retval = -1;
 			}
 			break;
@@ -181,7 +187,9 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 			break;
 
 		default:
-			if (log == TRUE) error_prequeue_add("Connection attempted to use an unknown association method.");
+			if (log == TRUE)
+				error_prequeue_add
+				    ("Connection attempted to use an unknown association method.");
 			retval = -1;
 			break;
 		}
@@ -189,117 +197,120 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 		// Make sure that the pairwise and group key types are valid based on what the card will allow
 		wctx = ctx->intTypeData;
 
-		if (conn->association.pairwise_keys > (CRYPT_FLAGS_WEP40 |CRYPT_FLAGS_TKIP | CRYPT_FLAGS_WRAP | CRYPT_FLAGS_CCMP
-			| CRYPT_FLAGS_WEP104))
-		{
-			if (log == TRUE) error_prequeue_add("An unknown type of encryption was configured for this connection.  Please update xsupconfcheck_conn_check() with the new type!");
+		if (conn->association.pairwise_keys >
+		    (CRYPT_FLAGS_WEP40 | CRYPT_FLAGS_TKIP | CRYPT_FLAGS_WRAP |
+		     CRYPT_FLAGS_CCMP | CRYPT_FLAGS_WEP104)) {
+			if (log == TRUE)
+				error_prequeue_add
+				    ("An unknown type of encryption was configured for this connection.  Please update xsupconfcheck_conn_check() with the new type!");
 			retval = -1;
-		}
-		else
-		{
-			if (conn->association.pairwise_keys == 0)
-			{
+		} else {
+			if (conn->association.pairwise_keys == 0) {
 				// Do nothing.
-			}
-			else if (conn->association.pairwise_keys & CRYPT_FLAGS_WEP40)
-			{
-				if ((wctx->enc_capa & DOES_WEP40) == 0)
-				{
-					if (log == TRUE) error_prequeue_add("Connection is configured to use WEP 40 as the pairwise/unicast cipher, but the card doesn't seem to support it.");
+			} else if (conn->association.
+				   pairwise_keys & CRYPT_FLAGS_WEP40) {
+				if ((wctx->enc_capa & DOES_WEP40) == 0) {
+					if (log == TRUE)
+						error_prequeue_add
+						    ("Connection is configured to use WEP 40 as the pairwise/unicast cipher, but the card doesn't seem to support it.");
 					retval = -1;
 				}
-			}
-			else if (conn->association.pairwise_keys & CRYPT_FLAGS_WEP104)
-			{
-				if ((wctx->enc_capa & DOES_WEP104) == 0)
-				{
-					if (log == TRUE) error_prequeue_add("Connection is configured to use WEP 104 as the pairwise/unicast cipher, but the card doesn't seem to support it.");
+			} else if (conn->association.
+				   pairwise_keys & CRYPT_FLAGS_WEP104) {
+				if ((wctx->enc_capa & DOES_WEP104) == 0) {
+					if (log == TRUE)
+						error_prequeue_add
+						    ("Connection is configured to use WEP 104 as the pairwise/unicast cipher, but the card doesn't seem to support it.");
 					retval = -1;
 				}
-			}
-			else if (conn->association.pairwise_keys & CRYPT_FLAGS_TKIP)
-			{
-				if ((wctx->enc_capa & DOES_TKIP) == 0)
-				{
-					if (log == TRUE) error_prequeue_add("Connection is configured to use TKIP as the pairwise/unicast cipher, but the card doesn't seem to support it.");
+			} else if (conn->association.
+				   pairwise_keys & CRYPT_FLAGS_TKIP) {
+				if ((wctx->enc_capa & DOES_TKIP) == 0) {
+					if (log == TRUE)
+						error_prequeue_add
+						    ("Connection is configured to use TKIP as the pairwise/unicast cipher, but the card doesn't seem to support it.");
 					retval = -1;
 				}
-			}
-			else if (conn->association.pairwise_keys & CRYPT_FLAGS_WRAP)
-			{
-				if (log == TRUE) error_prequeue_add("Connection is configured to use WRAP, but it isn't supported!");
+			} else if (conn->association.
+				   pairwise_keys & CRYPT_FLAGS_WRAP) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Connection is configured to use WRAP, but it isn't supported!");
 				retval = -1;
-			}
-			else if (conn->association.pairwise_keys & CRYPT_FLAGS_CCMP)
-			{
-				if ((wctx->enc_capa & DOES_CCMP) == 0)
-				{
-					if (log == TRUE) error_prequeue_add("Connection is configured to use CCMP as the pairwise/unicast cipher, but the card doesn't seem to support it.");
+			} else if (conn->association.
+				   pairwise_keys & CRYPT_FLAGS_CCMP) {
+				if ((wctx->enc_capa & DOES_CCMP) == 0) {
+					if (log == TRUE)
+						error_prequeue_add
+						    ("Connection is configured to use CCMP as the pairwise/unicast cipher, but the card doesn't seem to support it.");
 					retval = -1;
 				}
-			}
-			else
-			{
-				if (log == TRUE) error_prequeue_add("An unknown type of encryption was configured for this connection.  Please update xsupconfcheck_conn_check() with the new type!");
+			} else {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("An unknown type of encryption was configured for this connection.  Please update xsupconfcheck_conn_check() with the new type!");
 				retval = -1;
 			}
 		}
-		
-		switch (conn->association.group_keys)
-		{
+
+		switch (conn->association.group_keys) {
 		case 0:
 			// The default "AUTO" setting.
 			break;
 
 		case CRYPT_WEP40:
-			if ((wctx->enc_capa & DOES_WEP40) == 0)
-			{
-				if (log == TRUE) error_prequeue_add("Connection is configured to use WEP 40 as the group/broadcast/multicast cipher, but the card doesn't seem to support it.");
+			if ((wctx->enc_capa & DOES_WEP40) == 0) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Connection is configured to use WEP 40 as the group/broadcast/multicast cipher, but the card doesn't seem to support it.");
 				retval = -1;
 			}
-			break;		
+			break;
 
 		case CRYPT_WEP104:
-			if ((wctx->enc_capa & DOES_WEP104) == 0)
-			{
-				if (log == TRUE) error_prequeue_add("Connection is configured to use WEP 104 as the group/broadcast/multicast cipher, but the card doesn't seem to support it.");
+			if ((wctx->enc_capa & DOES_WEP104) == 0) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Connection is configured to use WEP 104 as the group/broadcast/multicast cipher, but the card doesn't seem to support it.");
 				retval = -1;
 			}
-			break;	
+			break;
 
 		case CRYPT_TKIP:
-			if ((wctx->enc_capa & DOES_TKIP) == 0)
-			{
-				if (log == TRUE) error_prequeue_add("Connection is configured to use TKIP as the group/broadcast/multicast cipher, but the card doesn't seem to support it.");
+			if ((wctx->enc_capa & DOES_TKIP) == 0) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Connection is configured to use TKIP as the group/broadcast/multicast cipher, but the card doesn't seem to support it.");
 				retval = -1;
 			}
-			break;	
+			break;
 
 		case CRYPT_WRAP:
-			if (log == TRUE) error_prequeue_add("Connection is configured to use WRAP, but it isn't supported!");
+			if (log == TRUE)
+				error_prequeue_add
+				    ("Connection is configured to use WRAP, but it isn't supported!");
 			break;
 
 		case CRYPT_CCMP:
-			if ((wctx->enc_capa & DOES_CCMP) == 0)
-			{
-				if (log == TRUE) error_prequeue_add("Connection is configured to use CCMP as the group/broadcast/multicast cipher, but the card doesn't seem to support it.");
+			if ((wctx->enc_capa & DOES_CCMP) == 0) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Connection is configured to use CCMP as the group/broadcast/multicast cipher, but the card doesn't seem to support it.");
 				retval = -1;
 			}
 			break;
 
 		default:
-			if (log == TRUE) error_prequeue_add("An unknown type of encryption was configured for this connection.  Please update xsupconfcheck_conn_check() with the new type!");
+			if (log == TRUE)
+				error_prequeue_add
+				    ("An unknown type of encryption was configured for this connection.  Please update xsupconfcheck_conn_check() with the new type!");
 			retval = -1;
 			break;
 		}
-	}
-	else
-	{
-		if (conn->profile != NULL)
-		{
+	} else {
+		if (conn->profile != NULL) {
 			// If the interface is wired, and we have a profile, make sure it is valid.
-			switch (xsupconfcheck_check_profile(conn->profile, log))
-			{
+			switch (xsupconfcheck_check_profile(conn->profile, log)) {
 			case PROFILE_NEED_UPW:
 				retval = CONNECTION_NEED_UPW;
 				break;
@@ -319,25 +330,25 @@ int xsupconfcheck_conn_check(context *ctx, struct config_connection *conn, int l
 	}
 
 	// If the user has configured to use static IPs, make sure they are really there.
-	if (conn->ip.type == CONFIG_IP_USE_STATIC)
-	{
+	if (conn->ip.type == CONFIG_IP_USE_STATIC) {
 		// Verify that an IP address and netmask is defined at a minimum.
-		if ((conn->ip.ipaddr == NULL) || (strlen(conn->ip.ipaddr) == 0))
-		{
-			if (log == TRUE) error_prequeue_add("Connection is configured to use a static IP address, but one isn't configured.");
+		if ((conn->ip.ipaddr == NULL) || (strlen(conn->ip.ipaddr) == 0)) {
+			if (log == TRUE)
+				error_prequeue_add
+				    ("Connection is configured to use a static IP address, but one isn't configured.");
 			retval = -1;
 		}
 
-		if ((conn->ip.netmask == NULL) || (strlen(conn->ip.netmask) == 0))
-		{
-			if (log == TRUE) error_prequeue_add("Connection is configured to use a static IP address, but no netmask is specified.");
+		if ((conn->ip.netmask == NULL)
+		    || (strlen(conn->ip.netmask) == 0)) {
+			if (log == TRUE)
+				error_prequeue_add
+				    ("Connection is configured to use a static IP address, but no netmask is specified.");
 			retval = -1;
 		}
-
 		// We don't really care if the DNS, or Gateway are correct, since there
 		// may be situations where setting them isn't needed.
 	}
 
 	return retval;
 }
-

@@ -34,7 +34,6 @@
 // Uncomment the #define below to enable textual debug output.
 // #define WRITE_CONNECTIONS_CONFIG 1
 
-
 /**
  * \brief Create the <Connections> block for the configuration file in a format
  *        that libxml2 can understand.
@@ -49,34 +48,38 @@
  * \retval xmlNodePtr containing the <Connections> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *cons, uint8_t config_type,
-									 char write_all, char write_to_disk)
+xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *
+						 cons, uint8_t config_type,
+						 char write_all,
+						 char write_to_disk)
 {
 	xmlNodePtr consnode = NULL;
 	xmlNodePtr connode = NULL;
 	struct config_connection *cur = NULL;
 
-	if (cons == NULL) return NULL;
+	if (cons == NULL)
+		return NULL;
 
 	// Create the root node for the <Connections> block.
-	consnode = xmlNewNode(NULL, (xmlChar *)"Connections");
-	if (consnode == NULL)
-	{
+	consnode = xmlNewNode(NULL, (xmlChar *) "Connections");
+	if (consnode == NULL) {
 #ifdef WRITE_CONNECTIONS_CONFIG
-		printf("Couldn't allocate memory to store <Connections> block!\n");
+		printf
+		    ("Couldn't allocate memory to store <Connections> block!\n");
 #endif
 		return NULL;
 	}
 
 	cur = cons;
 
-	while (cur != NULL)
-	{
-		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_CONN)) || (write_to_disk == FALSE))
-		{
-			connode = xsupconfwrite_connection_create_tree(cur, config_type, write_all);
-			if (connode == NULL)
-			{
+	while (cur != NULL) {
+		if ((!TEST_FLAG(cur->flags, CONFIG_VOLATILE_CONN))
+		    || (write_to_disk == FALSE)) {
+			connode =
+			    xsupconfwrite_connection_create_tree(cur,
+								 config_type,
+								 write_all);
+			if (connode == NULL) {
 #ifdef WRITE_CONNECTIONS_CONFIG
 				printf("Couldn't create <Connection> block!\n");
 #endif
@@ -84,10 +87,10 @@ xmlNodePtr xsupconfwrite_connections_create_tree(struct config_connection *cons,
 				return NULL;
 			}
 
-			if (xmlAddChild(consnode, connode) == NULL)
-			{
+			if (xmlAddChild(consnode, connode) == NULL) {
 #ifdef WRITE_CONNECTIONS_CONFIG
-				printf("Couldn't add <Connection> node to the <Connections> block!\n");
+				printf
+				    ("Couldn't add <Connection> node to the <Connections> block!\n");
 #endif
 				xmlFreeNode(consnode);
 				xmlFreeNode(connode);

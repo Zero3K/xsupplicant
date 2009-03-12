@@ -11,4 +11,4 @@
 int certificates_load_root(struct tls_vars *, char *);
 int certificates_load_user(struct tls_vars *, char *, char *, char *, char *);
 
-#endif // __CERTIFICATES_H__
+#endif				// __CERTIFICATES_H__

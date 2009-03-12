@@ -64,24 +64,24 @@
 #define USER_NO_SUBSCRIPTION         1031
 
 struct aka_eaptypedata {
-  uint8_t numrands;
-  uint8_t *nonce_mt;
-  uint8_t random_num[16];
-  uint8_t autn[16];
-  uint8_t auts[16];
-  uint8_t res[16];
-  uint16_t reslen;
-  uint8_t K_encr[16], K_aut[16], msk[64], emsk[64];
-  uint8_t *keyingMaterial;
-  SCARDCONTEXT scntx;
-  SCARDHANDLE shdl;
-  uint8_t card_mode;
-  uint8_t *readers;
-  uint8_t chal_type;
-  uint8_t sync_fail;
-};  
+	uint8_t numrands;
+	uint8_t *nonce_mt;
+	uint8_t random_num[16];
+	uint8_t autn[16];
+	uint8_t auts[16];
+	uint8_t res[16];
+	uint16_t reslen;
+	uint8_t K_encr[16], K_aut[16], msk[64], emsk[64];
+	uint8_t *keyingMaterial;
+	SCARDCONTEXT scntx;
+	SCARDHANDLE shdl;
+	uint8_t card_mode;
+	uint8_t *readers;
+	uint8_t chal_type;
+	uint8_t sync_fail;
+};
 
-int eapaka_is_pin_needed(context *ctx, struct config_eap_aka *userdata);
+int eapaka_is_pin_needed(context * ctx, struct config_eap_aka *userdata);
 
 void eapaka_check(eap_type_data *);
 void eapaka_process(eap_type_data *);

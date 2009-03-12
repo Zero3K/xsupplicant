@@ -34,7 +34,6 @@
 // Uncomment the #define below to enable textual debug output.
 // #define WRITE_EAP_FAST_DEBUG 1
 
-
 /**
  * \brief Create an EAP-FAST block for the configuration file in a format
  *        that libxml2 can understand.
@@ -49,30 +48,30 @@
  * \retval xmlNodePtr containing the EAP-FAST configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, uint8_t config_type,
-									   	          char write_all)
+xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast * fastdata,
+					      uint8_t config_type,
+					      char write_all)
 {
 	xmlNodePtr fastnode = NULL;
 	xmlNodePtr eapnode = NULL;
 	xmlNodePtr p2node = NULL;
 	char tempstatic[10];
 	char *temp = NULL;
-		
-	if (fastdata == NULL) return NULL;
+
+	if (fastdata == NULL)
+		return NULL;
 
 	fastnode = xsupconfwrite_common_newSibling(NULL, "Type", "FAST");
-	if (fastnode == NULL)
-	{
+	if (fastnode == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
 		printf("Couldn't create <Type> node for FAST!\n");
 #endif
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (fastdata->pac_location != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(fastnode, "PAC_File", fastdata->pac_location) == NULL)
-		{
+	if ((write_all == TRUE) || (fastdata->pac_location != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (fastnode, "PAC_File", fastdata->pac_location) == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
 			printf("Couldn't create <PAC_File> node for FAST.\n");
 #endif
@@ -82,38 +81,41 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 	}
 
 	if (xsupconfwrite_common_write_bool(fastnode, "Allow_Provision",
-		TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_ALLOWED), TRUE, write_all, TRUE) == NULL)
-	{
+					    TEST_FLAG(fastdata->flags,
+						      EAP_FAST_PROVISION_ALLOWED),
+					    TRUE, write_all, TRUE) == NULL) {
 		xmlFreeNode(fastnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_common_write_bool(fastnode, "Allow_Anonymous_Provision",
-		TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_ANONYMOUS), FALSE, write_all, TRUE) == NULL)
-	{
+	if (xsupconfwrite_common_write_bool
+	    (fastnode, "Allow_Anonymous_Provision",
+	     TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_ANONYMOUS), FALSE,
+	     write_all, TRUE) == NULL) {
 		xmlFreeNode(fastnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_common_write_bool(fastnode, "Allow_Authenticated_Provision",
-		TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_AUTHENTICATED), TRUE, write_all, TRUE) == NULL)
-	{
+	if (xsupconfwrite_common_write_bool
+	    (fastnode, "Allow_Authenticated_Provision",
+	     TEST_FLAG(fastdata->flags, EAP_FAST_PROVISION_AUTHENTICATED), TRUE,
+	     write_all, TRUE) == NULL) {
 		xmlFreeNode(fastnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_common_write_bool(fastnode, "Use_Logon_Credentials", 
-		TEST_FLAG(fastdata->flags, EAP_FAST_USE_LOGON_CREDS), FALSE, write_all, TRUE) == NULL)
-	{
+	if (xsupconfwrite_common_write_bool(fastnode, "Use_Logon_Credentials",
+					    TEST_FLAG(fastdata->flags,
+						      EAP_FAST_USE_LOGON_CREDS),
+					    FALSE, write_all, TRUE) == NULL) {
 		xmlFreeNode(fastnode);
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (fastdata->chunk_size != 0))
-	{
+	if ((write_all == TRUE) || (fastdata->chunk_size != 0)) {
 		sprintf((char *)&tempstatic, "%d", fastdata->chunk_size);
-		if (xsupconfwrite_common_newSibling(fastnode, "Chunk_Size", tempstatic) == NULL)
-		{
+		if (xsupconfwrite_common_newSibling
+		    (fastnode, "Chunk_Size", tempstatic) == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
 			printf("Couldn't create <Chunk_Size> node for FAST!\n");
 #endif
@@ -122,11 +124,10 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 		}
 	}
 
-	if ((write_all == TRUE) || (fastdata->innerid != NULL))
-	{
+	if ((write_all == TRUE) || (fastdata->innerid != NULL)) {
 		xsupconfwrite_convert_amp(fastdata->innerid, &temp);
-		if (xsupconfwrite_common_newSibling(fastnode, "Inner_ID", temp) == NULL)
-		{
+		if (xsupconfwrite_common_newSibling(fastnode, "Inner_ID", temp)
+		    == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
 			printf("Couldn't create <Inner_ID> node for FAST!\n");
 #endif
@@ -138,12 +139,13 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 		free(temp);
 	}
 
-	if ((write_all == TRUE) || (fastdata->trusted_server != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(fastnode, "Trusted_Server", fastdata->trusted_server) == NULL)
-		{
+	if ((write_all == TRUE) || (fastdata->trusted_server != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (fastnode, "Trusted_Server",
+		     fastdata->trusted_server) == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
-			printf("Couldn't create <Trusted_Server> node for FAST!\n");
+			printf
+			    ("Couldn't create <Trusted_Server> node for FAST!\n");
 #endif
 			xmlFreeNode(fastnode);
 			return NULL;
@@ -151,15 +153,15 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 	}
 
 	if (xsupconfwrite_common_write_bool(fastnode, "Validate_Certificate",
-		TEST_FLAG(fastdata->flags, EAP_FAST_VALIDATE_SERVER_CERT), TRUE, write_all, TRUE) == NULL)
-	{
+					    TEST_FLAG(fastdata->flags,
+						      EAP_FAST_VALIDATE_SERVER_CERT),
+					    TRUE, write_all, TRUE) == NULL) {
 		xmlFreeNode(fastnode);
 		return NULL;
 	}
 
-	p2node = xmlNewNode(NULL, (xmlChar *)"Phase2");
-	if (p2node == NULL)
-	{
+	p2node = xmlNewNode(NULL, (xmlChar *) "Phase2");
+	if (p2node == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
 		printf("Couldn't create <Phase2> node for FAST!\n");
 #endif
@@ -168,8 +170,7 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 	}
 
 	p2node = xmlAddSibling(fastnode, p2node);
-	if (p2node == NULL)
-	{
+	if (p2node == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
 		printf("Couldn't add <Phase2> node to FAST!\n");
 #endif
@@ -177,9 +178,10 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 		return NULL;
 	}
 
-	eapnode = xsupconfwrite_eap_create_tree(fastdata->phase2, config_type, write_all);
-	if (eapnode == NULL)
-	{
+	eapnode =
+	    xsupconfwrite_eap_create_tree(fastdata->phase2, config_type,
+					  write_all);
+	if (eapnode == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
 		printf("Couldn't create phase 2 <EAP> data for FAST!\n");
 #endif
@@ -187,8 +189,7 @@ xmlNodePtr xsupconfwrite_eap_fast_create_tree(struct config_eap_fast *fastdata, 
 		return NULL;
 	}
 
-	if (xmlAddChild(p2node, eapnode) == NULL)
-	{
+	if (xmlAddChild(p2node, eapnode) == NULL) {
 #ifdef WRITE_EAP_FAST_DEBUG
 		printf("Couldn't add phase 2 EAP data to FAST!\n");
 #endif

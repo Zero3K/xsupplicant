@@ -29,4 +29,4 @@ void interfaces_flush_cache();
 void interfaces_dump_cache();
 struct interfaces *interfaces_get_by_desc(char *);
 
-#endif  //__INTERFACES_H__
+#endif				//__INTERFACES_H__

@@ -16,4 +16,4 @@ void xsupconfig_devices_deinit(struct xsup_devices **);
 struct xsup_interfaces *xsupconfig_devices_get_interfaces();
 void xsupconfig_devices_dump(struct xsup_devices *);
 
-#endif // XSUPCONFIG_DEVICES
+#endif				// XSUPCONFIG_DEVICES

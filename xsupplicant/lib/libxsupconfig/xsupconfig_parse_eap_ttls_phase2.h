@@ -14,4 +14,4 @@ extern parser ttls_phase2[];
 void *xsupconfig_parse_eap_ttls_phase2(void **, uint8_t, xmlNodePtr);
 void *xsupconfig_parse_eap_ttls_phase2_eap(void **, uint8_t, xmlNodePtr);
 
-#endif // __XSUPCONFIG_PARSE_EAP_TTLS_PHASE2_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_TTLS_PHASE2_H__

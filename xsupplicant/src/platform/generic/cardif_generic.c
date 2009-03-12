@@ -34,48 +34,49 @@
 #ifdef WINDOWS
 char *getmac(char *devname)
 {
-  PPACKET_OID_DATA    pOidData;
-  CHAR *pStr = NULL;
-  LPADAPTER adapt = NULL;
-  char *mac = NULL;
+	PPACKET_OID_DATA pOidData;
+	CHAR *pStr = NULL;
+	LPADAPTER adapt = NULL;
+	char *mac = NULL;
 
-  // Create an adapter object.
-  adapt = PacketOpenAdapter(devname);	
-  if (adapt == NULL)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't create the adapter object needed to query the MAC address!\n");
-	  return NULL;
-  }
+	// Create an adapter object.
+	adapt = PacketOpenAdapter(devname);
+	if (adapt == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't create the adapter object needed to query the MAC address!\n");
+		return NULL;
+	}
 
-  pStr = malloc(sizeof(PACKET_OID_DATA)+128);
-  ZeroMemory(pStr, sizeof(PACKET_OID_DATA)+128);
-  pOidData = (PPACKET_OID_DATA) pStr;
-  pOidData->Oid = OID_802_3_CURRENT_ADDRESS;
-  pOidData->Length = 6;
-  
-  if (PacketRequest(adapt, FALSE, pOidData) != TRUE)
-  {
-	  debug_printf(DEBUG_NORMAL, "Unable to request the MAC address for this interface!\n");
-	  PacketCloseAdapter(adapt);
-	  return NULL;
-  }
+	pStr = malloc(sizeof(PACKET_OID_DATA) + 128);
+	ZeroMemory(pStr, sizeof(PACKET_OID_DATA) + 128);
+	pOidData = (PPACKET_OID_DATA) pStr;
+	pOidData->Oid = OID_802_3_CURRENT_ADDRESS;
+	pOidData->Length = 6;
 
-  mac = Malloc(6);
-  if (mac == NULL)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store interface MAC address!\n");
-	  PacketCloseAdapter(adapt);
-	  return NULL;
-  }
+	if (PacketRequest(adapt, FALSE, pOidData) != TRUE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to request the MAC address for this interface!\n");
+		PacketCloseAdapter(adapt);
+		return NULL;
+	}
 
-  memcpy(mac, pOidData->Data, 6);
-  
-  debug_printf(DEBUG_INT, "MAC : %02X:%02X:%02X:%02X:%02X:%02X\n", pOidData->Data[0], pOidData->Data[1], pOidData->Data[2],
-				pOidData->Data[3], pOidData->Data[4], pOidData->Data[5]);
+	mac = Malloc(6);
+	if (mac == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store interface MAC address!\n");
+		PacketCloseAdapter(adapt);
+		return NULL;
+	}
 
-  PacketCloseAdapter(adapt);
+	memcpy(mac, pOidData->Data, 6);
 
-  return mac;
+	debug_printf(DEBUG_INT, "MAC : %02X:%02X:%02X:%02X:%02X:%02X\n",
+		     pOidData->Data[0], pOidData->Data[1], pOidData->Data[2],
+		     pOidData->Data[3], pOidData->Data[4], pOidData->Data[5]);
+
+	PacketCloseAdapter(adapt);
+
+	return mac;
 }
 #else
 #error You need to implement a MAC address discovery function for operation on this OS!
@@ -87,44 +88,44 @@ char *getmac(char *devname)
  * we have an error.
  *
  ***********************************************/
-pcap_t *setup_pcap(char *dev_to_use, char *src_mac, int buf_size, int timeout, 
+pcap_t *setup_pcap(char *dev_to_use, char *src_mac, int buf_size, int timeout,
 		   char pcapErr[PCAP_ERRBUF_SIZE])
 {
-  char pcap_err[PCAP_ERRBUF_SIZE];   // pcap error buffer.
-  pcap_t *pcap_descr = NULL;
-  bpf_u_int32 pcap_maskp;
-  bpf_u_int32 pcap_netp;
-  char pcap_filter[100];
-  struct bpf_program pcap_fp;
-  char *errbuf=NULL;
+	char pcap_err[PCAP_ERRBUF_SIZE];	// pcap error buffer.
+	pcap_t *pcap_descr = NULL;
+	bpf_u_int32 pcap_maskp;
+	bpf_u_int32 pcap_netp;
+	char pcap_filter[100];
+	struct bpf_program pcap_fp;
+	char *errbuf = NULL;
 
-  pcap_lookupnet(dev_to_use, &pcap_netp, &pcap_maskp, pcap_err);
+	pcap_lookupnet(dev_to_use, &pcap_netp, &pcap_maskp, pcap_err);
 
-  pcap_descr = pcap_open_live(dev_to_use, buf_size, 1, timeout, pcap_err);
-  if (pcap_descr == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "pcap_open_live(): %s\n", pcap_err);
-      return NULL;
-    }
+	pcap_descr = pcap_open_live(dev_to_use, buf_size, 1, timeout, pcap_err);
+	if (pcap_descr == NULL) {
+		debug_printf(DEBUG_NORMAL, "pcap_open_live(): %s\n", pcap_err);
+		return NULL;
+	}
 
-  sprintf(pcap_filter, "ether dst %02x:%02x:%02x:%02x:%02x:%02x or ether dst 01:80:c2:00:00:03 and ether proto 0x888e", (uint8_t)src_mac[0], (uint8_t)src_mac[1], (uint8_t)src_mac[2],
-	  (uint8_t)src_mac[3], (uint8_t)src_mac[4], (uint8_t)src_mac[5]);
+	sprintf(pcap_filter,
+		"ether dst %02x:%02x:%02x:%02x:%02x:%02x or ether dst 01:80:c2:00:00:03 and ether proto 0x888e",
+		(uint8_t) src_mac[0], (uint8_t) src_mac[1],
+		(uint8_t) src_mac[2], (uint8_t) src_mac[3],
+		(uint8_t) src_mac[4], (uint8_t) src_mac[5]);
 
-  debug_printf(DEBUG_INT, "PCAP Filter : %s\n", pcap_filter);
-  
-  if (pcap_compile(pcap_descr, &pcap_fp, pcap_filter, 0, pcap_netp) == -1)
-    {
-      debug_printf(DEBUG_NORMAL, "Error running pcap compile!\n");
-      return NULL;
-    }
+	debug_printf(DEBUG_INT, "PCAP Filter : %s\n", pcap_filter);
 
-  if (pcap_setfilter(pcap_descr, &pcap_fp) == -1)
-    {
-      debug_printf(DEBUG_NORMAL, "Error setting filter!\n");
-      return NULL;
-    }
+	if (pcap_compile(pcap_descr, &pcap_fp, pcap_filter, 0, pcap_netp) == -1) {
+		debug_printf(DEBUG_NORMAL, "Error running pcap compile!\n");
+		return NULL;
+	}
 
-  return pcap_descr;
+	if (pcap_setfilter(pcap_descr, &pcap_fp) == -1) {
+		debug_printf(DEBUG_NORMAL, "Error setting filter!\n");
+		return NULL;
+	}
+
+	return pcap_descr;
 }
 
 /***********************************************
@@ -134,63 +135,59 @@ pcap_t *setup_pcap(char *dev_to_use, char *src_mac, int buf_size, int timeout,
  * use should be stored in the context structure.
  *
  ***********************************************/
-int cardif_init(context *thisint, char driver)
+int cardif_init(context * thisint, char driver)
 {
-  char pcap_err[PCAP_ERRBUF_SIZE];
-  uint8_t *source_mac = NULL;
-  struct gen_sock_data *sockData;
+	char pcap_err[PCAP_ERRBUF_SIZE];
+	uint8_t *source_mac = NULL;
+	struct gen_sock_data *sockData;
 
-  debug_printf(DEBUG_INT, "Initializing interface %s..\n", thisint->intName);
+	debug_printf(DEBUG_INT, "Initializing interface %s..\n",
+		     thisint->intName);
 
-  if (thisint->intName == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid interface!\n");
-      return -1;
-    }
+	if (thisint->intName == NULL) {
+		debug_printf(DEBUG_NORMAL, "Invalid interface!\n");
+		return -1;
+	}
+	// For this code, we only handle 1 interface, so the index doesn't matter.
+	thisint->intIndex = 0;
 
-  // For this code, we only handle 1 interface, so the index doesn't matter.
-  thisint->intIndex = 0;
+	// Allocate memory for the things we need.
+	thisint->sockData = (void *)Malloc(sizeof(struct gen_sock_data));
+	if (thisint->sockData == NULL) {
+		debug_printf(DEBUG_NORMAL, "Error allocating memory!\n");
+		return XEMALLOC;
+	}
 
-  // Allocate memory for the things we need.
-  thisint->sockData = (void *)Malloc(sizeof(struct gen_sock_data));
-  if (thisint->sockData == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Error allocating memory!\n");
-      return XEMALLOC;
-    }
+	sockData = thisint->sockData;
 
-  sockData = thisint->sockData;
+	source_mac = getmac(thisint->intName);
 
-  source_mac = getmac(thisint->intName);
+	if (source_mac == NULL)
+		return XEMALLOC;
 
-  if (source_mac == NULL) return XEMALLOC;
+	if ((sockData->pcap_descr = setup_pcap(thisint->intName,
+					       (char *)source_mac,
+					       1700, 1000, pcap_err)) == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't open interface %s at line %d in cardif_generic.c!\n",
+			     thisint->intName, __LINE__);
+		return -1;
+	}
 
-  if ((sockData->pcap_descr = setup_pcap(thisint->intName, 
-					 (char *)source_mac, 
-					 1700, 1000, 
-					 pcap_err)) == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't open interface %s at line %d in cardif_generic.c!\n",
-		   thisint->intName, __LINE__);
-      return -1;
-    }
+	// Store a copy of our source MAC for later use.
+	memcpy((char *)&thisint->source_mac[0], (char *)&source_mac[0], 6);
 
+	FREE(source_mac);
 
+	// Allocate a send buffer.
+	thisint->sendframe = Malloc(1524);
+	if (thisint->sendframe == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory for send frame buffer!\n");
+		return -1;
+	}
 
-  // Store a copy of our source MAC for later use.
-  memcpy((char *)&thisint->source_mac[0], (char *)&source_mac[0], 6);
-
-  FREE(source_mac);
-
-  // Allocate a send buffer.
-  thisint->sendframe = Malloc(1524);
-  if (thisint->sendframe == NULL)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for send frame buffer!\n");
-	  return -1;
-  }
-
-  return XENONE;
+	return XENONE;
 }
 
 /**************************************************************
@@ -198,9 +195,9 @@ int cardif_init(context *thisint, char driver)
  * We don't know how to handle keys, so don't do anything.
  *
  **************************************************************/
-void cardif_reset_keys(context *thisint)
+void cardif_reset_keys(context * thisint)
 {
-  return;
+	return;
 }
 
 /**************************************************************
@@ -212,10 +209,10 @@ void cardif_reset_keys(context *thisint)
  * to the multicast address.)
  *
  **************************************************************/
-int cardif_check_dest(context *thisint)
+int cardif_check_dest(context * thisint)
 {
-  // We probably don't need this either.
-  return XENOWIRELESS;
+	// We probably don't need this either.
+	return XENOWIRELESS;
 }
 
 /******************************************
@@ -223,12 +220,12 @@ int cardif_check_dest(context *thisint)
  * Return the socket number for functions that need it.
  *
  ******************************************/
-int cardif_get_socket(context *thisint)
+int cardif_get_socket(context * thisint)
 {
-  // This has no meaning in the context of this driver!
+	// This has no meaning in the context of this driver!
 
-  // Update this to use the "get selectable socket" pieces in current libpcap versions.
-  return -1;
+	// Update this to use the "get selectable socket" pieces in current libpcap versions.
+	return -1;
 }
 
 /******************************************
@@ -237,23 +234,22 @@ int cardif_get_socket(context *thisint)
  * of the interface.  This will be called before the program terminates.
  *
  ******************************************/
-int cardif_deinit(context *thisint)
+int cardif_deinit(context * thisint)
 {
-  struct gen_sock_data *sockData;
+	struct gen_sock_data *sockData;
 
-  sockData = thisint->sockData;
+	sockData = thisint->sockData;
 
-  debug_printf(DEBUG_EVERYTHING, "Cleaning up interface %s...\n",thisint->intName);
+	debug_printf(DEBUG_EVERYTHING, "Cleaning up interface %s...\n",
+		     thisint->intName);
 
-  if (sockData->pcap_descr != NULL)
-    {
-      pcap_close(sockData->pcap_descr);
-    }
+	if (sockData->pcap_descr != NULL) {
+		pcap_close(sockData->pcap_descr);
+	}
+	// Now clean up the memory.
+	FREE(thisint->sockData);
 
-  // Now clean up the memory.
-  FREE(thisint->sockData);
-
-  return XENONE;
+	return XENONE;
 }
 
 /******************************************
@@ -262,11 +258,11 @@ int cardif_deinit(context *thisint)
  * key.
  *
  ******************************************/
-int cardif_set_wireless_key(context *thisint, uint8_t *key, 
+int cardif_set_wireless_key(context * thisint, uint8_t * key,
 			    int keylen, int index)
 {
-  // We won't ever set a key, so return an error.
-  return XENOWIRELESS;
+	// We won't ever set a key, so return an error.
+	return XENOWIRELESS;
 }
 
 /******************************************
@@ -276,10 +272,10 @@ int cardif_set_wireless_key(context *thisint, uint8_t *key,
  * return an error.
  *
  ******************************************/
-int cardif_GetSSID(context *thisint, char *ssid_name)
+int cardif_GetSSID(context * thisint, char *ssid_name)
 {
-  // We don't have any wireless interfaces.
-  return XENOWIRELESS;
+	// We don't have any wireless interfaces.
+	return XENOWIRELESS;
 }
 
 /******************************************
@@ -288,9 +284,9 @@ int cardif_GetSSID(context *thisint, char *ssid_name)
  * keying, so return XENOWIRELESS.
  *
  ******************************************/
-int cardif_SetSSID(context *thisint, char *ssid_name)
+int cardif_SetSSID(context * thisint, char *ssid_name)
 {
-  return XENOWIRELESS;
+	return XENOWIRELESS;
 }
 
 /******************************************
@@ -299,10 +295,10 @@ int cardif_SetSSID(context *thisint, char *ssid_name)
  * to reset our configuration.
  *
  ******************************************/
-int cardif_check_ssid(context *thisint)
+int cardif_check_ssid(context * thisint)
 {
-  // We aren't wireless!
-  return XENOWIRELESS;
+	// We aren't wireless!
+	return XENOWIRELESS;
 }
 
 /******************************************
@@ -312,10 +308,10 @@ int cardif_check_ssid(context *thisint)
  * we should return an error.
  *
  ******************************************/
-int cardif_GetBSSID(context *thisint, char *bssid_dest)
+int cardif_GetBSSID(context * thisint, char *bssid_dest)
 {
-  // Not wireless
-  return XENOWIRELESS;
+	// Not wireless
+	return XENOWIRELESS;
 }
 
 /******************************************
@@ -324,10 +320,10 @@ int cardif_GetBSSID(context *thisint, char *bssid_dest)
  * or down.  If there isn't an interface, we should return an error.
  *
  ******************************************/
-int cardif_get_if_state(context *thisint)
+int cardif_get_if_state(context * thisint)
 {
-  // Not sure if there is a good way to do this.
-  return TRUE;
+	// Not sure if there is a good way to do this.
+	return TRUE;
 }
 
 /******************************************
@@ -337,63 +333,66 @@ int cardif_get_if_state(context *thisint)
  * if we have a problem sending the frame.
  *
  ******************************************/
-int cardif_sendframe(context *thisint)
+int cardif_sendframe(context * thisint)
 {
-  char nomac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  struct gen_sock_data *sockData;
-  struct config_network *network_data;
-  int pad;
+	char nomac[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	struct gen_sock_data *sockData;
+	struct config_network *network_data;
+	int pad;
 
-  sockData = thisint->sockData;
+	sockData = thisint->sockData;
 
-  if (thisint == NULL) return XEMALLOC;
+	if (thisint == NULL)
+		return XEMALLOC;
 
-  if (thisint->sendframe == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Cannot send NULL frame!\n");
-      return XENOFRAMES;
-    }
+	if (thisint->sendframe == NULL) {
+		debug_printf(DEBUG_NORMAL, "Cannot send NULL frame!\n");
+		return XENOFRAMES;
+	}
 
-  if (thisint->send_size == 0) return XENONE;
+	if (thisint->send_size == 0)
+		return XENONE;
 
-  network_data = config_get_network_config();
+	network_data = config_get_network_config();
 
-  if (network_data == NULL) 
-  {
-	  debug_printf(DEBUG_NORMAL, "No valid network data available!  Discarding packet!\n");
-	  return XEGENERROR;
-  }
+	if (network_data == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "No valid network data available!  Discarding packet!\n");
+		return XEGENERROR;
+	}
+	// The frame we are handed in shouldn't have a src/dest, so put it in.
+	memcpy(&thisint->sendframe[0], &thisint->dest_mac[0], 6);
+	memcpy(&thisint->sendframe[6], &thisint->source_mac[0], 6);
 
-  // The frame we are handed in shouldn't have a src/dest, so put it in.
-  memcpy(&thisint->sendframe[0], &thisint->dest_mac[0], 6);
-  memcpy(&thisint->sendframe[6], &thisint->source_mac[0], 6);
+	if (memcmp(nomac, (char *)&network_data->dest_mac[0], 6) != 0) {
+		debug_printf(DEBUG_INT,
+			     "Static MAC address defined!  Using it!\n");
+		memcpy(&thisint->sendframe[0], &network_data->dest_mac[0], 6);
+	}
 
-  if (memcmp(nomac, (char *)&network_data->dest_mac[0], 6) != 0)
-    {
-      debug_printf(DEBUG_INT, "Static MAC address defined!  Using it!\n");
-      memcpy(&thisint->sendframe[0], &network_data->dest_mac[0], 6);
-    }
+	if (thisint->send_size < 64) {
+		pad = 64 - thisint->send_size;
+		debug_printf(DEBUG_INT,
+			     "Padding frame to 64 bytes by adding %d byte"
+			     "(s).\n", pad);
+		memset(&thisint->sendframe[thisint->send_size + 1], 0x00, pad);
+		thisint->send_size += pad;
+	}
 
-  if (thisint->send_size < 64)
-  {
-      pad = 64 - thisint->send_size;
-      debug_printf(DEBUG_INT, "Padding frame to 64 bytes by adding %d byte"
-                   "(s).\n", pad);
-      memset(&thisint->sendframe[thisint->send_size+1], 0x00, pad);
-      thisint->send_size += pad;
-  }
+	debug_printf(DEBUG_EVERYTHING, "Frame to be sent (%d) : \n",
+		     thisint->send_size);
+	debug_hex_dump(DEBUG_EVERYTHING, thisint->sendframe,
+		       thisint->send_size);
 
-  debug_printf(DEBUG_EVERYTHING, "Frame to be sent (%d) : \n", thisint->send_size);
-  debug_hex_dump(DEBUG_EVERYTHING, thisint->sendframe, thisint->send_size);
+	if (pcap_sendpacket
+	    (sockData->pcap_descr, thisint->sendframe,
+	     thisint->send_size) < 0) {
+		debug_printf(DEBUG_NORMAL, "Error sending frame!\n");
+		pcap_perror(sockData->pcap_descr, NULL);
+		return -1;
+	}
 
-  if (pcap_sendpacket(sockData->pcap_descr, thisint->sendframe, thisint->send_size) < 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "Error sending frame!\n");
-	  pcap_perror(sockData->pcap_descr, NULL);
-	  return -1;
-  }
-
-  return XENONE;  // We didn't get an error.
+	return XENONE;		// We didn't get an error.
 }
 
 /******************************************
@@ -403,75 +402,73 @@ int cardif_sendframe(context *thisint)
  * is something we care about, and act accordingly.
  *
  ******************************************/
-int cardif_getframe(context *thisint)
+int cardif_getframe(context * thisint)
 {
-  int pcap_ret_val = 0;
-  char dot1x_default_dest[6] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x03};
-  struct gen_sock_data *sockData;
-  uint8_t *resultframe = NULL;
-  struct pcap_pkthdr *pkt_header = NULL;
-  u_char *pkt_data = NULL;
+	int pcap_ret_val = 0;
+	char dot1x_default_dest[6] = { 0x01, 0x80, 0xc2, 0x00, 0x00, 0x03 };
+	struct gen_sock_data *sockData;
+	uint8_t *resultframe = NULL;
+	struct pcap_pkthdr *pkt_header = NULL;
+	u_char *pkt_data = NULL;
 
-  sockData = thisint->sockData;
+	sockData = thisint->sockData;
 
-  FREE(thisint->recvframe);
-  thisint->recv_size = 0;
+	FREE(thisint->recvframe);
+	thisint->recv_size = 0;
 
-  resultframe = Malloc(1524);
-  if (resultframe == NULL)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store resulting frame!\n");
-	  return XESOCKOP;
-  }
+	resultframe = Malloc(1524);
+	if (resultframe == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store resulting frame!\n");
+		return XESOCKOP;
+	}
 
-  switch (pcap_next_ex(sockData->pcap_descr, &pkt_header, &pkt_data))
-  {
-  case 1:
-	  // Everything went fine, move on.
-	  break;
+	switch (pcap_next_ex(sockData->pcap_descr, &pkt_header, &pkt_data)) {
+	case 1:
+		// Everything went fine, move on.
+		break;
 
-  case 0:
-	  return XEWINTIMEREXPIRED;
-	  break;
+	case 0:
+		return XEWINTIMEREXPIRED;
+		break;
 
-  case -1:
-	  return XESOCKOP;
-	  break;
+	case -1:
+		return XESOCKOP;
+		break;
 
-  case -2:
-	  debug_printf(DEBUG_NORMAL, "Hit an EOF reading a pcap file!?  This shouldn't happen!\n");
-	  return XEGENERROR;
+	case -2:
+		debug_printf(DEBUG_NORMAL,
+			     "Hit an EOF reading a pcap file!?  This shouldn't happen!\n");
+		return XEGENERROR;
 
-  default:
-	  debug_printf(DEBUG_NORMAL, "Unknown result came from pcap!\n");
-	  return XEGENERROR;
-  }
+	default:
+		debug_printf(DEBUG_NORMAL, "Unknown result came from pcap!\n");
+		return XEGENERROR;
+	}
 
-  // We have more frames available.
-  memcpy(resultframe, pkt_data, pkt_header->len);
+	// We have more frames available.
+	memcpy(resultframe, pkt_data, pkt_header->len);
 
-  debug_printf(DEBUG_EVERYTHING, "Got Frame : \n");
-  debug_hex_dump(DEBUG_EVERYTHING, resultframe, pkt_header->len);
+	debug_printf(DEBUG_EVERYTHING, "Got Frame : \n");
+	debug_hex_dump(DEBUG_EVERYTHING, resultframe, pkt_header->len);
 
 //#warning FIX!
-  //  snmp_dot1xSuppEapolFramesRx();
+	//  snmp_dot1xSuppEapolFramesRx();
 
-  // Make sure that the frame we got is for us..
-  if ((memcmp(&thisint->source_mac[0], &resultframe[0], 6) == 0) ||
-      ((memcmp(&resultframe[0], &dot1x_default_dest[0], 6) == 0) &&
-       (memcmp(&resultframe[6], &thisint->source_mac[0], 6) != 0)))
-    {
-      thisint->recv_size = pkt_header->len;
-	  thisint->recvframe = resultframe;
-      return pkt_header->len;
-    }
+	// Make sure that the frame we got is for us..
+	if ((memcmp(&thisint->source_mac[0], &resultframe[0], 6) == 0) ||
+	    ((memcmp(&resultframe[0], &dot1x_default_dest[0], 6) == 0) &&
+	     (memcmp(&resultframe[6], &thisint->source_mac[0], 6) != 0))) {
+		thisint->recv_size = pkt_header->len;
+		thisint->recvframe = resultframe;
+		return pkt_header->len;
+	}
+	// Otherwise it isn't for us. 
+	debug_printf(DEBUG_INT, "Got a frame, not for us.\n");
 
-  // Otherwise it isn't for us. 
-  debug_printf(DEBUG_INT, "Got a frame, not for us.\n");
+	FREE(resultframe);
 
-  FREE(resultframe);
-
-  return XENOFRAMES;
+	return XENOFRAMES;
 }
 
 /******************************************
@@ -481,9 +478,9 @@ int cardif_getframe(context *thisint)
  ******************************************/
 int cardif_validate(char *interf)
 {
-  // Assume that the interface is valid, or the user wouldn't have
-  // told us to use it. ;)
-  return TRUE;
+	// Assume that the interface is valid, or the user wouldn't have
+	// told us to use it. ;)
+	return TRUE;
 }
 
 /*******************************************************
@@ -495,8 +492,8 @@ int cardif_validate(char *interf)
  *******************************************************/
 int cardif_int_is_wireless(char *interf)
 {
-  // Not ever going to be wireless!
-  return FALSE;
+	// Not ever going to be wireless!
+	return FALSE;
 }
 
 /******************************************************
@@ -504,9 +501,9 @@ int cardif_int_is_wireless(char *interf)
  * Stub for wireless scan.
  *
  *****************************************************/
-int cardif_start_wireless_scan(context *thisint)
+int cardif_start_wireless_scan(context * thisint)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -514,9 +511,9 @@ int cardif_start_wireless_scan(context *thisint)
  * Stub for encryption capabilities.
  *
  *****************************************************/
-void cardif_get_abilities(context *thisint)
+void cardif_get_abilities(context * thisint)
 {
-  thisint->enc_capa = 0;
+	thisint->enc_capa = 0;
 }
 
 /*****************************************************
@@ -533,9 +530,9 @@ void cardif_wait_for_int(char *intname)
  * Stub for clearing encryption keys
  *
  *****************************************************/
-int cardif_clear_keys(context *intdata)
+int cardif_clear_keys(context * intdata)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -543,9 +540,9 @@ int cardif_clear_keys(context *intdata)
  * Stub for wireless disassociation
  *
  *****************************************************/
-int cardif_disassociate(context *thisint, int reason_code)
+int cardif_disassociate(context * thisint, int reason_code)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -553,7 +550,7 @@ int cardif_disassociate(context *thisint, int reason_code)
  * Stub for passive scan timer callback
  *
  *****************************************************/
-void cardif_passive_scan_timeout(context *ctx)
+void cardif_passive_scan_timeout(context * ctx)
 {
 }
 
@@ -562,9 +559,9 @@ void cardif_passive_scan_timeout(context *ctx)
  * Stub for deleting an encryption key
  *
  *****************************************************/
-int cardif_delete_key(context *intdata, int key_idx, int set_tx)
+int cardif_delete_key(context * intdata, int key_idx, int set_tx)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -572,9 +569,9 @@ int cardif_delete_key(context *intdata, int key_idx, int set_tx)
  * Stub for disabling WPA association state
  *
  *****************************************************/
-int cardif_disable_wpa_state(context *thisint)
+int cardif_disable_wpa_state(context * thisint)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -582,9 +579,9 @@ int cardif_disable_wpa_state(context *thisint)
  * Stub for wireless scanning
  *
  *****************************************************/
-int cardif_do_wireless_scan(context *thisint, char passive)
+int cardif_do_wireless_scan(context * thisint, char passive)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -592,9 +589,9 @@ int cardif_do_wireless_scan(context *thisint, char passive)
  * Stub for disabling encryption
  *
  *****************************************************/
-int cardif_enc_disable(context *intdata)
+int cardif_enc_disable(context * intdata)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -602,7 +599,7 @@ int cardif_enc_disable(context *intdata)
  * Stub for reassociating to a wireless network
  *
  *****************************************************/
-void cardif_reassociate(context *intiface, uint8_t reason)
+void cardif_reassociate(context * intiface, uint8_t reason)
 {
 }
 
@@ -611,8 +608,7 @@ void cardif_reassociate(context *intiface, uint8_t reason)
  * Stub for setting WEP keys
  *
  *****************************************************/
-int cardif_set_wep_key(context *thisint, uint8_t *key,
-                       int keylen, int index)
+int cardif_set_wep_key(context * thisint, uint8_t * key, int keylen, int index)
 {
 }
 
@@ -621,9 +617,9 @@ int cardif_set_wep_key(context *thisint, uint8_t *key,
  * Stub for disassociate/roam
  *
  *****************************************************/
-int cardif_wep_associate(context *thisint, int zeros)
+int cardif_wep_associate(context * thisint, int zeros)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -631,10 +627,10 @@ int cardif_wep_associate(context *thisint, int zeros)
  * Stub for setting CCMP keys
  *
  *****************************************************/
-int cardif_set_ccmp_key(context *thisint, char *addr, int keyidx,
-                        int settx, char *key, int keylen)
+int cardif_set_ccmp_key(context * thisint, char *addr, int keyidx,
+			int settx, char *key, int keylen)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -642,10 +638,10 @@ int cardif_set_ccmp_key(context *thisint, char *addr, int keyidx,
  * Stub for setting TKIP keys
  *
  *****************************************************/
-int cardif_set_tkip_key(context *thisint, char *addr,
+int cardif_set_tkip_key(context * thisint, char *addr,
 			int keyidx, int settx, char *key, int keylen)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -653,9 +649,9 @@ int cardif_set_tkip_key(context *thisint, char *addr,
  * Stub for enabling/disabling rx of unencrypted frames on an interface
  *
  *****************************************************/
-int cardif_drop_unencrypted(context *intdata, char endis)
+int cardif_drop_unencrypted(context * intdata, char endis)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -663,9 +659,9 @@ int cardif_drop_unencrypted(context *intdata, char endis)
  * Stub for getting the WPA-IE
  *
  *****************************************************/
-int cardif_get_wpa_ie(context *intdata, char *iedata, int *ielen)
+int cardif_get_wpa_ie(context * intdata, char *iedata, int *ielen)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -673,9 +669,9 @@ int cardif_get_wpa_ie(context *intdata, char *iedata, int *ielen)
  * Stub for getting the RSN-IE
  *
  *****************************************************/
-int cardif_get_wpa2_ie(context *intdata, char *iedata, int *ielen)
+int cardif_get_wpa2_ie(context * intdata, char *iedata, int *ielen)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /*****************************************************
@@ -683,12 +679,11 @@ int cardif_get_wpa2_ie(context *intdata, char *iedata, int *ielen)
  * Stub for enabling/disabling countermeasures on an interface
  *
  *****************************************************/
-int cardif_countermeasures(context *intdata, char endis)
+int cardif_countermeasures(context * intdata, char endis)
 {
-  return XENONE;
+	return XENONE;
 }
 
-void cardif_operstate(context *ctx, uint8_t newstate)
+void cardif_operstate(context * ctx, uint8_t newstate)
 {
 }
-

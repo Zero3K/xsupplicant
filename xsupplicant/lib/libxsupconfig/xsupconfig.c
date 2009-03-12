@@ -55,35 +55,33 @@ char *forced_profile = NULL;
  **/
 int config_system_setup(char *path_to_config)
 {
-  xmlDocPtr doc = NULL;
-  xmlNode *root_element = NULL;
+	xmlDocPtr doc = NULL;
+	xmlNode *root_element = NULL;
 
-  TRACE 
+	TRACE xsupconfig_devices_init();
+	doc = loadConfig(path_to_config);
+	if (doc == NULL) {
+		// DO NOT change this to xsupconfig_common_log(), since it will cause linker issues with libxsupgui!
+		if (xsup_common_in_startup() != TRUE) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't load configuration file '%s'!\n",
+				     path_to_config);
+		}
 
-  xsupconfig_devices_init();
-  doc = loadConfig(path_to_config);
-  if (doc == NULL)
-    {
-	  // DO NOT change this to xsupconfig_common_log(), since it will cause linker issues with libxsupgui!
-	  if (xsup_common_in_startup() != TRUE)
-	  {
-		  debug_printf(DEBUG_NORMAL, "Couldn't load configuration file '%s'!\n", path_to_config);
-	  }
+		return XECONFIGFILEFAIL;
+	}
 
-      return XECONFIGFILEFAIL;
-    }
+	root_element = xmlDocGetRootElement(doc);
 
-  root_element = xmlDocGetRootElement(doc);
+	xsupconfig_parse(root_element, baselevel, CONFIG_LOAD_GLOBAL, NULL);
 
-  xsupconfig_parse(root_element, baselevel, CONFIG_LOAD_GLOBAL, NULL);
+	// set the file name
+	config_fname = _strdup(path_to_config);
 
-  // set the file name
-  config_fname = _strdup(path_to_config);
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
 
-  xmlFreeDoc(doc);
-  xmlCleanupParser();
-
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -95,34 +93,31 @@ int config_system_setup(char *path_to_config)
  **/
 int config_load_user_config(char *config_file)
 {
-  xmlDocPtr doc = NULL;
-  xmlNode *root_element = NULL;
+	xmlDocPtr doc = NULL;
+	xmlNode *root_element = NULL;
 
-  TRACE 
+	TRACE doc = loadConfig(config_file);
+	if (doc == NULL) {
+		// DO NOT change this to xsupconfig_common_log(), since it will cause linker issues with libxsupgui!
+		if (xsup_common_in_startup() != TRUE) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't load user configuration file '%s'!\n",
+				     config_file);
+		}
 
-  doc = loadConfig(config_file);
-  if (doc == NULL)
-    {
-	  // DO NOT change this to xsupconfig_common_log(), since it will cause linker issues with libxsupgui!
-	  if (xsup_common_in_startup() != TRUE)
-	  {
-		  debug_printf(DEBUG_NORMAL, "Couldn't load user configuration file '%s'!\n", config_file);
-	  }
+		conf_user_connections = NULL;
 
-	  conf_user_connections = NULL;
+		return XECONFIGFILEFAIL;
+	}
 
-      return XECONFIGFILEFAIL;
-    }
+	root_element = xmlDocGetRootElement(doc);
 
-  root_element = xmlDocGetRootElement(doc);
+	xsupconfig_parse(root_element, user_baselevel, CONFIG_LOAD_USER, NULL);
 
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
 
-  xsupconfig_parse(root_element, user_baselevel, CONFIG_LOAD_USER, NULL);
-
-  xmlFreeDoc(doc);
-  xmlCleanupParser();
-
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -197,13 +192,12 @@ struct config_profiles *config_get_profiles(uint8_t config_type)
 uint8_t config_get_friendly_warnings()
 {
 	TRACE
+	    if (TEST_FLAG
+		(conf_globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS)) {
+		return TRUE;
+	}
 
-  if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
-    {
-      return TRUE;
-    }
-
-  return FALSE;
+	return FALSE;
 }
 
 /**
@@ -217,14 +211,11 @@ uint8_t config_get_friendly_warnings()
  **/
 uint8_t config_get_idleWhile()
 {
-	TRACE
+	TRACE if (conf_globals->idleWhile_timeout == 0) {
+		return IDLE_WHILE_TIMER;
+	}
 
-  if (conf_globals->idleWhile_timeout == 0)
-    {
-      return IDLE_WHILE_TIMER;
-    }
-  
-  return conf_globals->idleWhile_timeout;
+	return conf_globals->idleWhile_timeout;
 }
 
 /**
@@ -235,14 +226,12 @@ uint8_t config_get_idleWhile()
  **/
 void config_create_new_config()
 {
-	TRACE
+	TRACE config_fname = NULL;	// We don't know what the file name will be.
 
-  config_fname = NULL;   // We don't know what the file name will be.
+	// Populate the globals
+	initialize_config_globals(&conf_globals);
 
-  // Populate the globals
-  initialize_config_globals(&conf_globals);
-
-  initialize_config_connections(&conf_connections);
+	initialize_config_connections(&conf_connections);
 }
 
 /**
@@ -263,25 +252,28 @@ int config_change_ttls_pwd(struct config_eap_method *meth, char *password)
 	void *ptr = NULL;
 
 	ttls = (struct config_eap_ttls *)meth->method_data;
-	if (ttls == NULL) return -1;
+	if (ttls == NULL)
+		return -1;
 
-	switch (ttls->phase2_type)
-	{
+	switch (ttls->phase2_type) {
 	case TTLS_PHASE2_PAP:
 	case TTLS_PHASE2_CHAP:
 	case TTLS_PHASE2_MSCHAP:
 	case TTLS_PHASE2_MSCHAPV2:
-		if (ttls->phase2_data == NULL)
-		{
-			ttls->phase2_data = Malloc(sizeof(struct config_pwd_only));
-			if (ttls->phase2_data == NULL) return -1;
+		if (ttls->phase2_data == NULL) {
+			ttls->phase2_data =
+			    Malloc(sizeof(struct config_pwd_only));
+			if (ttls->phase2_data == NULL)
+				return -1;
 		}
 
 		ptr = ((struct config_pwd_only *)(ttls->phase2_data))->password;
 		if (ptr != NULL)
-			FREE(((struct config_pwd_only *)(ttls->phase2_data))->password);
+			FREE(((struct config_pwd_only *)(ttls->phase2_data))->
+			     password);
 
-		((struct config_pwd_only *)(ttls->phase2_data))->password = _strdup(password);
+		((struct config_pwd_only *)(ttls->phase2_data))->password =
+		    _strdup(password);
 		break;
 
 	case TTLS_PHASE2_EAP:
@@ -289,7 +281,9 @@ int config_change_ttls_pwd(struct config_eap_method *meth, char *password)
 		break;
 
 	default:
-		debug_printf(DEBUG_NORMAL, "Unknown phase 2 authentication type %d!\n", ttls->phase2_type);
+		debug_printf(DEBUG_NORMAL,
+			     "Unknown phase 2 authentication type %d!\n",
+			     ttls->phase2_type);
 		break;
 	}
 
@@ -312,56 +306,75 @@ int config_change_pwd(struct config_eap_method *meth, char *password)
 {
 	void *ptr = NULL;
 
-	if (password == NULL) return XENONE;   // Nothing to do.
+	if (password == NULL)
+		return XENONE;	// Nothing to do.
 
-	if (meth->method_data == NULL) return XEMALLOC;
+	if (meth->method_data == NULL)
+		return XEMALLOC;
 
-	switch (meth->method_num)
-	{
+	switch (meth->method_num) {
 	case EAP_TYPE_MD5:
 	case EAP_TYPE_LEAP:
 	case EAP_TYPE_GTC:
 		ptr = ((struct config_pwd_only *)(meth->method_data))->password;
 		if (ptr != NULL)
-			FREE(((struct config_pwd_only *)(meth->method_data))->password);
+			FREE(((struct config_pwd_only *)(meth->method_data))->
+			     password);
 
-		((struct config_pwd_only *)(meth->method_data))->password = _strdup(password);
+		((struct config_pwd_only *)(meth->method_data))->password =
+		    _strdup(password);
 		break;
 
 	case EAP_TYPE_TLS:
-		ptr = ((struct config_eap_tls *)(meth->method_data))->user_key_pass;
+		ptr =
+		    ((struct config_eap_tls *)(meth->method_data))->
+		    user_key_pass;
 		if (ptr != NULL)
-			FREE(((struct config_eap_tls *)(meth->method_data))->user_key_pass);
+			FREE(((struct config_eap_tls *)(meth->method_data))->
+			     user_key_pass);
 
-		((struct config_eap_tls *)(meth->method_data))->user_key_pass = _strdup(password);
+		((struct config_eap_tls *)(meth->method_data))->user_key_pass =
+		    _strdup(password);
 		break;
 
 	case EAP_TYPE_SIM:
 		ptr = ((struct config_eap_sim *)(meth->method_data))->password;
 		if (ptr != NULL)
-			FREE(((struct config_eap_sim *)(meth->method_data))->password);
+			FREE(((struct config_eap_sim *)(meth->method_data))->
+			     password);
 
-		((struct config_eap_sim *)(meth->method_data))->password = _strdup(password);
+		((struct config_eap_sim *)(meth->method_data))->password =
+		    _strdup(password);
 		break;
 
 	case EAP_TYPE_AKA:
 		ptr = ((struct config_eap_aka *)(meth->method_data))->password;
 		if (ptr != NULL)
-			FREE(((struct config_eap_aka *)(meth->method_data))->password);
+			FREE(((struct config_eap_aka *)(meth->method_data))->
+			     password);
 
-		((struct config_eap_aka *)(meth->method_data))->password = _strdup(password);
+		((struct config_eap_aka *)(meth->method_data))->password =
+		    _strdup(password);
 		break;
 
 	case EAP_TYPE_MSCHAPV2:
-		ptr = ((struct config_eap_mschapv2 *)(meth->method_data))->password;
+		ptr =
+		    ((struct config_eap_mschapv2 *)(meth->method_data))->
+		    password;
 		if (ptr != NULL)
-			FREE(((struct config_eap_mschapv2 *)(meth->method_data))->password);
+			FREE(((struct config_eap_mschapv2 *)(meth->
+							     method_data))->
+			     password);
 
-		((struct config_eap_mschapv2 *)(meth->method_data))->password = _strdup(password);
+		((struct config_eap_mschapv2 *)(meth->method_data))->password =
+		    _strdup(password);
 		break;
 
 	case EAP_TYPE_PEAP:
-		return config_change_pwd(((struct config_eap_peap *)(meth->method_data))->phase2, password);
+		return
+		    config_change_pwd(((struct config_eap_peap *)(meth->
+								  method_data))->
+				      phase2, password);
 		break;
 
 	case EAP_TYPE_TTLS:
@@ -369,12 +382,16 @@ int config_change_pwd(struct config_eap_method *meth, char *password)
 		break;
 
 	case EAP_TYPE_FAST:
-		return config_change_pwd(((struct config_eap_fast *)(meth->method_data))->phase2, password);
+		return
+		    config_change_pwd(((struct config_eap_fast *)(meth->
+								  method_data))->
+				      phase2, password);
 		break;
 
 	default:
-		debug_printf(DEBUG_NORMAL, "Invalid EAP method requested!  (Type %d)\n",
-			meth->method_num);
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid EAP method requested!  (Type %d)\n",
+			     meth->method_num);
 		break;
 	}
 
@@ -390,29 +407,30 @@ int config_change_pwd(struct config_eap_method *meth, char *password)
  *
  * \retval ptr to the connection (if found), NULL if the connection isn't found.
  **/
-struct config_connection *config_find_connection_from_ssid(uint8_t config_type, char *ssidname)
+struct config_connection *config_find_connection_from_ssid(uint8_t config_type,
+							   char *ssidname)
 {
-    struct config_connection *cur = NULL;
+	struct config_connection *cur = NULL;
 
-    if (!ssidname) return NULL;
+	if (!ssidname)
+		return NULL;
 
-  // Start at the top of the list.
-  if (config_type == CONFIG_LOAD_GLOBAL)
-	cur = conf_connections;
-  else
-    cur = conf_user_connections;
+	// Start at the top of the list.
+	if (config_type == CONFIG_LOAD_GLOBAL)
+		cur = conf_connections;
+	else
+		cur = conf_user_connections;
 
-  while (cur != NULL)
-    {
-		if (cur->ssid != NULL)
-		{
-			if (strcmp(cur->ssid, ssidname) == 0) break;
+	while (cur != NULL) {
+		if (cur->ssid != NULL) {
+			if (strcmp(cur->ssid, ssidname) == 0)
+				break;
 		}
 
-      cur = cur->next;
-    }
+		cur = cur->next;
+	}
 
-  return cur;
+	return cur;
 }
 
 /**
@@ -426,23 +444,23 @@ struct config_connection *config_find_connection_from_ssid(uint8_t config_type, 
  **/
 uint8_t config_get_network_priority(char *matchname)
 {
-  struct config_connection *cur = NULL;
+	struct config_connection *cur = NULL;
 
-  TRACE
+	TRACE if (!matchname)
+		return 0xff;
 
-  if (!matchname)
-      return 0xff;
+	// Start at the top of the list.
+	cur = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL, matchname);
+	if (cur == NULL) {
+		cur =
+		    config_find_connection_from_ssid(CONFIG_LOAD_USER,
+						     matchname);
+	}
 
-  // Start at the top of the list.
-  cur = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL, matchname);
-  if (cur == NULL)
-  {
-	  cur = config_find_connection_from_ssid(CONFIG_LOAD_USER, matchname);
-  }
+	if (!cur)
+		return 0xff;
 
-  if (!cur) return 0xff;
-
-  return cur->priority;
+	return cur->priority;
 }
 
 /**
@@ -452,27 +470,27 @@ uint8_t config_get_network_priority(char *matchname)
  **/
 struct config_connection *config_find_wired_default()
 {
-  struct config_connection *cur = NULL;
+	struct config_connection *cur = NULL;
 
-  // Start by looking in the global config as it should override the user's selection.
-  cur = conf_connections;
+	// Start by looking in the global config as it should override the user's selection.
+	cur = conf_connections;
 
-  while (cur != NULL) 
-  {
-	  if ((cur->ssid == NULL) && (cur->priority == 1)) return cur;
-	  cur = cur->next;
-  }
+	while (cur != NULL) {
+		if ((cur->ssid == NULL) && (cur->priority == 1))
+			return cur;
+		cur = cur->next;
+	}
 
-  // If we don't find it in global config, look in the user config.
-  cur = conf_user_connections;
+	// If we don't find it in global config, look in the user config.
+	cur = conf_user_connections;
 
-  while (cur != NULL) 
-  {
-	  if ((cur->ssid == NULL) && (cur->priority == 1)) return cur;
-	  cur = cur->next;
-  }
+	while (cur != NULL) {
+		if ((cur->ssid == NULL) && (cur->priority == 1))
+			return cur;
+		cur = cur->next;
+	}
 
-  return NULL;
+	return NULL;
 }
 
 /**
@@ -483,78 +501,63 @@ struct config_connection *config_find_wired_default()
  *
  * \retval ptr  A pointer to the connection information, or NULL on failure.
  **/
-struct config_connection *config_find_connection(uint8_t conf_type, char *matchname)
+struct config_connection *config_find_connection(uint8_t conf_type,
+						 char *matchname)
 {
-  struct config_connection *cur = NULL;
+	struct config_connection *cur = NULL;
 
-  TRACE
-
-  if (conf_type == CONFIG_LOAD_GLOBAL)
-  {
-	cur = conf_connections;
-  }
-  else
-  {
-    cur = conf_user_connections;
-  }
-
-  if ((matchname == NULL) && (forced_profile == NULL))
-    {
-		debug_printf(DEBUG_CONFIG_PARSE, "No configuration name provided, and no forced profile provided!\n");
-      return NULL;
-    }
-
-  // If we have a forced profile, then look for it first.
-  if (forced_profile != NULL)
-    {
-      while ((cur != NULL) && (strcmp(cur->name, forced_profile) != 0))
-	{
-	  cur = cur->next;
-	}
-
-      // If a forced profile is defined, and not found, then we still
-      // need to return.
-      return cur;
-    }
-
-  while ((cur != NULL) && (strcmp(cur->name, matchname) != 0))
-    {
-      cur = cur->next;
-    }
-  
-  // If we got a match, return it.
-  if (cur != NULL)
-    {
-      return cur;
-    }
-  
-  // Otherwise, look against the essid.
-  if (conf_type == CONFIG_LOAD_GLOBAL)
-  {
-	cur = conf_connections;
-  }
-  else
-  {
-	  cur = conf_user_connections;
-  }
-
-  while (cur != NULL)
-  {
-    if ((cur->ssid == NULL) || (strcmp(cur->ssid,matchname) != 0)) 
-	{
-	  cur = cur->next;
+	TRACE if (conf_type == CONFIG_LOAD_GLOBAL) {
+		cur = conf_connections;
 	} else {
-  	  break;
+		cur = conf_user_connections;
 	}
-  }
-  
-  // Do we have a match on ssid?
-  if (cur != NULL)
-  {
-	return cur;
-  }
 
-  return NULL;
+	if ((matchname == NULL) && (forced_profile == NULL)) {
+		debug_printf(DEBUG_CONFIG_PARSE,
+			     "No configuration name provided, and no forced profile provided!\n");
+		return NULL;
+	}
+	// If we have a forced profile, then look for it first.
+	if (forced_profile != NULL) {
+		while ((cur != NULL)
+		       && (strcmp(cur->name, forced_profile) != 0)) {
+			cur = cur->next;
+		}
+
+		// If a forced profile is defined, and not found, then we still
+		// need to return.
+		return cur;
+	}
+
+	while ((cur != NULL) && (strcmp(cur->name, matchname) != 0)) {
+		cur = cur->next;
+	}
+
+	// If we got a match, return it.
+	if (cur != NULL) {
+		return cur;
+	}
+	// Otherwise, look against the essid.
+	if (conf_type == CONFIG_LOAD_GLOBAL) {
+		cur = conf_connections;
+	} else {
+		cur = conf_user_connections;
+	}
+
+	while (cur != NULL) {
+		if ((cur->ssid == NULL) || (strcmp(cur->ssid, matchname) != 0)) {
+			cur = cur->next;
+		} else {
+			break;
+		}
+	}
+
+	// Do we have a match on ssid?
+	if (cur != NULL) {
+		return cur;
+	}
+
+	return NULL;
 }
 
 /**
@@ -564,24 +567,26 @@ struct config_connection *config_find_connection(uint8_t conf_type, char *matchn
  **/
 void delete_config_single_profile(void **inptr)
 {
-  struct config_profiles *cur = NULL;
-  struct config_profiles **prof = (struct config_profiles **)inptr;
+	struct config_profiles *cur = NULL;
+	struct config_profiles **prof = (struct config_profiles **)inptr;
 
-  if (prof == NULL) return;
+	if (prof == NULL)
+		return;
 
-  if ((*prof) == NULL) return;
+	if ((*prof) == NULL)
+		return;
 
-  cur = (*prof);
+	cur = (*prof);
 
-  FREE_STRING(cur->name);
-  FREE_STRING(cur->identity);
-  FREE_STRING(cur->temp_password);
-  FREE_STRING(cur->temp_username);
-  delete_config_eap_method(&cur->method);
+	FREE_STRING(cur->name);
+	FREE_STRING(cur->identity);
+	FREE_STRING(cur->temp_password);
+	FREE_STRING(cur->temp_username);
+	delete_config_eap_method(&cur->method);
 
-  free((*prof));
+	free((*prof));
 
-  return;
+	return;
 }
 
 /**
@@ -594,21 +599,23 @@ void delete_config_single_profile(void **inptr)
  **/
 int delete_config_single_plugin(struct config_plugins **plug)
 {
-  struct config_plugins *cur = NULL;
+	struct config_plugins *cur = NULL;
 
-  if (plug == NULL) return XEMALLOC;
+	if (plug == NULL)
+		return XEMALLOC;
 
-  if ((*plug) == NULL) return XEMALLOC;
+	if ((*plug) == NULL)
+		return XEMALLOC;
 
-  cur = (*plug);
+	cur = (*plug);
 
-  FREE_STRING(cur->name);
-  FREE_STRING(cur->path);
-  FREE_STRING(cur->description);
+	FREE_STRING(cur->name);
+	FREE_STRING(cur->path);
+	FREE_STRING(cur->description);
 
-  free((*plug));
+	free((*plug));
 
-  return XENONE;
+	return XENONE;
 }
 
 /** 
@@ -622,46 +629,42 @@ int delete_config_single_plugin(struct config_plugins **plug)
  **/
 int config_delete_profile_global(char *profname)
 {
-  struct config_profiles *cur = NULL, *prev = NULL;
+	struct config_profiles *cur = NULL, *prev = NULL;
 
-  TRACE
+	TRACE if (profname == NULL)
+		return XENOTHING_TO_DO;
 
-	if (profname == NULL) return XENOTHING_TO_DO;
+	if (conf_profiles == NULL)
+		return XENOTHING_TO_DO;
 
-	if (conf_profiles == NULL) return XENOTHING_TO_DO;
+	if (strcmp(conf_profiles->name, profname) == 0) {
+		// The first one is the one we want to remove.
+		cur = conf_profiles;
+		conf_profiles = cur->next;
 
-    if (strcmp(conf_profiles->name, profname) == 0)
-      {
-	// The first one is the one we want to remove.
-	cur = conf_profiles;
-	conf_profiles = cur->next;
+		// Then, delete everything in that network.
+		delete_config_single_profile((void **)&cur);
 
-	// Then, delete everything in that network.
-	delete_config_single_profile((void **)&cur);
+		return XENONE;
+	}
+	// Otherwise, it will be somewhere else.
+	cur = conf_profiles->next;
+	prev = conf_profiles;
 
-	return XENONE;
-      }
+	while ((cur) && (strcmp(cur->name, profname) != 0)) {
+		cur = cur->next;
+		prev = prev->next;
+	}
 
-  // Otherwise, it will be somewhere else.
-  cur = conf_profiles->next;
-  prev = conf_profiles;
+	if ((cur) && (strcmp(cur->name, profname) == 0)) {
+		// We found the network to delete.
+		prev->next = cur->next;
 
-  while ((cur) && (strcmp(cur->name, profname) != 0))
-    {
-      cur = cur->next;
-      prev = prev->next;
-    }
+		delete_config_single_profile((void **)&cur);
+		return XENONE;
+	}
 
-  if ((cur) && (strcmp(cur->name, profname) == 0))
-    {
-      // We found the network to delete.
-      prev->next = cur->next;
-
-      delete_config_single_profile((void **)&cur);
-      return XENONE;
-    }
-
-  return XENOTHING_TO_DO;
+	return XENOTHING_TO_DO;
 }
 
 /** 
@@ -675,46 +678,42 @@ int config_delete_profile_global(char *profname)
  **/
 int config_delete_profile_user(char *profname)
 {
-  struct config_profiles *cur = NULL, *prev = NULL;
+	struct config_profiles *cur = NULL, *prev = NULL;
 
-  TRACE
+	TRACE if (profname == NULL)
+		return XENOTHING_TO_DO;
 
-	if (profname == NULL) return XENOTHING_TO_DO;
+	if (conf_user_profiles == NULL)
+		return XENOTHING_TO_DO;
 
-	if (conf_user_profiles == NULL) return XENOTHING_TO_DO;
+	if (strcmp(conf_user_profiles->name, profname) == 0) {
+		// The first one is the one we want to remove.
+		cur = conf_user_profiles;
+		conf_user_profiles = cur->next;
 
-    if (strcmp(conf_user_profiles->name, profname) == 0)
-      {
-	// The first one is the one we want to remove.
-	cur = conf_user_profiles;
-	conf_user_profiles = cur->next;
+		// Then, delete everything in that network.
+		delete_config_single_profile((void **)&cur);
 
-	// Then, delete everything in that network.
-	delete_config_single_profile((void **)&cur);
+		return XENONE;
+	}
+	// Otherwise, it will be somewhere else.
+	cur = conf_user_profiles->next;
+	prev = conf_user_profiles;
 
-	return XENONE;
-      }
+	while ((cur) && (strcmp(cur->name, profname) != 0)) {
+		cur = cur->next;
+		prev = prev->next;
+	}
 
-  // Otherwise, it will be somewhere else.
-  cur = conf_user_profiles->next;
-  prev = conf_user_profiles;
+	if ((cur) && (strcmp(cur->name, profname) == 0)) {
+		// We found the network to delete.
+		prev->next = cur->next;
 
-  while ((cur) && (strcmp(cur->name, profname) != 0))
-    {
-      cur = cur->next;
-      prev = prev->next;
-    }
+		delete_config_single_profile((void **)&cur);
+		return XENONE;
+	}
 
-  if ((cur) && (strcmp(cur->name, profname) == 0))
-    {
-      // We found the network to delete.
-      prev->next = cur->next;
-
-      delete_config_single_profile((void **)&cur);
-      return XENONE;
-    }
-
-  return XENOTHING_TO_DO;
+	return XENOTHING_TO_DO;
 }
 
 /**
@@ -745,46 +744,42 @@ int config_delete_profile(uint8_t config_type, char *profname)
  **/
 int config_delete_connection_global(char *netname)
 {
-  struct config_connection *cur = NULL, *prev = NULL;
+	struct config_connection *cur = NULL, *prev = NULL;
 
-  TRACE
+	TRACE if (netname == NULL)
+		return XENOTHING_TO_DO;
 
-  if (netname == NULL) return XENOTHING_TO_DO;
+	if (conf_connections == NULL)
+		return XENOTHING_TO_DO;
 
-  if (conf_connections == NULL) return XENOTHING_TO_DO;
+	if (strcmp(conf_connections->name, netname) == 0) {
+		// The first one is the one we want to remove.
+		cur = conf_connections;
+		conf_connections = cur->next;
 
-  if (strcmp(conf_connections->name, netname) == 0)
-    {
-      // The first one is the one we want to remove.
-      cur = conf_connections;
-      conf_connections = cur->next;
+		// Then, delete everything in that network.
+		delete_config_single_connection((void **)&cur);
 
-      // Then, delete everything in that network.
-      delete_config_single_connection((void **)&cur);
+		return XENONE;
+	}
+	// Otherwise, it will be somewhere else.
+	cur = conf_connections->next;
+	prev = conf_connections;
 
-      return XENONE;
-    }
+	while ((cur) && (strcmp(cur->name, netname) != 0)) {
+		cur = cur->next;
+		prev = prev->next;
+	}
 
-  // Otherwise, it will be somewhere else.
-  cur = conf_connections->next;
-  prev = conf_connections;
+	if ((cur) && (strcmp(cur->name, netname) == 0)) {
+		// We found the network to delete.
+		prev->next = cur->next;
 
-  while ((cur) && (strcmp(cur->name, netname) != 0))
-    {
-      cur = cur->next;
-      prev = prev->next;
-    }
+		delete_config_single_connection((void **)&cur);
+		return XENONE;
+	}
 
-  if ((cur) && (strcmp(cur->name, netname) == 0))
-    {
-      // We found the network to delete.
-      prev->next = cur->next;
-
-      delete_config_single_connection((void **)&cur);
-      return XENONE;
-    }
-  
-  return XENOTHING_TO_DO;
+	return XENOTHING_TO_DO;
 }
 
 /**
@@ -797,46 +792,42 @@ int config_delete_connection_global(char *netname)
  **/
 int config_delete_connection_user(char *netname)
 {
-  struct config_connection *cur = NULL, *prev = NULL;
+	struct config_connection *cur = NULL, *prev = NULL;
 
-  TRACE
+	TRACE if (netname == NULL)
+		return XENOTHING_TO_DO;
 
-  if (netname == NULL) return XENOTHING_TO_DO;
+	if (conf_user_connections == NULL)
+		return XENOTHING_TO_DO;
 
-  if (conf_user_connections == NULL) return XENOTHING_TO_DO;
+	if (strcmp(conf_user_connections->name, netname) == 0) {
+		// The first one is the one we want to remove.
+		cur = conf_user_connections;
+		conf_user_connections = cur->next;
 
-  if (strcmp(conf_user_connections->name, netname) == 0)
-    {
-      // The first one is the one we want to remove.
-      cur = conf_user_connections;
-      conf_user_connections = cur->next;
+		// Then, delete everything in that network.
+		delete_config_single_connection((void **)&cur);
 
-      // Then, delete everything in that network.
-      delete_config_single_connection((void **)&cur);
+		return XENONE;
+	}
+	// Otherwise, it will be somewhere else.
+	cur = conf_user_connections->next;
+	prev = conf_user_connections;
 
-      return XENONE;
-    }
+	while ((cur) && (strcmp(cur->name, netname) != 0)) {
+		cur = cur->next;
+		prev = prev->next;
+	}
 
-  // Otherwise, it will be somewhere else.
-  cur = conf_user_connections->next;
-  prev = conf_user_connections;
+	if ((cur) && (strcmp(cur->name, netname) == 0)) {
+		// We found the network to delete.
+		prev->next = cur->next;
 
-  while ((cur) && (strcmp(cur->name, netname) != 0))
-    {
-      cur = cur->next;
-      prev = prev->next;
-    }
+		delete_config_single_connection((void **)&cur);
+		return XENONE;
+	}
 
-  if ((cur) && (strcmp(cur->name, netname) == 0))
-    {
-      // We found the network to delete.
-      prev->next = cur->next;
-
-      delete_config_single_connection((void **)&cur);
-      return XENONE;
-    }
-  
-  return XENOTHING_TO_DO;
+	return XENOTHING_TO_DO;
 }
 
 /**
@@ -866,47 +857,43 @@ int config_delete_connection(uint8_t config_type, char *netname)
  **/
 int config_delete_interface(char *intdesc)
 {
-  struct xsup_interfaces *cur = NULL, *prev = NULL;
+	struct xsup_interfaces *cur = NULL, *prev = NULL;
 
-  TRACE
+	TRACE if (conf_devices == NULL)
+		return XENOTHING_TO_DO;
 
-  if (conf_devices == NULL) return XENOTHING_TO_DO;
+	cur = conf_devices->interf;
 
-  cur = conf_devices->interf;
+	if (cur == NULL)
+		return XENOTHING_TO_DO;
 
-  if (cur == NULL) return XENOTHING_TO_DO;
-
-  if (strcmp(cur->description, intdesc) == 0)
-    {
-      // The first one is the one we want to remove.
+	if (strcmp(cur->description, intdesc) == 0) {
+		// The first one is the one we want to remove.
 		conf_devices->interf = cur->next;
 
-      // Then, delete everything in that network.
+		// Then, delete everything in that network.
 		delete_config_interface((void **)&cur);
 
-      return XENONE;
-    }
+		return XENONE;
+	}
+	// Otherwise, it will be somewhere else.
+	prev = cur;
+	cur = cur->next;
 
-  // Otherwise, it will be somewhere else.
-  prev = cur;
-  cur = cur->next;
+	while ((cur) && (strcmp(cur->description, intdesc) != 0)) {
+		cur = cur->next;
+		prev = prev->next;
+	}
 
-  while ((cur) && (strcmp(cur->description, intdesc) != 0))
-    {
-      cur = cur->next;
-      prev = prev->next;
-    }
+	if ((cur) && (strcmp(cur->description, intdesc) == 0)) {
+		// We found the network to delete.
+		prev->next = cur->next;
 
-  if ((cur) && (strcmp(cur->description, intdesc) == 0))
-    {
-      // We found the network to delete.
-      prev->next = cur->next;
+		delete_config_interface((void **)&cur);
+		return XENONE;
+	}
 
-      delete_config_interface((void **)&cur);
-      return XENONE;
-    }
-  
-  return XENOTHING_TO_DO;
+	return XENOTHING_TO_DO;
 }
 
 /**
@@ -919,49 +906,46 @@ int config_delete_interface(char *intdesc)
  **/
 int config_delete_trusted_server_global(char *svrname)
 {
-  struct config_trusted_server *cur = NULL, *prev = NULL;
+	struct config_trusted_server *cur = NULL, *prev = NULL;
 
-  TRACE
+	TRACE if (svrname == NULL)
+		return XENOTHING_TO_DO;
 
-  if (svrname == NULL) return XENOTHING_TO_DO;
+	if (conf_trusted_servers == NULL)
+		return XENOTHING_TO_DO;
 
-  if (conf_trusted_servers == NULL) return XENOTHING_TO_DO;
+	cur = conf_trusted_servers->servers;
 
-  cur = conf_trusted_servers->servers;
+	if (cur == NULL)
+		return XENOTHING_TO_DO;
 
-  if (cur == NULL) return XENOTHING_TO_DO;
+	if (strcmp(cur->name, svrname) == 0) {
+		// The first one is the one we want to remove.
+		conf_trusted_servers->servers = cur->next;
 
-  if (strcmp(cur->name, svrname) == 0)
-    {
-      // The first one is the one we want to remove.
-	  conf_trusted_servers->servers = cur->next;
+		// Then, delete everything in that network.
+		delete_config_trusted_server((void **)&cur);
 
-      // Then, delete everything in that network.
-	  delete_config_trusted_server((void **)&cur);
+		return XENONE;
+	}
+	// Otherwise, it will be somewhere else.
+	prev = cur;
+	cur = cur->next;
 
-      return XENONE;
-    }
+	while ((cur) && (strcmp(cur->name, svrname) != 0)) {
+		cur = cur->next;
+		prev = prev->next;
+	}
 
-  // Otherwise, it will be somewhere else.
-  prev = cur;
-  cur = cur->next;
+	if ((cur) && (strcmp(cur->name, svrname) == 0)) {
+		// We found the one to delete.
+		prev->next = cur->next;
 
-  while ((cur) && (strcmp(cur->name, svrname) != 0))
-    {
-      cur = cur->next;
-      prev = prev->next;
-    }
+		delete_config_trusted_server((void **)&cur);
+		return XENONE;
+	}
 
-  if ((cur) && (strcmp(cur->name, svrname) == 0))
-    {
-      // We found the one to delete.
-      prev->next = cur->next;
-
-      delete_config_trusted_server((void **)&cur);
-      return XENONE;
-    }
-  
-  return XENOTHING_TO_DO;
+	return XENOTHING_TO_DO;
 }
 
 /**
@@ -974,49 +958,46 @@ int config_delete_trusted_server_global(char *svrname)
  **/
 int config_delete_trusted_server_user(char *svrname)
 {
-  struct config_trusted_server *cur = NULL, *prev = NULL;
+	struct config_trusted_server *cur = NULL, *prev = NULL;
 
-  TRACE
+	TRACE if (svrname == NULL)
+		return XENOTHING_TO_DO;
 
-  if (svrname == NULL) return XENOTHING_TO_DO;
+	if (conf_user_trusted_servers == NULL)
+		return XENOTHING_TO_DO;
 
-  if (conf_user_trusted_servers == NULL) return XENOTHING_TO_DO;
+	cur = conf_user_trusted_servers->servers;
 
-  cur = conf_user_trusted_servers->servers;
+	if (cur == NULL)
+		return XENOTHING_TO_DO;
 
-  if (cur == NULL) return XENOTHING_TO_DO;
+	if (strcmp(cur->name, svrname) == 0) {
+		// The first one is the one we want to remove.
+		conf_user_trusted_servers->servers = cur->next;
 
-  if (strcmp(cur->name, svrname) == 0)
-    {
-      // The first one is the one we want to remove.
-	  conf_user_trusted_servers->servers = cur->next;
+		// Then, delete everything in that network.
+		delete_config_trusted_server((void **)&cur);
 
-      // Then, delete everything in that network.
-	  delete_config_trusted_server((void **)&cur);
+		return XENONE;
+	}
+	// Otherwise, it will be somewhere else.
+	prev = cur;
+	cur = cur->next;
 
-      return XENONE;
-    }
+	while ((cur) && (strcmp(cur->name, svrname) != 0)) {
+		cur = cur->next;
+		prev = prev->next;
+	}
 
-  // Otherwise, it will be somewhere else.
-  prev = cur;
-  cur = cur->next;
+	if ((cur) && (strcmp(cur->name, svrname) == 0)) {
+		// We found the one to delete.
+		prev->next = cur->next;
 
-  while ((cur) && (strcmp(cur->name, svrname) != 0))
-    {
-      cur = cur->next;
-      prev = prev->next;
-    }
+		delete_config_trusted_server((void **)&cur);
+		return XENONE;
+	}
 
-  if ((cur) && (strcmp(cur->name, svrname) == 0))
-    {
-      // We found the one to delete.
-      prev->next = cur->next;
-
-      delete_config_trusted_server((void **)&cur);
-      return XENONE;
-    }
-  
-  return XENOTHING_TO_DO;
+	return XENOTHING_TO_DO;
 }
 
 /**
@@ -1046,8 +1027,7 @@ int config_delete_trusted_server(uint8_t config_type, char *svrname)
  **/
 struct config_globals *config_get_globals()
 {
-	TRACE
-  return conf_globals;
+	TRACE return conf_globals;
 }
 
 /**
@@ -1078,9 +1058,9 @@ struct config_plugins *config_get_plugins()
 struct xsup_interfaces *config_get_config_ints()
 {
 	TRACE
-
-	// If we don't have any devices in the config file, then say so. ;)
-	if (conf_devices == NULL) return NULL;
+	    // If we don't have any devices in the config file, then say so. ;)
+	    if (conf_devices == NULL)
+		return NULL;
 
 	return conf_devices->interf;
 }
@@ -1097,24 +1077,28 @@ struct xsup_interfaces *config_get_config_ints()
  **/
 char *config_get_ttls_pwd(struct config_eap_ttls *ttls)
 {
-	if (((struct config_pwd_only *)(ttls->phase2_data)) == NULL) return NULL;
+	if (((struct config_pwd_only *)(ttls->phase2_data)) == NULL)
+		return NULL;
 
-	switch (ttls->phase2_type)
-	{
+	switch (ttls->phase2_type) {
 	case TTLS_PHASE2_PAP:
-		return ((struct config_pwd_only *)(ttls->phase2_data))->password;
+		return ((struct config_pwd_only *)(ttls->phase2_data))->
+		    password;
 		break;
 
 	case TTLS_PHASE2_CHAP:
-		return ((struct config_pwd_only *)(ttls->phase2_data))->password;
+		return ((struct config_pwd_only *)(ttls->phase2_data))->
+		    password;
 		break;
 
 	case TTLS_PHASE2_MSCHAP:
-		return ((struct config_pwd_only *)(ttls->phase2_data))->password;
+		return ((struct config_pwd_only *)(ttls->phase2_data))->
+		    password;
 		break;
 
 	case TTLS_PHASE2_MSCHAPV2:
-		return ((struct config_pwd_only *)(ttls->phase2_data))->password;
+		return ((struct config_pwd_only *)(ttls->phase2_data))->
+		    password;
 		break;
 
 	case TTLS_PHASE2_EAP:
@@ -1123,8 +1107,8 @@ char *config_get_ttls_pwd(struct config_eap_ttls *ttls)
 
 	case TTLS_PHASE2_UNDEFINED:
 	default:
-	  return NULL;
-	  break;
+		return NULL;
+		break;
 	}
 
 	return NULL;
@@ -1141,20 +1125,21 @@ char *config_get_ttls_pwd(struct config_eap_ttls *ttls)
  **/
 char *config_get_pwd_from_profile(struct config_eap_method *meth)
 {
-	switch (meth->method_num)
-	{
+	switch (meth->method_num) {
 	case EAP_TYPE_MD5:
 	case EAP_TYPE_GTC:
 	case EAP_TYPE_LEAP:
-		return ((struct config_pwd_only *)(meth->method_data))->password;
+		return ((struct config_pwd_only *)(meth->method_data))->
+		    password;
 		break;
 
 	case EAP_TYPE_OTP:
-		return NULL;         // No password here.
+		return NULL;	// No password here.
 		break;
 
 	case EAP_TYPE_TLS:
-		return ((struct config_eap_tls *)(meth->method_data))->user_key_pass;
+		return ((struct config_eap_tls *)(meth->method_data))->
+		    user_key_pass;
 		break;
 
 	case EAP_TYPE_SIM:
@@ -1162,23 +1147,32 @@ char *config_get_pwd_from_profile(struct config_eap_method *meth)
 		break;
 
 	case EAP_TYPE_TTLS:
-		return config_get_ttls_pwd(((struct config_eap_ttls *)(meth->method_data)));
-		break;	
+		return
+		    config_get_ttls_pwd(((struct config_eap_ttls *)(meth->
+								    method_data)));
+		break;
 
 	case EAP_TYPE_AKA:
 		return ((struct config_eap_aka *)(meth->method_data))->password;
 		break;
 
 	case EAP_TYPE_PEAP:
-		return config_get_pwd_from_profile((((struct config_eap_peap *)(meth->method_data))->phase2));
+		return
+		    config_get_pwd_from_profile((((struct config_eap_peap
+						   *)(meth->method_data))->
+						 phase2));
 		break;
 
 	case EAP_TYPE_MSCHAPV2:
-		return ((struct config_eap_mschapv2 *)(meth->method_data))->password;
+		return ((struct config_eap_mschapv2 *)(meth->method_data))->
+		    password;
 		break;
 
 	case EAP_TYPE_FAST:
-		return config_get_pwd_from_profile((((struct config_eap_fast *)(meth->method_data))->phase2));
+		return
+		    config_get_pwd_from_profile((((struct config_eap_fast
+						   *)(meth->method_data))->
+						 phase2));
 		break;
 	}
 
@@ -1196,14 +1190,15 @@ char *config_get_pwd_from_profile(struct config_eap_method *meth)
  **/
 char *config_get_inner_user_from_profile(struct config_eap_method *meth)
 {
-	switch (meth->method_num)
-	{
+	switch (meth->method_num) {
 	case EAP_TYPE_TTLS:
-		return ((struct config_eap_ttls *)(meth->method_data))->inner_id;
-		break;	
+		return ((struct config_eap_ttls *)(meth->method_data))->
+		    inner_id;
+		break;
 
 	case EAP_TYPE_PEAP:
-		return ((struct config_eap_peap *)(meth->method_data))->identity;
+		return ((struct config_eap_peap *)(meth->method_data))->
+		    identity;
 		break;
 
 	case EAP_TYPE_FAST:
@@ -1219,7 +1214,7 @@ char *config_get_inner_user_from_profile(struct config_eap_method *meth)
 	case EAP_TYPE_SIM:
 	case EAP_TYPE_AKA:
 	case EAP_TYPE_MSCHAPV2:
-		return NULL;         // No inner username here.
+		return NULL;	// No inner username here.
 		break;
 	}
 
@@ -1232,12 +1227,10 @@ char *config_get_inner_user_from_profile(struct config_eap_method *meth)
 void config_destroy()
 {
 	TRACE
-
-  /* see if there really is something to cleanup */
-  xsupconfig_devices_deinit(&conf_devices);
-  delete_config_data();
+	    /* see if there really is something to cleanup */
+	    xsupconfig_devices_deinit(&conf_devices);
+	delete_config_data();
 }
-
 
 //****************************************
 // CONFIG QUERIES
@@ -1257,22 +1250,25 @@ void config_destroy()
  *          master linked list of profiles.  Freeing it will cause
  *          bad things to happen!
  **/
-struct config_profiles *config_find_profile(uint8_t config_type, char *profile_name)
+struct config_profiles *config_find_profile(uint8_t config_type,
+					    char *profile_name)
 {
 	struct config_profiles *cur = NULL;
 
 	// There was a request to find nothing, so return nothing.
-	if ((profile_name == NULL) || (strlen(profile_name) == 0)) return NULL;
+	if ((profile_name == NULL) || (strlen(profile_name) == 0))
+		return NULL;
 
 	debug_printf(DEBUG_CONFIG_PARSE, "Looking for profile '%s'!\n",
-		profile_name);
+		     profile_name);
 
 	if (config_type == CONFIG_LOAD_GLOBAL)
 		cur = conf_profiles;
 	else
 		cur = conf_user_profiles;
 
-	while ((cur != NULL) && (strcmp(cur->name, profile_name) != 0)) cur = cur->next;
+	while ((cur != NULL) && (strcmp(cur->name, profile_name) != 0))
+		cur = cur->next;
 
 	return cur;
 }
@@ -1295,8 +1291,8 @@ struct config_profiles *config_find_profile(uint8_t config_type, char *profile_n
  **/
 void delete_config_eap_tnc(struct config_eap_tnc **tmp_tnc)
 {
-  free(*tmp_tnc);
-  *tmp_tnc = NULL;
+	free(*tmp_tnc);
+	*tmp_tnc = NULL;
 }
 
 /**
@@ -1308,12 +1304,12 @@ void delete_config_eap_tnc(struct config_eap_tnc **tmp_tnc)
  **/
 void dump_config_eap_tnc(struct config_eap_tnc *tmp_tnc)
 {
-  if (!tmp_tnc)
-    return;
+	if (!tmp_tnc)
+		return;
 
-  printf("\t\t^ ^ ^ ^ ^ ^ eap-tnc ^ ^ ^ ^\n");
-  printf("\t\t  Fragment Size : %d\n", tmp_tnc->frag_size);
-  printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
+	printf("\t\t^ ^ ^ ^ ^ ^ eap-tnc ^ ^ ^ ^\n");
+	printf("\t\t  Fragment Size : %d\n", tmp_tnc->frag_size);
+	printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
 }
 
 /*******************/
@@ -1329,17 +1325,17 @@ void dump_config_eap_tnc(struct config_eap_tnc *tmp_tnc)
  **/
 void delete_config_eap_fast(struct config_eap_fast **tmp_fast)
 {
-  if (*tmp_fast == NULL)
-    return;
+	if (*tmp_fast == NULL)
+		return;
 
-  FREE_STRING((*tmp_fast)->pac_location);
-  FREE_STRING((*tmp_fast)->innerid);
-  FREE_STRING((*tmp_fast)->trusted_server);
+	FREE_STRING((*tmp_fast)->pac_location);
+	FREE_STRING((*tmp_fast)->innerid);
+	FREE_STRING((*tmp_fast)->trusted_server);
 
-  free((*tmp_fast)->phase2);
+	free((*tmp_fast)->phase2);
 
-  free (*tmp_fast);
-  *tmp_fast = NULL;
+	free(*tmp_fast);
+	*tmp_fast = NULL;
 }
 
 /**
@@ -1351,38 +1347,34 @@ void delete_config_eap_fast(struct config_eap_fast **tmp_fast)
  **/
 void dump_config_eap_fast(struct config_eap_fast *fast)
 {
-  if (!fast)
-    return;
+	if (!fast)
+		return;
 
-  printf("\t---------------eap-fast-------------\n");
-  printf("\t  PAC File: \"%s\"\n", fast->pac_location);
-  printf("\t  TLS Chunk Size: %d\n", fast->chunk_size);
-  printf("\t  Provisioning: ");
+	printf("\t---------------eap-fast-------------\n");
+	printf("\t  PAC File: \"%s\"\n", fast->pac_location);
+	printf("\t  TLS Chunk Size: %d\n", fast->chunk_size);
+	printf("\t  Provisioning: ");
 
-  if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED))
-  {
-	  if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS))
-	  {
-		  printf("Anonymous mode     ");
-	  }
+	if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED)) {
+		if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS)) {
+			printf("Anonymous mode     ");
+		}
 
-	  if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED))
-	  {
-		  printf("Authenticated mode");
-	  }
+		if (TEST_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED)) {
+			printf("Authenticated mode");
+		}
 
-	  printf("\n");
-  }
-  else
-  {
-	  printf("NO\n");
-  }
+		printf("\n");
+	} else {
+		printf("NO\n");
+	}
 
-  printf("\t  Inner ID: %s\n", fast->innerid);
+	printf("\t  Inner ID: %s\n", fast->innerid);
 
-  if (fast->phase2) dump_config_eap_method(fast->phase2, 1);
+	if (fast->phase2)
+		dump_config_eap_method(fast->phase2, 1);
 
-  printf("\t------------------------------------\n");
+	printf("\t------------------------------------\n");
 }
 
 /**
@@ -1401,19 +1393,16 @@ void dump_config_eap_fast(struct config_eap_fast *fast)
  **/
 void dump_config_eap_otp(struct config_pwd_only *otp, int dumplevel)
 {
-  if (!otp)
-    return;
+	if (!otp)
+		return;
 
-  if (dumplevel == 0)
-    {
-      printf("\t--------------eap-otp---------------\n");
-      printf("\t------------------------------------\n");
-    }
-  else
-    {
-      printf("\t^  ^  ^  ^  ^ eap-otp ^  ^  ^  ^  ^  ^\n");
-      printf("\t^  ^  ^  ^  ^  ^  ^   ^  ^  ^  ^  ^  ^\n");
-    }
+	if (dumplevel == 0) {
+		printf("\t--------------eap-otp---------------\n");
+		printf("\t------------------------------------\n");
+	} else {
+		printf("\t^  ^  ^  ^  ^ eap-otp ^  ^  ^  ^  ^  ^\n");
+		printf("\t^  ^  ^  ^  ^  ^  ^   ^  ^  ^  ^  ^  ^\n");
+	}
 }
 
   /*******************/
@@ -1432,21 +1421,21 @@ void dump_config_eap_otp(struct config_pwd_only *otp, int dumplevel)
  **/
 void delete_config_eap_tls(struct config_eap_tls **tmp_tls)
 {
-  if (*tmp_tls == NULL)
-    return;
+	if (*tmp_tls == NULL)
+		return;
 
-  FREE_STRING((*tmp_tls)->user_cert);
-  FREE_STRING((*tmp_tls)->crl_dir);  
-  FREE_STRING((*tmp_tls)->user_key);
-  FREE_STRING((*tmp_tls)->user_key_pass);
-  FREE_STRING((*tmp_tls)->random_file);
-  FREE_STRING((*tmp_tls)->sc.engine_id);
-  FREE_STRING((*tmp_tls)->sc.opensc_so_path);
-  FREE_STRING((*tmp_tls)->sc.key_id);
-  FREE_STRING((*tmp_tls)->trusted_server);
-  
-  free (*tmp_tls);
-  *tmp_tls = NULL;
+	FREE_STRING((*tmp_tls)->user_cert);
+	FREE_STRING((*tmp_tls)->crl_dir);
+	FREE_STRING((*tmp_tls)->user_key);
+	FREE_STRING((*tmp_tls)->user_key_pass);
+	FREE_STRING((*tmp_tls)->random_file);
+	FREE_STRING((*tmp_tls)->sc.engine_id);
+	FREE_STRING((*tmp_tls)->sc.opensc_so_path);
+	FREE_STRING((*tmp_tls)->sc.key_id);
+	FREE_STRING((*tmp_tls)->trusted_server);
+
+	free(*tmp_tls);
+	*tmp_tls = NULL;
 }
 
 /**
@@ -1458,26 +1447,26 @@ void delete_config_eap_tls(struct config_eap_tls **tmp_tls)
  **/
 void dump_config_eap_tls(struct config_eap_tls *tls)
 {
-  if (!tls)
-    return;
-  printf("\t---------------eap-tls--------------\n");
-  printf("\t  TLS Cert: \"%s\"\n", tls->user_cert);
-  printf("\t  TLS CRL Dir: \"%s\"\n", tls->crl_dir);
-  printf("\t  TLS Key: \"%s\"\n", tls->user_key);
-  printf("\t  TLS Key Pass: \"%s\"\n", tls->user_key_pass);
-  printf("\t  TLS Chunk Size: %d\n", tls->chunk_size);
-  printf("\t  TLS Random Source: \"%s\"\n", 
-	       tls->random_file);
-  printf("\t  TLS Session Resumption: %s\n", TEST_FLAG(tls->flags, EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
-  printf("\t  Using Smartcard:\n");
-  printf("\t\tEngine        : \"%s\"\n", tls->sc.engine_id);
-  printf("\t\tOpensc SO_PATH: \"%s\"\n", tls->sc.opensc_so_path);
-  printf("\t\tKey ID        : \"%s\"\n", tls->sc.key_id);
-  //printf("\t\tCertificate ID: \"%s\"", tls.sc->cert_id);
-  //printf("\t\tRoot Cert ID  : \"%s\"", tls.sc->root_id); 
-  printf("\t------------------------------------\n");
+	if (!tls)
+		return;
+	printf("\t---------------eap-tls--------------\n");
+	printf("\t  TLS Cert: \"%s\"\n", tls->user_cert);
+	printf("\t  TLS CRL Dir: \"%s\"\n", tls->crl_dir);
+	printf("\t  TLS Key: \"%s\"\n", tls->user_key);
+	printf("\t  TLS Key Pass: \"%s\"\n", tls->user_key_pass);
+	printf("\t  TLS Chunk Size: %d\n", tls->chunk_size);
+	printf("\t  TLS Random Source: \"%s\"\n", tls->random_file);
+	printf("\t  TLS Session Resumption: %s\n",
+	       TEST_FLAG(tls->flags,
+			 EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
+	printf("\t  Using Smartcard:\n");
+	printf("\t\tEngine        : \"%s\"\n", tls->sc.engine_id);
+	printf("\t\tOpensc SO_PATH: \"%s\"\n", tls->sc.opensc_so_path);
+	printf("\t\tKey ID        : \"%s\"\n", tls->sc.key_id);
+	//printf("\t\tCertificate ID: \"%s\"", tls.sc->cert_id);
+	//printf("\t\tRoot Cert ID  : \"%s\"", tls.sc->root_id); 
+	printf("\t------------------------------------\n");
 }
-
 
   /*******************/
  /* CONFIG_PWD_ONLY */
@@ -1492,13 +1481,13 @@ void dump_config_eap_tls(struct config_eap_tls *tls)
  **/
 void delete_config_pwd_only(struct config_pwd_only **tmp_pwd)
 {
-  if (*tmp_pwd == NULL)
-    return;
+	if (*tmp_pwd == NULL)
+		return;
 
-  FREE_STRING((*tmp_pwd)->password);
+	FREE_STRING((*tmp_pwd)->password);
 
-  free (*tmp_pwd);
-  *tmp_pwd = NULL;
+	free(*tmp_pwd);
+	*tmp_pwd = NULL;
 }
 
 /**
@@ -1513,20 +1502,20 @@ void delete_config_pwd_only(struct config_pwd_only **tmp_pwd)
  **/
 void dump_config_pwd_only(struct config_pwd_only *pwd, char *method, int level)
 {
-  if (pwd == NULL) return;
+	if (pwd == NULL)
+		return;
 
-  if (level == 0) {
-    printf("\t---------------%s--------------\n", method);
-    printf("\t  %s Pass: \"%s\"\n", method, pwd->password);
-    printf("\t------------------------------------\n");
-  }else {
-    printf("\t\t^ ^ ^  %s  ^ ^ ^\n", method);
-    printf("\t\t  %s Pass: \"%s\"\n", method, pwd->password);
-    printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");    
-  }
-  
+	if (level == 0) {
+		printf("\t---------------%s--------------\n", method);
+		printf("\t  %s Pass: \"%s\"\n", method, pwd->password);
+		printf("\t------------------------------------\n");
+	} else {
+		printf("\t\t^ ^ ^  %s  ^ ^ ^\n", method);
+		printf("\t\t  %s Pass: \"%s\"\n", method, pwd->password);
+		printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
+	}
+
 }
-
 
   /*******************/
  /* CONFIG_TTLS     */
@@ -1545,24 +1534,23 @@ void dump_config_pwd_only(struct config_pwd_only *pwd, char *method, int level)
  **/
 void delete_config_ttls_eap(struct config_eap_method **eapdata)
 {
-  struct config_eap_method *tmp, *next;
+	struct config_eap_method *tmp, *next;
 
-  if (eapdata == NULL)
-    {
-      printf("%s() was passed a NULL pointer!\n", __FUNCTION__);
-      return;
-    }
+	if (eapdata == NULL) {
+		printf("%s() was passed a NULL pointer!\n", __FUNCTION__);
+		return;
+	}
 
-  tmp = (*eapdata);
+	tmp = (*eapdata);
 
-  if (tmp == NULL) return;
+	if (tmp == NULL)
+		return;
 
-  while (tmp != NULL)
-    {
-      next = tmp->next;
-      delete_config_eap_method(&tmp);
-      tmp = next;
-    }
+	while (tmp != NULL) {
+		next = tmp->next;
+		delete_config_eap_method(&tmp);
+		tmp = next;
+	}
 }
 
 /**
@@ -1573,32 +1561,37 @@ void delete_config_ttls_eap(struct config_eap_method **eapdata)
  *                    include the information we need to know to free the
  *                    phase 2 method(s).
  **/
-void delete_config_ttls_phase2 (struct config_eap_ttls *ttls)
+void delete_config_ttls_phase2(struct config_eap_ttls *ttls)
 {
-  if (ttls == NULL)
-    return;
+	if (ttls == NULL)
+		return;
 
-  switch (ttls->phase2_type) {
-  case TTLS_PHASE2_PAP:
-    delete_config_pwd_only((struct config_pwd_only **)&ttls->phase2_data);
-    break;
-  case TTLS_PHASE2_CHAP: 
-    delete_config_pwd_only((struct config_pwd_only **)&ttls->phase2_data);
-    break;
-  case TTLS_PHASE2_MSCHAP:
-    delete_config_pwd_only((struct config_pwd_only **)&ttls->phase2_data);
-    break;
-  case TTLS_PHASE2_MSCHAPV2:
-    delete_config_pwd_only((struct config_pwd_only **)&ttls->phase2_data);
-    break;
-  case TTLS_PHASE2_EAP:
-    delete_config_ttls_eap((struct config_eap_method **)&ttls->phase2_data);
-    break;
-  default:
-    printf("AAAH! Trying to delete an undefined config"
-	   " type in %s.\nNotify developers. Type: 0x%x\n", 
-	   __FUNCTION__, ttls->phase2_type);
-  }
+	switch (ttls->phase2_type) {
+	case TTLS_PHASE2_PAP:
+		delete_config_pwd_only((struct config_pwd_only **)&ttls->
+				       phase2_data);
+		break;
+	case TTLS_PHASE2_CHAP:
+		delete_config_pwd_only((struct config_pwd_only **)&ttls->
+				       phase2_data);
+		break;
+	case TTLS_PHASE2_MSCHAP:
+		delete_config_pwd_only((struct config_pwd_only **)&ttls->
+				       phase2_data);
+		break;
+	case TTLS_PHASE2_MSCHAPV2:
+		delete_config_pwd_only((struct config_pwd_only **)&ttls->
+				       phase2_data);
+		break;
+	case TTLS_PHASE2_EAP:
+		delete_config_ttls_eap((struct config_eap_method **)&ttls->
+				       phase2_data);
+		break;
+	default:
+		printf("AAAH! Trying to delete an undefined config"
+		       " type in %s.\nNotify developers. Type: 0x%x\n",
+		       __FUNCTION__, ttls->phase2_type);
+	}
 }
 
 /**
@@ -1611,29 +1604,29 @@ void delete_config_ttls_phase2 (struct config_eap_ttls *ttls)
  **/
 void dump_config_ttls_eap(struct config_eap_method *phase2)
 {
-  struct config_eap_method *tmp;
+	struct config_eap_method *tmp;
 
-  tmp = phase2;
+	tmp = phase2;
 
-  while (tmp != NULL)
-    {
-      switch(tmp->method_num)
-	{
-	case EAP_TYPE_MD5:
-	  dump_config_pwd_only((struct config_pwd_only *)tmp->method_data, 
-			       "EAP-MD5", 2);
-	  break;
+	while (tmp != NULL) {
+		switch (tmp->method_num) {
+		case EAP_TYPE_MD5:
+			dump_config_pwd_only((struct config_pwd_only *)tmp->
+					     method_data, "EAP-MD5", 2);
+			break;
 
-	case EAP_TYPE_TNC:
-	  dump_config_eap_tnc((struct config_eap_tnc *)tmp->method_data);
-	  break;
+		case EAP_TYPE_TNC:
+			dump_config_eap_tnc((struct config_eap_tnc *)tmp->
+					    method_data);
+			break;
 
-	default:
-	  printf("Unknown TTLS phase 2 EAP method.  (%d)\n", tmp->method_num);
-	  break;
+		default:
+			printf("Unknown TTLS phase 2 EAP method.  (%d)\n",
+			       tmp->method_num);
+			break;
+		}
+		tmp = tmp->next;
 	}
-      tmp = tmp->next;
-    }
 }
 
 /**
@@ -1645,36 +1638,37 @@ void dump_config_ttls_eap(struct config_eap_method *phase2)
  *                   will also contain the information needed to know how
  *                   to dump the phase 2 information.
  **/
-void dump_config_ttls_phase2(struct config_eap_ttls *ttls) 
+void dump_config_ttls_phase2(struct config_eap_ttls *ttls)
 {
-  if (ttls == NULL)
-    return;
+	if (ttls == NULL)
+		return;
 
-  switch (ttls->phase2_type) {
-  case TTLS_PHASE2_PAP:
-    dump_config_pwd_only((struct config_pwd_only *)ttls->phase2_data, 
-			 "EAP-TTLS-PAP", 2);
-    break;
-  case TTLS_PHASE2_CHAP: 
-    dump_config_pwd_only((struct config_pwd_only *)ttls->phase2_data,
-			 "EAP-TTLS-CHAP", 2);
-    break;
-  case TTLS_PHASE2_MSCHAP:
-    dump_config_pwd_only((struct config_pwd_only *)ttls->phase2_data,
-			 "EAP-TTLS-MSCHAP", 2);
-    break;
-  case TTLS_PHASE2_MSCHAPV2:
-    dump_config_pwd_only((struct config_pwd_only *)ttls->phase2_data,
-			 "EAP-TTLS-MSCHAPv2", 2);
-    break;
-  case TTLS_PHASE2_EAP:
-    dump_config_ttls_eap((struct config_eap_method *)ttls->phase2_data);
-    break;
-  default:
-    printf("AAAH! Trying to dump an undefined config"
-	   " type in %s.\nNotify developers. Type: 0x%x\n", 
-	   __FUNCTION__, ttls->phase2_type);
-  }
+	switch (ttls->phase2_type) {
+	case TTLS_PHASE2_PAP:
+		dump_config_pwd_only((struct config_pwd_only *)ttls->
+				     phase2_data, "EAP-TTLS-PAP", 2);
+		break;
+	case TTLS_PHASE2_CHAP:
+		dump_config_pwd_only((struct config_pwd_only *)ttls->
+				     phase2_data, "EAP-TTLS-CHAP", 2);
+		break;
+	case TTLS_PHASE2_MSCHAP:
+		dump_config_pwd_only((struct config_pwd_only *)ttls->
+				     phase2_data, "EAP-TTLS-MSCHAP", 2);
+		break;
+	case TTLS_PHASE2_MSCHAPV2:
+		dump_config_pwd_only((struct config_pwd_only *)ttls->
+				     phase2_data, "EAP-TTLS-MSCHAPv2", 2);
+		break;
+	case TTLS_PHASE2_EAP:
+		dump_config_ttls_eap((struct config_eap_method *)ttls->
+				     phase2_data);
+		break;
+	default:
+		printf("AAAH! Trying to dump an undefined config"
+		       " type in %s.\nNotify developers. Type: 0x%x\n",
+		       __FUNCTION__, ttls->phase2_type);
+	}
 }
 
 /**
@@ -1685,21 +1679,21 @@ void dump_config_ttls_phase2(struct config_eap_ttls *ttls)
  **/
 void delete_config_eap_ttls(struct config_eap_ttls **tmp_ttls)
 {
-  if (*tmp_ttls == NULL)
-    return;
+	if (*tmp_ttls == NULL)
+		return;
 
-  FREE_STRING((*tmp_ttls)->user_cert);
-  FREE_STRING((*tmp_ttls)->crl_dir);
-  FREE_STRING((*tmp_ttls)->user_key);
-  FREE_STRING((*tmp_ttls)->user_key_pass);
-  FREE_STRING((*tmp_ttls)->random_file);  
-  FREE_STRING((*tmp_ttls)->trusted_server);
-  FREE_STRING((*tmp_ttls)->inner_id);
-  if ((*tmp_ttls)->phase2_data) 
-    delete_config_ttls_phase2((*tmp_ttls));
+	FREE_STRING((*tmp_ttls)->user_cert);
+	FREE_STRING((*tmp_ttls)->crl_dir);
+	FREE_STRING((*tmp_ttls)->user_key);
+	FREE_STRING((*tmp_ttls)->user_key_pass);
+	FREE_STRING((*tmp_ttls)->random_file);
+	FREE_STRING((*tmp_ttls)->trusted_server);
+	FREE_STRING((*tmp_ttls)->inner_id);
+	if ((*tmp_ttls)->phase2_data)
+		delete_config_ttls_phase2((*tmp_ttls));
 
-  free (*tmp_ttls);
-  *tmp_ttls = NULL;
+	free(*tmp_ttls);
+	*tmp_ttls = NULL;
 }
 
 /**
@@ -1711,41 +1705,45 @@ void delete_config_eap_ttls(struct config_eap_ttls **tmp_ttls)
  **/
 void dump_config_eap_ttls(struct config_eap_ttls *ttls)
 {
-  if (!ttls) {
-    return;
-  }
-  printf("\t---------------eap-ttls--------------\n");
-  printf("\t  TTLS Cert: \"%s\"\n", ttls->user_cert);
-  printf("\t  TTLS CRL Dir: \"%s\"\n", ttls->crl_dir);
-  printf("\t  TTLS Key: \"%s\"\n", ttls->user_key);
-  printf("\t  TTLS Key Pass: \"%s\"\n", ttls->user_key_pass);
-  printf("\t  TTLS Chunk Size: %d\n", ttls->chunk_size);
-  printf("\t  TTLS Random Source: \"%s\"\n", ttls->random_file);
-  printf("\t  TTLS Session Resumption: %s\n", TEST_FLAG(ttls->flags, EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
+	if (!ttls) {
+		return;
+	}
+	printf("\t---------------eap-ttls--------------\n");
+	printf("\t  TTLS Cert: \"%s\"\n", ttls->user_cert);
+	printf("\t  TTLS CRL Dir: \"%s\"\n", ttls->crl_dir);
+	printf("\t  TTLS Key: \"%s\"\n", ttls->user_key);
+	printf("\t  TTLS Key Pass: \"%s\"\n", ttls->user_key_pass);
+	printf("\t  TTLS Chunk Size: %d\n", ttls->chunk_size);
+	printf("\t  TTLS Random Source: \"%s\"\n", ttls->random_file);
+	printf("\t  TTLS Session Resumption: %s\n",
+	       TEST_FLAG(ttls->flags,
+			 EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
 
-  switch (ttls->phase2_type) {
-  case TTLS_PHASE2_PAP:
-    printf("\t  TTLS phase2: pap\n");    
-    break;
-  case TTLS_PHASE2_CHAP:
-    printf("\t  TTLS phase2: chap\n");    
-    break;
-  case TTLS_PHASE2_MSCHAP:
-    printf("\t  TTLS phase2: mschap\n");    
-    break;
-  case TTLS_PHASE2_MSCHAPV2:
-    printf("\t  TTLS phase2: mschapv2\n");        
-    break;
-  case TTLS_PHASE2_EAP:
-    printf("\t  TTLS phase2: EAP\n");
-    break;
-  default:
-    printf("\t  TTLS phase2: UNDEFINED\n");    
-    break;
-  }
-  if (ttls->phase2_data) dump_config_ttls_phase2(ttls);
-  else printf("No phase 2 defined?\n");
-  printf("\t------------------------------------\n");
+	switch (ttls->phase2_type) {
+	case TTLS_PHASE2_PAP:
+		printf("\t  TTLS phase2: pap\n");
+		break;
+	case TTLS_PHASE2_CHAP:
+		printf("\t  TTLS phase2: chap\n");
+		break;
+	case TTLS_PHASE2_MSCHAP:
+		printf("\t  TTLS phase2: mschap\n");
+		break;
+	case TTLS_PHASE2_MSCHAPV2:
+		printf("\t  TTLS phase2: mschapv2\n");
+		break;
+	case TTLS_PHASE2_EAP:
+		printf("\t  TTLS phase2: EAP\n");
+		break;
+	default:
+		printf("\t  TTLS phase2: UNDEFINED\n");
+		break;
+	}
+	if (ttls->phase2_data)
+		dump_config_ttls_phase2(ttls);
+	else
+		printf("No phase 2 defined?\n");
+	printf("\t------------------------------------\n");
 }
 
   /*******************/
@@ -1762,14 +1760,14 @@ void dump_config_eap_ttls(struct config_eap_ttls *ttls)
  **/
 void delete_config_eap_mschapv2(struct config_eap_mschapv2 **tmp_mschapv2)
 {
-  if (*tmp_mschapv2 == NULL)
-    return;
+	if (*tmp_mschapv2 == NULL)
+		return;
 
-  FREE_STRING((*tmp_mschapv2)->password);
-  FREE_STRING((*tmp_mschapv2)->nthash);
+	FREE_STRING((*tmp_mschapv2)->password);
+	FREE_STRING((*tmp_mschapv2)->nthash);
 
-  free (*tmp_mschapv2);
-  *tmp_mschapv2 = NULL;
+	free(*tmp_mschapv2);
+	*tmp_mschapv2 = NULL;
 }
 
 /**
@@ -1783,42 +1781,38 @@ void delete_config_eap_mschapv2(struct config_eap_mschapv2 **tmp_mschapv2)
  **/
 void dump_config_eap_mschapv2(struct config_eap_mschapv2 *mschapv2, int level)
 {
-  if (!mschapv2)
-    return;
-  if (level == 0) {
-    printf("\t---------------eap-mschapv2--------------\n");
-    if (mschapv2->password != NULL)
-      printf("\t  MSCHAPV2 Pass      : \"%s\"\n", mschapv2->password);
+	if (!mschapv2)
+		return;
+	if (level == 0) {
+		printf("\t---------------eap-mschapv2--------------\n");
+		if (mschapv2->password != NULL)
+			printf("\t  MSCHAPV2 Pass      : \"%s\"\n",
+			       mschapv2->password);
 
-    if (mschapv2->nthash != NULL)
-      printf("\t  MSCHAPV2 NtPwd Hash: \"%s\"\n", mschapv2->nthash);
+		if (mschapv2->nthash != NULL)
+			printf("\t  MSCHAPV2 NtPwd Hash: \"%s\"\n",
+			       mschapv2->nthash);
 
-    if (TEST_FLAG(mschapv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
-      {
-	printf("\t  MSCHAPV2 IAS Quirk : Yes\n");
-      }
-    else
-      {
-	printf("\t  MSCHAPV2 IAS Quirk : No\n");
-      }
-    printf("\t------------------------------------\n");
-  }else {
-  printf("\t\t^ ^ ^  eap-mschapv2  ^ ^ ^\n");
-    printf("\t\t  MSCHAPV2 Pass      : \"%s\"\n", mschapv2->password);
-    printf("\t\t  MSCHAPV2 NtPwd Hash: \"%s\"\n", mschapv2->nthash);
-    if (TEST_FLAG(mschapv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK))
-      {
-	printf("\t\t  MSCHAPV2 IAS Quirk : Yes\n");
-      }
-    else
-      {
-	printf("\t\t  MSCHAPV2 IAS Quirk : No\n");
-      }
-  printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
-  }
+		if (TEST_FLAG(mschapv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK)) {
+			printf("\t  MSCHAPV2 IAS Quirk : Yes\n");
+		} else {
+			printf("\t  MSCHAPV2 IAS Quirk : No\n");
+		}
+		printf("\t------------------------------------\n");
+	} else {
+		printf("\t\t^ ^ ^  eap-mschapv2  ^ ^ ^\n");
+		printf("\t\t  MSCHAPV2 Pass      : \"%s\"\n",
+		       mschapv2->password);
+		printf("\t\t  MSCHAPV2 NtPwd Hash: \"%s\"\n", mschapv2->nthash);
+		if (TEST_FLAG(mschapv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK)) {
+			printf("\t\t  MSCHAPV2 IAS Quirk : Yes\n");
+		} else {
+			printf("\t\t  MSCHAPV2 IAS Quirk : No\n");
+		}
+		printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
+	}
 
 }
-
 
   /*******************/
  /* CONFIG_PEAP     */
@@ -1833,21 +1827,21 @@ void dump_config_eap_mschapv2(struct config_eap_mschapv2 *mschapv2, int level)
  **/
 void delete_config_eap_peap(struct config_eap_peap **tmp_peap)
 {
-  if (*tmp_peap == NULL)
-    return;
+	if (*tmp_peap == NULL)
+		return;
 
-  FREE_STRING((*tmp_peap)->identity);
-  FREE_STRING((*tmp_peap)->user_cert);
-  FREE_STRING((*tmp_peap)->crl_dir);
-  FREE_STRING((*tmp_peap)->user_key)
-  FREE_STRING((*tmp_peap)->user_key_pass);
-  FREE_STRING((*tmp_peap)->random_file);
-  FREE_STRING((*tmp_peap)->trusted_server);
-  if ((*tmp_peap)->phase2)
-    delete_config_eap_method(&(*tmp_peap)->phase2);
+	FREE_STRING((*tmp_peap)->identity);
+	FREE_STRING((*tmp_peap)->user_cert);
+	FREE_STRING((*tmp_peap)->crl_dir);
+	FREE_STRING((*tmp_peap)->user_key)
+	    FREE_STRING((*tmp_peap)->user_key_pass);
+	FREE_STRING((*tmp_peap)->random_file);
+	FREE_STRING((*tmp_peap)->trusted_server);
+	if ((*tmp_peap)->phase2)
+		delete_config_eap_method(&(*tmp_peap)->phase2);
 
-  free (*tmp_peap);
-  *tmp_peap = NULL;
+	free(*tmp_peap);
+	*tmp_peap = NULL;
 }
 
 /**
@@ -1859,23 +1853,27 @@ void delete_config_eap_peap(struct config_eap_peap **tmp_peap)
  **/
 void dump_config_eap_peap(struct config_eap_peap *peap)
 {
-  if (!peap)
-    return;
-  printf("\t---------------eap-peap--------------\n");
-  printf("\t  PEAP phase 2 identity: \"%s\"\n", peap->identity);
-  printf("\t  PEAP Cert: \"%s\"\n", peap->user_cert);
-  printf("\t  PEAP CRL Dir: \"%s\"\n", peap->crl_dir);
-  printf("\t  PEAP Key: \"%s\"\n", peap->user_key);
-  printf("\t  PEAP Key Pass: \"%s\"\n", peap->user_key_pass);
-  printf("\t  PEAP Chunk Size: %d\n", peap->chunk_size);
-  printf("\t  PEAP Random Source: \"%s\"\n", peap->random_file);
-  printf("\t  PEAP Session Resumption: %s\n", TEST_FLAG(peap->flags, EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
-  printf("\t  Proper PEAPv1 Keying : %s\n", TEST_FLAG(peap->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS) ? "yes" : "no");
+	if (!peap)
+		return;
+	printf("\t---------------eap-peap--------------\n");
+	printf("\t  PEAP phase 2 identity: \"%s\"\n", peap->identity);
+	printf("\t  PEAP Cert: \"%s\"\n", peap->user_cert);
+	printf("\t  PEAP CRL Dir: \"%s\"\n", peap->crl_dir);
+	printf("\t  PEAP Key: \"%s\"\n", peap->user_key);
+	printf("\t  PEAP Key Pass: \"%s\"\n", peap->user_key_pass);
+	printf("\t  PEAP Chunk Size: %d\n", peap->chunk_size);
+	printf("\t  PEAP Random Source: \"%s\"\n", peap->random_file);
+	printf("\t  PEAP Session Resumption: %s\n",
+	       TEST_FLAG(peap->flags,
+			 EAP_TLS_FLAGS_SESSION_RESUME) ? "yes" : "no");
+	printf("\t  Proper PEAPv1 Keying : %s\n",
+	       TEST_FLAG(peap->flags,
+			 FLAGS_PEAP_PROPER_PEAPV1_KEYS) ? "yes" : "no");
 
-  if (peap->phase2) dump_config_eap_method(peap->phase2, 1);
-  printf("\t------------------------------------\n");
+	if (peap->phase2)
+		dump_config_eap_method(peap->phase2, 1);
+	printf("\t------------------------------------\n");
 }
-
 
   /*******************/
  /* CONFIG_SIM      */
@@ -1890,14 +1888,14 @@ void dump_config_eap_peap(struct config_eap_peap *peap)
  **/
 void delete_config_eap_sim(struct config_eap_sim **tmp_sim)
 {
-  if (*tmp_sim == NULL)
-    return;
+	if (*tmp_sim == NULL)
+		return;
 
-  FREE_STRING((*tmp_sim)->password);
-  FREE_STRING((*tmp_sim)->reader);
+	FREE_STRING((*tmp_sim)->password);
+	FREE_STRING((*tmp_sim)->reader);
 
-  free (*tmp_sim);
-  *tmp_sim = NULL;
+	free(*tmp_sim);
+	*tmp_sim = NULL;
 }
 
 /**
@@ -1913,19 +1911,21 @@ void delete_config_eap_sim(struct config_eap_sim **tmp_sim)
  **/
 void dump_config_eap_sim(struct config_eap_sim *sim, int level)
 {
-  if (!sim)
-    return;
-  if (level == 0) {
-    printf("\t---------------eap-sim--------------\n");
-    printf("\t  SIM Pass: \"%s\"\n", sim->password);
-    printf("\t  SIM Auto Realm: %s\n", sim->auto_realm ? "yes" : "no");  
-    printf("\t------------------------------------\n");
-  } else {
-    printf("\t\t^ ^ ^  eap-sim  ^ ^ ^\n");
-    printf("\t\t  SIM Pass: \"%s\"\n", sim->password);
-    printf("\t\t  SIM Auto Realm: %s\n", sim->auto_realm ? "yes" : "no");  
-    printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
-  }
+	if (!sim)
+		return;
+	if (level == 0) {
+		printf("\t---------------eap-sim--------------\n");
+		printf("\t  SIM Pass: \"%s\"\n", sim->password);
+		printf("\t  SIM Auto Realm: %s\n",
+		       sim->auto_realm ? "yes" : "no");
+		printf("\t------------------------------------\n");
+	} else {
+		printf("\t\t^ ^ ^  eap-sim  ^ ^ ^\n");
+		printf("\t\t  SIM Pass: \"%s\"\n", sim->password);
+		printf("\t\t  SIM Auto Realm: %s\n",
+		       sim->auto_realm ? "yes" : "no");
+		printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
+	}
 }
 
   /*******************/
@@ -1941,14 +1941,14 @@ void dump_config_eap_sim(struct config_eap_sim *sim, int level)
  **/
 void delete_config_eap_aka(struct config_eap_aka **tmp_aka)
 {
-  if (*tmp_aka == NULL)
-    return;
+	if (*tmp_aka == NULL)
+		return;
 
-  FREE_STRING((*tmp_aka)->password);
-  FREE_STRING((*tmp_aka)->reader);
+	FREE_STRING((*tmp_aka)->password);
+	FREE_STRING((*tmp_aka)->reader);
 
-  free (*tmp_aka);
-  *tmp_aka = NULL;
+	free(*tmp_aka);
+	*tmp_aka = NULL;
 }
 
 /**
@@ -1963,21 +1963,22 @@ void delete_config_eap_aka(struct config_eap_aka **tmp_aka)
  **/
 void dump_config_eap_aka(struct config_eap_aka *aka, int level)
 {
-  if (!aka)
-    return;
-  if (level == 0) {
-    printf("\t---------------eap-aka--------------\n");
-    printf("\t  AKA Pass: \"%s\"\n", aka->password);
-    printf("\t  AKA Auto Realm: %s\n", aka->auto_realm ? "yes" : "no");  
-    printf("\t------------------------------------\n");
-  } else {
-    printf("\t\t^ ^ ^  eap-aka  ^ ^ ^\n");
-    printf("\t\t  AKA Pass: \"%s\"\n", aka->password);
-    printf("\t\t  AKA Auto Realm: %s\n", aka->auto_realm ? "yes" : "no");  
-    printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
-  }
+	if (!aka)
+		return;
+	if (level == 0) {
+		printf("\t---------------eap-aka--------------\n");
+		printf("\t  AKA Pass: \"%s\"\n", aka->password);
+		printf("\t  AKA Auto Realm: %s\n",
+		       aka->auto_realm ? "yes" : "no");
+		printf("\t------------------------------------\n");
+	} else {
+		printf("\t\t^ ^ ^  eap-aka  ^ ^ ^\n");
+		printf("\t\t  AKA Pass: \"%s\"\n", aka->password);
+		printf("\t\t  AKA Auto Realm: %s\n",
+		       aka->auto_realm ? "yes" : "no");
+		printf("\t\t^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^ ^\n");
+	}
 }
-
 
   /*********************/
  /* CONFIG_EAP_METHOD */
@@ -1992,58 +1993,69 @@ void dump_config_eap_aka(struct config_eap_aka *aka, int level)
  **/
 void delete_config_eap_method(struct config_eap_method **method)
 {
-  if (method == NULL)
-      return;
+	if (method == NULL)
+		return;
 
-  if ((*method) == NULL)
-      return;
+	if ((*method) == NULL)
+		return;
 
-  delete_config_eap_method(&(*method)->next);
+	delete_config_eap_method(&(*method)->next);
 
-  switch ((*method)->method_num) {
-  case EAP_TYPE_TLS:
-    delete_config_eap_tls((struct config_eap_tls **)&((*method)->method_data));
-    break;
-  case EAP_TYPE_MD5:
-    delete_config_pwd_only((struct config_pwd_only **)&(*method)->method_data);
-    break;
-  case EAP_TYPE_PEAP:
-    delete_config_eap_peap((struct config_eap_peap **)&(*method)->method_data);
-    break;
-  case EAP_TYPE_SIM:
-    delete_config_eap_sim((struct config_eap_sim **)&(*method)->method_data);
-    break;
-  case EAP_TYPE_AKA:
-    delete_config_eap_aka((struct config_eap_aka **)&(*method)->method_data);
-    break;
-  case EAP_TYPE_TTLS:
-    delete_config_eap_ttls((struct config_eap_ttls **)&(*method)->method_data);
-    break; 
-  case EAP_TYPE_LEAP:
-    delete_config_pwd_only((struct config_pwd_only **)&(*method)->method_data);
-    break;
-  case EAP_TYPE_MSCHAPV2:
-    delete_config_eap_mschapv2((struct config_eap_mschapv2 **)&(*method)->method_data);
-    break;
-  case EAP_TYPE_OTP:
-    // Nothing to clean up here.
-    break;
-  case EAP_TYPE_GTC:
-    delete_config_pwd_only((struct config_pwd_only **)&(*method)->method_data);
-    break;
-  case EAP_TYPE_FAST:
-    delete_config_eap_fast((struct config_eap_fast **)&(*method)->method_data);
-    break;
-  case EAP_TYPE_TNC:
-    delete_config_eap_tnc((struct config_eap_tnc **)&(*method)->method_data);
-    break;
-  default:
-    printf("AAAH! Trying to delete an undefined config"
-	   " type in %s.\nNotify developers. Type: 0x%x\n", 
-	   __FUNCTION__, (*method)->method_num);
-  }
+	switch ((*method)->method_num) {
+	case EAP_TYPE_TLS:
+		delete_config_eap_tls((struct config_eap_tls **)
+				      &((*method)->method_data));
+		break;
+	case EAP_TYPE_MD5:
+		delete_config_pwd_only((struct config_pwd_only **)&(*method)->
+				       method_data);
+		break;
+	case EAP_TYPE_PEAP:
+		delete_config_eap_peap((struct config_eap_peap **)&(*method)->
+				       method_data);
+		break;
+	case EAP_TYPE_SIM:
+		delete_config_eap_sim((struct config_eap_sim **)&(*method)->
+				      method_data);
+		break;
+	case EAP_TYPE_AKA:
+		delete_config_eap_aka((struct config_eap_aka **)&(*method)->
+				      method_data);
+		break;
+	case EAP_TYPE_TTLS:
+		delete_config_eap_ttls((struct config_eap_ttls **)&(*method)->
+				       method_data);
+		break;
+	case EAP_TYPE_LEAP:
+		delete_config_pwd_only((struct config_pwd_only **)&(*method)->
+				       method_data);
+		break;
+	case EAP_TYPE_MSCHAPV2:
+		delete_config_eap_mschapv2((struct config_eap_mschapv2 **)
+					   &(*method)->method_data);
+		break;
+	case EAP_TYPE_OTP:
+		// Nothing to clean up here.
+		break;
+	case EAP_TYPE_GTC:
+		delete_config_pwd_only((struct config_pwd_only **)&(*method)->
+				       method_data);
+		break;
+	case EAP_TYPE_FAST:
+		delete_config_eap_fast((struct config_eap_fast **)&(*method)->
+				       method_data);
+		break;
+	case EAP_TYPE_TNC:
+		delete_config_eap_tnc((struct config_eap_tnc **)&(*method)->
+				      method_data);
+		break;
+	default:
+		printf("AAAH! Trying to delete an undefined config"
+		       " type in %s.\nNotify developers. Type: 0x%x\n",
+		       __FUNCTION__, (*method)->method_num);
+	}
 
-  FREE((*method));
+	FREE((*method));
 }
 
 /**
@@ -2059,63 +2071,68 @@ void delete_config_eap_method(struct config_eap_method **method)
  **/
 void dump_config_eap_method(struct config_eap_method *method, int dumplevel)
 {
-  if (method == NULL)
-    return;
+	if (method == NULL)
+		return;
 
-  switch ((method)->method_num) {
-  case EAP_TYPE_TLS:
-    dump_config_eap_tls((struct config_eap_tls *)((method)->method_data));
-    break;
-  case EAP_TYPE_MD5:
-    dump_config_pwd_only((struct config_pwd_only *)(method)->method_data, 
-			 "EAP-MD5", dumplevel);
-    break;
-  case EAP_TYPE_PEAP:
-    dump_config_eap_peap((struct config_eap_peap *)(method)->method_data);
-    break;
+	switch ((method)->method_num) {
+	case EAP_TYPE_TLS:
+		dump_config_eap_tls((struct config_eap_tls *)((method)->
+							      method_data));
+		break;
+	case EAP_TYPE_MD5:
+		dump_config_pwd_only((struct config_pwd_only *)(method)->
+				     method_data, "EAP-MD5", dumplevel);
+		break;
+	case EAP_TYPE_PEAP:
+		dump_config_eap_peap((struct config_eap_peap *)(method)->
+				     method_data);
+		break;
 
-  case EAP_TYPE_TNC:
-    dump_config_eap_tnc((struct config_eap_tnc *)(method)->method_data);
-    break;
+	case EAP_TYPE_TNC:
+		dump_config_eap_tnc((struct config_eap_tnc *)(method)->
+				    method_data);
+		break;
 
-  case EAP_TYPE_SIM:
-    dump_config_eap_sim((struct config_eap_sim *)(method)->method_data,
-			dumplevel);
-    break;
-  case EAP_TYPE_AKA:
-    dump_config_eap_aka((struct config_eap_aka *)(method)->method_data,
-			dumplevel);
-    break;
-  case EAP_TYPE_FAST:
-    dump_config_eap_fast((struct config_eap_fast *)(method)->method_data);
-    break;
-  case EAP_TYPE_TTLS:
-    dump_config_eap_ttls((struct config_eap_ttls *)(method)->method_data);
-    break; 
-  case EAP_TYPE_LEAP:
-    dump_config_pwd_only((struct config_pwd_only *)(method)->method_data,
-			 "LEAP", dumplevel);
-    break;
-  case EAP_TYPE_OTP:
-    dump_config_eap_otp((struct config_pwd_only *)(method)->method_data,
-			 dumplevel);
-    break;
-  case EAP_TYPE_GTC:
-    dump_config_pwd_only((struct config_pwd_only *)(method)->method_data,
-			 "EAP-GTC", dumplevel);
-    break;
-  case EAP_TYPE_MSCHAPV2:
-    dump_config_eap_mschapv2((struct config_eap_mschapv2 *)(method)->method_data,
-			     dumplevel);
-    break;
-    
-  default:
-    printf("AAAH! Trying to dump an undefined config"
-	   " type in %s\n.Notify developers. Type: 0x%x\n", 
-	   __FUNCTION__, (method)->method_num);
-  }
+	case EAP_TYPE_SIM:
+		dump_config_eap_sim((struct config_eap_sim *)(method)->
+				    method_data, dumplevel);
+		break;
+	case EAP_TYPE_AKA:
+		dump_config_eap_aka((struct config_eap_aka *)(method)->
+				    method_data, dumplevel);
+		break;
+	case EAP_TYPE_FAST:
+		dump_config_eap_fast((struct config_eap_fast *)(method)->
+				     method_data);
+		break;
+	case EAP_TYPE_TTLS:
+		dump_config_eap_ttls((struct config_eap_ttls *)(method)->
+				     method_data);
+		break;
+	case EAP_TYPE_LEAP:
+		dump_config_pwd_only((struct config_pwd_only *)(method)->
+				     method_data, "LEAP", dumplevel);
+		break;
+	case EAP_TYPE_OTP:
+		dump_config_eap_otp((struct config_pwd_only *)(method)->
+				    method_data, dumplevel);
+		break;
+	case EAP_TYPE_GTC:
+		dump_config_pwd_only((struct config_pwd_only *)(method)->
+				     method_data, "EAP-GTC", dumplevel);
+		break;
+	case EAP_TYPE_MSCHAPV2:
+		dump_config_eap_mschapv2((struct config_eap_mschapv2
+					  *)(method)->method_data, dumplevel);
+		break;
 
-  dump_config_eap_method(method->next, dumplevel);
+	default:
+		printf("AAAH! Trying to dump an undefined config"
+		       " type in %s\n.Notify developers. Type: 0x%x\n",
+		       __FUNCTION__, (method)->method_num);
+	}
+
+	dump_config_eap_method(method->next, dumplevel);
 }
 
   /**********************/
@@ -2130,20 +2147,21 @@ void dump_config_eap_method(struct config_eap_method *method, int dumplevel)
  **/
 void delete_config_single_connection(void **inptr)
 {
-  struct config_connection **tmp_conn = (struct config_connection **)inptr;
+	struct config_connection **tmp_conn =
+	    (struct config_connection **)inptr;
 
-  if (*tmp_conn == NULL)
-    return;
+	if (*tmp_conn == NULL)
+		return;
 
-  FREE_STRING((*tmp_conn)->name);
-  FREE_STRING((*tmp_conn)->ssid);
-  FREE_STRING((*tmp_conn)->profile);
+	FREE_STRING((*tmp_conn)->name);
+	FREE_STRING((*tmp_conn)->ssid);
+	FREE_STRING((*tmp_conn)->profile);
 
-  delete_config_ip_data((*tmp_conn));
-  delete_config_association((*tmp_conn));
+	delete_config_ip_data((*tmp_conn));
+	delete_config_association((*tmp_conn));
 
-  free ((*tmp_conn));
-  (*tmp_conn) = NULL;
+	free((*tmp_conn));
+	(*tmp_conn) = NULL;
 }
 
 /**
@@ -2155,7 +2173,8 @@ void delete_config_single_connection(void **inptr)
  **/
 void delete_config_connections(struct config_connection **tmp_conn)
 {
-	liblist_delete_list((genlist **)tmp_conn, delete_config_single_connection);
+	liblist_delete_list((genlist **) tmp_conn,
+			    delete_config_single_connection);
 
 	*tmp_conn = NULL;
 }
@@ -2168,16 +2187,16 @@ void delete_config_connections(struct config_connection **tmp_conn)
  **/
 void initialize_config_connections(struct config_connection **tmp_conn)
 {
-  if (*tmp_conn != NULL) {
-    delete_config_connections(tmp_conn);
-  }
-  *tmp_conn = 
-    (struct config_connection *)malloc(sizeof(struct config_connection));  
-  if (*tmp_conn)
-    {
-      memset(*tmp_conn, 0, sizeof(struct config_connection));
-      (*tmp_conn)->priority = DEFAULT_PRIORITY;
-    }
+	if (*tmp_conn != NULL) {
+		delete_config_connections(tmp_conn);
+	}
+	*tmp_conn =
+	    (struct config_connection *)
+	    malloc(sizeof(struct config_connection));
+	if (*tmp_conn) {
+		memset(*tmp_conn, 0, sizeof(struct config_connection));
+		(*tmp_conn)->priority = DEFAULT_PRIORITY;
+	}
 }
 
 /**
@@ -2205,7 +2224,7 @@ void delete_config_interface(void **inptr)
  **/
 void delete_config_devices(struct xsup_devices **head)
 {
-	liblist_delete_list((genlist **)head, delete_config_interface);
+	liblist_delete_list((genlist **) head, delete_config_interface);
 
 	(*head) = NULL;
 }
@@ -2223,24 +2242,24 @@ void delete_config_devices(struct xsup_devices **head)
 void delete_config_trusted_server(void **inptr)
 {
 	int i = 0;
-	struct config_trusted_server **tmp_server = (struct config_trusted_server **)inptr;
+	struct config_trusted_server **tmp_server =
+	    (struct config_trusted_server **)inptr;
 
-  if (((*tmp_server) == NULL) || (tmp_server == NULL))
-    return;
+	if (((*tmp_server) == NULL) || (tmp_server == NULL))
+		return;
 
-  FREE_STRING((*tmp_server)->name);
-  FREE_STRING((*tmp_server)->store_type);
+	FREE_STRING((*tmp_server)->name);
+	FREE_STRING((*tmp_server)->store_type);
 
-  for (i = 0; i < (*tmp_server)->num_locations; i++)
-  {
-	FREE_STRING((*tmp_server)->location[i]);
-  }
-  FREE((*tmp_server)->location);
+	for (i = 0; i < (*tmp_server)->num_locations; i++) {
+		FREE_STRING((*tmp_server)->location[i]);
+	}
+	FREE((*tmp_server)->location);
 
-  FREE_STRING((*tmp_server)->common_name);
+	FREE_STRING((*tmp_server)->common_name);
 
-  free ((*tmp_server));
-  (*tmp_server) = NULL;
+	free((*tmp_server));
+	(*tmp_server) = NULL;
 }
 
 /**
@@ -2252,16 +2271,16 @@ void delete_config_trusted_server(void **inptr)
  **/
 void delete_config_trusted_servers(struct config_trusted_servers **tmp_servers)
 {
-  struct config_trusted_server *cur = NULL;
+	struct config_trusted_server *cur = NULL;
 
-  if ((tmp_servers == NULL) || ((*tmp_servers) == NULL))
-    return;
+	if ((tmp_servers == NULL) || ((*tmp_servers) == NULL))
+		return;
 
-  cur = (*tmp_servers)->servers;
+	cur = (*tmp_servers)->servers;
 
-  liblist_delete_list((genlist **)&cur, delete_config_trusted_server);
+	liblist_delete_list((genlist **) & cur, delete_config_trusted_server);
 
-  FREE((*tmp_servers));
+	FREE((*tmp_servers));
 }
 
 /**
@@ -2272,32 +2291,31 @@ void delete_config_trusted_servers(struct config_trusted_servers **tmp_servers)
  **/
 void dump_config_network_wpa(uint8_t crypt)
 {
-  switch (crypt)
-    {
-    case CRYPT_WEP40:
-      printf("WEP40\n");
-      return;
+	switch (crypt) {
+	case CRYPT_WEP40:
+		printf("WEP40\n");
+		return;
 
-    case CRYPT_TKIP:
-      printf("TKIP\n");
-      return;
+	case CRYPT_TKIP:
+		printf("TKIP\n");
+		return;
 
-    case CRYPT_WRAP:
-      printf("WRAP\n");
-      return;
+	case CRYPT_WRAP:
+		printf("WRAP\n");
+		return;
 
-    case CRYPT_CCMP:
-      printf("CCMP\n");
-      return;
+	case CRYPT_CCMP:
+		printf("CCMP\n");
+		return;
 
-    case CRYPT_WEP104:
-      printf("WEP104\n");
-      return;
-    
-    default:
-      printf("NONE\n");
-      return;
-    }
+	case CRYPT_WEP104:
+		printf("WEP104\n");
+		return;
+
+	default:
+		printf("NONE\n");
+		return;
+	}
 }
 
 /**
@@ -2309,11 +2327,14 @@ void dump_config_network_wpa(uint8_t crypt)
  **/
 void dump_config_association(struct config_connection *conn)
 {
-	if (!conn) return;
+	if (!conn)
+		return;
 
 	printf("\t------- Association Information -------\n");
-	printf("\tAssociation Type    : %d\n", conn->association.association_type);
-	printf("\tPairwise Key Type   : %02x\n", conn->association.pairwise_keys);
+	printf("\tAssociation Type    : %d\n",
+	       conn->association.association_type);
+	printf("\tPairwise Key Type   : %02x\n",
+	       conn->association.pairwise_keys);
 	printf("\tGroup Key Type      : %d\n", conn->association.group_keys);
 	printf("\tAuthentication Type : %d\n", conn->association.auth_type);
 	printf("\tStatic WEP TX Index : %d\n", conn->association.txkey);
@@ -2330,7 +2351,8 @@ void dump_config_association(struct config_connection *conn)
  **/
 void delete_config_association(struct config_connection *conn)
 {
-	if (conn == NULL) return;  // Nothing to do.
+	if (conn == NULL)
+		return;		// Nothing to do.
 
 	FREE(conn->association.psk);
 	FREE(conn->association.psk_hex);
@@ -2349,7 +2371,8 @@ void delete_config_association(struct config_connection *conn)
  **/
 void delete_config_ip_data(struct config_connection *conn)
 {
-	if (conn == NULL) return; // Nothing to do.
+	if (conn == NULL)
+		return;		// Nothing to do.
 
 	FREE(conn->ip.dns1);
 	FREE(conn->ip.dns2);
@@ -2389,38 +2412,34 @@ void dump_config_ip(struct config_connection *conn)
  **/
 void dump_config_connections(struct config_connection *conn)
 {
-  if (!conn)
-    return;
-  printf("+-+-+-+-+  Network Name: \"%s\" +-+-+-+-+\n", conn->name);
+	if (!conn)
+		return;
+	printf("+-+-+-+-+  Network Name: \"%s\" +-+-+-+-+\n", conn->name);
 
-  printf("  SSID: \"%s\"\n", conn->ssid);
+	printf("  SSID: \"%s\"\n", conn->ssid);
 
-  if (TEST_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN))
-  {
-	  printf("  Hidden SSID : yes\n");
-  }
-  else
-  {
-	  printf("  Hidden SSID : no\n");
-  }
+	if (TEST_FLAG(conn->flags, CONFIG_NET_IS_HIDDEN)) {
+		printf("  Hidden SSID : yes\n");
+	} else {
+		printf("  Hidden SSID : no\n");
+	}
 
-  if (TEST_FLAG(conn->flags, CONFIG_NET_DEST_MAC))
-    printf("  DEST MAC: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n",
-	   conn->dest_mac[0], conn->dest_mac[1], conn->dest_mac[2],
-	   conn->dest_mac[3], conn->dest_mac[4], conn->dest_mac[5]);
+	if (TEST_FLAG(conn->flags, CONFIG_NET_DEST_MAC))
+		printf("  DEST MAC: %.2x:%.2x:%.2x:%.2x:%.2x:%.2x\n",
+		       conn->dest_mac[0], conn->dest_mac[1], conn->dest_mac[2],
+		       conn->dest_mac[3], conn->dest_mac[4], conn->dest_mac[5]);
 
-  printf("  Priority  : %d\n", conn->priority);
-  printf("  Profile   : %s\n", conn->profile);
-  printf("  EAPoL Ver : %d\n", conn->force_eapol_ver);
+	printf("  Priority  : %d\n", conn->priority);
+	printf("  Profile   : %s\n", conn->profile);
+	printf("  EAPoL Ver : %d\n", conn->force_eapol_ver);
 
-  dump_config_association(conn);
-  dump_config_ip(conn);
+	dump_config_association(conn);
+	dump_config_ip(conn);
 
-  if (conn->next)
-    dump_config_connections(conn->next);
-      
+	if (conn->next)
+		dump_config_connections(conn->next);
+
 }
-
 
   /*******************/
  /* CONFIG_GLOBALS  */
@@ -2436,15 +2455,15 @@ void dump_config_connections(struct config_connection *conn)
  **/
 void delete_config_globals(struct config_globals **tmp_globals)
 {
-  if (*tmp_globals == NULL)
-    return;
+	if (*tmp_globals == NULL)
+		return;
 
-  FREE_STRING((*tmp_globals)->logpath);
-  FREE_STRING((*tmp_globals)->ipc_group_name);
-  FREE_STRING((*tmp_globals)->log_facility);
-  
-  free (*tmp_globals);
-  *tmp_globals = NULL;
+	FREE_STRING((*tmp_globals)->logpath);
+	FREE_STRING((*tmp_globals)->ipc_group_name);
+	FREE_STRING((*tmp_globals)->log_facility);
+
+	free(*tmp_globals);
+	*tmp_globals = NULL;
 }
 
 /**
@@ -2462,11 +2481,12 @@ void delete_config_globals(struct config_globals **tmp_globals)
  **/
 int config_set_new_globals(struct config_globals *new_globals)
 {
-  if (new_globals == NULL) return XEMALLOC;
+	if (new_globals == NULL)
+		return XEMALLOC;
 
-  conf_globals = new_globals;
+	conf_globals = new_globals;
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -2479,17 +2499,16 @@ int config_set_new_globals(struct config_globals *new_globals)
  **/
 void initialize_config_globals(struct config_globals **tmp_globals)
 {
-  if (*tmp_globals != NULL) {
-    delete_config_globals(tmp_globals);
-  }
-  *tmp_globals = 
-    (struct config_globals *)malloc(sizeof(struct config_globals));  
-  if (*tmp_globals)
-    {
-      memset(*tmp_globals, 0, sizeof(struct config_globals));
-    
-	  xsupconfig_defaults_set_globals((*tmp_globals));
-    }
+	if (*tmp_globals != NULL) {
+		delete_config_globals(tmp_globals);
+	}
+	*tmp_globals =
+	    (struct config_globals *)malloc(sizeof(struct config_globals));
+	if (*tmp_globals) {
+		memset(*tmp_globals, 0, sizeof(struct config_globals));
+
+		xsupconfig_defaults_set_globals((*tmp_globals));
+	}
 }
 
 /**
@@ -2502,104 +2521,97 @@ void initialize_config_globals(struct config_globals **tmp_globals)
  **/
 void dump_config_globals(struct config_globals *globals)
 {
-  if (!globals) {
-    printf("No Globals\n");
-    return;
-  }
+	if (!globals) {
+		printf("No Globals\n");
+		return;
+	}
 
-  if (globals->logpath)
-  {
-    printf("Logpath: '%s'\n", globals->logpath);
-	printf("Log level : %d\n", globals->loglevel);
-  }
+	if (globals->logpath) {
+		printf("Logpath: '%s'\n", globals->logpath);
+		printf("Log level : %d\n", globals->loglevel);
+	}
 
-  if (globals->log_facility)
-    printf("Log Facility: '%s'\n", globals->log_facility);
+	if (globals->log_facility)
+		printf("Log Facility: '%s'\n", globals->log_facility);
 
-  if (globals->ipc_group_name)
-    printf("IPC Group Name : '%s' \n", globals->ipc_group_name);
+	if (globals->ipc_group_name)
+		printf("IPC Group Name : '%s' \n", globals->ipc_group_name);
 
-  if (globals->auth_period != 0)
-    printf("Auth Period: %d\n", globals->auth_period);
+	if (globals->auth_period != 0)
+		printf("Auth Period: %d\n", globals->auth_period);
 
-  if (globals->held_period != 0)
-    printf("Held Period: %d\n", globals->held_period);
+	if (globals->held_period != 0)
+		printf("Held Period: %d\n", globals->held_period);
 
-  if (globals->max_starts != 0)
-    printf("Max Starts: %d\n", globals->max_starts);
+	if (globals->max_starts != 0)
+		printf("Max Starts: %d\n", globals->max_starts);
 
-  if (globals->stale_key_timeout != 0)
-    printf("Stale Key Timeout: %d\n", globals->stale_key_timeout);
+	if (globals->stale_key_timeout != 0)
+		printf("Stale Key Timeout: %d\n", globals->stale_key_timeout);
 
-  if (globals->active_timeout != 0)
-    printf("Active Scan Timeout: %d\n", globals->active_timeout);
+	if (globals->active_timeout != 0)
+		printf("Active Scan Timeout: %d\n", globals->active_timeout);
 
-  if (globals->idleWhile_timeout != 0)
-    printf("Idle While Timeout: %d\n", globals->idleWhile_timeout);
+	if (globals->idleWhile_timeout != 0)
+		printf("Idle While Timeout: %d\n", globals->idleWhile_timeout);
 
-  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS))
-    {
-      printf("Friendly Warnings : Yes\n");
-    } else {
-      printf("Friendly Warnings : No\n");
-    }
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS)) {
+		printf("Friendly Warnings : Yes\n");
+	} else {
+		printf("Friendly Warnings : No\n");
+	}
 
-  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ASSOC_AUTO))
-    {
-      printf("Auto Association : Yes\n");
-    } else {
-      printf("Auto Association : No\n");
-    }
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ASSOC_AUTO)) {
+		printf("Auto Association : Yes\n");
+	} else {
+		printf("Auto Association : No\n");
+	}
 
-  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM))
-    {
-      printf("Roaming          : Firmware\n");
-    } else {
-      printf("Roaming          : Xsupplicant\n");
-    }
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)) {
+		printf("Roaming          : Firmware\n");
+	} else {
+		printf("Roaming          : Xsupplicant\n");
+	}
 
-  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN))
-    {
-      printf("Passive Scanning : Yes\n");
-    } else {
-      printf("Passive Scanning : No\n");
-    }
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN)) {
+		printf("Passive Scanning : Yes\n");
+	} else {
+		printf("Passive Scanning : No\n");
+	}
 
-  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF))
-  {
-	  printf("Disconnect at Logoff : Yes\n");
-  } else {
-	  printf("Disconnect at Logoff : No\n");
-  }
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF)) {
+		printf("Disconnect at Logoff : Yes\n");
+	} else {
+		printf("Disconnect at Logoff : No\n");
+	}
 
-  printf("Passive Scan Timeout : %d\n", globals->passive_timeout);
+	printf("Passive Scan Timeout : %d\n", globals->passive_timeout);
 
-  printf("Association Timeout : %d\n", globals->assoc_timeout);
+	printf("Association Timeout : %d\n", globals->assoc_timeout);
 
-  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ALLMULTI))
-    printf("ALLMULTI is enabled!\n");
-  else
-    printf("ALLMULTI is disabled!\n");
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ALLMULTI))
+		printf("ALLMULTI is enabled!\n");
+	else
+		printf("ALLMULTI is disabled!\n");
 
-  printf("Destination: ");
-  switch (globals->destination)
-    {
-    case DEST_AUTO:
-      printf("Auto\n");
-      break;
+	printf("Destination: ");
+	switch (globals->destination) {
+	case DEST_AUTO:
+		printf("Auto\n");
+		break;
 
-    case DEST_BSSID:
-      printf("BSSID\n");
-      break;
+	case DEST_BSSID:
+		printf("BSSID\n");
+		break;
 
-    case DEST_MULTICAST:
-      printf("Multicast\n");
-      break;
+	case DEST_MULTICAST:
+		printf("Multicast\n");
+		break;
 
-    case DEST_SOURCE:
-      printf("Source\n");
-      break;
-    }
+	case DEST_SOURCE:
+		printf("Source\n");
+		break;
+	}
 }
 
   /*******************/
@@ -2612,32 +2624,32 @@ void dump_config_globals(struct config_globals *globals)
  **/
 void delete_config_data()
 {
-  if (config_fname)
-    free(config_fname);
+	if (config_fname)
+		free(config_fname);
 
-  if (conf_globals)
-    delete_config_globals(&conf_globals);
+	if (conf_globals)
+		delete_config_globals(&conf_globals);
 
-  if (conf_profiles)
-	  delete_config_profiles(&conf_profiles);
+	if (conf_profiles)
+		delete_config_profiles(&conf_profiles);
 
-  if (conf_user_profiles)
-	  delete_config_profiles(&conf_user_profiles);
+	if (conf_user_profiles)
+		delete_config_profiles(&conf_user_profiles);
 
-  if (conf_connections)
-    delete_config_connections(&conf_connections);
+	if (conf_connections)
+		delete_config_connections(&conf_connections);
 
-  if (conf_user_connections)
-	delete_config_connections(&conf_user_connections);
+	if (conf_user_connections)
+		delete_config_connections(&conf_user_connections);
 
-  if (conf_trusted_servers)
-	  delete_config_trusted_servers(&conf_trusted_servers);
+	if (conf_trusted_servers)
+		delete_config_trusted_servers(&conf_trusted_servers);
 
-  if (conf_user_trusted_servers)
-	  delete_config_trusted_servers(&conf_user_trusted_servers);
+	if (conf_user_trusted_servers)
+		delete_config_trusted_servers(&conf_user_trusted_servers);
 
-  if (conf_devices)
-	  delete_config_devices(&conf_devices);
+	if (conf_devices)
+		delete_config_devices(&conf_devices);
 }
 
 /**
@@ -2664,14 +2676,12 @@ void dump_config_trusted_server(struct config_trusted_server *start)
 {
 	int i = 0;
 
-	while (start != NULL)
-	{
+	while (start != NULL) {
 		printf("\t--------- Trusted Server ----------\n");
 		printf("\tName        : %s\n", start->name);
 		printf("\tStore Type  : %s\n", start->store_type);
 
-		for (i = 0; i<start->num_locations; i++)
-		{
+		for (i = 0; i < start->num_locations; i++) {
 			printf("\tLocation %d  : %s\n", i, start->location[i]);
 		}
 
@@ -2680,7 +2690,7 @@ void dump_config_trusted_server(struct config_trusted_server *start)
 		printf("\t------------------------------------\n");
 
 		start = start->next;
-	}		
+	}
 }
 
 /**
@@ -2692,7 +2702,8 @@ void dump_config_trusted_server(struct config_trusted_server *start)
  **/
 void dump_config_trusted_servers(struct config_trusted_servers *ts)
 {
-	if (ts == NULL) return;
+	if (ts == NULL)
+		return;
 
 	printf("-!-!-!-!-! Trusted Servers !-!-!-!-!\n");
 	dump_config_trusted_server(ts->servers);
@@ -2713,8 +2724,7 @@ void dump_config_profiles(struct config_profiles *data)
 	cur = data;
 
 	printf("+-+-+-+-+-+ Profiles -+-+-+-+-+\n");
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		printf("   ************ Profile *************\n");
 		printf("    Name     : %s\n", cur->name);
 		printf("    Identity : %s\n", cur->identity);
@@ -2739,8 +2749,7 @@ void dump_config_plugins(struct config_plugins *data)
 	struct config_plugins *cur = data;
 
 	printf("+-+-+-+-+-+ Plugins -+-+-+-+-+\n");
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		printf("   ************ Plugin *************\n");
 		printf("    Name     : %s\n", cur->name);
 		printf("    Path     : %s\n", cur->path);
@@ -2761,7 +2770,7 @@ void dump_config_plugins(struct config_plugins *data)
  **/
 void delete_config_profiles(struct config_profiles **prof)
 {
-	liblist_delete_list((genlist **)prof, delete_config_single_profile);
+	liblist_delete_list((genlist **) prof, delete_config_single_profile);
 
 	(*prof) = NULL;
 }
@@ -2772,15 +2781,15 @@ void delete_config_profiles(struct config_profiles **prof)
  **/
 void dump_config_data()
 {
-  printf("=-=-=-=-=-=-=-=-=-=-=-=-=\n");
-  printf("Configuration File: %s\n", config_fname);
-  dump_config_globals(conf_globals);
-  dump_config_profiles(conf_profiles);
-  dump_config_connections(conf_connections);
-  dump_config_devices(conf_devices);
-  dump_config_trusted_servers(conf_trusted_servers);
-  dump_config_plugins(conf_plugins);
-  printf("=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+	printf("=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+	printf("Configuration File: %s\n", config_fname);
+	dump_config_globals(conf_globals);
+	dump_config_profiles(conf_profiles);
+	dump_config_connections(conf_connections);
+	dump_config_devices(conf_devices);
+	dump_config_trusted_servers(conf_trusted_servers);
+	dump_config_plugins(conf_plugins);
+	printf("=-=-=-=-=-=-=-=-=-=-=-=-=\n");
 }
 
 /**
@@ -2791,7 +2800,8 @@ void dump_config_data()
  **/
 void reset_config_globals(struct config_globals *newglobs)
 {
-	if (newglobs == NULL) return;
+	if (newglobs == NULL)
+		return;
 
 	delete_config_globals(&conf_globals);
 	conf_globals = newglobs;
@@ -2811,18 +2821,17 @@ int add_change_config_connections_global(struct config_connection *confconn)
 {
 	struct config_connection *cur = NULL, *prev = NULL;
 
-	if (confconn == NULL) return XEGENERROR;
+	if (confconn == NULL)
+		return XEGENERROR;
 
 	// If we don't have any connections currently in memory.
-	if (conf_connections == NULL)
-	{
+	if (conf_connections == NULL) {
 		conf_connections = confconn;
 
 		return XENONE;
 	}
 
-	if (strcmp(conf_connections->name, confconn->name) == 0)
-	{
+	if (strcmp(conf_connections->name, confconn->name) == 0) {
 		// The first node is the one we are changing.
 		confconn->next = conf_connections->next;
 		delete_config_single_connection((void **)&conf_connections);
@@ -2833,19 +2842,16 @@ int add_change_config_connections_global(struct config_connection *confconn)
 	cur = conf_connections->next;
 	prev = conf_connections;
 
-	while ((cur != NULL) && (strcmp(cur->name, confconn->name) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->name, confconn->name) != 0)) {
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL)
-	{
+	if (cur == NULL) {
 		// It is an addition.
 		prev->next = confconn;
 		return XENONE;
 	}
-
 	// Otherwise, we need to replace the node that cur points to.
 	confconn->next = cur->next;
 	prev->next = confconn;
@@ -2868,21 +2874,21 @@ int add_change_config_connections_user(struct config_connection *confconn)
 {
 	struct config_connection *cur = NULL, *prev = NULL;
 
-	if (confconn == NULL) return XEGENERROR;
+	if (confconn == NULL)
+		return XEGENERROR;
 
 	// If we don't have any connections currently in memory.
-	if (conf_user_connections == NULL)
-	{
+	if (conf_user_connections == NULL) {
 		conf_user_connections = confconn;
 
 		return XENONE;
 	}
 
-	if (strcmp(conf_user_connections->name, confconn->name) == 0)
-	{
+	if (strcmp(conf_user_connections->name, confconn->name) == 0) {
 		// The first node is the one we are changing.
 		confconn->next = conf_user_connections->next;
-		delete_config_single_connection((void **)&conf_user_connections);
+		delete_config_single_connection((void **)
+						&conf_user_connections);
 		conf_user_connections = confconn;
 		return XENONE;
 	}
@@ -2890,19 +2896,16 @@ int add_change_config_connections_user(struct config_connection *confconn)
 	cur = conf_user_connections->next;
 	prev = conf_user_connections;
 
-	while ((cur != NULL) && (strcmp(cur->name, confconn->name) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->name, confconn->name) != 0)) {
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL)
-	{
+	if (cur == NULL) {
 		// It is an addition.
 		prev->next = confconn;
 		return XENONE;
 	}
-
 	// Otherwise, we need to replace the node that cur points to.
 	confconn->next = cur->next;
 	prev->next = confconn;
@@ -2925,18 +2928,17 @@ int add_change_config_plugins(struct config_plugins *confplug)
 {
 	struct config_plugins *cur = NULL, *prev = NULL;
 
-	if (confplug == NULL) return XEGENERROR;
+	if (confplug == NULL)
+		return XEGENERROR;
 
 	// If we don't have any plugins currently in memory.
-	if (conf_plugins == NULL)
-	{
+	if (conf_plugins == NULL) {
 		conf_plugins = confplug;
 
 		return XENONE;
 	}
 
-	if (strcmp(conf_plugins->name, confplug->name) == 0)
-	{
+	if (strcmp(conf_plugins->name, confplug->name) == 0) {
 		// The first node is the one we are changing.
 		confplug->next = conf_plugins->next;
 		delete_config_single_plugin(&conf_plugins);
@@ -2947,19 +2949,16 @@ int add_change_config_plugins(struct config_plugins *confplug)
 	cur = conf_plugins->next;
 	prev = conf_plugins;
 
-	while ((cur != NULL) && (strcmp(cur->name, confplug->name) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->name, confplug->name) != 0)) {
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL)
-	{
+	if (cur == NULL) {
 		// It is an addition.
 		prev->next = confplug;
 		return XENONE;
 	}
-
 	// Otherwise, we need to replace the node that cur points to.
 	confplug->next = cur->next;
 	prev->next = confplug;
@@ -2978,14 +2977,12 @@ int add_change_config_plugins(struct config_plugins *confplug)
  * \retval XENONE on success
  * \retval XEGENERROR on general failure
  **/
-int add_change_config_connections(uint8_t conf_type, struct config_connection *confconn)
+int add_change_config_connections(uint8_t conf_type,
+				  struct config_connection *confconn)
 {
-	if (conf_type == CONFIG_LOAD_GLOBAL)
-	{
+	if (conf_type == CONFIG_LOAD_GLOBAL) {
 		return add_change_config_connections_global(confconn);
-	}
-	else
-	{
+	} else {
 		return add_change_config_connections_user(confconn);
 	}
 }
@@ -3004,18 +3001,17 @@ int add_change_config_profiles_global(struct config_profiles *confprof)
 {
 	struct config_profiles *cur = NULL, *prev = NULL;
 
-	if (confprof == NULL) return XEGENERROR;
+	if (confprof == NULL)
+		return XEGENERROR;
 
 	// If we don't have any profiles currently in memory.
-	if (conf_profiles == NULL)
-	{
+	if (conf_profiles == NULL) {
 		conf_profiles = confprof;
 
 		return XENONE;
 	}
 
-	if (strcmp(conf_profiles->name, confprof->name) == 0)
-	{
+	if (strcmp(conf_profiles->name, confprof->name) == 0) {
 		// The first node is the one we are changing.
 		confprof->next = conf_profiles->next;
 		delete_config_single_profile((void **)&conf_profiles);
@@ -3026,19 +3022,16 @@ int add_change_config_profiles_global(struct config_profiles *confprof)
 	cur = conf_profiles->next;
 	prev = conf_profiles;
 
-	while ((cur != NULL) && (strcmp(cur->name, confprof->name) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->name, confprof->name) != 0)) {
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL)
-	{
+	if (cur == NULL) {
 		// It is an addition.
 		prev->next = confprof;
 		return XENONE;
 	}
-
 	// Otherwise, we need to replace the node that cur points to.
 	confprof->next = cur->next;
 	prev->next = confprof;
@@ -3061,18 +3054,17 @@ int add_change_config_profiles_user(struct config_profiles *confprof)
 {
 	struct config_profiles *cur = NULL, *prev = NULL;
 
-	if (confprof == NULL) return XEGENERROR;
+	if (confprof == NULL)
+		return XEGENERROR;
 
 	// If we don't have any profiles currently in memory.
-	if (conf_user_profiles == NULL)
-	{
+	if (conf_user_profiles == NULL) {
 		conf_user_profiles = confprof;
 
 		return XENONE;
 	}
 
-	if (strcmp(conf_user_profiles->name, confprof->name) == 0)
-	{
+	if (strcmp(conf_user_profiles->name, confprof->name) == 0) {
 		// The first node is the one we are changing.
 		confprof->next = conf_user_profiles->next;
 		delete_config_single_profile((void **)&conf_user_profiles);
@@ -3083,19 +3075,16 @@ int add_change_config_profiles_user(struct config_profiles *confprof)
 	cur = conf_user_profiles->next;
 	prev = conf_user_profiles;
 
-	while ((cur != NULL) && (strcmp(cur->name, confprof->name) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->name, confprof->name) != 0)) {
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL)
-	{
+	if (cur == NULL) {
 		// It is an addition.
 		prev->next = confprof;
 		return XENONE;
 	}
-
 	// Otherwise, we need to replace the node that cur points to.
 	confprof->next = cur->next;
 	prev->next = confprof;
@@ -3115,7 +3104,8 @@ int add_change_config_profiles_user(struct config_profiles *confprof)
  * \retval XENONE on success
  * \retval XEGENERROR on general failure
  **/
-int add_change_config_profiles(uint8_t config_type, struct config_profiles *confprof)
+int add_change_config_profiles(uint8_t config_type,
+			       struct config_profiles *confprof)
 {
 	if (config_type == CONFIG_LOAD_GLOBAL)
 		return add_change_config_profiles_global(confprof);
@@ -3134,25 +3124,25 @@ int add_change_config_profiles(uint8_t config_type, struct config_profiles *conf
  * \retval XEMALLOC on memory allocation error
  * \retval XEGENERROR on general failure
  **/
-int add_change_config_trusted_server_global(struct config_trusted_server *confts)
+int add_change_config_trusted_server_global(struct config_trusted_server
+					    *confts)
 {
 	struct config_trusted_server *cur = NULL, *prev = NULL;
 
-	if (confts == NULL) return XEGENERROR;
+	if (confts == NULL)
+		return XEGENERROR;
 
-	if (conf_trusted_servers == NULL)
-	{
-		conf_trusted_servers = Malloc(sizeof(struct config_trusted_servers));
-		if (conf_trusted_servers == NULL)
-		{
-			debug_printf(DEBUG_CONFIG_PARSE, "Couldn't allocate memory to store trusted servers structure!\n");
+	if (conf_trusted_servers == NULL) {
+		conf_trusted_servers =
+		    Malloc(sizeof(struct config_trusted_servers));
+		if (conf_trusted_servers == NULL) {
+			debug_printf(DEBUG_CONFIG_PARSE,
+				     "Couldn't allocate memory to store trusted servers structure!\n");
 			return XEMALLOC;
 		}
 	}
-
 	// If we don't have any trusted servers currently in memory.
-	if (conf_trusted_servers->servers == NULL)
-	{
+	if (conf_trusted_servers->servers == NULL) {
 		conf_trusted_servers->servers = confts;
 
 		return XENONE;
@@ -3160,8 +3150,7 @@ int add_change_config_trusted_server_global(struct config_trusted_server *confts
 
 	cur = conf_trusted_servers->servers;
 
-	if (strcmp(cur->name, confts->name) == 0)
-	{
+	if (strcmp(cur->name, confts->name) == 0) {
 		// The first node is the one we are changing.
 		confts->next = cur->next;
 		delete_config_trusted_server((void **)&cur);
@@ -3172,19 +3161,16 @@ int add_change_config_trusted_server_global(struct config_trusted_server *confts
 	cur = conf_trusted_servers->servers->next;
 	prev = conf_trusted_servers->servers;
 
-	while ((cur != NULL) && (strcmp(cur->name, confts->name) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->name, confts->name) != 0)) {
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL)
-	{
+	if (cur == NULL) {
 		// It is an addition.
 		prev->next = confts;
 		return XENONE;
 	}
-
 	// Otherwise, we need to replace the node that cur points to.
 	confts->next = cur->next;
 	prev->next = confts;
@@ -3208,21 +3194,20 @@ int add_change_config_trusted_server_user(struct config_trusted_server *confts)
 {
 	struct config_trusted_server *cur = NULL, *prev = NULL;
 
-	if (confts == NULL) return XEGENERROR;
+	if (confts == NULL)
+		return XEGENERROR;
 
-	if (conf_user_trusted_servers == NULL)
-	{
-		conf_user_trusted_servers = Malloc(sizeof(struct config_trusted_servers));
-		if (conf_user_trusted_servers == NULL)
-		{
-			debug_printf(DEBUG_CONFIG_PARSE, "Couldn't allocate memory to store trusted servers structure!\n");
+	if (conf_user_trusted_servers == NULL) {
+		conf_user_trusted_servers =
+		    Malloc(sizeof(struct config_trusted_servers));
+		if (conf_user_trusted_servers == NULL) {
+			debug_printf(DEBUG_CONFIG_PARSE,
+				     "Couldn't allocate memory to store trusted servers structure!\n");
 			return XEMALLOC;
 		}
 	}
-
 	// If we don't have any trusted servers currently in memory.
-	if (conf_user_trusted_servers->servers == NULL)
-	{
+	if (conf_user_trusted_servers->servers == NULL) {
 		conf_user_trusted_servers->servers = confts;
 
 		return XENONE;
@@ -3230,8 +3215,7 @@ int add_change_config_trusted_server_user(struct config_trusted_server *confts)
 
 	cur = conf_user_trusted_servers->servers;
 
-	if (strcmp(cur->name, confts->name) == 0)
-	{
+	if (strcmp(cur->name, confts->name) == 0) {
 		// The first node is the one we are changing.
 		confts->next = cur->next;
 		delete_config_trusted_server((void **)&cur);
@@ -3242,19 +3226,16 @@ int add_change_config_trusted_server_user(struct config_trusted_server *confts)
 	cur = conf_user_trusted_servers->servers->next;
 	prev = conf_user_trusted_servers->servers;
 
-	while ((cur != NULL) && (strcmp(cur->name, confts->name) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->name, confts->name) != 0)) {
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL)
-	{
+	if (cur == NULL) {
 		// It is an addition.
 		prev->next = confts;
 		return XENONE;
 	}
-
 	// Otherwise, we need to replace the node that cur points to.
 	confts->next = cur->next;
 	prev->next = confts;
@@ -3275,7 +3256,8 @@ int add_change_config_trusted_server_user(struct config_trusted_server *confts)
  * \retval XEMALLOC on memory allocation error
  * \retval XEGENERROR on general failure
  **/
-int add_change_config_trusted_server(uint8_t config_type, struct config_trusted_server *confts)
+int add_change_config_trusted_server(uint8_t config_type,
+				     struct config_trusted_server *confts)
 {
 	if (config_type == CONFIG_LOAD_GLOBAL)
 		return add_change_config_trusted_server_global(confts);
@@ -3298,21 +3280,19 @@ int add_change_config_interface(struct xsup_interfaces *confif)
 {
 	struct xsup_interfaces *cur = NULL, *prev = NULL;
 
-	if (confif == NULL) return XEGENERROR;
+	if (confif == NULL)
+		return XEGENERROR;
 
-	if (conf_devices == NULL)
-	{
+	if (conf_devices == NULL) {
 		conf_devices = Malloc(sizeof(struct xsup_devices));
-		if (conf_devices == NULL)
-		{
-			debug_printf(DEBUG_CONFIG_PARSE, "Couldn't allocate memory to store interface structure!\n");
+		if (conf_devices == NULL) {
+			debug_printf(DEBUG_CONFIG_PARSE,
+				     "Couldn't allocate memory to store interface structure!\n");
 			return XEMALLOC;
 		}
 	}
-
 	// If we don't have any interfaces currently in memory.
-	if (conf_devices->interf == NULL)
-	{
+	if (conf_devices->interf == NULL) {
 		conf_devices->interf = confif;
 
 		return XENONE;
@@ -3320,8 +3300,7 @@ int add_change_config_interface(struct xsup_interfaces *confif)
 
 	cur = conf_devices->interf;
 
-	if (strcmp(cur->description, confif->description) == 0)
-	{
+	if (strcmp(cur->description, confif->description) == 0) {
 		// The first node is the one we are changing.
 		confif->next = cur->next;
 		delete_config_interface((void **)&cur);
@@ -3332,19 +3311,17 @@ int add_change_config_interface(struct xsup_interfaces *confif)
 	cur = conf_devices->interf->next;
 	prev = conf_devices->interf;
 
-	while ((cur != NULL) && (strcmp(cur->description, confif->description) != 0))
-	{
+	while ((cur != NULL)
+	       && (strcmp(cur->description, confif->description) != 0)) {
 		prev = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL)
-	{
+	if (cur == NULL) {
 		// It is an addition.
 		prev->next = confif;
 		return XENONE;
 	}
-
 	// Otherwise, we need to replace the node that cur points to.
 	confif->next = cur->next;
 	prev->next = confif;
@@ -3365,15 +3342,14 @@ struct xsup_interfaces *config_find_int(char *intdesc)
 {
 	struct xsup_interfaces *cur = NULL;
 
-	if ((intdesc == NULL) || (strlen(intdesc) == 0)) return NULL;    // If we asked for nothing, return nothing.
+	if ((intdesc == NULL) || (strlen(intdesc) == 0))
+		return NULL;	// If we asked for nothing, return nothing.
 
 	cur = config_get_config_ints();
 
-	while ((cur != NULL) && (strcmp(cur->description, intdesc) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->description, intdesc) != 0)) {
 		cur = cur->next;
 	}
 
 	return cur;
 }
-

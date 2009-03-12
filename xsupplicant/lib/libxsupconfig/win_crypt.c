@@ -35,34 +35,34 @@ int pwcrypt_funcs_available()
  * Convert an array of uint8_t to a string.
  *
  **/
-char *convert_hex_to_str(uint8_t *inhex, uint16_t insize)
+char *convert_hex_to_str(uint8_t * inhex, uint16_t insize)
 {
-  uint16_t strsize = 0, i;
-  char *retstr = NULL;
-  char bytes[3];
+	uint16_t strsize = 0, i;
+	char *retstr = NULL;
+	char bytes[3];
 
-  if (inhex == NULL) return NULL;
+	if (inhex == NULL)
+		return NULL;
 
-  strsize = (insize * 2)+1;
+	strsize = (insize * 2) + 1;
 
-  retstr = (char *)malloc(strsize);
-  if (retstr == NULL) return NULL;
+	retstr = (char *)malloc(strsize);
+	if (retstr == NULL)
+		return NULL;
 
-  memset(retstr, 0x00, strsize);
+	memset(retstr, 0x00, strsize);
 
-  memset(&bytes, 0x00, 3);
+	memset(&bytes, 0x00, 3);
 
-  for (i=0;i<insize;i++)
-    {
-      sprintf(bytes, "%02X", inhex[i]);
-      if (Strcat(retstr, strsize, bytes) != 0)
-		{
+	for (i = 0; i < insize; i++) {
+		sprintf(bytes, "%02X", inhex[i]);
+		if (Strcat(retstr, strsize, bytes) != 0) {
 			fprintf(stderr, "Refusing to overflow string!\n");
 			return NULL;
 		}
-    }
+	}
 
-  return retstr;
+	return retstr;
 }
 
 /**
@@ -77,7 +77,8 @@ char *convert_hex_to_str(uint8_t *inhex, uint16_t insize)
  * \retval 0 on success
  * \retval -1 on failure
  **/
-int pwcrypt_encrypt(uint8_t config_type, uint8_t *toencdata, uint16_t toenclen, uint8_t **encdata, uint16_t *enclen)
+int pwcrypt_encrypt(uint8_t config_type, uint8_t * toencdata, uint16_t toenclen,
+		    uint8_t ** encdata, uint16_t * enclen)
 {
 	DATA_BLOB DataIn;
 	DATA_BLOB DataOut;
@@ -85,11 +86,13 @@ int pwcrypt_encrypt(uint8_t config_type, uint8_t *toencdata, uint16_t toenclen, 
 	DataIn.cbData = toenclen;
 	DataIn.pbData = toencdata;
 
-	if (config_type == CONFIG_LOAD_GLOBAL)
-	{
-		if(CryptProtectData(&DataIn, L"Password String", NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
-		{
-			(*encdata) = convert_hex_to_str(DataOut.pbData, DataOut.cbData);
+	if (config_type == CONFIG_LOAD_GLOBAL) {
+		if (CryptProtectData
+		    (&DataIn, L"Password String", NULL, NULL, NULL,
+		     (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE),
+		     &DataOut)) {
+			(*encdata) =
+			    convert_hex_to_str(DataOut.pbData, DataOut.cbData);
 			(*enclen) = DataOut.cbData;
 
 			LocalFree(DataOut.pbData);
@@ -97,25 +100,25 @@ int pwcrypt_encrypt(uint8_t config_type, uint8_t *toencdata, uint16_t toenclen, 
 			return 0;
 		}
 
-		return -1;   // Encryption failed.
-	}
-	else
-	{
+		return -1;	// Encryption failed.
+	} else {
 		win_impersonate_desktop_user();
 
-		if(CryptProtectData(&DataIn, L"Password String", NULL, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN, &DataOut))
-		{
-			(*encdata) = convert_hex_to_str(DataOut.pbData, DataOut.cbData);
+		if (CryptProtectData
+		    (&DataIn, L"Password String", NULL, NULL, NULL,
+		     CRYPTPROTECT_UI_FORBIDDEN, &DataOut)) {
+			(*encdata) =
+			    convert_hex_to_str(DataOut.pbData, DataOut.cbData);
 			(*enclen) = DataOut.cbData;
 
 			LocalFree(DataOut.pbData);
-		
+
 			win_impersonate_back_to_self();
 			return 0;
 		}
 
 		win_impersonate_back_to_self();
-		return -1;   // Encryption failed.
+		return -1;	// Encryption failed.
 	}
 
 	return -1;
@@ -123,64 +126,61 @@ int pwcrypt_encrypt(uint8_t config_type, uint8_t *toencdata, uint16_t toenclen, 
 
 char ctonibble1(char cnib)
 {
-  char retVal=0x00;
-  char testval=0x00;
+	char retVal = 0x00;
+	char testval = 0x00;
 
-  if ((cnib>='0') && (cnib<='9'))
-    {
-      retVal = cnib - '0';
-    } else {
-      testval = toupper(cnib);
-      if ((testval>='A') && (testval<='F'))
-	{
-	  retVal = ((testval - 'A') +10);
+	if ((cnib >= '0') && (cnib <= '9')) {
+		retVal = cnib - '0';
 	} else {
-	  printf("Error in conversion!  (Check ctonibble1()) -- %02x\n",testval);
+		testval = toupper(cnib);
+		if ((testval >= 'A') && (testval <= 'F')) {
+			retVal = ((testval - 'A') + 10);
+		} else {
+			printf
+			    ("Error in conversion!  (Check ctonibble1()) -- %02x\n",
+			     testval);
+		}
 	}
-    }
-  return retVal;
+	return retVal;
 }
 
 // Convert an ASCII hex string to it's binary version.
-void str2hex(char *instr, uint8_t **outstr, int *rsize)
+void str2hex(char *instr, uint8_t ** outstr, int *rsize)
 {
-  int i;
-  int size;
-  uint8_t *result = NULL;
+	int i;
+	int size;
+	uint8_t *result = NULL;
 
-  (*rsize) = 0;
-  (*outstr) = NULL;
-  if (instr == NULL)
-  {
-	  return;
-  }
+	(*rsize) = 0;
+	(*outstr) = NULL;
+	if (instr == NULL) {
+		return;
+	}
 
-  size = strlen(instr);
-	
-  // Make sure we don't try to convert something that isn't byte aligned.
-  if ((size % 2) != 0)
-    {
-      printf("Hex string isn't an even number of chars!!!\n");
-      return;
-    }
+	size = strlen(instr);
 
-  result = malloc(size/2);
-  if (result == NULL) 
-  {
-	  (*outstr) = NULL;
-	  return;
-  }
+	// Make sure we don't try to convert something that isn't byte aligned.
+	if ((size % 2) != 0) {
+		printf("Hex string isn't an even number of chars!!!\n");
+		return;
+	}
 
-  for (i=0;i<(size/2);i++)
-    {
-      if (instr[i*2] != 0x00)
-		{
-			result[i] = (ctonibble1(instr[i*2]) << 4) + ctonibble1(instr[(i*2)+1]);
+	result = malloc(size / 2);
+	if (result == NULL) {
+		(*outstr) = NULL;
+		return;
+	}
+
+	for (i = 0; i < (size / 2); i++) {
+		if (instr[i * 2] != 0x00) {
+			result[i] =
+			    (ctonibble1(instr[i * 2]) << 4) +
+			    ctonibble1(instr[(i * 2) + 1]);
 		}
-    }
+	}
 
-  (*rsize) = (int)(size/2);
-  (*outstr) = result;
+	(*rsize) = (int)(size / 2);
+	(*outstr) = result;
 }
 
 /**
@@ -195,7 +195,8 @@ void str2hex(char *instr, uint8_t **outstr, int *rsize)
  * \retval 0 on success
  * \retval -1 on failure
  **/
-int pwcrypt_decrypt(uint8_t config_type, uint8_t *encdata, uint16_t enclen, uint8_t **decdata, uint16_t *declen)
+int pwcrypt_decrypt(uint8_t config_type, uint8_t * encdata, uint16_t enclen,
+		    uint8_t ** decdata, uint16_t * declen)
 {
 	DATA_BLOB DataIn;
 	DATA_BLOB DataOut;
@@ -204,21 +205,24 @@ int pwcrypt_decrypt(uint8_t config_type, uint8_t *encdata, uint16_t enclen, uint
 
 	str2hex(encdata, &data, &size);
 
-	if (size <= 0) return -1;
+	if (size <= 0)
+		return -1;
 
 	DataIn.cbData = size;
 	DataIn.pbData = data;
 
-	if (config_type == CONFIG_LOAD_GLOBAL)
-	{
-		if (CryptUnprotectData(&DataIn, NULL, NULL, NULL, NULL, (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE), &DataOut))
-		{
+	if (config_type == CONFIG_LOAD_GLOBAL) {
+		if (CryptUnprotectData
+		    (&DataIn, NULL, NULL, NULL, NULL,
+		     (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE),
+		     &DataOut)) {
 			free(data);
 
-			(*decdata) = malloc(DataOut.cbData+3);
-			if ((*decdata) == NULL) return -1;
+			(*decdata) = malloc(DataOut.cbData + 3);
+			if ((*decdata) == NULL)
+				return -1;
 
-			memset((*decdata), 0x00, DataOut.cbData+3);
+			memset((*decdata), 0x00, DataOut.cbData + 3);
 			memcpy((*decdata), DataOut.pbData, DataOut.cbData);
 
 			(*declen) = strlen((*decdata));
@@ -230,19 +234,19 @@ int pwcrypt_decrypt(uint8_t config_type, uint8_t *encdata, uint16_t enclen, uint
 
 		free(data);
 		return -1;
-	}
-	else
-	{
+	} else {
 		win_impersonate_desktop_user();
 
-		if (CryptUnprotectData(&DataIn, NULL, NULL, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN, &DataOut))
-		{
+		if (CryptUnprotectData
+		    (&DataIn, NULL, NULL, NULL, NULL, CRYPTPROTECT_UI_FORBIDDEN,
+		     &DataOut)) {
 			free(data);
 
-			(*decdata) = malloc(DataOut.cbData+3);
-			if ((*decdata) == NULL) return -1;
+			(*decdata) = malloc(DataOut.cbData + 3);
+			if ((*decdata) == NULL)
+				return -1;
 
-			memset((*decdata), 0x00, DataOut.cbData+3);
+			memset((*decdata), 0x00, DataOut.cbData + 3);
 			memcpy((*decdata), DataOut.pbData, DataOut.cbData);
 
 			(*declen) = strlen((*decdata));
@@ -261,5 +265,4 @@ int pwcrypt_decrypt(uint8_t config_type, uint8_t *encdata, uint16_t enclen, uint
 	return -1;
 }
 
-
-#endif  // WINDOWS
+#endif				// WINDOWS

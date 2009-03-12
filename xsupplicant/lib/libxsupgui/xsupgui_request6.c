@@ -14,7 +14,7 @@
 #include "src/stdintwin.h"
 #else
 #define _strdup strdup
-#endif // WINDOWS
+#endif				// WINDOWS
 
 #include "xsupgui.h"
 #include "xsupgui_request.h"
@@ -23,7 +23,6 @@
 #include "libxsupconfig/xsupconfig_parse.h"
 
 #include "src/xsup_common.h"
-
 
 /**
  *  \brief Request that the supplicant send us a list of known interfaces from the  
@@ -37,7 +36,7 @@
  *        data is returned as an array, the caller should be able to free((*retints)) and 
  *        be fine.
  **/
-int xsupgui_request_enum_ints_config(int_config_enum **retints)
+int xsupgui_request_enum_ints_config(int_config_enum ** retints)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -47,128 +46,116 @@ int xsupgui_request_enum_ints_config(int_config_enum **retints)
 	int numints = 0, i = 0, err = 0;
 	int_config_enum *ints = NULL;
 
-	if (retints == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (retints == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*retints) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto finish_enum_ints;
 	}
 
-	if (xmlNewChild(n, NULL, (xmlChar *)"Enum_Config_Interfaces", NULL) == NULL)
-	{
+	if (xmlNewChild(n, NULL, (xmlChar *) "Enum_Config_Interfaces", NULL) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_ints;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_enum_ints;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_enum_ints;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto finish_enum_ints;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = xsupgui_request_find_node(n->children, "Interface_Config_List");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE;
 		goto finish_enum_ints;
 	}
 
 	t = xsupgui_request_find_node(n->children, "Interface_Count");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE;
 		goto finish_enum_ints;
 	}
 
 	content = xmlNodeGetContent(t);
-	if ((content == NULL) || (strlen((char *)content) == 0))
-	{
+	if ((content == NULL) || (strlen((char *)content) == 0)) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_ints;
 	}
-
 #ifdef REQUEST_DEBUG
 	printf("%s interface(s) found!\n", content);
 #endif
-	if (content != NULL)
-	{
+	if (content != NULL) {
 		numints = atoi((char *)content);
 
-		if (content != NULL) free(content);
-	}
-	else
-	{
+		if (content != NULL)
+			free(content);
+	} else {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_ints;
 	}
 
 	// Allocate memory for our return structure.
-	ints = malloc(sizeof(int_config_enum)*(numints+1));
-	if (ints == NULL) 
-	{
+	ints = malloc(sizeof(int_config_enum) * (numints + 1));
+	if (ints == NULL) {
 #ifdef REQUEST_DEBUG
 		printf("Couldn't allocate memory to return interface data!\n");
 #endif
 		done = IPC_ERROR_CANT_ALLOCATE_MEMORY;
 		goto finish_enum_ints;
 	}
-
 	// Clear the memory.
-	memset(ints, 0x00, (sizeof(int_config_enum)*(numints+1)));
+	memset(ints, 0x00, (sizeof(int_config_enum) * (numints + 1)));
 
 	n = n->children;
-	for (i=0; i <numints; i++)
-	{
+	for (i = 0; i < numints; i++) {
 		n = xsupgui_request_find_node(n, "Interface");
-		if (n == NULL) 
-		{
-			if (ints != NULL) free(ints);
+		if (n == NULL) {
+			if (ints != NULL)
+				free(ints);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_ints;
 		}
 
 		t = xsupgui_request_find_node(n->children, "Interface_MAC");
-		if (t == NULL) 
-		{
-			if (ints != NULL) free(ints);
+		if (t == NULL) {
+			if (ints != NULL)
+				free(ints);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_ints;
 		}
 
 		ints[i].mac = (char *)xmlNodeGetContent(t);
 
-		t = xsupgui_request_find_node(n->children, "Interface_Description");
-		if (t == NULL)
-		{
-			if (ints != NULL) free(ints);
+		t = xsupgui_request_find_node(n->children,
+					      "Interface_Description");
+		if (t == NULL) {
+			if (ints != NULL)
+				free(ints);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_ints;
 		}
@@ -176,20 +163,17 @@ int xsupgui_request_enum_ints_config(int_config_enum **retints)
 		ints[i].desc = (char *)xmlNodeGetContent(t);
 
 		t = xsupgui_request_find_node(n->children, "Is_Wireless");
-		if (t == NULL)
-		{
-			if (ints != NULL) free(ints);
+		if (t == NULL) {
+			if (ints != NULL)
+				free(ints);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_ints;
 		}
 
 		content = xmlNodeGetContent(t);
-		if (strcmp((char *)content, "YES") == 0)
-		{
+		if (strcmp((char *)content, "YES") == 0) {
 			ints[i].is_wireless = TRUE;
-		}
-		else
-		{
+		} else {
 			ints[i].is_wireless = FALSE;
 		}
 
@@ -201,11 +185,13 @@ int xsupgui_request_enum_ints_config(int_config_enum **retints)
 	(*retints) = ints;
 	done = REQUEST_SUCCESS;
 
-finish_enum_ints:
-	if (doc) xmlFreeDoc(doc);
-	if (retdoc) xmlFreeDoc(retdoc);
+ finish_enum_ints:
+	if (doc)
+		xmlFreeDoc(doc);
+	if (retdoc)
+		xmlFreeDoc(retdoc);
 
-	return done;  
+	return done;
 }
 
 /**
@@ -224,8 +210,8 @@ finish_enum_ints:
  *  \retval >299 on error (retints will contain nothing interesting)
  *  \retval REQUEST_SUCCESS on success (retints will be populated, with a NULL set at the end.)
  *  \retval REQUEST_TIMEOUT on timeout (retints will contain nothing interesting)
- **/ 
-int xsupgui_request_enum_ssids(char *device, ssid_info_enum **ssids)
+ **/
+int xsupgui_request_enum_ssids(char *device, ssid_info_enum ** ssids)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -236,30 +222,30 @@ int xsupgui_request_enum_ssids(char *device, ssid_info_enum **ssids)
 	ssid_info_enum *ssidarray = NULL;
 	char *temp = NULL;
 
-	if ((device == NULL) || (ssids == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
+	if ((device == NULL) || (ssids == NULL))
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*ssids) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto finish_enum_ssids;
 	}
 
-	n = xmlNewChild(n, NULL, (xmlChar *)"Enum_Known_SSIDs", NULL);
-	if (n == NULL)
-	{
+	n = xmlNewChild(n, NULL, (xmlChar *) "Enum_Known_SSIDs", NULL);
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_enum_ssids;
 	}
 
 	xsupgui_xml_common_convert_amp(device, &temp);
-	if (xmlNewChild(n, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(n, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
 		goto finish_enum_ssids;
@@ -267,97 +253,83 @@ int xsupgui_request_enum_ssids(char *device, ssid_info_enum **ssids)
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_enum_ssids;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_enum_ssids;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto finish_enum_ssids;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = xsupgui_request_find_node(n->children, "Known_SSID_List");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE;
 		goto finish_enum_ssids;
 	}
 
 	t = xsupgui_request_find_node(n->children, "SSIDs_Count");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_ssids;
 	}
 
 	content = xmlNodeGetContent(t);
-	if (content == NULL)
-	{
+	if (content == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_ssids;
 	}
-
 #ifdef REQUEST_DEBUG
 	printf("%s SSID(s) found!\n", content);
 #endif
-	if (content != NULL)
-	{
+	if (content != NULL) {
 		numssids = atoi((char *)content);
 
-		if (content != NULL) free(content);
-	}
-	else
-	{
+		if (content != NULL)
+			free(content);
+	} else {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_ssids;
 	}
 
 	// Allocate memory for our return structure.
-	ssidarray = malloc(sizeof(ssid_info_enum)*(numssids+1));
-	if (ssidarray == NULL) 
-	{
+	ssidarray = malloc(sizeof(ssid_info_enum) * (numssids + 1));
+	if (ssidarray == NULL) {
 #ifdef REQUEST_DEBUG
 		printf("Couldn't allocate memory to return SSID data!\n");
 #endif
 		done = IPC_ERROR_CANT_ALLOCATE_MEMORY;
 		goto finish_enum_ssids;
 	}
-
 	// Clear the memory.
-	memset(ssidarray, 0x00, (sizeof(ssid_info_enum)*(numssids+1)));
+	memset(ssidarray, 0x00, (sizeof(ssid_info_enum) * (numssids + 1)));
 
 	n = n->children;
-	for (i=0; i <numssids; i++)
-	{
+	for (i = 0; i < numssids; i++) {
 		n = xsupgui_request_find_node(n, "SSID");
-		if (n == NULL) 
-		{
-			if (ssidarray != NULL) free(ssidarray);
+		if (n == NULL) {
+			if (ssidarray != NULL)
+				free(ssidarray);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_ssids;
 		}
 
 		t = xsupgui_request_find_node(n->children, "SSID_Name");
-		if (t == NULL) 
-		{
-			if (ssidarray != NULL) free(ssidarray);
+		if (t == NULL) {
+			if (ssidarray != NULL)
+				free(ssidarray);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_ssids;
 		}
@@ -365,9 +337,9 @@ int xsupgui_request_enum_ssids(char *device, ssid_info_enum **ssids)
 		ssidarray[i].ssidname = (char *)xmlNodeGetContent(t);
 
 		t = xsupgui_request_find_node(n->children, "SSID_Abilities");
-		if (t == NULL)
-		{
-			if (ssidarray != NULL) free(ssidarray);
+		if (t == NULL) {
+			if (ssidarray != NULL)
+				free(ssidarray);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_ssids;
 		}
@@ -377,9 +349,9 @@ int xsupgui_request_enum_ssids(char *device, ssid_info_enum **ssids)
 		xmlFree(content);
 
 		t = xsupgui_request_find_node(n->children, "Signal_Strength");
-		if (t == NULL)
-		{
-			if (ssidarray != NULL) free(ssidarray);
+		if (t == NULL) {
+			if (ssidarray != NULL)
+				free(ssidarray);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish_enum_ssids;
 		}
@@ -394,11 +366,13 @@ int xsupgui_request_enum_ssids(char *device, ssid_info_enum **ssids)
 	(*ssids) = ssidarray;
 	done = REQUEST_SUCCESS;
 
-finish_enum_ssids:
-	if (doc) xmlFreeDoc(doc);
-	if (retdoc) xmlFreeDoc(retdoc);
+ finish_enum_ssids:
+	if (doc)
+		xmlFreeDoc(doc);
+	if (retdoc)
+		xmlFreeDoc(retdoc);
 
-	return done;  
+	return done;
 }
 
 /**
@@ -410,17 +384,16 @@ finish_enum_ssids:
  * \retval REQUEST_SUCCESS on success
  * \retval REQUEST_FAILURE on failure
  **/
-int xsupgui_request_free_ssid_enum(ssid_info_enum **ssids)
+int xsupgui_request_free_ssid_enum(ssid_info_enum ** ssids)
 {
 	int i = 0;
 	ssid_info_enum *ssid;
 
 	ssid = (*ssids);
 
-  if (!ssid)
-    return REQUEST_SUCCESS;
-	while (ssid[i].ssidname != NULL)
-	{
+	if (!ssid)
+		return REQUEST_SUCCESS;
+	while (ssid[i].ssidname != NULL) {
 		free(ssid[i].ssidname);
 
 		i++;
@@ -465,28 +438,28 @@ int xsupgui_request_wireless_scan(char *devname, uint8_t passive)
 	int err = 0;
 	char *temp = NULL;
 
-	if (devname == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (devname == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto finish_wireless_scan;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Wireless_Scan", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Wireless_Scan", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_wireless_scan;
 	}
 
 	xsupgui_xml_common_convert_amp(devname, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Interface", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_INT_NODE;
 		free(temp);
 		goto finish_wireless_scan;
@@ -494,30 +467,27 @@ int xsupgui_request_wireless_scan(char *devname, uint8_t passive)
 	free(temp);
 
 	sprintf((char *)&tempstatic, "%d", passive);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Passive", (xmlChar *)tempstatic) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Passive", (xmlChar *) tempstatic)
+	    == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish_wireless_scan;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish_wireless_scan;
 	}
-
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish_wireless_scan;
 	}
 
 	done = xsupgui_request_is_ack(retdoc);
 
-finish_wireless_scan:
+ finish_wireless_scan:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -542,71 +512,64 @@ int xsupgui_request_version_string(char **verstr)
 	int done = REQUEST_SUCCESS;
 	int err = 0;
 
-	if (verstr == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (verstr == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*verstr) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto finish;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Get_Version_String", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Get_Version_String", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto finish;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = xsupgui_request_find_node(n->children, "Version_String");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESPONSE;
 		goto finish;
 	}
 
 	(*verstr) = (char *)xmlNodeGetContent(n);
 
-	if (((*verstr) == NULL) || (strlen((*verstr)) == 0))
-	{
+	if (((*verstr) == NULL) || (strlen((*verstr)) == 0)) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 	}
 
 	done = REQUEST_SUCCESS;
 
-finish:
+ finish:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -623,7 +586,7 @@ finish:
  * \retval REQUEST_TIMEOUT the request timed out
  * \retval REQUEST_SUCCESS the request succeeded
  **/
-int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
+int xsupgui_request_enum_root_ca_certs(cert_enum ** casa)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -635,88 +598,78 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 	char *value = NULL;
 	cert_enum *cas = NULL;
 
-	if (casa == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (casa == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*casa) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto finish;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Enum_Root_CA_Certs", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Enum_Root_CA_Certs", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto finish;
 	}
 
 	n = xsupgui_request_find_node(n->children, "Root_CA_Certs_Enum");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE;
 		goto finish;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = xsupgui_request_find_node(n->children, "Number_Of_Certs");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish;
 	}
 
 	value = (char *)xmlNodeGetContent(n);
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish;
 	}
 
 	numcerts = atoi(value);
 
-	cas = (cert_enum *)Malloc((sizeof(cert_enum) * (numcerts+1)));
-	if (cas == NULL)
-	{
+	cas = (cert_enum *) Malloc((sizeof(cert_enum) * (numcerts + 1)));
+	if (cas == NULL) {
 		done = IPC_ERROR_CANT_ALLOCATE_MEMORY;
 		goto finish;
 	}
 
 	n = xsupgui_request_find_node(n, "Certificates");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		free(cas);
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish;
@@ -724,11 +677,9 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 	n = n->children;
 
-	for (i = 0; i < numcerts; i++)
-	{
+	for (i = 0; i < numcerts; i++) {
 		t = xsupgui_request_find_node(n, "Certificate");
-		if (t == NULL)
-		{
+		if (t == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -737,8 +688,7 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 		t = t->children;
 
 		b = xsupgui_request_find_node(t, "Store_Type");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -746,18 +696,14 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
-			cas[i].storetype = NULL;   // Which shouldn't EVER happen!
-		}
-		else
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
+			cas[i].storetype = NULL;	// Which shouldn't EVER happen!
+		} else {
 			cas[i].storetype = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Name");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -765,18 +711,14 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cas[i].certname = NULL;
-		}
-		else
-		{
+		} else {
 			cas[i].certname = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Friendly_Name");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -784,18 +726,14 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cas[i].friendlyname = NULL;
-		}
-		else
-		{
+		} else {
 			cas[i].friendlyname = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Issuer");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -803,18 +741,14 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cas[i].issuer = NULL;
-		}
-		else
-		{
+		} else {
 			cas[i].issuer = value;
 		}
 
 		b = xsupgui_request_find_node(t, "CommonName");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -822,18 +756,14 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cas[i].commonname = NULL;
-		}
-		else
-		{
+		} else {
 			cas[i].commonname = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Location");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -841,18 +771,14 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cas[i].location = NULL;
-		}
-		else
-		{
+		} else {
 			cas[i].location = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Month");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -860,19 +786,15 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cas[i].month = 0;
-		}
-		else
-		{
+		} else {
 			cas[i].month = atoi(value);
 		}
 		xmlFree(value);
 
 		b = xsupgui_request_find_node(t, "Day");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -880,19 +802,15 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cas[i].day = 0;
-		}
-		else
-		{
+		} else {
 			cas[i].day = atoi(value);
 		}
 		xmlFree(value);
 
 		b = xsupgui_request_find_node(t, "Year");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cas);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -900,12 +818,9 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cas[i].year = 0;
-		}
-		else
-		{
+		} else {
 			cas[i].year = atoi(value);
 		}
 		xmlFree(value);
@@ -915,7 +830,7 @@ int xsupgui_request_enum_root_ca_certs(cert_enum **casa)
 
 	(*casa) = cas;
 
-finish:
+ finish:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -932,7 +847,7 @@ finish:
  * \retval REQUEST_TIMEOUT the request timed out
  * \retval REQUEST_SUCCESS the request succeeded
  **/
-int xsupgui_request_enum_user_certs(cert_enum **certs)
+int xsupgui_request_enum_user_certs(cert_enum ** certs)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -944,88 +859,78 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 	char *value = NULL;
 	cert_enum *cert = NULL;
 
-	if (certs == NULL) return IPC_ERROR_INVALID_PARAMETERS;
+	if (certs == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	(*certs) = NULL;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto finish;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Enum_User_Certs", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Enum_User_Certs", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto finish;
 	}
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto finish;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto finish;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto finish;
 	}
 
 	n = xsupgui_request_find_node(n->children, "User_Certs_Enum");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE;
 		goto finish;
 	}
-
 	// If we get here, then we know that the document passed the
 	// validation tests imposed.  So, we need to see if we got the result 
 	// we wanted.
 	n = xsupgui_request_find_node(n->children, "Number_Of_Certs");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish;
 	}
 
 	value = (char *)xmlNodeGetContent(n);
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish;
 	}
 
 	numcerts = atoi(value);
 
-	cert = (cert_enum *)Malloc((sizeof(cert_enum) * (numcerts+1)));
-	if (cert == NULL)
-	{
+	cert = (cert_enum *) Malloc((sizeof(cert_enum) * (numcerts + 1)));
+	if (cert == NULL) {
 		done = IPC_ERROR_CANT_ALLOCATE_MEMORY;
 		goto finish;
 	}
 
 	n = xsupgui_request_find_node(n, "Certificates");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		free(cert);
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish;
@@ -1033,11 +938,9 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 	n = n->children;
 
-	for (i = 0; i < numcerts; i++)
-	{
+	for (i = 0; i < numcerts; i++) {
 		t = xsupgui_request_find_node(n, "Certificate");
-		if (t == NULL)
-		{
+		if (t == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1046,8 +949,7 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 		t = t->children;
 
 		b = xsupgui_request_find_node(t, "Store_Type");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1055,18 +957,14 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
-			cert[i].storetype = NULL;   // Which shouldn't EVER happen!
-		}
-		else
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
+			cert[i].storetype = NULL;	// Which shouldn't EVER happen!
+		} else {
 			cert[i].storetype = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Name");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1074,18 +972,14 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cert[i].certname = NULL;
-		}
-		else
-		{
+		} else {
 			cert[i].certname = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Friendly_Name");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1093,18 +987,14 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cert[i].friendlyname = NULL;
-		}
-		else
-		{
+		} else {
 			cert[i].friendlyname = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Issuer");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1112,18 +1002,14 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cert[i].issuer = NULL;
-		}
-		else
-		{
+		} else {
 			cert[i].issuer = value;
 		}
 
 		b = xsupgui_request_find_node(t, "CommonName");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1131,18 +1017,14 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cert[i].commonname = NULL;
-		}
-		else
-		{
+		} else {
 			cert[i].commonname = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Location");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1150,18 +1032,14 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cert[i].location = NULL;
-		}
-		else
-		{
+		} else {
 			cert[i].location = value;
 		}
 
 		b = xsupgui_request_find_node(t, "Month");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1169,19 +1047,15 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cert[i].month = 0;
-		}
-		else
-		{
+		} else {
 			cert[i].month = atoi(value);
 		}
 		xmlFree(value);
 
 		b = xsupgui_request_find_node(t, "Day");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1189,19 +1063,15 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cert[i].day = 0;
-		}
-		else
-		{
+		} else {
 			cert[i].day = atoi(value);
 		}
 		xmlFree(value);
 
 		b = xsupgui_request_find_node(t, "Year");
-		if (b == NULL)
-		{
+		if (b == NULL) {
 			free(cert);
 			done = IPC_ERROR_BAD_RESPONSE_DATA;
 			goto finish;
@@ -1209,12 +1079,9 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 		value = (char *)xmlNodeGetContent(b);
 
-		if ((value == NULL) || (strlen(value) == 0))
-		{
+		if ((value == NULL) || (strlen(value) == 0)) {
 			cert[i].year = 0;
-		}
-		else
-		{
+		} else {
 			cert[i].year = atoi(value);
 		}
 		xmlFree(value);
@@ -1224,7 +1091,7 @@ int xsupgui_request_enum_user_certs(cert_enum **certs)
 
 	(*certs) = cert;
 
-finish:
+ finish:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
@@ -1237,18 +1104,19 @@ finish:
  * @param[in] numcas   The number of CAs that are represented in the enumeration.
  * @param[in] cas   The array of CA names.
  **/
-void xsupgui_request_free_cert_enum(cert_enum **cas)
+void xsupgui_request_free_cert_enum(cert_enum ** cas)
 {
 	cert_enum *casa = NULL;
 	int i = 0;
 
 	casa = (*cas);
 
-	if (casa == NULL) return;
+	if (casa == NULL)
+		return;
 
-	while (casa[i].certname != NULL)
-	{
-		if (casa[i].certname != NULL) free(casa[i].certname);
+	while (casa[i].certname != NULL) {
+		if (casa[i].certname != NULL)
+			free(casa[i].certname);
 		i++;
 	}
 
@@ -1261,18 +1129,24 @@ void xsupgui_request_free_cert_enum(cert_enum **cas)
  *
  * @param[in] cinfo   A pointer to the structure that we want to free the members of.
  **/
-void xsupgui_request_free_cert_info(cert_info **incinfo)
+void xsupgui_request_free_cert_info(cert_info ** incinfo)
 {
 	cert_info *cinfo = NULL;
 
 	cinfo = (*incinfo);
 
-	if (cinfo->C) free(cinfo->C);
-	if (cinfo->CN) free(cinfo->CN);
-	if (cinfo->O) free(cinfo->O);
-	if (cinfo->L) free(cinfo->L);
-	if (cinfo->OU) free(cinfo->OU);
-	if (cinfo->S) free(cinfo->S);
+	if (cinfo->C)
+		free(cinfo->C);
+	if (cinfo->CN)
+		free(cinfo->CN);
+	if (cinfo->O)
+		free(cinfo->O);
+	if (cinfo->L)
+		free(cinfo->L);
+	if (cinfo->OU)
+		free(cinfo->OU);
+	if (cinfo->S)
+		free(cinfo->S);
 
 	free((*incinfo));
 }
@@ -1292,7 +1166,8 @@ void xsupgui_request_free_cert_info(cert_info **incinfo)
  * \retval REQUEST_TIMEOUT the request timed out
  * \retval REQUEST_SUCCESS the request succeeded
  **/
-int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_info **outcinfo)
+int xsupgui_request_ca_certificate_info(char *storetype, char *location,
+					cert_info ** outcinfo)
 {
 	xmlDocPtr doc = NULL;
 	xmlDocPtr retdoc = NULL;
@@ -1304,28 +1179,28 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 
 	(*outcinfo) = NULL;
 
-	if ((storetype == NULL) || (location == NULL)) return IPC_ERROR_INVALID_PARAMETERS;
+	if ((storetype == NULL) || (location == NULL))
+		return IPC_ERROR_INVALID_PARAMETERS;
 
 	doc = xsupgui_xml_common_build_msg();
-	if (doc == NULL) return IPC_ERROR_CANT_CREATE_REQ_HDR;
+	if (doc == NULL)
+		return IPC_ERROR_CANT_CREATE_REQ_HDR;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_REQ_ROOT_NODE;
 		goto done;
 	}
 
-	t = xmlNewChild(n, NULL, (xmlChar *)"Get_Certificate_Info", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(n, NULL, (xmlChar *) "Get_Certificate_Info", NULL);
+	if (t == NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		goto done;
 	}
 
 	xsupgui_xml_common_convert_amp(storetype, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Store_Type", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Store_Type", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
 		goto done;
@@ -1333,8 +1208,8 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 	free(temp);
 
 	xsupgui_xml_common_convert_amp(location, &temp);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Location", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Location", (xmlChar *) temp) ==
+	    NULL) {
 		done = IPC_ERROR_CANT_CREATE_REQUEST;
 		free(temp);
 		goto done;
@@ -1342,39 +1217,33 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 	free(temp);
 
 	err = xsupgui_request_send(doc, &retdoc);
-	if (err != REQUEST_SUCCESS)
-	{
+	if (err != REQUEST_SUCCESS) {
 		done = err;
 		goto done;
 	}
-
 	// Otherwise, parse it and see if we got what we wanted.
 
 	// Check if we got errors.
 	err = xsupgui_request_check_exceptions(retdoc);
-	if (err != 0) 
-	{
+	if (err != 0) {
 		done = err;
 		goto done;
 	}
 
 	n = xmlDocGetRootElement(retdoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_CANT_FIND_RESP_ROOT_NODE;
 		goto done;
 	}
 
 	n = xsupgui_request_find_node(n->children, "Certificate_Info");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE;
 		goto done;
 	}
 
 	n = xsupgui_request_find_node(n->children, "Certificate");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -1382,15 +1251,13 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 	n = n->children;
 
 	n = xsupgui_request_find_node(n, "O");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
 
-	cinfo = (cert_info *)malloc(sizeof(cert_info));
-	if (cinfo == NULL)
-	{
+	cinfo = (cert_info *) malloc(sizeof(cert_info));
+	if (cinfo == NULL) {
 		done = IPC_ERROR_MALLOC;
 		goto done;
 	}
@@ -1398,8 +1265,7 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 	cinfo->O = (char *)xmlNodeGetContent(n);
 
 	n = xsupgui_request_find_node(n, "OU");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -1407,8 +1273,7 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 	cinfo->OU = (char *)xmlNodeGetContent(n);
 
 	n = xsupgui_request_find_node(n, "S");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -1416,8 +1281,7 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 	cinfo->S = (char *)xmlNodeGetContent(n);
 
 	n = xsupgui_request_find_node(n, "C");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -1425,8 +1289,7 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 	cinfo->C = (char *)xmlNodeGetContent(n);
 
 	n = xsupgui_request_find_node(n, "CN");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -1434,8 +1297,7 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 	cinfo->CN = (char *)xmlNodeGetContent(n);
 
 	n = xsupgui_request_find_node(n, "L");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto done;
 	}
@@ -1444,12 +1306,9 @@ int xsupgui_request_ca_certificate_info(char *storetype, char *location, cert_in
 
 	(*outcinfo) = cinfo;
 
-done:
+ done:
 	xmlFreeDoc(doc);
 	xmlFreeDoc(retdoc);
 
 	return done;
 }
-
-
-

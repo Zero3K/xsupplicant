@@ -17,4 +17,4 @@ extern parser user_connections[];
 void *xsupconfig_parse_connections(void **, uint8_t, xmlNodePtr);
 void *xsupconfig_parse_user_connections(void **, uint8_t, xmlNodePtr);
 
-#endif //__XSUPCONFIG_PARSE_CONNECTIONS_H__
+#endif				//__XSUPCONFIG_PARSE_CONNECTIONS_H__

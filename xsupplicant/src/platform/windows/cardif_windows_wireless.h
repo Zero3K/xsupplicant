@@ -32,15 +32,16 @@ int cardif_windows_wireless_scan(context *, char);
 void cardif_windows_wireless_associate(context *);
 void cardif_windows_wireless_use_temp_keys(char);
 int cardif_windows_wireless_enc_open(context *);
-int cardif_windows_wireless_enc_disable(context *thisint);
+int cardif_windows_wireless_enc_disable(context * thisint);
 void cardif_windows_wireless_set_zero_keys(context *);
 void cardif_windows_wireless_zero_keys(context *);
 int cardif_windows_wireless_wpa_state(context *, char);
-int cardif_windows_wireless_set_wpa_ie(context *, unsigned char *, unsigned int);
+int cardif_windows_wireless_set_wpa_ie(context *, unsigned char *,
+				       unsigned int);
 int cardif_windows_wireless_set_iwauth(context *, int, uint32_t, char *);
-int cardif_windows_wireless_set_key_ext(context *, int, 
-				  unsigned char *, int, int, char *, int,
-				  char *, int);
+int cardif_windows_wireless_set_key_ext(context *, int,
+					unsigned char *, int, int, char *, int,
+					char *, int);
 
 void cardif_windows_wireless_enc_capabilities(context *);
 uint8_t cardif_windows_wireless_get_num_pmkids(context *);

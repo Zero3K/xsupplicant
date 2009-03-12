@@ -25,150 +25,147 @@
 #include "xsupconfig_parse_eap_mschapv2.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_mschapv2(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2(void **attr, uint8_t config_type,
+				    xmlNodePtr node)
 {
-  struct config_eap_method *meth = NULL;
+	struct config_eap_method *meth = NULL;
 
-  meth = (*attr);
+	meth = (*attr);
 
-  if (meth == NULL)
-  {
-	meth = xsupconfig_alloc_method(meth, "EAP-MSCHAPv2");
-	(*attr) = meth;
-  }
-  else
-  {
-	  meth = xsupconfig_alloc_method(meth, "EAP-MSCHAPv2");
-  }
+	if (meth == NULL) {
+		meth = xsupconfig_alloc_method(meth, "EAP-MSCHAPv2");
+		(*attr) = meth;
+	} else {
+		meth = xsupconfig_alloc_method(meth, "EAP-MSCHAPv2");
+	}
 
-  if (meth == NULL) return NULL;
+	if (meth == NULL)
+		return NULL;
 
 #ifdef PARSE_DEBUG
-  printf("Parsing method 'EAP-MSCHAPv2'.\n");
+	printf("Parsing method 'EAP-MSCHAPv2'.\n");
 #endif
 
-  meth->method_num = EAP_TYPE_MSCHAPV2;
-  meth->method_data = malloc(sizeof(struct config_eap_mschapv2));
-  if (meth->method_data == NULL)
-    {
-      printf("Couldn't allocate memory to store EAP-MSCHAPv2 data in network "
-	     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	meth->method_num = EAP_TYPE_MSCHAPV2;
+	meth->method_data = malloc(sizeof(struct config_eap_mschapv2));
+	if (meth->method_data == NULL) {
+		printf
+		    ("Couldn't allocate memory to store EAP-MSCHAPv2 data in network "
+		     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  memset(meth->method_data, 0x00, sizeof(struct config_eap_mschapv2));
-  
-  return meth->method_data;
+	memset(meth->method_data, 0x00, sizeof(struct config_eap_mschapv2));
+
+	return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_mschapv2_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_password(void **attr, uint8_t config_type,
+					     xmlNodePtr node)
 {
-  struct config_eap_mschapv2 *mscv2 = NULL;
-  char *value = NULL;
+	struct config_eap_mschapv2 *mscv2 = NULL;
+	char *value = NULL;
 
-  mscv2 = (*attr);
+	mscv2 = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Password for EAP-MSCHAPv2 is '%s'!\n", value);
+	printf("Password for EAP-MSCHAPv2 is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		mscv2->password = NULL;
-	}
-	else
-	{
+	} else {
 		mscv2->password = _strdup(value);
 	}
 
 	xmlFree(value);
 
-  return mscv2;
+	return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_enc_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_enc_password(void **attr,
+						 uint8_t config_type,
+						 xmlNodePtr node)
 {
-  struct config_eap_mschapv2 *mscv2 = NULL;
-  char *value = NULL;
-  uint16_t size = 0;
+	struct config_eap_mschapv2 *mscv2 = NULL;
+	char *value = NULL;
+	uint16_t size = 0;
 
+	mscv2 = (*attr);
 
-  mscv2 = (*attr);
-
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Password for EAP-MSCHAPv2 is '%s'!\n", value);
+	printf("Password for EAP-MSCHAPv2 is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		return mscv2;
 	}
 
-  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&mscv2->password, &size) != 0)
-  {
-	  xmlFree(value);
-	  mscv2->password = NULL;
-	  return mscv2;
-  }
+	if (pwcrypt_decrypt
+	    (config_type, (uint8_t *) value, strlen(value),
+	     (uint8_t **) & mscv2->password, &size) != 0) {
+		xmlFree(value);
+		mscv2->password = NULL;
+		return mscv2;
+	}
 
-  if ((mscv2->password != NULL) && (strlen(mscv2->password) == 0))
-  {
-	  FREE(mscv2->password);
-  }
+	if ((mscv2->password != NULL) && (strlen(mscv2->password) == 0)) {
+		FREE(mscv2->password);
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return mscv2;
+	return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_machine_auth(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_machine_auth(void **attr,
+						 uint8_t config_type,
+						 xmlNodePtr node)
 {
 	struct config_eap_mschapv2 *mscv2 = NULL;
 	char *value = NULL;
 	uint8_t result = 0;
 
-	if (!(config_type & OPTION_GLOBAL_CONFIG_ONLY))
-	{
-		printf("Attempted to use a global config option in a user config!  Ignoring!\n");
+	if (!(config_type & OPTION_GLOBAL_CONFIG_ONLY)) {
+		printf
+		    ("Attempted to use a global config option in a user config!  Ignoring!\n");
 		return (*attr);
 	}
 
 	mscv2 = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Use machine authentication : %s\n", value);
+	printf("Use machine authentication : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
- 
-    if (result == 1)
-    {
-      SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
-    }
-  else
-    {
-		xsupconfig_common_log("Unknown value for <Machine_Authentication_Mode> at line %ld.  Using default of NO.",
-			xsupconfig_parse_get_line_num());
-      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
+	} else if (result == 0) {
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
+	} else {
+		xsupconfig_common_log
+		    ("Unknown value for <Machine_Authentication_Mode> at line %ld.  Using default of NO.",
+		     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH);
+	}
 
-  return mscv2;
+	xmlFree(value);
+
+	return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_logon_creds(void **attr,
+						uint8_t config_type,
+						xmlNodePtr node)
 {
 	struct config_eap_mschapv2 *mscv2 = NULL;
 	char *value = NULL;
@@ -176,141 +173,147 @@ void *xsupconfig_parse_eap_mschapv2_logon_creds(void **attr, uint8_t config_type
 
 	mscv2 = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Use logon creds : %s\n", value);
+	printf("Use logon creds : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
- 
-    if (result == 1)
-    {
-      SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
-    }
-  else
-    {
-		xsupconfig_common_log("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
-			xsupconfig_parse_get_line_num());
-      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
+	} else if (result == 0) {
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
+	} else {
+		xsupconfig_common_log
+		    ("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
+		     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS);
+	}
 
-  return mscv2;
+	xmlFree(value);
+
+	return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_nt_pwd_hash(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_nt_pwd_hash(void **attr,
+						uint8_t config_type,
+						xmlNodePtr node)
 {
-  struct config_eap_mschapv2 *mscv2 = NULL;
-  char *value = NULL;
+	struct config_eap_mschapv2 *mscv2 = NULL;
+	char *value = NULL;
 
-  mscv2 = (*attr);
+	mscv2 = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("NT Password Hash for EAP-MSCHAPv2 is '%s'!\n", value);
+	printf("NT Password Hash for EAP-MSCHAPv2 is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		mscv2->nthash = NULL;
-	}
-	else
-	{
+	} else {
 		mscv2->nthash = _strdup(value);
 	}
 
 	xmlFree(value);
 
-  return mscv2;
+	return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_ias_quirk(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_ias_quirk(void **attr, uint8_t config_type,
+					      xmlNodePtr node)
 {
-  char *value = NULL;
-  struct config_eap_mschapv2 *mscv2 = NULL;
-  uint8_t result = 0;
+	char *value = NULL;
+	struct config_eap_mschapv2 *mscv2 = NULL;
+	uint8_t result = 0;
 
-  mscv2 = (struct config_eap_mschapv2 *)(*attr);
+	mscv2 = (struct config_eap_mschapv2 *)(*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("IAS Quirk : %s\n", value);
+	printf("IAS Quirk : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
- 
-    if (result == 1)
-    {
-      SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
-    }
-  else
-    {
-		xsupconfig_common_log("Unknown value for <IAS_Quirk> at line %ld.  Using default of NO.",
-			xsupconfig_parse_get_line_num());
-      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
+	} else if (result == 0) {
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
+	} else {
+		xsupconfig_common_log
+		    ("Unknown value for <IAS_Quirk> at line %ld.  Using default of NO.",
+		     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_IAS_QUIRK);
+	}
 
-  return mscv2;
+	xmlFree(value);
+
+	return mscv2;
 }
 
-void *xsupconfig_parse_eap_mschapv2_volatile(void **attr, unsigned char config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_mschapv2_volatile(void **attr,
+					     unsigned char config_type,
+					     xmlNodePtr node)
 {
-  char *value = NULL;
-  struct config_eap_mschapv2 *mscv2 = NULL;
-  uint8_t result = 0;
+	char *value = NULL;
+	struct config_eap_mschapv2 *mscv2 = NULL;
+	uint8_t result = 0;
 
-  mscv2 = (struct config_eap_mschapv2 *)(*attr);
+	mscv2 = (struct config_eap_mschapv2 *)(*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Volatile : %s\n", value);
+	printf("Volatile : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
- 
-    if (result == 1)
-    {
-      SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
-    }
-  else
-    {
-		xsupconfig_common_log("Unknown value for Volatile at line %ld.  Using default of NO.",
-			xsupconfig_parse_get_line_num());
-      UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		SET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
+	} else if (result == 0) {
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
+	} else {
+		xsupconfig_common_log
+		    ("Unknown value for Volatile at line %ld.  Using default of NO.",
+		     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(mscv2->flags, FLAGS_EAP_MSCHAPV2_VOLATILE);
+	}
 
-  return mscv2;
+	xmlFree(value);
+
+	return mscv2;
 }
 
 parser eap_mschapv2[] = {
-  {"Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_password},
-  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_enc_password},
-  {"NT_Password_Hash", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_nt_pwd_hash},
-  {"Machine_Authentication_Mode", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_eap_mschapv2_machine_auth},
-  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_logon_creds},
-  {"IAS_Quirk", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_ias_quirk},
-  {"Volatile", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_mschapv2_volatile},
-  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
+	{"Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_mschapv2_password}
+	,
+	{"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_mschapv2_enc_password}
+	,
+	{"NT_Password_Hash", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_mschapv2_nt_pwd_hash}
+	,
+	{"Machine_Authentication_Mode", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY,
+	 &xsupconfig_parse_eap_mschapv2_machine_auth}
+	,
+	{"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_mschapv2_logon_creds}
+	,
+	{"IAS_Quirk", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_mschapv2_ias_quirk}
+	,
+	{"Volatile", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_mschapv2_volatile}
+	,
+	{"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing}
+	,
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

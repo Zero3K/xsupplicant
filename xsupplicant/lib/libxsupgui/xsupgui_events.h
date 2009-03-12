@@ -32,11 +32,12 @@ int xsupgui_events_get_scan_complete_interface(char **);
 int xsupgui_events_get_passwd_challenge(char **, char **, char **, char **);
 int xsupgui_events_get_ui_event(int *, char **, char **);
 int xsupgui_events_get_tnc_ui_event(uint32_t *, uint32_t *);
-int xsupgui_events_get_tnc_ui_request_event(uint32_t *, uint32_t *, uint32_t *, uint32_t *);
-int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *, uint32_t *, uint32_t *, uint32_t *, tnc_msg_batch **);
+int xsupgui_events_get_tnc_ui_request_event(uint32_t *, uint32_t *, uint32_t *,
+					    uint32_t *);
+int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *, uint32_t *,
+						  uint32_t *, uint32_t *,
+						  tnc_msg_batch **);
 void xsupgui_events_free_tnc_msg_batch_data(tnc_msg_batch **);
 int xsupgui_events_get_error(int *, char **);
 
-#endif // __XSUPGUI_EVENTS_H__
-
-
+#endif				// __XSUPGUI_EVENTS_H__

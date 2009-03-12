@@ -25,11 +25,11 @@ int xsupgui_ud_selectable_socket();
 
 long int xsupgui_ud_process(int *evttype);
 
-int xsupgui_ud_send(unsigned char *tosend, int sendsize, unsigned char **result, int *resultsize);
+int xsupgui_ud_send(unsigned char *tosend, int sendsize, unsigned char **result,
+		    int *resultsize);
 int xsupgui_ud_send_to_event(unsigned char *buffer, int bufsize);
 
 xmlDocPtr xsupgui_ud_get_event_doc();
 void xsupgui_ud_free_event_doc();
 
-#endif  // __XSUPGUI_UD_H__
-
+#endif				// __XSUPGUI_UD_H__

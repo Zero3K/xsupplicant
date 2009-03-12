@@ -20,7 +20,6 @@
 #define PEAP_VERSION1    1
 #define HIGHEST_PEAP_SUPPORTED   PEAP_VERSION1
 
-
 #define PEAP_SESSION_KEY_CONST         "client EAP encryption"
 #define PEAP_SESSION_KEY_CONST_SIZE    21
 
@@ -36,7 +35,7 @@ uint8_t *eappeap_buildResp(eap_type_data *);
 uint8_t eappeap_isKeyAvailable(eap_type_data *);
 uint8_t *eappeap_getKey(eap_type_data *);
 void eappeap_deinit(eap_type_data *);
-void eappeap_get_machineauth_name(context *ctx);
+void eappeap_get_machineauth_name(context * ctx);
 int eappeap_creds_required(void *);
 char *eappeap_get_username(void *);
 #endif

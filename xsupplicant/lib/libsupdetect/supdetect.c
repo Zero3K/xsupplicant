@@ -43,23 +43,28 @@
 
 #include "supdetect.h"
 
-typedef void (*found_callback)(char *name, int *blocktype, int *severity);
+typedef void (*found_callback) (char *name, int *blocktype, int *severity);
 
 #ifdef WINDOWS
 sup_fingerprints supsearch[] = {
-	{CHECK_PROCESS, "WPA Supplicant", "wpa_supplicant.exe", NULL, OTHER_SUPPLICANT, BLOCKER},
-	{CHECK_SERVICE, "Atheros Configuration Service", "Atheros Configuration Service", NULL, (WIRELESS_MANAGER | OTHER_SUPPLICANT), BLOCKER},
-	{CHECK_PROCESS, "NetGear WG111v2 Manager", "WG111v2.exe", NULL, WIRELESS_MANAGER, BLOCKER},
-	{CHECK_PROCESS, "NetGear WG511 Manager", "WG511WLU.exe", NULL, WIRELESS_MANAGER, BLOCKER},
+	{CHECK_PROCESS, "WPA Supplicant", "wpa_supplicant.exe", NULL,
+	 OTHER_SUPPLICANT, BLOCKER},
+	{CHECK_SERVICE, "Atheros Configuration Service",
+	 "Atheros Configuration Service", NULL,
+	 (WIRELESS_MANAGER | OTHER_SUPPLICANT), BLOCKER},
+	{CHECK_PROCESS, "NetGear WG111v2 Manager", "WG111v2.exe", NULL,
+	 WIRELESS_MANAGER, BLOCKER},
+	{CHECK_PROCESS, "NetGear WG511 Manager", "WG511WLU.exe", NULL,
+	 WIRELESS_MANAGER, BLOCKER},
 	{-1, NULL, NULL, NULL, -1, -1}
 };
 #elif LINUX
 sup_fingerprints supsearch[] = {
-  {-1, NULL, NULL, NULL, -1, -1}
+	{-1, NULL, NULL, NULL, -1, -1}
 };
 #elif DARWIN
 sup_fingerprints supsearch[] = {
-  {-1, NULL, NULL, NULL, -1, -1}
+	{-1, NULL, NULL, NULL, -1, -1}
 };
 #else
 #error You need to define fingerprints for this OS!
@@ -82,8 +87,7 @@ void toupper_str(char *instr)
 {
 	unsigned int i, t;
 
-	for (i = 0; i<strlen(instr); i++)
-	{
+	for (i = 0; i < strlen(instr); i++) {
 		t = toupper(instr[i]);
 		instr[i] = t;
 	}
@@ -95,47 +99,45 @@ void toupper_str(char *instr)
  *
  * @param[in] toadd   The record that matched that we want to log.
  **/
-void supdetect_add_to_ui_queue(sup_fingerprints *toadd)
+void supdetect_add_to_ui_queue(sup_fingerprints * toadd)
 {
 	char *result = NULL;
 
-	result = Malloc(strlen(toadd->product_name)+256);
-	if (result == NULL)
-	{
-		printf("Couldn't allocate memory to create error/warning for the UI!\n");
+	result = Malloc(strlen(toadd->product_name) + 256);
+	if (result == NULL) {
+		printf
+		    ("Couldn't allocate memory to create error/warning for the UI!\n");
 		return;
 	}
 
-	if (toadd->block_type && OTHER_SUPPLICANT)
-	{
-		if (toadd->severity == BLOCKER)
-		{
-			sprintf(result, "<ERROR> The supplicant '%s' was found.  This may prevent this supplicant from working properly.  Please disable the other supplicant.", toadd->product_name);
+	if (toadd->block_type && OTHER_SUPPLICANT) {
+		if (toadd->severity == BLOCKER) {
+			sprintf(result,
+				"<ERROR> The supplicant '%s' was found.  This may prevent this supplicant from working properly.  Please disable the other supplicant.",
+				toadd->product_name);
+		} else {
+			sprintf(result,
+				"<Warning> The supplicant '%s' was found.  This may have adverse effects on this supplicant.  You should consider disabling the other supplicant.",
+				toadd->product_name);
 		}
-		else
-		{
-			sprintf(result, "<Warning> The supplicant '%s' was found.  This may have adverse effects on this supplicant.  You should consider disabling the other supplicant.", toadd->product_name);
-		}
-	}
-	else
-	{
+	} else {
 		// For now, the only other option is a wireless manager.  If this changes
 		// in the future, this needs to be updated.
-		if (toadd->severity == BLOCKER)
-		{
-			sprintf(result, "<ERROR> The wireless manager '%s' was found.  This may prevent this supplicant from working properly.  Please disable the wireless manager.", toadd->product_name);
-		}
-		else
-		{
-			sprintf(result, "<Warning> The wireless manager '%s' was found.  This may have adverse effects on this supplicant.  You should consider disabling the wireless manager.", toadd->product_name);
+		if (toadd->severity == BLOCKER) {
+			sprintf(result,
+				"<ERROR> The wireless manager '%s' was found.  This may prevent this supplicant from working properly.  Please disable the wireless manager.",
+				toadd->product_name);
+		} else {
+			sprintf(result,
+				"<Warning> The wireless manager '%s' was found.  This may have adverse effects on this supplicant.  You should consider disabling the wireless manager.",
+				toadd->product_name);
 		}
 	}
 
-	if (result != NULL)
-	{
-		if (error_prequeue_add(result) != 0)
-		{
-			printf("Couldn't add error/warning message to the UI queue.\n");
+	if (result != NULL) {
+		if (error_prequeue_add(result) != 0) {
+			printf
+			    ("Couldn't add error/warning message to the UI queue.\n");
 		}
 
 		free(result);
@@ -152,7 +154,7 @@ void supdetect_add_to_ui_queue(sup_fingerprints *toadd)
  * \retval 0 if it wasn't.
  * \retval -1 on error
  **/
-int supdetect_file_exists(sup_fingerprints *search)
+int supdetect_file_exists(sup_fingerprints * search)
 {
 	int len = 0;
 	char *filename = NULL;
@@ -160,22 +162,22 @@ int supdetect_file_exists(sup_fingerprints *search)
 
 	if (search->location != NULL)
 		len = (int)strlen(search->location);
-	
+
 	if (search->product_name != NULL)
 		len += (int)strlen(search->product_name);
 
-	len += 3;  // A few bytes for padding.
+	len += 3;		// A few bytes for padding.
 
 	filename = malloc(len);
-	if (filename == NULL) return -1;
+	if (filename == NULL)
+		return -1;
 
 	memset(filename, 0x00, len);
 
 	sprintf(filename, "%s%s", search->location, search->match_string);
 
 	fp = fopen(filename, "r");
-	if (fp == NULL) 
-	{
+	if (fp == NULL) {
 		free(filename);
 		return 0;
 	}
@@ -198,50 +200,48 @@ int supdetect_check_for_other_supplicants()
 	int found = 0;
 
 #ifdef WINDOWS
-	if (windows_calls_wmi_init() != 0) return -1;
-	if (windows_calls_wmi_connect() != 0) return -1;
+	if (windows_calls_wmi_init() != 0)
+		return -1;
+	if (windows_calls_wmi_connect() != 0)
+		return -1;
 #endif
 
-	found += os_strange_checks();           // Look for anything weird with this OS.
+	found += os_strange_checks();	// Look for anything weird with this OS.
 
-	while (supsearch[i].check_type != -1)
-	{
-		switch (supsearch[i].check_type)
-		{
+	while (supsearch[i].check_type != -1) {
+		switch (supsearch[i].check_type) {
 		case CHECK_FILE:
-			if (supdetect_file_exists(&supsearch[i]) > 0)
-			{
+			if (supdetect_file_exists(&supsearch[i]) > 0) {
 				found++;
-				
+
 				supdetect_add_to_ui_queue(&supsearch[i]);
 			}
 			break;
 
 		case CHECK_PROCESS:
-			if (supdetect_check_process_list(&supsearch[i]) > 0)
-			{
+			if (supdetect_check_process_list(&supsearch[i]) > 0) {
 				found++;
 
 				supdetect_add_to_ui_queue(&supsearch[i]);
 			}
 			break;
 
-#ifdef WINDOWS         // Windows specific checks.
+#ifdef WINDOWS			// Windows specific checks.
 		case CHECK_REGISTRY:
 			break;
 
 		case CHECK_SERVICE:
-			if (supdetect_check_service_list(&supsearch[i]) > 0)
-			{
+			if (supdetect_check_service_list(&supsearch[i]) > 0) {
 				found++;
 
 				supdetect_add_to_ui_queue(&supsearch[i]);
 			}
 			break;
-#endif  // WINDOWS
+#endif				// WINDOWS
 
 		default:
-			printf("Requested check for unknown type %d!\n", supsearch[i].check_type);
+			printf("Requested check for unknown type %d!\n",
+			       supsearch[i].check_type);
 			break;
 		}
 

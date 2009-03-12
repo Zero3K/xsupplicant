@@ -22,36 +22,36 @@
 
 #ifdef WINDOWS
 struct wpa_key_packet {
-  uint8_t key_descriptor;
-  uint8_t key_information[2];
-  uint16_t key_length;
-  uint8_t key_replay_counter[8];
-  uint8_t key_nonce[32];
-  uint8_t key_iv[16];
-  uint8_t key_rsc[8];
-  uint8_t key_id[8];
-  uint8_t key_mic[16];
-  uint16_t key_material_len;
-  uint8_t keydata[0];
-  
-  // The n octets that follow is the keying material.
+	uint8_t key_descriptor;
+	uint8_t key_information[2];
+	uint16_t key_length;
+	uint8_t key_replay_counter[8];
+	uint8_t key_nonce[32];
+	uint8_t key_iv[16];
+	uint8_t key_rsc[8];
+	uint8_t key_id[8];
+	uint8_t key_mic[16];
+	uint16_t key_material_len;
+	uint8_t keydata[0];
+
+	// The n octets that follow is the keying material.
 };
 #else
 struct wpa_key_packet {
-  uint8_t key_descriptor;
-  uint8_t key_information[2];
-  uint16_t key_length;
-  uint8_t key_replay_counter[8];
-  uint8_t key_nonce[32];
-  uint8_t key_iv[16];
-  uint8_t key_rsc[8];
-  uint8_t key_id[8];
-  uint8_t key_mic[16];
-  uint16_t key_material_len;
-  uint8_t keydata[0];
+	uint8_t key_descriptor;
+	uint8_t key_information[2];
+	uint16_t key_length;
+	uint8_t key_replay_counter[8];
+	uint8_t key_nonce[32];
+	uint8_t key_iv[16];
+	uint8_t key_rsc[8];
+	uint8_t key_id[8];
+	uint8_t key_mic[16];
+	uint16_t key_material_len;
+	uint8_t keydata[0];
 
-  // The n octets that follow is the keying material.
-} __attribute__((__packed__));
+	// The n octets that follow is the keying material.
+} __attribute__ ((__packed__));
 #endif
 
 #ifdef WINDOWS

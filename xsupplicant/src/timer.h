@@ -26,18 +26,17 @@
 #define SIG_STRENGTH           9
 #define PSK_DEATH_TIMER        10
 #define PMKSA_CACHE_MGMT_TIMER 11
-#define CONN_DEATH_TIMER	   12    // A timer to track how long a connection has been dead.
+#define CONN_DEATH_TIMER	   12	// A timer to track how long a connection has been dead.
 
-struct timer_data
-{
-  struct timer_data *next;
+struct timer_data {
+	struct timer_data *next;
 
-  uint16_t seconds_left;     // How many seconds are left before this timer
-                             // expires.
-  uint16_t timer_id;         // A numeric identifier that indicates what
-                             // type of timer this is.  (From above)
-  int8_t (*timer_tick)(context *);
-  int8_t (*timer_expired)(context *);
+	uint16_t seconds_left;	// How many seconds are left before this timer
+	// expires.
+	uint16_t timer_id;	// A numeric identifier that indicates what
+	// type of timer this is.  (From above)
+	 int8_t(*timer_tick) (context *);
+	 int8_t(*timer_expired) (context *);
 };
 
 void timer_init(context *);

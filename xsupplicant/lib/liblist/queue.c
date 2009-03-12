@@ -33,7 +33,7 @@
  * \retval 0 on success
  * \retval <0 on failure
  **/
-int queue_create(queue_data **indata)
+int queue_create(queue_data ** indata)
 {
 	(*indata) = malloc(sizeof(queue_data));
 	if ((*indata) == NULL)
@@ -62,26 +62,29 @@ int queue_create(queue_data **indata)
  * \retval -3 on structure is inconsistant and shouldn't be trusted
  * \retval -4 couldn't realloc() enough data!  (i.e. Can't enqueue your new data. ;)
  **/
-int queue_enqueue(queue_data **indata, uint8_t *newdata, uint32_t newsize)
+int queue_enqueue(queue_data ** indata, uint8_t * newdata, uint32_t newsize)
 {
 	queue_data *queue = NULL;
 	void *newmem = NULL;
 
 	// First, check for consistancy in the structure.
-	if (indata == NULL) return -1;        // It NEVER should be!
+	if (indata == NULL)
+		return -1;	// It NEVER should be!
 
 	queue = (*indata);
 
-	if (queue == NULL) return -2;
+	if (queue == NULL)
+		return -2;
 
-	if ((queue->queuesize == 0) && (queue->queue != NULL)) return -3;
+	if ((queue->queuesize == 0) && (queue->queue != NULL))
+		return -3;
 
 	// We believe the structure should be solid.  So
 	newmem = realloc(queue->queue, (queue->queuesize + newsize));
-	if (newmem == NULL)   // Uh, oh..  We couldn't get enough memory!!! 
+	if (newmem == NULL)	// Uh, oh..  We couldn't get enough memory!!! 
 		return -4;
 
-	queue->queue = newmem;   // Otherwise, update our pointer.
+	queue->queue = newmem;	// Otherwise, update our pointer.
 
 	memcpy(&queue->queue[queue->queuesize], newdata, newsize);
 
@@ -107,49 +110,55 @@ int queue_enqueue(queue_data **indata, uint8_t *newdata, uint32_t newsize)
  * \retval -6 on already at the end of the queue.
  * \retval -7 on couldn't allocate memory to store resulting fragment.
  **/
-int queue_dequeue(queue_data **queuedata, uint8_t **outdata, uint32_t *size)
+int queue_dequeue(queue_data ** queuedata, uint8_t ** outdata, uint32_t * size)
 {
 	queue_data *queue = NULL;
 
 	// Sanity check our structure
-	if (queuedata == NULL) return -1;
+	if (queuedata == NULL)
+		return -1;
 
-	if ((*queuedata) == NULL) return -2;
+	if ((*queuedata) == NULL)
+		return -2;
 
-	if (outdata == NULL) return -3;
+	if (outdata == NULL)
+		return -3;
 
-	if (size == NULL) return -4;
+	if (size == NULL)
+		return -4;
 
 	queue = (*queuedata);
 
-	if (queue->cur_offset > queue->queuesize) return -5;
+	if (queue->cur_offset > queue->queuesize)
+		return -5;
 
-	if (queue->cur_offset == queue->queuesize) return -6;
+	if (queue->cur_offset == queue->queuesize)
+		return -6;
 
 	// If the caller is dumb, and asks us for nothing, give it to them. ;)
-	if ((*size) == 0)
-	{
+	if ((*size) == 0) {
 		(*outdata) = NULL;
-		if (queue->cur_offset < queue->queuesize) return 1;
+		if (queue->cur_offset < queue->queuesize)
+			return 1;
 
 		return 0;
 	}
-
 	// If the caller has asked for more data than we have, adjust the request to
 	// cover all of the data that remains.
-	if ((*size) > (queue->queuesize - queue->cur_offset))
-	{
+	if ((*size) > (queue->queuesize - queue->cur_offset)) {
 		(*size) = (queue->queuesize - queue->cur_offset);
 	}
 
 	(*outdata) = malloc((*size));
-	if ((*outdata) == NULL) return -7;
+	if ((*outdata) == NULL)
+		return -7;
 
 	memcpy((*outdata), &queue->queue[queue->cur_offset], (*size));
 
 	queue->cur_offset += (*size);
 
-	if (queue->cur_offset < queue->queuesize) return 1;
+	if (queue->cur_offset < queue->queuesize)
+		return 1;
 
 	return 0;
 }
@@ -163,20 +172,24 @@ int queue_dequeue(queue_data **queuedata, uint8_t **outdata, uint32_t *size)
  * \retval 0 on success
  * \retval <0 on error
  **/
-int queue_get_size(queue_data **queuedata, uint32_t *datasize)
+int queue_get_size(queue_data ** queuedata, uint32_t * datasize)
 {
 	queue_data *queue = NULL;
 
 	// Verify that the structure seems to be valid.
-	if (queuedata == NULL) return -1;
+	if (queuedata == NULL)
+		return -1;
 
-	if ((*queuedata) == NULL) return -2;
+	if ((*queuedata) == NULL)
+		return -2;
 
-	if (datasize == NULL) return -3;
+	if (datasize == NULL)
+		return -3;
 
 	queue = (*queuedata);
 
-	if ((queue->queuesize > 0) && (queue->queue == NULL)) return -4;
+	if ((queue->queuesize > 0) && (queue->queue == NULL))
+		return -4;
 
 	// Otherwise, we can be pretty confident that our queue depth value is correct.
 	(*datasize) = queue->queuesize;
@@ -192,18 +205,19 @@ int queue_get_size(queue_data **queuedata, uint32_t *datasize)
  * \retval 0 on success
  * \retval <0 on error
  **/
-int queue_destroy(queue_data **queuedata)
+int queue_destroy(queue_data ** queuedata)
 {
 	queue_data *queue = NULL;
 
-	if (queuedata == NULL) return -1;
+	if (queuedata == NULL)
+		return -1;
 
-	if ((*queuedata) == NULL) return -2;
-	
+	if ((*queuedata) == NULL)
+		return -2;
+
 	queue = (*queuedata);
 
-	if (NULL != queue->queue) 
-	{
+	if (NULL != queue->queue) {
 		free(queue->queue);
 		queue->queue = NULL;
 	}
@@ -228,17 +242,20 @@ int queue_destroy(queue_data **queuedata)
  * \retval 0 if it is not at the head
  * \retval <0 on error
  **/
-int queue_at_head(queue_data **queuedata)
+int queue_at_head(queue_data ** queuedata)
 {
 	queue_data *queue = NULL;
 
-	if (queuedata == NULL) return -1;
+	if (queuedata == NULL)
+		return -1;
 
-	if ((*queuedata) == NULL) return -2;
+	if ((*queuedata) == NULL)
+		return -2;
 
 	queue = (*queuedata);
 
-	if (queue->cur_offset == 0) return 1;
+	if (queue->cur_offset == 0)
+		return 1;
 
 	return 0;
 }
@@ -252,17 +269,20 @@ int queue_at_head(queue_data **queuedata)
  * \retval 0 if we are not at the end
  * \retval <0 on error
  **/
-int queue_queue_done(queue_data **queuedata)
+int queue_queue_done(queue_data ** queuedata)
 {
 	queue_data *queue = NULL;
 
-	if (queuedata == NULL) return -1;
+	if (queuedata == NULL)
+		return -1;
 
-	if ((*queuedata) == NULL) return -2;
+	if ((*queuedata) == NULL)
+		return -2;
 
 	queue = (*queuedata);
 
-	if (queue->cur_offset >= queue->queuesize) return 1;
+	if (queue->cur_offset >= queue->queuesize)
+		return 1;
 
 	return 0;
 }

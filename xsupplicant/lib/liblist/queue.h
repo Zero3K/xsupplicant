@@ -11,7 +11,7 @@
 typedef struct _queue_data {
 	uint32_t queuesize;
 	uint32_t cur_offset;
-	
+
 	uint8_t *queue;
 } queue_data;
 
@@ -23,5 +23,4 @@ int queue_get_size(queue_data **, uint32_t *);
 int queue_at_head(queue_data **);
 int queue_queue_done(queue_data **);
 
-#endif // __QUEUE_H__
-
+#endif				// __QUEUE_H__

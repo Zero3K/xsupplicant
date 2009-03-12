@@ -28,176 +28,166 @@
 #include "src/xsup_err.h"
 #include "liblist/liblist.h"
 
-void *xsupconfig_parse_interface(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_interface(void **attr, uint8_t config_type,
+				 xmlNodePtr node)
 {
-  struct xsup_devices *mydevs = NULL;
-  struct xsup_interfaces *newint = NULL;
+	struct xsup_devices *mydevs = NULL;
+	struct xsup_interfaces *newint = NULL;
 
-  mydevs = (*attr);
+	mydevs = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Building interfaces config.\n");
+	printf("Building interfaces config.\n");
 #endif
 
-  if (xsupconfig_defaults_create_interface(&newint) != XENONE)
-  {
-	printf("Couldn't allocate memory to store interface setting configuration!"
-			"  (Line %ld)\n", xsupconfig_parse_get_line_num());
-	exit(1);
-  }
+	if (xsupconfig_defaults_create_interface(&newint) != XENONE) {
+		printf
+		    ("Couldn't allocate memory to store interface setting configuration!"
+		     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(1);
+	}
 
-  liblist_add_to_tail((genlist **)&mydevs->interf, (genlist *)newint);
+	liblist_add_to_tail((genlist **) & mydevs->interf, (genlist *) newint);
 
-  return newint;
+	return newint;
 }
 
-void *xsupconfig_parse_interface_description(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_interface_description(void **attr, uint8_t config_type,
+					     xmlNodePtr node)
 {
-  struct xsup_interfaces *myints = NULL;
-  struct xsup_interfaces *check = NULL;
-  char *value = NULL;
+	struct xsup_interfaces *myints = NULL;
+	struct xsup_interfaces *check = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  myints = (*attr);
+	myints = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Interface description is '%s'!\n", value);
+	printf("Interface description is '%s'!\n", value);
 #endif
 
-	if (xsup_common_in_startup() == TRUE)
-	{
-	  check = NULL;
+	if (xsup_common_in_startup() == TRUE) {
+		check = NULL;
 
-	  if (conf_devices != NULL)
-	  {
-		  check = conf_devices->interf;
-	  }
+		if (conf_devices != NULL) {
+			check = conf_devices->interf;
+		}
 
-	  while (check != NULL)
-	  {
-		  if (check->description != NULL)
-		  {
-			  if (strcmp(check->description, value) == 0)
-			  {
-				  xsupconfig_common_log("There is more than one interface with the description of '%s'.  This should have only happened if you manually modified the configuration file.  If you have, you should manually remove (or rename) the duplicate interface that you don't want to use.\n", value);
-			  }
-		  }
+		while (check != NULL) {
+			if (check->description != NULL) {
+				if (strcmp(check->description, value) == 0) {
+					xsupconfig_common_log
+					    ("There is more than one interface with the description of '%s'.  This should have only happened if you manually modified the configuration file.  If you have, you should manually remove (or rename) the duplicate interface that you don't want to use.\n",
+					     value);
+				}
+			}
 
-		  check = check->next;
-	  }
+			check = check->next;
+		}
 	}
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		myints->description = NULL;
-	}
-	else
-	{
+	} else {
 		myints->description = _strdup(value);
 		xmlFree(value);
 	}
 
-  return myints;
+	return myints;
 }
 
-void *xsupconfig_parse_interface_type(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_interface_type(void **attr, uint8_t config_type,
+				      xmlNodePtr node)
 {
-  struct xsup_interfaces *myints = NULL;
-  char *value = NULL;
+	struct xsup_interfaces *myints = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  myints = (*attr);
+	myints = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("Interface type is '%s'!\n", value);
+	printf("Interface type is '%s'!\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		myints->driver_type = NULL;
-	}
-	else
-	{
+	} else {
 		myints->driver_type = _strdup(value);
 		xmlFree(value);
 	}
 
-  return myints;
+	return myints;
 }
 
-void *xsupconfig_parse_interface_mac(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_interface_mac(void **attr, uint8_t config_type,
+				     xmlNodePtr node)
 {
-  struct xsup_interfaces *myints = NULL;
-  struct xsup_interfaces *check = NULL;
-  char *mystr = NULL;
-  char *value = NULL;
-  uint8_t mac[6];
-  uint8_t zerosmac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	struct xsup_interfaces *myints = NULL;
+	struct xsup_interfaces *check = NULL;
+	char *mystr = NULL;
+	char *value = NULL;
+	uint8_t mac[6];
+	uint8_t zerosmac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("MAC address is : %s\n", value);
+	printf("MAC address is : %s\n", value);
 #endif
 
-  myints = (struct xsup_interfaces *)(*attr);
+	myints = (struct xsup_interfaces *)(*attr);
 
-  mystr = value;
+	mystr = value;
 
-  if (xsupconfig_common_is_valid_mac(mystr) == FALSE) 
-  {
-	  printf("Invalid MAC address at line %ld.  Ignoring!\n", 
-			xsupconfig_parse_get_line_num());
-	  return myints;
-  }
-
-  xsupconfig_common_convert_mac(mystr, (char *)&mac);
-
-	if (xsup_common_in_startup() == TRUE)
-	{
-	  check = NULL;
-
-	  if (conf_devices != NULL)
-	  {
-		check = conf_devices->interf;
-	  }
-
-	  // There are some "interfaces" that will have a MAC address of all 0s.  
-	  // These aren't interfaces that we should be using, but if they get entered
-	  // in to our config file, then we throw up an error.  We don't want to do that
-	  // so don't run our checks if the MAC is all 0s.
-	  if (memcmp(mac, zerosmac, 6) != 0)
-	  {
-		while (check != NULL)
-		{
-		  if (check->description != NULL)
-		  {
-			  if (memcmp(check->mac, mac, 6) == 0)
-			  {
-				  xsupconfig_common_log("There is more than one interface with the MAC address of %02X:%02X:%02X:%02X:%02X:%02X.  This should have only happened if you manually modified the configuration file.  If you have, you should manually remove (or rename) the duplicate interface that you don't want to use.\n",
-					  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-			  }
-		  }
-
-		  check = check->next;
-		}
-	  }
+	if (xsupconfig_common_is_valid_mac(mystr) == FALSE) {
+		printf("Invalid MAC address at line %ld.  Ignoring!\n",
+		       xsupconfig_parse_get_line_num());
+		return myints;
 	}
 
-  memcpy(&myints->mac, &mac, 6);
+	xsupconfig_common_convert_mac(mystr, (char *)&mac);
+
+	if (xsup_common_in_startup() == TRUE) {
+		check = NULL;
+
+		if (conf_devices != NULL) {
+			check = conf_devices->interf;
+		}
+		// There are some "interfaces" that will have a MAC address of all 0s.  
+		// These aren't interfaces that we should be using, but if they get entered
+		// in to our config file, then we throw up an error.  We don't want to do that
+		// so don't run our checks if the MAC is all 0s.
+		if (memcmp(mac, zerosmac, 6) != 0) {
+			while (check != NULL) {
+				if (check->description != NULL) {
+					if (memcmp(check->mac, mac, 6) == 0) {
+						xsupconfig_common_log
+						    ("There is more than one interface with the MAC address of %02X:%02X:%02X:%02X:%02X:%02X.  This should have only happened if you manually modified the configuration file.  If you have, you should manually remove (or rename) the duplicate interface that you don't want to use.\n",
+						     mac[0], mac[1], mac[2],
+						     mac[3], mac[4], mac[5]);
+					}
+				}
+
+				check = check->next;
+			}
+		}
+	}
+
+	memcpy(&myints->mac, &mac, 6);
 
 #ifdef PARSE_DEBUG
-  printf("Result : %02X:%02X:%02X:%02X:%02X:%02X\n", myints->mac[0], myints->mac[1], myints->mac[2],
-	 myints->mac[3], myints->mac[4], myints->mac[5]);
+	printf("Result : %02X:%02X:%02X:%02X:%02X:%02X\n", myints->mac[0],
+	       myints->mac[1], myints->mac[2], myints->mac[3], myints->mac[4],
+	       myints->mac[5]);
 #endif
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return myints;
+	return myints;
 }
 
 /**
@@ -208,40 +198,36 @@ void *xsupconfig_parse_interface_mac(void **attr, uint8_t config_type, xmlNodePt
  *
  * \retval ptr to the modified xsup_interfaces struct.
  **/
-void *xsupconfig_parse_interface_is_wireless(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_interface_is_wireless(void **attr, uint8_t config_type,
+					     xmlNodePtr node)
 {
-  struct xsup_interfaces *myints = NULL;
-  char *value = NULL;
-  uint8_t result = 0;
+	struct xsup_interfaces *myints = NULL;
+	char *value = NULL;
+	uint8_t result = 0;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Interface is wireless : %s\n", value);
+	printf("Interface is wireless : %s\n", value);
 #endif
 
-  myints = (struct xsup_interfaces *)(*attr);
+	myints = (struct xsup_interfaces *)(*attr);
 
-  result = xsupconfig_common_yesno(value);
- 
-  if (result == 1)
-    {
-      SET_FLAG(myints->flags, CONFIG_INTERFACE_IS_WIRELESS);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myints->flags, CONFIG_INTERFACE_IS_WIRELESS);
-    }
-  else
-    {
-      printf("Unknown value for Wireless.  (Line %ld)\n    Using "
-	     "default of 'NO'.\n", xsupconfig_parse_get_line_num());
-      UNSET_FLAG(myints->flags, CONFIG_INTERFACE_IS_WIRELESS);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		SET_FLAG(myints->flags, CONFIG_INTERFACE_IS_WIRELESS);
+	} else if (result == 0) {
+		UNSET_FLAG(myints->flags, CONFIG_INTERFACE_IS_WIRELESS);
+	} else {
+		printf("Unknown value for Wireless.  (Line %ld)\n    Using "
+		       "default of 'NO'.\n", xsupconfig_parse_get_line_num());
+		UNSET_FLAG(myints->flags, CONFIG_INTERFACE_IS_WIRELESS);
+	}
 
-  return myints;
+	xmlFree(value);
+
+	return myints;
 }
 
 /**
@@ -252,58 +238,69 @@ void *xsupconfig_parse_interface_is_wireless(void **attr, uint8_t config_type, x
  *
  * \retval ptr to the modified xsup_interfaces struct.
  **/
-void *xsupconfig_parse_manage_interface(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_manage_interface(void **attr, uint8_t config_type,
+					xmlNodePtr node)
 {
-  struct xsup_interfaces *myints = NULL;
-  char *value = NULL;
-  uint8_t result = 0;
+	struct xsup_interfaces *myints = NULL;
+	char *value = NULL;
+	uint8_t result = 0;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Interface should be managed : %s\n", value);
+	printf("Interface should be managed : %s\n", value);
 #endif
 
-  myints = (struct xsup_interfaces *)(*attr);
+	myints = (struct xsup_interfaces *)(*attr);
 
-  result = xsupconfig_common_yesno(value);
- 
-  if (result == 1)
-    {
-      UNSET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
-    }
-  else if (result == 0)
-    {
-      SET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
-    }
-  else
-    {
-      printf("Unknown value for Manage.  (Line %ld)\n    Using "
-	     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
-      UNSET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		UNSET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
+	} else if (result == 0) {
+		SET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
+	} else {
+		printf("Unknown value for Manage.  (Line %ld)\n    Using "
+		       "default of 'YES'.\n", xsupconfig_parse_get_line_num());
+		UNSET_FLAG(myints->flags, CONFIG_INTERFACE_DONT_MANAGE);
+	}
 
-  return myints;
+	xmlFree(value);
+
+	return myints;
 }
 
-void *xsupconfig_parse_interface_default_connection(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_interface_default_connection(void **attr,
+						    uint8_t config_type,
+						    xmlNodePtr node)
 {
-  xsupconfig_common_log("The configuration settings for default wired connections have changed.  You will need to reconfigure "
-	  "your default wired connection.");
-  return (*attr);
+	xsupconfig_common_log
+	    ("The configuration settings for default wired connections have changed.  You will need to reconfigure "
+	     "your default wired connection.");
+	return (*attr);
 }
-
 
 parser interf[] = {
-  {"Description", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_description},
-  {"MAC", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_mac},
-  {"Type", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_type},
-  {"Wireless", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_interface_is_wireless},
-  {"Manage", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_manage_interface},
+	{"Description", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY,
+	 &xsupconfig_parse_interface_description}
+	,
+	{"MAC", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY,
+	 &xsupconfig_parse_interface_mac}
+	,
+	{"Type", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY,
+	 &xsupconfig_parse_interface_type}
+	,
+	{"Wireless", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY,
+	 &xsupconfig_parse_interface_is_wireless}
+	,
+	{"Manage", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY,
+	 xsupconfig_parse_manage_interface}
+	,
 
-  // Used to handle migration.
-  {"Default_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY, xsupconfig_parse_interface_default_connection},
-  
-  {NULL, NULL, FALSE, 0, NULL}};
+	// Used to handle migration.
+	{"Default_Connection", NULL, FALSE, OPTION_GLOBAL_CONFIG_ONLY,
+	 xsupconfig_parse_interface_default_connection}
+	,
+
+	{NULL, NULL, FALSE, 0, NULL}
+};

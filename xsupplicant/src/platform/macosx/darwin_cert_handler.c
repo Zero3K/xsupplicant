@@ -32,7 +32,7 @@
  **/
 int cert_handler_init()
 {
-  // Nothing to do here.
+	// Nothing to do here.
 	return XENONE;
 }
 
@@ -53,43 +53,42 @@ void cert_handler_deinit()
  * \retval NULL on error
  * \retval ptr to a string that contains the value.
  **/
-static char *cert_handler_get_container_value(char *pszSubjectString, char *container)
+static char *cert_handler_get_container_value(char *pszSubjectString,
+					      char *container)
 {
 	char *temp = NULL;
 	char *end = NULL;
 	char *result = NULL;
 
-	temp = Malloc(strlen(pszSubjectString)+1);
-	if (temp == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store temporary work buffer!\n");
+	temp = Malloc(strlen(pszSubjectString) + 1);
+	if (temp == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store temporary work buffer!\n");
 		return NULL;
 	}
 
 	end = strstr(pszSubjectString, container);
-	if (end == NULL) return NULL;                   // Couldn't find what we were looking for.
+	if (end == NULL)
+		return NULL;	// Couldn't find what we were looking for.
 
 	strcpy(temp, end);
-//	temp += strlen(container);  // Skip the container value
+//      temp += strlen(container);  // Skip the container value
 
-	if (temp[strlen(container)] == '"')
-	{
+	if (temp[strlen(container)] == '"') {
 		// It is a quoted value.
 		end = strstr(&temp[strlen(container)], "\"");
-		end[0] = 0x00;   // Set it to a NULL.
-	}
-	else
-	{
+		end[0] = 0x00;	// Set it to a NULL.
+	} else {
 		end = strstr(&temp[strlen(container)], ",");
-		if (end != NULL)         // If we are already at the end, we will return NULL. So ignore it.
-			end[0] = 0x00;   // Set it to a NULL.
+		if (end != NULL)	// If we are already at the end, we will return NULL. So ignore it.
+			end[0] = 0x00;	// Set it to a NULL.
 	}
 
 	result = Malloc(strlen(temp));
-	if (result == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store final result!  (in %s())\n",
-				__FUNCTION__);
+	if (result == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store final result!  (in %s())\n",
+			     __FUNCTION__);
 		return NULL;
 	}
 
@@ -116,9 +115,9 @@ static char *cert_handler_get_container_value(char *pszSubjectString, char *cont
  * \retval -1 on failure
  **/
 #if 0
-int cert_handler_get_info(PCCERT_CONTEXT  pCertContext, cert_info *certinfo)
+int cert_handler_get_info(PCCERT_CONTEXT pCertContext, cert_info * certinfo)
 {
-  return -1;
+	return -1;
 }
 #endif
 
@@ -132,9 +131,9 @@ int cert_handler_get_info(PCCERT_CONTEXT  pCertContext, cert_info *certinfo)
  * \retval 0 on success
  * \retval -1 on error
  **/
-int cert_handler_get_info_from_name(char *certname, cert_info *certinfo)
+int cert_handler_get_info_from_name(char *certname, cert_info * certinfo)
 {
-  return -1;
+	return -1;
 }
 
 /**
@@ -142,7 +141,7 @@ int cert_handler_get_info_from_name(char *certname, cert_info *certinfo)
  *
  * @param[in] cinfo   A pointer to the structure that we want to free the members of.
  **/
-void cert_handler_free_cert_info(cert_info *cinfo)
+void cert_handler_free_cert_info(cert_info * cinfo)
 {
 	FREE(cinfo->C);
 	FREE(cinfo->CN);
@@ -161,7 +160,7 @@ void cert_handler_free_cert_info(cert_info *cinfo)
  **/
 int cert_handler_num_root_ca_certs()
 {
-  return -1;
+	return -1;
 }
 
 /**
@@ -170,18 +169,20 @@ int cert_handler_num_root_ca_certs()
  * @param[in] numcas   The number of CAs that are represented in the enumeration.
  * @param[in] cas   The array of CA names.
  **/
-void cert_handler_free_cert_enum(int numcas, cert_enum **cas)
+void cert_handler_free_cert_enum(int numcas, cert_enum ** cas)
 {
 	cert_enum *casa = NULL;
 	int i = 0;
 
 	casa = (*cas);
 
-	for (i = 0; i < numcas; i++)
-	{
-		if (casa[i].certname != NULL) free(casa[i].certname);
-                if (casa[i].friendlyname != NULL) free(casa[i].friendlyname);
-                if (casa[i].issuer != NULL) free(casa[i].issuer);
+	for (i = 0; i < numcas; i++) {
+		if (casa[i].certname != NULL)
+			free(casa[i].certname);
+		if (casa[i].friendlyname != NULL)
+			free(casa[i].friendlyname);
+		if (casa[i].issuer != NULL)
+			free(casa[i].issuer);
 	}
 
 	FREE((*cas));
@@ -202,17 +203,18 @@ void cert_handler_free_cert_enum(int numcas, cert_enum **cas)
  * \retval -1 on error
  * \retval 0 on success
  **/
-int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
+int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 {
-  return -1;
+	return -1;
 }
 
-int cert_handler_get_info_from_store(char *storetype, char *location, cert_info *certinfo)
+int cert_handler_get_info_from_store(char *storetype, char *location,
+				     cert_info * certinfo)
 {
-  return 0;
+	return 0;
 }
 
 int cert_handler_add_cert_to_store(char *path_to_cert)
 {
-  return 0;
+	return 0;
 }

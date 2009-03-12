@@ -15,7 +15,6 @@
 void mschap_check(eap_type_data *);
 void mschap_process(eap_type_data *, uint8_t *, uint16_t);
 void mschap_buildResp(eap_type_data *, uint8_t *, uint16_t *);
-void mschap_deinit(eap_type_data *eapdata);
+void mschap_deinit(eap_type_data * eapdata);
 
 #endif
-

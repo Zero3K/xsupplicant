@@ -38,45 +38,75 @@
 #include "xsupconfig_parse_eap_psk.h"
 
 eap_methods meths[] = {
-	{ "TTLS", EAP_TYPE_TTLS, eap_ttls, xsupconfig_parse_eap_ttls},
-	{ "ttls", EAP_TYPE_TTLS, eap_ttls, xsupconfig_parse_eap_ttls},
-	{ "AKA", EAP_TYPE_AKA, eap_aka, xsupconfig_parse_eap_aka},
-	{ "aka", EAP_TYPE_AKA, eap_aka, xsupconfig_parse_eap_aka},
-	{ "FAST", EAP_TYPE_FAST, eap_fast, xsupconfig_parse_eap_fast},
-	{ "fast", EAP_TYPE_FAST, eap_fast, xsupconfig_parse_eap_fast},
-	{ "GTC", EAP_TYPE_GTC, eap_gtc, xsupconfig_parse_eap_gtc},
-	{ "gtc", EAP_TYPE_GTC, eap_gtc, xsupconfig_parse_eap_gtc},
-	{ "MD5", EAP_TYPE_MD5, eap_md5, xsupconfig_parse_eap_md5},
-	{ "md5", EAP_TYPE_MD5, eap_md5, xsupconfig_parse_eap_md5},
-	{ "MSCHAPV2", EAP_TYPE_MSCHAPV2, eap_mschapv2, xsupconfig_parse_eap_mschapv2},
-	{ "MSCHAPv2", EAP_TYPE_MSCHAPV2, eap_mschapv2, xsupconfig_parse_eap_mschapv2},
-	{ "mschapv2", EAP_TYPE_MSCHAPV2, eap_mschapv2, xsupconfig_parse_eap_mschapv2},
-	{ "OTP", EAP_TYPE_OTP, eap_otp, xsupconfig_parse_eap_otp},
-	{ "otp", EAP_TYPE_OTP, eap_otp, xsupconfig_parse_eap_otp},
-	{ "PEAP", EAP_TYPE_PEAP, eap_peap, xsupconfig_parse_eap_peap},
-	{ "peap", EAP_TYPE_PEAP, eap_peap, xsupconfig_parse_eap_peap},
-	{ "SIM", EAP_TYPE_SIM, eap_sim, xsupconfig_parse_eap_sim},
-	{ "sim", EAP_TYPE_SIM, eap_sim, xsupconfig_parse_eap_sim},
-	{ "TLS", EAP_TYPE_TLS, eap_tls, xsupconfig_parse_eap_tls},
-	{ "tls", EAP_TYPE_TLS, eap_tls, xsupconfig_parse_eap_tls},
+	{"TTLS", EAP_TYPE_TTLS, eap_ttls, xsupconfig_parse_eap_ttls}
+	,
+	{"ttls", EAP_TYPE_TTLS, eap_ttls, xsupconfig_parse_eap_ttls}
+	,
+	{"AKA", EAP_TYPE_AKA, eap_aka, xsupconfig_parse_eap_aka}
+	,
+	{"aka", EAP_TYPE_AKA, eap_aka, xsupconfig_parse_eap_aka}
+	,
+	{"FAST", EAP_TYPE_FAST, eap_fast, xsupconfig_parse_eap_fast}
+	,
+	{"fast", EAP_TYPE_FAST, eap_fast, xsupconfig_parse_eap_fast}
+	,
+	{"GTC", EAP_TYPE_GTC, eap_gtc, xsupconfig_parse_eap_gtc}
+	,
+	{"gtc", EAP_TYPE_GTC, eap_gtc, xsupconfig_parse_eap_gtc}
+	,
+	{"MD5", EAP_TYPE_MD5, eap_md5, xsupconfig_parse_eap_md5}
+	,
+	{"md5", EAP_TYPE_MD5, eap_md5, xsupconfig_parse_eap_md5}
+	,
+	{"MSCHAPV2", EAP_TYPE_MSCHAPV2, eap_mschapv2,
+	 xsupconfig_parse_eap_mschapv2}
+	,
+	{"MSCHAPv2", EAP_TYPE_MSCHAPV2, eap_mschapv2,
+	 xsupconfig_parse_eap_mschapv2}
+	,
+	{"mschapv2", EAP_TYPE_MSCHAPV2, eap_mschapv2,
+	 xsupconfig_parse_eap_mschapv2}
+	,
+	{"OTP", EAP_TYPE_OTP, eap_otp, xsupconfig_parse_eap_otp}
+	,
+	{"otp", EAP_TYPE_OTP, eap_otp, xsupconfig_parse_eap_otp}
+	,
+	{"PEAP", EAP_TYPE_PEAP, eap_peap, xsupconfig_parse_eap_peap}
+	,
+	{"peap", EAP_TYPE_PEAP, eap_peap, xsupconfig_parse_eap_peap}
+	,
+	{"SIM", EAP_TYPE_SIM, eap_sim, xsupconfig_parse_eap_sim}
+	,
+	{"sim", EAP_TYPE_SIM, eap_sim, xsupconfig_parse_eap_sim}
+	,
+	{"TLS", EAP_TYPE_TLS, eap_tls, xsupconfig_parse_eap_tls}
+	,
+	{"tls", EAP_TYPE_TLS, eap_tls, xsupconfig_parse_eap_tls}
+	,
 
 #ifdef ENABLE_LEAP
-	{ "LEAP", EAP_TYPE_LEAP, leap, xsupconfig_parse_leap},
-	{ "leap", EAP_TYPE_LEAP, leap, xsupconfig_parse_leap},
-#endif  // ENABLE_LEAP
+	{"LEAP", EAP_TYPE_LEAP, leap, xsupconfig_parse_leap}
+	,
+	{"leap", EAP_TYPE_LEAP, leap, xsupconfig_parse_leap}
+	,
+#endif				// ENABLE_LEAP
 
-	{ "PSK", EAP_TYPE_PSK, eap_psk, xsupconfig_parse_eap_psk},
-	{ "psk", EAP_TYPE_PSK, eap_psk, xsupconfig_parse_eap_psk},
+	{"PSK", EAP_TYPE_PSK, eap_psk, xsupconfig_parse_eap_psk}
+	,
+	{"psk", EAP_TYPE_PSK, eap_psk, xsupconfig_parse_eap_psk}
+	,
 
-	{NULL, 0, NULL, NULL}};
+	{NULL, 0, NULL, NULL}
+};
 
-eap_methods *xsupconfig_parse_eap_get_method(eap_methods *eaplist, char *method_name)
+eap_methods *xsupconfig_parse_eap_get_method(eap_methods * eaplist,
+					     char *method_name)
 {
 	int i = 0;
 
-	while (eaplist[i].name != NULL)
-	{
-		if (strcmp(eaplist[i].name, method_name) == 0) break;
+	while (eaplist[i].name != NULL) {
+		if (strcmp(eaplist[i].name, method_name) == 0)
+			break;
 		i++;
 	}
 
@@ -91,44 +121,45 @@ void *xsupconfig_parse_eap(void **attr, uint8_t config_type, xmlNodePtr node)
 	eap_methods *meth = NULL;
 
 #ifdef PARSE_DEBUG
-  printf("Parse EAP..\n");
+	printf("Parse EAP..\n");
 #endif
 
-  // Start by finding the EAP type we will be using.
-  t = xsupconfig_common_find_node(node->children, "Type");
-  if (t == NULL)
-  {
-	  xsupconfig_common_log("EAP configuration data starting at line %ld doesn't contain a valid EAP type to use!\n",
-		  xsupconfig_parse_get_line_num());
-	  return NULL;
-  }
+	// Start by finding the EAP type we will be using.
+	t = xsupconfig_common_find_node(node->children, "Type");
+	if (t == NULL) {
+		xsupconfig_common_log
+		    ("EAP configuration data starting at line %ld doesn't contain a valid EAP type to use!\n",
+		     xsupconfig_parse_get_line_num());
+		return NULL;
+	}
 
-  value = (char *)xmlNodeGetContent(t);
+	value = (char *)xmlNodeGetContent(t);
 #ifdef PARSE_DEBUG
-  printf("EAP Type : %s\n", value);
+	printf("EAP Type : %s\n", value);
 #endif
 
-  cur = (*attr);
+	cur = (*attr);
 
-  meth = xsupconfig_parse_eap_get_method((eap_methods *)&meths, value);
+	meth = xsupconfig_parse_eap_get_method((eap_methods *) & meths, value);
 
-  if (meth->name == NULL)
-  {
-	  xsupconfig_common_log("Invalid EAP method '%s' requested at line %ld.\n", value,
-		  xsupconfig_parse_get_line_num());
-	  xmlFree(value);
-	  return NULL;
-  }
+	if (meth->name == NULL) {
+		xsupconfig_common_log
+		    ("Invalid EAP method '%s' requested at line %ld.\n", value,
+		     xsupconfig_parse_get_line_num());
+		xmlFree(value);
+		return NULL;
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  // Go ahead and parse the EAP data.
-  meth->init_method((void **)&cur->method, config_type, node->children);
+	// Go ahead and parse the EAP data.
+	meth->init_method((void **)&cur->method, config_type, node->children);
 
-  // Using OPTION_ANY_CONFIG here is safe because we want to allow EAP methods in both configuration files
-  // if we ever end up in a situation where we want to limit EAP to one configuraiton or the other we will
-  // need to make larger changes.
-  xsupconfig_parse(node->children, meth->parsedata, config_type, &cur->method->method_data);
+	// Using OPTION_ANY_CONFIG here is safe because we want to allow EAP methods in both configuration files
+	// if we ever end up in a situation where we want to limit EAP to one configuraiton or the other we will
+	// need to make larger changes.
+	xsupconfig_parse(node->children, meth->parsedata, config_type,
+			 &cur->method->method_data);
 
-  return (*attr);
+	return (*attr);
 }

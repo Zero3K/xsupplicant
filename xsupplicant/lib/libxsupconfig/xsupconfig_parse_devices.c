@@ -27,28 +27,30 @@
 #include "xsupconfig_devices.h"
 #include "src/xsup_debug.h"
 
-void *xsupconfig_parse_devices(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_devices(void **attr, uint8_t config_type,
+			       xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
-  printf("Building devices config.\n");
+	printf("Building devices config.\n");
 #endif
 
-  conf_devices = malloc(sizeof(struct xsup_devices));
-  if (conf_devices == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store device configuration!"
-	     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(1);
-    }
+	conf_devices = malloc(sizeof(struct xsup_devices));
+	if (conf_devices == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store device configuration!"
+			     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(1);
+	}
 
-  memset(conf_devices, 0x00, sizeof(struct xsup_devices));
+	memset(conf_devices, 0x00, sizeof(struct xsup_devices));
 
-  return conf_devices;
+	return conf_devices;
 }
 
-
 parser devices[] = {
-  {"Interface", (struct conf_parse_struct *)&interf, TRUE, OPTION_GLOBAL_CONFIG_ONLY,
-	xsupconfig_parse_interface},
-  
-  {NULL, NULL, FALSE, 0, NULL}};
+	{"Interface", (struct conf_parse_struct *)&interf, TRUE,
+	 OPTION_GLOBAL_CONFIG_ONLY,
+	 xsupconfig_parse_interface},
+
+	{NULL, NULL, FALSE, 0, NULL}
+};

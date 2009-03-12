@@ -23,12 +23,12 @@
 
 // Event flags
 #define EVENT_IGNORE_INT       BIT(0)
-#define EVENT_PRIMARY		   BIT(7)  // This event handler slot does accept frames.
-#define EVENT_SECONDARY 	   BIT(6)  // This event handler slot doesn't accept frames, but needs a context anyway.
+#define EVENT_PRIMARY		   BIT(7)	// This event handler slot does accept frames.
+#define EVENT_SECONDARY 	   BIT(6)	// This event handler slot doesn't accept frames, but needs a context anyway.
 
 // Starting maximum number of event handlers we will register.  (This will be dynamically increased as needed.)
 #define STARTING_EVENTS       20
-#define EVENT_GROW            5    // The number of additional event slots to add when we run out.
+#define EVENT_GROW            5	// The number of additional event slots to add when we run out.
 
 void event_core_init();
 void event_core_deinit();
@@ -36,7 +36,8 @@ void event_core();
 int event_core_is_terminating();
 context *event_core_get_active_ctx();
 void event_core_terminate();
-int event_core_register(HANDLE, context *, int(*)(context *, HANDLE), uint8_t, int, char *);
+int event_core_register(HANDLE, context *, int (*)(context *, HANDLE), uint8_t,
+			int, char *);
 void event_core_deregister(HANDLE, uint8_t);
 context *event_core_locate(char *);
 LPOVERLAPPED event_core_get_ovr(HANDLE, uint8_t);
@@ -63,9 +64,10 @@ uint32_t event_core_register_ui_connect_callback(void *callback);
 int event_core_lock();
 int event_core_unlock();
 context *event_core_locate_by_connection(char *matchstr);
-void event_core_change_wireless(config_globals *newsettings);
+void event_core_change_wireless(config_globals * newsettings);
 void event_core_change_os_ctrl_state(void *);
-int event_core_bind_hevent(HANDLE devHandle, HANDLE hEvent, unsigned char evtType);
+int event_core_bind_hevent(HANDLE devHandle, HANDLE hEvent,
+			   unsigned char evtType);
 int event_core_get_sleep_state();
 
 #endif

@@ -26,99 +26,103 @@
 #include "xsupconfig_common.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_ttls_mschap(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_mschap(void **attr, uint8_t config_type,
+				       xmlNodePtr node)
 {
-  struct config_eap_ttls *ttls = NULL;
+	struct config_eap_ttls *ttls = NULL;
 
-  ttls = (*attr);
+	ttls = (*attr);
 
-  if (ttls == NULL)
-    {
-      xsupconfig_common_log("Invalid TTLS phase 1!  You cannot have TTLS phase 2 data without"
-	     " having a phase 1!  (This is likely a bug in the parser code!)"
-	     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	if (ttls == NULL) {
+		xsupconfig_common_log
+		    ("Invalid TTLS phase 1!  You cannot have TTLS phase 2 data without"
+		     " having a phase 1!  (This is likely a bug in the parser code!)"
+		     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  ttls->phase2_data = malloc(sizeof(struct config_pwd_only));
-  if (ttls->phase2_data == NULL)
-    {
-      printf("Couldn't allocate memory to store MSCHAP configuration for "
-	     "EAP-TTLS!  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	ttls->phase2_data = malloc(sizeof(struct config_pwd_only));
+	if (ttls->phase2_data == NULL) {
+		printf
+		    ("Couldn't allocate memory to store MSCHAP configuration for "
+		     "EAP-TTLS!  (Line %ld)\n",
+		     xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  memset(ttls->phase2_data, 0x00, sizeof(struct config_pwd_only));
+	memset(ttls->phase2_data, 0x00, sizeof(struct config_pwd_only));
 
-  return ttls->phase2_data;
+	return ttls->phase2_data;
 }
 
-void *xsupconfig_parse_eap_ttls_mschap_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_mschap_password(void **attr,
+						uint8_t config_type,
+						xmlNodePtr node)
 {
-  struct config_pwd_only *mschap = NULL;
-  char *value = NULL;
+	struct config_pwd_only *mschap = NULL;
+	char *value = NULL;
 
-  mschap = (*attr);
-  
-  value = (char *)xmlNodeGetContent(node);
+	mschap = (*attr);
+
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("MSCHAP Password : %s\n", value);
+	printf("MSCHAP Password : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		mschap->password = NULL;
-	}
-	else
-	{
+	} else {
 		mschap->password = _strdup(value);
 		xmlFree(value);
 	}
 
-  return mschap;
+	return mschap;
 }
 
-void *xsupconfig_parse_eap_ttls_enc_mschap_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_enc_mschap_password(void **attr,
+						    uint8_t config_type,
+						    xmlNodePtr node)
 {
-  struct config_pwd_only *mschap = NULL;
-  char *value = NULL;
-  uint16_t size = 0;
+	struct config_pwd_only *mschap = NULL;
+	char *value = NULL;
+	uint16_t size = 0;
 
-  mschap = (*attr);
-  
-  value = (char *)xmlNodeGetContent(node);
+	mschap = (*attr);
+
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("MSCHAP Password : %s\n", value);
+	printf("MSCHAP Password : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		return mschap;
 	}
 
-  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&mschap->password, &size) != 0)
-  {
-	  xmlFree(value);
-	  mschap->password = NULL;
-	  return mschap;
-  }
+	if (pwcrypt_decrypt
+	    (config_type, (uint8_t *) value, strlen(value),
+	     (uint8_t **) & mschap->password, &size) != 0) {
+		xmlFree(value);
+		mschap->password = NULL;
+		return mschap;
+	}
 
-  if ((mschap->password != NULL) && (strlen(mschap->password) == 0))
-  {
-	  FREE(mschap->password);
-  }
-  
-  xmlFree(value);
+	if ((mschap->password != NULL) && (strlen(mschap->password) == 0)) {
+		FREE(mschap->password);
+	}
 
-  return mschap;
+	xmlFree(value);
+
+	return mschap;
 }
 
 parser eap_ttls_mschap[] = {
-  {"Password", NULL, FALSE, OPTION_ANY_CONFIG,
-   &xsupconfig_parse_eap_ttls_mschap_password},
-  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_enc_mschap_password}};
-
+	{"Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_ttls_mschap_password}
+	,
+	{"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_ttls_enc_mschap_password}
+};

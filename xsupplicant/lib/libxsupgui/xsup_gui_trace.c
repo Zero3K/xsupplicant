@@ -17,7 +17,7 @@
 
 #include "xsup_gui_trace.h"
 
-FILE *tracefile = NULL;   ///< The handle to the trace file we are using.
+FILE *tracefile = NULL;		///< The handle to the trace file we are using.
 
 /**
  * \brief Establish the GUI trace file.
@@ -29,10 +29,12 @@ FILE *tracefile = NULL;   ///< The handle to the trace file we are using.
  **/
 int xsup_gui_trace_enable(char *filename)
 {
-	if (tracefile != NULL) return 0;    // If we call enable again, and we already have a file, return no error.
+	if (tracefile != NULL)
+		return 0;	// If we call enable again, and we already have a file, return no error.
 
 	tracefile = fopen(filename, "w+");
-	if (tracefile == NULL) return -1;
+	if (tracefile == NULL)
+		return -1;
 
 	return 0;
 }
@@ -45,7 +47,8 @@ int xsup_gui_trace_enable(char *filename)
  **/
 int xsup_gui_trace_disable()
 {
-	if (tracefile == NULL) return 0;
+	if (tracefile == NULL)
+		return 0;
 
 	fclose(tracefile);
 
@@ -61,18 +64,18 @@ int xsup_gui_trace_disable()
 void xsup_gui_trace(char *fmt, ...)
 {
 	char temp[TEMP_LOG_BUF_SIZE];
-    va_list ap;
+	va_list ap;
 
-	if (tracefile == NULL) return;
+	if (tracefile == NULL)
+		return;
 
-      va_start(ap, fmt);
+	va_start(ap, fmt);
 
-      vsnprintf((char *)&temp, TEMP_LOG_BUF_SIZE-1, fmt, ap);
+	vsnprintf((char *)&temp, TEMP_LOG_BUF_SIZE - 1, fmt, ap);
 
-	  fprintf(tracefile, temp);
+	fprintf(tracefile, temp);
 
-	  fflush(tracefile);
+	fflush(tracefile);
 
-	  va_end(ap);
+	va_end(ap);
 }
-

@@ -34,8 +34,7 @@ void xsupconfig_devices_init()
 	debug_printf(DEBUG_INIT, "Init devices structure.\n");
 
 	// If there is already something in memory, clean it up.
-	if (conf_devices != NULL)
-	{
+	if (conf_devices != NULL) {
 		xsupconfig_devices_deinit(&conf_devices);
 	}
 }
@@ -72,13 +71,14 @@ void xsupconfig_devices_deinit(struct xsup_devices **xsup_devs)
 {
 	debug_printf(DEBUG_INIT, "Clearing out devices structure.\n");
 
-	if ((*xsup_devs) == NULL) return;
+	if ((*xsup_devs) == NULL)
+		return;
 
 	// Clear out any interfaces that we may have allocated.
-	liblist_delete_list((genlist **)&(*xsup_devs)->interf, xsupconfig_devices_clear_interface);
+	liblist_delete_list((genlist **) & (*xsup_devs)->interf,
+			    xsupconfig_devices_clear_interface);
 	(*xsup_devs)->interf = NULL;
-	if ((*xsup_devs) != NULL) 
-	{
+	if ((*xsup_devs) != NULL) {
 		free((*xsup_devs));
 		(*xsup_devs) = NULL;
 	}
@@ -97,16 +97,15 @@ void xsupconfig_devices_dump_interfaces(struct xsup_interfaces *data)
 
 	cur = data;
 
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		printf("\t---------- Interface -------------\n");
 		printf("\tDescription : %s\n", cur->description);
 
 		printf("\tMAC Address : ");
-		for (i=0; i<6; i++)
-		{
+		for (i = 0; i < 6; i++) {
 			printf("%02X", cur->mac[i]);
-			if (i != 5) printf(":");
+			if (i != 5)
+				printf(":");
 		}
 		printf("\n");
 
@@ -125,7 +124,8 @@ void xsupconfig_devices_dump_interfaces(struct xsup_interfaces *data)
  **/
 void xsupconfig_devices_dump(struct xsup_devices *data)
 {
-	if (data == NULL) return;
+	if (data == NULL)
+		return;
 
 	xsupconfig_devices_dump_interfaces(data->interf);
 }
@@ -138,8 +138,7 @@ void xsupconfig_devices_dump(struct xsup_devices *data)
  **/
 struct xsup_interfaces *xsupconfig_devices_get_interfaces()
 {
-	if (conf_devices == NULL)
-	{
+	if (conf_devices == NULL) {
 		printf("No devices found in the configuration!\n");
 		return NULL;
 	}

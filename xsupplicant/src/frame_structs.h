@@ -33,30 +33,30 @@
 
 #ifdef WINDOWS
 struct eapol_header {
-  uint16_t frame_type;
-  uint8_t  eapol_version;
-  uint8_t  eapol_type;
-  uint16_t  eapol_length;
+	uint16_t frame_type;
+	uint8_t eapol_version;
+	uint8_t eapol_type;
+	uint16_t eapol_length;
 };
 #else
 struct eapol_header {
-  uint16_t frame_type;
-  uint8_t  eapol_version;
-  uint8_t  eapol_type;
-  uint16_t  eapol_length;
-} __attribute__((__packed__));
+	uint16_t frame_type;
+	uint8_t eapol_version;
+	uint8_t eapol_type;
+	uint16_t eapol_length;
+} __attribute__ ((__packed__));
 #endif
 
 struct eap_header {
-  uint8_t  eap_code;
-  uint8_t  eap_identifier;
-  uint16_t eap_length;
-  uint8_t  eap_type;
-} 
+	uint8_t eap_code;
+	uint8_t eap_identifier;
+	uint16_t eap_length;
+	uint8_t eap_type;
+}
 #ifndef WINDOWS
-__attribute__((__packed__))
+__attribute__ ((__packed__))
 #endif
-;
+    ;
 
 #ifdef WINDOWS
 #pragma pack()

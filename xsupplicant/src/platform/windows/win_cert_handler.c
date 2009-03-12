@@ -29,7 +29,7 @@
 #include "../../eap_types/tls/tls_funcs.h"
 #include "cardif_windows.h"
 
-char *convert_hex_to_str(uint8_t *inhex, uint16_t insize);
+char *convert_hex_to_str(uint8_t * inhex, uint16_t insize);
 
 //  #define CHECK_EKU   1      // Only show root certs with the server EKUs.  (Same as Windows XP defaults.)
 
@@ -45,10 +45,12 @@ HCERTSTORE hCertUserStore = NULL;
 int cert_handler_init()
 {
 	debug_printf(DEBUG_CERTS, "Starting Certificate Services...\n");
-	hCertStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-								(HCRYPTPROV_LEGACY)NULL, CERT_SYSTEM_STORE_LOCAL_MACHINE, L"ROOT");
-	if (hCertStore == NULL)
-	{
+	hCertStore =
+	    CertOpenStore(CERT_STORE_PROV_SYSTEM,
+			  X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+			  (HCRYPTPROV_LEGACY) NULL,
+			  CERT_SYSTEM_STORE_LOCAL_MACHINE, L"ROOT");
+	if (hCertStore == NULL) {
 		return XEGENERROR;
 	}
 
@@ -65,10 +67,12 @@ int cert_handler_init()
 int cert_handler_user_init()
 {
 	debug_printf(DEBUG_CERTS, "Starting User Certificate Services...\n");
-	hCertUserStore = CertOpenStore( CERT_STORE_PROV_SYSTEM, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-								(HCRYPTPROV_LEGACY)NULL, CERT_SYSTEM_STORE_CURRENT_USER, L"MY");
-	if (hCertUserStore == NULL)
-	{
+	hCertUserStore =
+	    CertOpenStore(CERT_STORE_PROV_SYSTEM,
+			  X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+			  (HCRYPTPROV_LEGACY) NULL,
+			  CERT_SYSTEM_STORE_CURRENT_USER, L"MY");
+	if (hCertUserStore == NULL) {
 		return XEGENERROR;
 	}
 
@@ -81,7 +85,8 @@ int cert_handler_user_init()
 void cert_handler_user_deinit()
 {
 	debug_printf(DEBUG_CERTS, "Killing user certificate services...\n");
-	if (hCertUserStore != NULL) CertCloseStore(hCertUserStore, 0);
+	if (hCertUserStore != NULL)
+		CertCloseStore(hCertUserStore, 0);
 	hCertUserStore = NULL;
 }
 
@@ -91,7 +96,8 @@ void cert_handler_user_deinit()
 void cert_handler_deinit()
 {
 	debug_printf(DEBUG_CERTS, "Killing certificate services...\n");
-	if (hCertStore != NULL) CertCloseStore(hCertStore, 0);
+	if (hCertStore != NULL)
+		CertCloseStore(hCertStore, 0);
 	hCertStore = NULL;
 }
 
@@ -105,42 +111,41 @@ void cert_handler_deinit()
  * \retval NULL on error
  * \retval ptr to a string that contains the value.
  **/
-static char *cert_handler_get_container_value(char *pszSubjectString, char *container)
+static char *cert_handler_get_container_value(char *pszSubjectString,
+					      char *container)
 {
 	char *temp = NULL;
 	char *end = NULL;
 	char *result = NULL;
 
-	temp = Malloc(strlen(pszSubjectString)+1);
-	if (temp == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store temporary work buffer!\n");
+	temp = Malloc(strlen(pszSubjectString) + 1);
+	if (temp == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store temporary work buffer!\n");
 		return NULL;
 	}
 
 	end = strstr(pszSubjectString, container);
-	if (end == NULL) return NULL;                   // Couldn't find what we were looking for.
+	if (end == NULL)
+		return NULL;	// Couldn't find what we were looking for.
 
 	strcpy(temp, end);
 
-	if (temp[strlen(container)] == '"')
-	{
+	if (temp[strlen(container)] == '"') {
 		// It is a quoted value.
 		end = strstr(&temp[strlen(container)], "\"");
-		end[0] = 0x00;   // Set it to a NULL.
-	}
-	else
-	{
+		end[0] = 0x00;	// Set it to a NULL.
+	} else {
 		end = strstr(&temp[strlen(container)], ",");
-		if (end != NULL)         // If we are already at the end, we will return NULL. So ignore it.
-			end[0] = 0x00;   // Set it to a NULL.
+		if (end != NULL)	// If we are already at the end, we will return NULL. So ignore it.
+			end[0] = 0x00;	// Set it to a NULL.
 	}
 
 	result = Malloc(strlen(temp));
-	if (result == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store final result!  (in %s())\n",
-				__FUNCTION__);
+	if (result == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store final result!  (in %s())\n",
+			     __FUNCTION__);
 		return NULL;
 	}
 
@@ -166,24 +171,31 @@ static char *cert_handler_get_container_value(char *pszSubjectString, char *cont
  * \retval 0 on success
  * \retval -1 on failure
  **/
-int cert_handler_get_info(PCCERT_CONTEXT  pCertContext, cert_info *certinfo)
+int cert_handler_get_info(PCCERT_CONTEXT pCertContext, cert_info * certinfo)
 {
 	char pszSubjectString[1024];
 	char *temp;
 
-	if (CertNameToStr(X509_ASN_ENCODING, &pCertContext->pCertInfo->Subject, CERT_X500_NAME_STR, pszSubjectString, 1024) > 0)
-	{
-		certinfo->C = cert_handler_get_container_value(pszSubjectString, "C=");
+	if (CertNameToStr
+	    (X509_ASN_ENCODING, &pCertContext->pCertInfo->Subject,
+	     CERT_X500_NAME_STR, pszSubjectString, 1024) > 0) {
+		certinfo->C =
+		    cert_handler_get_container_value(pszSubjectString, "C=");
 
-		certinfo->S = cert_handler_get_container_value(pszSubjectString, "S=");
+		certinfo->S =
+		    cert_handler_get_container_value(pszSubjectString, "S=");
 
-		certinfo->L = cert_handler_get_container_value(pszSubjectString, "L=");
+		certinfo->L =
+		    cert_handler_get_container_value(pszSubjectString, "L=");
 
-		certinfo->O = cert_handler_get_container_value(pszSubjectString, "O=");
+		certinfo->O =
+		    cert_handler_get_container_value(pszSubjectString, "O=");
 
-		certinfo->OU = cert_handler_get_container_value(pszSubjectString, "OU=");
+		certinfo->OU =
+		    cert_handler_get_container_value(pszSubjectString, "OU=");
 
-		certinfo->CN = cert_handler_get_container_value(pszSubjectString, "CN=");
+		certinfo->CN =
+		    cert_handler_get_container_value(pszSubjectString, "CN=");
 
 		return 0;
 	}
@@ -191,50 +203,62 @@ int cert_handler_get_info(PCCERT_CONTEXT  pCertContext, cert_info *certinfo)
 	return -1;
 }
 
-PCCERT_CONTEXT win_cert_handler_get_from_win_store(char *storetype, char *location)
+PCCERT_CONTEXT win_cert_handler_get_from_win_store(char *storetype,
+						   char *location)
 {
-	PCCERT_CONTEXT  pCertContext = NULL;
+	PCCERT_CONTEXT pCertContext = NULL;
 	CRYPT_HASH_BLOB toFindData;
 	uint8_t *hashData = NULL;
 
-	if (storetype == NULL) return NULL;
-	if (location == NULL) return NULL;
+	if (storetype == NULL)
+		return NULL;
+	if (location == NULL)
+		return NULL;
 
 	str2hex(location, &hashData, &toFindData.cbData);
 	toFindData.pbData = hashData;
 
-	pCertContext = CertFindCertificateInStore(hCertStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0, CERT_FIND_HASH, &toFindData, NULL);
-	FREE(hashData);  // Clean up the memory no matter what.
-	
-	if (pCertContext == NULL)
-	{ 
-		debug_printf(DEBUG_NORMAL, "Couldn't locate the certificate!\n");
+	pCertContext =
+	    CertFindCertificateInStore(hCertStore,
+				       X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+				       0, CERT_FIND_HASH, &toFindData, NULL);
+	FREE(hashData);		// Clean up the memory no matter what.
+
+	if (pCertContext == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't locate the certificate!\n");
 		return NULL;
 	}
 
 	return pCertContext;
 }
 
-PCCERT_CONTEXT win_cert_handler_get_from_user_store(char *storetype, char *location)
+PCCERT_CONTEXT win_cert_handler_get_from_user_store(char *storetype,
+						    char *location)
 {
-	PCCERT_CONTEXT  pCertContext = NULL;
+	PCCERT_CONTEXT pCertContext = NULL;
 	CRYPT_HASH_BLOB toFindData;
 	uint8_t *hashData = NULL;
 
-	if (storetype == NULL) return NULL;
-	if (location == NULL) return NULL;
+	if (storetype == NULL)
+		return NULL;
+	if (location == NULL)
+		return NULL;
 
 	str2hex(location, &hashData, &toFindData.cbData);
 	toFindData.pbData = hashData;
 
 	cert_handler_user_init();
 
-	pCertContext = CertFindCertificateInStore(hCertUserStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0, CERT_FIND_HASH, &toFindData, NULL);
-	FREE(hashData);  // Clean up the memory no matter what.
-	
-	if (pCertContext == NULL)
-	{ 
-		debug_printf(DEBUG_NORMAL, "Couldn't locate the certificate!\n");
+	pCertContext =
+	    CertFindCertificateInStore(hCertUserStore,
+				       X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+				       0, CERT_FIND_HASH, &toFindData, NULL);
+	FREE(hashData);		// Clean up the memory no matter what.
+
+	if (pCertContext == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't locate the certificate!\n");
 		cert_handler_user_deinit();
 		return NULL;
 	}
@@ -253,17 +277,17 @@ PCCERT_CONTEXT win_cert_handler_get_from_user_store(char *storetype, char *locat
  * \retval 0 on success
  * \retval -1 on error
  **/
-int cert_handler_get_info_from_store(char *storetype, char *location, cert_info *certinfo)
+int cert_handler_get_info_from_store(char *storetype, char *location,
+				     cert_info * certinfo)
 {
-	PCCERT_CONTEXT  pCertContext = NULL;
+	PCCERT_CONTEXT pCertContext = NULL;
 
 	pCertContext = win_cert_handler_get_from_win_store(storetype, location);
-	if (pCertContext == NULL)
-	{ 
-		debug_printf(DEBUG_NORMAL, "Couldn't locate the certificate!\n");
+	if (pCertContext == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't locate the certificate!\n");
 		return -1;
 	}
-
 
 	return cert_handler_get_info(pCertContext, certinfo);
 }
@@ -273,7 +297,7 @@ int cert_handler_get_info_from_store(char *storetype, char *location, cert_info 
  *
  * @param[in] cinfo   A pointer to the structure that we want to free the members of.
  **/
-void cert_handler_free_cert_info(cert_info *cinfo)
+void cert_handler_free_cert_info(cert_info * cinfo)
 {
 	FREE(cinfo->C);
 	FREE(cinfo->CN);
@@ -292,45 +316,48 @@ void cert_handler_free_cert_info(cert_info *cinfo)
  **/
 int cert_handler_num_root_ca_certs()
 {
-	PCCERT_CONTEXT  pCertContext = NULL;
+	PCCERT_CONTEXT pCertContext = NULL;
 	int numcerts = 0;
 	int i = 0;
 	char pszNameString[256];
 	DWORD size = 0;
 	CERT_ENHKEY_USAGE *enhkey = NULL;
 
-	if (hCertStore != NULL)
-	{
+	if (hCertStore != NULL) {
 		cert_handler_deinit();
 		cert_handler_init();
 	}
-
 	// Enumerate all of the certificates, and count only the ones that have the
 	// server authentication EKU set.
-	while ((pCertContext = CertEnumCertificatesInStore(hCertStore, pCertContext)))
-	{
+	while ((pCertContext =
+		CertEnumCertificatesInStore(hCertStore, pCertContext))) {
 		// We only check this certificate if we can get it's name.  If not, it is ignored.
-		if (!CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to determine certificate name.\n");
-		}
-		else
-		{
+		if (!CertGetNameString
+		    (pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL,
+		     pszNameString, 128)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Unable to determine certificate name.\n");
+		} else {
 #ifdef CHECK_EKU
-			if (CertGetEnhancedKeyUsage(pCertContext, 0, NULL, &size))
-			{
+			if (CertGetEnhancedKeyUsage
+			    (pCertContext, 0, NULL, &size)) {
 				enhkey = malloc(size);
-				if (enhkey == NULL)
-				{
-					debug_printf(DEBUG_NORMAL, "Unable to allocate memory to get EKU data!\n");
+				if (enhkey == NULL) {
+					debug_printf(DEBUG_NORMAL,
+						     "Unable to allocate memory to get EKU data!\n");
 					return -1;
 				}
 
-				if (CertGetEnhancedKeyUsage(pCertContext, 0, enhkey, &size))
-				{
-					for (i = 0; i < enhkey->cUsageIdentifier; i++)
-					{
-						if (strcmp(enhkey->rgpszUsageIdentifier[i], szOID_PKIX_KP_SERVER_AUTH) == 0)
+				if (CertGetEnhancedKeyUsage
+				    (pCertContext, 0, enhkey, &size)) {
+					for (i = 0;
+					     i < enhkey->cUsageIdentifier;
+					     i++) {
+						if (strcmp
+						    (enhkey->
+						     rgpszUsageIdentifier[i],
+						     szOID_PKIX_KP_SERVER_AUTH)
+						    == 0)
 #endif
 							numcerts++;
 #ifdef CHECK_EKU
@@ -338,17 +365,18 @@ int cert_handler_num_root_ca_certs()
 				}
 
 				FREE(enhkey);
-			}
-			else
-			{
-				debug_printf(DEBUG_NORMAL, "Unable to determine EKU data size!\n");
+			} else {
+				debug_printf(DEBUG_NORMAL,
+					     "Unable to determine EKU data size!\n");
 				return -1;
 			}
 #endif
 		}
 	}
 
-	debug_printf(DEBUG_CERTS, "There were %d cert(s) that can be used for server authentication.\n", numcerts);
+	debug_printf(DEBUG_CERTS,
+		     "There were %d cert(s) that can be used for server authentication.\n",
+		     numcerts);
 	return numcerts;
 }
 
@@ -361,49 +389,51 @@ int cert_handler_num_root_ca_certs()
  **/
 int cert_handler_num_user_certs()
 {
-	PCCERT_CONTEXT  pCertContext = NULL;
+	PCCERT_CONTEXT pCertContext = NULL;
 	int numcerts = 0;
 	int i = 0;
 	char pszNameString[256];
 	DWORD size = 0;
 	CERT_ENHKEY_USAGE *enhkey = NULL;
 
-	if (hCertUserStore != NULL)
-	{
+	if (hCertUserStore != NULL) {
 		cert_handler_user_deinit();
 		cert_handler_user_init();
-	}
-	else
-	{
+	} else {
 		cert_handler_user_init();
 	}
 
 	// Enumerate all of the certificates, and count only the ones that have the
 	// server authentication EKU set.
-	while ((pCertContext = CertEnumCertificatesInStore(hCertUserStore, pCertContext)))
-	{
+	while ((pCertContext =
+		CertEnumCertificatesInStore(hCertUserStore, pCertContext))) {
 		// We only check this certificate if we can get it's name.  If not, it is ignored.
-		if (!CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, 128))
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to determine certificate name.\n");
-		}
-		else
-		{
+		if (!CertGetNameString
+		    (pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL,
+		     pszNameString, 128)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Unable to determine certificate name.\n");
+		} else {
 #ifdef CHECK_EKU
-			if (CertGetEnhancedKeyUsage(pCertContext, 0, NULL, &size))
-			{
+			if (CertGetEnhancedKeyUsage
+			    (pCertContext, 0, NULL, &size)) {
 				enhkey = malloc(size);
-				if (enhkey == NULL)
-				{
-					debug_printf(DEBUG_NORMAL, "Unable to allocate memory to get EKU data!\n");
+				if (enhkey == NULL) {
+					debug_printf(DEBUG_NORMAL,
+						     "Unable to allocate memory to get EKU data!\n");
 					return -1;
 				}
 
-				if (CertGetEnhancedKeyUsage(pCertContext, 0, enhkey, &size))
-				{
-					for (i = 0; i < enhkey->cUsageIdentifier; i++)
-					{
-						if (strcmp(enhkey->rgpszUsageIdentifier[i], szOID_PKIX_KP_CLIENT_AUTH) == 0)
+				if (CertGetEnhancedKeyUsage
+				    (pCertContext, 0, enhkey, &size)) {
+					for (i = 0;
+					     i < enhkey->cUsageIdentifier;
+					     i++) {
+						if (strcmp
+						    (enhkey->
+						     rgpszUsageIdentifier[i],
+						     szOID_PKIX_KP_CLIENT_AUTH)
+						    == 0)
 #endif
 							numcerts++;
 #ifdef CHECK_EKU
@@ -411,23 +441,23 @@ int cert_handler_num_user_certs()
 				}
 
 				FREE(enhkey);
-			}
-			else
-			{
-				debug_printf(DEBUG_NORMAL, "Unable to determine EKU data size!\n");
+			} else {
+				debug_printf(DEBUG_NORMAL,
+					     "Unable to determine EKU data size!\n");
 				return -1;
 			}
 #endif
 		}
 	}
 
-	debug_printf(DEBUG_CERTS, "There were %d cert(s) that can be used for user authentication.\n", numcerts);
+	debug_printf(DEBUG_CERTS,
+		     "There were %d cert(s) that can be used for user authentication.\n",
+		     numcerts);
 
 	cert_handler_user_deinit();
 
 	return numcerts;
 }
-
 
 /**
  * \brief Free the memory that was allocated to store the certificate enumeration.
@@ -435,18 +465,20 @@ int cert_handler_num_user_certs()
  * @param[in] numcas   The number of CAs that are represented in the enumeration.
  * @param[in] cas   The array of CA names.
  **/
-void cert_handler_free_cert_enum(int numcas, cert_enum **cas)
+void cert_handler_free_cert_enum(int numcas, cert_enum ** cas)
 {
 	cert_enum *casa = NULL;
 	int i = 0;
 
 	casa = (*cas);
 
-	for (i = 0; i < numcas; i++)
-	{
-		if (casa[i].certname != NULL) FREE(casa[i].certname);
-		if (casa[i].friendlyname != NULL) FREE(casa[i].friendlyname);
-		if (casa[i].issuer != NULL) FREE(casa[i].issuer);
+	for (i = 0; i < numcas; i++) {
+		if (casa[i].certname != NULL)
+			FREE(casa[i].certname);
+		if (casa[i].friendlyname != NULL)
+			FREE(casa[i].friendlyname);
+		if (casa[i].issuer != NULL)
+			FREE(casa[i].issuer);
 	}
 
 	free((*cas));
@@ -455,38 +487,37 @@ void cert_handler_free_cert_enum(int numcas, cert_enum **cas)
 
 char *do_sha1(char *tohash, int size)
 {
-  EVP_MD_CTX ctx;
-  char *hash_ret;
-  int evp_ret_len;
+	EVP_MD_CTX ctx;
+	char *hash_ret;
+	int evp_ret_len;
 
-  if (!xsup_assert((tohash != NULL), "tohash != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((tohash != NULL), "tohash != NULL", FALSE))
+		return NULL;
 
-  if (!xsup_assert((size > 0), "size > 0", FALSE))
-    return NULL;
+	if (!xsup_assert((size > 0), "size > 0", FALSE))
+		return NULL;
 
-  hash_ret = (char *)Malloc(21);  // We should get 20 bytes returned.
-  if (hash_ret == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for 'hash_ret' in "
-		   "%s().\n", __FUNCTION__);
-      return NULL;
-    }
- 
-  EVP_DigestInit(&ctx, EVP_sha1());
-  EVP_DigestUpdate(&ctx, tohash, size);
-  EVP_DigestFinal(&ctx, hash_ret, (int *)&evp_ret_len);
+	hash_ret = (char *)Malloc(21);	// We should get 20 bytes returned.
+	if (hash_ret == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory for 'hash_ret' in "
+			     "%s().\n", __FUNCTION__);
+		return NULL;
+	}
 
-  if (evp_ret_len != 20)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid result from OpenSSL SHA calls! "
-		   "(%s:%d)\n", __FUNCTION__, __LINE__);
-      return NULL;
-    }
+	EVP_DigestInit(&ctx, EVP_sha1());
+	EVP_DigestUpdate(&ctx, tohash, size);
+	EVP_DigestFinal(&ctx, hash_ret, (int *)&evp_ret_len);
 
-  return hash_ret;
+	if (evp_ret_len != 20) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid result from OpenSSL SHA calls! "
+			     "(%s:%d)\n", __FUNCTION__, __LINE__);
+		return NULL;
+	}
+
+	return hash_ret;
 }
-
 
 /**
  * \brief Enumerate root CA certificates that are in the store that
@@ -503,9 +534,9 @@ char *do_sha1(char *tohash, int size)
  * \retval -1 on error
  * \retval 0 on success
  **/
-int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
+int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 {
-	PCCERT_CONTEXT  pCertContext = NULL;
+	PCCERT_CONTEXT pCertContext = NULL;
 	int certidx = 0;
 	int i = 0;
 	wchar_t pszNameString[256];
@@ -518,107 +549,179 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
 	uint8_t *sha1hash = NULL;
 	char *temp = NULL;
 
-	if (hCertStore != NULL)
-	{
+	if (hCertStore != NULL) {
 		cert_handler_deinit();
 		cert_handler_init();
 	}
 
-	casa = Malloc((sizeof(cert_enum) * ((*numcas)+1)));
-	if (casa == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store certificate enumeration.\n");
+	casa = Malloc((sizeof(cert_enum) * ((*numcas) + 1)));
+	if (casa == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store certificate enumeration.\n");
 		return -1;
 	}
-
 	// Enumerate all of the certificates, and count only the ones that have the
 	// server authentication EKU set.
-	while ((hCertStore != NULL) && (pCertContext = CertEnumCertificatesInStore(hCertStore, pCertContext)) &&
-		(pCertContext != NULL))
-	{
+	while ((hCertStore != NULL)
+	       && (pCertContext =
+		   CertEnumCertificatesInStore(hCertStore, pCertContext))
+	       && (pCertContext != NULL)) {
 		// We only check this certificate if we can get it's name.  If not, it is ignored.
-		if (!CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, sizeof(pszNameString)))
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to determine certificate name.\n");
-		}
-		else
-		{
+		if (!CertGetNameStringW
+		    (pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL,
+		     pszNameString, sizeof(pszNameString))) {
+			debug_printf(DEBUG_NORMAL,
+				     "Unable to determine certificate name.\n");
+		} else {
 			// Everything in this enum is out of the windows cert store.
 			casa[certidx].storetype = _strdup("WINDOWS");
 
-			sha1hash = do_sha1(pCertContext->pbCertEncoded, pCertContext->cbCertEncoded);
+			sha1hash =
+			    do_sha1(pCertContext->pbCertEncoded,
+				    pCertContext->cbCertEncoded);
 			temp = convert_hex_to_str(sha1hash, 20);
 			casa[certidx].location = temp;
 			FREE(sha1hash);
 
 #ifdef CHECK_EKU
-			if (CertGetEnhancedKeyUsage(pCertContext, 0, NULL, &size))
-			{
+			if (CertGetEnhancedKeyUsage
+			    (pCertContext, 0, NULL, &size)) {
 				enhkey = malloc(size);
-				if (enhkey == NULL)
-				{
-					debug_printf(DEBUG_NORMAL, "Unable to allocate memory to get EKU data!\n");
+				if (enhkey == NULL) {
+					debug_printf(DEBUG_NORMAL,
+						     "Unable to allocate memory to get EKU data!\n");
 					return -1;
 				}
 
-				if (CertGetEnhancedKeyUsage(pCertContext, 0, enhkey, &size))
-				{
-					for (i = 0; i < enhkey->cUsageIdentifier; i++)
-					{
-						if (strcmp(enhkey->rgpszUsageIdentifier[i], szOID_PKIX_KP_SERVER_AUTH) == 0)
-						{
+				if (CertGetEnhancedKeyUsage
+				    (pCertContext, 0, enhkey, &size)) {
+					for (i = 0;
+					     i < enhkey->cUsageIdentifier;
+					     i++) {
+						if (strcmp
+						    (enhkey->
+						     rgpszUsageIdentifier[i],
+						     szOID_PKIX_KP_SERVER_AUTH)
+						    == 0) {
 #endif
-							if (WideCharToMultiByte(CP_UTF8, 0, pszNameString, wcslen(pszNameString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
-							{
-								debug_printf(DEBUG_NORMAL, "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+							if (WideCharToMultiByte
+							    (CP_UTF8, 0,
+							     pszNameString,
+							     wcslen
+							     (pszNameString) +
+							     1, utf8_buffer,
+							     sizeof
+							     (utf8_buffer),
+							     NULL, NULL) == 0) {
+								debug_printf
+								    (DEBUG_NORMAL,
+								     "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n",
+								     __FUNCTION__,
+								     __LINE__);
 								continue;
 							}
-							casa[certidx].certname = _strdup(utf8_buffer);
-							
+							casa[certidx].certname =
+							    _strdup
+							    (utf8_buffer);
+
 							// Get the subject name for this certificate.
 
-							if (CertGetNameStringW(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
-							{
-								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
-								{
-									debug_printf(DEBUG_NORMAL, "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+							if (CertGetNameStringW
+							    (pCertContext,
+							     CERT_NAME_FRIENDLY_DISPLAY_TYPE,
+							     0, NULL,
+							     pszSubjectString,
+							     sizeof
+							     (pszSubjectString))
+							    > 0) {
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
+									debug_printf
+									    (DEBUG_NORMAL,
+									     "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n",
+									     __FUNCTION__,
+									     __LINE__);
 									continue;
 								}
-								casa[certidx].friendlyname = _strdup(utf8_buffer);
+								casa[certidx].
+								    friendlyname
+								    =
+								    _strdup
+								    (utf8_buffer);
 							}
 
-							memset(&pszSubjectString, 0x00, sizeof(pszSubjectString));
+							memset
+							    (&pszSubjectString,
+							     0x00,
+							     sizeof
+							     (pszSubjectString));
 
-							if (CertGetNameStringW(pCertContext, CERT_NAME_DNS_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
-							{
-								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
-								{
-									debug_printf(DEBUG_NORMAL, "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+							if (CertGetNameStringW
+							    (pCertContext,
+							     CERT_NAME_DNS_TYPE,
+							     0, NULL,
+							     pszSubjectString,
+							     sizeof
+							     (pszSubjectString))
+							    > 0) {
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
+									debug_printf
+									    (DEBUG_NORMAL,
+									     "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n",
+									     __FUNCTION__,
+									     __LINE__);
 									continue;
 								}
 
-								casa[certidx].commonname = _strdup(utf8_buffer);
+								casa[certidx].
+								    commonname =
+								    _strdup
+								    (utf8_buffer);
 							}
-
 							// Get the issuer name for this certificate.
-							if (CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
-							{
-								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
-								{
-									debug_printf(DEBUG_NORMAL, "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+							if (CertGetNameStringW
+							    (pCertContext,
+							     CERT_NAME_SIMPLE_DISPLAY_TYPE,
+							     CERT_NAME_ISSUER_FLAG,
+							     NULL,
+							     pszSubjectString,
+							     sizeof
+							     (pszSubjectString))
+							    > 0) {
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
+									debug_printf
+									    (DEBUG_NORMAL,
+									     "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n",
+									     __FUNCTION__,
+									     __LINE__);
 									continue;
 								}
 
-								casa[certidx].issuer = _strdup(utf8_buffer);
+								casa[certidx].
+								    issuer =
+								    _strdup
+								    (utf8_buffer);
 							}
 
-							memset(&systime, 0x00, sizeof(systime));
+							memset(&systime, 0x00,
+							       sizeof(systime));
 
-							if (FileTimeToSystemTime(&pCertContext->pCertInfo->NotAfter, &systime) != 0)
-							{
-								casa[certidx].day = systime.wDay;
-								casa[certidx].month = systime.wMonth;
-								casa[certidx].year = systime.wYear;
+							if (FileTimeToSystemTime
+							    (&pCertContext->
+							     pCertInfo->
+							     NotAfter,
+							     &systime) != 0) {
+								casa[certidx].
+								    day =
+								    systime.
+								    wDay;
+								casa[certidx].
+								    month =
+								    systime.
+								    wMonth;
+								casa[certidx].
+								    year =
+								    systime.
+								    wYear;
 							}
 
 							certidx++;
@@ -628,17 +731,18 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
 				}
 
 				FREE(enhkey);
-			}
-			else
-			{
-				debug_printf(DEBUG_NORMAL, "Unable to determine EKU data size!\n");
+			} else {
+				debug_printf(DEBUG_NORMAL,
+					     "Unable to determine EKU data size!\n");
 				return -1;
 			}
 #endif
 		}
 	}
 
-	debug_printf(DEBUG_CERTS, "There were %d cert(s) that can be used for server authentication.\n", certidx);
+	debug_printf(DEBUG_CERTS,
+		     "There were %d cert(s) that can be used for server authentication.\n",
+		     certidx);
 	(*cas) = casa;
 
 	return certidx;
@@ -654,86 +758,78 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum **cas)
 int cert_handler_add_cert_to_store(char *path_to_cert)
 {
 	HANDLE hFile;
-	PCCERT_CONTEXT	pCertContext;
-	BYTE			pbBuffer[8096];
-	DWORD			cbBuffer;
-	DWORD			dwErr;
-	LPVOID			lastErrStr;
-	int				retval = 0;
+	PCCERT_CONTEXT pCertContext;
+	BYTE pbBuffer[8096];
+	DWORD cbBuffer;
+	DWORD dwErr;
+	LPVOID lastErrStr;
+	int retval = 0;
 
-	if ((hFile = CreateFile( path_to_cert,
-							GENERIC_READ,
-							0,
-							NULL,
-							OPEN_EXISTING,
-							FILE_ATTRIBUTE_NORMAL,
-							NULL ) ) != INVALID_HANDLE_VALUE )
-	{
+	if ((hFile = CreateFile(path_to_cert,
+				GENERIC_READ,
+				0,
+				NULL,
+				OPEN_EXISTING,
+				FILE_ATTRIBUTE_NORMAL,
+				NULL)) != INVALID_HANDLE_VALUE) {
 		cbBuffer = 0;
 
-		memset( pbBuffer, 0, sizeof( pbBuffer ) );
+		memset(pbBuffer, 0, sizeof(pbBuffer));
 
-		if (ReadFile( hFile,
-						pbBuffer,
-						sizeof( pbBuffer ),
-						&cbBuffer,
-						NULL ) )
-		{
+		if (ReadFile(hFile,
+			     pbBuffer, sizeof(pbBuffer), &cbBuffer, NULL)) {
 
-			if ((pCertContext = CertCreateCertificateContext( X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 
-															pbBuffer, 
-															cbBuffer) ) )
-			{
-				if (hCertStore)
-				{
-					if (!CertAddCertificateContextToStore( hCertStore, 
-															pCertContext, 
-															CERT_STORE_ADD_NEW, 
-															NULL ) )
-					{
+			if ((pCertContext =
+			     CertCreateCertificateContext(X509_ASN_ENCODING |
+							  PKCS_7_ASN_ENCODING,
+							  pbBuffer,
+							  cbBuffer))) {
+				if (hCertStore) {
+					if (!CertAddCertificateContextToStore
+					    (hCertStore, pCertContext,
+					     CERT_STORE_ADD_NEW, NULL)) {
 						dwErr = GetLastError();
 
-						if (dwErr ==  CRYPT_E_EXISTS )
-						{
+						if (dwErr == CRYPT_E_EXISTS) {
 							//
 							// Certificate already exists
 							//
-						}
-						else
-						{
-							lastErrStr = GetLastErrorStr(dwErr);
-							debug_printf(DEBUG_NORMAL, "Unable to add certificate to store.  Windows error was '%d'.\n", lastErrStr);
+						} else {
+							lastErrStr =
+							    GetLastErrorStr
+							    (dwErr);
+							debug_printf
+							    (DEBUG_NORMAL,
+							     "Unable to add certificate to store.  Windows error was '%d'.\n",
+							     lastErrStr);
 							LocalFree(lastErrStr);
-							retval = IPC_EVENT_ERROR_CANT_ADD_CERT_TO_STORE;
+							retval =
+							    IPC_EVENT_ERROR_CANT_ADD_CERT_TO_STORE;
 						}
 					}
-				}
-				else
-				{
-					debug_printf(DEBUG_NORMAL, "Certificate store isn't open!\n");
-					retval = IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD;
+				} else {
+					debug_printf(DEBUG_NORMAL,
+						     "Certificate store isn't open!\n");
+					retval =
+					    IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD;
 				}
 
-				CertFreeCertificateContext( pCertContext );
+				CertFreeCertificateContext(pCertContext);
 
 				pCertContext = NULL;
-			}
-			else
-			{
-				debug_printf(DEBUG_NORMAL, "Unable to read certificate file!\n");
+			} else {
+				debug_printf(DEBUG_NORMAL,
+					     "Unable to read certificate file!\n");
 				retval = IPC_EVENT_ERROR_CANT_READ_FILE;
 			}
-		}
-		else
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to open certificate file!\n");
+		} else {
+			debug_printf(DEBUG_NORMAL,
+				     "Unable to open certificate file!\n");
 			retval = IPC_EVENT_ERROR_CANT_READ_FILE;
 		}
 
-		CloseHandle( hFile );
-	}
-	else
-	{
+		CloseHandle(hFile);
+	} else {
 		retval = IPC_EVENT_ERROR_CANT_READ_FILE;
 	}
 
@@ -755,9 +851,9 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
  * \retval -1 on error
  * \retval 0 on success
  **/
-int cert_handler_enum_user_certs(int *numcer, cert_enum **cer)
+int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 {
-	PCCERT_CONTEXT  pCertContext = NULL;
+	PCCERT_CONTEXT pCertContext = NULL;
 	int certidx = 0;
 	int i = 0;
 	wchar_t pszNameString[256];
@@ -770,113 +866,184 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum **cer)
 	uint8_t *sha1hash = NULL;
 	char *temp = NULL;
 
-	if (hCertUserStore != NULL)
-	{
+	if (hCertUserStore != NULL) {
 		cert_handler_user_deinit();
 		cert_handler_user_init();
-	}
-	else
-	{
+	} else {
 		cert_handler_user_init();
 	}
 
-	certs = Malloc((sizeof(cert_enum) * ((*numcer)+1)));
-	if (certs == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store certificate enumeration.\n");
+	certs = Malloc((sizeof(cert_enum) * ((*numcer) + 1)));
+	if (certs == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store certificate enumeration.\n");
 		return -1;
 	}
-
 	// Enumerate all of the certificates, and count only the ones that have the
 	// server authentication EKU set.
-	while ((hCertUserStore != NULL) && (pCertContext = CertEnumCertificatesInStore(hCertUserStore, pCertContext)) &&
-		(pCertContext != NULL))
-	{
+	while ((hCertUserStore != NULL)
+	       && (pCertContext =
+		   CertEnumCertificatesInStore(hCertUserStore, pCertContext))
+	       && (pCertContext != NULL)) {
 		// We only check this certificate if we can get it's name.  If not, it is ignored.
-		if (!CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, pszNameString, sizeof(pszNameString)))
-		{
-			debug_printf(DEBUG_NORMAL, "Unable to determine certificate name.\n");
-		}
-		else
-		{
+		if (!CertGetNameStringW
+		    (pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL,
+		     pszNameString, sizeof(pszNameString))) {
+			debug_printf(DEBUG_NORMAL,
+				     "Unable to determine certificate name.\n");
+		} else {
 			// Everything in this enum is out of the windows cert store.
 			certs[certidx].storetype = _strdup("WINDOWS");
 
-			sha1hash = do_sha1(pCertContext->pbCertEncoded, pCertContext->cbCertEncoded);
+			sha1hash =
+			    do_sha1(pCertContext->pbCertEncoded,
+				    pCertContext->cbCertEncoded);
 			temp = convert_hex_to_str(sha1hash, 20);
 			certs[certidx].location = temp;
 			FREE(sha1hash);
 
 #ifdef CHECK_EKU
-			if (CertGetEnhancedKeyUsage(pCertContext, 0, NULL, &size))
-			{
+			if (CertGetEnhancedKeyUsage
+			    (pCertContext, 0, NULL, &size)) {
 				enhkey = malloc(size);
-				if (enhkey == NULL)
-				{
-					debug_printf(DEBUG_NORMAL, "Unable to allocate memory to get EKU data!\n");
+				if (enhkey == NULL) {
+					debug_printf(DEBUG_NORMAL,
+						     "Unable to allocate memory to get EKU data!\n");
 					return -1;
 				}
 
-				if (CertGetEnhancedKeyUsage(pCertContext, 0, enhkey, &size))
-				{
-					for (i = 0; i < enhkey->cUsageIdentifier; i++)
-					{
-						if (strcmp(enhkey->rgpszUsageIdentifier[i], szOID_PKIX_KP_CLIENT_AUTH) == 0)
-						{
+				if (CertGetEnhancedKeyUsage
+				    (pCertContext, 0, enhkey, &size)) {
+					for (i = 0;
+					     i < enhkey->cUsageIdentifier;
+					     i++) {
+						if (strcmp
+						    (enhkey->
+						     rgpszUsageIdentifier[i],
+						     szOID_PKIX_KP_CLIENT_AUTH)
+						    == 0) {
 #endif
-							if (WideCharToMultiByte(CP_UTF8, 0, pszNameString, wcslen(pszNameString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
-							{
-								debug_printf(DEBUG_NORMAL, "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+							if (WideCharToMultiByte
+							    (CP_UTF8, 0,
+							     pszNameString,
+							     wcslen
+							     (pszNameString) +
+							     1, utf8_buffer,
+							     sizeof
+							     (utf8_buffer),
+							     NULL, NULL) == 0) {
+								debug_printf
+								    (DEBUG_NORMAL,
+								     "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n",
+								     __FUNCTION__,
+								     __LINE__);
 								continue;
 							}
 
-							certs[certidx].certname = _strdup(utf8_buffer);
-							
+							certs[certidx].
+							    certname =
+							    _strdup
+							    (utf8_buffer);
+
 							// Get the subject name for this certificate.
 
-							if (CertGetNameStringW(pCertContext, CERT_NAME_FRIENDLY_DISPLAY_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
-							{
-								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
-								{
-									debug_printf(DEBUG_NORMAL, "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+							if (CertGetNameStringW
+							    (pCertContext,
+							     CERT_NAME_FRIENDLY_DISPLAY_TYPE,
+							     0, NULL,
+							     pszSubjectString,
+							     sizeof
+							     (pszSubjectString))
+							    > 0) {
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
+									debug_printf
+									    (DEBUG_NORMAL,
+									     "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n",
+									     __FUNCTION__,
+									     __LINE__);
 									continue;
 								}
 
-								certs[certidx].friendlyname = _strdup(utf8_buffer);
+								certs[certidx].
+								    friendlyname
+								    =
+								    _strdup
+								    (utf8_buffer);
 							}
 
-							memset(&pszSubjectString, 0x00, sizeof(pszSubjectString));
+							memset
+							    (&pszSubjectString,
+							     0x00,
+							     sizeof
+							     (pszSubjectString));
 
-							if (CertGetNameStringW(pCertContext, CERT_NAME_DNS_TYPE, 0, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
-							{
-								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
-								{
-									debug_printf(DEBUG_NORMAL, "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+							if (CertGetNameStringW
+							    (pCertContext,
+							     CERT_NAME_DNS_TYPE,
+							     0, NULL,
+							     pszSubjectString,
+							     sizeof
+							     (pszSubjectString))
+							    > 0) {
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
+									debug_printf
+									    (DEBUG_NORMAL,
+									     "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n",
+									     __FUNCTION__,
+									     __LINE__);
 									continue;
 								}
 
-								certs[certidx].commonname = _strdup(utf8_buffer);
+								certs[certidx].
+								    commonname =
+								    _strdup
+								    (utf8_buffer);
 							}
-
 							// Get the issuer name for this certificate.
-							if (CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, CERT_NAME_ISSUER_FLAG, NULL, pszSubjectString, sizeof(pszSubjectString)) > 0)
-							{
-								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString)+1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0)
-								{
-									debug_printf(DEBUG_NORMAL, "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n", __FUNCTION__, __LINE__);
+							if (CertGetNameStringW
+							    (pCertContext,
+							     CERT_NAME_SIMPLE_DISPLAY_TYPE,
+							     CERT_NAME_ISSUER_FLAG,
+							     NULL,
+							     pszSubjectString,
+							     sizeof
+							     (pszSubjectString))
+							    > 0) {
+								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
+									debug_printf
+									    (DEBUG_NORMAL,
+									     "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n",
+									     __FUNCTION__,
+									     __LINE__);
 									continue;
 								}
 
-								certs[certidx].issuer = _strdup(utf8_buffer);
+								certs[certidx].
+								    issuer =
+								    _strdup
+								    (utf8_buffer);
 							}
 
-							memset(&systime, 0x00, sizeof(systime));
+							memset(&systime, 0x00,
+							       sizeof(systime));
 
-							if (FileTimeToSystemTime(&pCertContext->pCertInfo->NotAfter, &systime) != 0)
-							{
-								certs[certidx].day = systime.wDay;
-								certs[certidx].month = systime.wMonth;
-								certs[certidx].year = systime.wYear;
+							if (FileTimeToSystemTime
+							    (&pCertContext->
+							     pCertInfo->
+							     NotAfter,
+							     &systime) != 0) {
+								certs[certidx].
+								    day =
+								    systime.
+								    wDay;
+								certs[certidx].
+								    month =
+								    systime.
+								    wMonth;
+								certs[certidx].
+								    year =
+								    systime.
+								    wYear;
 							}
 
 							certidx++;
@@ -886,17 +1053,18 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum **cer)
 				}
 
 				FREE(enhkey);
-			}
-			else
-			{
-				debug_printf(DEBUG_NORMAL, "Unable to determine EKU data size!\n");
+			} else {
+				debug_printf(DEBUG_NORMAL,
+					     "Unable to determine EKU data size!\n");
 				return -1;
 			}
 #endif
 		}
 	}
 
-	debug_printf(DEBUG_CERTS, "There were %d cert(s) that can be used for user authentication.\n", certidx);
+	debug_printf(DEBUG_CERTS,
+		     "There were %d cert(s) that can be used for user authentication.\n",
+		     certidx);
 	(*cer) = certs;
 
 	cert_handler_user_deinit();
@@ -910,28 +1078,28 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum **cer)
  * \note Not implemented because it isn't needed.
  **/
 static int rsa_pub_enc(int flen, const unsigned char *from, unsigned char *to,
-						RSA *rsa, int padding)
+		       RSA * rsa, int padding)
 {
 	return 0;
 }
 
 /* verify arbitrary data */
 static int rsa_pub_dec(int flen, const unsigned char *from, unsigned char *to,
-						RSA *rsa, int padding)
+		       RSA * rsa, int padding)
 {
 	return 0;
 }
 
 /* decrypt */
-static int rsa_priv_dec(int flen, const unsigned char *from, unsigned char *to, 
-						RSA *rsa, int padding)
+static int rsa_priv_dec(int flen, const unsigned char *from, unsigned char *to,
+			RSA * rsa, int padding)
 {
 	return 0;
 }
 
 /* sign arbitrary data */
-static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to, 
-						RSA *rsa, int padding)
+static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
+			RSA * rsa, int padding)
 {
 	struct tls_vars *mytls_vars = (struct tls_vars *)rsa->meth->app_data;
 	HCRYPTHASH hash;
@@ -939,47 +1107,47 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 	unsigned char *buf = NULL;
 
 	// Verify that we have all of the information we need to sign data.
-	if (mytls_vars == NULL) 
-	{
-		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, ERR_R_PASSED_NULL_PARAMETER);
+	if (mytls_vars == NULL) {
+		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT,
+		       ERR_R_PASSED_NULL_PARAMETER);
 		return 0;
 	}
 
-	if (padding != RSA_PKCS1_PADDING) 
-	{
-		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, RSA_R_UNKNOWN_PADDING_TYPE);
+	if (padding != RSA_PKCS1_PADDING) {
+		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT,
+		       RSA_R_UNKNOWN_PADDING_TYPE);
 		return 0;
 	}
 
-	if (flen != 36) 
-	{
-		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, RSA_R_INVALID_MESSAGE_LENGTH);
+	if (flen != 36) {
+		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT,
+		       RSA_R_INVALID_MESSAGE_LENGTH);
 		return 0;
 	}
 
-	if (!CryptCreateHash(mytls_vars->hcProv, CALG_SSL3_SHAMD5, 0, 0, &hash)) 
-	{
-		debug_printf(DEBUG_NORMAL, "CryptCreateHash() failed! (Error %d)\n", GetLastError());
+	if (!CryptCreateHash(mytls_vars->hcProv, CALG_SSL3_SHAMD5, 0, 0, &hash)) {
+		debug_printf(DEBUG_NORMAL,
+			     "CryptCreateHash() failed! (Error %d)\n",
+			     GetLastError());
 		return 0;
 	}
 
 	len = sizeof(hash_size);
-	if (!CryptGetHashParam(hash, HP_HASHSIZE, (BYTE *) &hash_size, &len, 0)) 
-	{
+	if (!CryptGetHashParam
+	    (hash, HP_HASHSIZE, (BYTE *) & hash_size, &len, 0)) {
 		debug_printf(DEBUG_NORMAL, "CryptGetHashParam() failed!\n");
 		CryptDestroyHash(hash);
 		return 0;
 	}
 
-	if ((int)hash_size != flen) 
-	{
-		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, RSA_R_INVALID_MESSAGE_LENGTH);
+	if ((int)hash_size != flen) {
+		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT,
+		       RSA_R_INVALID_MESSAGE_LENGTH);
 		CryptDestroyHash(hash);
 		return 0;
 	}
 
-	if (!CryptSetHashParam(hash, HP_HASHVAL, (BYTE * ) from, 0)) 
-	{
+	if (!CryptSetHashParam(hash, HP_HASHVAL, (BYTE *) from, 0)) {
 		debug_printf(DEBUG_NORMAL, "CryptSetHashParam() failed!\n");
 		CryptDestroyHash(hash);
 		return 0;
@@ -987,22 +1155,21 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 
 	len = RSA_size(rsa);
 	buf = Malloc(len);
-	if (buf == NULL) 
-	{
+	if (buf == NULL) {
 		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, ERR_R_MALLOC_FAILURE);
 		CryptDestroyHash(hash);
 		return 0;
 	}
 
-	if (!CryptSignHash(hash, mytls_vars->pdwKeyspec, NULL, 0, buf, &len)) 
-	{
+	if (!CryptSignHash(hash, mytls_vars->pdwKeyspec, NULL, 0, buf, &len)) {
 		debug_printf(DEBUG_NORMAL, "CryptSignHash() failed!\n");
 		CryptDestroyHash(hash);
 		FREE(buf);
 		return 0;
 	}
 
-	for (i = 0; i < len; i++) to[i] = buf[len - i - 1];
+	for (i = 0; i < len; i++)
+		to[i] = buf[len - i - 1];
 	FREE(buf);
 
 	CryptDestroyHash(hash);
@@ -1010,24 +1177,25 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 }
 
 /* called at RSA_free */
-static int finish(RSA *rsa)
+static int finish(RSA * rsa)
 {
 	struct tls_vars *mytls_vars = (struct tls_vars *)rsa->meth->app_data;
 
-	if (mytls_vars == NULL) return 0;
+	if (mytls_vars == NULL)
+		return 0;
 
-	if (mytls_vars->pfCallerFreeProv == TRUE)
-	{
+	if (mytls_vars->pfCallerFreeProv == TRUE) {
 		// We need to free the CSP.
 		CryptReleaseContext(mytls_vars->hcProv, 0);
 	}
 
 	FREE((char *)rsa->meth);
-	
+
 	return 1;
 }
 
-int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars, PCCERT_CONTEXT mycert)
+int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars,
+				    PCCERT_CONTEXT mycert)
 {
 	X509 *wincert = NULL;
 	unsigned long err = 0;
@@ -1038,35 +1206,36 @@ int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars, PCCERT_CONTEXT 
 
 	tempptr = mycert->pbCertEncoded;
 
-	ERR_clear_error();  // Clear the error queue for this thread.
+	ERR_clear_error();	// Clear the error queue for this thread.
 	wincert = d2i_X509(NULL, &tempptr, mycert->cbCertEncoded);
-	if (wincert == NULL)
-	{
+	if (wincert == NULL) {
 		err = ERR_get_error();
-		debug_printf(DEBUG_NORMAL, "Couldn't load certificate from Windows certificate store!\n");
-		debug_printf(DEBUG_AUTHTYPES, "OpenSSL error is : %s\n", ERR_error_string(err, NULL));
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't load certificate from Windows certificate store!\n");
+		debug_printf(DEBUG_AUTHTYPES, "OpenSSL error is : %s\n",
+			     ERR_error_string(err, NULL));
 		return -1;
 	}
 
 	ERR_clear_error();
 
 	// Then, load the private key.
-	if (CryptAcquireCertificatePrivateKey(mycert, CRYPT_ACQUIRE_COMPARE_KEY_FLAG, NULL, &mytls_vars->hcProv, 
-		&mytls_vars->pdwKeyspec, &mytls_vars->pfCallerFreeProv) == FALSE)
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to load the user private key data!\n");
+	if (CryptAcquireCertificatePrivateKey
+	    (mycert, CRYPT_ACQUIRE_COMPARE_KEY_FLAG, NULL, &mytls_vars->hcProv,
+	     &mytls_vars->pdwKeyspec, &mytls_vars->pfCallerFreeProv) == FALSE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to load the user private key data!\n");
 		X509_free(wincert);
 		return -1;
 	}
 
 	rsa_meth = Malloc(sizeof(RSA_METHOD));
-	if (rsa_meth == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to allocate memory to create replacement RSA methods.\n");
+	if (rsa_meth == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to allocate memory to create replacement RSA methods.\n");
 		X509_free(wincert);
 		return -1;
 	}
-
 	// Set up the function pointers to our replacement functions.
 	rsa_meth->name = _strdup("CryptoAPI RSA Replacement");
 	rsa_meth->rsa_priv_dec = rsa_priv_dec;
@@ -1078,24 +1247,23 @@ int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars, PCCERT_CONTEXT 
 	rsa_meth->app_data = (char *)mytls_vars;
 
 	rsa = RSA_new();
-	if (rsa == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to allocate memory with RSA_new().\n");
+	if (rsa == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to allocate memory with RSA_new().\n");
 		X509_free(wincert);
 		return -1;
 	}
 
-	if (mytls_vars->ctx == NULL)
-	{
+	if (mytls_vars->ctx == NULL) {
 		debug_printf(DEBUG_NORMAL, "No SSL context established!\n");
 		X509_free(wincert);
 		RSA_free(rsa);
 		return -1;
 	}
 
-	if (!SSL_CTX_use_certificate(mytls_vars->ctx, wincert))
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to use selected user certificate!\n");
+	if (!SSL_CTX_use_certificate(mytls_vars->ctx, wincert)) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to use selected user certificate!\n");
 		X509_free(wincert);
 		RSA_free(rsa);
 		return -1;
@@ -1107,29 +1275,28 @@ int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars, PCCERT_CONTEXT 
 	rsa->n = BN_dup(pub_rsa->n);
 	rsa->e = BN_dup(pub_rsa->e);
 
-	if (!RSA_set_method(rsa, rsa_meth))
-	{
+	if (!RSA_set_method(rsa, rsa_meth)) {
 		RSA_free(rsa);
-		debug_printf(DEBUG_NORMAL, "Couldn't set the OpenSSL RSA method!\n");
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't set the OpenSSL RSA method!\n");
 		return -1;
 	}
 
-	if (!SSL_CTX_use_RSAPrivateKey(mytls_vars->ctx, rsa))
-	{
+	if (!SSL_CTX_use_RSAPrivateKey(mytls_vars->ctx, rsa)) {
 		RSA_free(rsa);
-		debug_printf(DEBUG_NORMAL, "Couldn't set the OpenSSL RSA Private Key method!\n");
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't set the OpenSSL RSA Private Key method!\n");
 		return -1;
 	}
 
 	RSA_free(rsa);
 
-  if (!SSL_CTX_check_private_key(mytls_vars->ctx))
-    {
-      debug_printf(DEBUG_NORMAL, "Private key isn't valid!\n");
-     // tls_funcs_process_error();
-      return -1; XETLSCERTLOAD;
-    }
+	if (!SSL_CTX_check_private_key(mytls_vars->ctx)) {
+		debug_printf(DEBUG_NORMAL, "Private key isn't valid!\n");
+		// tls_funcs_process_error();
+		return -1;
+		XETLSCERTLOAD;
+	}
 
 	return 0;
 }
-

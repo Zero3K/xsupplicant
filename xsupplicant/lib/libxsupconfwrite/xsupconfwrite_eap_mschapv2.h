@@ -8,9 +8,7 @@
 #ifndef __XSUPCONFWRITE_EAP_MSCHAPV2_H__
 #define __XSUPCONFWRITE_EAP_MSCHAPV2_H__
 
-xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *, uint8_t, char);
+xmlNodePtr xsupconfwrite_eap_mschapv2_create_tree(struct config_eap_mschapv2 *,
+						  uint8_t, char);
 
-#endif // __XSUPCONFWRITE_EAP_MSCHAPV2_H__
-
-
-
+#endif				// __XSUPCONFWRITE_EAP_MSCHAPV2_H__

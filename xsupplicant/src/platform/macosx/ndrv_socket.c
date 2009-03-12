@@ -56,127 +56,121 @@
 
 #include "ndrv_socket.h"
 
-int
-ndrv_socket(char * ifname)
+int ndrv_socket(char *ifname)
 {
-    struct sockaddr_ndrv 	ndrv;
-    int 			s;
+	struct sockaddr_ndrv ndrv;
+	int s;
 
-    s = socket(AF_NDRV, SOCK_RAW, 0);
-    if (s < 0) {
-	fprintf(stderr, "ndrv_socket: socket() failed: %s\n", strerror(errno));
-	goto failed;
-    }
-    strncpy((char *)ndrv.snd_name, ifname, sizeof(ndrv.snd_name));
-    ndrv.snd_len = sizeof(ndrv);
-    ndrv.snd_family = AF_NDRV;
-    if (bind(s, (struct sockaddr *)&ndrv, sizeof(ndrv)) < 0) {
-	fprintf(stderr, "ndrv_socket: bind() failed: %s\n", strerror(errno));
-	goto failed;
-    }
-    return (s);
+	s = socket(AF_NDRV, SOCK_RAW, 0);
+	if (s < 0) {
+		fprintf(stderr, "ndrv_socket: socket() failed: %s\n",
+			strerror(errno));
+		goto failed;
+	}
+	strncpy((char *)ndrv.snd_name, ifname, sizeof(ndrv.snd_name));
+	ndrv.snd_len = sizeof(ndrv);
+	ndrv.snd_family = AF_NDRV;
+	if (bind(s, (struct sockaddr *)&ndrv, sizeof(ndrv)) < 0) {
+		fprintf(stderr, "ndrv_socket: bind() failed: %s\n",
+			strerror(errno));
+		goto failed;
+	}
+	return (s);
  failed:
-    if (s >= 0) {
-	close(s);
-    }
-    return (-1);
+	if (s >= 0) {
+		close(s);
+	}
+	return (-1);
 }
 
-int
-ndrv_socket_bind(int s, u_long family, u_short ether_type)
+int ndrv_socket_bind(int s, u_long family, u_short ether_type)
 {
-    struct ndrv_protocol_desc	proto;
-    struct ndrv_demux_desc	demux;
-    int				status;
+	struct ndrv_protocol_desc proto;
+	struct ndrv_demux_desc demux;
+	int status;
 
-    bzero(&proto, sizeof(proto));
-    bzero(&demux, sizeof(demux));
-    proto.version = NDRV_PROTOCOL_DESC_VERS;
-    proto.protocol_family = family;
-    proto.demux_count = 1;
-    proto.demux_list = &demux;
-    demux.type = NDRV_DEMUXTYPE_ETHERTYPE;
-    demux.length = sizeof(demux.data.ether_type);
-    demux.data.ether_type = htons(ether_type);
-    status = setsockopt(s, SOL_NDRVPROTO, NDRV_SETDMXSPEC, 
-			(caddr_t)&proto, sizeof(proto));
-    if (status < 0) {
-        fprintf(stderr, "setsockopt(NDRV_SETDMXSPEC) failed: %s\n", 
-		strerror(errno));
-	return (status);
-    }
-    return (0);
+	bzero(&proto, sizeof(proto));
+	bzero(&demux, sizeof(demux));
+	proto.version = NDRV_PROTOCOL_DESC_VERS;
+	proto.protocol_family = family;
+	proto.demux_count = 1;
+	proto.demux_list = &demux;
+	demux.type = NDRV_DEMUXTYPE_ETHERTYPE;
+	demux.length = sizeof(demux.data.ether_type);
+	demux.data.ether_type = htons(ether_type);
+	status = setsockopt(s, SOL_NDRVPROTO, NDRV_SETDMXSPEC,
+			    (caddr_t) & proto, sizeof(proto));
+	if (status < 0) {
+		fprintf(stderr, "setsockopt(NDRV_SETDMXSPEC) failed: %s\n",
+			strerror(errno));
+		return (status);
+	}
+	return (0);
 }
 
-int
-ndrv_socket_add_multicast(int s, struct sockaddr_dl * dl_p)
+int ndrv_socket_add_multicast(int s, struct sockaddr_dl *dl_p)
 {
-    int			status;
+	int status;
 
-    status = setsockopt(s, SOL_NDRVPROTO, NDRV_ADDMULTICAST, 
-			dl_p, dl_p->sdl_len);
-    if (status < 0) {
-        fprintf(stderr, "setsockopt(NDRV_ADDMULTICAST) failed: %s\n", 
-		strerror(errno));
-	return (status);
-    }
-    return (0);
+	status = setsockopt(s, SOL_NDRVPROTO, NDRV_ADDMULTICAST,
+			    dl_p, dl_p->sdl_len);
+	if (status < 0) {
+		fprintf(stderr, "setsockopt(NDRV_ADDMULTICAST) failed: %s\n",
+			strerror(errno));
+		return (status);
+	}
+	return (0);
 }
 
-int
-ndrv_socket_remove_multicast(int s, struct sockaddr_dl * dl_p)
+int ndrv_socket_remove_multicast(int s, struct sockaddr_dl *dl_p)
 {
-    int			status;
+	int status;
 
-    status = setsockopt(s, SOL_NDRVPROTO, NDRV_DELMULTICAST, 
-			dl_p, dl_p->sdl_len);
-    if (status < 0) {
-        fprintf(stderr, "setsockopt(NDRV_DELMULTICAST) failed: %s\n", 
-		strerror(errno));
-	return (status);
-    }
-    return (0);
+	status = setsockopt(s, SOL_NDRVPROTO, NDRV_DELMULTICAST,
+			    dl_p, dl_p->sdl_len);
+	if (status < 0) {
+		fprintf(stderr, "setsockopt(NDRV_DELMULTICAST) failed: %s\n",
+			strerror(errno));
+		return (status);
+	}
+	return (0);
 }
 
 #ifdef TEST_NDRV_SOCKET
-int
-main(int argc, const char * argv[])
+int main(int argc, const char *argv[])
 {
-    int fd, size, i;
-    char buf[1500];
-    fd_set rfds;
+	int fd, size, i;
+	char buf[1500];
+	fd_set rfds;
 
-    if (argc < 1) {
-	fprintf(stderr, "usage: ndrv <ifname>\n");
+	if (argc < 1) {
+		fprintf(stderr, "usage: ndrv <ifname>\n");
+		exit(1);
+	}
+	fd = ndrv_socket(argv[1]);
+	if (fd < 0) {
+		fprintf(stderr, "ndrv_socket(%s) failed\n", argv[1]);
+	}
+
+	if (ndrv_socket_bind(fd, 0x8021ec, 0x888e) < 0) {
+		printf("Failed to bind!\n");
+	}
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+
+	if (select(fd + 1, &rfds, NULL, NULL, NULL) > 0) {
+		printf("Select returned correctly!\n");
+	}
+
+	size = recv(fd, &buf, 1500, 0);
+
+	if (size > 0) {
+		printf("Got packet of %d byte(s)\n", size);
+	}
+
+	close(fd);
 	exit(1);
-    }
-    fd = ndrv_socket(argv[1]);
-    if (fd < 0) {
-	fprintf(stderr, "ndrv_socket(%s) failed\n", argv[1]);
-    }
-
-    if (ndrv_socket_bind(fd, 0x8021ec, 0x888e) < 0)
-      {
-	printf("Failed to bind!\n");
-      }
-
-    FD_ZERO(&rfds);
-    FD_SET(fd, &rfds);
-
-    if (select(fd+1, &rfds, NULL, NULL, NULL) > 0)
-      {
-	printf("Select returned correctly!\n");
-      }
-
-    size = recv(fd, &buf, 1500, 0);
-    
-    if (size > 0)
-      {
-	printf("Got packet of %d byte(s)\n", size);
-      }
-
-    close(fd);
-    exit(1);
 }
 
-#endif TEST_NDRV_SOCKET
+#endif	/* TEST_NDRV_SOCKET */

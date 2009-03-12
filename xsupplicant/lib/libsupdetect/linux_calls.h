@@ -13,10 +13,9 @@
 #ifndef __LINUX_CALLS_H__
 #define __LINUX_CALLS_H__
 
-int supdetect_check_process_list(sup_fingerprints *search);
+int supdetect_check_process_list(sup_fingerprints * search);
 int os_strange_checks();
 
+#endif				// __LINUX_CALLS_H__
 
-#endif // __LINUX_CALLS_H__
-
-#endif // LINUX
+#endif				// LINUX

@@ -11,4 +11,4 @@
 
 int xsupconfcheck_ts_check(struct config_trusted_server *, int);
 
-#endif // __XSUPCONFCHECK_TS_H__
+#endif				// __XSUPCONFCHECK_TS_H__

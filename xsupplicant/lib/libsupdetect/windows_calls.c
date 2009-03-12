@@ -7,7 +7,7 @@
  **/
 #ifdef WINDOWS
 
-#define _CRT_SECURE_NO_WARNINGS		// Silence warnings about older C calls.
+#define _CRT_SECURE_NO_WARNINGS	// Silence warnings about older C calls.
 
 #define _WIN32_DCOM
 
@@ -15,7 +15,7 @@
 // to the IWbem* interfaces.
 #ifndef COBJMACROS
 #define COBJMACROS
-#endif 
+#endif
 
 #include <stdio.h>
 
@@ -26,7 +26,6 @@
 
 IWbemLocator *wcLoc = NULL;
 IWbemServices *wSvc = NULL;
-
 
 /**
  * \brief Initialize WMI so that we can use it.
@@ -40,47 +39,48 @@ int windows_calls_wmi_init()
 	wcLoc = NULL;
 	wSvc = NULL;
 
-	hr = CoInitializeEx(0, COINIT_APARTMENTTHREADED); 
-	if ((hr != S_OK) && (hr != S_FALSE))
-	{
-		if (hr == RPC_E_CHANGED_MODE)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't change threading mode.  Trying to continue with current threading model.\n");
-		}
-		else if (FAILED(hr)) 
-		{ 
-			debug_printf(DEBUG_NORMAL, "Failed to initialize COM library. Error code = 0x%x\n", hr);
+	hr = CoInitializeEx(0, COINIT_APARTMENTTHREADED);
+	if ((hr != S_OK) && (hr != S_FALSE)) {
+		if (hr == RPC_E_CHANGED_MODE) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't change threading mode.  Trying to continue with current threading model.\n");
+		} else if (FAILED(hr)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Failed to initialize COM library. Error code = 0x%x\n",
+				     hr);
 			return -1;
 		}
 	}
 
-	hr =  CoInitializeSecurity(
-	    NULL,                      // Security descriptor    
-	    -1,                        // COM negotiates authentication service
-	    NULL,                      // Authentication services
-		NULL,                      // Reserved
-	    RPC_C_AUTHN_LEVEL_DEFAULT, // Default authentication level for proxies
-	    RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation level for proxies
-	    NULL,                        // Authentication info
-	    EOAC_NONE,                   // Additional capabilities of the client or server
-	    NULL);                       // Reserved
+	hr = CoInitializeSecurity(NULL,	// Security descriptor    
+				  -1,	// COM negotiates authentication service
+				  NULL,	// Authentication services
+				  NULL,	// Reserved
+				  RPC_C_AUTHN_LEVEL_DEFAULT,	// Default authentication level for proxies
+				  RPC_C_IMP_LEVEL_IMPERSONATE,	// Default Impersonation level for proxies
+				  NULL,	// Authentication info
+				  EOAC_NONE,	// Additional capabilities of the client or server
+				  NULL);	// Reserved
 
-	if (hr != S_OK && hr != RPC_E_TOO_LATE)
-	{
-		debug_printf(DEBUG_NORMAL, "Failed to initialize COM security. Error code = 0x%02x\n", hr);
+	if (hr != S_OK && hr != RPC_E_TOO_LATE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Failed to initialize COM security. Error code = 0x%02x\n",
+			     hr);
 		CoUninitialize();
 		return -1;
 	}
 
-	hr = CoCreateInstance(&CLSID_WbemLocator, 0, 
-        CLSCTX_INPROC_SERVER, &IID_IWbemLocator, (LPVOID *) &wcLoc);
- 
-    if (FAILED(hr))
-    {
-        debug_printf(DEBUG_NORMAL, "Failed to create IWbemLocator object. Err code = 0x%02x\n", hr);
-        CoUninitialize();
-        return -1;
-    }
+	hr = CoCreateInstance(&CLSID_WbemLocator, 0,
+			      CLSCTX_INPROC_SERVER, &IID_IWbemLocator,
+			      (LPVOID *) & wcLoc);
+
+	if (FAILED(hr)) {
+		debug_printf(DEBUG_NORMAL,
+			     "Failed to create IWbemLocator object. Err code = 0x%02x\n",
+			     hr);
+		CoUninitialize();
+		return -1;
+	}
 
 	return 0;
 }
@@ -92,13 +92,13 @@ int windows_calls_wmi_init()
  **/
 int windows_calls_wmi_deinit()
 {
-	if(wcLoc != NULL)
-		IWbemLocator_Release(wcLoc);   
+	if (wcLoc != NULL)
+		IWbemLocator_Release(wcLoc);
 
 	if (wSvc != NULL)
 		IWbemLocator_Release(wSvc);
 
-    CoUninitialize();
+	CoUninitialize();
 
 	return 0;
 }
@@ -115,45 +115,43 @@ int windows_calls_wmi_connect()
 {
 	HRESULT hr;
 
-	if (wcLoc == NULL)
-	{
-		printf("Couldn't connect to IWbemLocator because wcLoc was NULL!\n");
+	if (wcLoc == NULL) {
+		printf
+		    ("Couldn't connect to IWbemLocator because wcLoc was NULL!\n");
+		return -1;
+	}
+	// Connect to the root\default namespace with the current user.
+	hr = IWbemLocator_ConnectServer(wcLoc,
+					L"ROOT\\CIMV2",
+					NULL, NULL, NULL, 0, NULL, NULL, &wSvc);
+
+	if (FAILED(hr)) {
+		debug_printf(DEBUG_NORMAL,
+			     "Could not connect. Error code = 0x%x\n", hr);
 		return -1;
 	}
 
-  // Connect to the root\default namespace with the current user.
-    hr = IWbemLocator_ConnectServer(wcLoc,
-            L"ROOT\\CIMV2", 
-            NULL, NULL, NULL, 0, NULL, NULL, &wSvc);
-
-    if (FAILED(hr))
-    {
-        debug_printf(DEBUG_NORMAL, "Could not connect. Error code = 0x%x\n", hr);
-        return -1;
-    }
-
-	if (wSvc == NULL)
-	{
+	if (wSvc == NULL) {
 		printf("Couldn't connect to IWbemLocator service!\n");
 		return -1;
 	}
 
-    hr = CoSetProxyBlanket(
-       (IUnknown *)wSvc,                        // Indicates the proxy to set
-       RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx
-       RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx
-       NULL,                        // Server principal name 
-       RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx 
-       RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx
-       NULL,                        // client identity
-       EOAC_NONE                    // proxy capabilities 
-    );
+	hr = CoSetProxyBlanket((IUnknown *) wSvc,	// Indicates the proxy to set
+			       RPC_C_AUTHN_WINNT,	// RPC_C_AUTHN_xxx
+			       RPC_C_AUTHZ_NONE,	// RPC_C_AUTHZ_xxx
+			       NULL,	// Server principal name 
+			       RPC_C_AUTHN_LEVEL_CALL,	// RPC_C_AUTHN_LEVEL_xxx 
+			       RPC_C_IMP_LEVEL_IMPERSONATE,	// RPC_C_IMP_LEVEL_xxx
+			       NULL,	// client identity
+			       EOAC_NONE	// proxy capabilities 
+	    );
 
-    if (FAILED(hr))
-    {
-        debug_printf(DEBUG_NORMAL, "Could not set proxy blanket. Error code = 0x%02x\n", hr);
-        return -1;
-    }
+	if (FAILED(hr)) {
+		debug_printf(DEBUG_NORMAL,
+			     "Could not set proxy blanket. Error code = 0x%02x\n",
+			     hr);
+		return -1;
+	}
 
 	return 0;
 }
@@ -166,7 +164,7 @@ int windows_calls_wmi_connect()
  * \retval >0 number of times the fingerprint was matched.
  * \retval 0 process not found.
  **/
-int supdetect_check_process_list(sup_fingerprints *search)
+int supdetect_check_process_list(sup_fingerprints * search)
 {
 	HRESULT hr;
 	IEnumWbemClassObject *pEnumerator = NULL;
@@ -177,46 +175,49 @@ int supdetect_check_process_list(sup_fingerprints *search)
 	char utf8result[1000];
 	char *matchstr = NULL;
 
-	if (wSvc == NULL)
-	{
+	if (wSvc == NULL) {
 		return -1;
 	}
 
-    hr = IWbemServices_ExecQuery(wSvc,
-         L"WQL", L"select * from Win32_Process",
-         WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, 
-         NULL,
-         &pEnumerator);
+	hr = IWbemServices_ExecQuery(wSvc,
+				     L"WQL", L"select * from Win32_Process",
+				     WBEM_FLAG_FORWARD_ONLY |
+				     WBEM_FLAG_RETURN_IMMEDIATELY, NULL,
+				     &pEnumerator);
 
-    if (FAILED(hr)) return -1;
+	if (FAILED(hr))
+		return -1;
 
 	matchstr = _strdup(search->match_string);
-	if (matchstr == NULL) return -1;
+	if (matchstr == NULL)
+		return -1;
 
 	toupper_str(matchstr);
 
-	while ((SUCCEEDED(IEnumWbemClassObject_Next(pEnumerator, WBEM_INFINITE, 1, 
-         &pclsObj, &uReturn)) && (uReturn != 0)))
-	{
-			hr = IWbemClassObject_Get(pclsObj, L"Caption", 0, &vtProp, 0, 0);
-			if (SUCCEEDED(hr))
-			{
-				sprintf(utf8result, "%ws", vtProp.bstrVal);
+	while ((SUCCEEDED
+		(IEnumWbemClassObject_Next
+		 (pEnumerator, WBEM_INFINITE, 1, &pclsObj, &uReturn))
+		&& (uReturn != 0))) {
+		hr = IWbemClassObject_Get(pclsObj, L"Caption", 0, &vtProp, 0,
+					  0);
+		if (SUCCEEDED(hr)) {
+			sprintf(utf8result, "%ws", vtProp.bstrVal);
 
-				VariantClear(&vtProp);
+			VariantClear(&vtProp);
 
-				IWbemClassObject_Release(pclsObj);
+			IWbemClassObject_Release(pclsObj);
 
-				toupper_str((char *)&utf8result);
+			toupper_str((char *)&utf8result);
 
-				if (strcmp(utf8result, matchstr) == 0) found++;
-			}
+			if (strcmp(utf8result, matchstr) == 0)
+				found++;
+		}
 	}
 
 	IWbemClassObject_Release(pEnumerator);
 
 	free(matchstr);
-	
+
 	return found;
 }
 
@@ -228,7 +229,7 @@ int supdetect_check_process_list(sup_fingerprints *search)
  * \retval >0 number of times the fingerprint was matched.
  * \retval 0 process not found.
  **/
-int supdetect_check_service_list(sup_fingerprints *search)
+int supdetect_check_service_list(sup_fingerprints * search)
 {
 	HRESULT hr;
 	IEnumWbemClassObject *pEnumerator = NULL;
@@ -239,61 +240,63 @@ int supdetect_check_service_list(sup_fingerprints *search)
 	char utf8result[1000];
 	char *matchstr = NULL;
 
-	if (wSvc == NULL)
-	{
+	if (wSvc == NULL) {
 		return -1;
 	}
 
-    hr = IWbemServices_ExecQuery(wSvc,
-         L"WQL", L"select * from Win32_Service",
-         WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY, 
-         NULL,
-         &pEnumerator);
+	hr = IWbemServices_ExecQuery(wSvc,
+				     L"WQL", L"select * from Win32_Service",
+				     WBEM_FLAG_FORWARD_ONLY |
+				     WBEM_FLAG_RETURN_IMMEDIATELY, NULL,
+				     &pEnumerator);
 
-    if (FAILED(hr)) return -1;
+	if (FAILED(hr))
+		return -1;
 
 	matchstr = _strdup(search->match_string);
-	if (matchstr == NULL) return -1;
+	if (matchstr == NULL)
+		return -1;
 
 	toupper_str(matchstr);
 
-	while ((SUCCEEDED(IEnumWbemClassObject_Next(pEnumerator, WBEM_INFINITE, 1, 
-         &pclsObj, &uReturn)) && (uReturn != 0)))
-	{
-			hr = IWbemClassObject_Get(pclsObj, L"Caption", 0, &vtProp, 0, 0);
-			if (SUCCEEDED(hr))
-			{
-				sprintf(utf8result, "%ws", vtProp.bstrVal);
+	while ((SUCCEEDED
+		(IEnumWbemClassObject_Next
+		 (pEnumerator, WBEM_INFINITE, 1, &pclsObj, &uReturn))
+		&& (uReturn != 0))) {
+		hr = IWbemClassObject_Get(pclsObj, L"Caption", 0, &vtProp, 0,
+					  0);
+		if (SUCCEEDED(hr)) {
+			sprintf(utf8result, "%ws", vtProp.bstrVal);
 
-				VariantClear(&vtProp);
+			VariantClear(&vtProp);
 
-				toupper_str((char *)&utf8result);
+			toupper_str((char *)&utf8result);
 
-				if (strcmp(utf8result, matchstr) == 0)
-				{
-					// It was found, now see if it is running.
-					hr = IWbemClassObject_Get(pclsObj, L"State", 0, &vtProp, 0, 0);
-					if (SUCCEEDED(hr))
-					{
-						sprintf(utf8result, "%ws", vtProp.bstrVal);
+			if (strcmp(utf8result, matchstr) == 0) {
+				// It was found, now see if it is running.
+				hr = IWbemClassObject_Get(pclsObj, L"State", 0,
+							  &vtProp, 0, 0);
+				if (SUCCEEDED(hr)) {
+					sprintf(utf8result, "%ws",
+						vtProp.bstrVal);
 
-						VariantClear(&vtProp);
+					VariantClear(&vtProp);
 
-						toupper_str((char *)&utf8result);
+					toupper_str((char *)&utf8result);
 
-						if (strcmp(utf8result, "RUNNING") == 0) 
-							found++;
-					}
+					if (strcmp(utf8result, "RUNNING") == 0)
+						found++;
 				}
-
-				IWbemClassObject_Release(pclsObj);
 			}
+
+			IWbemClassObject_Release(pclsObj);
+		}
 	}
 
 	IWbemClassObject_Release(pEnumerator);
 
 	free(matchstr);
-	
+
 	return found;
 }
 
@@ -310,5 +313,4 @@ int os_strange_checks()
 	return 0;
 }
 
-
-#endif // WINDOWS
+#endif				// WINDOWS

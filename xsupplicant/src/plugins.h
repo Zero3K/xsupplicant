@@ -12,22 +12,21 @@
 
 #ifdef WINDOWS
 #include "stdintwin.h"
-#endif // WINDOWS
+#endif				// WINDOWS
 
 #ifndef WINDOWS
 #include <stdint.h>
-#endif // WINDOWS
+#endif				// WINDOWS
 
-enum plugin_status
-  {
-    PLUGIN_LOAD_SUCCESS,
-    PLUGIN_LOAD_FAILURE,
-    PLUGIN_UNLOAD_SUCCESS,
-    PLUGIN_UNLOAD_FAILURE, 
-    PLUGIN_NOT_ALLOCATED,
-    PLUGIN_ALREADY_INITIALIZED,
-    PLUGIN_NOT_LOADED
-  };
+enum plugin_status {
+	PLUGIN_LOAD_SUCCESS,
+	PLUGIN_LOAD_FAILURE,
+	PLUGIN_UNLOAD_SUCCESS,
+	PLUGIN_UNLOAD_FAILURE,
+	PLUGIN_NOT_ALLOCATED,
+	PLUGIN_ALREADY_INITIALIZED,
+	PLUGIN_NOT_LOADED
+};
 
 #define LOG_HOOK_FULL_DEBUG 1
 
@@ -38,4 +37,4 @@ uint8_t load_plugins();
 uint8_t unload_plugins();
 void log_hook_full_debug(char *msg);
 
-#endif // _XSUP_PLUGINS_H
+#endif				// _XSUP_PLUGINS_H

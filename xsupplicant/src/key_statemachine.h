@@ -20,6 +20,4 @@
 
 void key_statemachine_run(context *);
 
-
 #endif
-

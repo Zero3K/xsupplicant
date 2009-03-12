@@ -18,6 +18,4 @@
 #define IPC_EVENT_LOG_AUTHENTICATION_FAILED_STR     "++++ Authentication Failed (Phase %s) ++++"
 #define IPC_EVENT_LOG_CANT_GET_CAPABILITIES_STR     "Unable to determine the capabilities of interface %s."
 
-#endif // __IPC_EVENTS_CATALOG_H__
-
-
+#endif				// __IPC_EVENTS_CATALOG_H__

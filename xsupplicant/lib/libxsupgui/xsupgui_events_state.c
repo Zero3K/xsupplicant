@@ -36,8 +36,7 @@ char *xsupgui_events_state_get_statemachine_str(int state)
 {
 	char *retval = NULL;
 
-	switch (state)
-	{
+	switch (state) {
 	case IPC_STATEMACHINE_PHYSICAL:
 		retval = _strdup("Physical");
 		break;
@@ -79,8 +78,7 @@ char *xsupgui_events_state_get_wireless_state_str(int state)
 {
 	char *retval = NULL;
 
-	switch (state)
-	{
+	switch (state) {
 	case UNKNOWN:
 		retval = _strdup("UNKNOWN");
 		break;
@@ -104,7 +102,7 @@ char *xsupgui_events_state_get_wireless_state_str(int state)
 	case ASSOCIATION_TIMEOUT_S:
 		retval = _strdup("ASSOCIATING_TIMEOUT_S");
 		break;
-                                   
+
 	case PORT_DOWN:
 		retval = _strdup("PORT_DOWN");
 		break;
@@ -150,8 +148,7 @@ char *xsupgui_events_state_get_8021X_state_str(int state)
 {
 	char *retval = NULL;
 
-	switch (state)
-	{
+	switch (state) {
 	case LOGOFF:
 		retval = _strdup("LOGOFF");
 		break;
@@ -217,8 +214,7 @@ char *xsupgui_events_state_get_8021Xbe_state_str(int state)
 {
 	char *retval = NULL;
 
-	switch (state)
-	{
+	switch (state) {
 	case UNKNOWN:
 		retval = _strdup("UNKNOWN");
 		break;
@@ -280,8 +276,7 @@ char *xsupgui_events_state_get_eap_state_str(int state)
 {
 	char *retval = NULL;
 
-	switch (state)
-	{
+	switch (state) {
 	case EAP_UNKNOWN:
 		retval = _strdup("UNKNOWN");
 		break;

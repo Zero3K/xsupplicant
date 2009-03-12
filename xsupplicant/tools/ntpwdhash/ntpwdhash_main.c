@@ -29,30 +29,27 @@
  **/
 char *to_unicode(char *non_uni)
 {
-  char *retUni;
-  int i;
+	char *retUni;
+	int i;
 
-  if (!non_uni)
-    {
-      printf("Invalid value passed in to to_unicode()! (%s:%d)\n", 
-	     __FUNCTION__, __LINE__);
-      return NULL;
-    }
+	if (!non_uni) {
+		printf("Invalid value passed in to to_unicode()! (%s:%d)\n",
+		       __FUNCTION__, __LINE__);
+		return NULL;
+	}
 
-  retUni = (char *)malloc((strlen(non_uni)+1)*2);
-  if (retUni == NULL)
-    {
-      printf("Error with MALLOC in to_unicode()! (%s:%d)\n", __FUNCTION__,
-	     __LINE__);
-      return NULL;
-    }
-  memset(retUni, 0x00, ((strlen(non_uni)+1)*2));
+	retUni = (char *)malloc((strlen(non_uni) + 1) * 2);
+	if (retUni == NULL) {
+		printf("Error with MALLOC in to_unicode()! (%s:%d)\n",
+		       __FUNCTION__, __LINE__);
+		return NULL;
+	}
+	memset(retUni, 0x00, ((strlen(non_uni) + 1) * 2));
 
-  for (i=0; i<strlen(non_uni); i++)
-    {
-      retUni[(2*i)] = non_uni[i];
-    }
-  return retUni;
+	for (i = 0; i < strlen(non_uni); i++) {
+		retUni[(2 * i)] = non_uni[i];
+	}
+	return retUni;
 }
 
 /**
@@ -64,50 +61,48 @@ char *to_unicode(char *non_uni)
  **/
 void NtPasswordHash(char *Password, char *PasswordHash)
 {
-  EVP_MD_CTX cntx;
-  char retVal[20];
-  int i, len;
-  char *uniPassword;
+	EVP_MD_CTX cntx;
+	char retVal[20];
+	int i, len;
+	char *uniPassword;
 
-  if ((!Password) || (!PasswordHash))
-    {
-      printf("Invalid data passed in to NtPasswordHash()! (%s:%d)\n",
-	     __FUNCTION__, __LINE__);
-      return;
-    }
+	if ((!Password) || (!PasswordHash)) {
+		printf("Invalid data passed in to NtPasswordHash()! (%s:%d)\n",
+		       __FUNCTION__, __LINE__);
+		return;
+	}
 
-  memset(retVal, 0x00, 20);
-  uniPassword = to_unicode(Password);
-  len = (strlen(Password))*2;
+	memset(retVal, 0x00, 20);
+	uniPassword = to_unicode(Password);
+	len = (strlen(Password)) * 2;
 
-  EVP_DigestInit(&cntx, EVP_md4());
-  EVP_DigestUpdate(&cntx, uniPassword, len);
-  EVP_DigestFinal(&cntx, (uint8_t *)&retVal, (u_int *)&i);
-  memcpy(PasswordHash, &retVal, 16);
-  free(uniPassword);
+	EVP_DigestInit(&cntx, EVP_md4());
+	EVP_DigestUpdate(&cntx, uniPassword, len);
+	EVP_DigestFinal(&cntx, (uint8_t *) & retVal, (u_int *) & i);
+	memcpy(PasswordHash, &retVal, 16);
+	free(uniPassword);
 }
 
 int main(int argc, char *argv[])
 {
-  char pwd_hash[16];
-  int i;
+	char pwd_hash[16];
+	int i;
 
-  if (argc <= 1)
-    {
-      printf("ntpwdhash <password>\n");
-      return 255;
-    }
+	if (argc <= 1) {
+		printf("ntpwdhash <password>\n");
+		return 255;
+	}
 
-  NtPasswordHash(argv[1], (char *)&pwd_hash);
+	NtPasswordHash(argv[1], (char *)&pwd_hash);
 
-  printf("Resulting hash value (copy and paste to Xsupplicant configuration)"
-	 " :\n");
+	printf
+	    ("Resulting hash value (copy and paste to Xsupplicant configuration)"
+	     " :\n");
 
-  for (i=0;i<16;i++)
-    {
-      printf("%02X", (unsigned char)pwd_hash[i]);
-    }
-  printf("\n");
+	for (i = 0; i < 16; i++) {
+		printf("%02X", (unsigned char)pwd_hash[i]);
+	}
+	printf("\n");
 
-  return 0;
+	return 0;
 }

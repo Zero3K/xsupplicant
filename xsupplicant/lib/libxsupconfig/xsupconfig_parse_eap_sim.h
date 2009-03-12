@@ -15,4 +15,4 @@ extern parser eap_sim[];
 
 void *xsupconfig_parse_eap_sim(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_EAP_SIM_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_SIM_H__

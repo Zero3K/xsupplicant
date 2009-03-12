@@ -33,26 +33,23 @@
 #define __GET_OPT_H__
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
-extern int option_index;
+	extern int option_index;
 
-struct options
-{
-  int number;		/* Number, which is returned from getopt() */
-  char *name;		/* Long name */
-  char *description;	/* Description */
-  char *shortName;	/* Short name */
-  int args;		/* Does the option take an argument? */
-};
+	struct options {
+		int number;	/* Number, which is returned from getopt() */
+		char *name;	/* Long name */
+		char *description;	/* Description */
+		char *shortName;	/* Short name */
+		int args;	/* Does the option take an argument? */
+	};
 
-int getopts(int argc, char **argv, struct options opts[], char **args);
-int getopts_usage(char *progName, struct options opts[]);
+	int getopts(int argc, char **argv, struct options opts[], char **args);
+	int getopts_usage(char *progName, struct options opts[]);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif 		/* __GET_OPT_H__ */
+#endif				/* __GET_OPT_H__ */

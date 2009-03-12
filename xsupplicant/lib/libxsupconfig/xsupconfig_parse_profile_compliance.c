@@ -24,331 +24,354 @@
 #include "xsupconfig_common.h"
 #include "src/eap_types/tnc/tnc_compliance_options.h"
 
-void *xsupconfig_parse_profile_compliance(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance(void **attr, uint8_t config_type,
+					  xmlNodePtr node)
 {
 	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_enable(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_enable(void **attr,
+						 uint8_t config_type,
+						 xmlNodePtr node)
 {
-  struct config_profiles *myprofile = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_profiles *myprofile = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
-  printf("Compliance Enable : %s\n", value);
+	printf("Compliance Enable : %s\n", value);
 #endif
 
-  myprofile = (*attr);
+	myprofile = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ENABLE);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ENABLE);
-    }
-  else
-    {
-      printf("Unknown value for compliance Enable. (Line %ld)\n   Using default of "
-	     "'YES'.\n", xsupconfig_parse_get_line_num());
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ENABLE);
-    }
+	if (result == 1) {
+		SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ENABLE);
+	} else if (result == 0) {
+		UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ENABLE);
+	} else {
+		printf
+		    ("Unknown value for compliance Enable. (Line %ld)\n   Using default of "
+		     "'YES'.\n", xsupconfig_parse_get_line_num());
+		SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ENABLE);
+	}
 
-  FREE(value);
+	FREE(value);
 
-  return (*attr);
+	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_personality_check(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_personality_check(void **attr,
+							    uint8_t config_type,
+							    xmlNodePtr node)
 {
-  struct config_profiles *myprofile = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_profiles *myprofile = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
-  printf("Personality Check : %s\n", value);
+	printf("Personality Check : %s\n", value);
 #endif
 
-  myprofile = (*attr);
+	myprofile = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_PERSONALITY_CHECK);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_PERSONALITY_CHECK);
-    }
-  else
-    {
-      printf("Unknown value for personality compliance. (Line %ld)\n   Using default of "
-	     "'YES'.\n", xsupconfig_parse_get_line_num());
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_PERSONALITY_CHECK);
-    }
+	if (result == 1) {
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_PERSONALITY_CHECK);
+	} else if (result == 0) {
+		UNSET_FLAG(myprofile->compliance,
+			   TNC_COMPLIANCE_PERSONALITY_CHECK);
+	} else {
+		printf
+		    ("Unknown value for personality compliance. (Line %ld)\n   Using default of "
+		     "'YES'.\n", xsupconfig_parse_get_line_num());
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_PERSONALITY_CHECK);
+	}
 
-  FREE(value);
+	FREE(value);
 
-  return (*attr);
+	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_firewall_check(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_firewall_check(void **attr,
+							 uint8_t config_type,
+							 xmlNodePtr node)
 {
-  struct config_profiles *myprofile = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_profiles *myprofile = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
-  printf("Firewall Check : %s\n", value);
+	printf("Firewall Check : %s\n", value);
 #endif
 
-  myprofile = (*attr);
+	myprofile = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_FIREWALL_CHECK);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_FIREWALL_CHECK);
-    }
-  else
-    {
-      printf("Unknown value for firewall compliance. (Line %ld)\n   Using default of "
-	     "'YES'.\n", xsupconfig_parse_get_line_num());
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_FIREWALL_CHECK);
-    }
+	if (result == 1) {
+		SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_FIREWALL_CHECK);
+	} else if (result == 0) {
+		UNSET_FLAG(myprofile->compliance,
+			   TNC_COMPLIANCE_FIREWALL_CHECK);
+	} else {
+		printf
+		    ("Unknown value for firewall compliance. (Line %ld)\n   Using default of "
+		     "'YES'.\n", xsupconfig_parse_get_line_num());
+		SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_FIREWALL_CHECK);
+	}
 
-  FREE(value);
+	FREE(value);
 
-  return (*attr);
+	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_anti_spyware_check(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_anti_spyware_check(void **attr,
+							     uint8_t
+							     config_type,
+							     xmlNodePtr node)
 {
-  struct config_profiles *myprofile = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_profiles *myprofile = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
-  printf("Anti-Spyware Check : %s\n", value);
+	printf("Anti-Spyware Check : %s\n", value);
 #endif
 
-  myprofile = (*attr);
+	myprofile = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_SPYWARE_CHECK);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_SPYWARE_CHECK);
-    }
-  else
-    {
-      printf("Unknown value for anti-spyware compliance. (Line %ld)\n   Using default of "
-	     "'YES'.\n", xsupconfig_parse_get_line_num());
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_SPYWARE_CHECK);
-    }
+	if (result == 1) {
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_ANTI_SPYWARE_CHECK);
+	} else if (result == 0) {
+		UNSET_FLAG(myprofile->compliance,
+			   TNC_COMPLIANCE_ANTI_SPYWARE_CHECK);
+	} else {
+		printf
+		    ("Unknown value for anti-spyware compliance. (Line %ld)\n   Using default of "
+		     "'YES'.\n", xsupconfig_parse_get_line_num());
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_ANTI_SPYWARE_CHECK);
+	}
 
-  FREE(value);
+	FREE(value);
 
-  return (*attr);
+	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_anti_virus_check(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_anti_virus_check(void **attr,
+							   uint8_t config_type,
+							   xmlNodePtr node)
 {
-  struct config_profiles *myprofile = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_profiles *myprofile = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
-  printf("Anti-Virus Check : %s\n", value);
+	printf("Anti-Virus Check : %s\n", value);
 #endif
 
-  myprofile = (*attr);
+	myprofile = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_VIRUS_CHECK);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_VIRUS_CHECK);
-    }
-  else
-    {
-      printf("Unknown value for anti-virus compliance. (Line %ld)\n   Using default of "
-	     "'YES'.\n", xsupconfig_parse_get_line_num());
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_VIRUS_CHECK);
-    }
+	if (result == 1) {
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_ANTI_VIRUS_CHECK);
+	} else if (result == 0) {
+		UNSET_FLAG(myprofile->compliance,
+			   TNC_COMPLIANCE_ANTI_VIRUS_CHECK);
+	} else {
+		printf
+		    ("Unknown value for anti-virus compliance. (Line %ld)\n   Using default of "
+		     "'YES'.\n", xsupconfig_parse_get_line_num());
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_ANTI_VIRUS_CHECK);
+	}
 
-  FREE(value);
+	FREE(value);
 
-  return (*attr);
+	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_anti_phishing_check(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_anti_phishing_check(void **attr,
+							      uint8_t
+							      config_type,
+							      xmlNodePtr node)
 {
-  struct config_profiles *myprofile = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_profiles *myprofile = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
-  printf("Anti-Phishing Check : %s\n", value);
+	printf("Anti-Phishing Check : %s\n", value);
 #endif
 
-  myprofile = (*attr);
+	myprofile = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_PHISHING_CHECK);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_PHISHING_CHECK);
-    }
-  else
-    {
-      printf("Unknown value for anti-phishing compliance. (Line %ld)\n   Using default of "
-	     "'YES'.\n", xsupconfig_parse_get_line_num());
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ANTI_PHISHING_CHECK);
-    }
+	if (result == 1) {
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_ANTI_PHISHING_CHECK);
+	} else if (result == 0) {
+		UNSET_FLAG(myprofile->compliance,
+			   TNC_COMPLIANCE_ANTI_PHISHING_CHECK);
+	} else {
+		printf
+		    ("Unknown value for anti-phishing compliance. (Line %ld)\n   Using default of "
+		     "'YES'.\n", xsupconfig_parse_get_line_num());
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_ANTI_PHISHING_CHECK);
+	}
 
-  FREE(value);
+	FREE(value);
 
-  return (*attr);
+	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_allow_full_system_scan(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_allow_full_system_scan(void **attr,
+								 uint8_t
+								 config_type,
+								 xmlNodePtr
+								 node)
 {
-  struct config_profiles *myprofile = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_profiles *myprofile = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
-  printf("Allow full system scan : %s\n", value);
+	printf("Allow full system scan : %s\n", value);
 #endif
 
-  myprofile = (*attr);
+	myprofile = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN);
-    }
-  else
-    {
-      printf("Unknown value for allow full system scan. (Line %ld)\n   Using default of "
-	     "'YES'.\n", xsupconfig_parse_get_line_num());
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN);
-    }
+	if (result == 1) {
+		SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN);
+	} else if (result == 0) {
+		UNSET_FLAG(myprofile->compliance,
+			   TNC_COMPLIANCE_ALLOW_FULL_SCAN);
+	} else {
+		printf
+		    ("Unknown value for allow full system scan. (Line %ld)\n   Using default of "
+		     "'YES'.\n", xsupconfig_parse_get_line_num());
+		SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ALLOW_FULL_SCAN);
+	}
 
-  FREE(value);
+	FREE(value);
 
-  return (*attr);
+	return (*attr);
 }
 
-void *xsupconfig_parse_profile_compliance_allow_auto_update(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_profile_compliance_allow_auto_update(void **attr,
+							    uint8_t config_type,
+							    xmlNodePtr node)
 {
-  struct config_profiles *myprofile = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
-  xmlChar *content = NULL;
+	struct config_profiles *myprofile = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+	xmlChar *content = NULL;
 
-  content = xmlNodeGetContent(node);
-  value = _strdup((char *)content);
-  xmlFree(content);
+	content = xmlNodeGetContent(node);
+	value = _strdup((char *)content);
+	xmlFree(content);
 
 #ifdef PARSE_DEBUG
-  printf("Allow auto update : %s\n", value);
+	printf("Allow auto update : %s\n", value);
 #endif
 
-  myprofile = (*attr);
+	myprofile = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ALLOW_AUTO_UPDATE);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ALLOW_AUTO_UPDATE);
-    }
-  else
-    {
-      printf("Unknown value for allow full system scan. (Line %ld)\n   Using default of "
-	     "'YES'.\n", xsupconfig_parse_get_line_num());
-      SET_FLAG(myprofile->compliance, TNC_COMPLIANCE_ALLOW_AUTO_UPDATE);
-    }
+	if (result == 1) {
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_ALLOW_AUTO_UPDATE);
+	} else if (result == 0) {
+		UNSET_FLAG(myprofile->compliance,
+			   TNC_COMPLIANCE_ALLOW_AUTO_UPDATE);
+	} else {
+		printf
+		    ("Unknown value for allow full system scan. (Line %ld)\n   Using default of "
+		     "'YES'.\n", xsupconfig_parse_get_line_num());
+		SET_FLAG(myprofile->compliance,
+			 TNC_COMPLIANCE_ALLOW_AUTO_UPDATE);
+	}
 
-  FREE(value);
+	FREE(value);
 
-  return (*attr);
+	return (*attr);
 }
 
 parser compliance[] = {
-	{"Enable", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_enable},
-	{"Personality_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_personality_check},
-	{"Firewall_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_firewall_check},	
-	{"Anti_Spyware_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_anti_spyware_check},
-	{"Anti_Virus_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_anti_virus_check},
-	{"Anti_Phishing_Check", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_anti_phishing_check},
-	{"Allow_Full_Scan", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_allow_full_system_scan},
-	{"Allow_Auto_Update", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_profile_compliance_allow_auto_update},
+	{"Enable", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_profile_compliance_enable}
+	,
+	{"Personality_Check", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_profile_compliance_personality_check}
+	,
+	{"Firewall_Check", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_profile_compliance_firewall_check}
+	,
+	{"Anti_Spyware_Check", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_profile_compliance_anti_spyware_check}
+	,
+	{"Anti_Virus_Check", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_profile_compliance_anti_virus_check}
+	,
+	{"Anti_Phishing_Check", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_profile_compliance_anti_phishing_check}
+	,
+	{"Allow_Full_Scan", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_profile_compliance_allow_full_system_scan}
+	,
+	{"Allow_Auto_Update", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_profile_compliance_allow_auto_update}
+	,
 
-    {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

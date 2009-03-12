@@ -22,5 +22,4 @@ int error_prequeue_data_available();
 int error_prequeue_events_available();
 err_prequeue *error_prequeue_get_head();
 
-
-#endif // __ERROR_PREQUEUE_H__
+#endif				// __ERROR_PREQUEUE_H__

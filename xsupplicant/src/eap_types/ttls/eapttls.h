@@ -23,7 +23,6 @@
 #define TTLS_SESSION_KEY_CONST   "ttls keying material"
 #define TTLS_SESSION_KEY_CONST_SIZE    20
 
-
 void eapttls_check(eap_type_data *);
 void eapttls_process(eap_type_data *);
 uint8_t *eapttls_buildResp(eap_type_data *);

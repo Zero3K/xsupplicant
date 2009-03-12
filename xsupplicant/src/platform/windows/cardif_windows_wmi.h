@@ -13,7 +13,7 @@
 #define __CARDIF_WINDOWS_WMI_H__
 
 #define INVALID_WMI_IDX    -1
-#define DEFAULT_GW_METRIC  20     // Seems to be the default for Windows interfaces.
+#define DEFAULT_GW_METRIC  20	// Seems to be the default for Windows interfaces.
 
 #define WMI_BIND_ADD     0
 #define WMI_BIND_CHECK   1
@@ -42,8 +42,8 @@ int cardif_windows_wmi_set_static_gw(context *, char *);
 
 int cardif_windows_wmi_event_connect();
 int cardif_windows_wmi_event_disconnect();
-void cardif_windows_wmi_late_bind_insert_check(int action, wchar_t *name);
-int cardif_windows_wmi_post_insert_bind(wchar_t *name);
+void cardif_windows_wmi_late_bind_insert_check(int action, wchar_t * name);
+int cardif_windows_wmi_post_insert_bind(wchar_t * name);
 
 #ifdef WINDOWS_USE_WMI
 void cardif_windows_wmi_ip_update();
@@ -54,4 +54,4 @@ int cardif_windows_wmi_deinit();
 
 void cardif_windows_wmi_check_events();
 
-#endif // __CARDIF_WINDOWS_WMI_H__
+#endif				// __CARDIF_WINDOWS_WMI_H__

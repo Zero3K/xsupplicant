@@ -34,15 +34,13 @@
 
 #define MANDITORY_FLAG       0x40
 #define VENDOR_FLAG          0x80
-#define TTLS_CHALLENGE       (uint8_t *)"ttls challenge"    // Need to generate implied challenge.
+#define TTLS_CHALLENGE       (uint8_t *)"ttls challenge"	// Need to generate implied challenge.
 #define TTLS_CHALLENGE_SIZE  14
 
 #define TTLS_PHASE2_DEBUG    1
 
-
-
 void build_avp(uint32_t, uint32_t, uint64_t, uint8_t *, uint64_t, uint8_t *,
-               uint16_t *);
+	       uint16_t *);
 uint8_t *implicit_challenge(eap_type_data *);
 struct config_ttls_phase2 *get_phase2_conf(struct config_ttls_phase2 *,
 					   uint8_t);

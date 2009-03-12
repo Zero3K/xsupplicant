@@ -24,4 +24,4 @@ int cardif_macosx_wireless_set_ccmp_key(context *, unsigned char *, int, int,
 int cardif_macosx_wireless_delete_key(context *, int, int);
 int cardif_macosx_wireless_set_key_material(context *);
 
-#endif // __CARDIF_MACOSX_WIRELESS_H__
+#endif				// __CARDIF_MACOSX_WIRELESS_H__

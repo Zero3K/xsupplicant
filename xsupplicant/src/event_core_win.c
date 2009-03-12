@@ -56,32 +56,32 @@
 //#define LOCK_DEBUG  1
 
 typedef struct eventhandler_struct {
-  HANDLE devHandle;
-  char *name;
-  context *ctx;
-  int (*func_to_call)(context *, HANDLE);
-  LPOVERLAPPED ovr;
-  HANDLE hEvent;
-  uint8_t flags;
-  uint8_t silent;
+	HANDLE devHandle;
+	char *name;
+	context *ctx;
+	int (*func_to_call) (context *, HANDLE);
+	LPOVERLAPPED ovr;
+	HANDLE hEvent;
+	uint8_t flags;
+	uint8_t silent;
 } eventhandler;
 
-eventhandler *events = NULL;  
+eventhandler *events = NULL;
 uint16_t num_event_slots = 0;
 
 int locate = 0;
 
 time_t last_check = 0;
-int terminate = 0;         // Is there a request to terminate ourselves.
-int userlogon = 0;		   // (single shot) User logged on event.
-int userlogoff = 0;        // (single shot) User logged off event.
-int user_logged_on = FALSE;  // Is there a user currently logged on to windows?
-void (*imc_notify_callback)() = NULL;
-void (*imc_ui_connect_callback)() = NULL;
+int terminate = 0;		// Is there a request to terminate ourselves.
+int userlogon = 0;		// (single shot) User logged on event.
+int userlogoff = 0;		// (single shot) User logged off event.
+int user_logged_on = FALSE;	// Is there a user currently logged on to windows?
+void (*imc_notify_callback) () = NULL;
+void (*imc_ui_connect_callback) () = NULL;
 context *active_ctx = NULL;
 int sleep_state = PWR_STATE_RUNNING;
 
-void global_deinit();      // In xsup_driver.c, there is no header we can include, so this prototype keeps the complier from complaining.
+void global_deinit();		// In xsup_driver.c, there is no header we can include, so this prototype keeps the complier from complaining.
 
 HANDLE evtCoreMutex;
 
@@ -93,7 +93,7 @@ context *event_core_get_active_ctx()
 	return active_ctx;
 }
 
-void event_core_set_active_ctx(context *ctx)
+void event_core_set_active_ctx(context * ctx)
 {
 	active_ctx = ctx;
 }
@@ -126,15 +126,15 @@ int event_core_set_ovr(HANDLE devHandle, uint8_t eventType, LPOVERLAPPED lovr)
 	int i;
 	uint8_t evtType;
 
-	for (i=0; i < num_event_slots; i++)
-	{
+	for (i = 0; i < num_event_slots; i++) {
 #ifdef DEBUG_EVENT_HANDLER
 		printf("%d == %d?\n", devHandle, events[i].devHandle);
 #endif
 		evtType = (events[i].flags & 0xf0);
-		if ((devHandle == events[i].devHandle) && (evtType == eventType))
-		{
-			if (events[i].ovr != NULL) FREE(events[i].ovr);
+		if ((devHandle == events[i].devHandle)
+		    && (evtType == eventType)) {
+			if (events[i].ovr != NULL)
+				FREE(events[i].ovr);
 
 			events[i].ovr = lovr;
 			events[i].hEvent = lovr->hEvent;
@@ -156,14 +156,13 @@ LPOVERLAPPED event_core_get_ovr(HANDLE devHandle, uint8_t eventType)
 	int i;
 	uint8_t evtType = 0;
 
-	for (i=0; i < num_event_slots; i++)
-	{
+	for (i = 0; i < num_event_slots; i++) {
 #ifdef DEBUG_EVENT_HANDLER
 		printf("%d == %d?\n", devHandle, events[i].devHandle);
 #endif
-		evtType = (events[i].flags & 0xf0);  // Only include the high bits.
-		if ((devHandle == events[i].devHandle) && (eventType == evtType))
-		{
+		evtType = (events[i].flags & 0xf0);	// Only include the high bits.
+		if ((devHandle == events[i].devHandle)
+		    && (eventType == evtType)) {
 			return events[i].ovr;
 		}
 	}
@@ -177,21 +176,22 @@ LPOVERLAPPED event_core_get_ovr(HANDLE devHandle, uint8_t eventType)
 /**
  * Bind an hEvent to our event structure so that the event_core() will pick it up.
  **/
-int event_core_bind_hevent(HANDLE devHandle, HANDLE hEvent, unsigned char evtType)
+int event_core_bind_hevent(HANDLE devHandle, HANDLE hEvent,
+			   unsigned char evtType)
 {
 	int i;
 
-	for (i=0; i < num_event_slots; i++)
-	{
-		if ((devHandle == events[i].devHandle) && ((events[i].flags & evtType) == evtType))
-		{
+	for (i = 0; i < num_event_slots; i++) {
+		if ((devHandle == events[i].devHandle)
+		    && ((events[i].flags & evtType) == evtType)) {
 #ifdef DEBUG_EVENT_HANDLER
-			debug_printf(DEBUG_NORMAL, "Binding device handle %d to event handle %d.\n",
-					devHandle, hEvent);
+			debug_printf(DEBUG_NORMAL,
+				     "Binding device handle %d to event handle %d.\n",
+				     devHandle, hEvent);
 #endif
 			events[i].hEvent = hEvent;
 			events[i].ovr->hEvent = hEvent;
-	
+
 			return XENONE;
 		}
 	}
@@ -207,30 +207,29 @@ void global_deinit();
  **/
 BOOL WINAPI ConsoleHandler(DWORD CEvent)
 {
-    char mesg[128];
+	char mesg[128];
 
-    switch(CEvent)
-    {
-    case CTRL_C_EVENT:
+	switch (CEvent) {
+	case CTRL_C_EVENT:
 	case CTRL_BREAK_EVENT:
 		debug_printf(DEBUG_EVENT_CORE, "Caught a BREAK event.\n");
 		event_core_terminate();
-        break;
-    case CTRL_CLOSE_EVENT:
-        debug_printf(DEBUG_EVENT_CORE, "Caught a close event.\n");
+		break;
+	case CTRL_CLOSE_EVENT:
+		debug_printf(DEBUG_EVENT_CORE, "Caught a close event.\n");
 		event_core_terminate();
-        break;
-    case CTRL_LOGOFF_EVENT:
+		break;
+	case CTRL_LOGOFF_EVENT:
 		debug_printf(DEBUG_EVENT_CORE, "Caught a logoff event.\n");
-        break;
-    case CTRL_SHUTDOWN_EVENT:
+		break;
+	case CTRL_SHUTDOWN_EVENT:
 		debug_printf(DEBUG_EVENT_CORE, "Caught a shutdown event.\n");
 		event_core_terminate();
-        break;
+		break;
 
-    }
+	}
 
-    return TRUE;
+	return TRUE;
 }
 
 /**
@@ -239,9 +238,10 @@ BOOL WINAPI ConsoleHandler(DWORD CEvent)
  **/
 void event_core_ctrl_c_handle()
 {
-	if (SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler,TRUE) == FALSE)
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to install termination handler!\n");
+	if (SetConsoleCtrlHandler((PHANDLER_ROUTINE) ConsoleHandler, TRUE) ==
+	    FALSE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to install termination handler!\n");
 	}
 }
 
@@ -250,15 +250,15 @@ void event_core_ctrl_c_handle()
  *
  * @param[in] events   A pointer to the structure that we want to set the defaults on.
  **/
-static void event_core_init_single_event(eventhandler *events)
+static void event_core_init_single_event(eventhandler * events)
 {
-      events->devHandle = INVALID_HANDLE_VALUE;
-      events->name = NULL;
-	  events->ctx = NULL;
-	  events->flags = 0x00;
-      events->func_to_call = NULL;
-	  events->hEvent = INVALID_HANDLE_VALUE;
-	  events->ovr = NULL;
+	events->devHandle = INVALID_HANDLE_VALUE;
+	events->name = NULL;
+	events->ctx = NULL;
+	events->flags = 0x00;
+	events->func_to_call = NULL;
+	events->hEvent = INVALID_HANDLE_VALUE;
+	events->ovr = NULL;
 }
 
 /***********************************************************************
@@ -269,60 +269,59 @@ static void event_core_init_single_event(eventhandler *events)
  ***********************************************************************/
 void event_core_init()
 {
-  int i;
+	int i;
 
-  num_event_slots = STARTING_EVENTS;
+	num_event_slots = STARTING_EVENTS;
 
-  events = Malloc(sizeof(eventhandler) * num_event_slots);
-  if (events == NULL)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store event slots!\n");
-	  global_deinit();
-  }
+	events = Malloc(sizeof(eventhandler) * num_event_slots);
+	if (events == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store event slots!\n");
+		global_deinit();
+	}
 
-  for (i=0; i < num_event_slots; i++)
-    {
+	for (i = 0; i < num_event_slots; i++) {
 		event_core_init_single_event(&events[i]);
-    }
+	}
 
-  event_core_ctrl_c_handle();
-  time(&last_check);   // Get our starting clock position.
+	event_core_ctrl_c_handle();
+	time(&last_check);	// Get our starting clock position.
 
-  if (cardif_windows_get_os_ver() >= 2)
-  {
-	  if (cardif_windows_wmi_init() != XENONE)
-	  {
-		  debug_printf(DEBUG_NORMAL, "Couldn't establish a connection to WMI!  It is likely that "
-				"things will be broken!  (We will try to continue anyway.)\n");
-		  ipc_events_error(NULL, IPC_EVENT_ERROR_WMI_ATTACH_FAILED, NULL);
-	  }
-  }
-  else
-  {
-	  cardif_windows_ip_update();
-  }
+	if (cardif_windows_get_os_ver() >= 2) {
+		if (cardif_windows_wmi_init() != XENONE) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't establish a connection to WMI!  It is likely that "
+				     "things will be broken!  (We will try to continue anyway.)\n");
+			ipc_events_error(NULL,
+					 IPC_EVENT_ERROR_WMI_ATTACH_FAILED,
+					 NULL);
+		}
+	} else {
+		cardif_windows_ip_update();
+	}
 
-  if (win_ip_manip_init_iphlpapi() != XENONE)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't load the iphlpapi DLL!  IP address setting functionality will be broken!\n");
-  }
+	if (win_ip_manip_init_iphlpapi() != XENONE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't load the iphlpapi DLL!  IP address setting functionality will be broken!\n");
+	}
 
-  if (wlanapi_interface_connect() != WLANAPI_OK)
-  {
-	  if (wzc_ctrl_connect() != XENONE)
-	  {
-		  debug_printf(DEBUG_NORMAL, "Unable to initialize Windows Zero Config handle.  You should "
-			  "go in to your network control panel, and click the check box for 'Use Windows to "
-			  "configure my wireless settings.'\n");
-		  ipc_events_error(NULL, IPC_EVENT_ERROR_WZC_ATTACH_FAILED, NULL);
-	  }
-  }
+	if (wlanapi_interface_connect() != WLANAPI_OK) {
+		if (wzc_ctrl_connect() != XENONE) {
+			debug_printf(DEBUG_NORMAL,
+				     "Unable to initialize Windows Zero Config handle.  You should "
+				     "go in to your network control panel, and click the check box for 'Use Windows to "
+				     "configure my wireless settings.'\n");
+			ipc_events_error(NULL,
+					 IPC_EVENT_ERROR_WZC_ATTACH_FAILED,
+					 NULL);
+		}
+	}
 
-  evtCoreMutex = CreateMutex(NULL, FALSE, NULL);   // Nobody owns this mutex to start with.
-  if (evtCoreMutex == INVALID_HANDLE_VALUE)
-  {
-	  debug_printf(DEBUG_NORMAL, "Unable to create a mutex for the event core!\n");
-  }
+	evtCoreMutex = CreateMutex(NULL, FALSE, NULL);	// Nobody owns this mutex to start with.
+	if (evtCoreMutex == INVALID_HANDLE_VALUE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to create a mutex for the event core!\n");
+	}
 }
 
 /***********************************************************************
@@ -333,39 +332,36 @@ void event_core_init()
  ***********************************************************************/
 void event_core_deinit()
 {
-  int i;
+	int i;
 
-  // Only deinit 
-  if (cardif_windows_get_os_ver() >= 2)
-  {
-	cardif_windows_wmi_deinit();
-  }
-  else
-  {
-	  cardif_windows_ip_update_cleanup();
-  }
+	// Only deinit 
+	if (cardif_windows_get_os_ver() >= 2) {
+		cardif_windows_wmi_deinit();
+	} else {
+		cardif_windows_ip_update_cleanup();
+	}
 
-  win_ip_manip_deinit_iphlpapi();
+	win_ip_manip_deinit_iphlpapi();
 
-  event_core_lock();    // Even if this fails, we should keep trying to deinit.
+	event_core_lock();	// Even if this fails, we should keep trying to deinit.
 
-  for (i=0;i < num_event_slots; i++)
-    {
-      if (events[i].name)
-	  {
-		  event_core_deregister(events[i].devHandle, (events[i].flags & 0xf0));
-	  }
-    }
+	for (i = 0; i < num_event_slots; i++) {
+		if (events[i].name) {
+			event_core_deregister(events[i].devHandle,
+					      (events[i].flags & 0xf0));
+		}
+	}
 
-  wzc_ctrl_disconnect();
+	wzc_ctrl_disconnect();
 
-  wlanapi_interface_disconnect();
+	wlanapi_interface_disconnect();
 
-  event_core_unlock();
+	event_core_unlock();
 
-  if (evtCoreMutex != INVALID_HANDLE_VALUE) CloseHandle(evtCoreMutex);
+	if (evtCoreMutex != INVALID_HANDLE_VALUE)
+		CloseHandle(evtCoreMutex);
 
-  FREE(events);
+	FREE(events);
 }
 
 int event_core_lock()
@@ -376,27 +372,28 @@ int event_core_lock()
 	// Wait for our mutex to be available!
 	dwWaitResult = WaitForSingleObject(evtCoreMutex, INFINITE);
 
-	switch (dwWaitResult)
-	{
+	switch (dwWaitResult) {
 	case WAIT_OBJECT_0:
 #ifdef LOCK_DEBUG
-		debug_printf(DEBUG_IPC, "Acquired event core lock.  (Thread ID : %d)\n", GetCurrentThreadId());
+		debug_printf(DEBUG_IPC,
+			     "Acquired event core lock.  (Thread ID : %d)\n",
+			     GetCurrentThreadId());
 #endif
 		return 0;
 		break;
 
 	default:
 		lastError = GetLastError();
-		if (lastError != 0)
-		{
-			debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error acquiring event core lock!  (Error %d -- wait result %d)\n", GetLastError(), dwWaitResult);
-		}
-		else
-		{
+		if (lastError != 0) {
+			debug_printf(DEBUG_IPC,
+				     "!!!!!!!!!!!! Error acquiring event core lock!  (Error %d -- wait result %d)\n",
+				     GetLastError(), dwWaitResult);
+		} else {
 			// We can get in to a situation where a thread may have terminated without releasing
 			// a lock.  In these cases, Windows may tell us there was an error, but 
 			// GetLastError() indicates that the log was obtained correctly.
-			debug_printf(DEBUG_NORMAL, "Windows indicated an error obtaining the event core lock.  But, the lock was obtained successfully.  This is usually a bug in the code.  Please report it!\n");
+			debug_printf(DEBUG_NORMAL,
+				     "Windows indicated an error obtaining the event core lock.  But, the lock was obtained successfully.  This is usually a bug in the code.  Please report it!\n");
 			return 0;
 		}
 		break;
@@ -407,14 +404,15 @@ int event_core_lock()
 
 int event_core_unlock()
 {
-	if (!ReleaseMutex(evtCoreMutex))
-	{
-		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error releasing event core lock!  (Error %d) (Thread id : %d)\n", GetLastError(), GetCurrentThreadId());
+	if (!ReleaseMutex(evtCoreMutex)) {
+		debug_printf(DEBUG_IPC,
+			     "!!!!!!!!!!!! Error releasing event core lock!  (Error %d) (Thread id : %d)\n",
+			     GetLastError(), GetCurrentThreadId());
 		return -1;
 	}
-
 #ifdef LOCK_DEBUG
-	debug_printf(DEBUG_IPC, "Released event core lock.  (Thread ID : %d)\n", GetCurrentThreadId());
+	debug_printf(DEBUG_IPC, "Released event core lock.  (Thread ID : %d)\n",
+		     GetCurrentThreadId());
 #endif
 
 	return 0;
@@ -428,27 +426,27 @@ int event_core_unlock()
  * @param[in] name   A name to give this event.
  *
  **/
-static void event_core_fill_reg_struct(eventhandler *events, HANDLE devHandle, int(*call_func)(context *, HANDLE),
-										context *ctx, uint8_t flags, char *name)
+static void event_core_fill_reg_struct(eventhandler * events, HANDLE devHandle,
+				       int (*call_func) (context *, HANDLE),
+				       context * ctx, uint8_t flags, char *name)
 {
-	      events->devHandle = devHandle;
-	      events->name = _strdup(name);
-		  events->ctx = ctx;
-		  events->flags = flags;
-	      events->func_to_call = call_func;
-		  events->silent = 0;
-		  events->ovr = Malloc(sizeof(OVERLAPPED));
-		  if (events->ovr == NULL)
-		  {
-			  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store OVERLAPPED structure!\n");
-			  ipc_events_malloc_failed(NULL);
-		  }
+	events->devHandle = devHandle;
+	events->name = _strdup(name);
+	events->ctx = ctx;
+	events->flags = flags;
+	events->func_to_call = call_func;
+	events->silent = 0;
+	events->ovr = Malloc(sizeof(OVERLAPPED));
+	if (events->ovr == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store OVERLAPPED structure!\n");
+		ipc_events_malloc_failed(NULL);
+	}
 
-		  if (flags == EVENT_PRIMARY)
-		  {
-			  // Set up a receive.
-			  cardif_setup_recv(events->ctx);
-		  }
+	if (flags == EVENT_PRIMARY) {
+		// Set up a receive.
+		cardif_setup_recv(events->ctx);
+	}
 }
 
 /*************************************************************************
@@ -464,156 +462,185 @@ static void event_core_fill_reg_struct(eventhandler *events, HANDLE devHandle, i
  *    0 -- on success
  *
  *************************************************************************/
-int event_core_register(HANDLE devHandle, context *ctx, 
-		int(*call_func)(context *, HANDLE), uint8_t flags,
-		int hilo, char *name)
+int event_core_register(HANDLE devHandle, context * ctx,
+			int (*call_func) (context *, HANDLE), uint8_t flags,
+			int hilo, char *name)
 {
-  int i = 0, done = FALSE;
-  void *temp = NULL;
-  config_globals *globals = NULL;
+	int i = 0, done = FALSE;
+	void *temp = NULL;
+	config_globals *globals = NULL;
 
-  if (!xsup_assert((call_func != NULL), "call_func != NULL", FALSE))
-    return -1;
-
-  if (!xsup_assert((name != NULL), "name != NULL", FALSE))
-    return -1;
-
-  globals = config_get_globals();
-
-  if (hilo == 0)
-    {
-      while ((i < num_event_slots) && (done != TRUE))
-	{
-	  if (events[i].devHandle == INVALID_HANDLE_VALUE)
-	    {
-              debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
-                           "slot %d.\n", name, i);
-
-			  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
-			  if ((globals != NULL) && (ctx != NULL) && (ctx->intType != ETH_802_11_INT) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
-			  {
-				  events[i].flags |= EVENT_IGNORE_INT;
-			  }
-	      done = TRUE;
-	    }
-	  
-	  i++;
-	}
-      
-      if ((i >= num_event_slots) && (done == FALSE))
-	{
-	  debug_printf(DEBUG_NORMAL, "Not enough event handler slots "
-		       "available!  (Increasing.)\n");
-
-	  num_event_slots += EVENT_GROW;
-
-	  temp = realloc(events, (sizeof(eventhandler) * num_event_slots));
-	  if (temp == NULL)
-	  {
-		  num_event_slots -= EVENT_GROW;
-		ipc_events_error(NULL, IPC_EVENT_ERROR_NO_IPC_SLOTS, NULL);
+	if (!xsup_assert((call_func != NULL), "call_func != NULL", FALSE))
 		return -1;
-	  }
 
-	  events = temp;
+	if (!xsup_assert((name != NULL), "name != NULL", FALSE))
+		return -1;
 
-	  for (i = (num_event_slots-EVENT_GROW); i <num_event_slots; i++)
-	  {
-		  event_core_init_single_event(&events[i]);
-	  }
+	globals = config_get_globals();
 
-	  // Try to fill the slot again.
-	  i = 0;
+	if (hilo == 0) {
+		while ((i < num_event_slots) && (done != TRUE)) {
+			if (events[i].devHandle == INVALID_HANDLE_VALUE) {
+				debug_printf(DEBUG_EVENT_CORE,
+					     "Registered event handler '%s' in "
+					     "slot %d.\n", name, i);
 
-        while ((i < num_event_slots) && (done != TRUE))
-		{
-		  if (events[i].devHandle == INVALID_HANDLE_VALUE)
-		    {
-	           debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
-	                        "slot %d.\n", name, i);
+				event_core_fill_reg_struct(&events[i],
+							   devHandle, call_func,
+							   ctx, flags, name);
+				if ((globals != NULL) && (ctx != NULL)
+				    && (ctx->intType != ETH_802_11_INT)
+				    &&
+				    (TEST_FLAG
+				     (globals->flags,
+				      CONFIG_GLOBALS_WIRELESS_ONLY))) {
+					events[i].flags |= EVENT_IGNORE_INT;
+				}
+				done = TRUE;
+			}
 
-			  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
-			  if ((globals != NULL) && (ctx != NULL) && (ctx->intType != ETH_802_11_INT) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
-			  {
-				  events[i].flags |= EVENT_IGNORE_INT;
-			  }
-
-		      done = TRUE;
-		    }
-	  
-		  i++;
+			i++;
 		}
 
-	  }
-    }
-  else
-    {
-      i = num_event_slots - 1;
-      while ((i >= 0) && (done != TRUE))
-        {
-          if (events[i].devHandle == INVALID_HANDLE_VALUE)
-	    {
-	      debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
-			   "slot %d.\n", name, i);
-		  event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
-		  if ((globals != NULL) && (ctx != NULL) && (ctx->intType != ETH_802_11_INT) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
-		  {
-			  events[i].flags |= EVENT_IGNORE_INT;
-		  }
+		if ((i >= num_event_slots) && (done == FALSE)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Not enough event handler slots "
+				     "available!  (Increasing.)\n");
 
-              done = TRUE;
-            }
-	  
-	  i--;
-        }
+			num_event_slots += EVENT_GROW;
 
-      if ((i < 0) && (done == FALSE))
-        {
-          debug_printf(DEBUG_NORMAL, "Not enough event handler slots "
-                        "available!  (Increasing)\n");
+			temp =
+			    realloc(events,
+				    (sizeof(eventhandler) * num_event_slots));
+			if (temp == NULL) {
+				num_event_slots -= EVENT_GROW;
+				ipc_events_error(NULL,
+						 IPC_EVENT_ERROR_NO_IPC_SLOTS,
+						 NULL);
+				return -1;
+			}
 
-	  num_event_slots += EVENT_GROW;
+			events = temp;
 
-	  temp = realloc(events, (sizeof(eventhandler) * num_event_slots));
-	  if (temp == NULL)
-	  {
-		  num_event_slots -= EVENT_GROW;
-		ipc_events_error(NULL, IPC_EVENT_ERROR_NO_IPC_SLOTS, NULL);
-		return -1;
-	  }
+			for (i = (num_event_slots - EVENT_GROW);
+			     i < num_event_slots; i++) {
+				event_core_init_single_event(&events[i]);
+			}
 
-	  events = temp;
+			// Try to fill the slot again.
+			i = 0;
 
-	  for (i = (num_event_slots-1); i >= (num_event_slots - EVENT_GROW); i--)
-	  {
-		  event_core_init_single_event(&events[i]);
-	  }
+			while ((i < num_event_slots) && (done != TRUE)) {
+				if (events[i].devHandle == INVALID_HANDLE_VALUE) {
+					debug_printf(DEBUG_EVENT_CORE,
+						     "Registered event handler '%s' in "
+						     "slot %d.\n", name, i);
 
-	  i = num_event_slots -1;
+					event_core_fill_reg_struct(&events[i],
+								   devHandle,
+								   call_func,
+								   ctx, flags,
+								   name);
+					if ((globals != NULL) && (ctx != NULL)
+					    && (ctx->intType != ETH_802_11_INT)
+					    &&
+					    (TEST_FLAG
+					     (globals->flags,
+					      CONFIG_GLOBALS_WIRELESS_ONLY))) {
+						events[i].flags |=
+						    EVENT_IGNORE_INT;
+					}
 
-        while ((i >= 0) && (done != TRUE))
-        {
-          if (events[i].devHandle == INVALID_HANDLE_VALUE)
-			{
-				debug_printf(DEBUG_EVENT_CORE, "Registered event handler '%s' in "
-					"slot %d.\n", name, i);
-				event_core_fill_reg_struct(&events[i], devHandle, call_func, ctx, flags, name);
-			  if ((globals != NULL) && (ctx != NULL) && (ctx->intType != ETH_802_11_INT) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY)))
-			  {
-				  events[i].flags |= EVENT_IGNORE_INT;
-			  }
+					done = TRUE;
+				}
+
+				i++;
+			}
+
+		}
+	} else {
+		i = num_event_slots - 1;
+		while ((i >= 0) && (done != TRUE)) {
+			if (events[i].devHandle == INVALID_HANDLE_VALUE) {
+				debug_printf(DEBUG_EVENT_CORE,
+					     "Registered event handler '%s' in "
+					     "slot %d.\n", name, i);
+				event_core_fill_reg_struct(&events[i],
+							   devHandle, call_func,
+							   ctx, flags, name);
+				if ((globals != NULL) && (ctx != NULL)
+				    && (ctx->intType != ETH_802_11_INT)
+				    &&
+				    (TEST_FLAG
+				     (globals->flags,
+				      CONFIG_GLOBALS_WIRELESS_ONLY))) {
+					events[i].flags |= EVENT_IGNORE_INT;
+				}
 
 				done = TRUE;
-            }
-	  
+			}
+
 			i--;
-        }
+		}
 
-	  return -1;
-        }
-    }
+		if ((i < 0) && (done == FALSE)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Not enough event handler slots "
+				     "available!  (Increasing)\n");
 
-  return 0;
+			num_event_slots += EVENT_GROW;
+
+			temp =
+			    realloc(events,
+				    (sizeof(eventhandler) * num_event_slots));
+			if (temp == NULL) {
+				num_event_slots -= EVENT_GROW;
+				ipc_events_error(NULL,
+						 IPC_EVENT_ERROR_NO_IPC_SLOTS,
+						 NULL);
+				return -1;
+			}
+
+			events = temp;
+
+			for (i = (num_event_slots - 1);
+			     i >= (num_event_slots - EVENT_GROW); i--) {
+				event_core_init_single_event(&events[i]);
+			}
+
+			i = num_event_slots - 1;
+
+			while ((i >= 0) && (done != TRUE)) {
+				if (events[i].devHandle == INVALID_HANDLE_VALUE) {
+					debug_printf(DEBUG_EVENT_CORE,
+						     "Registered event handler '%s' in "
+						     "slot %d.\n", name, i);
+					event_core_fill_reg_struct(&events[i],
+								   devHandle,
+								   call_func,
+								   ctx, flags,
+								   name);
+					if ((globals != NULL) && (ctx != NULL)
+					    && (ctx->intType != ETH_802_11_INT)
+					    &&
+					    (TEST_FLAG
+					     (globals->flags,
+					      CONFIG_GLOBALS_WIRELESS_ONLY))) {
+						events[i].flags |=
+						    EVENT_IGNORE_INT;
+					}
+
+					done = TRUE;
+				}
+
+				i--;
+			}
+
+			return -1;
+		}
+	}
+
+	return 0;
 }
 
 /***********************************************************************
@@ -626,29 +653,29 @@ int event_core_register(HANDLE devHandle, context *ctx,
  ***********************************************************************/
 void event_core_deregister(HANDLE devHandle, uint8_t flags)
 {
-  int i;
+	int i;
 
-  for (i=0;i < num_event_slots;i++)
-    {
-      if ((events[i].devHandle == devHandle) && ((events[i].flags & 0xf0) == flags))
-	{
-	  debug_printf(DEBUG_EVENT_CORE, "Deregistering event handler '%s' in "
-		       "slot %d.\n", events[i].name, i);
+	for (i = 0; i < num_event_slots; i++) {
+		if ((events[i].devHandle == devHandle)
+		    && ((events[i].flags & 0xf0) == flags)) {
+			debug_printf(DEBUG_EVENT_CORE,
+				     "Deregistering event handler '%s' in "
+				     "slot %d.\n", events[i].name, i);
 
-	  if ((events[i].ctx != NULL) && ((events[i].flags & 0xf0) != EVENT_SECONDARY)) 
-	  {
-		  context_destroy(events[i].ctx);
-		  free(events[i].ctx);
-	  }
-	  events[i].ctx = NULL;
+			if ((events[i].ctx != NULL)
+			    && ((events[i].flags & 0xf0) != EVENT_SECONDARY)) {
+				context_destroy(events[i].ctx);
+				free(events[i].ctx);
+			}
+			events[i].ctx = NULL;
 
-	  FREE(events[i].name);
-	  events[i].devHandle = INVALID_HANDLE_VALUE;
-	  events[i].hEvent = INVALID_HANDLE_VALUE;
-	  events[i].func_to_call = NULL;
-	  FREE(events[i].ovr);
+			FREE(events[i].name);
+			events[i].devHandle = INVALID_HANDLE_VALUE;
+			events[i].hEvent = INVALID_HANDLE_VALUE;
+			events[i].func_to_call = NULL;
+			FREE(events[i].ovr);
+		}
 	}
-    }
 }
 
 /**
@@ -657,33 +684,32 @@ void event_core_deregister(HANDLE devHandle, uint8_t flags)
  * @param[in] ctx   The context that we are recieving the frame on.
  * @param[in] size   The size of the frame we recieved.
  **/
-void event_core_recv_frame(context *ctx, ULONG size)
+void event_core_recv_frame(context * ctx, ULONG size)
 {
 	config_globals *globals = NULL;
 
-	if (ctx->intType == ETH_802_11_INT)
-	{
-		if (ctx->intTypeData != NULL)
-		{
+	if (ctx->intType == ETH_802_11_INT) {
+		if (ctx->intTypeData != NULL) {
 			globals = config_get_globals();
 
-			if ((((wireless_ctx *)(ctx->intTypeData))->state != ASSOCIATED) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL)))
-			{
+			if ((((wireless_ctx *) (ctx->intTypeData))->state !=
+			     ASSOCIATED)
+			    &&
+			    (TEST_FLAG
+			     (globals->flags, CONFIG_GLOBALS_INT_CTRL))) {
 				cardif_windows_wmi_check_events();
 				wireless_sm_do_state(ctx);
 			}
 		}
 	}
 
-	if (ctx->recvframe != NULL)
-	{
-		if (ctx->recv_size != 0)
-		{
+	if (ctx->recvframe != NULL) {
+		if (ctx->recv_size != 0) {
 			// If we have an unprocessed frame in the buffer, clear it out.
 			ctx->recv_size = 0;
 		}
 
-		FREE(ctx->recvframe); 
+		FREE(ctx->recvframe);
 		ctx->recvframe = NULL;
 		ctx->eap_state->eapReqData = NULL;
 	}
@@ -693,7 +719,7 @@ void event_core_recv_frame(context *ctx, ULONG size)
 
 	((struct win_sock_data *)(ctx->sockData))->frame = NULL;
 	((struct win_sock_data *)(ctx->sockData))->size = 0;
-					
+
 	// Set up to receive the next frame.
 	cardif_setup_recv(ctx);
 }
@@ -705,267 +731,281 @@ void event_core_recv_frame(context *ctx, ULONG size)
  **/
 void event_core()
 {
-  HANDLE *handles = NULL;
-  int numhandles = 0, i = 0;
-  DWORD result = 0;
-  LPOVERLAPPED readOvr = 0;
-  struct eapol_header *eapol = NULL;
-  wireless_ctx *wctx = NULL;
-  ULONG bytesrx = 0;
-  time_t curtime = 0;
-  uint64_t uptime = 0;
-  long int err = 0;
-  config_globals *globals = NULL;
+	HANDLE *handles = NULL;
+	int numhandles = 0, i = 0;
+	DWORD result = 0;
+	LPOVERLAPPED readOvr = 0;
+	struct eapol_header *eapol = NULL;
+	wireless_ctx *wctx = NULL;
+	ULONG bytesrx = 0;
+	time_t curtime = 0;
+	uint64_t uptime = 0;
+	long int err = 0;
+	config_globals *globals = NULL;
 
-  if (terminate == 1)
-  {
-	  debug_printf(DEBUG_NORMAL, "Got a request to terminate.\n");
-	  global_deinit();
-	  return;
-  }
+	if (terminate == 1) {
+		debug_printf(DEBUG_NORMAL, "Got a request to terminate.\n");
+		global_deinit();
+		return;
+	}
 
-  globals = config_get_globals();
+	globals = config_get_globals();
 
-  event_core_check_state();
+	event_core_check_state();
 
-  // XXX This belongs in the frame processing code path, we should be checking if we are going to sleep,
-  // and discarding things.  Need to clean up the frame processing code path, and put this there.
-  if (event_core_get_sleep_state() == TRUE)
-  {
-	  // We are going to sleep.  Don't process anything.
-	  Sleep(1);
-	  return;
-  }
+	// XXX This belongs in the frame processing code path, we should be checking if we are going to sleep,
+	// and discarding things.  Need to clean up the frame processing code path, and put this there.
+	if (event_core_get_sleep_state() == TRUE) {
+		// We are going to sleep.  Don't process anything.
+		Sleep(1);
+		return;
+	}
 
-  handles = Malloc(sizeof(HANDLE) * num_event_slots);
-  if (handles == NULL)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store interface handles.  Terminating.\n");
-	  global_deinit();
-  }
-
+	handles = Malloc(sizeof(HANDLE) * num_event_slots);
+	if (handles == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store interface handles.  Terminating.\n");
+		global_deinit();
+	}
 #if DEBUG_EVENT_HANDLER
-  debug_printf(DEBUG_NORMAL, "Watching event handles :\n");
+	debug_printf(DEBUG_NORMAL, "Watching event handles :\n");
 #endif
 
-  cardif_windows_wmi_check_events();
+	cardif_windows_wmi_check_events();
 
-  if (event_core_lock() != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "!!!!!!!! Unable to acquire the event core lock!!  Bad things will probably happen!\n");
-  }
+	if (event_core_lock() != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "!!!!!!!! Unable to acquire the event core lock!!  Bad things will probably happen!\n");
+	}
 
-  for (i = 0; i<num_event_slots; i++)
-  {
-	  if (events[i].ctx != NULL)
-	  {
-		  active_ctx = events[i].ctx;
-		  cardif_check_events(events[i].ctx);
-	  }
+	for (i = 0; i < num_event_slots; i++) {
+		if (events[i].ctx != NULL) {
+			active_ctx = events[i].ctx;
+			cardif_check_events(events[i].ctx);
+		}
 
-	  if ((events[i].hEvent != INVALID_HANDLE_VALUE) && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)) &&
-		  ((events[i].ctx == NULL) || (!TEST_FLAG(events[i].ctx->flags, INT_IGNORE))))
-	  {
-		  // We have a handle, add it to our list of events to watch for, and check for events.
+		if ((events[i].hEvent != INVALID_HANDLE_VALUE)
+		    && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
+		    && ((events[i].ctx == NULL)
+			|| (!TEST_FLAG(events[i].ctx->flags, INT_IGNORE)))) {
+			// We have a handle, add it to our list of events to watch for, and check for events.
 #if DEBUG_EVENT_HANDLER
-		  debug_printf(DEBUG_EVENT_CORE, "hEvent = %d  hdl = %d (%s)\n", events[i].hEvent, events[i].devHandle, events[i].name);
+			debug_printf(DEBUG_EVENT_CORE,
+				     "hEvent = %d  hdl = %d (%s)\n",
+				     events[i].hEvent, events[i].devHandle,
+				     events[i].name);
 #endif
-		  handles[numhandles] = events[i].hEvent;
-		  numhandles++;
-	  }
-  }
+			handles[numhandles] = events[i].hEvent;
+			numhandles++;
+		}
+	}
 
-  if (event_core_unlock() != 0)
-  {
-	  debug_printf(DEBUG_EVENT_CORE, "Lock failure in %s():%d\n", __FUNCTION__, __LINE__);
-  }
+	if (event_core_unlock() != 0) {
+		debug_printf(DEBUG_EVENT_CORE, "Lock failure in %s():%d\n",
+			     __FUNCTION__, __LINE__);
+	}
 
-  if (numhandles <= 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "No handles available to watch.  Cannot continue!\n");
-	  FREE(handles);
-	  global_deinit();
-  }
+	if (numhandles <= 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "No handles available to watch.  Cannot continue!\n");
+		FREE(handles);
+		global_deinit();
+	}
 
-  result = WaitForMultipleObjectsEx(numhandles, handles, FALSE, 1000, 1);
+	result = WaitForMultipleObjectsEx(numhandles, handles, FALSE, 1000, 1);
 
-  cardif_windows_wmi_check_events();
+	cardif_windows_wmi_check_events();
 
-  if (event_core_lock() != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "!!!!!!!! Unable to acquire the event core lock!!  Bad things will probably happen!\n");
-  }
+	if (event_core_lock() != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "!!!!!!!! Unable to acquire the event core lock!!  Bad things will probably happen!\n");
+	}
 
-	  for (i=(num_event_slots-1); i>=0; i--)
-	  {
-		  if ((events[i].devHandle != INVALID_HANDLE_VALUE) && (HasOverlappedIoCompleted(events[i].ovr) == TRUE) &&
-			  (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)) && ((events[i].ctx == NULL) || (!TEST_FLAG(events[i].ctx->flags, INT_IGNORE))))
-		  {
-			  readOvr = events[i].ovr;
+	for (i = (num_event_slots - 1); i >= 0; i--) {
+		if ((events[i].devHandle != INVALID_HANDLE_VALUE)
+		    && (HasOverlappedIoCompleted(events[i].ovr) == TRUE)
+		    && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
+		    && ((events[i].ctx == NULL)
+			|| (!TEST_FLAG(events[i].ctx->flags, INT_IGNORE)))) {
+			readOvr = events[i].ovr;
 
-			  if (GetOverlappedResult(events[i].devHandle, readOvr, &bytesrx, FALSE) != 0)
-			  {
-				  debug_printf(DEBUG_EVENT_CORE, "Got data on handle %d (Size %d).\n", events[i].devHandle,
-					  bytesrx);
-				  
-				  // Only process as a frame handler if we have a context, and
-				  // no flags indicating that it isn't a frame handler.
-				  if ((events[i].ctx != NULL) && ((events[i].flags & 0xf0) == EVENT_PRIMARY))
-  				  {
-					  event_core_recv_frame(events[i].ctx, bytesrx);
-				  } 
+			if (GetOverlappedResult
+			    (events[i].devHandle, readOvr, &bytesrx,
+			     FALSE) != 0) {
+				debug_printf(DEBUG_EVENT_CORE,
+					     "Got data on handle %d (Size %d).\n",
+					     events[i].devHandle, bytesrx);
 
-				  if ((events[i].ctx != NULL) && ((events[i].flags & 0xf0) == EVENT_SECONDARY))
-				  {
-					  cardif_windows_events_set_bytes_rx(events[i].ctx, bytesrx);
-				  }
+				// Only process as a frame handler if we have a context, and
+				// no flags indicating that it isn't a frame handler.
+				if ((events[i].ctx != NULL)
+				    && ((events[i].flags & 0xf0) ==
+					EVENT_PRIMARY)) {
+					event_core_recv_frame(events[i].ctx,
+							      bytesrx);
+				}
 
+				if ((events[i].ctx != NULL)
+				    && ((events[i].flags & 0xf0) ==
+					EVENT_SECONDARY)) {
+					cardif_windows_events_set_bytes_rx
+					    (events[i].ctx, bytesrx);
+				}
 				// Be sure to set active_ctx before calling the function below.  It is
 				// used to allow upper layers to determine details of the lower layers.
 				active_ctx = events[i].ctx;
-				events[i].func_to_call(events[i].ctx, events[i].devHandle);
+				events[i].func_to_call(events[i].ctx,
+						       events[i].devHandle);
 				events[i].silent = 0;
-			
+
 				// Make sure our globals variable is up-to-date in case the IPC channel changed 
 				// something.
 				globals = config_get_globals();
-			  }
-			  else
-			  {
-				  err = GetLastError();
-				  if (GetLastError() == ERROR_BROKEN_PIPE)
-				  {
-					  active_ctx = events[i].ctx;
-					  events[i].func_to_call(events[i].ctx, events[i].devHandle);
-				  }
-
-				  if ((err == ERROR_OPERATION_ABORTED) && (events[i].ctx != NULL))
-				  {
-					  active_ctx = events[i].ctx;
-
-					  // If we get an operation aborted event, and it is on an event handler that has a 
-					  // context, we want to bounce the I/O handler to see if we can recover.
-					  debug_printf(DEBUG_INT, "Operation aborted.  (Hdl : %d  Evt : %d)\n", events[i].devHandle, events[i].hEvent);
-					  if ((events[i].flags & 0xf0) == EVENT_PRIMARY)
-					  {
-		 			    // This is how we restart I/O on a primary event handler.
-						cardif_cancel_io(events[i].ctx);
-						cardif_restart_io(events[i].ctx);
-						events[i].silent++;
-					  }
-
-					  if ((events[i].flags & 0xf0) == EVENT_SECONDARY)
-					  {
-			  			cardif_windows_restart_int_events(events[i].ctx);
-					  }
-
-					  // If the interface has been broken for at least 31 seconds, we want to shut it down.
-					  if (events[i].silent >= 32)
-					  {
-						  // We have a network interface that has disappeared, and we
-						  // don't know what to do, so dump it's context and log a message.
-						  debug_printf(DEBUG_VERBOSE, "The interface '%s' went in to a strange state.  We will terminate it's context.  If you want to "
-							  "use this interface, you need to repair it, or unplug it and plug it back in.\n", events[i].ctx->desc);
-
-			  			  ipc_events_ui(events[i].ctx, IPC_EVENT_INTERFACE_REMOVED, events[i].ctx->desc);
-
-						  events[i].ctx->flags |= INT_GONE;
-					  
-						  // Make sure we deregister both primary and secondary handlers.  (Always deregister the secondary first!)
-						  event_core_deregister(events[i].devHandle, EVENT_SECONDARY);
-						  event_core_deregister(events[i].devHandle, EVENT_PRIMARY);
-					  }
-				  }
-			  }
-		  }
-	  }  
-
-  // Clean up our handles array.
-  FREE(handles);
-
-  if (userlogoff == TRUE)
-  {
-	  event_core_win_do_user_logoff();
-  }
-
-  if (userlogon == TRUE)
-  {
-	  event_core_win_do_user_logon();
-  }
-
-  time(&curtime); 
-  if (last_check > curtime)
-  {
-	  debug_printf(DEBUG_EVENT_CORE, "Let's do the time warp again.  Your clock has gone backward!\n");
-	  last_check = curtime;
-  }
-
-  // If we got nailed with a bunch of events, make sure we still tick the clock.  This
-  // method won't have exactly one second precision, but it should be close enough.
-  if (curtime > last_check) 
-  {
-	  result = WAIT_TIMEOUT;
-	  last_check = curtime;
-  }
-
-  if (result == WAIT_TIMEOUT)
-  {
-	  // See if logs need to be rolled.
-	  xsup_debug_check_log_roll();
-
-	  for (i=0; i<num_event_slots; i++)
-	  {
-		  if ((events[i].ctx != NULL) && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)))
-		  {
-			active_ctx = events[i].ctx;
-			events[i].ctx->statemachine->tick = TRUE;
-			events[i].ctx->tick = TRUE;
- 
-			// Tick clock.
-			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
-			{
-				timer_tick(events[i].ctx);
-			}
-		  }
-	  }
-  }
-
-  for (i=0; i<num_event_slots; i++)
-  {
-	  if ((events[i].ctx != NULL) && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL)))
-	  {
-		active_ctx = events[i].ctx;
-		if (events[i].ctx->intType != ETH_802_11_INT) 
-		{
-			if (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
-			{
-				if ((events[i].ctx->conn != NULL) && ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY))
-				{
-					statemachine_run(events[i].ctx);
+			} else {
+				err = GetLastError();
+				if (GetLastError() == ERROR_BROKEN_PIPE) {
+					active_ctx = events[i].ctx;
+					events[i].func_to_call(events[i].ctx,
+							       events[i].
+							       devHandle);
 				}
-				else
-				{
-					if (events[i].ctx->eap_state != NULL)
-					{
-						events[i].ctx->eap_state->eap_sm_state = DISCONNECTED;
+
+				if ((err == ERROR_OPERATION_ABORTED)
+				    && (events[i].ctx != NULL)) {
+					active_ctx = events[i].ctx;
+
+					// If we get an operation aborted event, and it is on an event handler that has a 
+					// context, we want to bounce the I/O handler to see if we can recover.
+					debug_printf(DEBUG_INT,
+						     "Operation aborted.  (Hdl : %d  Evt : %d)\n",
+						     events[i].devHandle,
+						     events[i].hEvent);
+					if ((events[i].flags & 0xf0) ==
+					    EVENT_PRIMARY) {
+						// This is how we restart I/O on a primary event handler.
+						cardif_cancel_io(events[i].ctx);
+						cardif_restart_io(events[i].
+								  ctx);
+						events[i].silent++;
+					}
+
+					if ((events[i].flags & 0xf0) ==
+					    EVENT_SECONDARY) {
+						cardif_windows_restart_int_events
+						    (events[i].ctx);
+					}
+					// If the interface has been broken for at least 31 seconds, we want to shut it down.
+					if (events[i].silent >= 32) {
+						// We have a network interface that has disappeared, and we
+						// don't know what to do, so dump it's context and log a message.
+						debug_printf(DEBUG_VERBOSE,
+							     "The interface '%s' went in to a strange state.  We will terminate it's context.  If you want to "
+							     "use this interface, you need to repair it, or unplug it and plug it back in.\n",
+							     events[i].ctx->
+							     desc);
+
+						ipc_events_ui(events[i].ctx,
+							      IPC_EVENT_INTERFACE_REMOVED,
+							      events[i].ctx->
+							      desc);
+
+						events[i].ctx->flags |=
+						    INT_GONE;
+
+						// Make sure we deregister both primary and secondary handlers.  (Always deregister the secondary first!)
+						event_core_deregister(events[i].
+								      devHandle,
+								      EVENT_SECONDARY);
+						event_core_deregister(events[i].
+								      devHandle,
+								      EVENT_PRIMARY);
 					}
 				}
 			}
 		}
-		else
-		{
-			if (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
+	}
+
+	// Clean up our handles array.
+	FREE(handles);
+
+	if (userlogoff == TRUE) {
+		event_core_win_do_user_logoff();
+	}
+
+	if (userlogon == TRUE) {
+		event_core_win_do_user_logon();
+	}
+
+	time(&curtime);
+	if (last_check > curtime) {
+		debug_printf(DEBUG_EVENT_CORE,
+			     "Let's do the time warp again.  Your clock has gone backward!\n");
+		last_check = curtime;
+	}
+	// If we got nailed with a bunch of events, make sure we still tick the clock.  This
+	// method won't have exactly one second precision, but it should be close enough.
+	if (curtime > last_check) {
+		result = WAIT_TIMEOUT;
+		last_check = curtime;
+	}
+
+	if (result == WAIT_TIMEOUT) {
+		// See if logs need to be rolled.
+		xsup_debug_check_log_roll();
+
+		for (i = 0; i < num_event_slots; i++) {
+			if ((events[i].ctx != NULL)
+			    && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)))
 			{
-				wireless_sm_do_state(events[i].ctx);
+				active_ctx = events[i].ctx;
+				events[i].ctx->statemachine->tick = TRUE;
+				events[i].ctx->tick = TRUE;
+
+				// Tick clock.
+				if ((events[i].flags & EVENT_PRIMARY) ==
+				    EVENT_PRIMARY) {
+					timer_tick(events[i].ctx);
+				}
 			}
 		}
 	}
-  }
 
-  if (event_core_unlock() != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "!!!!!!!!!!!! Unable to release event core lock!  Bad things will probably happen!!\n");
-  }
+	for (i = 0; i < num_event_slots; i++) {
+		if ((events[i].ctx != NULL)
+		    && (TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL))) {
+			active_ctx = events[i].ctx;
+			if (events[i].ctx->intType != ETH_802_11_INT) {
+				if (!TEST_FLAG
+				    (events[i].flags, EVENT_IGNORE_INT)) {
+					if ((events[i].ctx->conn != NULL)
+					    &&
+					    ((events[i].
+					      flags & EVENT_PRIMARY) ==
+					     EVENT_PRIMARY)) {
+						statemachine_run(events[i].ctx);
+					} else {
+						if (events[i].ctx->eap_state !=
+						    NULL) {
+							events[i].ctx->
+							    eap_state->
+							    eap_sm_state =
+							    DISCONNECTED;
+						}
+					}
+				}
+			} else {
+				if (!TEST_FLAG
+				    (events[i].flags, EVENT_IGNORE_INT)) {
+					wireless_sm_do_state(events[i].ctx);
+				}
+			}
+		}
+	}
+
+	if (event_core_unlock() != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "!!!!!!!!!!!! Unable to release event core lock!  Bad things will probably happen!!\n");
+	}
 }
 
 /**
@@ -979,19 +1019,19 @@ void event_core()
  **/
 context *event_core_locate(char *matchstr)
 {
-  int i;
+	int i;
 
-  if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
+		return NULL;
 
-  for (i = 0; i < num_event_slots; i++)
-  {
-	  if ((events[i].ctx != NULL) && (strcmp(events[i].ctx->intName, matchstr) == 0))
-		  return events[i].ctx;
-  }
+	for (i = 0; i < num_event_slots; i++) {
+		if ((events[i].ctx != NULL)
+		    && (strcmp(events[i].ctx->intName, matchstr) == 0))
+			return events[i].ctx;
+	}
 
-  // Otherwise, we ran out of options.
-  return NULL;
+	// Otherwise, we ran out of options.
+	return NULL;
 }
 
 /**
@@ -1005,19 +1045,20 @@ context *event_core_locate(char *matchstr)
  **/
 context *event_core_locate_by_connection(char *matchstr)
 {
-  int i;
+	int i;
 
-  if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
+		return NULL;
 
-  for (i = 0; i < num_event_slots; i++)
-  {
-	  if ((events[i].ctx != NULL) && (events[i].ctx->conn_name != NULL) && (strcmp(events[i].ctx->conn_name, matchstr) == 0))
-		  return events[i].ctx;
-  }
+	for (i = 0; i < num_event_slots; i++) {
+		if ((events[i].ctx != NULL)
+		    && (events[i].ctx->conn_name != NULL)
+		    && (strcmp(events[i].ctx->conn_name, matchstr) == 0))
+			return events[i].ctx;
+	}
 
-  // Otherwise, we ran out of options.
-  return NULL;
+	// Otherwise, we ran out of options.
+	return NULL;
 }
 
 /**
@@ -1030,19 +1071,19 @@ context *event_core_locate_by_connection(char *matchstr)
  **/
 context *event_core_locate_by_desc(char *matchstr)
 {
-  int i;
+	int i;
 
-  if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
+		return NULL;
 
-  for (i = 0; i < num_event_slots; i++)
-  {
-	  if ((events[i].ctx != NULL) && (strcmp(events[i].ctx->desc, matchstr) == 0))
-		  return events[i].ctx;
-  }
+	for (i = 0; i < num_event_slots; i++) {
+		if ((events[i].ctx != NULL)
+		    && (strcmp(events[i].ctx->desc, matchstr) == 0))
+			return events[i].ctx;
+	}
 
-  // Otherwise, we ran out of options.
-  return NULL;
+	// Otherwise, we ran out of options.
+	return NULL;
 }
 
 /**
@@ -1055,19 +1096,19 @@ context *event_core_locate_by_desc(char *matchstr)
  **/
 context *event_core_locate_by_desc_strstr(char *matchstr)
 {
-  int i;
+	int i;
 
-  if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
+		return NULL;
 
-  for (i = 0; i < num_event_slots; i++)
-  {
-	  if ((events[i].ctx != NULL) && (strstr(events[i].ctx->desc, matchstr) != NULL))
-		  return events[i].ctx;
-  }
+	for (i = 0; i < num_event_slots; i++) {
+		if ((events[i].ctx != NULL)
+		    && (strstr(events[i].ctx->desc, matchstr) != NULL))
+			return events[i].ctx;
+	}
 
-  // Otherwise, we ran out of options.
-  return NULL;
+	// Otherwise, we ran out of options.
+	return NULL;
 }
 
 /**
@@ -1078,49 +1119,43 @@ context *event_core_locate_by_desc_strstr(char *matchstr)
  * \retval ptr  Pointer to a context structure for the interface requested.
  * \retval NULL Couldn't locate the desired interface.
  **/
-context *event_core_locate_by_caption(wchar_t *matchstr, int exact)
+context *event_core_locate_by_caption(wchar_t * matchstr, int exact)
 {
-  int i;
-  struct win_sock_data *sockData = NULL;
-  wchar_t *str = NULL;
-  context *ctx = NULL;
+	int i;
+	struct win_sock_data *sockData = NULL;
+	wchar_t *str = NULL;
+	context *ctx = NULL;
 
-  if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
+		return NULL;
 
-  for (i = 0; i < num_event_slots; i++)
-  {
-	  if (events[i].ctx != NULL)
-	  {
-		  sockData = events[i].ctx->sockData;
-		  if (sockData != NULL)
-		  {
-			  // Depending on the type of event it is, Windows may send the full name with the "- Packet Scheduler Miniport"
-			  // on the end, or just send the bare name.  In 99% of cases, you want to use an exact match to avoid any
-			  // weird stuff..  But, for things like the connect and disconnect events, you need to use a substring
-			  // match.   Always try to use an exact match first!!  (It will save you pain in the long run!)
-			  if (exact == TRUE)
-			  {
-				  if (wcscmp(sockData->caption, matchstr) == 0)
-					  return events[i].ctx;
-			  }
-			  else
-			  {
-				  str = wcsstr(sockData->caption, matchstr);
-				  if (str != NULL)
-				  {
-					  if (wcscmp(str, matchstr) == 0)
-						  return events[i].ctx;
-				  }
-			  }
-		  }
-	  }
-  }
+	for (i = 0; i < num_event_slots; i++) {
+		if (events[i].ctx != NULL) {
+			sockData = events[i].ctx->sockData;
+			if (sockData != NULL) {
+				// Depending on the type of event it is, Windows may send the full name with the "- Packet Scheduler Miniport"
+				// on the end, or just send the bare name.  In 99% of cases, you want to use an exact match to avoid any
+				// weird stuff..  But, for things like the connect and disconnect events, you need to use a substring
+				// match.   Always try to use an exact match first!!  (It will save you pain in the long run!)
+				if (exact == TRUE) {
+					if (wcscmp(sockData->caption, matchstr)
+					    == 0)
+						return events[i].ctx;
+				} else {
+					str =
+					    wcsstr(sockData->caption, matchstr);
+					if (str != NULL) {
+						if (wcscmp(str, matchstr) == 0)
+							return events[i].ctx;
+					}
+				}
+			}
+		}
+	}
 
-  // Otherwise, we ran out of options.
-  return NULL;
+	// Otherwise, we ran out of options.
+	return NULL;
 }
-
 
 void event_core_reset_locator()
 {
@@ -1133,16 +1168,18 @@ context *event_core_get_next_context()
 
 	desired_ctx = ++locate;
 
-	if (desired_ctx >= num_event_slots) return NULL;
+	if (desired_ctx >= num_event_slots)
+		return NULL;
 
-	while ((desired_ctx < num_event_slots) && (events[desired_ctx].ctx == NULL))
-	{
+	while ((desired_ctx < num_event_slots)
+	       && (events[desired_ctx].ctx == NULL)) {
 		desired_ctx++;
 	}
 
 	locate = desired_ctx;
 
-	if (desired_ctx >= num_event_slots) return NULL;
+	if (desired_ctx >= num_event_slots)
+		return NULL;
 
 	return events[desired_ctx].ctx;
 }
@@ -1206,13 +1243,12 @@ void event_core_going_to_sleep()
 {
 	int i = 0;
 
-	debug_printf(DEBUG_NORMAL, "XSupplicant got a request for the machine to enter a sleep state.\n");
+	debug_printf(DEBUG_NORMAL,
+		     "XSupplicant got a request for the machine to enter a sleep state.\n");
 
-	for (i= 0; i< num_event_slots; i++)
-	{
+	for (i = 0; i < num_event_slots; i++) {
 		// Loop through each event slot, cancel the IO, flag the context.
-		if (events[i].ctx != NULL)
-		{
+		if (events[i].ctx != NULL) {
 			cardif_cancel_io(events[i].ctx);
 			events[i].flags |= EVENT_IGNORE_INT;
 		}
@@ -1234,20 +1270,17 @@ void event_core_cancel_sleep()
 {
 	int i = 0;
 
-	debug_printf(DEBUG_NORMAL, "Another process canceled the sleep request.\n");
+	debug_printf(DEBUG_NORMAL,
+		     "Another process canceled the sleep request.\n");
 
-	for (i= 0; i< num_event_slots; i++)
-	{
+	for (i = 0; i < num_event_slots; i++) {
 		// Loop through each event slot, cancel the IO, flag the context.
-		if (events[i].ctx != NULL)
-		{
-			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
-			{
+		if (events[i].ctx != NULL) {
+			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) {
 				cardif_restart_io(events[i].ctx);
-			}
-			else
-			{
-				cardif_windows_restart_int_events(events[i].ctx);
+			} else {
+				cardif_windows_restart_int_events(events[i].
+								  ctx);
 			}
 
 			events[i].flags &= (~EVENT_IGNORE_INT);
@@ -1269,103 +1302,129 @@ void event_core_waking_up()
 	int i = 0;
 	wireless_ctx *wctx = NULL;
 
-	debug_printf(DEBUG_NORMAL, "XSupplicant is coming out of a sleep state.\n");
+	debug_printf(DEBUG_NORMAL,
+		     "XSupplicant is coming out of a sleep state.\n");
 
-	for (i= 0; i< num_event_slots; i++)
-	{
+	for (i = 0; i < num_event_slots; i++) {
 		// Loop through each event slot, cancel the IO, flag the context.
-		if (events[i].ctx != NULL)
-		{
-			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
-			{
+		if (events[i].ctx != NULL) {
+			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) {
 				cardif_restart_io(events[i].ctx);
 
 #ifdef HAVE_TNC
-		if(events[i].ctx->tnc_data != NULL) 
-		{
-			if(imc_disconnect_callback != NULL)
-				imc_disconnect_callback(events[i].ctx->tnc_data->connectionID);
+				if (events[i].ctx->tnc_data != NULL) {
+					if (imc_disconnect_callback != NULL)
+						imc_disconnect_callback(events
+									[i].
+									ctx->
+									tnc_data->
+									connectionID);
 
-			libtnc_tncc_DeleteConnection(events[i].ctx->tnc_data);
+					libtnc_tncc_DeleteConnection(events[i].
+								     ctx->
+								     tnc_data);
 
-			events[i].ctx->tnc_data = NULL;
-		}
+					events[i].ctx->tnc_data = NULL;
+				}
 #endif
 
 				// Depending on the order that things are restarted, and the events that 
 				// happened before we went to sleep, the UI may believe that some interfaces
 				// were removed, and never inserted again.  So, we generated inserted events
 				// for each interface we know about so that the UI is in sync with us.
-				ipc_events_ui(NULL, IPC_EVENT_INTERFACE_INSERTED, events[i].ctx->intName);
+				ipc_events_ui(NULL,
+					      IPC_EVENT_INTERFACE_INSERTED,
+					      events[i].ctx->intName);
 
 				// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
 				events[i].ctx->auths = 0;
 
 				// Force a DHCP release/renew on the next auth.  (Assuming we are doing DHCP. ;)
-				SET_FLAG(events[i].ctx->flags, DHCP_RELEASE_RENEW);
+				SET_FLAG(events[i].ctx->flags,
+					 DHCP_RELEASE_RENEW);
 
 				// Clear our timers.
-				if (events[i].ctx->statemachine != NULL)
-				{
-					events[i].ctx->statemachine->to_authenticated = 0;
+				if (events[i].ctx->statemachine != NULL) {
+					events[i].ctx->statemachine->
+					    to_authenticated = 0;
 					// Cause our state machines to reset to a known state.
-					events[i].ctx->statemachine->initialize = TRUE;
+					events[i].ctx->statemachine->
+					    initialize = TRUE;
 				}
 
 				if (events[i].ctx->eap_state != NULL)
-					events[i].ctx->eap_state->eapRestart = TRUE;
+					events[i].ctx->eap_state->eapRestart =
+					    TRUE;
 
-				if (events[i].ctx->intType == ETH_802_11_INT)
-				{
+				if (events[i].ctx->intType == ETH_802_11_INT) {
 					wctx = events[i].ctx->intTypeData;
 					memset(wctx->cur_bssid, 0x00, 6);
 
-					if (events[i].ctx->conn != NULL)
-					{
-						wireless_sm_change_state(ASSOCIATING, events[i].ctx);
+					if (events[i].ctx->conn != NULL) {
+						wireless_sm_change_state
+						    (ASSOCIATING,
+						     events[i].ctx);
 					}
 
-					if (cardif_get_link_state(events[i].ctx) == TRUE)
-					{
-						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_UP, events[i].ctx->desc);
-					}
-					else
-					{
-						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_DOWN, events[i].ctx->desc);
+					if (cardif_get_link_state(events[i].ctx)
+					    == TRUE) {
+						ipc_events_ui(NULL,
+							      IPC_EVENT_UI_LINK_UP,
+							      events[i].ctx->
+							      desc);
+					} else {
+						ipc_events_ui(NULL,
+							      IPC_EVENT_UI_LINK_DOWN,
+							      events[i].ctx->
+							      desc);
 					}
 
-					UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
-				}
-				else
-				{
+					UNSET_FLAG(events[i].ctx->flags,
+						   FORCED_CONN);
+				} else {
 					// Some interfaces send a link down when the machine is going to
 					// sleep.  So, we need to probe to make sure we show proper state
 					// when we wake up.
-					if (cardif_get_link_state(events[i].ctx) == TRUE)
-					{
-						if (events[i].ctx->statemachine != NULL)
-							events[i].ctx->statemachine->portEnabled = TRUE;
+					if (cardif_get_link_state(events[i].ctx)
+					    == TRUE) {
+						if (events[i].ctx->
+						    statemachine != NULL)
+							events[i].ctx->
+							    statemachine->
+							    portEnabled = TRUE;
 
-						if (events[i].ctx->eap_state != NULL)
-							events[i].ctx->eap_state->portEnabled = TRUE;
+						if (events[i].ctx->eap_state !=
+						    NULL)
+							events[i].ctx->
+							    eap_state->
+							    portEnabled = TRUE;
 
-						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_UP, events[i].ctx->desc);
-					}
-					else
-					{
-						if (events[i].ctx->statemachine != NULL)
-							events[i].ctx->statemachine->portEnabled = FALSE;
+						ipc_events_ui(NULL,
+							      IPC_EVENT_UI_LINK_UP,
+							      events[i].ctx->
+							      desc);
+					} else {
+						if (events[i].ctx->
+						    statemachine != NULL)
+							events[i].ctx->
+							    statemachine->
+							    portEnabled = FALSE;
 
-						if (events[i].ctx->eap_state != NULL)
-							events[i].ctx->eap_state->portEnabled = FALSE;
+						if (events[i].ctx->eap_state !=
+						    NULL)
+							events[i].ctx->
+							    eap_state->
+							    portEnabled = FALSE;
 
-						ipc_events_ui(NULL, IPC_EVENT_UI_LINK_DOWN, events[i].ctx->desc);
+						ipc_events_ui(NULL,
+							      IPC_EVENT_UI_LINK_DOWN,
+							      events[i].ctx->
+							      desc);
 					}
 				}
-			}
-			else
-			{
-				cardif_windows_restart_int_events(events[i].ctx);
+			} else {
+				cardif_windows_restart_int_events(events[i].
+								  ctx);
 			}
 
 			events[i].flags &= (~EVENT_IGNORE_INT);
@@ -1384,8 +1443,7 @@ void event_core_waking_up()
  **/
 void event_core_check_state()
 {
-	switch (sleep_state)
-	{
+	switch (sleep_state) {
 	default:
 	case PWR_STATE_RUNNING:
 	case PWR_STATE_HELD:
@@ -1412,9 +1470,9 @@ void event_core_check_state()
  **/
 void event_core_user_logged_on()
 {
-	if (user_logged_on == FALSE)
-	{
-		debug_printf(DEBUG_EVENT_CORE, ">>* Set user logged on flag!\n");
+	if (user_logged_on == FALSE) {
+		debug_printf(DEBUG_EVENT_CORE,
+			     ">>* Set user logged on flag!\n");
 		userlogon = TRUE;
 	}
 
@@ -1436,35 +1494,30 @@ void event_core_load_user_config()
 	char *conf_path = NULL;
 	char *temp = NULL;
 
-	  temp = platform_get_users_data_store_path();
-	  if (temp != NULL)
-	  {
-		  conf_path = Malloc(strlen(temp)+50);
-		  if (conf_path != NULL)
-		  {
-			  strcpy(conf_path, temp);
-			  strcat(conf_path, "\\xsupplicant.user.conf");
+	temp = platform_get_users_data_store_path();
+	if (temp != NULL) {
+		conf_path = Malloc(strlen(temp) + 50);
+		if (conf_path != NULL) {
+			strcpy(conf_path, temp);
+			strcat(conf_path, "\\xsupplicant.user.conf");
 
-			  if (config_load_user_config(conf_path) != XENONE)
-			  {
-				  debug_printf(DEBUG_NORMAL, "Unable to load the user's configuration.  No user specific configuration settings will be available!\n");
-			  }
-			  else
-			  {
-				  debug_printf(DEBUG_NORMAL, "Loaded new user specific configuration.\n");
+			if (config_load_user_config(conf_path) != XENONE) {
+				debug_printf(DEBUG_NORMAL,
+					     "Unable to load the user's configuration.  No user specific configuration settings will be available!\n");
+			} else {
+				debug_printf(DEBUG_NORMAL,
+					     "Loaded new user specific configuration.\n");
 
-				  // Save the path so we can grab it for a trouble ticket or crash dump.
-				  crashdump_add_curuser_conf(conf_path);
-			  }
+				// Save the path so we can grab it for a trouble ticket or crash dump.
+				crashdump_add_curuser_conf(conf_path);
+			}
 
-			  FREE(temp);
-			  FREE(conf_path);
-		  }
-		  else
-		  {
-			  FREE(temp);
-		  }
-	  }
+			FREE(temp);
+			FREE(conf_path);
+		} else {
+			FREE(temp);
+		}
+	}
 }
 
 void event_core_win_do_user_logon()
@@ -1473,34 +1526,30 @@ void event_core_win_do_user_logon()
 	int i = 0;
 	context *ctx = NULL;
 
-	  // Inform any IMCs that may need to know.
-	  debug_printf(DEBUG_EVENT_CORE, ">>* Processed user logged on flag.\n");
-	  if (imc_notify_callback != NULL) 
-	  {
-		  imc_notify_callback();
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_EVENT_CORE, ">>* Notify callback is NULL!\n");
-	  }
+	// Inform any IMCs that may need to know.
+	debug_printf(DEBUG_EVENT_CORE, ">>* Processed user logged on flag.\n");
+	if (imc_notify_callback != NULL) {
+		imc_notify_callback();
+	} else {
+		debug_printf(DEBUG_EVENT_CORE,
+			     ">>* Notify callback is NULL!\n");
+	}
 
-	  event_core_load_user_config();
+	event_core_load_user_config();
 
-	  // Determine if we want to allow a machine authentication to continue, if not, drop the
-	  // connection and reset the context so it starts to search the user's prioritized list.
-	  globals = config_get_globals();
-	  if ((globals != NULL) && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN)))
-	  {
-		  // The admin hasn't allowed the user to keep the machine auth alive when they log in.  
+	// Determine if we want to allow a machine authentication to continue, if not, drop the
+	// connection and reset the context so it starts to search the user's prioritized list.
+	globals = config_get_globals();
+	if ((globals != NULL)
+	    && (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN))) {
+		// The admin hasn't allowed the user to keep the machine auth alive when they log in.  
 
-		  // Iterate all contexts.
-		for (i= 0; i< num_event_slots; i++)
-		{
+		// Iterate all contexts.
+		for (i = 0; i < num_event_slots; i++) {
 			// Loop through each event slot, cancel the IO, flag the context.
-			if (events[i].ctx != NULL)
-			{
-				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
-				{
+			if (events[i].ctx != NULL) {
+				if ((events[i].flags & EVENT_PRIMARY) ==
+				    EVENT_PRIMARY) {
 					ctx = events[i].ctx;
 
 					context_disconnect(ctx);
@@ -1511,9 +1560,9 @@ void event_core_win_do_user_logon()
 				}
 			}
 		}
-	  }
+	}
 
-	  userlogon = FALSE;   // Don't retrigger.
+	userlogon = FALSE;	// Don't retrigger.
 }
 
 void event_core_win_do_user_logoff()
@@ -1522,30 +1571,28 @@ void event_core_win_do_user_logoff()
 	context *ctx = NULL;
 	int i = 0;
 
-	userlogoff = FALSE;  // Don't trigger again.
+	userlogoff = FALSE;	// Don't trigger again.
 
-	crashdump_remove_curuser_conf();  // So we don't try to save the wrong config it we crash or create a trouble ticket.
+	crashdump_remove_curuser_conf();	// So we don't try to save the wrong config it we crash or create a trouble ticket.
 
 	globals = config_get_globals();
-	if (globals == NULL) 
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to obtain the global configuration data.\n");
+	if (globals == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to obtain the global configuration data.\n");
 		return;
 	}
 
 	logon_creds_flush_stored_creds();
 
-	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF))
-	{
-		debug_printf(DEBUG_NORMAL, "Console user logged off.  Dropping all connections.\n");
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF)) {
+		debug_printf(DEBUG_NORMAL,
+			     "Console user logged off.  Dropping all connections.\n");
 
-		for (i= 0; i< num_event_slots; i++)
-		{
+		for (i = 0; i < num_event_slots; i++) {
 			// Loop through each event slot, cancel the IO, flag the context.
-			if (events[i].ctx != NULL)
-			{
-				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
-				{
+			if (events[i].ctx != NULL) {
+				if ((events[i].flags & EVENT_PRIMARY) ==
+				    EVENT_PRIMARY) {
 					ctx = events[i].ctx;
 
 					context_disconnect(ctx);
@@ -1553,12 +1600,15 @@ void event_core_win_do_user_logoff()
 
 #ifdef HAVE_TNC
 					// If we are using a TNC enabled build, signal the IMC to clean up.
-					if(ctx->tnc_data != NULL) 
-					{
-						if(imc_disconnect_callback != NULL)
-							imc_disconnect_callback(ctx->tnc_data->connectionID);
+					if (ctx->tnc_data != NULL) {
+						if (imc_disconnect_callback !=
+						    NULL)
+							imc_disconnect_callback
+							    (ctx->tnc_data->
+							     connectionID);
 
-						libtnc_tncc_DeleteConnection(ctx->tnc_data);
+						libtnc_tncc_DeleteConnection
+						    (ctx->tnc_data);
 
 						ctx->tnc_data = NULL;
 					}
@@ -1566,22 +1616,21 @@ void event_core_win_do_user_logoff()
 				}
 			}
 		}
-	}
-	else
-	{
+	} else {
 		// If we didn't drop all connections, we need to at least drop
 		// the connections whose configurations are about to be deleted.
-		for (i= 0; i< num_event_slots; i++)
-		{
+		for (i = 0; i < num_event_slots; i++) {
 			// Loop through each event slot, cancel the IO, flag the context.
-			if (events[i].ctx != NULL)
-			{
-				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
-				{
-					if (config_find_connection(CONFIG_LOAD_USER, events[i].ctx->conn->name) != NULL)
-					{
+			if (events[i].ctx != NULL) {
+				if ((events[i].flags & EVENT_PRIMARY) ==
+				    EVENT_PRIMARY) {
+					if (config_find_connection
+					    (CONFIG_LOAD_USER,
+					     events[i].ctx->conn->name) !=
+					    NULL) {
 						// Drop the connection.
-						context_disconnect(events[i].ctx);
+						context_disconnect(events[i].
+								   ctx);
 					}
 				}
 			}
@@ -1604,7 +1653,8 @@ void event_core_win_do_user_logoff()
  **/
 uint32_t event_core_register_imc_logon_callback(void *callback)
 {
-	if (imc_notify_callback != NULL) return 1;
+	if (imc_notify_callback != NULL)
+		return 1;
 
 	imc_notify_callback = callback;
 
@@ -1626,7 +1676,8 @@ uint32_t event_core_register_imc_logon_callback(void *callback)
  **/
 uint32_t event_core_register_disconnect_callback(void *callback)
 {
-	if (imc_disconnect_callback != NULL) return 1;
+	if (imc_disconnect_callback != NULL)
+		return 1;
 
 	imc_disconnect_callback = callback;
 
@@ -1648,7 +1699,8 @@ uint32_t event_core_register_disconnect_callback(void *callback)
  **/
 uint32_t event_core_register_ui_connect_callback(void *callback)
 {
-	if (imc_ui_connect_callback != NULL) return 1;
+	if (imc_ui_connect_callback != NULL)
+		return 1;
 
 	imc_ui_connect_callback = callback;
 
@@ -1663,22 +1715,18 @@ void event_core_drop_active_conns()
 {
 	int i = 0;
 
-	for (i= 0; i< num_event_slots; i++)
-	{
+	for (i = 0; i < num_event_slots; i++) {
 		// Loop through each event slot, and disconnect it.
-		if ((events[i].ctx != NULL) && (events[i].ctx->conn != NULL))
-		{
-			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY)
-			{
-				if (statemachine_change_state(events[i].ctx, LOGOFF) == 0)
-				{
-					events[i].ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
+		if ((events[i].ctx != NULL) && (events[i].ctx->conn != NULL)) {
+			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) {
+				if (statemachine_change_state
+				    (events[i].ctx, LOGOFF) == 0) {
+					events[i].ctx->auths = 0;	// So that we renew DHCP on the next authentication.
 
 					txLogoff(events[i].ctx);
 				}
 
-				if (events[i].ctx->intType == ETH_802_11_INT)
-				{
+				if (events[i].ctx->intType == ETH_802_11_INT) {
 					// Send a disassociate.
 					cardif_disassociate(events[i].ctx, 0);
 				}
@@ -1687,7 +1735,7 @@ void event_core_drop_active_conns()
 	}
 }
 
-void event_core_change_wireless(config_globals *newsettings)
+void event_core_change_wireless(config_globals * newsettings)
 {
 	config_globals *globals = NULL;
 	wireless_ctx *wctx = NULL;
@@ -1695,43 +1743,47 @@ void event_core_change_wireless(config_globals *newsettings)
 
 	globals = config_get_globals();
 
-	if (globals == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to determine current state of the Wireless_Only option!\n");
+	if (globals == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to determine current state of the Wireless_Only option!\n");
 		return;
 	}
-
 	// Only do things if something has changed.
-	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY) != TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_WIRELESS_ONLY))
-	{
-		for (i= 0; i< num_event_slots; i++)
-		{
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY) !=
+	    TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_WIRELESS_ONLY)) {
+		for (i = 0; i < num_event_slots; i++) {
 			// We only care if this interface is wired.
-			if ((events[i].ctx != NULL) && (events[i].ctx->intType != ETH_802_11_INT))
-			{
-				if (TEST_FLAG(newsettings->flags, CONFIG_GLOBALS_WIRELESS_ONLY))
-				{
+			if ((events[i].ctx != NULL)
+			    && (events[i].ctx->intType != ETH_802_11_INT)) {
+				if (TEST_FLAG
+				    (newsettings->flags,
+				     CONFIG_GLOBALS_WIRELESS_ONLY)) {
 					// Disable all wired interfaces.  (If it isn't already disabled.)
-					if (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
-					{
+					if (!TEST_FLAG
+					    (events[i].flags,
+					     EVENT_IGNORE_INT)) {
 						cardif_cancel_io(events[i].ctx);
-						events[i].flags |= EVENT_IGNORE_INT;
+						events[i].flags |=
+						    EVENT_IGNORE_INT;
 					}
-				}
-				else
-				{
+				} else {
 					// Enable all wired interfaces.  (If it isn't already enabled.)
-					if (TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))
-					{
-						cardif_restart_io(events[i].ctx);
-						events[i].flags &= (~EVENT_IGNORE_INT);
+					if (TEST_FLAG
+					    (events[i].flags,
+					     EVENT_IGNORE_INT)) {
+						cardif_restart_io(events[i].
+								  ctx);
+						events[i].flags &=
+						    (~EVENT_IGNORE_INT);
 
-						if (events[i].ctx->intType == ETH_802_11_INT)
-						{
-							wctx = events[i].ctx->intTypeData;
-							memset(wctx->cur_bssid, 0x00, 6);
+						if (events[i].ctx->intType ==
+						    ETH_802_11_INT) {
+							wctx =
+							    events[i].ctx->
+							    intTypeData;
+							memset(wctx->cur_bssid,
+							       0x00, 6);
 						}
-
 						// Reset our auth count so that we do a new IP release/renew.  Just in case Windows beats us to the punch.
 						events[i].ctx->auths = 0;
 					}
@@ -1753,66 +1805,69 @@ void event_core_change_os_ctrl_state(void *param)
 
 	event_core_lock();
 
-	if (param != NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "XSupplicant is taking control of your interfaces...\n");
-	}
-	else
-	{
-		debug_printf(DEBUG_NORMAL, "XSupplicant is giving control of your interfaces to Windows...\n");
+	if (param != NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "XSupplicant is taking control of your interfaces...\n");
+	} else {
+		debug_printf(DEBUG_NORMAL,
+			     "XSupplicant is giving control of your interfaces to Windows...\n");
 	}
 
-	for (i= 0; i< num_event_slots; i++)
-	{
-		if (param != NULL)
-		{
+	for (i = 0; i < num_event_slots; i++) {
+		if (param != NULL) {
 			// XSupplicant should control this interface.
-			if (events[i].ctx != NULL)
-			{
-				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) 
-				{
-					windows_int_ctrl_take_ctrl(events[i].ctx);
+			if (events[i].ctx != NULL) {
+				if ((events[i].flags & EVENT_PRIMARY) ==
+				    EVENT_PRIMARY) {
+					windows_int_ctrl_take_ctrl(events[i].
+								   ctx);
 					cardif_restart_io(events[i].ctx);
-				}
-				else
-				{
-					cardif_windows_restart_int_events(events[i].ctx);
+				} else {
+					cardif_windows_restart_int_events(events
+									  [i].
+									  ctx);
 				}
 
 				events[i].flags &= (~EVENT_IGNORE_INT);
 
-				if (TEST_FLAG(events[i].flags, EVENT_PRIMARY))
-				{
+				if (TEST_FLAG(events[i].flags, EVENT_PRIMARY)) {
 					// Clear out the connection data so we don't get confused
 					// when we come back.  And set the release/renew flag so
 					// we do a full release/renew when we come back.
-					UNSET_FLAG(events[i].ctx->flags, FORCED_CONN);
-					SET_FLAG(events[i].ctx->flags, DHCP_RELEASE_RENEW);
+					UNSET_FLAG(events[i].ctx->flags,
+						   FORCED_CONN);
+					SET_FLAG(events[i].ctx->flags,
+						 DHCP_RELEASE_RENEW);
 					events[i].ctx->conn = NULL;
 					events[i].ctx->prof = NULL;
 					FREE(events[i].ctx->conn_name);
 
-					if (statemachine_change_state(events[i].ctx, LOGOFF) == 0)
-					{
-						events[i].ctx->auths = 0;                   // So that we renew DHCP on the next authentication.
+					if (statemachine_change_state
+					    (events[i].ctx, LOGOFF) == 0) {
+						events[i].ctx->auths = 0;	// So that we renew DHCP on the next authentication.
 
 						txLogoff(events[i].ctx);
 					}
 
-					if (events[i].ctx->intType == ETH_802_11_INT)
-					{
-						config_ssid_clear(events[i].ctx->intTypeData);
-						wireless_sm_change_state(UNASSOCIATED, events[i].ctx);						
+					if (events[i].ctx->intType ==
+					    ETH_802_11_INT) {
+						config_ssid_clear(events[i].
+								  ctx->
+								  intTypeData);
+						wireless_sm_change_state
+						    (UNASSOCIATED,
+						     events[i].ctx);
 					}
 				}
 			}
-		}
-		else
-		{
+		} else {
 			// Windows should control this interface.
-			if (events[i].ctx != NULL)
-			{
-				if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) windows_int_ctrl_give_to_windows(events[i].ctx);
+			if (events[i].ctx != NULL) {
+				if ((events[i].flags & EVENT_PRIMARY) ==
+				    EVENT_PRIMARY)
+					windows_int_ctrl_give_to_windows(events
+									 [i].
+									 ctx);
 				cardif_cancel_io(events[i].ctx);
 				events[i].flags |= EVENT_IGNORE_INT;
 			}
@@ -1835,7 +1890,9 @@ void event_core_change_os_ctrl_state(void *param)
  **/
 int event_core_get_sleep_state()
 {
-	if ((sleep_state == PWR_STATE_SLEEPING) || (sleep_state == PWR_STATE_HELD)) return TRUE;
+	if ((sleep_state == PWR_STATE_SLEEPING)
+	    || (sleep_state == PWR_STATE_HELD))
+		return TRUE;
 
 	return FALSE;
 }

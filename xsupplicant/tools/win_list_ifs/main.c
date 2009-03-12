@@ -18,7 +18,7 @@
 #if 0
 #include "pcap.h"
 
-void print_if_info(pcap_if_t *ifdata)
+void print_if_info(pcap_if_t * ifdata)
 {
 	printf("Interface Name : %s\n", ifdata->name);
 	printf("\tInterface Description : %s\n\n", ifdata->description);
@@ -28,18 +28,16 @@ int main()
 {
 	pcap_if_t *alldevs;
 	pcap_if_t *cur;
-	char errbuf[PCAP_ERRBUF_SIZE+1];
+	char errbuf[PCAP_ERRBUF_SIZE + 1];
 
-	if (pcap_findalldevs(&alldevs, &errbuf) < 0)
-	{
+	if (pcap_findalldevs(&alldevs, &errbuf) < 0) {
 		printf("Error : %s\n", errbuf);
 		exit(1);
 	}
 
 	cur = alldevs;
 
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		print_if_info(cur);
 		cur = cur->next;
 	}
@@ -48,7 +46,7 @@ int main()
 }
 #endif
 
-char  NdisDev[] = "\\\\.\\\\Open1X";
+char NdisDev[] = "\\\\.\\\\Open1X";
 
 /**
  * Rather than just showing an error code, we want to show a string.
@@ -60,9 +58,9 @@ LPVOID GetLastErrorStr(DWORD error)
 	LPVOID lpMsgBuf;
 
 	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-   				  FORMAT_MESSAGE_FROM_SYSTEM,
-				  NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-				  (LPTSTR) &lpMsgBuf, 0, NULL );
+		      FORMAT_MESSAGE_FROM_SYSTEM,
+		      NULL, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		      (LPTSTR) & lpMsgBuf, 0, NULL);
 
 	return lpMsgBuf;
 }
@@ -79,24 +77,27 @@ void ListDevs(HANDLE devHandle)
 	DWORD BytesWritten, dw;
 	LPVOID lpMsgBuf;
 
-	printf("Interfaces currently known to the Open1X Protocol Handler :\n\n");
+	printf
+	    ("Interfaces currently known to the Open1X Protocol Handler :\n\n");
 	// Allocate enough memory to store the result.
 	pQueryBinding = malloc(1024);
-	if (pQueryBinding == NULL)
-	{
-		printf("Couldn't allocate memory to store the binding structure!\n");
+	if (pQueryBinding == NULL) {
+		printf
+		    ("Couldn't allocate memory to store the binding structure!\n");
 		return;
 	}
 
 	pQueryBinding->BindingIndex = 0;
 
 	while (DeviceIoControl(devHandle, IOCTL_NDISPROT_QUERY_BINDING,
-			pQueryBinding, sizeof(NDISPROT_QUERY_BINDING),
-			pQueryBinding, 1024,
-			&BytesWritten, NULL) != 0)
-	{
-		printf("Device Name : %ws\n", (WCHAR *)((PUCHAR)pQueryBinding + pQueryBinding->DeviceNameOffset));
-		printf("\tDevice Description : %ws\n", (WCHAR *)((PUCHAR)pQueryBinding + pQueryBinding->DeviceDescrOffset));
+			       pQueryBinding, sizeof(NDISPROT_QUERY_BINDING),
+			       pQueryBinding, 1024, &BytesWritten, NULL) != 0) {
+		printf("Device Name : %ws\n",
+		       (WCHAR *) ((PUCHAR) pQueryBinding +
+				  pQueryBinding->DeviceNameOffset));
+		printf("\tDevice Description : %ws\n",
+		       (WCHAR *) ((PUCHAR) pQueryBinding +
+				  pQueryBinding->DeviceDescrOffset));
 		printf("\n");
 
 		pQueryBinding->BindingIndex++;
@@ -104,8 +105,7 @@ void ListDevs(HANDLE devHandle)
 
 	dw = GetLastError();
 
-	if (dw != ERROR_NO_MORE_ITEMS)
-	{
+	if (dw != ERROR_NO_MORE_ITEMS) {
 		lpMsgBuf = GetLastErrorStr(dw);
 		printf("Error getting interface information!\n");
 		printf("  Error was : %s\n", lpMsgBuf);
@@ -121,27 +121,25 @@ void ListDevs(HANDLE devHandle)
  **/
 HANDLE GetHandle(char *devName)
 {
-		HANDLE retHandle;
-		LPVOID lpMsgBuf;
+	HANDLE retHandle;
+	LPVOID lpMsgBuf;
 
-		retHandle = CreateFile(devName, 
-							   FILE_READ_DATA | FILE_WRITE_DATA,
-							   FILE_SHARE_READ | FILE_SHARE_WRITE,
-							   NULL, OPEN_EXISTING, 
-							   FILE_ATTRIBUTE_NORMAL,
-							   INVALID_HANDLE_VALUE);
+	retHandle = CreateFile(devName,
+			       FILE_READ_DATA | FILE_WRITE_DATA,
+			       FILE_SHARE_READ | FILE_SHARE_WRITE,
+			       NULL, OPEN_EXISTING,
+			       FILE_ATTRIBUTE_NORMAL, INVALID_HANDLE_VALUE);
 
-		if (retHandle == INVALID_HANDLE_VALUE)
-		{
-			lpMsgBuf = GetLastErrorStr(GetLastError());
+	if (retHandle == INVALID_HANDLE_VALUE) {
+		lpMsgBuf = GetLastErrorStr(GetLastError());
 
-			printf("Couldn't establish a connection to the Open1X "
-				"protocol service!\n  Error was : %s", lpMsgBuf);
+		printf("Couldn't establish a connection to the Open1X "
+		       "protocol service!\n  Error was : %s", lpMsgBuf);
 
-			LocalFree(lpMsgBuf);
-		}
+		LocalFree(lpMsgBuf);
+	}
 
-		return retHandle;
+	return retHandle;
 }
 
 int main()
@@ -156,10 +154,9 @@ int main()
 
 	ListDevs(devHandle);
 
-	if (CloseHandle(devHandle) == 0)
-	{
+	if (CloseHandle(devHandle) == 0) {
 		printf("Couldn't close device handle to Open1X protocol "
-				"handler.\n");
+		       "handler.\n");
 
 		lpMsgBuf = GetLastErrorStr(GetLastError());
 		printf("Error was : %s\n", lpMsgBuf);

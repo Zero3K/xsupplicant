@@ -19,72 +19,72 @@
 /**
  *  Error/warning/deprecated codes (and their meanings) that can be sent over the IPC channel.
  **/
-#define IPC_ERROR_NONE                300   // No error.
-#define IPC_ERROR_CANT_ALLOCATE_NODE  301   // Unable the allocate a node in the XML tree.
-#define IPC_ERROR_UNKNOWN_REQUEST     302   // Requested information we know nothing about.
-#define IPC_ERROR_CANT_LOCATE_NODE    303   // Couldn't find the node we needed in a request.
-#define IPC_ERROR_INVALID_INTERFACE   304   // Couldn't locate the interface that was requested.
-#define IPC_ERROR_INVALID_CONTEXT     305   // The context requested didn't contain all of the 
+#define IPC_ERROR_NONE                300	// No error.
+#define IPC_ERROR_CANT_ALLOCATE_NODE  301	// Unable the allocate a node in the XML tree.
+#define IPC_ERROR_UNKNOWN_REQUEST     302	// Requested information we know nothing about.
+#define IPC_ERROR_CANT_LOCATE_NODE    303	// Couldn't find the node we needed in a request.
+#define IPC_ERROR_INVALID_INTERFACE   304	// Couldn't locate the interface that was requested.
+#define IPC_ERROR_INVALID_CONTEXT     305	// The context requested didn't contain all of the
 											//    information we needed.
-#define IPC_ERROR_INVALID_BSSID       306   // We don't know a valid BSSID.  (The card is probably
+#define IPC_ERROR_INVALID_BSSID       306	// We don't know a valid BSSID.  (The card is probably
 											// not associated!)
-#define IPC_ERROR_INVALID_SIGNAL_STRENGTH  307  // The signal strength value isn't available.
-#define IPC_ERROR_INVALID_REQUEST     308   // The request didn't contain the information needed.
-#define IPC_ERROR_CANT_LOGOFF         309   // Attempt to change to logoff state failed.
-#define IPC_ERROR_INTERFACE_NOT_FOUND 310   // The interface requested was not found.
-#define IPC_ERROR_COULDNT_CHANGE_UPW  311   // The username and/or password couldn't be changed.
-#define IPC_ERROR_INVALID_ROOT_NODE   312   // The root node in the request was invalid.
-#define IPC_ERROR_INVALID_CONN_NAME   313   // The connection name requested was invalid.
-#define IPC_ERROR_INVALID_PROF_NAME   314   // The profile name requested was invalid.
-#define IPC_ERROR_INT_NOT_WIRELESS    315   // The requested interface is not wireless.
-#define IPC_ERROR_CANT_GET_IP         316   // Couldn't obtain the IP address for requested interface!
-#define IPC_ERROR_CANT_GET_NETMASK    317   // Couldn't obtain the netmask for requested interface.
-#define IPC_ERROR_CANT_GET_GATEWAY    318   // Couldn't obtain the default gateway for requested interface.
-#define IPC_ERROR_CANT_FIND_SSID      319   // Couldn't locate the requested SSID in the SSID cache.
-#define IPC_ERROR_NO_INTERFACES       320   // The supplicant is not currently managing any interfaces.
-#define IPC_ERROR_INVALID_FILE        321   // The filename requested is invalid.
-#define IPC_ERROR_CANT_WRITE_CONFIG   322   // Couldn't write the configuration file!
-#define IPC_ERROR_INVALID_NODE        323   // Couldn't locate node %s!
-#define IPC_ERROR_CANT_GET_CONFIG     324   // Couldn't get requested configuration information!
-#define IPC_ERROR_CONFIG_CONFLICT     325   // Attempted to create a connection/profile/trusted server in a configuration, when the other configuration already has one by the same name.
-#define IPC_ERROR_INVALID_TRUSTED_SVR 326   // Couldn't locate the requested trusted server.
-#define IPC_ERROR_PARSING             327   // Attempt to parse requested configuration block failed.
-#define IPC_ERROR_MALLOC              328   // Failed to allocate memory!
-#define IPC_ERROR_CANT_CHANGE_CONFIG  329   // Failed to change requested configuration data.
-#define IPC_ERROR_CANT_PASSIVE_SCAN   330   // The OS doesn't know how to passive scan, or the interface won't allow it.
-#define IPC_ERROR_UNKNOWN_SCAN_ERROR  331   // An unhandled error occurred while attempting to scan.
-#define IPC_ERROR_CERT_STORE_ERROR    332   // An error occurred obtaining access to the certificate store.
-#define IPC_ERROR_CANT_GET_CERT_INFO  333   // Unable to locate the certificate information requested.
-#define IPC_ERROR_BAD_TNC_UI_RESPONSE 334   // The attempt to trigger the response to a TNC UI request failed.
-#define IPC_ERROR_INTERFACE_IN_USE    335   // The requested interface is already in use.
-#define IPC_ERROR_NO_CONNECTION       336   // The interface doesn't have a connection assigned.
-#define IPC_ERROR_NEW_ERRORS_IN_QUEUE 337   // There are errors to be read from the error queue.
-#define IPC_ERROR_CANT_DEL_CONN_IN_USE 338  // Cannot delete the connection.  It is currently in use.
-#define IPC_ERROR_CANT_GET_SYS_UPTIME 339   // Unable to determine the system uptime.
-#define IPC_ERROR_NEED_USERNAME       340   // No username was provided for an EAP authentication.
-#define IPC_ERROR_NEED_PASSWORD       341   // No password was provided for the authentication.
-#define IPC_ERROR_CANT_RENAME         342   // Unable to rename connection/profile/trusted server.
-#define IPC_ERROR_STILL_IN_USE        343   // The profile/trusted server is still in use and cannot be deleted.
-#define IPC_ERROR_NAME_IN_USE         344   // The connection/profile/trusted server name is already in use.
-#define IPC_ERROR_GEN_TROUBLE_TICKET  345   // An unrecoverable error occurred while generating trouble tickets.
-#define IPC_ERROR_FILE_EXISTS         346   // A request was made to overwrite a file that already exists.
-#define IPC_ERROR_NOT_SUPPORTED		  347   // The request is not supported.
-#define IPC_ERROR_NOT_ALLOWED		  348   // The requested operation is not allowed while the supplicant is in its current state.
-#define IPC_ERROR_SSID_NOT_FOUND      349   // The requested SSID is not found in the scan cache.
-#define IPC_ERROR_REQUEST_FAILED	  350   // The operation requested failed.
+#define IPC_ERROR_INVALID_SIGNAL_STRENGTH  307	// The signal strength value isn't available.
+#define IPC_ERROR_INVALID_REQUEST     308	// The request didn't contain the information needed.
+#define IPC_ERROR_CANT_LOGOFF         309	// Attempt to change to logoff state failed.
+#define IPC_ERROR_INTERFACE_NOT_FOUND 310	// The interface requested was not found.
+#define IPC_ERROR_COULDNT_CHANGE_UPW  311	// The username and/or password couldn't be changed.
+#define IPC_ERROR_INVALID_ROOT_NODE   312	// The root node in the request was invalid.
+#define IPC_ERROR_INVALID_CONN_NAME   313	// The connection name requested was invalid.
+#define IPC_ERROR_INVALID_PROF_NAME   314	// The profile name requested was invalid.
+#define IPC_ERROR_INT_NOT_WIRELESS    315	// The requested interface is not wireless.
+#define IPC_ERROR_CANT_GET_IP         316	// Couldn't obtain the IP address for requested interface!
+#define IPC_ERROR_CANT_GET_NETMASK    317	// Couldn't obtain the netmask for requested interface.
+#define IPC_ERROR_CANT_GET_GATEWAY    318	// Couldn't obtain the default gateway for requested interface.
+#define IPC_ERROR_CANT_FIND_SSID      319	// Couldn't locate the requested SSID in the SSID cache.
+#define IPC_ERROR_NO_INTERFACES       320	// The supplicant is not currently managing any interfaces.
+#define IPC_ERROR_INVALID_FILE        321	// The filename requested is invalid.
+#define IPC_ERROR_CANT_WRITE_CONFIG   322	// Couldn't write the configuration file!
+#define IPC_ERROR_INVALID_NODE        323	// Couldn't locate node %s!
+#define IPC_ERROR_CANT_GET_CONFIG     324	// Couldn't get requested configuration information!
+#define IPC_ERROR_CONFIG_CONFLICT     325	// Attempted to create a connection/profile/trusted server in a configuration, when the other configuration already has one by the same name.
+#define IPC_ERROR_INVALID_TRUSTED_SVR 326	// Couldn't locate the requested trusted server.
+#define IPC_ERROR_PARSING             327	// Attempt to parse requested configuration block failed.
+#define IPC_ERROR_MALLOC              328	// Failed to allocate memory!
+#define IPC_ERROR_CANT_CHANGE_CONFIG  329	// Failed to change requested configuration data.
+#define IPC_ERROR_CANT_PASSIVE_SCAN   330	// The OS doesn't know how to passive scan, or the interface won't allow it.
+#define IPC_ERROR_UNKNOWN_SCAN_ERROR  331	// An unhandled error occurred while attempting to scan.
+#define IPC_ERROR_CERT_STORE_ERROR    332	// An error occurred obtaining access to the certificate store.
+#define IPC_ERROR_CANT_GET_CERT_INFO  333	// Unable to locate the certificate information requested.
+#define IPC_ERROR_BAD_TNC_UI_RESPONSE 334	// The attempt to trigger the response to a TNC UI request failed.
+#define IPC_ERROR_INTERFACE_IN_USE    335	// The requested interface is already in use.
+#define IPC_ERROR_NO_CONNECTION       336	// The interface doesn't have a connection assigned.
+#define IPC_ERROR_NEW_ERRORS_IN_QUEUE 337	// There are errors to be read from the error queue.
+#define IPC_ERROR_CANT_DEL_CONN_IN_USE 338	// Cannot delete the connection.  It is currently in use.
+#define IPC_ERROR_CANT_GET_SYS_UPTIME 339	// Unable to determine the system uptime.
+#define IPC_ERROR_NEED_USERNAME       340	// No username was provided for an EAP authentication.
+#define IPC_ERROR_NEED_PASSWORD       341	// No password was provided for the authentication.
+#define IPC_ERROR_CANT_RENAME         342	// Unable to rename connection/profile/trusted server.
+#define IPC_ERROR_STILL_IN_USE        343	// The profile/trusted server is still in use and cannot be deleted.
+#define IPC_ERROR_NAME_IN_USE         344	// The connection/profile/trusted server name is already in use.
+#define IPC_ERROR_GEN_TROUBLE_TICKET  345	// An unrecoverable error occurred while generating trouble tickets.
+#define IPC_ERROR_FILE_EXISTS         346	// A request was made to overwrite a file that already exists.
+#define IPC_ERROR_NOT_SUPPORTED		  347	// The request is not supported.
+#define IPC_ERROR_NOT_ALLOWED		  348	// The requested operation is not allowed while the supplicant is in its current state.
+#define IPC_ERROR_SSID_NOT_FOUND      349	// The requested SSID is not found in the scan cache.
+#define IPC_ERROR_REQUEST_FAILED	  350	// The operation requested failed.
 #define IPC_ERROR_CONFIG_NOT_DEFINED  351	// The type of configuration was not defined.
 #define IPC_ERROR_USER_NOT_ADMIN	  352	// The requested action can only be performed by an administrative user.
-#define IPC_ERROR_INVALID_CONFIG	  353   // The configuration type (i.e. system level or user level) was invalid.
+#define IPC_ERROR_INVALID_CONFIG	  353	// The configuration type (i.e. system level or user level) was invalid.
 
 /**
  *  Result values.
  **/
 #define IPC_TIMEOUT                   -1
 #define IPC_FAILURE                   -2
-#define IPC_SUCCESS                    0    // Anything >= this is a success.
+#define IPC_SUCCESS                    0	// Anything >= this is a success.
 #define IPC_FUNCTION_NOT_FOUND        -3
-#define IPC_CHANGE_TO_EVENT_ONLY     100    // Convert this socket to an event only socket.
-#define IPC_CHANGE_TO_SYNC_ONLY      110    // Convert this socket to request/response only.
+#define IPC_CHANGE_TO_EVENT_ONLY     100	// Convert this socket to an event only socket.
+#define IPC_CHANGE_TO_SYNC_ONLY      110	// Convert this socket to request/response only.
 
 #define AUTH_STATE_STOPPED    1
 #define AUTH_STATE_RESTART    2
@@ -92,18 +92,18 @@
 #define AUTH_STATE_RUNNING    4
 
 // Define if the configuration file tells us that a connection will be encrypted or not.
-#define CONNECTION_ENC_NONE     1   ///< Configuration information says we will have no encryption enabled.
-#define CONNECTION_ENC_ENABLED  2   ///< Configuration information says we will have encryption enabled.  (i.e. It is 802.1X with dynamic WEP, or some variation of WPA/WPA2)
-#define CONNECTION_ENC_UNKNOWN  3   ///< We can't determine if encryption will be used or not from the information in the config file.
+#define CONNECTION_ENC_NONE     1	///< Configuration information says we will have no encryption enabled.
+#define CONNECTION_ENC_ENABLED  2	///< Configuration information says we will have encryption enabled.  (i.e. It is 802.1X with dynamic WEP, or some variation of WPA/WPA2)
+#define CONNECTION_ENC_UNKNOWN  3	///< We can't determine if encryption will be used or not from the information in the config file.
 
 // Flags that indicate status for possible connections.
-#define POSS_CONN_INT_AVAIL     0x01  ///< Set to 1 if the interface needed for a connection is available.
-#define POSS_CONN_IS_WIRELESS   0x02  ///< Set to 1 if the interface is wireless
-#define POSS_CONN_IS_HIDDEN     0x04  ///< Set to 1 if the SSID is configured as Hidden in the configuration.
-#define POSS_CONN_SSID_KNOWN    0x08  ///< Set to 1 if the SSID was found in the scan cache.
-#define POSS_CONN_INT_UNKNOWN   0x10  ///< Set to 1 if the interface isn't found in the live cache, or the configuration.  (Should almost NEVER happen!)
-#define POSS_CONN_LINK_STATE    0x20  ///< Set to 1 if the link is up, set to 0 if it is down.
-#define POSS_CONN_NO_PWD        0x40  ///< Set to 1 if the EAP method doesn't want a password to be set.
+#define POSS_CONN_INT_AVAIL     0x01	///< Set to 1 if the interface needed for a connection is available.
+#define POSS_CONN_IS_WIRELESS   0x02	///< Set to 1 if the interface is wireless
+#define POSS_CONN_IS_HIDDEN     0x04	///< Set to 1 if the SSID is configured as Hidden in the configuration.
+#define POSS_CONN_SSID_KNOWN    0x08	///< Set to 1 if the SSID was found in the scan cache.
+#define POSS_CONN_INT_UNKNOWN   0x10	///< Set to 1 if the interface isn't found in the live cache, or the configuration.  (Should almost NEVER happen!)
+#define POSS_CONN_LINK_STATE    0x20	///< Set to 1 if the link is up, set to 0 if it is down.
+#define POSS_CONN_NO_PWD        0x40	///< Set to 1 if the EAP method doesn't want a password to be set.
 
 void ipc_callout_init();
 void ipc_callout_deinit();
@@ -206,4 +206,4 @@ int ipc_callout_enum_smartcard_readers(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_enum_user_certs(xmlNodePtr, xmlNodePtr *);
 int ipc_callout_store_logon_creds(xmlNodePtr, xmlNodePtr *);
 
-#endif  // _IPC_CALLOUT_H_
+#endif				// _IPC_CALLOUT_H_

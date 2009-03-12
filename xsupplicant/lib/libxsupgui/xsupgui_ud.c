@@ -42,7 +42,7 @@
 int ipc_sock = -1;
 int ipc_event_sock = -1;
 
-xmlDocPtr xmlrecvmsg = NULL;        ///< XML Document that represents an async event that we received.
+xmlDocPtr xmlrecvmsg = NULL;	///< XML Document that represents an async event that we received.
 
 /**
  * \brief Establish a request/response handler to talk to the supplicant.
@@ -52,33 +52,32 @@ xmlDocPtr xmlrecvmsg = NULL;        ///< XML Document that represents an async e
  **/
 int xsupgui_ud_connect()
 {
-  int sockErr;
-  struct sockaddr_un sa;
+	int sockErr;
+	struct sockaddr_un sa;
 
-  ipc_sock = socket(PF_UNIX, SOCK_STREAM, 0);
-  if (ipc_sock < 0)
-    {
+	ipc_sock = socket(PF_UNIX, SOCK_STREAM, 0);
+	if (ipc_sock < 0) {
 #if DEBUG
-      printf("Error getting socket!\n");
+		printf("Error getting socket!\n");
 #endif
-      return -1;
-    }
+		return -1;
+	}
 
-  Strncpy(sa.sun_path, sizeof(sa.sun_path), XSUP_SOCKET, sizeof(sa.sun_path));
+	Strncpy(sa.sun_path, sizeof(sa.sun_path), XSUP_SOCKET,
+		sizeof(sa.sun_path));
 
-  sa.sun_family = AF_LOCAL;
-  
-  sockErr = connect(ipc_sock, (struct sockaddr *)&sa, sizeof(sa));
-  if (sockErr < 0) 
-    {
+	sa.sun_family = AF_LOCAL;
+
+	sockErr = connect(ipc_sock, (struct sockaddr *)&sa, sizeof(sa));
+	if (sockErr < 0) {
 #if DEBUG
-      printf("Socket Error : %d -- %s  (%s:%d)\n", errno, strerror(errno),
-	     __FUNCTION__, __LINE__);
+		printf("Socket Error : %d -- %s  (%s:%d)\n", errno,
+		       strerror(errno), __FUNCTION__, __LINE__);
 #endif
-      return errno;
-    }
+		return errno;
+	}
 
-  return 0;
+	return 0;
 }
 
 /**
@@ -93,46 +92,45 @@ int xsupgui_ud_connect()
  **/
 int xsupgui_ud_connect_event_listener()
 {
-  int sockErr = 0;
-  struct sockaddr_un sa;
-  char *result = NULL;
-  int ressize = 0;
+	int sockErr = 0;
+	struct sockaddr_un sa;
+	char *result = NULL;
+	int ressize = 0;
 
-  ipc_event_sock = socket(PF_UNIX, SOCK_STREAM, 0);
-  if (ipc_event_sock < 0)
-    {
+	ipc_event_sock = socket(PF_UNIX, SOCK_STREAM, 0);
+	if (ipc_event_sock < 0) {
 #if DEBUG
-      printf("Error getting socket!\n");
+		printf("Error getting socket!\n");
 #endif
-      return -1;
-    }
+		return -1;
+	}
 
-  Strncpy(sa.sun_path, sizeof(sa.sun_path), XSUP_SOCKET, sizeof(sa.sun_path));
+	Strncpy(sa.sun_path, sizeof(sa.sun_path), XSUP_SOCKET,
+		sizeof(sa.sun_path));
 
-  sa.sun_family = AF_LOCAL;
+	sa.sun_family = AF_LOCAL;
 
-  sockErr = connect(ipc_event_sock, (struct sockaddr *)&sa, sizeof(sa));
-  if (sockErr < 0)
-    {
+	sockErr = connect(ipc_event_sock, (struct sockaddr *)&sa, sizeof(sa));
+	if (sockErr < 0) {
 #if DEBUG
-      printf("Socket Error : %d -- %s  (%s:%d)\n", errno, strerror(errno),
-             __FUNCTION__, __LINE__);
+		printf("Socket Error : %d -- %s  (%s:%d)\n", errno,
+		       strerror(errno), __FUNCTION__, __LINE__);
 #endif
-      return errno;
-    }
+		return errno;
+	}
 
-  if (xsupgui_request_set_as_event(&result, &ressize) == REQUEST_FAILURE)
-    return -1;
+	if (xsupgui_request_set_as_event(&result, &ressize) == REQUEST_FAILURE)
+		return -1;
 
-  if (xsupgui_ud_send_to_event((unsigned char *)result, ressize) == REQUEST_FAILURE)
-    {
-      free(result);
-      result = NULL;
-      return -1;
-    }
+	if (xsupgui_ud_send_to_event((unsigned char *)result, ressize) ==
+	    REQUEST_FAILURE) {
+		free(result);
+		result = NULL;
+		return -1;
+	}
 
-  free(result);
-  return 0;
+	free(result);
+	return 0;
 }
 
 /**
@@ -143,8 +141,9 @@ int xsupgui_ud_connect_event_listener()
  **/
 int xsupgui_ud_disconnect()
 {
-  if (ipc_sock != -1) close(ipc_sock);
-  return 0;
+	if (ipc_sock != -1)
+		close(ipc_sock);
+	return 0;
 }
 
 /**
@@ -155,9 +154,10 @@ int xsupgui_ud_disconnect()
  **/
 int xsupgui_ud_disconnect_event_listener()
 {
-  if (ipc_event_sock != -1) close(ipc_event_sock);
+	if (ipc_event_sock != -1)
+		close(ipc_event_sock);
 
-  return 0;
+	return 0;
 }
 
 /**
@@ -167,7 +167,7 @@ int xsupgui_ud_disconnect_event_listener()
  **/
 xmlDocPtr xsupgui_ud_get_event_doc()
 {
-  return xmlrecvmsg;
+	return xmlrecvmsg;
 }
 
 /**
@@ -176,9 +176,10 @@ xmlDocPtr xsupgui_ud_get_event_doc()
  **/
 void xsupgui_ud_free_event_doc()
 {
-  if (xmlrecvmsg == NULL) return;  // Nothing to do.
-  xmlFreeDoc(xmlrecvmsg);
-  xmlrecvmsg = NULL;
+	if (xmlrecvmsg == NULL)
+		return;		// Nothing to do.
+	xmlFreeDoc(xmlrecvmsg);
+	xmlrecvmsg = NULL;
 }
 
 /**
@@ -195,35 +196,34 @@ void xsupgui_ud_free_event_doc()
  **/
 int xsupgui_ud_recv_event(unsigned char **result, int *resultsize)
 {
-  unsigned char *resdata = NULL;
-  ssize_t cread = 0;
-  int retval = 0;
+	unsigned char *resdata = NULL;
+	ssize_t cread = 0;
+	int retval = 0;
 
-  (*result) = NULL;
-  (*resultsize) = 0;
+	(*result) = NULL;
+	(*resultsize) = 0;
 
-  resdata = malloc(MAXBUF);
-  if (resdata == NULL)
-    {
-      return IPC_ERROR_CANT_MALLOC_LOCAL;
-    }
+	resdata = malloc(MAXBUF);
+	if (resdata == NULL) {
+		return IPC_ERROR_CANT_MALLOC_LOCAL;
+	}
 
-  cread = recv(ipc_event_sock, resdata, MAXBUF, 0); 
+	cread = recv(ipc_event_sock, resdata, MAXBUF, 0);
 
-  if (cread < 0) return IPC_ERROR_UNABLE_TO_READ;   // Got an error.
+	if (cread < 0)
+		return IPC_ERROR_UNABLE_TO_READ;	// Got an error.
 
-  if (cread == 0)
-    {
-      printf("No data available!\n");
-      return REQUEST_TIMEOUT;
-    }
+	if (cread == 0) {
+		printf("No data available!\n");
+		return REQUEST_TIMEOUT;
+	}
 
-  printf("Event : \n %s\n", resdata);
+	printf("Event : \n %s\n", resdata);
 
-  (*resultsize) = cread;
-  (*result) = resdata;
+	(*resultsize) = cread;
+	(*result) = resdata;
 
-  return retval;
+	return retval;
 }
 
 /**
@@ -240,126 +240,117 @@ int xsupgui_ud_recv_event(unsigned char **result, int *resultsize)
  **/
 int xsupgui_ud_recv(unsigned char **result, int *resultsize)
 {
-  unsigned char *resdata = NULL;
-  uint8_t *data = NULL;
-  ssize_t cread = 0;
-  fd_set rfds;
-  struct timeval tv;
-  int done = FALSE;
-  int size = 0;
-  int offset = 0;
-  ipc_header *hdr = NULL;
-  uint32_t value32 = 0;
+	unsigned char *resdata = NULL;
+	uint8_t *data = NULL;
+	ssize_t cread = 0;
+	fd_set rfds;
+	struct timeval tv;
+	int done = FALSE;
+	int size = 0;
+	int offset = 0;
+	ipc_header *hdr = NULL;
+	uint32_t value32 = 0;
 
-  if (ipc_sock < 0) return IPC_ERROR_CTRL_NOT_CONNECTED;
+	if (ipc_sock < 0)
+		return IPC_ERROR_CTRL_NOT_CONNECTED;
 
-  resdata = malloc(MAXBUF);
-  if (resdata == NULL)
-    {
-      return IPC_ERROR_CANT_MALLOC_LOCAL;
-    }
-
-  memset(resdata, 0x00, MAXBUF);
-
-  while (done == FALSE)
-    {
-      FD_ZERO(&rfds);
-      FD_SET(ipc_sock, &rfds);
-      
-      tv.tv_sec = 2;
-      tv.tv_usec = 0;
-      
-      switch (select(ipc_sock+1, &rfds, 0, 0, &tv))
-	{
-	case 0:
-	  return 1;   // Timeout
-	  break;
-	  
-	case -1:
-	  return -1;  // Got an error.
-	  break;
-	  
-	default:
-	  // Fall through.
-	  break;
-	}
-      
-      cread = recv(ipc_sock, resdata, MAXBUF, 0);
-
-      if (cread == 0)
-	{
-	  free(resdata);
-	  printf("No data available!\n");
-	  return IPC_ERROR_RECV_IPC_RUNT;
+	resdata = malloc(MAXBUF);
+	if (resdata == NULL) {
+		return IPC_ERROR_CANT_MALLOC_LOCAL;
 	}
 
-      if (cread < 0)    // Got an error.
-	{
-	  free(resdata);
-	  return IPC_ERROR_UNABLE_TO_READ;
-	}
+	memset(resdata, 0x00, MAXBUF);
 
-      if (cread < sizeof(ipc_header))
-	{
-	  return IPC_ERROR_RECV_IPC_RUNT;
-	}
+	while (done == FALSE) {
+		FD_ZERO(&rfds);
+		FD_SET(ipc_sock, &rfds);
 
-      size = cread;
+		tv.tv_sec = 2;
+		tv.tv_usec = 0;
 
-      if (resdata[0] == 0x00)
-	{
-	  size = (cread - sizeof(ipc_header));
+		switch (select(ipc_sock + 1, &rfds, 0, 0, &tv)) {
+		case 0:
+			return 1;	// Timeout
+			break;
 
-	  if (data == NULL)
-	    {
-	      data = malloc(size);
-	      if (data == NULL)
-		{
-		  free(resdata);
-		  return -1;
+		case -1:
+			return -1;	// Got an error.
+			break;
+
+		default:
+			// Fall through.
+			break;
 		}
-	      
-	      memset(data, 0x00, size);
-	    }
-	  
-	  memcpy(&data[offset], &resdata[sizeof(ipc_header)], size);
-	  
-	  free(resdata);
-	
-	  (*resultsize) = offset + size;
-	  (*result) = data;
-	  return REQUEST_SUCCESS;
+
+		cread = recv(ipc_sock, resdata, MAXBUF, 0);
+
+		if (cread == 0) {
+			free(resdata);
+			printf("No data available!\n");
+			return IPC_ERROR_RECV_IPC_RUNT;
+		}
+
+		if (cread < 0)	// Got an error.
+		{
+			free(resdata);
+			return IPC_ERROR_UNABLE_TO_READ;
+		}
+
+		if (cread < sizeof(ipc_header)) {
+			return IPC_ERROR_RECV_IPC_RUNT;
+		}
+
+		size = cread;
+
+		if (resdata[0] == 0x00) {
+			size = (cread - sizeof(ipc_header));
+
+			if (data == NULL) {
+				data = malloc(size);
+				if (data == NULL) {
+					free(resdata);
+					return -1;
+				}
+
+				memset(data, 0x00, size);
+			}
+
+			memcpy(&data[offset], &resdata[sizeof(ipc_header)],
+			       size);
+
+			free(resdata);
+
+			(*resultsize) = offset + size;
+			(*result) = data;
+			return REQUEST_SUCCESS;
+		}
+
+		if ((resdata[0] && IPC_MSG_TOTAL_SIZE) == IPC_MSG_TOTAL_SIZE) {
+			// We need to allocate memory.
+			if (data != NULL) {
+				return IPC_ERROR_NOT_INITIALIZED;
+			}
+
+			hdr = (ipc_header *) & resdata[0];
+			value32 = ntohl(hdr->length);
+
+			data = malloc(value32);
+			if (data == NULL) {
+				free(resdata);
+				return IPC_ERROR_CANT_MALLOC_LOCAL;
+			}
+			memset(data, 0x00, value32);
+		}
+		// Copy the data.
+		memcpy(&data[offset], &resdata[sizeof(ipc_header)],
+		       (size - sizeof(ipc_header)));
+		offset += (size - sizeof(ipc_header));
 	}
 
-      if ((resdata[0] && IPC_MSG_TOTAL_SIZE) == IPC_MSG_TOTAL_SIZE)
-	{
-	  // We need to allocate memory.
-	  if (data != NULL)
-	    {
-	      return IPC_ERROR_NOT_INITIALIZED;
-	    }
+	(*resultsize) = offset;
+	(*result) = data;
 
-	  hdr = (ipc_header *)&resdata[0];
-	  value32 = ntohl(hdr->length);
-
-	  data = malloc(value32);
-	  if (data == NULL)
-	    {
-	      free(resdata);
-	      return IPC_ERROR_CANT_MALLOC_LOCAL;
-	    }
-	  memset(data, 0x00, value32);
-	}
-
-      // Copy the data.
-      memcpy(&data[offset], &resdata[sizeof(ipc_header)], (size - sizeof(ipc_header)));
-      offset += (size - sizeof(ipc_header));
-    }
-
-  (*resultsize) = offset;
-  (*result) = data;
-
-  return REQUEST_SUCCESS;
+	return REQUEST_SUCCESS;
 }
 
 /**
@@ -380,41 +371,42 @@ int xsupgui_ud_recv(unsigned char **result, int *resultsize)
  **/
 long int xsupgui_ud_process(int *evttype)
 {
-  int retval = 1;
-  unsigned char *eventbuf = NULL;
-  int eventbufressize = 0;
+	int retval = 1;
+	unsigned char *eventbuf = NULL;
+	int eventbufressize = 0;
 
-  // If eventbuf points to something, we have a problem.
-  if (xmlrecvmsg != NULL)
-    return 0;
+	// If eventbuf points to something, we have a problem.
+	if (xmlrecvmsg != NULL)
+		return 0;
 
-  retval = xsupgui_ud_recv_event(&eventbuf, &eventbufressize);
+	retval = xsupgui_ud_recv_event(&eventbuf, &eventbufressize);
 
-  if (retval != REQUEST_SUCCESS)
-    {
-      return retval;
-    }
+	if (retval != REQUEST_SUCCESS) {
+		return retval;
+	}
 
-  if ((eventbuf == NULL) || ((eventbufressize-5) < 0))
-    {
-      xmlrecvmsg = NULL;
-      if (eventbuf != NULL) free(eventbuf);
-      return IPC_ERROR_BAD_RESPONSE_DATA;
-    }
+	if ((eventbuf == NULL) || ((eventbufressize - 5) < 0)) {
+		xmlrecvmsg = NULL;
+		if (eventbuf != NULL)
+			free(eventbuf);
+		return IPC_ERROR_BAD_RESPONSE_DATA;
+	}
 
-  xmlrecvmsg = xmlReadMemory((char *)&eventbuf[5], (eventbufressize-5), "ipc.xml", NULL, 0);
-  if (xmlrecvmsg == NULL)
-    {
-      free(eventbuf);
-      return IPC_ERROR_BAD_RESPONSE_DATA;
-    }
+	xmlrecvmsg =
+	    xmlReadMemory((char *)&eventbuf[5], (eventbufressize - 5),
+			  "ipc.xml", NULL, 0);
+	if (xmlrecvmsg == NULL) {
+		free(eventbuf);
+		return IPC_ERROR_BAD_RESPONSE_DATA;
+	}
 
-  if (eventbuf != NULL) free(eventbuf);
-  eventbuf = NULL;
+	if (eventbuf != NULL)
+		free(eventbuf);
+	eventbuf = NULL;
 
-  (*evttype) = xsupgui_events_get_event_num(xmlrecvmsg);
+	(*evttype) = xsupgui_events_get_event_num(xmlrecvmsg);
 
-  return REQUEST_SUCCESS;
+	return REQUEST_SUCCESS;
 }
 
 /**
@@ -425,7 +417,7 @@ long int xsupgui_ud_process(int *evttype)
  **/
 int xsupgui_ud_selectable_socket()
 {
-  return ipc_event_sock;
+	return ipc_event_sock;
 }
 
 /**
@@ -444,27 +436,31 @@ int xsupgui_ud_selectable_socket()
  * \warning This function should *NEVER* be called outside of the libxsupgui
  *          library!  And should *ONLY* be directly called by
  *          \ref xsupgui_send_to_event().
- **/ 
+ **/
 int xsupgui_ud_send_to_event(unsigned char *buffer, int bufsize)
 {
-  int totalbytes = 0;
-  unsigned char *result = NULL;
-  int resultsize = 0;
-  int retval = 0;
-  xmlDocPtr indoc = NULL;
+	int totalbytes = 0;
+	unsigned char *result = NULL;
+	int resultsize = 0;
+	int retval = 0;
+	xmlDocPtr indoc = NULL;
 
-  totalbytes = send(ipc_event_sock, buffer, bufsize, 0);
-  if (totalbytes < 0) return REQUEST_FAILURE;
+	totalbytes = send(ipc_event_sock, buffer, bufsize, 0);
+	if (totalbytes < 0)
+		return REQUEST_FAILURE;
 
-  if (totalbytes != bufsize) return REQUEST_FAILURE;
+	if (totalbytes != bufsize)
+		return REQUEST_FAILURE;
 
-  retval = xsupgui_ud_recv_event(&result, &resultsize);
-  if (retval != 0) return REQUEST_FAILURE;
+	retval = xsupgui_ud_recv_event(&result, &resultsize);
+	if (retval != 0)
+		return REQUEST_FAILURE;
 
-  indoc = xsupgui_xml_common_validate_msg(&result[5], (resultsize-5));
-  if (indoc == NULL) return REQUEST_FAILURE;
+	indoc = xsupgui_xml_common_validate_msg(&result[5], (resultsize - 5));
+	if (indoc == NULL)
+		return REQUEST_FAILURE;
 
-  return xsupgui_request_is_ack(indoc);
+	return xsupgui_request_is_ack(indoc);
 }
 
 /**
@@ -490,15 +486,17 @@ int xsupgui_ud_send_to_event(unsigned char *buffer, int bufsize)
 int xsupgui_ud_send(unsigned char *tosend, int sendsize, unsigned char **result,
 		    int *resultsize)
 {
-  int totalbytes = 0;
+	int totalbytes = 0;
 
-  (*result) = NULL;
-  (*resultsize) = 0;
+	(*result) = NULL;
+	(*resultsize) = 0;
 
-  totalbytes = send(ipc_sock, tosend, sendsize, 0);
-  if (totalbytes < 0) return REQUEST_FAILURE;
+	totalbytes = send(ipc_sock, tosend, sendsize, 0);
+	if (totalbytes < 0)
+		return REQUEST_FAILURE;
 
-  if (totalbytes != sendsize) return REQUEST_FAILURE;
+	if (totalbytes != sendsize)
+		return REQUEST_FAILURE;
 
-  return xsupgui_ud_recv(result, resultsize);
+	return xsupgui_ud_recv(result, resultsize);
 }

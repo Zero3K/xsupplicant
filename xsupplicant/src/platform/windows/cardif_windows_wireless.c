@@ -58,24 +58,23 @@
 #define Ndis802_11AuthModeWPA2      6
 #define Ndis802_11AuthModeWPA2PSK   7
 
-typedef struct _NDIS_802_11_AUTHENTICATION_ENCRYPTION
-{
-  NDIS_802_11_AUTHENTICATION_MODE  AuthModeSupported;
-  NDIS_802_11_ENCRYPTION_STATUS  EncryptStatusSupported;
-} NDIS_802_11_AUTHENTICATION_ENCRYPTION, *PNDIS_802_11_AUTHENTICATION_ENCRYPTION;
+typedef struct _NDIS_802_11_AUTHENTICATION_ENCRYPTION {
+	NDIS_802_11_AUTHENTICATION_MODE AuthModeSupported;
+	NDIS_802_11_ENCRYPTION_STATUS EncryptStatusSupported;
+} NDIS_802_11_AUTHENTICATION_ENCRYPTION,
+    *PNDIS_802_11_AUTHENTICATION_ENCRYPTION;
 
-typedef struct _NDIS_802_11_CAPABILITY
-{
-  ULONG  Length;
-  ULONG  Version;
-  ULONG  NoOfPMKIDs;
-  ULONG  NoOfAuthEncryptPairsSupported;
-  NDIS_802_11_AUTHENTICATION_ENCRYPTION AuthenticationEncryptionSupported[1];
+typedef struct _NDIS_802_11_CAPABILITY {
+	ULONG Length;
+	ULONG Version;
+	ULONG NoOfPMKIDs;
+	ULONG NoOfAuthEncryptPairsSupported;
+	NDIS_802_11_AUTHENTICATION_ENCRYPTION
+	    AuthenticationEncryptionSupported[1];
 } NDIS_802_11_CAPABILITY, *PNDIS_802_11_CAPABILITY;
 #endif
 
-typedef struct _NEEDED_OIDS
-{
+typedef struct _NEEDED_OIDS {
 	DWORD oid;
 	char oidname[50];
 } NEEDED_OIDS;
@@ -83,7 +82,8 @@ typedef struct _NEEDED_OIDS
 NEEDED_OIDS oldoidsneeded[] = {
 	{OID_802_11_BSSID_LIST, "OID_802_11_BSSID_LIST"},
 	{OID_802_11_BSSID_LIST_SCAN, "OID_802_11_BSSID_LIST_SCAN"},
-	{OID_802_11_ASSOCIATION_INFORMATION, "OID_802_11_ASSOCIATION_INFORMATION"},
+	{OID_802_11_ASSOCIATION_INFORMATION,
+	 "OID_802_11_ASSOCIATION_INFORMATION"},
 	{OID_802_11_AUTHENTICATION_MODE, "OID_802_11_AUTHENTICATION_MODE"},
 	{OID_802_11_ENCRYPTION_STATUS, "OID_802_11_ENCRYPTION_STATUS"},
 	{OID_802_11_INFRASTRUCTURE_MODE, "OID_802_11_INFRASTRUCTURE_MODE"},
@@ -112,190 +112,201 @@ NEEDED_OIDS newoidsneeded[] = {
  * It is also possible this will be called if we get a scan complete event
  * from the driver.
  **/
-void cardif_windows_wireless_scan_timeout(context *ctx)
+void cardif_windows_wireless_scan_timeout(context * ctx)
 {
-  DWORD BytesReturned = 0;
-  UCHAR Buffer[65535];  // 64k of scan data is a *LOT*!
-  PNDISPROT_QUERY_OID pQueryOid = NULL;
-  PNDIS_802_11_BSSID_LIST_EX pBssidList = NULL;
-  PNDIS_WLAN_BSSID_EX pBssidEx = NULL;
-  PNDIS_802_11_SSID pSsid = NULL;
-  UCHAR *ofs = NULL;
-  char rssi = 0;
-  int i = 0;
-  char ssid[33];
-  struct win_sock_data *sockData = NULL;
-  LPVOID lpMsgBuf = NULL;
-  wireless_ctx *wctx = NULL;
-  DWORD lastError = 0;
-  ULONG ielen = 0;
-  uint8_t percentage = 0;
-  int x = 0;
-  float rate = 0;
+	DWORD BytesReturned = 0;
+	UCHAR Buffer[65535];	// 64k of scan data is a *LOT*!
+	PNDISPROT_QUERY_OID pQueryOid = NULL;
+	PNDIS_802_11_BSSID_LIST_EX pBssidList = NULL;
+	PNDIS_WLAN_BSSID_EX pBssidEx = NULL;
+	PNDIS_802_11_SSID pSsid = NULL;
+	UCHAR *ofs = NULL;
+	char rssi = 0;
+	int i = 0;
+	char ssid[33];
+	struct win_sock_data *sockData = NULL;
+	LPVOID lpMsgBuf = NULL;
+	wireless_ctx *wctx = NULL;
+	DWORD lastError = 0;
+	ULONG ielen = 0;
+	uint8_t percentage = 0;
+	int x = 0;
+	float rate = 0;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  if (ipc_events_scan_complete(ctx) != IPC_SUCCESS)
-  {
-	  debug_printf(DEBUG_NORMAL, "Couldn't send scan complete event to IPC listeners.\n");
-  }
+	if (ipc_events_scan_complete(ctx) != IPC_SUCCESS) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't send scan complete event to IPC listeners.\n");
+	}
 
-  timer_cancel(ctx, SCANCHECK_TIMER);
+	timer_cancel(ctx, SCANCHECK_TIMER);
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return;
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return;
 
-  memset(&Buffer[0], 0x00, sizeof(Buffer));
-  pQueryOid = (PNDISPROT_QUERY_OID)&Buffer[0];
-  pQueryOid->Oid = OID_802_11_BSSID_LIST;
+	memset(&Buffer[0], 0x00, sizeof(Buffer));
+	pQueryOid = (PNDISPROT_QUERY_OID) & Buffer[0];
+	pQueryOid->Oid = OID_802_11_BSSID_LIST;
 
-  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE, 
-					(LPVOID)&Buffer[0], sizeof(Buffer), (LPVOID)&Buffer[0],
-					sizeof(Buffer), &BytesReturned) == FALSE)
-  {
-	  lastError = GetLastError();
+	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
+			 (LPVOID) & Buffer[0], sizeof(Buffer),
+			 (LPVOID) & Buffer[0], sizeof(Buffer),
+			 &BytesReturned) == FALSE) {
+		lastError = GetLastError();
 
-	  if (lastError != ERROR_NOT_READY)
-	  {
-		  // If we are associated, then a passive scan failed.  So ignore it.
-		  if (wctx->state != ASSOCIATED)
-		  {
-			ipc_events_error(ctx, IPC_EVENT_ERROR_GETTING_SCAN_DATA, ctx->desc);
-		  }
-  		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Attempt to get scan data results on interface '%s' failed!  Reason was : %s\n", 
-			ctx->desc, lpMsgBuf);
-		LocalFree(lpMsgBuf);
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_INT, "The interface indicated it wasn't ready.  Ignoring scan attempt.\n");
-	  }
+		if (lastError != ERROR_NOT_READY) {
+			// If we are associated, then a passive scan failed.  So ignore it.
+			if (wctx->state != ASSOCIATED) {
+				ipc_events_error(ctx,
+						 IPC_EVENT_ERROR_GETTING_SCAN_DATA,
+						 ctx->desc);
+			}
+			lpMsgBuf = GetLastErrorStr(GetLastError());
+			debug_printf(DEBUG_NORMAL,
+				     "Attempt to get scan data results on interface '%s' failed!  Reason was : %s\n",
+				     ctx->desc, lpMsgBuf);
+			LocalFree(lpMsgBuf);
+		} else {
+			debug_printf(DEBUG_INT,
+				     "The interface indicated it wasn't ready.  Ignoring scan attempt.\n");
+		}
 
-	  return;
-  }
+		return;
+	}
+	// Only clear our cache if we have new data.  This allows us to handle situations where
+	// stale scan data provides a means to authenticate to a connection that associates slowly
+	// (such as the IPW3945 with Trpz APs.)
+	config_ssid_clear(wctx);
 
-  // Only clear our cache if we have new data.  This allows us to handle situations where
-  // stale scan data provides a means to authenticate to a connection that associates slowly
-  // (such as the IPW3945 with Trpz APs.)
-  config_ssid_clear(wctx);
+	pBssidList = (PNDIS_802_11_BSSID_LIST_EX) & pQueryOid->Data[0];
 
+	debug_printf(DEBUG_INT, "Got %d result(s).\n",
+		     pBssidList->NumberOfItems);
 
-  pBssidList = (PNDIS_802_11_BSSID_LIST_EX)&pQueryOid->Data[0];
+	pBssidEx = (PNDIS_WLAN_BSSID_EX) & pBssidList->Bssid[0];
+	ofs = (UCHAR *) pBssidEx;
 
-  debug_printf(DEBUG_INT, "Got %d result(s).\n", pBssidList->NumberOfItems);
+	for (i = 0; i < (int)pBssidList->NumberOfItems; i++) {
+		pBssidEx = (PNDIS_WLAN_BSSID_EX) ofs;
 
-  pBssidEx = (PNDIS_WLAN_BSSID_EX)&pBssidList->Bssid[0];
-  ofs = (UCHAR *)pBssidEx;
+		pSsid = (PNDIS_802_11_SSID) & pBssidEx->Ssid;
 
-  for (i = 0; i < (int)pBssidList->NumberOfItems; i++)
-  {
-	  pBssidEx = (PNDIS_WLAN_BSSID_EX)ofs;
+		memset(&ssid, 0x00, sizeof(ssid));
+		if (strncpy_s
+		    ((void *)&ssid, sizeof(ssid), pSsid->Ssid,
+		     pSsid->SsidLength) != 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't make a copy of the SSID in %s() at %d!\n",
+				     __FUNCTION__, __LINE__);
+			goto bad_strncpy;
+		}
 
-	  pSsid = (PNDIS_802_11_SSID)&pBssidEx->Ssid;
+		rssi = pBssidEx->Rssi;
 
-	  memset(&ssid, 0x00, sizeof(ssid));
-	  if (strncpy_s((void *)&ssid, sizeof(ssid), pSsid->Ssid, pSsid->SsidLength) != 0)
-	  {
-		  debug_printf(DEBUG_NORMAL, "Couldn't make a copy of the SSID in %s() at %d!\n",
-			  __FUNCTION__, __LINE__);
-		  goto bad_strncpy;
-	  }
+		// According to the windows documentation, the RSSI should vary between
+		// -10 and -200 dBm.  So, we need to figure out a percentage based on that.
 
-	  rssi = pBssidEx->Rssi;
+		// However, many examples on the net show that valid ranges will run from -50 to -100.
 
-	  // According to the windows documentation, the RSSI should vary between
-	  // -10 and -200 dBm.  So, we need to figure out a percentage based on that.
+		percentage = (((rssi) + 100) * 2);	// Make the dBm a positive number, and the lowest value
+		// equal to 0.  (So, the range will now be 0 - 190.)
 
-	  // However, many examples on the net show that valid ranges will run from -50 to -100.
+		if (percentage > 100)
+			percentage = 100;	// Some cards may have a percentage > 100 depending on their sensativity.  In those cases, only return 100. ;)
 
-	  percentage = (((rssi) + 100)*2);    // Make the dBm a positive number, and the lowest value
-	  	                                    // equal to 0.  (So, the range will now be 0 - 190.)
+		config_ssid_add_ssid_name(wctx, ssid);
+		config_ssid_add_bssid(wctx, pBssidEx->MacAddress);
+		config_ssid_add_qual(wctx, 0, rssi, 0, percentage);
 
-	  if (percentage > 100) percentage = 100;  // Some cards may have a percentage > 100 depending on their sensativity.  In those cases, only return 100. ;)
+		debug_printf(DEBUG_INT,
+			     "Found SSID : %s\t\t BSSID : %02x:%02x:%02x:%02x:%02x:%02x\t RSSI : %d\t 802.11 Type : %d\t Percentage : %d\n",
+			     ssid, pBssidEx->MacAddress[0],
+			     pBssidEx->MacAddress[1], pBssidEx->MacAddress[2],
+			     pBssidEx->MacAddress[3], pBssidEx->MacAddress[4],
+			     pBssidEx->MacAddress[5], rssi,
+			     pBssidEx->NetworkTypeInUse, percentage);
 
-	  config_ssid_add_ssid_name(wctx, ssid);
-	  config_ssid_add_bssid(wctx, pBssidEx->MacAddress);
-	  config_ssid_add_qual(wctx, 0, rssi, 0, percentage);
+		if (pBssidEx->NetworkTypeInUse == Ndis802_11OFDM5) {
+			config_ssid_update_abilities(wctx, ABIL_DOT11_A);
+		} else if (pBssidEx->NetworkTypeInUse == Ndis802_11FH) {
+			config_ssid_update_abilities(wctx, ABIL_DOT11_STD);
+		} else if ((pBssidEx->NetworkTypeInUse == Ndis802_11DS)
+			   || (pBssidEx->NetworkTypeInUse ==
+			       Ndis802_11OFDM24)) {
+			// We need to look at the bit rates to decide what is supported here.  (This is icky!)
+			for (x = 0; x < 16; x++) {
+				rate =
+				    ((pBssidEx->SupportedRates[x] & 0x7f) *
+				     0.5);
 
-	  debug_printf(DEBUG_INT, "Found SSID : %s\t\t BSSID : %02x:%02x:%02x:%02x:%02x:%02x\t RSSI : %d\t 802.11 Type : %d\t Percentage : %d\n", ssid,
-		  pBssidEx->MacAddress[0], pBssidEx->MacAddress[1], pBssidEx->MacAddress[2], pBssidEx->MacAddress[3],
-		  pBssidEx->MacAddress[4], pBssidEx->MacAddress[5], rssi, pBssidEx->NetworkTypeInUse, percentage);
+				if ((rate == 1.0) || (rate == 2.0)) {
+					config_ssid_update_abilities(wctx,
+								     ABIL_DOT11_STD);
+				} else if ((rate == 5.5) || (rate == 11.0)) {
+					config_ssid_update_abilities(wctx,
+								     ABIL_DOT11_B);
+				} else if ((rate > 11.0) && (rate <= 54.0)) {
+					config_ssid_update_abilities(wctx,
+								     ABIL_DOT11_G);
+				}
+			}
+		} else {
+			debug_printf(DEBUG_NORMAL,
+				     "Unknown network type in use.  Type %d.\n",
+				     pBssidEx->NetworkTypeInUse);
+		}
 
-	  if (pBssidEx->NetworkTypeInUse == Ndis802_11OFDM5)
-	  {
-		  config_ssid_update_abilities(wctx, ABIL_DOT11_A);
-	  }
-	  else if (pBssidEx->NetworkTypeInUse == Ndis802_11FH)
-	  {
-		  config_ssid_update_abilities(wctx, ABIL_DOT11_STD);
-	  }
-	  else if ((pBssidEx->NetworkTypeInUse == Ndis802_11DS) || (pBssidEx->NetworkTypeInUse == Ndis802_11OFDM24))
-	  {
-		  // We need to look at the bit rates to decide what is supported here.  (This is icky!)
-		  for (x = 0; x < 16; x++)
-		  {
-			  rate = ((pBssidEx->SupportedRates[x] & 0x7f)*0.5);
+		if (pBssidEx->Privacy == 1)
+			config_ssid_update_abilities(wctx, ABIL_ENC);
 
-			  if ((rate == 1.0) || (rate == 2.0))
-			  {
-				  config_ssid_update_abilities(wctx, ABIL_DOT11_STD);
-			  }
-			  else if ((rate == 5.5) || (rate == 11.0))
-			  {
-				  config_ssid_update_abilities(wctx, ABIL_DOT11_B);
-			  }
-			  else if ((rate > 11.0) && (rate <= 54.0))
-			  {
-				  config_ssid_update_abilities(wctx, ABIL_DOT11_G);
-			  }
-		  }
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_NORMAL, "Unknown network type in use.  Type %d.\n", pBssidEx->NetworkTypeInUse);
-	  }
+		// At least one card tested returned a bogus IELength value.  So we need to check it against the structure
+		// length, and if it is invalid, we need to try to calculate the proper value.
+		if (pBssidEx->IELength > pBssidEx->Length) {
+			if (pBssidEx->Length > sizeof(NDIS_WLAN_BSSID_EX)) {
+				ielen =
+				    pBssidEx->Length -
+				    sizeof(NDIS_WLAN_BSSID_EX);
+			} else {
+				ielen = 0;
+			}
+		} else {
+			ielen = pBssidEx->IELength;
+		}
 
-	  if (pBssidEx->Privacy == 1) config_ssid_update_abilities(wctx, ABIL_ENC);
+		if (ielen > 0)
+			cardif_windows_wireless_parse_ies(ctx,
+							  (uint8_t *) &
+							  pBssidEx->
+							  IEs[sizeof
+							      (NDIS_802_11_FIXED_IEs)],
+							  ielen);
 
-	  // At least one card tested returned a bogus IELength value.  So we need to check it against the structure
-	  // length, and if it is invalid, we need to try to calculate the proper value.
-	  if (pBssidEx->IELength > pBssidEx->Length)
-	  {
-		  if (pBssidEx->Length > sizeof(NDIS_WLAN_BSSID_EX))
-		  {
-			  ielen = pBssidEx->Length - sizeof(NDIS_WLAN_BSSID_EX);
-		  }
-		  else
-		  {
-			  ielen = 0;
-		  }
-	  }
-	  else
-	  {
-		  ielen = pBssidEx->IELength;
-	  }
+		if ((ielen > 0)
+		    &&
+		    (cardif_windows_wireless_find_ht_ie
+		     (ctx,
+		      (uint8_t *) & pBssidEx->
+		      IEs[sizeof(NDIS_802_11_FIXED_IEs)], ielen) == TRUE)) {
+			config_ssid_update_abilities(wctx, ABIL_DOT11_N);
+		}
 
-	  if (ielen > 0) cardif_windows_wireless_parse_ies(ctx, (uint8_t *)&pBssidEx->IEs[sizeof(NDIS_802_11_FIXED_IEs)], ielen);
+ bad_strncpy:
+		ofs += pBssidEx->Length;
+	}
 
-	  if ((ielen > 0) && (cardif_windows_wireless_find_ht_ie(ctx, (uint8_t *)&pBssidEx->IEs[sizeof(NDIS_802_11_FIXED_IEs)], ielen) == TRUE))
-	  {
-		  config_ssid_update_abilities(wctx, ABIL_DOT11_N);
-	  }
+	UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
+	wctx->temp_ssid = NULL;
 
-bad_strncpy:
-	  ofs += pBssidEx->Length;
-  }
-
-  UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
-  wctx->temp_ssid = NULL;
-
-  return;
+	return;
 }
 
 /**
@@ -305,16 +316,19 @@ bad_strncpy:
  *
  * \retval XENONE on success.
  **/
-int cardif_windows_wireless_xp_passive(context *ctx)
+int cardif_windows_wireless_xp_passive(context * ctx)
 {
 	wireless_ctx *wctx = NULL;
 	struct found_ssids *ssids = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return XEGENERROR;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEGENERROR;
 
-	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE)) return XEGENERROR;
+	if (!xsup_assert
+	    ((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
+		return XEGENERROR;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	//debug_printf(DEBUG_NORMAL, "Doing 'passive' scan!\n");
 	cardif_windows_wireless_scan_timeout(ctx);
@@ -324,14 +338,12 @@ int cardif_windows_wireless_xp_passive(context *ctx)
 	// Walk the list, and generate OKC entries for anything that we might roam to.
 	ssids = wctx->ssid_cache;
 
-	while (ssids != NULL)
-	{
+	while (ssids != NULL) {
 		// If the SSID in the cache is one that matches the SSID we are currently on.
-		if ((ssids->ssid_name != NULL) && (wctx->cur_essid != NULL) && (strcmp(ssids->ssid_name, wctx->cur_essid) == 0))
-		{
+		if ((ssids->ssid_name != NULL) && (wctx->cur_essid != NULL)
+		    && (strcmp(ssids->ssid_name, wctx->cur_essid) == 0)) {
 			// We only care if it is a WPA2 network.
-			if (ssids->rsn_ie != NULL)
-			{
+			if (ssids->rsn_ie != NULL) {
 				pmksa_seen(ctx, ssids->mac, ssids->ssid_name);
 			}
 		}
@@ -341,52 +353,56 @@ int cardif_windows_wireless_xp_passive(context *ctx)
 
 	pmksa_apply_cache(ctx);
 
-	return XENONE;  // We always return XENONE for now, since failure to generate OKC entries isn't
-					// a big deal.
+	return XENONE;		// We always return XENONE for now, since failure to generate OKC entries isn't
+	// a big deal.
 }
 
 /**
  * Tell the wireless card to scan for wireless networks.
  **/
-int cardif_windows_wireless_scan(context *ctx, char passive)
+int cardif_windows_wireless_scan(context * ctx, char passive)
 {
-  DWORD BytesReturned = 0;
-  UCHAR Buffer[sizeof(NDIS_OID)+4];
-  PNDISPROT_SET_OID pSetOid = NULL;
-  struct win_sock_data *sockData = NULL;
-  LPVOID lpMsgBuf = NULL;
+	DWORD BytesReturned = 0;
+	UCHAR Buffer[sizeof(NDIS_OID) + 4];
+	PNDISPROT_SET_OID pSetOid = NULL;
+	struct win_sock_data *sockData = NULL;
+	LPVOID lpMsgBuf = NULL;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (passive == TRUE)
-  {
-	  // Windows XP doesn't allow us to request a passive scan.  So, we just want to grab the latest
-	  // data in the card's scan cache, and pray that it is doing passives all the time. ;)
-	  return cardif_windows_wireless_xp_passive(ctx);
-  }
+	if (passive == TRUE) {
+		// Windows XP doesn't allow us to request a passive scan.  So, we just want to grab the latest
+		// data in the card's scan cache, and pray that it is doing passives all the time. ;)
+		return cardif_windows_wireless_xp_passive(ctx);
+	}
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return XEMALLOC;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return XEMALLOC;
 
-  memset(&Buffer, 0x00, sizeof(Buffer));
-  pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
-  pSetOid->Oid = OID_802_11_BSSID_LIST_SCAN;
+	memset(&Buffer, 0x00, sizeof(Buffer));
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
+	pSetOid->Oid = OID_802_11_BSSID_LIST_SCAN;
 
-  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, (LPVOID)&Buffer[0], sizeof(NDISPROT_QUERY_OID)+4, 
-					NULL, 0, &BytesReturned) == FALSE)
-  {
-	  //ipc_events_error(ctx, IPC_EVENT_ERROR_CANT_START_SCAN, ctx->desc);
+	if (devioctl_blk
+	    (sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
+	     (LPVOID) & Buffer[0], sizeof(NDISPROT_QUERY_OID) + 4, NULL, 0,
+	     &BytesReturned) == FALSE) {
+		//ipc_events_error(ctx, IPC_EVENT_ERROR_CANT_START_SCAN, ctx->desc);
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Unable to start a scan on interface '%s'!  (Your scan information may not be current.)  Reason was : %s\n", ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to start a scan on interface '%s'!  (Your scan information may not be current.)  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-	  return -1;
-  }
-
-  // Once we had done that, we need to wait for at least 6 seconds to get full scan data back.
-  // So set a timer to check in 8 seconds.
-  timer_add_timer(ctx, SCANCHECK_TIMER, 8, NULL, cardif_windows_wireless_scan_timeout);
-  return XENONE;
+		return -1;
+	}
+	// Once we had done that, we need to wait for at least 6 seconds to get full scan data back.
+	// So set a timer to check in 8 seconds.
+	timer_add_timer(ctx, SCANCHECK_TIMER, 8, NULL,
+			cardif_windows_wireless_scan_timeout);
+	return XENONE;
 }
 
 /**
@@ -395,12 +411,12 @@ int cardif_windows_wireless_scan(context *ctx, char passive)
  *  When this function is called, "ie_size" should be the size of the buffer defined by
  *  "ies".  On return, "ie_size" will be the length of the IE block copied in to the buffer.
  **/
-int cardif_windows_wireless_get_ies(context *ctx, char *ies, int *ie_size)
+int cardif_windows_wireless_get_ies(context * ctx, char *ies, int *ie_size)
 {
-    DWORD  BytesReturned = 0;
-    DWORD  result = 0;
-    UCHAR  QueryBuffer[65535];              // Unlikely that we would have a result this size!
-    PNDISPROT_QUERY_OID pQueryOid = NULL;
+	DWORD BytesReturned = 0;
+	DWORD result = 0;
+	UCHAR QueryBuffer[65535];	// Unlikely that we would have a result this size!
+	PNDISPROT_QUERY_OID pQueryOid = NULL;
 	PNDIS_802_11_ASSOCIATION_INFORMATION pInfo = NULL;
 	struct win_sock_data *sockData = NULL;
 	LPVOID lpMsgBuf = NULL;
@@ -414,38 +430,41 @@ int cardif_windows_wireless_get_ies(context *ctx, char *ies, int *ie_size)
 		return -1;
 
 	memset(&QueryBuffer, 0x00, sizeof(QueryBuffer));
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid = (PNDISPROT_QUERY_OID) & QueryBuffer[0];
 	pQueryOid->Oid = OID_802_11_ASSOCIATION_INFORMATION;
 
 	result = devioctl(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer),
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned);
+			  (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			  (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			  &BytesReturned);
 
-    if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION))
-    {
-		if (result == 0xffffffff)
-		{
-			debug_printf(DEBUG_INT, "IOCTL returned that no association information is available.\n");
-			debug_printf(DEBUG_INT, "Are you associated to a network!?\n");
+	if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION)) {
+		if (result == 0xffffffff) {
+			debug_printf(DEBUG_INT,
+				     "IOCTL returned that no association information is available.\n");
+			debug_printf(DEBUG_INT,
+				     "Are you associated to a network!?\n");
 			return -1;
 		}
 
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Get association information on interface '%s' failed.  Reason was : %s\n", 
-			ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Get association information on interface '%s' failed.  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
-
-	pInfo = (PNDIS_802_11_ASSOCIATION_INFORMATION)&pQueryOid->Data[0];
-
-	if (pInfo->RequestIELength > (*ie_size))
-	{
-		debug_printf(DEBUG_NORMAL, "Insufficient buffer space to store resulting IEs!\n");
 		return -1;
 	}
 
-	memcpy(ies, &pQueryOid->Data[pInfo->OffsetRequestIEs], pInfo->RequestIELength);
+	pInfo = (PNDIS_802_11_ASSOCIATION_INFORMATION) & pQueryOid->Data[0];
+
+	if (pInfo->RequestIELength > (*ie_size)) {
+		debug_printf(DEBUG_NORMAL,
+			     "Insufficient buffer space to store resulting IEs!\n");
+		return -1;
+	}
+
+	memcpy(ies, &pQueryOid->Data[pInfo->OffsetRequestIEs],
+	       pInfo->RequestIELength);
 	(*ie_size) = pInfo->RequestIELength;
 
 	return XENONE;
@@ -464,63 +483,61 @@ int cardif_windows_wireless_get_ies(context *ctx, char *ies, int *ie_size)
  *   
  *  The value for XX needs to be at least 8 for it to be a valid IE.
  **/
-int cardif_windows_wireless_find_wpa2_ie(context *ctx, uint8_t *in_ie, uint16_t in_size,
-										uint8_t *out_ie, uint16_t *out_size)
+int cardif_windows_wireless_find_wpa2_ie(context * ctx, uint8_t * in_ie,
+					 uint16_t in_size, uint8_t * out_ie,
+					 uint16_t * out_size)
 {
-	const char wpa2oui[3] = {0x00, 0x0f, 0xac};
+	const char wpa2oui[3] = { 0x00, 0x0f, 0xac };
 	unsigned int i = 0;
 	char done = 0;
 	wireless_ctx *wctx = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return -1;
 
 	i = 0;
 	done = FALSE;
 
-	while ((i < in_size) && (done == FALSE))
-	{
-		if (in_ie[i] == 0x30)
-		{
+	while ((i < in_size) && (done == FALSE)) {
+		if (in_ie[i] == 0x30) {
 			// It may be a WPA 2 IE.
-			if ((unsigned char)in_ie[i+1] >= 8)
-			{
+			if ((unsigned char)in_ie[i + 1] >= 8) {
 				// Looking good..
-				if ((in_ie[i+2] == 0x01) && (in_ie[i+3] == 0x00))
-				{
-					if (memcmp(&in_ie[i+4], &wpa2oui, 3) == 0)
-					{
+				if ((in_ie[i + 2] == 0x01)
+				    && (in_ie[i + 3] == 0x00)) {
+					if (memcmp(&in_ie[i + 4], &wpa2oui, 3)
+					    == 0) {
 						done = TRUE;
 					}
 				}
 			}
 		}
 
-		if (done == FALSE) i+=(unsigned char)(in_ie[i+1]+2);
+		if (done == FALSE)
+			i += (unsigned char)(in_ie[i + 1] + 2);
 	}
 
-	if (done == FALSE)
-	{
+	if (done == FALSE) {
 		// If we are scanning, then not finding an IE is no big deal.  Otherwise, it is
 		// probably an error worth reporting.
-		if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
-		{
-			debug_printf(DEBUG_INT, "IE block didn't contain a valid WPA2 IE!\n");
-		}
-		else
-		{
+		if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {
+			debug_printf(DEBUG_INT,
+				     "IE block didn't contain a valid WPA2 IE!\n");
+		} else {
 			//debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA2 IE!\n");
 		}
 		return -1;
 	}
-						
-	debug_printf(DEBUG_INT, "WPA2 IE (%d) : ", in_ie[i+1]);
-	debug_hex_printf(DEBUG_INT, &in_ie[i], in_ie[i+1]+2);
 
-	(*out_size) = in_ie[i+1]+2;
+	debug_printf(DEBUG_INT, "WPA2 IE (%d) : ", in_ie[i + 1]);
+	debug_hex_printf(DEBUG_INT, &in_ie[i], in_ie[i + 1] + 2);
+
+	(*out_size) = in_ie[i + 1] + 2;
 	memcpy(out_ie, &in_ie[i], (*out_size));
 
 	return XENONE;
@@ -529,75 +546,78 @@ int cardif_windows_wireless_find_wpa2_ie(context *ctx, uint8_t *in_ie, uint16_t 
 /**
  * Get the WPA2 Information Element.
  **/
-int cardif_windows_wireless_get_wpa2_ie(context *ctx, uint8_t *iedata, uint16_t *ielen)
+int cardif_windows_wireless_get_wpa2_ie(context * ctx, uint8_t * iedata,
+					uint16_t * ielen)
 {
 	char ie_buf[65535];
 	int ie_size = 65535;
 
 	if (cardif_windows_wireless_get_ies(ctx, ie_buf, &ie_size) != XENONE)
 		return -1;
-	
+
 	debug_printf(DEBUG_INT, "IEs returned (Length : %d) :\n", ie_size);
 	debug_hex_printf(DEBUG_INT, ie_buf, ie_size);
 
-	if (cardif_windows_wireless_find_wpa2_ie(ctx, ie_buf, ie_size, iedata, ielen) != XENONE)
+	if (cardif_windows_wireless_find_wpa2_ie
+	    (ctx, ie_buf, ie_size, iedata, ielen) != XENONE)
 		return -1;
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
  * Scan through whatever was returned by the scan, and pull
  * out any interesting IEs.
  **/
-void cardif_windows_wireless_parse_ies(context *ctx, uint8_t *iedata, uint16_t ielen)
+void cardif_windows_wireless_parse_ies(context * ctx, uint8_t * iedata,
+				       uint16_t ielen)
 {
-  int i = 0;
-  uint16_t wpalen = 0;
-  uint8_t wpaie[255];
-  uint8_t authtypes = 0;
-  uint8_t abilities = 0;
+	int i = 0;
+	uint16_t wpalen = 0;
+	uint8_t wpaie[255];
+	uint8_t authtypes = 0;
+	uint8_t abilities = 0;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
-    return;
+	if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((ielen > 0), "ielen > 0", FALSE))
-    return;
+	if (!xsup_assert((ielen > 0), "ielen > 0", FALSE))
+		return;
 
-  if (cardif_windows_wireless_find_wpa_ie(ctx, iedata, ielen, wpaie, &wpalen) == XENONE)
-  {
-	  authtypes = wpa_parse_auth_type(wpaie);
-	  
-	  if (authtypes != 0xff)
-	  {
-		  if (TEST_FLAG(authtypes, WPA_PSK)) abilities |= ABIL_WPA_PSK;
-		  if (TEST_FLAG(authtypes, WPA_DOT1X)) abilities |= ABIL_WPA_DOT1X;
-	  }
+	if (cardif_windows_wireless_find_wpa_ie
+	    (ctx, iedata, ielen, wpaie, &wpalen) == XENONE) {
+		authtypes = wpa_parse_auth_type(wpaie);
 
-	  // We have a valid IE, save it.
-	  abilities |= ABIL_WPA_IE;
-	  config_ssid_update_abilities(ctx->intTypeData, abilities);
-	  config_ssid_add_wpa_ie(ctx->intTypeData, wpaie, wpalen);
-  }
+		if (authtypes != 0xff) {
+			if (TEST_FLAG(authtypes, WPA_PSK))
+				abilities |= ABIL_WPA_PSK;
+			if (TEST_FLAG(authtypes, WPA_DOT1X))
+				abilities |= ABIL_WPA_DOT1X;
+		}
+		// We have a valid IE, save it.
+		abilities |= ABIL_WPA_IE;
+		config_ssid_update_abilities(ctx->intTypeData, abilities);
+		config_ssid_add_wpa_ie(ctx->intTypeData, wpaie, wpalen);
+	}
 
-  if (cardif_windows_wireless_find_wpa2_ie(ctx, iedata, ielen, wpaie, &wpalen) == XENONE)
-  {
-	  authtypes = wpa2_parse_auth_type(wpaie);
+	if (cardif_windows_wireless_find_wpa2_ie
+	    (ctx, iedata, ielen, wpaie, &wpalen) == XENONE) {
+		authtypes = wpa2_parse_auth_type(wpaie);
 
-	  if (authtypes != 0xff)
-	  {
-		  if (TEST_FLAG(authtypes, RSN_PSK)) abilities |= ABIL_RSN_PSK;
-		  if (TEST_FLAG(authtypes, RSN_DOT1X)) abilities |= ABIL_RSN_DOT1X;
-	  }
-	
-      // We have a valid IE, save it.
-	  abilities |= ABIL_RSN_IE;
-	  config_ssid_update_abilities(ctx->intTypeData, abilities);
-	  config_ssid_add_rsn_ie(ctx->intTypeData, wpaie, wpalen);
-  }
+		if (authtypes != 0xff) {
+			if (TEST_FLAG(authtypes, RSN_PSK))
+				abilities |= ABIL_RSN_PSK;
+			if (TEST_FLAG(authtypes, RSN_DOT1X))
+				abilities |= ABIL_RSN_DOT1X;
+		}
+		// We have a valid IE, save it.
+		abilities |= ABIL_RSN_IE;
+		config_ssid_update_abilities(ctx->intTypeData, abilities);
+		config_ssid_add_rsn_ie(ctx->intTypeData, wpaie, wpalen);
+	}
 }
 
 /**
@@ -614,21 +634,20 @@ int cardif_windows_get_os_ver()
 
 	winVer.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
 
-	if (GetVersionEx(&winVer) == 0)
-	{
-		debug_printf(DEBUG_NORMAL, "****  Unable to determine Windows version in use!\n");
+	if (GetVersionEx(&winVer) == 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "****  Unable to determine Windows version in use!\n");
 		return 0;
 	}
-
 	// Major version of 6 is Vista or 2k8.  So use the new ioctls.
-	if (winVer.dwMajorVersion == 6) return 2;
+	if (winVer.dwMajorVersion == 6)
+		return 2;
 
-	if (winVer.dwMajorVersion == 5)
-	{
-		switch (winVer.dwMinorVersion)
-		{
+	if (winVer.dwMajorVersion == 5) {
+		switch (winVer.dwMinorVersion) {
 		case 0:
-			debug_printf(DEBUG_INT, "Detected Windows 2000.     *****  It is likely that this won't work!!!  *****\n");
+			debug_printf(DEBUG_INT,
+				     "Detected Windows 2000.     *****  It is likely that this won't work!!!  *****\n");
 			return 1;
 			break;
 
@@ -638,112 +657,21 @@ int cardif_windows_get_os_ver()
 			break;
 
 		case 2:
-			debug_printf(DEBUG_NORMAL, "Detected Windows 2003 server or Windows XP 64 bit edition.   ***** It is likely that this won't work!!!! *****\n");
+			debug_printf(DEBUG_NORMAL,
+				     "Detected Windows 2003 server or Windows XP 64 bit edition.   ***** It is likely that this won't work!!!! *****\n");
 			return 1;
 			break;
 
 		default:
-			debug_printf(DEBUG_NORMAL, "Unknown version of Windows.    ***** It is likely that this won't work!!!!! *****\n");
+			debug_printf(DEBUG_NORMAL,
+				     "Unknown version of Windows.    ***** It is likely that this won't work!!!!! *****\n");
 			return 0;
 			break;
 		}
 	}
 
-	return 0;  // Not sure what to do.
+	return 0;		// Not sure what to do.
 }
-#if 0
-    DWORD  BytesReturned = 0;
-    DWORD  result = 0;
-    UCHAR  QueryBuffer[4096];
-    PNDISPROT_QUERY_OID pQueryOid = NULL;
-	struct win_sock_data *sockData = NULL;
-	LPVOID lpMsgBuf = NULL;
-	DWORD *vals = NULL;
-	int count = 0, i = 0, x = 0;
-	int retval = 0;
-
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-		return 0;
-
-	sockData = (struct win_sock_data *)ctx->sockData;
-
-	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
-		return 0;
-
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
-	pQueryOid->Oid = OID_GEN_SUPPORTED_LIST;
-
-	result = devioctl(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer),
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned);
-
-    if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION))
-    {
-		if (result == 0xffffffff)
-		{
-			debug_printf(DEBUG_NORMAL, "IOCTL returned that it doesn't know how to enumerate OIDs!\n");
-			return 0;
-		}
-
-		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_GETTING_BSSID, ctx->desc);
-		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Enum IOCTLs IOCTL failed on interface '%s'.  Error was : %s\n", 
-			ctx->desc, lpMsgBuf);
-		LocalFree(lpMsgBuf);
-        return 0;
-    }
-
-	vals = pQueryOid->Data;
-	count = ((BytesReturned - sizeof(NDIS_OID)) / sizeof(DWORD));
-
-	debug_printf(DEBUG_INT, "Found %d OIDs in the table.\n", count);
-	
-	x = -1;
-	retval = 2;  // Assume we can handle the needed IOCTLs, until we decide otherwise.
-
-	debug_printf(DEBUG_INT, "\n------- Checking for Current Gen IOCTLs -------\n");
-	while (((++x) >= 0) && (newoidsneeded[x].oid != 0) && (retval == 2))
-	{
-		i = 0;
-
-		while (((++i) <= count) && (newoidsneeded[x].oid != vals[i]));
-
-		if (i <= count) 
-		{
-			debug_printf(DEBUG_INT, "Found IOCTL for %s.\n", newoidsneeded[x].oidname);
-		} 
-		else
-		{
-			retval = 0;
-		}
-	}
-
-	if (retval == 2) goto done;
-
-	x = -1;
-	retval = 1;  // Assume we can handle the needed IOCTLs, until we decide otherwise.
-
-	debug_printf(DEBUG_INT, "\n------- Checking for Last Gen IOCTLs -------\n");
-	while (((++x) >= 0) && (oldoidsneeded[x].oid != 0) && (retval == 1))
-	{
-		i = 0;
-
-		while (((++i) <= count) && (oldoidsneeded[x].oid != vals[i]));
-
-		if (i <= count) 
-		{
-			debug_printf(DEBUG_INT, "Found IOCTL for %s.\n", oldoidsneeded[x].oidname);
-		} 
-		else
-		{
-			retval = 0;
-		}
-	}
-
-done:
-	return retval;
-}
-#endif
 
 /**
  * \brief Check to see if the context supports the authmode requested.  If it does,
@@ -755,33 +683,36 @@ done:
  * \retval TRUE if the authmode is supported.
  * \retval FALSE if the authmode isn't supported (this function will also send out a UI error message)
  **/
-int cardif_windows_authmode_supported_in_ctx(context *ctx, DWORD authmode)
+int cardif_windows_authmode_supported_in_ctx(context * ctx, DWORD authmode)
 {
 	int retval = TRUE;
 	wireless_ctx *wctx = NULL;
 
-	if (ctx->intType != ETH_802_11_INT) return retval;
+	if (ctx->intType != ETH_802_11_INT)
+		return retval;
 
 	wctx = ctx->intTypeData;
 
-	if (wctx == NULL) return retval;
+	if (wctx == NULL)
+		return retval;
 
-	switch (authmode)
-	{
+	switch (authmode) {
 	case Ndis802_11AuthModeWPA:
-		if (!TEST_FLAG(wctx->enc_capa, DOES_WPA))
-		{
-			debug_printf(DEBUG_NORMAL, "Attempted to set the authentication mode to WPA when the card doesn't appear to support it.\n");
-			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED, "WPA");
+		if (!TEST_FLAG(wctx->enc_capa, DOES_WPA)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Attempted to set the authentication mode to WPA when the card doesn't appear to support it.\n");
+			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED,
+					 "WPA");
 			retval = FALSE;
 		}
 		break;
 
 	case Ndis802_11AuthModeWPA2:
-		if (!TEST_FLAG(wctx->enc_capa, DOES_WPA2))
-		{
-			debug_printf(DEBUG_NORMAL, "Attempted to set the authentication mode to WPA2 when the card doesn't appear to support it.\n");
-			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED, "WPA2");
+		if (!TEST_FLAG(wctx->enc_capa, DOES_WPA2)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Attempted to set the authentication mode to WPA2 when the card doesn't appear to support it.\n");
+			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED,
+					 "WPA2");
 			retval = FALSE;
 		}
 		break;
@@ -794,53 +725,56 @@ int cardif_windows_authmode_supported_in_ctx(context *ctx, DWORD authmode)
  * Set the authentication (as in 802.11, not 802.1X) mode that we will be using to
  * create an association with the AP.
  **/
-int cardif_windows_set_auth_mode(context *ctx, DWORD authmode, int throwError)
+int cardif_windows_set_auth_mode(context * ctx, DWORD authmode, int throwError)
 {
-  DWORD Bytes = 0;
-  UCHAR Buffer[sizeof(NDIS_OID)+sizeof(DWORD)];  
-  PNDISPROT_SET_OID pSetOid = NULL;
-  struct win_sock_data *sockData = NULL;
-  DWORD *mode = NULL;
+	DWORD Bytes = 0;
+	UCHAR Buffer[sizeof(NDIS_OID) + sizeof(DWORD)];
+	PNDISPROT_SET_OID pSetOid = NULL;
+	struct win_sock_data *sockData = NULL;
+	DWORD *mode = NULL;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
-  pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 
-  pSetOid->Oid = OID_802_11_AUTHENTICATION_MODE;
-  mode = (DWORD *)&pSetOid->Data[0];
+	pSetOid->Oid = OID_802_11_AUTHENTICATION_MODE;
+	mode = (DWORD *) & pSetOid->Data[0];
 
-  (*mode) = authmode;
-  SetLastError(0);
+	(*mode) = authmode;
+	SetLastError(0);
 
-  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, 
-					(LPVOID)&Buffer[0], sizeof(Buffer), NULL, 0, &Bytes) == FALSE)
-  {
-	  // Only scream if we believe this should have worked.
-	  if (GetLastError() != ERROR_NOT_READY)
-	  {
-		  if (throwError == TRUE)
-		  {
-			  // If the auth mode isn't supported the call below will throw the error to the UI.
-			  if (cardif_windows_authmode_supported_in_ctx(ctx, authmode) == TRUE)
-			  {
-				debug_printf(DEBUG_NORMAL, "Attempt to set authentication mode for interface '%s' failed!\n",
-					ctx->desc);
-				ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_802_11_AUTH_MODE, ctx->desc);
-			  }
-		  }
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_NORMAL, "'%s' indicated it wasn't ready yet.  We will try again later.\n", ctx->desc);
-	  }
-	  return -1;
-  }
+	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
+			 (LPVOID) & Buffer[0], sizeof(Buffer), NULL, 0,
+			 &Bytes) == FALSE) {
+		// Only scream if we believe this should have worked.
+		if (GetLastError() != ERROR_NOT_READY) {
+			if (throwError == TRUE) {
+				// If the auth mode isn't supported the call below will throw the error to the UI.
+				if (cardif_windows_authmode_supported_in_ctx
+				    (ctx, authmode) == TRUE) {
+					debug_printf(DEBUG_NORMAL,
+						     "Attempt to set authentication mode for interface '%s' failed!\n",
+						     ctx->desc);
+					ipc_events_error(ctx,
+							 IPC_EVENT_ERROR_FAILED_SETTING_802_11_AUTH_MODE,
+							 ctx->desc);
+				}
+			}
+		} else {
+			debug_printf(DEBUG_NORMAL,
+				     "'%s' indicated it wasn't ready yet.  We will try again later.\n",
+				     ctx->desc);
+		}
+		return -1;
+	}
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -853,42 +787,46 @@ int cardif_windows_set_auth_mode(context *ctx, DWORD authmode, int throwError)
  * \retval TRUE if the encryption mode is supported
  * \retval FALSE if it is not (this function will send a message to the UI)
  **/
-int cardif_windows_enc_supported_in_ctx(context *ctx, DWORD encmode)
+int cardif_windows_enc_supported_in_ctx(context * ctx, DWORD encmode)
 {
 	int retval = TRUE;
 	wireless_ctx *wctx = NULL;
 
-	if (ctx->intType != ETH_802_11_INT) return retval;
+	if (ctx->intType != ETH_802_11_INT)
+		return retval;
 
 	wctx = ctx->intTypeData;
 
-	if (wctx == NULL) return retval;
+	if (wctx == NULL)
+		return retval;
 
-	switch (encmode)
-	{
+	switch (encmode) {
 	case Ndis802_11Encryption1Enabled:
-		if (!TEST_FLAG(wctx->flags, DOES_WEP104))
-		{
-			debug_printf(DEBUG_NORMAL, "Attempted to enable WEP encryption, but the interface doesn't seem to support it.\n");
-			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED, "WEP encryption");
+		if (!TEST_FLAG(wctx->flags, DOES_WEP104)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Attempted to enable WEP encryption, but the interface doesn't seem to support it.\n");
+			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED,
+					 "WEP encryption");
 			retval = FALSE;
 		}
 		break;
 
 	case Ndis802_11Encryption2Enabled:
-		if (!TEST_FLAG(wctx->flags, DOES_TKIP))
-		{
-			debug_printf(DEBUG_NORMAL, "Attempted to enable TKIP encryption, but the interface doesn't seem to support it.\n");
-			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED, "TKIP encryption");
+		if (!TEST_FLAG(wctx->flags, DOES_TKIP)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Attempted to enable TKIP encryption, but the interface doesn't seem to support it.\n");
+			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED,
+					 "TKIP encryption");
 			retval = FALSE;
 		}
 		break;
 
 	case Ndis802_11Encryption3Enabled:
-		if (!TEST_FLAG(wctx->flags, DOES_CCMP))
-		{
-			debug_printf(DEBUG_NORMAL, "Attempted to enable CCMP encryption, but the interface doesn't seem to support it.\n");
-			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED, "CCMP encryption");
+		if (!TEST_FLAG(wctx->flags, DOES_CCMP)) {
+			debug_printf(DEBUG_NORMAL,
+				     "Attempted to enable CCMP encryption, but the interface doesn't seem to support it.\n");
+			ipc_events_error(ctx, IPC_EVENT_ERROR_NOT_SUPPORTED,
+					 "CCMP encryption");
 			retval = FALSE;
 		}
 		break;
@@ -915,97 +853,104 @@ int cardif_windows_enc_supported_in_ctx(context *ctx, DWORD encmode)
  * WEP, TKIP, and AES encryption are supported and enabled on the device.
  * The AES cipher suite as defined through this OID is AES-CCMP. If the device supports other variants of the AES cipher suite, it cannot advertise support for the Encryption3 encryption mode unless the device also supports AES-CCMP.
  **/
-int cardif_windows_set_enc_mode(context *ctx, DWORD encmode, int throwError)
+int cardif_windows_set_enc_mode(context * ctx, DWORD encmode, int throwError)
 {
-  DWORD BytesReturned = 0;
-  UCHAR Buffer[sizeof(NDIS_OID)+sizeof(DWORD)];  
-  PNDISPROT_SET_OID pSetOid = NULL;
-  struct win_sock_data *sockData = NULL;
-  DWORD *mode = NULL;
+	DWORD BytesReturned = 0;
+	UCHAR Buffer[sizeof(NDIS_OID) + sizeof(DWORD)];
+	PNDISPROT_SET_OID pSetOid = NULL;
+	struct win_sock_data *sockData = NULL;
+	DWORD *mode = NULL;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
-  pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 
-  pSetOid->Oid = OID_802_11_ENCRYPTION_STATUS;
-  mode = (DWORD *)&pSetOid->Data[0];
+	pSetOid->Oid = OID_802_11_ENCRYPTION_STATUS;
+	mode = (DWORD *) & pSetOid->Data[0];
 
-  (*mode) = encmode;
-  SetLastError(0);
+	(*mode) = encmode;
+	SetLastError(0);
 
-  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, 
-					(LPVOID)&Buffer[0], sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE)
-  {
-	  // Only scream if we believe this should have worked.
-	  if (GetLastError() != ERROR_NOT_READY)
-	  {
-		  if (throwError == TRUE)
-		  {
-			  if (cardif_windows_enc_supported_in_ctx(ctx, encmode) == TRUE)
-			  {
-				debug_printf(DEBUG_NORMAL, "Attempt to set encryption mode for interface '%s' failed!\n",
-					ctx->desc);
-				ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_802_11_ENC_MODE, ctx->desc);
-			  }
-		  }
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_NORMAL, "'%s' indicated it wasn't ready yet.  We will try again later.\n", ctx->desc);
-	  }
-	  return -1;
-  }
+	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
+			 (LPVOID) & Buffer[0], sizeof(Buffer), NULL, 0,
+			 &BytesReturned) == FALSE) {
+		// Only scream if we believe this should have worked.
+		if (GetLastError() != ERROR_NOT_READY) {
+			if (throwError == TRUE) {
+				if (cardif_windows_enc_supported_in_ctx
+				    (ctx, encmode) == TRUE) {
+					debug_printf(DEBUG_NORMAL,
+						     "Attempt to set encryption mode for interface '%s' failed!\n",
+						     ctx->desc);
+					ipc_events_error(ctx,
+							 IPC_EVENT_ERROR_FAILED_SETTING_802_11_ENC_MODE,
+							 ctx->desc);
+				}
+			}
+		} else {
+			debug_printf(DEBUG_NORMAL,
+				     "'%s' indicated it wasn't ready yet.  We will try again later.\n",
+				     ctx->desc);
+		}
+		return -1;
+	}
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
  * Set the card in to infrastructure mode.  This will case all keys to be deleted.
  **/
-int cardif_windows_set_infra_mode(context *ctx)
+int cardif_windows_set_infra_mode(context * ctx)
 {
-  DWORD BytesReturned = 0;
-  UCHAR Buffer[sizeof(NDIS_OID)+sizeof(DWORD)];  
-  PNDISPROT_SET_OID pSetOid = NULL;
-  struct win_sock_data *sockData = NULL;
-  DWORD *mode = NULL;
+	DWORD BytesReturned = 0;
+	UCHAR Buffer[sizeof(NDIS_OID) + sizeof(DWORD)];
+	PNDISPROT_SET_OID pSetOid = NULL;
+	struct win_sock_data *sockData = NULL;
+	DWORD *mode = NULL;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
-  pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 
-  pSetOid->Oid = OID_802_11_INFRASTRUCTURE_MODE;
-  mode = (DWORD *)&pSetOid->Data[0];
+	pSetOid->Oid = OID_802_11_INFRASTRUCTURE_MODE;
+	mode = (DWORD *) & pSetOid->Data[0];
 
-  (*mode) = Ndis802_11Infrastructure;
+	(*mode) = Ndis802_11Infrastructure;
 
-  SetLastError(0);
+	SetLastError(0);
 
-  if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, 
-					(LPVOID)&Buffer[0], sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE)
-  {
-	  if (GetLastError() == ERROR_NOT_READY)  // The interface wasn't ready yet.
-	  {
-		  debug_printf(DEBUG_NORMAL, "Attempt to set infrastructure mode for interface '%s' failed.  The interface reported it isn't ready yet.\n");
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_NORMAL, "Attempt to set infrastructure mode for interface '%s' failed!  (Error : %d)\n",
-			  ctx->desc, GetLastError());
-		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_802_11_INFRA_MODE, ctx->desc);
-	  }
-	  return -1;
-  }
+	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
+			 (LPVOID) & Buffer[0], sizeof(Buffer), NULL, 0,
+			 &BytesReturned) == FALSE) {
+		if (GetLastError() == ERROR_NOT_READY)	// The interface wasn't ready yet.
+		{
+			debug_printf(DEBUG_NORMAL,
+				     "Attempt to set infrastructure mode for interface '%s' failed.  The interface reported it isn't ready yet.\n");
+		} else {
+			debug_printf(DEBUG_NORMAL,
+				     "Attempt to set infrastructure mode for interface '%s' failed!  (Error : %d)\n",
+				     ctx->desc, GetLastError());
+			ipc_events_error(ctx,
+					 IPC_EVENT_ERROR_FAILED_SETTING_802_11_INFRA_MODE,
+					 ctx->desc);
+		}
+		return -1;
+	}
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -1013,7 +958,7 @@ int cardif_windows_set_infra_mode(context *ctx)
  * where we roam to a different AP and the card needs to have WEP
  * disabled.
  **/
-int cardif_windows_wireless_enc_disable(context *ctx)
+int cardif_windows_wireless_enc_disable(context * ctx)
 {
 	return cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeOpen, TRUE);
 }
@@ -1022,7 +967,8 @@ int cardif_windows_wireless_enc_disable(context *ctx)
  *  Take a block of IE data specified by "in_ie" and parse it, looking for a
  *  HT (802.11n) information element.  
  **/
-int cardif_windows_wireless_find_ht_ie(context *ctx, uint8_t *in_ie, unsigned int in_size)
+int cardif_windows_wireless_find_ht_ie(context * ctx, uint8_t * in_ie,
+				       unsigned int in_size)
 {
 	unsigned int i = 0;
 	char done = 0;
@@ -1031,19 +977,18 @@ int cardif_windows_wireless_find_ht_ie(context *ctx, uint8_t *in_ie, unsigned in
 	i = 0;
 	done = FALSE;
 
-	while ((i < in_size) && (done == FALSE))
-	{
-		if (in_ie[i] == 45)   // 45 = HT Capabilities IE which is only in 802.11n capable beacons.
+	while ((i < in_size) && (done == FALSE)) {
+		if (in_ie[i] == 45)	// 45 = HT Capabilities IE which is only in 802.11n capable beacons.
 		{
 			done = TRUE;
 		}
-		if (done == FALSE) i+=(unsigned char)(in_ie[i+1]+2);
+		if (done == FALSE)
+			i += (unsigned char)(in_ie[i + 1] + 2);
 	}
-					
-	if (done == TRUE)
-	{
-		debug_printf(DEBUG_INT, "HT IE (%d) : ", in_ie[i+1]);
-		debug_hex_printf(DEBUG_INT, &in_ie[i], in_ie[i+1]+2);
+
+	if (done == TRUE) {
+		debug_printf(DEBUG_INT, "HT IE (%d) : ", in_ie[i + 1]);
+		debug_hex_printf(DEBUG_INT, &in_ie[i], in_ie[i + 1] + 2);
 	}
 
 	return done;
@@ -1062,10 +1007,11 @@ int cardif_windows_wireless_find_ht_ie(context *ctx, uint8_t *in_ie, unsigned in
  *   
  *  The value for XX needs to be at least 11 for it to be a valid IE.
  **/
-int cardif_windows_wireless_find_wpa_ie(context *ctx, uint8_t *in_ie, unsigned int in_size,
-										uint8_t *out_ie, uint8_t *out_size)
+int cardif_windows_wireless_find_wpa_ie(context * ctx, uint8_t * in_ie,
+					unsigned int in_size, uint8_t * out_ie,
+					uint8_t * out_size)
 {
-	const char wpaoui[3] = {0x00, 0x50, 0xf2};
+	const char wpaoui[3] = { 0x00, 0x50, 0xf2 };
 	unsigned int i = 0;
 	char done = 0;
 	wireless_ctx *wctx = NULL;
@@ -1073,53 +1019,50 @@ int cardif_windows_wireless_find_wpa_ie(context *ctx, uint8_t *in_ie, unsigned i
 	i = 0;
 	done = FALSE;
 
-	while ((i < in_size) && (done == FALSE))
-	{
-		if (in_ie[i] == 0xdd)
-		{
+	while ((i < in_size) && (done == FALSE)) {
+		if (in_ie[i] == 0xdd) {
 			// It may be a WPA 1 IE.
-			if (in_ie[i+1] >= 11)
-			{
+			if (in_ie[i + 1] >= 11) {
 				// Looking good..
-				if (memcmp(&in_ie[i+2], &wpaoui[0], 3) == 0)
-				{
-					if ((in_ie[i+5] == 0x01) && (in_ie[i+6] == 0x01) && (in_ie[i+7] == 0x00))
-					{
+				if (memcmp(&in_ie[i + 2], &wpaoui[0], 3) == 0) {
+					if ((in_ie[i + 5] == 0x01)
+					    && (in_ie[i + 6] == 0x01)
+					    && (in_ie[i + 7] == 0x00)) {
 						// Very likely. ;)
-						if (memcmp(&in_ie[i+8], &wpaoui[0], 3) == 0)
-						{
+						if (memcmp
+						    (&in_ie[i + 8], &wpaoui[0],
+						     3) == 0) {
 							done = TRUE;
 						}
 					}
 				}
 			}
 		}
-		if (done == FALSE) i+=(unsigned char)(in_ie[i+1]+2);
+		if (done == FALSE)
+			i += (unsigned char)(in_ie[i + 1] + 2);
 	}
 
-	if (done == FALSE)
-	{
-		wctx = (wireless_ctx *)ctx->intTypeData;
+	if (done == FALSE) {
+		wctx = (wireless_ctx *) ctx->intTypeData;
 
-		if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
+		if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+			return -1;
 
 		// If we are scanning, then not finding an IE is no big deal.  Otherwise, it is
 		// probably an error worth reporting.
-		if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
-		{
-			debug_printf(DEBUG_INT, "IE block didn't contain a valid WPA1 IE!\n");
-		}
-		else
-		{
+		if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {
+			debug_printf(DEBUG_INT,
+				     "IE block didn't contain a valid WPA1 IE!\n");
+		} else {
 			//debug_printf(DEBUG_NORMAL, "IE block didn't contain a valid WPA1 IE!\n");
 		}
 		return -1;
 	}
-						
-	debug_printf(DEBUG_INT, "WPA1 IE (%d) : ", in_ie[i+1]);
-	debug_hex_printf(DEBUG_INT, &in_ie[i], in_ie[i+1]+2);
 
-	(*out_size) = in_ie[i+1]+2;
+	debug_printf(DEBUG_INT, "WPA1 IE (%d) : ", in_ie[i + 1]);
+	debug_hex_printf(DEBUG_INT, &in_ie[i], in_ie[i + 1] + 2);
+
+	(*out_size) = in_ie[i + 1] + 2;
 	memcpy(out_ie, &in_ie[i], (*out_size));
 
 	return XENONE;
@@ -1128,8 +1071,7 @@ int cardif_windows_wireless_find_wpa_ie(context *ctx, uint8_t *in_ie, unsigned i
 /**
  *  Generate the WPA1 Information Element
  **/
-int cardif_windows_wireless_get_wpa_ie(context *ctx, 
-				 char *iedata, int *ielen)
+int cardif_windows_wireless_get_wpa_ie(context * ctx, char *iedata, int *ielen)
 {
 	uint8_t ie_buf[65535];
 	unsigned int ie_size = 65535;
@@ -1139,16 +1081,17 @@ int cardif_windows_wireless_get_wpa_ie(context *ctx,
 
 	if (cardif_windows_wireless_get_ies(ctx, ie_buf, &ie_size) != XENONE)
 		return -1;
-	
+
 	debug_printf(DEBUG_INT, "IEs returned (Length : %d) :\n", ie_size);
 	debug_hex_printf(DEBUG_INT, ie_buf, ie_size);
 
-	if (cardif_windows_wireless_find_wpa_ie(ctx, ie_buf, ie_size, iedata, &len) != XENONE)
+	if (cardif_windows_wireless_find_wpa_ie
+	    (ctx, ie_buf, ie_size, iedata, &len) != XENONE)
 		return -1;
 
 	(*ielen) = len;
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -1157,7 +1100,7 @@ int cardif_windows_wireless_get_wpa_ie(context *ctx,
  * @param[in] ctx   The context to the interface that we want to set open
  *					association on.
  **/
-int cardif_windows_wireless_enc_open(context *ctx)
+int cardif_windows_wireless_enc_open(context * ctx)
 {
 	return cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeOpen, TRUE);
 }
@@ -1165,12 +1108,12 @@ int cardif_windows_wireless_enc_open(context *ctx)
 /**
  * Set the SSID of the wireless card.
  **/
-int cardif_windows_wireless_set_ssid(context *ctx, char *ssid_name)
+int cardif_windows_wireless_set_ssid(context * ctx, char *ssid_name)
 {
-    DWORD  BytesReturned = 0;
-    DWORD  result = 0;
-    UCHAR  Buffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_SSID)];
-    PNDISPROT_SET_OID pSetOid = NULL;
+	DWORD BytesReturned = 0;
+	DWORD result = 0;
+	UCHAR Buffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_SSID)];
+	PNDISPROT_SET_OID pSetOid = NULL;
 	struct win_sock_data *sockData = NULL;
 	PNDIS_802_11_SSID pSsid = NULL;
 	LPVOID lpMsgBuf = NULL;
@@ -1186,24 +1129,25 @@ int cardif_windows_wireless_set_ssid(context *ctx, char *ssid_name)
 	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
 		return -1;
 
-  if (ctx->intType != ETH_802_11_INT)
-    {
-      // We want to verify that the interface is in fact, not wireless, and
-      // not that we are in a situation where the interface has just been 
-      // down.
-      debug_printf(DEBUG_NORMAL, "This interface isn't wireless!\n");
-      return XENOWIRELESS;
-    } 
+	if (ctx->intType != ETH_802_11_INT) {
+		// We want to verify that the interface is in fact, not wireless, and
+		// not that we are in a situation where the interface has just been 
+		// down.
+		debug_printf(DEBUG_NORMAL, "This interface isn't wireless!\n");
+		return XENOWIRELESS;
+	}
 
-	pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 	pSetOid->Oid = OID_802_11_SSID;
 
-	pSsid = (PNDIS_802_11_SSID)&pSetOid->Data[0];
+	pSsid = (PNDIS_802_11_SSID) & pSetOid->Data[0];
 
-	if (strncpy_s(pSsid->Ssid, sizeof(pSsid->Ssid), ssid_name, strlen(ssid_name)) != 0)
-	{
-		debug_printf(DEBUG_NORMAL, "Failed to copy SSID in %s() at %d!\n",
-			__FUNCTION__, __LINE__);
+	if (strncpy_s
+	    (pSsid->Ssid, sizeof(pSsid->Ssid), ssid_name,
+	     strlen(ssid_name)) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Failed to copy SSID in %s() at %d!\n",
+			     __FUNCTION__, __LINE__);
 		return -1;
 	}
 
@@ -1211,23 +1155,24 @@ int cardif_windows_wireless_set_ssid(context *ctx, char *ssid_name)
 	SetLastError(0);
 
 	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
-			(LPVOID)&Buffer[0], sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE)
-	{
+			 (LPVOID) & Buffer[0], sizeof(Buffer), NULL, 0,
+			 &BytesReturned) == FALSE) {
 		// Only complain if we believe the card was ready when we asked for this.
-		if (GetLastError() != ERROR_NOT_READY)
-		{
-			ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_SSID, ctx->desc);
+		if (GetLastError() != ERROR_NOT_READY) {
+			ipc_events_error(ctx,
+					 IPC_EVENT_ERROR_FAILED_SETTING_SSID,
+					 ctx->desc);
 			lpMsgBuf = GetLastErrorStr(GetLastError());
-			debug_printf(DEBUG_NORMAL, "Set SSID IOCTL failed on interface '%s'.  Reason was : %s\n",
-				ctx->desc, lpMsgBuf);
+			debug_printf(DEBUG_NORMAL,
+				     "Set SSID IOCTL failed on interface '%s'.  Reason was : %s\n",
+				     ctx->desc, lpMsgBuf);
 			LocalFree(lpMsgBuf);
-		}
-		else
-		{
-			debug_printf(DEBUG_NORMAL, "'%s' reported it wasn't ready.  We will try again later.\n");
+		} else {
+			debug_printf(DEBUG_NORMAL,
+				     "'%s' reported it wasn't ready.  We will try again later.\n");
 		}
 		return -1;
-    }
+	}
 
 	return XENONE;
 }
@@ -1235,12 +1180,12 @@ int cardif_windows_wireless_set_ssid(context *ctx, char *ssid_name)
 /**
  * Set the Broadcast SSID (MAC address) of the AP we are connected to.
  **/
-int cardif_windows_wireless_set_bssid(context *ctx, uint8_t *bssid)
+int cardif_windows_wireless_set_bssid(context * ctx, uint8_t * bssid)
 {
-    DWORD  BytesReturned = 0;
-    DWORD  result = 0;
-    UCHAR  Buffer[sizeof(NDIS_OID) + 6];
-    PNDISPROT_SET_OID pSetOid = NULL;
+	DWORD BytesReturned = 0;
+	DWORD result = 0;
+	UCHAR Buffer[sizeof(NDIS_OID) + 6];
+	PNDISPROT_SET_OID pSetOid = NULL;
 	struct win_sock_data *sockData = NULL;
 	LPVOID lpMsgBuf = NULL;
 
@@ -1255,25 +1200,26 @@ int cardif_windows_wireless_set_bssid(context *ctx, uint8_t *bssid)
 	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
 		return -1;
 
-	pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 	pSetOid->Oid = OID_802_11_BSSID;
 
 	memcpy(&Buffer[sizeof(NDIS_OID)], bssid, 6);
 
 	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
-			(LPVOID)&Buffer[0], sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE)
-	{
-		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_BSSID, ctx->desc);
+			 (LPVOID) & Buffer[0], sizeof(Buffer), NULL, 0,
+			 &BytesReturned) == FALSE) {
+		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_BSSID,
+				 ctx->desc);
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Set BSSID IOCTL failed on interface '%s'.  Reason was : %s\n",
-			ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Set BSSID IOCTL failed on interface '%s'.  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
+		return -1;
+	}
 
-  return XENONE;
+	return XENONE;
 }
-
 
 /**
  * Get the Broadcast SSID (MAC address) of the Access Point we are connected 
@@ -1287,13 +1233,12 @@ int cardif_windows_wireless_set_bssid(context *ctx, uint8_t *bssid)
  * \retval XENONE on success
  * \retval -1 on error
  **/
-int cardif_windows_wireless_get_bssid(context *ctx, 
-				char *bssid_dest)
+int cardif_windows_wireless_get_bssid(context * ctx, char *bssid_dest)
 {
-    DWORD  BytesReturned = 0;
-    DWORD  result = 0;
-    UCHAR  QueryBuffer[sizeof(NDIS_OID) + 6];
-    PNDISPROT_QUERY_OID pQueryOid = NULL;
+	DWORD BytesReturned = 0;
+	DWORD result = 0;
+	UCHAR QueryBuffer[sizeof(NDIS_OID) + 6];
+	PNDISPROT_QUERY_OID pQueryOid = NULL;
 	struct win_sock_data *sockData = NULL;
 	LPVOID lpMsgBuf = NULL;
 
@@ -1308,30 +1253,32 @@ int cardif_windows_wireless_get_bssid(context *ctx,
 	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
 		return -1;
 
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid = (PNDISPROT_QUERY_OID) & QueryBuffer[0];
 	pQueryOid->Oid = OID_802_11_BSSID;
 
 	result = devioctl(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer),
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned);
+			  (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			  (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			  &BytesReturned);
 
-    if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION))
-    {
-		if (result == 0xffffffff)
-		{
-			debug_printf(DEBUG_INT, "IOCTL returned that no BSSID is currently valid!\n");
-			debug_printf(DEBUG_INT, "Are you associated to a network!?\n");
+	if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION)) {
+		if (result == 0xffffffff) {
+			debug_printf(DEBUG_INT,
+				     "IOCTL returned that no BSSID is currently valid!\n");
+			debug_printf(DEBUG_INT,
+				     "Are you associated to a network!?\n");
 			return -1;
 		}
 
-		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_GETTING_BSSID, ctx->desc);
+		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_GETTING_BSSID,
+				 ctx->desc);
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Get BSSID IOCTL failed on interface '%s'.  Reason was : %s\n", 
-			ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Get BSSID IOCTL failed on interface '%s'.  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
-
+		return -1;
+	}
 	// Otherwise, pQueryOid->Data should contain the BSSID.
 	memcpy(bssid_dest, pQueryOid->Data, 6);
 
@@ -1347,12 +1294,12 @@ int cardif_windows_wireless_get_bssid(context *ctx,
  * \retval XENONE on success
  * \retval -1 on error
  **/
-int cardif_windows_wireless_get_freq(context *ctx, uint32_t *freq)
+int cardif_windows_wireless_get_freq(context * ctx, uint32_t * freq)
 {
-    DWORD  BytesReturned = 0;
-    DWORD  result = 0;
-    UCHAR  QueryBuffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_CONFIGURATION)];
-    PNDISPROT_QUERY_OID pQueryOid = NULL;
+	DWORD BytesReturned = 0;
+	DWORD result = 0;
+	UCHAR QueryBuffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_CONFIGURATION)];
+	PNDISPROT_QUERY_OID pQueryOid = NULL;
 	PNDIS_802_11_CONFIGURATION pConf = NULL;
 	struct win_sock_data *sockData = NULL;
 	LPVOID lpMsgBuf = NULL;
@@ -1368,24 +1315,24 @@ int cardif_windows_wireless_get_freq(context *ctx, uint32_t *freq)
 	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
 		return -1;
 
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid = (PNDISPROT_QUERY_OID) & QueryBuffer[0];
 	pQueryOid->Oid = OID_802_11_CONFIGURATION;
 
 	result = devioctl(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer),
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned);
+			  (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			  (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			  &BytesReturned);
 
-    if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION))
-    {
+	if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION)) {
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Get BSSID IOCTL failed on interface '%s'.  Reason was : %s\n", 
-			ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Get BSSID IOCTL failed on interface '%s'.  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
-
+		return -1;
+	}
 	// Otherwise, pQueryOid->Data should contain the BSSID.
-	pConf = (PNDIS_802_11_CONFIGURATION)pQueryOid->Data;
+	pConf = (PNDIS_802_11_CONFIGURATION) pQueryOid->Data;
 	(*freq) = pConf->DSConfig;
 
 	return XENONE;
@@ -1396,12 +1343,13 @@ int cardif_windows_wireless_get_freq(context *ctx, uint32_t *freq)
  * this is not a wireless card, or the information is not available, we should
  * return an error.
  **/
-int cardif_windows_wireless_get_ssid(context *ctx, char *ssid_name, unsigned int ssidsize)
+int cardif_windows_wireless_get_ssid(context * ctx, char *ssid_name,
+				     unsigned int ssidsize)
 {
-    DWORD  BytesReturned = 0;
-    DWORD  result = 0;
-    UCHAR  QueryBuffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_SSID)];
-    PNDISPROT_QUERY_OID pQueryOid = NULL;
+	DWORD BytesReturned = 0;
+	DWORD result = 0;
+	UCHAR QueryBuffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_SSID)];
+	PNDISPROT_QUERY_OID pQueryOid = NULL;
 	struct win_sock_data *sockData = NULL;
 	PNDIS_802_11_SSID pSsid = NULL;
 	LPVOID lpMsgBuf = NULL;
@@ -1417,72 +1365,69 @@ int cardif_windows_wireless_get_ssid(context *ctx, char *ssid_name, unsigned int
 	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
 		return -1;
 
-  if (ctx->intType != ETH_802_11_INT)
-    {
-      // We want to verify that the interface is in fact, not wireless, and
-      // not that we are in a situation where the interface has just been 
-      // down.
-      debug_printf(DEBUG_NORMAL, "This interface isn't wireless!\n");
-      return XENOWIRELESS;
-    } 
-
-  // If we get here, and isWireless == FALSE, then we need to double
-  // check that our interface is really not wireless.
+	if (ctx->intType != ETH_802_11_INT) {
+		// We want to verify that the interface is in fact, not wireless, and
+		// not that we are in a situation where the interface has just been 
+		// down.
+		debug_printf(DEBUG_NORMAL, "This interface isn't wireless!\n");
+		return XENOWIRELESS;
+	}
+	// If we get here, and isWireless == FALSE, then we need to double
+	// check that our interface is really not wireless.
 #if 0
-  if (ctx->intType != ETH_802_11_INT)
-    {
-      if (cardif_int_is_wireless(ctx) == TRUE)
-		{
+	if (ctx->intType != ETH_802_11_INT) {
+		if (cardif_int_is_wireless(ctx) == TRUE) {
 			SET_FLAG(ctx->flags, IS_WIRELESS);
-		} 
-	  else 
-		{
+		} else {
 			UNSET_FLAG(ctx->flags, IS_WIRELESS);
 		}
 
-      if (!TEST_FLAG(ctx->flags, IS_WIRELESS))
-		{
+		if (!TEST_FLAG(ctx->flags, IS_WIRELESS)) {
 			UNSET_FLAG(ctx->flags, WAS_DOWN);
 		}
-    }
+	}
 #endif
 
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid = (PNDISPROT_QUERY_OID) & QueryBuffer[0];
 	pQueryOid->Oid = OID_802_11_SSID;
 
 	result = devioctl(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer),
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned);
+			  (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			  (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			  &BytesReturned);
 
-    if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION))
-    {
-		if (result == 0xffffffff)
-		{
-			debug_printf(DEBUG_INT, "IOCTL returned that no SSID is currently valid!\n");
-			debug_printf(DEBUG_INT, "Are you associated to a network!?\n");
+	if ((result != WAIT_OBJECT_0) && (result != WAIT_IO_COMPLETION)) {
+		if (result == 0xffffffff) {
+			debug_printf(DEBUG_INT,
+				     "IOCTL returned that no SSID is currently valid!\n");
+			debug_printf(DEBUG_INT,
+				     "Are you associated to a network!?\n");
 			return -1;
 		}
 
-		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_GETTING_SSID, ctx->desc);
+		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_GETTING_SSID,
+				 ctx->desc);
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Get SSID IOCTL failed on interface '%s'.  Reason was : %s\n", 
-			ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Get SSID IOCTL failed on interface '%s'.  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
-
-	pSsid = (PNDIS_802_11_SSID)&pQueryOid->Data[0];
-
-	if (Strncpy(ssid_name, ssidsize, pSsid->Ssid, pSsid->SsidLength+1) != 0)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't copy SSID in %s() at %d!\n",
-			__FUNCTION__, __LINE__);
 		return -1;
 	}
 
-	ssid_name[pSsid->SsidLength+1] = 0x00;
+	pSsid = (PNDIS_802_11_SSID) & pQueryOid->Data[0];
 
-  return XENONE;
+	if (Strncpy(ssid_name, ssidsize, pSsid->Ssid, pSsid->SsidLength + 1) !=
+	    0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't copy SSID in %s() at %d!\n",
+			     __FUNCTION__, __LINE__);
+		return -1;
+	}
+
+	ssid_name[pSsid->SsidLength + 1] = 0x00;
+
+	return XENONE;
 }
 
 /**
@@ -1491,80 +1436,87 @@ int cardif_windows_wireless_get_ssid(context *ctx, char *ssid_name, unsigned int
  *
  *  For Windows, the zero_keys value does nothing.
  **/
-int cardif_windows_wireless_wep_associate(context *ctx, int zero_keys)
+int cardif_windows_wireless_wep_associate(context * ctx, int zero_keys)
 {
 	wireless_ctx *wctx = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return -1;
 
-  debug_printf(DEBUG_INT, "(WEP Associate) Set infra mode.\n");
-  if (cardif_windows_set_infra_mode(ctx) != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "Request to set infrastructure mode on interface '%s' failed.\n",
-		  ctx->desc);
-	  return -1;
-  }
-
-  debug_printf(DEBUG_INT, "(WEP Associate) Set auth mode.\n");
-  if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeOpen, TRUE) != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "Request to set the authentication mode to Open failed on interface '%s'.\n",
-		  ctx->desc);
-	  return -1;
-  }
-  wctx->assoc_type = ASSOC_TYPE_OPEN;
-
-  if ((ctx->conn->association.auth_type == AUTH_NONE) &&
-	  (ctx->conn->association.txkey == 0))
-  {
-	  debug_printf(DEBUG_INT, "(WEP Associate) Disable encryption.\n");
-	  if (cardif_windows_set_enc_mode(ctx, Ndis802_11EncryptionDisabled, TRUE) != 0)
-	  {
-		  debug_printf(DEBUG_NORMAL, "Request to set encryption mode failed on interface '%s'.\n",
-			  ctx->desc);
-		  return -1;
-	  }
-  }
-  else
-  {
-	debug_printf(DEBUG_INT, "(WEP Associate) Set encryption mode.\n");
-	if (cardif_windows_set_enc_mode(ctx, Ndis802_11Encryption1Enabled, TRUE) != 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Request to set encryption mode failed on interface '%s'.\n",
-		  ctx->desc);
-	  return -1;
+	debug_printf(DEBUG_INT, "(WEP Associate) Set infra mode.\n");
+	if (cardif_windows_set_infra_mode(ctx) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Request to set infrastructure mode on interface '%s' failed.\n",
+			     ctx->desc);
+		return -1;
 	}
 
-	wctx->pairwiseKeyType = CIPHER_WEP104;
+	debug_printf(DEBUG_INT, "(WEP Associate) Set auth mode.\n");
+	if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeOpen, TRUE) !=
+	    0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Request to set the authentication mode to Open failed on interface '%s'.\n",
+			     ctx->desc);
+		return -1;
+	}
+	wctx->assoc_type = ASSOC_TYPE_OPEN;
 
-	debug_printf(DEBUG_INT, "(WEP Associate) Set any static keys that are configured.\n");
-	set_static_wep_keys(ctx, &ctx->conn->association);
-  }
+	if ((ctx->conn->association.auth_type == AUTH_NONE) &&
+	    (ctx->conn->association.txkey == 0)) {
+		debug_printf(DEBUG_INT,
+			     "(WEP Associate) Disable encryption.\n");
+		if (cardif_windows_set_enc_mode
+		    (ctx, Ndis802_11EncryptionDisabled, TRUE) != 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Request to set encryption mode failed on interface '%s'.\n",
+				     ctx->desc);
+			return -1;
+		}
+	} else {
+		debug_printf(DEBUG_INT,
+			     "(WEP Associate) Set encryption mode.\n");
+		if (cardif_windows_set_enc_mode
+		    (ctx, Ndis802_11Encryption1Enabled, TRUE) != 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Request to set encryption mode failed on interface '%s'.\n",
+				     ctx->desc);
+			return -1;
+		}
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+		wctx->pairwiseKeyType = CIPHER_WEP104;
 
-  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
+		debug_printf(DEBUG_INT,
+			     "(WEP Associate) Set any static keys that are configured.\n");
+		set_static_wep_keys(ctx, &ctx->conn->association);
+	}
 
-  debug_printf(DEBUG_INT, "(WEP Associate) Set SSID.\n");
-  if (cardif_windows_wireless_set_ssid(ctx, wctx->cur_essid) != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "Request to set the SSID failed on interface '%s'.\n", ctx->desc);
-	  return -1;
-  }
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  return XENONE;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return -1;
+
+	debug_printf(DEBUG_INT, "(WEP Associate) Set SSID.\n");
+	if (cardif_windows_wireless_set_ssid(ctx, wctx->cur_essid) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Request to set the SSID failed on interface '%s'.\n",
+			     ctx->desc);
+		return -1;
+	}
+
+	return XENONE;
 }
 
-int cardif_windows_wireless_native_disassociate(context *ctx, int reason)
+int cardif_windows_wireless_native_disassociate(context * ctx, int reason)
 {
-    DWORD  BytesReturned;
-    DWORD  result;
-    UCHAR  QueryBuffer[sizeof(NDISPROT_QUERY_OID)];
-    PNDISPROT_QUERY_OID pQueryOid = NULL;
+	DWORD BytesReturned;
+	DWORD result;
+	UCHAR QueryBuffer[sizeof(NDISPROT_QUERY_OID)];
+	PNDISPROT_QUERY_OID pQueryOid = NULL;
 	struct win_sock_data *sockData = NULL;
 	wireless_ctx *wctx = NULL;
 	LPVOID lpMsgBuf = NULL;
@@ -1577,23 +1529,24 @@ int cardif_windows_wireless_native_disassociate(context *ctx, int reason)
 	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
 		return -1;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return -1;
 
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid = (PNDISPROT_QUERY_OID) & QueryBuffer[0];
 	pQueryOid->Oid = OID_802_11_DISASSOCIATE;
 
 	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer),
-			(LPVOID)&QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned) == FALSE)
-	{
-        debug_printf(DEBUG_NORMAL, "Disassociate failed.\n");
+			 (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			 (LPVOID) & QueryBuffer[0], sizeof(QueryBuffer),
+			 &BytesReturned) == FALSE) {
+		debug_printf(DEBUG_NORMAL, "Disassociate failed.\n");
 		lpMsgBuf = GetLastErrorStr(GetLastError());
 		debug_printf(DEBUG_NORMAL, "Reason was : %s\n", lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
+		return -1;
+	}
 
 	return XENONE;
 }
@@ -1601,23 +1554,24 @@ int cardif_windows_wireless_native_disassociate(context *ctx, int reason)
 /**
  * Send a disassociate request to the AP we are currently connected to.
  **/
-int cardif_windows_wireless_disassociate(context *ctx, int reason)
+int cardif_windows_wireless_disassociate(context * ctx, int reason)
 {
 	wireless_ctx *wctx = NULL;
 	int i = 0;
 	char randomssid[31];
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return -1;
 
 	//cardif_windows_wireless_native_disassociate(ctx, reason);
 
 	// Set an SSID to turn the radio back on.
-	for (i = 0; i < 30; i++)
-	{
+	for (i = 0; i < 30; i++) {
 		randomssid[i] = (char)(((float)(rand() % 87)) + 35);
 	}
 	randomssid[30] = 0x00;
@@ -1635,7 +1589,7 @@ int cardif_windows_wireless_disassociate(context *ctx, int reason)
 
 	memset(wctx->cur_bssid, 0x00, 6);
 
-    return XENONE;
+	return XENONE;
 }
 
 // Windows uses higher order bits in the key index to determine what type of key it is.
@@ -1649,49 +1603,55 @@ int cardif_windows_wireless_disassociate(context *ctx, int reason)
  * Set a WEP key.  Also, based on the index, we may change the transmit
  * key.
  **/
-int cardif_windows_wireless_set_WEP_key(context *ctx, uint8_t *key, 
-				  int keylen, int keyidx)
+int cardif_windows_wireless_set_WEP_key(context * ctx, uint8_t * key,
+					int keylen, int keyidx)
 {
 	struct win_sock_data *sockData = NULL;
 	DWORD BytesReturned = 0;
-	UCHAR Buffer[sizeof(NDIS_OID)+sizeof(NDIS_802_11_WEP)+13];
+	UCHAR Buffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_WEP) + 13];
 	PNDISPROT_SET_OID pSetOid = NULL;
 	PNDIS_802_11_WEP pKey = NULL;
 	LPVOID lpMsgBuf = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-	if (!xsup_assert((key != NULL), "key != NULL", FALSE)) return -1;
+	if (!xsup_assert((key != NULL), "key != NULL", FALSE))
+		return -1;
 
 	sockData = ctx->sockData;
 
-	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
-	pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 	pSetOid->Oid = OID_802_11_ADD_WEP;
 
-	pKey = (PNDIS_802_11_WEP)&pSetOid->Data[0];
+	pKey = (PNDIS_802_11_WEP) & pSetOid->Data[0];
 
 	pKey->Length = FIELD_OFFSET(NDIS_802_11_WEP, KeyMaterial) + keylen;
 	pKey->KeyIndex = (keyidx & 0x7f);
 
-	if ((keyidx & 0x80) == 0x80) pKey->KeyIndex |= TX_KEY;
+	if ((keyidx & 0x80) == 0x80)
+		pKey->KeyIndex |= TX_KEY;
 
 	pKey->KeyLength = keylen;
 
 	memcpy(&pKey->KeyMaterial[0], key, keylen);
 
 	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
-			(LPVOID)&Buffer[0], sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE)
-	{
-		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_WEP_KEY, ctx->desc);
+			 (LPVOID) & Buffer[0], sizeof(Buffer), NULL, 0,
+			 &BytesReturned) == FALSE) {
+		ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_WEP_KEY,
+				 ctx->desc);
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Set WEP Key IOCTL failed on interface '%s'.  Reason was : %s\n",
-			ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Set WEP Key IOCTL failed on interface '%s'.  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
-	
+		return -1;
+	}
+
 	return XENONE;
 }
 
@@ -1701,74 +1661,71 @@ int cardif_windows_wireless_set_WEP_key(context *ctx, uint8_t *key,
  * left here to keep this code similar to the other interface handlers.  (And will probably be
  * removed at some point in the future.)
  **/
-int cardif_windows_wireless_set_key_ext(context *ctx, int alg, 
-				   unsigned char *addr, int keyidx, int settx, 
-				   char *seq,  int seqlen, char *key, 
-				   int keylen)
+int cardif_windows_wireless_set_key_ext(context * ctx, int alg,
+					unsigned char *addr, int keyidx,
+					int settx, char *seq, int seqlen,
+					char *key, int keylen)
 {
 	struct win_sock_data *sockData = NULL;
 	DWORD BytesReturned = 0;
-	UCHAR Buffer[sizeof(NDIS_OID)+FIELD_OFFSET(NDIS_802_11_KEY, KeyMaterial) + 32];
+	UCHAR Buffer[sizeof(NDIS_OID) +
+		     FIELD_OFFSET(NDIS_802_11_KEY, KeyMaterial) + 32];
 	PNDISPROT_SET_OID pSetOid = NULL;
 	PNDIS_802_11_KEY pKey = NULL;
 	LPVOID lpMsgBuf = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-	if (!xsup_assert((key != NULL), "key != NULL", FALSE)) return -1;
+	if (!xsup_assert((key != NULL), "key != NULL", FALSE))
+		return -1;
 
-	if (alg == ALG_WEP)
-	{
+	if (alg == ALG_WEP) {
 		// The caller should call cardif_windows_wireless_set_wep directly, but this is
 		// just in case they do something stupid. ;)
-		return cardif_windows_wireless_set_WEP_key(ctx, key, keylen, keyidx);
+		return cardif_windows_wireless_set_WEP_key(ctx, key, keylen,
+							   keyidx);
 	}
 
 	sockData = ctx->sockData;
 
-	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
 	memset(&Buffer[0], 0x00, sizeof(Buffer));
 
-	pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 	pSetOid->Oid = OID_802_11_ADD_KEY;
 
-	pKey = (PNDIS_802_11_KEY)&pSetOid->Data[0];
-	pKey->Length = FIELD_OFFSET(NDIS_802_11_KEY, KeyMaterial) + keylen; 
+	pKey = (PNDIS_802_11_KEY) & pSetOid->Data[0];
+	pKey->Length = FIELD_OFFSET(NDIS_802_11_KEY, KeyMaterial) + keylen;
 	pKey->KeyIndex = keyidx;
 	pKey->KeyLength = keylen;
 
 	debug_printf(DEBUG_INT, "Key Index = %d\n", pKey->KeyIndex);
 	debug_printf(DEBUG_INT, "Key Length = %d\n", pKey->KeyLength);
 
-	if (alg == ALG_TKIP)
-	{
+	if (alg == ALG_TKIP) {
 		// Need to swap the MICs (back) so Windows can handle it the way it wants.
 		wpa_common_swap_rx_tx_mic(key);
 	}
 
-	if (seq == NULL)
-	{
+	if (seq == NULL) {
 		pKey->KeyIndex |= MANUAL_RSC;
-		memset((UCHAR *)&pKey->KeyRSC, 0x00, sizeof(NDIS_802_11_KEY_RSC));
-	}
-	else
-	{
+		memset((UCHAR *) & pKey->KeyRSC, 0x00,
+		       sizeof(NDIS_802_11_KEY_RSC));
+	} else {
 		pKey->KeyIndex |= MANUAL_RSC;
 		memcpy(&pKey->KeyRSC, seq, seqlen);
 	}
-		
-	if (addr != NULL)
-	{
+
+	if (addr != NULL) {
 		memcpy(pKey->BSSID, addr, 6);
-	}
-	else
-	{
+	} else {
 		memset(pKey->BSSID, 0xff, 6);
 	}
 
-	if (settx == TRUE)
-	{
+	if (settx == TRUE) {
 		debug_printf(DEBUG_INT, "TX key!\n");
 		pKey->KeyIndex |= (TX_KEY | PAIRWISE_KEY);
 		//pKey->KeyIndex |= TX_KEY;
@@ -1780,57 +1737,63 @@ int cardif_windows_wireless_set_key_ext(context *ctx, int alg,
 	debug_hex_printf(DEBUG_INT, pKey->KeyMaterial, keylen);
 
 	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
-			(LPVOID)&Buffer[0], sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE)
-	{
-		switch (alg)
-		{
+			 (LPVOID) & Buffer[0], sizeof(Buffer), NULL, 0,
+			 &BytesReturned) == FALSE) {
+		switch (alg) {
 		case ALG_TKIP:
-			ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_TKIP_KEY, ctx->desc);
+			ipc_events_error(ctx,
+					 IPC_EVENT_ERROR_FAILED_SETTING_TKIP_KEY,
+					 ctx->desc);
 			break;
 
 		case ALG_CCMP:
-			ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_CCMP_KEY, ctx->desc);
+			ipc_events_error(ctx,
+					 IPC_EVENT_ERROR_FAILED_SETTING_CCMP_KEY,
+					 ctx->desc);
 			break;
 
 		default:
-			ipc_events_error(ctx, IPC_EVENT_ERROR_FAILED_SETTING_UNKNOWN_KEY, ctx->desc);
+			ipc_events_error(ctx,
+					 IPC_EVENT_ERROR_FAILED_SETTING_UNKNOWN_KEY,
+					 ctx->desc);
 			break;
 		}
 
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Set key IOCTL failed on interface '%s'.  Reason was : %s\n", 
-			ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Set key IOCTL failed on interface '%s'.  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
+		return -1;
+	}
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
  * Push a TKIP key down to the wireless card.
  **/
-int cardif_windows_wireless_set_tkip_key(context *ctx, 
-				   unsigned char *addr, int keyidx, int settx, 
-				   char *key, int keylen)
+int cardif_windows_wireless_set_tkip_key(context * ctx,
+					 unsigned char *addr, int keyidx,
+					 int settx, char *key, int keylen)
 {
-    char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+	char seq[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-	return cardif_windows_wireless_set_key_ext(ctx, ALG_TKIP, addr, keyidx, settx, 
-				   seq, 6, key, keylen);
+	return cardif_windows_wireless_set_key_ext(ctx, ALG_TKIP, addr, keyidx,
+						   settx, seq, 6, key, keylen);
 }
 
 /**
  * Push a CCMP key down to the wireless card.
  **/
-int cardif_windows_wireless_set_ccmp_key(context *ctx,
-				   unsigned char *addr, int keyidx, int settx,
-				   char *key, int keylen)
+int cardif_windows_wireless_set_ccmp_key(context * ctx,
+					 unsigned char *addr, int keyidx,
+					 int settx, char *key, int keylen)
 {
-    char seq[6] = {0x00,0x00,0x00,0x00,0x00,0x00};
+	char seq[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-	return cardif_windows_wireless_set_key_ext(ctx, ALG_CCMP, addr, keyidx, settx, 
-				   seq, 6, key, keylen);
+	return cardif_windows_wireless_set_key_ext(ctx, ALG_CCMP, addr, keyidx,
+						   settx, seq, 6, key, keylen);
 }
 
 /**
@@ -1838,10 +1801,11 @@ int cardif_windows_wireless_set_ccmp_key(context *ctx,
  *    On Windows, we don't have the ability to send in an IE, so this function
  *    does nothing.
  **/
-int cardif_windows_wireless_set_wpa_ie(context *ctx, 
-				 unsigned char *wpaie, unsigned int wpalen)
+int cardif_windows_wireless_set_wpa_ie(context * ctx,
+				       unsigned char *wpaie,
+				       unsigned int wpalen)
 {
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -1850,197 +1814,202 @@ int cardif_windows_wireless_set_wpa_ie(context *ctx,
  */
 DWORD cardif_windows_wireless_cipher(int cipher)
 {
-  switch (cipher)
-    {
-    case CIPHER_NONE:
-      return 0xffffffff;
-      break;
+	switch (cipher) {
+	case CIPHER_NONE:
+		return 0xffffffff;
+		break;
 
-    case CIPHER_WEP40:
-      return Ndis802_11Encryption1Enabled;
-      break;
+	case CIPHER_WEP40:
+		return Ndis802_11Encryption1Enabled;
+		break;
 
-    case CIPHER_TKIP:
-      return Ndis802_11Encryption2Enabled;
-      break;
+	case CIPHER_TKIP:
+		return Ndis802_11Encryption2Enabled;
+		break;
 
-    case CIPHER_WRAP:
-      debug_printf(DEBUG_NORMAL, "WRAP is not supported!\n");
-      return 0xffffffff;
-      break;
+	case CIPHER_WRAP:
+		debug_printf(DEBUG_NORMAL, "WRAP is not supported!\n");
+		return 0xffffffff;
+		break;
 
-    case CIPHER_CCMP:
-      return Ndis802_11Encryption3Enabled;
-      break;
-      
-    case CIPHER_WEP104:
-      return Ndis802_11Encryption1Enabled;
-      break;
+	case CIPHER_CCMP:
+		return Ndis802_11Encryption3Enabled;
+		break;
 
-    default:
-      debug_printf(DEBUG_NORMAL, "Unknown cipher value of %d!  (Turning on everything.)\n", cipher);
-      return Ndis802_11Encryption3Enabled;
-      break;
-    }
+	case CIPHER_WEP104:
+		return Ndis802_11Encryption1Enabled;
+		break;
+
+	default:
+		debug_printf(DEBUG_NORMAL,
+			     "Unknown cipher value of %d!  (Turning on everything.)\n",
+			     cipher);
+		return Ndis802_11Encryption3Enabled;
+		break;
+	}
 }
 
 /**
  * Set all of the card settings that are needed in order to complete an
  * association, so that we can begin the authentication.
  **/
-void cardif_windows_wireless_associate(context *ctx)
+void cardif_windows_wireless_associate(context * ctx)
 {
-  struct config_globals *globals = NULL;
-  wireless_ctx *wctx = NULL;
-  DWORD enc_mode = 0;
+	struct config_globals *globals = NULL;
+	wireless_ctx *wctx = NULL;
+	DWORD enc_mode = 0;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return;
 
-  debug_printf(DEBUG_INT, "(Associate) Set infra mode.\n");
-  if (cardif_windows_set_infra_mode(ctx) != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "Request to set infrastructure mode failed on interface '%s'.\n",
-		  ctx->desc);
-	  return;
-  }
+	debug_printf(DEBUG_INT, "(Associate) Set infra mode.\n");
+	if (cardif_windows_set_infra_mode(ctx) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Request to set infrastructure mode failed on interface '%s'.\n",
+			     ctx->desc);
+		return;
+	}
 
-  if ((config_ssid_get_ssid_abilities(ctx->intTypeData) & ABIL_RSN_IE) ||
-	  ((config_ssid_find_by_name(wctx, wctx->cur_essid) == NULL) &&
-	  ((ctx->conn != NULL) && (ctx->conn->association.association_type == ASSOC_TYPE_WPA2))))
-  {
-	  wctx->assoc_type = ASSOC_TYPE_WPA2;
-	  // We are doing WPA2.
-	  if (ctx->conn->association.auth_type != AUTH_PSK)
-	  {
-		debug_printf(DEBUG_INT, "(Associate) Set auth mode.  (WPA2-802.1X)\n");
-		if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeWPA2, TRUE) != 0)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't set the authentication mode to WPA2-Enterprise on interface '%s'.\n",
-				ctx->desc);
-			return;
+	if ((config_ssid_get_ssid_abilities(ctx->intTypeData) & ABIL_RSN_IE) ||
+	    ((config_ssid_find_by_name(wctx, wctx->cur_essid) == NULL) &&
+	     ((ctx->conn != NULL)
+	      && (ctx->conn->association.association_type ==
+		  ASSOC_TYPE_WPA2)))) {
+		wctx->assoc_type = ASSOC_TYPE_WPA2;
+		// We are doing WPA2.
+		if (ctx->conn->association.auth_type != AUTH_PSK) {
+			debug_printf(DEBUG_INT,
+				     "(Associate) Set auth mode.  (WPA2-802.1X)\n");
+			if (cardif_windows_set_auth_mode
+			    (ctx, Ndis802_11AuthModeWPA2, TRUE) != 0) {
+				debug_printf(DEBUG_NORMAL,
+					     "Couldn't set the authentication mode to WPA2-Enterprise on interface '%s'.\n",
+					     ctx->desc);
+				return;
+			}
+		} else {
+			debug_printf(DEBUG_INT,
+				     "(Associate) Set auth mode.  (WPA2-PSK)\n");
+			if (cardif_windows_set_auth_mode
+			    (ctx, Ndis802_11AuthModeWPA2PSK, TRUE) != 0) {
+				debug_printf(DEBUG_NORMAL,
+					     "Request to set the authentication mode to WPA2-PSK failed on interface '%s'.\n",
+					     ctx->desc);
+				return;
+			}
 		}
-	  }
-	  else
-	  {
-		debug_printf(DEBUG_INT, "(Associate) Set auth mode.  (WPA2-PSK)\n");
-		if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeWPA2PSK, TRUE) != 0)
-		{
-			debug_printf(DEBUG_NORMAL, "Request to set the authentication mode to WPA2-PSK failed on interface '%s'.\n",
-				ctx->desc);
-			return;
+
+		if (ctx->conn->association.pairwise_keys == 0) {
+			wctx->groupKeyType = wpa2_get_group_crypt(ctx);
+			wctx->pairwiseKeyType = wpa2_get_pairwise_crypt(ctx);
+			if (wctx->pairwiseKeyType == 0xff) {
+				debug_printf(DEBUG_NORMAL,
+					     "Couldn't determine cipher type.  Forcing to CCMP.\n");
+				wctx->pairwiseKeyType = CIPHER_CCMP;
+			}
+		} else {
+			debug_printf(DEBUG_INT, "Key type hard set to %d.\n",
+				     ctx->conn->association.pairwise_keys);
+			if (ctx->conn->association.
+			    pairwise_keys & CRYPT_FLAGS_CCMP) {
+				wctx->pairwiseKeyType = CIPHER_CCMP;
+			} else if (ctx->conn->association.
+				   pairwise_keys & CRYPT_FLAGS_TKIP) {
+				wctx->pairwiseKeyType = CIPHER_TKIP;
+			} else if (ctx->conn->association.
+				   pairwise_keys & (CRYPT_FLAGS_WEP40 |
+						    CRYPT_FLAGS_WEP104)) {
+				wctx->pairwiseKeyType = CIPHER_WEP104;
+			}
 		}
-	  }
-
-	  if (ctx->conn->association.pairwise_keys == 0)
-	  {
-		wctx->groupKeyType = wpa2_get_group_crypt(ctx);
-		wctx->pairwiseKeyType = wpa2_get_pairwise_crypt(ctx);
-		if (wctx->pairwiseKeyType == 0xff) 
-		{
-		  debug_printf(DEBUG_NORMAL, "Couldn't determine cipher type.  Forcing to CCMP.\n");
-		  wctx->pairwiseKeyType = CIPHER_CCMP;
+	} else
+	    if ((config_ssid_get_ssid_abilities(ctx->intTypeData) & ABIL_WPA_IE)
+		|| ((config_ssid_find_by_name(wctx, wctx->cur_essid) == NULL)
+		    && ((ctx->conn != NULL)
+			&& (ctx->conn->association.association_type ==
+			    ASSOC_TYPE_WPA1)))) {
+		wctx->assoc_type = ASSOC_TYPE_WPA1;
+		// We are doing WPA1.
+		if (ctx->conn->association.auth_type != AUTH_PSK) {
+			debug_printf(DEBUG_INT,
+				     "(Associate) Set auth mode.  (WPA-802.1X)\n");
+			if (cardif_windows_set_auth_mode
+			    (ctx, Ndis802_11AuthModeWPA, TRUE) != 0) {
+				debug_printf(DEBUG_NORMAL,
+					     "Couldn't set the authentication mode to WPA-Enterprise on interface '%s'.\n",
+					     ctx->desc);
+				return;
+			}
+		} else {
+			debug_printf(DEBUG_INT,
+				     "(Associate) Set auth mode.  (WPA-PSK)\n");
+			if (cardif_windows_set_auth_mode
+			    (ctx, Ndis802_11AuthModeWPAPSK, TRUE) != 0) {
+				debug_printf(DEBUG_NORMAL,
+					     "Couldn't set the authentication mode to WPA-PSK on interface '%s'.\n",
+					     ctx->desc);
+				return;
+			}
 		}
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_INT, "Key type hard set to %d.\n", ctx->conn->association.pairwise_keys);
-		  if (ctx->conn->association.pairwise_keys & CRYPT_FLAGS_CCMP)
-		  {
-			  wctx->pairwiseKeyType = CIPHER_CCMP;
-		  }
-		  else if (ctx->conn->association.pairwise_keys & CRYPT_FLAGS_TKIP)
-		  {
-			  wctx->pairwiseKeyType = CIPHER_TKIP;
-		  }
-		  else if (ctx->conn->association.pairwise_keys & (CRYPT_FLAGS_WEP40 | CRYPT_FLAGS_WEP104))
-		  {
-			  wctx->pairwiseKeyType = CIPHER_WEP104;
-		  }
-	  }
-  } else if ((config_ssid_get_ssid_abilities(ctx->intTypeData) & ABIL_WPA_IE) ||
-	  	  ((config_ssid_find_by_name(wctx, wctx->cur_essid) == NULL) &&
-		  ((ctx->conn != NULL) && (ctx->conn->association.association_type == ASSOC_TYPE_WPA1))))
-  {
-	  wctx->assoc_type = ASSOC_TYPE_WPA1;
-	  // We are doing WPA1.
-	  if (ctx->conn->association.auth_type != AUTH_PSK)
-	  {
-		debug_printf(DEBUG_INT, "(Associate) Set auth mode.  (WPA-802.1X)\n");
-		if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeWPA, TRUE) != 0)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't set the authentication mode to WPA-Enterprise on interface '%s'.\n",
-				ctx->desc);
-			return;
+
+		if (ctx->conn->association.pairwise_keys == 0) {
+			wctx->groupKeyType = wpa_get_group_crypt(ctx);
+			wctx->pairwiseKeyType = wpa_get_pairwise_crypt(ctx);
+			if (wctx->pairwiseKeyType == 0xff) {
+				debug_printf(DEBUG_NORMAL,
+					     "Couldn't determine cipher type.  Forcing to TKIP.\n");
+				wctx->pairwiseKeyType = CIPHER_TKIP;
+			}
+		} else {
+			debug_printf(DEBUG_INT, "Key type hard set to %d.\n",
+				     ctx->conn->association.pairwise_keys);
+			if (ctx->conn->association.
+			    pairwise_keys & CRYPT_FLAGS_CCMP) {
+				wctx->pairwiseKeyType = CIPHER_CCMP;
+			} else if (ctx->conn->association.
+				   pairwise_keys & CRYPT_FLAGS_TKIP) {
+				wctx->pairwiseKeyType = CIPHER_TKIP;
+			} else if (ctx->conn->association.
+				   pairwise_keys & (CRYPT_FLAGS_WEP40 |
+						    CRYPT_FLAGS_WEP104)) {
+				wctx->pairwiseKeyType = CIPHER_WEP104;
+			}
 		}
-	  }
-	  else
-	  {
-		debug_printf(DEBUG_INT, "(Associate) Set auth mode.  (WPA-PSK)\n");
-		if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeWPAPSK, TRUE) != 0)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't set the authentication mode to WPA-PSK on interface '%s'.\n",
-				ctx->desc);
-			return;
-		}		
-	  }
+	}
 
-	  if (ctx->conn->association.pairwise_keys == 0)
-	  {
-		wctx->groupKeyType = wpa_get_group_crypt(ctx);
-		wctx->pairwiseKeyType = wpa_get_pairwise_crypt(ctx);
-		if (wctx->pairwiseKeyType == 0xff) 
-		{
-		  debug_printf(DEBUG_NORMAL, "Couldn't determine cipher type.  Forcing to TKIP.\n");
-		  wctx->pairwiseKeyType = CIPHER_TKIP;
-		}
-	  }
-	  else
-	  {
-		  debug_printf(DEBUG_INT, "Key type hard set to %d.\n", ctx->conn->association.pairwise_keys);
-		  if (ctx->conn->association.pairwise_keys & CRYPT_FLAGS_CCMP)
-		  {
-			  wctx->pairwiseKeyType = CIPHER_CCMP;
-		  }
-		  else if (ctx->conn->association.pairwise_keys & CRYPT_FLAGS_TKIP)
-		  {
-			  wctx->pairwiseKeyType = CIPHER_TKIP;
-		  }
-		  else if (ctx->conn->association.pairwise_keys & (CRYPT_FLAGS_WEP40 | CRYPT_FLAGS_WEP104))
-		  {
-			  wctx->pairwiseKeyType = CIPHER_WEP104;
-		  }
-	  }
-  }
+	enc_mode = cardif_windows_wireless_cipher(wctx->pairwiseKeyType);
 
-  enc_mode = cardif_windows_wireless_cipher(wctx->pairwiseKeyType);
+	debug_printf(DEBUG_INT,
+		     "(Associate) Set encryption mode. (%d, %d, %d)\n",
+		     enc_mode, Ndis802_11Encryption2Enabled,
+		     Ndis802_11Encryption3Enabled);
+	if (cardif_windows_set_enc_mode(ctx, enc_mode, TRUE) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Request to set encryption mode failed on interface '%s'.\n",
+			     ctx->desc);
+		return;
+	}
 
-  debug_printf(DEBUG_INT, "(Associate) Set encryption mode. (%d, %d, %d)\n", enc_mode,
-	  Ndis802_11Encryption2Enabled, Ndis802_11Encryption3Enabled);
-  if (cardif_windows_set_enc_mode(ctx, enc_mode, TRUE) != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "Request to set encryption mode failed on interface '%s'.\n",
-		  ctx->desc);
-	  return;
-  }
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
+	debug_printf(DEBUG_INT, "(Associate) Set SSID (%s).\n",
+		     wctx->cur_essid);
+	if (cardif_windows_wireless_set_ssid(ctx, wctx->cur_essid) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Request to set the SSID failed on interface '%s'.\n",
+			     ctx->desc);
+		return;
+	}
 
-  debug_printf(DEBUG_INT, "(Associate) Set SSID (%s).\n", wctx->cur_essid);
-  if (cardif_windows_wireless_set_ssid(ctx, wctx->cur_essid) != 0)
-  {
-	  debug_printf(DEBUG_NORMAL, "Request to set the SSID failed on interface '%s'.\n",
-		  ctx->desc);
-	  return;
-  }
-
-  return;
+	return;
 }
 
 // Windows doesn't seem to distinguish between WEP40 and WEP104.  So, "DOES_WEP" defines both.
@@ -2049,64 +2018,65 @@ void cardif_windows_wireless_associate(context *ctx)
 /**
  * Determine the types of encryption supported.
  **/
-void cardif_windows_enc_mode_supported(NDIS_802_11_ENCRYPTION_STATUS es, uint32_t *enc)
+void cardif_windows_enc_mode_supported(NDIS_802_11_ENCRYPTION_STATUS es,
+				       uint32_t * enc)
 {
-        switch (es)
-        {
-			// The values below should never come up in the results.
-        case Ndis802_11EncryptionNotSupported:
-        case Ndis802_11EncryptionDisabled:
-		case Ndis802_11Encryption1KeyAbsent:
-		case Ndis802_11Encryption2KeyAbsent:
-		case Ndis802_11Encryption3KeyAbsent:
-			break;
+	switch (es) {
+		// The values below should never come up in the results.
+	case Ndis802_11EncryptionNotSupported:
+	case Ndis802_11EncryptionDisabled:
+	case Ndis802_11Encryption1KeyAbsent:
+	case Ndis802_11Encryption2KeyAbsent:
+	case Ndis802_11Encryption3KeyAbsent:
+		break;
 
-		default:
-			debug_printf(DEBUG_NORMAL, "Unknown/Invalid encryption method.  (%d)\n", es);
-                break;
+	default:
+		debug_printf(DEBUG_NORMAL,
+			     "Unknown/Invalid encryption method.  (%d)\n", es);
+		break;
 
-        case Ndis802_11Encryption1Enabled:
-                (*enc) |= (DOES_WEP);
-                break;
+	case Ndis802_11Encryption1Enabled:
+		(*enc) |= (DOES_WEP);
+		break;
 
-        case Ndis802_11Encryption2Enabled:
-				(*enc) |= (DOES_WEP | DOES_TKIP);
-				break;
+	case Ndis802_11Encryption2Enabled:
+		(*enc) |= (DOES_WEP | DOES_TKIP);
+		break;
 
-        case Ndis802_11Encryption3Enabled:
-                (*enc) |= (DOES_WEP | DOES_TKIP | DOES_CCMP);
-                break;
-       }
+	case Ndis802_11Encryption3Enabled:
+		(*enc) |= (DOES_WEP | DOES_TKIP | DOES_CCMP);
+		break;
+	}
 }
 
 /**
  * Determine the authentication modes supported.
  **/
-void cardif_windows_auth_mode_supported(NDIS_802_11_AUTHENTICATION_MODE am, uint32_t *capa)
+void cardif_windows_auth_mode_supported(NDIS_802_11_AUTHENTICATION_MODE am,
+					uint32_t * capa)
 {
-        switch (am)
-        {
-			// Don't currently care about these.
-        case Ndis802_11AuthModeOpen:
-        case Ndis802_11AuthModeShared:
-        case Ndis802_11AuthModeAutoSwitch:
-                break;
+	switch (am) {
+		// Don't currently care about these.
+	case Ndis802_11AuthModeOpen:
+	case Ndis802_11AuthModeShared:
+	case Ndis802_11AuthModeAutoSwitch:
+		break;
 
-        case Ndis802_11AuthModeWPA:
-        case Ndis802_11AuthModeWPAPSK:
-        case Ndis802_11AuthModeWPANone:
-				(*capa) |= DOES_WPA;
-                break;
+	case Ndis802_11AuthModeWPA:
+	case Ndis802_11AuthModeWPAPSK:
+	case Ndis802_11AuthModeWPANone:
+		(*capa) |= DOES_WPA;
+		break;
 
-        case Ndis802_11AuthModeWPA2:
-        case Ndis802_11AuthModeWPA2PSK:
-				(*capa) |= DOES_WPA2;
-                break;
+	case Ndis802_11AuthModeWPA2:
+	case Ndis802_11AuthModeWPA2PSK:
+		(*capa) |= DOES_WPA2;
+		break;
 
-        default:
-                fprintf(stderr, "Unknown authentication mode %d!\n", am);
-                break;
-       }
+	default:
+		fprintf(stderr, "Unknown authentication mode %d!\n", am);
+		break;
+	}
 }
 
 /**
@@ -2115,29 +2085,28 @@ void cardif_windows_auth_mode_supported(NDIS_802_11_AUTHENTICATION_MODE am, uint
  * @param[in,out] ctx   The context for the interface that we are trying to determine the
  *                      encryption capabilities of.
  **/
-void cardif_windows_wireless_enc_capabilities_secondary(context *ctx)
+void cardif_windows_wireless_enc_capabilities_secondary(context * ctx)
 {
 	wireless_ctx *wctx = NULL;
 
-	if (ctx->intType != ETH_802_11_INT) return;
+	if (ctx->intType != ETH_802_11_INT)
+		return;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	// First, check encryption modes.
-	if (cardif_windows_set_enc_mode(ctx, Ndis802_11Encryption3Enabled, FALSE) == 0)
-	{
+	if (cardif_windows_set_enc_mode
+	    (ctx, Ndis802_11Encryption3Enabled, FALSE) == 0) {
 		wctx->enc_capa |= (DOES_WEP | DOES_TKIP | DOES_CCMP);
-	}
-	else if (cardif_windows_set_enc_mode(ctx, Ndis802_11Encryption2Enabled, FALSE) == 0)
-	{
+	} else
+	    if (cardif_windows_set_enc_mode
+		(ctx, Ndis802_11Encryption2Enabled, FALSE) == 0) {
 		wctx->enc_capa |= (DOES_WEP | DOES_TKIP);
-	}
-	else if (cardif_windows_set_enc_mode(ctx, Ndis802_11Encryption1Enabled, FALSE) == 0)
-	{
+	} else
+	    if (cardif_windows_set_enc_mode
+		(ctx, Ndis802_11Encryption1Enabled, FALSE) == 0) {
 		wctx->enc_capa |= DOES_WEP;
-	}
-	else
-	{
+	} else {
 		wctx->enc_capa = 0;
 	}
 
@@ -2150,22 +2119,23 @@ void cardif_windows_wireless_enc_capabilities_secondary(context *ctx)
  * @param[in,out] ctx   The context for the interface we are attempting to determine the
  *                      authentication mode for.
  **/
-void cardif_windows_wireless_auth_capabilities_secondary(context *ctx)
+void cardif_windows_wireless_auth_capabilities_secondary(context * ctx)
 {
 	wireless_ctx *wctx = NULL;
 
-	if (ctx->intType != ETH_802_11_INT) return;
+	if (ctx->intType != ETH_802_11_INT)
+		return;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	// Then authentication modes.
-	if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeWPA, FALSE) == 0)
-	{
+	if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeWPA, FALSE) ==
+	    0) {
 		wctx->enc_capa |= DOES_WPA;
 	}
 
-	if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeWPA2, FALSE) == 0)
-	{
+	if (cardif_windows_set_auth_mode(ctx, Ndis802_11AuthModeWPA2, FALSE) ==
+	    0) {
 		wctx->enc_capa |= DOES_WPA2;
 	}
 
@@ -2178,9 +2148,10 @@ void cardif_windows_wireless_auth_capabilities_secondary(context *ctx)
  * @param[in,out] ctx   The context for the interface that we are trying to determine the
  *                      capabilities of.
  **/
-void cardif_windows_wireless_capabilities_secondary(context *ctx)
+void cardif_windows_wireless_capabilities_secondary(context * ctx)
 {
-	if (ctx->intType != ETH_802_11_INT) return;
+	if (ctx->intType != ETH_802_11_INT)
+		return;
 
 	cardif_windows_wireless_enc_capabilities_secondary(ctx);
 
@@ -2195,7 +2166,8 @@ void cardif_windows_wireless_capabilities_secondary(context *ctx)
  * 
  * \retval XENONE on success
  **/
-int cardif_windows_get_capability(context *ctx, PNDIS_802_11_CAPABILITY *pcapa)
+int cardif_windows_get_capability(context * ctx,
+				  PNDIS_802_11_CAPABILITY * pcapa)
 {
 	struct win_sock_data *sockData = NULL;
 	DWORD BytesReturned = 0;
@@ -2204,65 +2176,77 @@ int cardif_windows_get_capability(context *ctx, PNDIS_802_11_CAPABILITY *pcapa)
 	void *retCapa = NULL;
 	int i = 0;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
 	sockData = ctx->sockData;
 
-	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid = (PNDISPROT_QUERY_OID) & QueryBuffer[0];
 	pQueryOid->Oid = OID_802_11_CAPABILITY;
 
-	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE, &QueryBuffer[0],
-				sizeof(QueryBuffer), &QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned) == FALSE)
-	{
-		return -1;   // Couldn't do malloc.  We don't want to scream here, just return an error code.  (There may be cases where this IOCTL failing is perfectly fine.)
+	if (devioctl_blk
+	    (sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
+	     &QueryBuffer[0], sizeof(QueryBuffer), &QueryBuffer[0],
+	     sizeof(QueryBuffer), &BytesReturned) == FALSE) {
+		return -1;	// Couldn't do malloc.  We don't want to scream here, just return an error code.  (There may be cases where this IOCTL failing is perfectly fine.)
 	}
 
 	retCapa = Malloc(BytesReturned - sizeof(pQueryOid->Oid));
-	if (retCapa == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to allocate memory in %s()!\n", __FUNCTION__);
+	if (retCapa == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to allocate memory in %s()!\n",
+			     __FUNCTION__);
 		return XEMALLOC;
 	}
 
-	memcpy(retCapa, pQueryOid->Data, (BytesReturned - sizeof(pQueryOid->Oid)));
+	memcpy(retCapa, pQueryOid->Data,
+	       (BytesReturned - sizeof(pQueryOid->Oid)));
 	(*pcapa) = retCapa;
 
 	return XENONE;
 }
 
-
 /**
  * Determine the encryption capabilities for this driver/interface.
  **/
-void cardif_windows_wireless_enc_capabilities(context *ctx)
+void cardif_windows_wireless_enc_capabilities(context * ctx)
 {
 	PNDIS_802_11_CAPABILITY pCapa = NULL;
 	int i = 0;
 	wireless_ctx *wctx = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return;
 
-	if (cardif_windows_get_capability(ctx, &pCapa) != XENONE)
-	{
-		debug_printf(DEBUG_INT, "Couldn't determine capabilities the normal way, trying the icky way.\n");
+	if (cardif_windows_get_capability(ctx, &pCapa) != XENONE) {
+		debug_printf(DEBUG_INT,
+			     "Couldn't determine capabilities the normal way, trying the icky way.\n");
 
 		// Attempt the secondary way. :-/
 		cardif_windows_wireless_capabilities_secondary(ctx);
 		return;
 	}
 
-	if (pCapa == NULL) return;
+	if (pCapa == NULL)
+		return;
 
-	for (i=0; i < (int)pCapa->NoOfAuthEncryptPairsSupported; i++)
-	{
-		cardif_windows_auth_mode_supported(pCapa->AuthenticationEncryptionSupported[i].AuthModeSupported, &wctx->enc_capa);
-		cardif_windows_enc_mode_supported(pCapa->AuthenticationEncryptionSupported[i].EncryptStatusSupported, &wctx->enc_capa);
+	for (i = 0; i < (int)pCapa->NoOfAuthEncryptPairsSupported; i++) {
+		cardif_windows_auth_mode_supported(pCapa->
+						   AuthenticationEncryptionSupported
+						   [i].AuthModeSupported,
+						   &wctx->enc_capa);
+		cardif_windows_enc_mode_supported(pCapa->
+						  AuthenticationEncryptionSupported
+						  [i].EncryptStatusSupported,
+						  &wctx->enc_capa);
 	}
 
 	FREE(pCapa);
@@ -2271,88 +2255,88 @@ void cardif_windows_wireless_enc_capabilities(context *ctx)
 /**
  * Delete any keys that are currently installed in the driver/interface.
  **/
-int cardif_windows_wireless_delete_key(context *ctx, int key_idx, int set_tx)
+int cardif_windows_wireless_delete_key(context * ctx, int key_idx, int set_tx)
 {
 	struct win_sock_data *sockData = NULL;
 	DWORD BytesReturned = 0;
-	UCHAR Buffer[sizeof(NDIS_OID)+sizeof(NDIS_802_11_REMOVE_KEY)];
+	UCHAR Buffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_REMOVE_KEY)];
 	PNDISPROT_SET_OID pSetOid = NULL;
 	PNDIS_802_11_REMOVE_KEY pRkey = NULL;
 	LPVOID lpMsgBuf = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
 	sockData = ctx->sockData;
 
-	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
-	pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 	pSetOid->Oid = OID_802_11_REMOVE_KEY;
 
-	pRkey = (PNDIS_802_11_REMOVE_KEY)&pSetOid->Data[0];
+	pRkey = (PNDIS_802_11_REMOVE_KEY) & pSetOid->Data[0];
 	pRkey->Length = sizeof(NDIS_802_11_REMOVE_KEY);
 	pRkey->KeyIndex = 0;
 	pRkey->KeyIndex = key_idx;
-	
-	if (set_tx == TRUE)
-	{
+
+	if (set_tx == TRUE) {
 		memcpy(pRkey->BSSID, &ctx->dest_mac[0], 6);
 		pRkey->KeyIndex |= (1 << 30);
-	}
-	else
-	{
+	} else {
 		memset(pRkey->BSSID, 0xff, 6);
 	}
 
 	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE,
-			(LPVOID)&Buffer[0], sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE)
-	{
+			 (LPVOID) & Buffer[0], sizeof(Buffer), NULL, 0,
+			 &BytesReturned) == FALSE) {
 		lpMsgBuf = GetLastErrorStr(GetLastError());
-		debug_printf(DEBUG_NORMAL, "Remove Key IOCTL failed on interface '%s'.  Reason was : %s\n",
-			ctx->desc, lpMsgBuf);
+		debug_printf(DEBUG_NORMAL,
+			     "Remove Key IOCTL failed on interface '%s'.  Reason was : %s\n",
+			     ctx->desc, lpMsgBuf);
 		LocalFree(lpMsgBuf);
-        return -1;
-    }
+		return -1;
+	}
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
  * Enable the filter that only allows for EAPoL frames to get through.
  **/
-int cardif_windows_wireless_drop_unencrypted(context *ctx, char endis)
+int cardif_windows_wireless_drop_unencrypted(context * ctx, char endis)
 {
 	struct win_sock_data *sockData = NULL;
 	DWORD BytesReturned = 0;
-	UCHAR Buffer[sizeof(NDIS_OID)+sizeof(NDIS_802_11_PRIVACY_FILTER)];
+	UCHAR Buffer[sizeof(NDIS_OID) + sizeof(NDIS_802_11_PRIVACY_FILTER)];
 	PNDISPROT_SET_OID pSetOid = NULL;
 	DWORD *filter = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
 	sockData = ctx->sockData;
 
-	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
-	pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 	pSetOid->Oid = OID_802_11_PRIVACY_FILTER;
 
-	filter = (DWORD *)&pSetOid->Data[0];
+	filter = (DWORD *) & pSetOid->Data[0];
 
-	if (endis == TRUE)
-	{
+	if (endis == TRUE) {
 		(*filter) = Ndis802_11PrivFilter8021xWEP;
-	}
-	else
-	{
+	} else {
 		(*filter) = Ndis802_11PrivFilterAcceptAll;
 	}
 
-	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, &Buffer[0],
-				sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't set privacy filter status for interface '%s'.\n",
-			ctx->desc);
+	if (devioctl_blk
+	    (sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, &Buffer[0],
+	     sizeof(Buffer), NULL, 0, &BytesReturned) == FALSE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't set privacy filter status for interface '%s'.\n",
+			     ctx->desc);
 		return -1;
 	}
 
@@ -2364,7 +2348,7 @@ int cardif_windows_wireless_drop_unencrypted(context *ctx, char endis)
  *  call will only return something valid if the interface is associated.  If the
  *  interface isn't associated, then this function will return -1.
  **/
-int cardif_windows_wireless_get_percent(context *ctx)
+int cardif_windows_wireless_get_percent(context * ctx)
 {
 	struct win_sock_data *sockData = NULL;
 	DWORD BytesReturned = 0;
@@ -2375,38 +2359,44 @@ int cardif_windows_wireless_get_percent(context *ctx)
 	int percentage = -1;
 	wireless_ctx *wctx = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return -1;
 
-	wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return -1;
+	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
+		return -1;
 
 	sockData = ctx->sockData;
 
-	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return -1;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return -1;
 
-	pQueryOid = (PNDISPROT_QUERY_OID)&QueryBuffer[0];
+	pQueryOid = (PNDISPROT_QUERY_OID) & QueryBuffer[0];
 	pQueryOid->Oid = OID_802_11_RSSI;
 
-	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE, &QueryBuffer[0],
-				sizeof(QueryBuffer), &QueryBuffer[0], sizeof(QueryBuffer), &BytesReturned) == FALSE)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't determine the RSSI value for interface '%s'.\n",
-			ctx->desc);
+	if (devioctl_blk
+	    (sockData->devHandle, IOCTL_NDISPROT_QUERY_OID_VALUE,
+	     &QueryBuffer[0], sizeof(QueryBuffer), &QueryBuffer[0],
+	     sizeof(QueryBuffer), &BytesReturned) == FALSE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't determine the RSSI value for interface '%s'.\n",
+			     ctx->desc);
 		return -1;
 	}
 
-	pRssi = (NDIS_802_11_RSSI *)&pQueryOid->Data[0];
+	pRssi = (NDIS_802_11_RSSI *) & pQueryOid->Data[0];
 
 	// According to the windows documentation, the RSSI should vary between
 	// -10 and -200 dBm.  So, we need to figure out a percentage based on that.
 
 	// However, many examples on the net show that valid ranges will run from -50 to -100.
 
-	percentage = (((*pRssi) + 100)*2);    // Make the dBm a positive number, and the lowest value
-		                                  // equal to 0.  (So, the range will now be 0 - 190.)
+	percentage = (((*pRssi) + 100) * 2);	// Make the dBm a positive number, and the lowest value
+	// equal to 0.  (So, the range will now be 0 - 190.)
 
-	if (percentage > 100) percentage = 100;  // Some cards may have a percentage > 100 depending on their sensativity.  In those cases, only return 100. ;)
+	if (percentage > 100)
+		percentage = 100;	// Some cards may have a percentage > 100 depending on their sensativity.  In those cases, only return 100. ;)
 
 	return percentage;
 }
@@ -2422,127 +2412,141 @@ int cardif_windows_wireless_get_percent(context *ctx)
  * @param[in] state   The new state to put the interface in.
  *
  **/
-void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
+void cardif_windows_wireless_set_operstate(context * ctx, uint8_t state)
 {
 	int retval = 0;
 	int dhcpenabled = 0;
 	char *curip = NULL;
 	struct win_sock_data *sockData = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-	if (state == XIF_OPER_UP) 
-	{
-		if (ctx->conn == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Somehow you managed to get to an \"interface up\""
-				" on interface '%s' without a connection being defined?\n", ctx->desc);
-			debug_printf(DEBUG_NORMAL, "Please send your configuration file (edited for "
-				"passwords) to the list.\n");
+	if (state == XIF_OPER_UP) {
+		if (ctx->conn == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Somehow you managed to get to an \"interface up\""
+				     " on interface '%s' without a connection being defined?\n",
+				     ctx->desc);
+			debug_printf(DEBUG_NORMAL,
+				     "Please send your configuration file (edited for "
+				     "passwords) to the list.\n");
 			return;
 		}
 
-		if ((ctx->auths != 0) && (ctx->conn->ip.renew_on_reauth != TRUE))
-		{
+		if ((ctx->auths != 0)
+		    && (ctx->conn->ip.renew_on_reauth != TRUE)) {
 			// Do nothing.
 			return;
 		}
 
 		ctx->auths++;
 
-		switch (ctx->conn->ip.type)
-		{
+		switch (ctx->conn->ip.type) {
 		case CONFIG_IP_USE_NONE:
 			debug_printf(DEBUG_INT, "Not doing anything. ;)\n");
 			break;
 
 		case CONFIG_IP_USE_DHCP:
 			cardif_windows_is_dhcp_enabled(ctx, &dhcpenabled);
-			
-			if (dhcpenabled == FALSE)  // If DHCP is already enabled, don't try to do it again.
+
+			if (dhcpenabled == FALSE)	// If DHCP is already enabled, don't try to do it again.
 			{
-				sockData = (struct win_sock_data *)ctx->sockData;
+				sockData =
+				    (struct win_sock_data *)ctx->sockData;
 
-				if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE)) return;
+				if (!xsup_assert
+				    ((sockData != NULL), "sockData != NULL",
+				     FALSE))
+					return;
 
-				if (sockData->osver < 2)
-				{
+				if (sockData->osver < 2) {
 					// Windows XP and earlier
-					if (win_ip_manip_enable_dhcp(ctx) != 0)
-					{
-						debug_printf(DEBUG_NORMAL, "Unable to enable DHCP!\n");
+					if (win_ip_manip_enable_dhcp(ctx) != 0) {
+						debug_printf(DEBUG_NORMAL,
+							     "Unable to enable DHCP!\n");
 					}
-				}
-				else
-				{
-					debug_printf(DEBUG_INT, "Turning on DHCP.\n");
-					retval = cardif_windows_wmi_enable_dhcp(ctx);
-					if (retval == 94)
-					{
+				} else {
+					debug_printf(DEBUG_INT,
+						     "Turning on DHCP.\n");
+					retval =
+					    cardif_windows_wmi_enable_dhcp(ctx);
+					if (retval == 94) {
 						// Try again.
-						retval = cardif_windows_wmi_enable_dhcp(ctx);
-						if (retval != 0)
-						{
-							debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
+						retval =
+						    cardif_windows_wmi_enable_dhcp
+						    (ctx);
+						if (retval != 0) {
+							debug_printf
+							    (DEBUG_NORMAL,
+							     "Couldn't enable DHCP on interface '%s'.  Error was %d.\n",
+							     ctx->desc, retval);
 							break;
 						}
-					}
-					else if (retval != 0)
-					{
-						debug_printf(DEBUG_NORMAL, "Couldn't enable DHCP on interface '%s'.  Error was %d.\n", ctx->desc, retval);
+					} else if (retval != 0) {
+						debug_printf(DEBUG_NORMAL,
+							     "Couldn't enable DHCP on interface '%s'.  Error was %d.\n",
+							     ctx->desc, retval);
 						break;
 					}
 				}
 			}
 
-			debug_printf(DEBUG_NORMAL, "Requesting DHCP information for '%s'.\n", ctx->desc);
+			debug_printf(DEBUG_NORMAL,
+				     "Requesting DHCP information for '%s'.\n",
+				     ctx->desc);
 
-			if (TEST_FLAG(ctx->flags, DHCP_RELEASE_RENEW))
-			{
+			if (TEST_FLAG(ctx->flags, DHCP_RELEASE_RENEW)) {
 				cardif_windows_release_renew(ctx);
-			}
-			else
-			{
+			} else {
 				cardif_windows_renew_ip(ctx);
 			}
 			break;
 
 		case CONFIG_IP_USE_STATIC:
-			if (ctx->auths > 1) return;   // We don't need to "renew" a static IP address.
+			if (ctx->auths > 1)
+				return;	// We don't need to "renew" a static IP address.
 
-			debug_printf(DEBUG_NORMAL, "Setting a static IP for %s.\n", ctx->desc);
-			retval = cardif_windows_set_static_ip(ctx, ctx->conn->ip.ipaddr, ctx->conn->ip.netmask, ctx->conn->ip.gateway);
-			if (retval != 0)
-			{
-				debug_printf(DEBUG_NORMAL, "Failed to request setting of a static IP address on interface '%s'!\n", ctx->desc);
+			debug_printf(DEBUG_NORMAL,
+				     "Setting a static IP for %s.\n",
+				     ctx->desc);
+			retval =
+			    cardif_windows_set_static_ip(ctx,
+							 ctx->conn->ip.ipaddr,
+							 ctx->conn->ip.netmask,
+							 ctx->conn->ip.gateway);
+			if (retval != 0) {
+				debug_printf(DEBUG_NORMAL,
+					     "Failed to request setting of a static IP address on interface '%s'!\n",
+					     ctx->desc);
 				break;
 			}
 			break;
 
 		default:
-			debug_printf(DEBUG_NORMAL, "Invalid IP address setting type on interface '%s'.  Not sure what you are thinking!?\n", ctx->desc);
+			debug_printf(DEBUG_NORMAL,
+				     "Invalid IP address setting type on interface '%s'.  Not sure what you are thinking!?\n",
+				     ctx->desc);
 			break;
 		}
-	} else if (state == XIF_OPER_DORMANT)
-	{
+	} else if (state == XIF_OPER_DORMANT) {
 		/// XXX Make this behavior configurable!
-		if ((ctx != NULL) && (ctx->conn != NULL))
-		{
-			switch (ctx->conn->ip.type)
-			{
+		if ((ctx != NULL) && (ctx->conn != NULL)) {
+			switch (ctx->conn->ip.type) {
 			case CONFIG_IP_USE_DHCP:
 				// Only do this if we have not authed yet.  Otherwise on Cisco switches we end up
 				// bouncing the connection each time we reauth.  :-(
-				if (ctx->auths == 0)
-				{
-					cardif_windows_is_dhcp_enabled(ctx, &dhcpenabled);
-			
-					if (dhcpenabled == FALSE)  // If DHCP is already enabled, don't try to do it again.
+				if (ctx->auths == 0) {
+					cardif_windows_is_dhcp_enabled(ctx,
+								       &dhcpenabled);
+
+					if (dhcpenabled == FALSE)	// If DHCP is already enabled, don't try to do it again.
 					{
 						cardif_windows_enable_dhcp(ctx);
 					}
 
-					debug_printf(DEBUG_INT, "Requesting lease renew.\n");
+					debug_printf(DEBUG_INT,
+						     "Requesting lease renew.\n");
 					cardif_windows_release_renew(ctx);
 				}
 				break;
@@ -2558,18 +2562,18 @@ void cardif_windows_wireless_set_operstate(context *ctx, uint8_t state)
  * 
  * \retval 0..255   The number of PMKIDs that are supported.
  **/
-uint8_t cardif_windows_wireless_get_num_pmkids(context *ctx)
+uint8_t cardif_windows_wireless_get_num_pmkids(context * ctx)
 {
 	PNDIS_802_11_CAPABILITY pCapa = NULL;
 	uint8_t result;
 
-	if (cardif_windows_get_capability(ctx, &pCapa) != XENONE)
-	{
-		debug_printf(DEBUG_INT, "Unable to determine the number of supported PMKIDs.  Returning 0.\n");
+	if (cardif_windows_get_capability(ctx, &pCapa) != XENONE) {
+		debug_printf(DEBUG_INT,
+			     "Unable to determine the number of supported PMKIDs.  Returning 0.\n");
 		return 0;
 	}
 
-	result = (uint8_t)pCapa->NoOfPMKIDs;
+	result = (uint8_t) pCapa->NoOfPMKIDs;
 
 	FREE(pCapa);
 
@@ -2584,7 +2588,7 @@ uint8_t cardif_windows_wireless_get_num_pmkids(context *ctx)
  * \retval TRUE on success
  * \retval FALSE on failure
  **/
-int cardif_windows_wireless_apply_pmkids(context *ctx, pmksa_list *pmklist)
+int cardif_windows_wireless_apply_pmkids(context * ctx, pmksa_list * pmklist)
 {
 	wireless_ctx *wctx = NULL;
 	NDIS_802_11_PMKID *pPMKids = NULL;
@@ -2598,59 +2602,68 @@ int cardif_windows_wireless_apply_pmkids(context *ctx, pmksa_list *pmklist)
 	UCHAR *Buffer;
 	PNDISPROT_SET_OID pSetOid = NULL;
 
-	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return FALSE;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return FALSE;
 
-	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE)) return FALSE;
+	if (!xsup_assert
+	    ((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
+		return FALSE;
 
-	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE)) return FALSE;
+	if (!xsup_assert
+	    ((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE))
+		return FALSE;
 
 	wctx = ctx->intTypeData;
 
 	sockData = ctx->sockData;
 
-	if (wctx->pmkids_supported > 0)
-	{
-		for (i = (wctx->pmkids_supported-1); i >= 0; i--)
-		{
-			if (pmklist[i].cache_element != NULL) numelems++;
+	if (wctx->pmkids_supported > 0) {
+		for (i = (wctx->pmkids_supported - 1); i >= 0; i--) {
+			if (pmklist[i].cache_element != NULL)
+				numelems++;
 		}
 	}
-
 	// If we don't have any elements in the list, we want to send an empty element.
 	if (numelems == 0)
-		buflen = FIELD_OFFSET(NDIS_802_11_PMKID, BSSIDInfo) + sizeof(BSSID_INFO);
+		buflen =
+		    FIELD_OFFSET(NDIS_802_11_PMKID,
+				 BSSIDInfo) + sizeof(BSSID_INFO);
 	else
-		buflen = FIELD_OFFSET(NDIS_802_11_PMKID, BSSIDInfo) + (numelems * sizeof(BSSID_INFO));
+		buflen =
+		    FIELD_OFFSET(NDIS_802_11_PMKID,
+				 BSSIDInfo) + (numelems * sizeof(BSSID_INFO));
 
 	Buffer = Malloc(buflen + sizeof(NDISPROT_SET_OID));
-	if (Buffer == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to allocate memory to store the PMKID cache we want to apply to interface '%s'!\n", ctx->desc);
+	if (Buffer == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to allocate memory to store the PMKID cache we want to apply to interface '%s'!\n",
+			     ctx->desc);
 		return FALSE;
 	}
 
-	pSetOid = (PNDISPROT_SET_OID)&Buffer[0];
+	pSetOid = (PNDISPROT_SET_OID) & Buffer[0];
 	pSetOid->Oid = OID_802_11_PMKID;
 
-	pPMKids = (PNDIS_802_11_PMKID)pSetOid->Data;
+	pPMKids = (PNDIS_802_11_PMKID) pSetOid->Data;
 
 	pPMKids->Length = buflen;
 
-	if (numelems > 0)
-	{
+	if (numelems > 0) {
 		pPMKids->BSSIDInfoCount = numelems;
 
-		if ((wctx->pmkids_supported > 0) && (numelems > 0))
-		{
-			for (i = 1; i <= numelems; i++)
-			{
-				memcpy(pPMKids->BSSIDInfo[i-1].BSSID, pmklist[wctx->pmkids_supported-i].cache_element->authenticator_mac, 6);
-				memcpy(pPMKids->BSSIDInfo[i-1].PMKID, pmklist[wctx->pmkids_supported-i].cache_element->pmkid, sizeof(NDIS_802_11_PMKID_VALUE));
+		if ((wctx->pmkids_supported > 0) && (numelems > 0)) {
+			for (i = 1; i <= numelems; i++) {
+				memcpy(pPMKids->BSSIDInfo[i - 1].BSSID,
+				       pmklist[wctx->pmkids_supported -
+					       i].cache_element->
+				       authenticator_mac, 6);
+				memcpy(pPMKids->BSSIDInfo[i - 1].PMKID,
+				       pmklist[wctx->pmkids_supported -
+					       i].cache_element->pmkid,
+				       sizeof(NDIS_802_11_PMKID_VALUE));
 			}
 		}
-	}
-	else
-	{
+	} else {
 		// Force an empty cache entry to be written.
 		pPMKids->BSSIDInfoCount = 1;
 	}
@@ -2658,44 +2671,44 @@ int cardif_windows_wireless_apply_pmkids(context *ctx, pmksa_list *pmklist)
 	debug_printf(DEBUG_INT, "PMKSA set OID (%d) :\n", pPMKids->Length);
 	debug_hex_dump(DEBUG_INT, pSetOid->Data, pPMKids->Length);
 
-	if (devioctl_blk(sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, Buffer,
-				(buflen + sizeof(NDISPROT_SET_OID)), NULL, 0, &BytesReturned) == FALSE)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't set PMKIDs for interface '%s'.\n",
-			ctx->desc);
+	if (devioctl_blk
+	    (sockData->devHandle, IOCTL_NDISPROT_SET_OID_VALUE, Buffer,
+	     (buflen + sizeof(NDISPROT_SET_OID)), NULL, 0,
+	     &BytesReturned) == FALSE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't set PMKIDs for interface '%s'.\n",
+			     ctx->desc);
 		FREE(Buffer);
 		return FALSE;
 	}
-	
-//	debug_printf(DEBUG_NORMAL, "%d PMKID(s) set for interface '%s'.\n", pPMKids->BSSIDInfoCount, ctx->desc);
+//      debug_printf(DEBUG_NORMAL, "%d PMKID(s) set for interface '%s'.\n", pPMKids->BSSIDInfoCount, ctx->desc);
 	FREE(Buffer);
 	return TRUE;
 }
 
 struct cardif_funcs cardif_windows_wireless_driver = {
-  cardif_windows_wireless_scan,                       // .scan
-  cardif_windows_wireless_disassociate,               // .disassociate
-  cardif_windows_wireless_set_WEP_key,                // .set_wep_key
-  cardif_windows_wireless_set_tkip_key,               // .set_tkip_key
-  cardif_windows_wireless_set_ccmp_key,               // .set_ccmp_key
-  cardif_windows_wireless_delete_key,                 // .delete_key
-  cardif_windows_wireless_associate,                  // .associate
-  cardif_windows_wireless_get_ssid,                   // .get_ssid
-  cardif_windows_wireless_get_bssid,                  // .get_bssid
-  NULL,                                               // .wpa_state
-  NULL,                                               // .wpa
-  cardif_windows_wireless_wep_associate,              // .wep_associate
-  NULL,                                               // .countermeasures
-  cardif_windows_wireless_drop_unencrypted,           // .drop_unencrypted
-  cardif_windows_wireless_get_wpa_ie,                 // .get_wpa_ie
-  cardif_windows_wireless_get_wpa2_ie,                // .get_wpa2_ie
-  cardif_windows_wireless_enc_disable,                // .enc_disable
-  cardif_windows_wireless_enc_capabilities,			  // .enc_capabilities
-  cardif_windows_wireless_set_bssid,                  // .set_bssid
-  cardif_windows_wireless_set_operstate,			  // .set_operstate
-  NULL,												  // .set_linkmode
-  cardif_windows_wireless_get_percent,                // .get_signal_percent
-  cardif_windows_wireless_apply_pmkids,				  // .apply_pmkid_data
-  cardif_windows_wireless_get_freq,                   // .get_freq
+	cardif_windows_wireless_scan,	// .scan
+	cardif_windows_wireless_disassociate,	// .disassociate
+	cardif_windows_wireless_set_WEP_key,	// .set_wep_key
+	cardif_windows_wireless_set_tkip_key,	// .set_tkip_key
+	cardif_windows_wireless_set_ccmp_key,	// .set_ccmp_key
+	cardif_windows_wireless_delete_key,	// .delete_key
+	cardif_windows_wireless_associate,	// .associate
+	cardif_windows_wireless_get_ssid,	// .get_ssid
+	cardif_windows_wireless_get_bssid,	// .get_bssid
+	NULL,			// .wpa_state
+	NULL,			// .wpa
+	cardif_windows_wireless_wep_associate,	// .wep_associate
+	NULL,			// .countermeasures
+	cardif_windows_wireless_drop_unencrypted,	// .drop_unencrypted
+	cardif_windows_wireless_get_wpa_ie,	// .get_wpa_ie
+	cardif_windows_wireless_get_wpa2_ie,	// .get_wpa2_ie
+	cardif_windows_wireless_enc_disable,	// .enc_disable
+	cardif_windows_wireless_enc_capabilities,	// .enc_capabilities
+	cardif_windows_wireless_set_bssid,	// .set_bssid
+	cardif_windows_wireless_set_operstate,	// .set_operstate
+	NULL,			// .set_linkmode
+	cardif_windows_wireless_get_percent,	// .get_signal_percent
+	cardif_windows_wireless_apply_pmkids,	// .apply_pmkid_data
+	cardif_windows_wireless_get_freq,	// .get_freq
 };
-

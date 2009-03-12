@@ -49,38 +49,35 @@
  * \retval xmlNodePtr containing the <Devices> tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_devices_create_tree(struct xsup_devices *conf_devs,
-								 char write_all)
+xmlNodePtr xsupconfwrite_devices_create_tree(struct xsup_devices * conf_devs,
+					     char write_all)
 {
 	xmlNodePtr devicesnode = NULL;
 	xmlNodePtr intNode = NULL;
 	struct xsup_interfaces *cur = NULL;
 
-	if (conf_devs == NULL) return NULL;
+	if (conf_devs == NULL)
+		return NULL;
 
 	// Create the root node for the <Devices> block.
-	devicesnode = xmlNewNode(NULL, (xmlChar *)"Devices");
-	if (devicesnode == NULL)
-	{
+	devicesnode = xmlNewNode(NULL, (xmlChar *) "Devices");
+	if (devicesnode == NULL) {
 #ifdef WRITE_DEVICES_DEBUG
 		printf("Couldn't allocate memory to create <Devices> tree!\n");
-#endif  
+#endif
 		return NULL;
 	}
 
 	cur = conf_devs->interf;
 
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		intNode = xsupconfwrite_interface_create_tree(cur, write_all);
-		if (intNode == NULL)
-		{
+		if (intNode == NULL) {
 			free(devicesnode);
 			return NULL;
 		}
 
-		if (xmlAddChild(devicesnode, intNode) == NULL)
-		{
+		if (xmlAddChild(devicesnode, intNode) == NULL) {
 			free(devicesnode);
 			return NULL;
 		}

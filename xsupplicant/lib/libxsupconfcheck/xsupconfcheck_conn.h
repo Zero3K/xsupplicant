@@ -9,6 +9,6 @@
 #ifndef __XSUPCONFCHECK_CONFIG_H__
 #define __XSUPCONFCHECK_CONFIG_H__
 
-int xsupconfcheck_conn_check(context *ctx, struct config_connection *, int);
+int xsupconfcheck_conn_check(context * ctx, struct config_connection *, int);
 
-#endif // __XSUPCONFCHECK_CONFIG_H__
+#endif				// __XSUPCONFCHECK_CONFIG_H__

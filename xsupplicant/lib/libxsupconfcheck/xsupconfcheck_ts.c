@@ -25,7 +25,10 @@
 extern PCCERT_CONTEXT cert_find_by_long_name(char *certname);
 
 #else
-void cert_find_by_long_name(char *certname) {}
+void cert_find_by_long_name(char *certname)
+{
+}
+
 #warning You need to define a certificate handler!
 #endif
 
@@ -47,8 +50,7 @@ int xsupconfcheck_ts_file_exists(char *filename)
 	FILE *fp = NULL;
 
 	fp = fopen(filename, "r");
-	if (fp == NULL)
-	{
+	if (fp == NULL) {
 		return 0;
 	}
 
@@ -74,45 +76,46 @@ int xsupconfcheck_ts_check(struct config_trusted_server *ts, int log)
 	PCCERT_CONTEXT mycert = NULL;
 #endif
 
-	if (ts->store_type == NULL)
-	{
-		error_prequeue_add("No store type is set in the configuration file!");
+	if (ts->store_type == NULL) {
+		error_prequeue_add
+		    ("No store type is set in the configuration file!");
 		return -1;
 	}
 
-	if (strcmp(ts->store_type, "WINDOWS") == 0)
-	{
+	if (strcmp(ts->store_type, "WINDOWS") == 0) {
 #ifndef WINDOWS
-		error_prequeue_add("Trusted server configuration is set to point to Windows, but this OS doesn't seem to be Windows.");
+		error_prequeue_add
+		    ("Trusted server configuration is set to point to Windows, but this OS doesn't seem to be Windows.");
 		retval = -1;
 #else
 		// Now that we have cert chaining, the code below seems broken.
-		for (i = 0; i < ts->num_locations; i++)
-		{
-			mycert = win_cert_handler_get_from_win_store(ts->store_type, ts->location[i]);
-			if (mycert == NULL)
-			{
-				if (log == TRUE) error_prequeue_add("Certificate specified by the trusted server configuration couldn't be found!");
+		for (i = 0; i < ts->num_locations; i++) {
+			mycert =
+			    win_cert_handler_get_from_win_store(ts->store_type,
+								ts->
+								location[i]);
+			if (mycert == NULL) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Certificate specified by the trusted server configuration couldn't be found!");
 				retval = -1;
 			}
 		}
 #endif
 	}
 
-	if (strcmp(ts->store_type, "FILE") == 0)
-	{
-		for (i = 0; i < ts->num_locations; i++)
-		{
-			if (xsupconfcheck_ts_file_exists(ts->location[i]) != 1)
-			{
-				if (log == TRUE) error_prequeue_add("Certificate file specified by the trusted server configuration doesn't exist!");
+	if (strcmp(ts->store_type, "FILE") == 0) {
+		for (i = 0; i < ts->num_locations; i++) {
+			if (xsupconfcheck_ts_file_exists(ts->location[i]) != 1) {
+				if (log == TRUE)
+					error_prequeue_add
+					    ("Certificate file specified by the trusted server configuration doesn't exist!");
 				retval = -1;
 			}
 		}
 	}
 
-	if (strcmp(ts->store_type, "DIRECTORY") == 0)
-	{
+	if (strcmp(ts->store_type, "DIRECTORY") == 0) {
 		// XXX Todo.
 	}
 

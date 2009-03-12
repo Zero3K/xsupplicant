@@ -15,4 +15,4 @@ extern parser peap_phase2[];
 
 void *xsupconfig_parse_eap_peap_phase2(void **, uint8_t, xmlNodePtr);
 
-#endif // __XSUPCONFIG_PARSE_EAP_PEAP_PHASE2_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_PEAP_PHASE2_H__

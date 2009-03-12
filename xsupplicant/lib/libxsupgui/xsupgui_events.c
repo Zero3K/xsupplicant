@@ -55,26 +55,23 @@ int xsupgui_events_generate_log_string(char **ints, char **logline)
 	(*logline) = NULL;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
+	if (doc == NULL)
 		return IPC_ERROR_NULL_DOCUMENT;
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE;
 		goto gen_log_done;
 	}
 
 	log = xsupgui_request_find_node(root->children, "Log");
-	if (log == NULL) 
-	{
+	if (log == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto gen_log_done;
 	}
 
 	t = xsupgui_request_find_node(log->children, "Interface");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto gen_log_done;
 	}
@@ -84,8 +81,7 @@ int xsupgui_events_generate_log_string(char **ints, char **logline)
 	xmlFree(content);
 
 	msg = xsupgui_request_find_node(log->children, "Message");
-	if (msg == NULL)
-	{
+	if (msg == NULL) {
 		retval = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto gen_log_done;
 	}
@@ -94,7 +90,7 @@ int xsupgui_events_generate_log_string(char **ints, char **logline)
 	(*logline) = _strdup((char *)content);
 	xmlFree(content);
 
-gen_log_done:
+ gen_log_done:
 
 	return retval;
 }
@@ -115,7 +111,8 @@ gen_log_done:
  * \retval  -1 on error  (all data will be invalid)
  * \retval   0 on success
  **/
-int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *newstate, uint32_t *tncconnectionid)
+int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate,
+				    int *newstate, uint32_t * tncconnectionid)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL;
@@ -123,19 +120,17 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	char *value = NULL;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
+	if (doc == NULL)
 		return -1;
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = -1;
 		goto state_change_done;
 	}
 
 	t = xsupgui_request_find_node(root->children, "State_Transition");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto state_change_done;
 	}
@@ -143,8 +138,7 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	t = t->children;
 
 	t = xsupgui_request_find_node(t, "Interface");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto state_change_done;
 	}
@@ -154,8 +148,7 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	xmlFree(value);
 
 	t = xsupgui_request_find_node(t, "Statemachine");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto state_change_done;
 	}
@@ -166,8 +159,7 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	value = NULL;
 
 	t = xsupgui_request_find_node(t, "Old_State");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto state_change_done;
 	}
@@ -178,8 +170,7 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	value = NULL;
 
 	t = xsupgui_request_find_node(t, "New_State");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto state_change_done;
 	}
@@ -189,24 +180,21 @@ int xsupgui_events_get_state_change(char **intf, int *sm, int *oldstate, int *ne
 	xmlFree(value);
 	value = NULL;
 
-    // Note that if this tag doesn't exist, we still need to return
-    // a value, otherwise non-tnc builds will fail here.
-    t = xsupgui_request_find_node(t, "TNC_Connection_ID");
-    if (t == NULL)
-    {
-        // For non-tnc versions of XSupplicant.
-        (*tncconnectionid) = 0xFFFFFFFF;
-    }
-    else
-    {
-      value = (char *)xmlNodeGetContent(t);
-        (*tncconnectionid) = atoi(value);
-	xmlFree(value);
-    }
+	// Note that if this tag doesn't exist, we still need to return
+	// a value, otherwise non-tnc builds will fail here.
+	t = xsupgui_request_find_node(t, "TNC_Connection_ID");
+	if (t == NULL) {
+		// For non-tnc versions of XSupplicant.
+		(*tncconnectionid) = 0xFFFFFFFF;
+	} else {
+		value = (char *)xmlNodeGetContent(t);
+		(*tncconnectionid) = atoi(value);
+		xmlFree(value);
+	}
 
-    value = NULL;
+	value = NULL;
 
-state_change_done:
+ state_change_done:
 
 	return retval;
 }
@@ -226,7 +214,8 @@ long int xsupgui_events_get_event_num(xmlDocPtr doc)
 	long int retval = 0;
 
 	n = xmlDocGetRootElement(doc);
-	if (n == NULL) return -1;
+	if (n == NULL)
+		return -1;
 
 	/**
 	 *  All event checks below should be checked from most likely to
@@ -235,69 +224,60 @@ long int xsupgui_events_get_event_num(xmlDocPtr doc)
 	 **/
 
 	t = xsupgui_request_find_node(n->children, "State_Transition");
-	if (t != NULL)
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_STATEMACHINE;
 		goto event_num_done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "Log");
-	if (t != NULL) 
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_LOG;
 		goto event_num_done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "UI_Event");
-	if (t != NULL)
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_UI;
 		goto event_num_done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "Wireless_Scan_Complete");
-	if (t != NULL)
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_SCAN_COMPLETE;
 		goto event_num_done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "TNC_Event");
-	if (t != NULL)
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_TNC_UI;
 		goto event_num_done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "TNC_Request_Event");
-	if (t != NULL)
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_TNC_UI_REQUEST;
 		goto event_num_done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "TNC_Request_Batch_Event");
-	if (t != NULL)
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_TNC_UI_BATCH_REQUEST;
 		goto event_num_done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "Error_Event");
-	if (t != NULL)
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_ERROR;
 		goto event_num_done;
 	}
 
 	t = xsupgui_request_find_node(n->children, "EAP_Password_Request");
-	if (t != NULL)
-	{
+	if (t != NULL) {
 		retval = IPC_EVENT_REQUEST_PWD;
 		goto event_num_done;
 	}
 
-event_num_done:
+ event_num_done:
 	return retval;
 }
 
@@ -320,19 +300,17 @@ int xsupgui_events_get_scan_complete_interface(char **intf)
 	int retval = 0;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
+	if (doc == NULL)
 		return -1;
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = -1;
 		goto done;
 	}
 
 	t = xsupgui_request_find_node(root->children, "Wireless_Scan_Complete");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -340,8 +318,7 @@ int xsupgui_events_get_scan_complete_interface(char **intf)
 	t = t->children;
 
 	t = xsupgui_request_find_node(t, "Interface");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -350,7 +327,7 @@ int xsupgui_events_get_scan_complete_interface(char **intf)
 	(*intf) = _strdup((char *)content);
 	xmlFree(content);
 
-done:
+ done:
 
 	return retval;
 }
@@ -369,7 +346,8 @@ done:
  * \retval   0 unknown  (all data should be considered invalid)
  * \retval  >=1 success
  **/
-int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char **eapmethod, char **chalstr)
+int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName,
+					char **eapmethod, char **chalstr)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL;
@@ -377,19 +355,17 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 	int retval = 0;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
+	if (doc == NULL)
 		return -1;
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = -1;
 		goto done;
 	}
 
 	t = xsupgui_request_find_node(root->children, "EAP_Password_Request");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -397,8 +373,7 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 	t = t->children;
 
 	t = xsupgui_request_find_node(t, "Connection_Name");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -408,8 +383,7 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 	xmlFree(content);
 
 	t = xsupgui_request_find_node(t, "Interface_Name");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -419,8 +393,7 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 	xmlFree(content);
 
 	t = xsupgui_request_find_node(t, "EAP_Method");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -430,8 +403,7 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 	xmlFree(content);
 
 	t = xsupgui_request_find_node(t, "Challenge_String");
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -440,7 +412,7 @@ int xsupgui_events_get_passwd_challenge(char **conn_name, char **intName, char *
 	(*chalstr) = _strdup((char *)content);
 	xmlFree(content);
 
-done:
+ done:
 
 	return retval;
 }
@@ -458,19 +430,17 @@ void xsupgui_events_build_error(char **errstr, char *instr, char *arg)
 {
 	char *mystr = NULL;
 
-	if (instr == NULL) (*errstr) = NULL;  // Nothing to do.
+	if (instr == NULL)
+		(*errstr) = NULL;	// Nothing to do.
 
-	if (arg == NULL)
-	{
+	if (arg == NULL) {
 		(*errstr) = strdup(instr);
 		return;
 	}
-
 	// This malloc() will result in a buffer that is at least 2 bytes larger than
 	// what we really need.  So, we should be safe from overflows.
 	mystr = malloc(strlen(instr) + strlen(arg) + 10);
-	if (mystr == NULL)
-	{
+	if (mystr == NULL) {
 		(*errstr) = NULL;
 		return;
 	}
@@ -500,27 +470,26 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 	int code = 0;
 	int retval = 0;
 
-	if (errnum == NULL) return -1;
-	if (errstr == NULL) return -1;
+	if (errnum == NULL)
+		return -1;
+	if (errstr == NULL)
+		return -1;
 
 	(*errnum) = 0;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
-	{
+	if (doc == NULL) {
 		return -1;
 	}
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = -1;
 		goto done;
 	}
 
 	t = xsupgui_request_find_node(root->children, "Error_Event");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -528,8 +497,7 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 	t = t->children;
 
 	n = xsupgui_request_find_node(t, "Error_Code");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -540,8 +508,7 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(n, "Argument");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -549,260 +516,376 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 	value = (char *)xmlNodeGetContent(n);
 
 	// Now, build the string.
-	switch (code)
-	{
+	switch (code) {
 	case IPC_EVENT_ERROR_CANT_START_SCAN:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CANT_START_SCAN_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_CANT_START_SCAN_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_TIMEOUT_WAITING_FOR_ID:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_TIMEOUT_WAITING_FOR_ID_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_TIMEOUT_WAITING_FOR_ID_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_TIMEOUT_DURING_AUTH:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_TIMEOUT_DURING_AUTH_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_TIMEOUT_DURING_AUTH_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_MALLOC:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_MALLOC_STR, value);
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_MALLOC_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_GET_MAC:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_GET_MAC_STR, value);
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_GET_MAC_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_CANT_CREATE_WIRELESS_CTX:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CANT_CREATE_WIRELESS_CTX_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_CANT_CREATE_WIRELESS_CTX_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_SEND_FAILED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SEND_FAILED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_SEND_FAILED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_GETTING_INT_INFO:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_GETTING_INT_INFO_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_GETTING_INT_INFO_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_GETTING_SCAN_DATA:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_GETTING_SCAN_DATA_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_GETTING_SCAN_DATA_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_802_11_AUTH_MODE:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_802_11_AUTH_MODE_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_802_11_AUTH_MODE_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_802_11_ENC_MODE:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_802_11_ENC_MODE_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_802_11_ENC_MODE_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_802_11_INFRA_MODE:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_802_11_INFRA_MODE_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_802_11_INFRA_MODE_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_SSID:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_SSID_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_SSID_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_BSSID:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_BSSID_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_BSSID_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_GETTING_BSSID:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_GETTING_BSSID_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_GETTING_BSSID_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_GETTING_SSID:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_GETTING_SSID_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_GETTING_SSID_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_WEP_KEY:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_WEP_KEY_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_WEP_KEY_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_TKIP_KEY:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_TKIP_KEY_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_TKIP_KEY_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_CCMP_KEY:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_CCMP_KEY_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_CCMP_KEY_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_SETTING_UNKNOWN_KEY:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_SETTING_UNKNOWN_KEY_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_SETTING_UNKNOWN_KEY_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_OVERFLOW_ATTEMPTED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_OVERFLOW_ATTEMPTED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_OVERFLOW_ATTEMPTED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_INVALID_KEY_REQUEST:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_INVALID_KEY_REQUEST_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_INVALID_KEY_REQUEST_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_RESTRICTED_HOURS:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_RESTRICTED_HOURS_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_RESTRICTED_HOURS_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_ACCT_DISABLED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_ACCT_DISABLED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_ACCT_DISABLED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_PASSWD_EXPIRED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_PASSWD_EXPIRED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_PASSWD_EXPIRED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_NO_PERMS:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_PERMS_STR, value);
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_PERMS_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_CHANGING_PASSWD:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CHANGING_PASSWD_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_CHANGING_PASSWD_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_TEXT:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_TEXT_STR, value);
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_TEXT_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_AES_UNWRAP:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_AES_UNWRAP_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_AES_UNWRAP_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_UNKNOWN_KEY_REQUEST:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_UNKNOWN_KEY_REQUEST_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_UNKNOWN_KEY_REQUEST_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_INVALID_PTK:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_INVALID_PTK_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_INVALID_PTK_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_IES_DONT_MATCH:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_IES_DONT_MATCH_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_IES_DONT_MATCH_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_PMK_UNAVAILABLE:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_PMK_UNAVAILABLE_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_PMK_UNAVAILABLE_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_TLS_DECRYPTION_FAILED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_TLS_DECRYPTION_FAILED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_TLS_DECRYPTION_FAILED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_SUPPLICANT_SHUTDOWN_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_NO_IPC_SLOTS:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_IPC_SLOTS_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_NO_IPC_SLOTS_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_UNKNOWN_EAPOL_KEY_TYPE:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_UNKNOWN_EAPOL_KEY_TYPE_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_UNKNOWN_EAPOL_KEY_TYPE_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_INVALID_MIC_VERSION:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_INVALID_MIC_VERSION_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_INVALID_MIC_VERSION_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_UNKNOWN_PEAP_VERSION:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_UNKNOWN_PEAP_VERSION_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_UNKNOWN_PEAP_VERSION_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_NO_WCTX:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_WCTX_STR, value);
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_WCTX_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_CANT_RENEW_DHCP:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CANT_RENEW_DHCP_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_CANT_RENEW_DHCP_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_TO_BIND:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_TO_BIND_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_TO_BIND_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_FAILED_TO_GET_HANDLE:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_FAILED_TO_GET_HANDLE_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_FAILED_TO_GET_HANDLE_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_EVENT_HANDLE_FAILED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_EVENT_HANDLE_FAILED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_EVENT_HANDLE_FAILED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_WMI_ATTACH_FAILED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_WMI_ATTACH_FAILED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_WMI_ATTACH_FAILED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_WMI_ASYNC_FAILED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_WMI_ASYNC_FAILED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_WMI_ASYNC_FAILED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_CANT_ADD_CERT_TO_STORE:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CANT_ADD_CERT_TO_STORE_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_CANT_ADD_CERT_TO_STORE_STR,
+					   value);
 		break;
-		
+
 	case IPC_EVENT_ERROR_CANT_READ_FILE:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CANT_READ_FILE_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_CANT_READ_FILE_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_CERT_CHAIN_IS_INVALID:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_CERT_CHAIN_IS_INVALID_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_CERT_CHAIN_IS_INVALID_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_NOT_SUPPORTED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NOT_SUPPORTED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_NOT_SUPPORTED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_SIM_READER_NOT_FOUND:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SIM_READER_NOT_FOUND_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_SIM_READER_NOT_FOUND_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_SIM_CANT_CONNECT:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SIM_CANT_CONNECT_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_SIM_CANT_CONNECT_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_SIM_CARD_NOT_READY:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SIM_CARD_NOT_READY_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_SIM_CARD_NOT_READY_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_NO_SIM_READERS:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_SIM_READERS_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_NO_SIM_READERS_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_NO_PIN:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_PIN_STR, value);
+		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_NO_PIN_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_BAD_PIN_MORE_ATTEMPTS_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_BAD_PIN_CARD_BLOCKED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_3G_NOT_SUPPORTED:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_3G_NOT_SUPPORTED_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_3G_NOT_SUPPORTED_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_UNKNOWN_SIM_ERROR_STR,
+					   value);
 		break;
 
 	case IPC_EVENT_ERROR_SIM_NOTIFICATION:
-		xsupgui_events_build_error(errstr, IPC_EVENT_ERROR_SIM_NOTIFICATION_STR, value);
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_SIM_NOTIFICATION_STR,
+					   value);
 		break;
 
 	default:
-		xsupgui_events_build_error(errstr, "Unknown error event!", NULL);
+		xsupgui_events_build_error(errstr, "Unknown error event!",
+					   NULL);
 		break;
 	}
 
 	xmlFree(value);
 
-done:
+ done:
 
 	return retval;
 }
@@ -824,22 +907,20 @@ int xsupgui_events_get_ui_event(int *evtnum, char **intname, char **param)
 	xmlNodePtr root = NULL, t = NULL, n = NULL;
 	xmlChar *content = NULL;
 	char *value = NULL;
-	int retval  = 0;
+	int retval = 0;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
+	if (doc == NULL)
 		return -1;
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = -1;
 		goto done;
 	}
 
 	t = xsupgui_request_find_node(root->children, "UI_Event");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -847,8 +928,7 @@ int xsupgui_events_get_ui_event(int *evtnum, char **intname, char **param)
 	t = t->children;
 
 	n = xsupgui_request_find_node(t, "Event_Code");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -860,16 +940,14 @@ int xsupgui_events_get_ui_event(int *evtnum, char **intname, char **param)
 	(*intname) = NULL;
 
 	n = xsupgui_request_find_node(t, "Interface");
-	if (n != NULL)
-	{
-	        content = xmlNodeGetContent(n);
+	if (n != NULL) {
+		content = xmlNodeGetContent(n);
 		(*intname) = _strdup((char *)content);
 		xmlFree(content);
 	}
-	
+
 	n = xsupgui_request_find_node(t, "Parameter");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -878,7 +956,7 @@ int xsupgui_events_get_ui_event(int *evtnum, char **intname, char **param)
 	(*param) = _strdup((char *)content);
 	xmlFree(content);
 
-done:
+ done:
 
 	return retval;
 }
@@ -893,7 +971,7 @@ done:
  * \retval 0 on success
  * \retval <0 on failure
  **/
-int xsupgui_events_get_tnc_ui_event(uint32_t *oui, uint32_t *notification)
+int xsupgui_events_get_tnc_ui_event(uint32_t * oui, uint32_t * notification)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL, n = NULL;
@@ -901,19 +979,17 @@ int xsupgui_events_get_tnc_ui_event(uint32_t *oui, uint32_t *notification)
 	int retval = 0;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
+	if (doc == NULL)
 		return -1;
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = -1;
 		goto done;
 	}
 
 	t = xsupgui_request_find_node(root->children, "TNC_Event");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -921,8 +997,7 @@ int xsupgui_events_get_tnc_ui_event(uint32_t *oui, uint32_t *notification)
 	t = t->children;
 
 	n = xsupgui_request_find_node(t, "OUI");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -933,8 +1008,7 @@ int xsupgui_events_get_tnc_ui_event(uint32_t *oui, uint32_t *notification)
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "Notification");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -944,7 +1018,7 @@ int xsupgui_events_get_tnc_ui_event(uint32_t *oui, uint32_t *notification)
 	(*notification) = atoi(value);
 	xmlFree(value);
 
-done:
+ done:
 
 	return retval;
 }
@@ -962,8 +1036,8 @@ done:
  * \retval 0 on success
  * \retval <0 on failure
  **/
-int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID, 
-											uint32_t *oui, uint32_t *request)
+int xsupgui_events_get_tnc_ui_request_event(uint32_t * imcID, uint32_t * connID,
+					    uint32_t * oui, uint32_t * request)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL, n = NULL;
@@ -971,19 +1045,17 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	int retval = 0;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
+	if (doc == NULL)
 		return -1;
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = -1;
 		goto done;
 	}
 
 	t = xsupgui_request_find_node(root->children, "TNC_Request_Event");
-	if (t == NULL) 
-	{
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -991,8 +1063,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	t = t->children;
 
 	n = xsupgui_request_find_node(t, "imcID");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1003,8 +1074,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "connID");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1015,8 +1085,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "OUI");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1027,8 +1096,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "Request");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1038,7 +1106,7 @@ int xsupgui_events_get_tnc_ui_request_event(uint32_t *imcID, uint32_t *connID,
 	(*request) = atoi(value);
 	xmlFree(value);
 
-done:
+ done:
 
 	return retval;
 }
@@ -1054,7 +1122,11 @@ done:
  * \retval 0 on success
  * \retval <0 on failure.
  **/
-int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *connID, uint32_t *oui, uint32_t *msgid, tnc_msg_batch **batch)
+int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t * imcID,
+						  uint32_t * connID,
+						  uint32_t * oui,
+						  uint32_t * msgid,
+						  tnc_msg_batch ** batch)
 {
 	xmlDocPtr doc = NULL;
 	xmlNodePtr root = NULL, t = NULL, n = NULL, item = NULL;
@@ -1066,19 +1138,18 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	tnc_msg_batch *data = NULL;
 
 	doc = xsupgui_get_event_doc();
-	if (doc == NULL) 
+	if (doc == NULL)
 		return -1;
 
 	root = xmlDocGetRootElement(doc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = -1;
 		goto done;
 	}
 
-	t = xsupgui_request_find_node(root->children, "TNC_Request_Batch_Event");
-	if (t == NULL) 
-	{
+	t = xsupgui_request_find_node(root->children,
+				      "TNC_Request_Batch_Event");
+	if (t == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1086,8 +1157,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	t = t->children;
 
 	n = xsupgui_request_find_node(t, "imcID");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1098,8 +1168,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "connID");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1110,8 +1179,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "OUI");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1122,8 +1190,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "MsgID");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1134,8 +1201,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 	xmlFree(value);
 
 	n = xsupgui_request_find_node(t, "Items");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
@@ -1147,37 +1213,32 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 
 	// "items" contains the number of items that are in the batch.  So
 	// allocate some memory to store the items.
-	data = malloc(((items+1) * sizeof(tnc_msg_batch)));
-	if (data == NULL)
-	{
+	data = malloc(((items + 1) * sizeof(tnc_msg_batch)));
+	if (data == NULL) {
 		retval = -1;
 		goto done;
 	}
 
-	memset(data, 0x00, ((items+1) * sizeof(tnc_msg_batch)));
+	memset(data, 0x00, ((items + 1) * sizeof(tnc_msg_batch)));
 
 	n = xsupgui_request_find_node(t, "Batch");
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = -1;
 		goto done;
 	}
 
 	n = n->children;
 
-	for (i = 0; i < items; i++)
-	{
+	for (i = 0; i < items; i++) {
 		// Now, parse each item in the batch.
 		t = xsupgui_request_find_node(n, "Item");
-		if (t == NULL)
-		{
+		if (t == NULL) {
 			retval = -1;
 			goto done;
 		}
 
 		item = xsupgui_request_find_node(t->children, "imcID");
-		if (item == NULL)
-		{
+		if (item == NULL) {
 			retval = -1;
 			goto done;
 		}
@@ -1187,8 +1248,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 		xmlFree(value);
 
 		item = xsupgui_request_find_node(t->children, "connectionID");
-		if (item == NULL)
-		{
+		if (item == NULL) {
 			retval = -1;
 			goto done;
 		}
@@ -1198,8 +1258,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 		xmlFree(value);
 
 		item = xsupgui_request_find_node(t->children, "OUI");
-		if (item == NULL)
-		{
+		if (item == NULL) {
 			retval = -1;
 			goto done;
 		}
@@ -1209,8 +1268,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 		xmlFree(value);
 
 		item = xsupgui_request_find_node(t->children, "MsgID");
-		if (item == NULL)
-		{
+		if (item == NULL) {
 			retval = -1;
 			goto done;
 		}
@@ -1220,8 +1278,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 		xmlFree(value);
 
 		item = xsupgui_request_find_node(t->children, "Parameter");
-		if (item == NULL)
-		{
+		if (item == NULL) {
 			retval = -1;
 			goto done;
 		}
@@ -1230,12 +1287,9 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 		value = _strdup((char *)content);
 		xmlFree(content);
 
-		if ((value != NULL) || (strlen(value) != 0))
-		{
+		if ((value != NULL) || (strlen(value) != 0)) {
 			data[i].parameter = value;
-		}
-		else
-		{
+		} else {
 			free(value);
 		}
 
@@ -1244,7 +1298,7 @@ int xsupgui_events_get_tnc_ui_batch_request_event(uint32_t *imcID, uint32_t *con
 
 	(*batch) = data;
 
-done:
+ done:
 
 	return retval;
 }
@@ -1254,15 +1308,14 @@ done:
  *
  * @param[in] data   The TNC message batch that we want to free the members of.
  **/
-void xsupgui_events_free_tnc_msg_batch_data(tnc_msg_batch **data)
+void xsupgui_events_free_tnc_msg_batch_data(tnc_msg_batch ** data)
 {
 	int i = 0;
 	tnc_msg_batch *batch = NULL;
 
 	batch = (*data);
 
-	while (batch[i].oui != 0)
-	{
+	while (batch[i].oui != 0) {
 		free(batch[i].parameter);
 		batch[i].parameter = 0;
 
@@ -1273,4 +1326,3 @@ void xsupgui_events_free_tnc_msg_batch_data(tnc_msg_batch **data)
 
 	(*data) = NULL;
 }
-

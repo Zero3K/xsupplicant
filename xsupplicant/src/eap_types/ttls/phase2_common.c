@@ -33,61 +33,56 @@
 #include "src/event_core.h"
 #endif
 
-
-
 /**************************************************************************
  *
  * Create a properly formatted RADIUS attribute value pair.
  *
  **************************************************************************/
 void build_avp(uint32_t avp_value, uint32_t avp_vendor, uint64_t avp_flags,
-               uint8_t *in_value, uint64_t in_value_len, uint8_t *out_value,
-               uint16_t *out_size)
+	       uint8_t * in_value, uint64_t in_value_len, uint8_t * out_value,
+	       uint16_t * out_size)
 {
-  int avp_padded;
-  uint32_t avp_vendor_stuff;
-  uint32_t avp_code;
-  uint32_t bitmask_avp_len;
+	int avp_padded;
+	uint32_t avp_vendor_stuff;
+	uint32_t avp_code;
+	uint32_t bitmask_avp_len;
 
-  if (!xsup_assert((out_size != NULL), "out_size != NULL", FALSE))
-    return;
+	if (!xsup_assert((out_size != NULL), "out_size != NULL", FALSE))
+		return;
 
-  *out_size = 0;
+	*out_size = 0;
 
-  if (!xsup_assert((in_value != NULL), "in_value != NULL", FALSE))
-    return;
+	if (!xsup_assert((in_value != NULL), "in_value != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((out_value != NULL), "out_value != NULL", FALSE))
-    return;
+	if (!xsup_assert((out_value != NULL), "out_value != NULL", FALSE))
+		return;
 
-  avp_code = htonl(avp_value);
-  avp_vendor_stuff = htonl(avp_vendor);
+	avp_code = htonl(avp_value);
+	avp_vendor_stuff = htonl(avp_vendor);
 
-  if (avp_vendor != 0)
-    {
-      in_value_len = in_value_len +4;
-    }
+	if (avp_vendor != 0) {
+		in_value_len = in_value_len + 4;
+	}
 
-  if ((in_value_len % 4) != 0)
-    {
-      avp_padded = (in_value_len + (4 - (in_value_len % 4)));
-    } else {
-      avp_padded = in_value_len;
-    }
-  bitmask_avp_len = htonl((avp_flags << 24) + in_value_len + 8);
+	if ((in_value_len % 4) != 0) {
+		avp_padded = (in_value_len + (4 - (in_value_len % 4)));
+	} else {
+		avp_padded = in_value_len;
+	}
+	bitmask_avp_len = htonl((avp_flags << 24) + in_value_len + 8);
 
-  memset(out_value, 0x00, avp_padded+12);
-  memcpy(&out_value[0], &avp_code, 4);
-  memcpy(&out_value[4], &bitmask_avp_len, 4);
-  if (avp_vendor != 0)
-    {
-      memcpy(&out_value[8], &avp_vendor_stuff, 4);
-      memcpy(&out_value[12], in_value, in_value_len);
-      *out_size = avp_padded+8;
-    } else {
-      memcpy(&out_value[8], in_value, in_value_len);
-      *out_size = avp_padded+8;
-    }
+	memset(out_value, 0x00, avp_padded + 12);
+	memcpy(&out_value[0], &avp_code, 4);
+	memcpy(&out_value[4], &bitmask_avp_len, 4);
+	if (avp_vendor != 0) {
+		memcpy(&out_value[8], &avp_vendor_stuff, 4);
+		memcpy(&out_value[12], in_value, in_value_len);
+		*out_size = avp_padded + 8;
+	} else {
+		memcpy(&out_value[8], in_value, in_value_len);
+		*out_size = avp_padded + 8;
+	}
 }
 
 /************************************************************************
@@ -96,13 +91,13 @@ void build_avp(uint32_t avp_value, uint32_t avp_vendor, uint64_t avp_flags,
  * material for PAP/CHAP/MSCHAP/MSCHAPv2.
  *
  ************************************************************************/
-uint8_t *implicit_challenge(eap_type_data *eapdata)
+uint8_t *implicit_challenge(eap_type_data * eapdata)
 {
-  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+		return NULL;
 
-  return tls_funcs_gen_keyblock(eapdata->eap_data, TLS_FUNCS_CLIENT_FIRST,
-				TTLS_CHALLENGE,	TTLS_CHALLENGE_SIZE);
+	return tls_funcs_gen_keyblock(eapdata->eap_data, TLS_FUNCS_CLIENT_FIRST,
+				      TTLS_CHALLENGE, TTLS_CHALLENGE_SIZE);
 }
 
 /*******************************************************************
@@ -112,24 +107,24 @@ uint8_t *implicit_challenge(eap_type_data *eapdata)
  *******************************************************************/
 uint8_t *build_request_id(uint8_t reqId)
 {
-  struct eap_header *eaphdr;
-  uint8_t *buffer = NULL;
+	struct eap_header *eaphdr;
+	uint8_t *buffer = NULL;
 
-  buffer = Malloc(sizeof(struct eap_header));
-  if (buffer == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store request "
-		   "identity packet!\n");
-	  ipc_events_malloc_failed(NULL);
-      return NULL;
-    }
+	buffer = Malloc(sizeof(struct eap_header));
+	if (buffer == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store request "
+			     "identity packet!\n");
+		ipc_events_malloc_failed(NULL);
+		return NULL;
+	}
 
-  eaphdr = (struct eap_header *)buffer;
+	eaphdr = (struct eap_header *)buffer;
 
-  eaphdr->eap_code = EAP_REQUEST_PKT;
-  eaphdr->eap_identifier = reqId;
-  eaphdr->eap_length = ntohs(sizeof(struct eap_header));
-  eaphdr->eap_type = EAP_TYPE_IDENTITY;
+	eaphdr->eap_code = EAP_REQUEST_PKT;
+	eaphdr->eap_identifier = reqId;
+	eaphdr->eap_length = ntohs(sizeof(struct eap_header));
+	eaphdr->eap_type = EAP_TYPE_IDENTITY;
 
-  return buffer;
+	return buffer;
 }

@@ -36,14 +36,14 @@ struct interfaces *interfaces_alloc(struct interfaces **root_int)
 	struct interfaces *newint = NULL;
 
 	newint = Malloc(sizeof(struct interfaces));
-	if (newint == NULL) 
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to allocate memory for the interface cache!\n");
+	if (newint == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to allocate memory for the interface cache!\n");
 		ipc_events_malloc_failed(NULL);
 		return NULL;
 	}
 
-	liblist_add_to_tail((genlist **)root_int, (genlist *)newint);
+	liblist_add_to_tail((genlist **) root_int, (genlist *) newint);
 
 	return newint;
 }
@@ -51,14 +51,15 @@ struct interfaces *interfaces_alloc(struct interfaces **root_int)
 /**
  *  Add information about an interface to our interface cache.
  **/
-int interfaces_add(char *intname, char *desc, char *mac, unsigned char is_wireless)
+int interfaces_add(char *intname, char *desc, char *mac,
+		   unsigned char is_wireless)
 {
 	struct interfaces *cur = NULL;
 
 	cur = interfaces_alloc(&interface_cache);
-	if (cur == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't allocate memory for interface cache!\n");
+	if (cur == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory for interface cache!\n");
 		return -1;
 	}
 
@@ -90,7 +91,7 @@ struct interfaces *interfaces_get_by_mac(char *mac)
 	cur = interface_cache;
 
 	while ((cur != NULL) && (memcmp(cur->mac, mac, 6) != 0))
-			cur = cur->next;
+		cur = cur->next;
 
 	return cur;
 }
@@ -104,7 +105,8 @@ char *interfaces_get_name_from_mac(char *mac)
 
 	cur = interfaces_get_by_mac(mac);
 
-	if (cur == NULL) return NULL;
+	if (cur == NULL)
+		return NULL;
 
 	return cur->intname;
 }
@@ -118,7 +120,8 @@ char *interfaces_get_desc_from_mac(char *mac)
 
 	cur = interfaces_get_by_mac(mac);
 
-	if (cur == NULL) return NULL;
+	if (cur == NULL)
+		return NULL;
 
 	return cur->desc;
 }
@@ -133,12 +136,11 @@ void interfaces_dump_cache()
 	cur = interface_cache;
 
 	debug_printf(DEBUG_INT, "\n\n\nInterface Cache : \n\n");
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		debug_printf(DEBUG_INT, "Description : %s\n", cur->desc);
 		debug_printf(DEBUG_INT, "\tDevice Name : %s\n", cur->intname);
 		debug_printf(DEBUG_INT, "\tMAC address : ");
-		debug_hex_printf(DEBUG_INT, (uint8_t *)cur->mac, 6);
+		debug_hex_printf(DEBUG_INT, (uint8_t *) cur->mac, 6);
 		debug_printf_nl(DEBUG_INT, "\n");
 
 		cur = cur->next;
@@ -171,16 +173,17 @@ int interfaces_delete(char *intdesc)
 {
 	struct interfaces *cur = NULL, *last = NULL;
 
-	if (intdesc == NULL) return -1;
+	if (intdesc == NULL)
+		return -1;
 
 	interfaces_dump_cache();
 
 	cur = interface_cache;
 
-	if (cur == NULL) return -1;
+	if (cur == NULL)
+		return -1;
 
-	if (strcmp(cur->desc, intdesc) == 0)
-	{
+	if (strcmp(cur->desc, intdesc) == 0) {
 		interface_cache = cur->next;
 
 		interfaces_delete_node((void **)&cur);
@@ -191,13 +194,13 @@ int interfaces_delete(char *intdesc)
 	last = cur;
 	cur = cur->next;
 
-	while ((cur != NULL) && (strcmp(cur->desc, intdesc) != 0))
-	{
+	while ((cur != NULL) && (strcmp(cur->desc, intdesc) != 0)) {
 		last = cur;
 		cur = cur->next;
 	}
 
-	if (cur == NULL) return 0;     // Interface wasn't found.
+	if (cur == NULL)
+		return 0;	// Interface wasn't found.
 
 	// Otherwise, delete it from the tree.
 	last->next = cur->next;
@@ -211,7 +214,8 @@ int interfaces_delete(char *intdesc)
  **/
 void interfaces_flush_cache()
 {
-	liblist_delete_list((genlist **)&interface_cache, interfaces_delete_node);
+	liblist_delete_list((genlist **) & interface_cache,
+			    interfaces_delete_node);
 }
 
 /**
@@ -224,8 +228,9 @@ struct interfaces *interfaces_get_by_desc(char *desc)
 
 	cur = interface_cache;
 
-	while ((cur != NULL) && (cur->desc != NULL) && (strcmp(cur->desc, desc) != 0))
-			cur = cur->next;
+	while ((cur != NULL) && (cur->desc != NULL)
+	       && (strcmp(cur->desc, desc) != 0))
+		cur = cur->next;
 
 	return cur;
 }

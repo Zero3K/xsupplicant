@@ -28,7 +28,7 @@
 #define S_FORCE_AUTH     9
 #define S_FORCE_UNAUTH   10
 
-extern void (*imc_disconnect_callback)(uint32_t connectionID);
+extern void (*imc_disconnect_callback) (uint32_t connectionID);
 
 int statemachine_init(context *);
 int statemachine_reinit(context *);

@@ -34,7 +34,6 @@
 // Uncomment the #define below to enable textual debug output.
 // #define WRITE_EAP_SIM_DEBUG 1
 
-
 /**
  * \brief Create an EAP-SIM block for the configuration file in a format
  *        that libxml2 can understand.
@@ -51,47 +50,51 @@
  * \retval xmlNodePtr containing the SIM configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata, uint8_t config_type,
-										     char write_all)
+xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim * simdata,
+					     uint8_t config_type,
+					     char write_all)
 {
 	xmlNodePtr simnode = NULL;
 	char *temp = NULL;
 	uint16_t ressize;
-		
-	if (simdata == NULL) return NULL;
+
+	if (simdata == NULL)
+		return NULL;
 
 	simnode = xsupconfwrite_common_newSibling(NULL, "Type", "SIM");
-	if (simnode == NULL)
-	{
+	if (simnode == NULL) {
 #ifdef WRITE_EAP_SIM_DEBUG
 		printf("Couldn't create <Type> node for SIM!\n");
 #endif
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (simdata->password != NULL))
-	{
-		if ((simdata->password != NULL) && (pwcrypt_funcs_available() == TRUE))
-		{
+	if ((write_all == TRUE) || (simdata->password != NULL)) {
+		if ((simdata->password != NULL)
+		    && (pwcrypt_funcs_available() == TRUE)) {
 			// Write the encrypted version.
-			if (pwcrypt_encrypt(config_type, (uint8_t *)simdata->password, strlen(simdata->password), (uint8_t **)&temp, &ressize) != 0)
-			{
+			if (pwcrypt_encrypt
+			    (config_type, (uint8_t *) simdata->password,
+			     strlen(simdata->password), (uint8_t **) & temp,
+			     &ressize) != 0) {
 				// Couldn't encrypt the data.  So write the cleartext version.
-				if (xsupconfwrite_common_newSibling(simnode, "Password", simdata->password) == NULL)
-				{
+				if (xsupconfwrite_common_newSibling
+				    (simnode, "Password",
+				     simdata->password) == NULL) {
 #ifdef WRITE_EAP_SIM_DEBUG
-					printf("Couldn't create <Password> node for SIM.\n");
+					printf
+					    ("Couldn't create <Password> node for SIM.\n");
 #endif
 					xmlFreeNode(simnode);
 					return NULL;
 				}
-			}
-			else
-			{
-				if (xsupconfwrite_common_newSibling(simnode, "Encrypted_Password", temp) == NULL)
-				{
+			} else {
+				if (xsupconfwrite_common_newSibling
+				    (simnode, "Encrypted_Password",
+				     temp) == NULL) {
 #ifdef WRITE_EAP_SIM_DEBUG
-					printf("Couldn't create <Encrypted_Password> node.\n");
+					printf
+					    ("Couldn't create <Encrypted_Password> node.\n");
 #endif
 					xmlFreeNode(simnode);
 					free(temp);
@@ -100,13 +103,12 @@ xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata, uin
 
 				free(temp);
 			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(simnode, "Password", simdata->password) == NULL)
-			{
+		} else {
+			if (xsupconfwrite_common_newSibling
+			    (simnode, "Password", simdata->password) == NULL) {
 #ifdef WRITE_EAP_SIM_DEBUG
-				printf("Couldn't create <Password> node for SIM.\n");
+				printf
+				    ("Couldn't create <Password> node for SIM.\n");
 #endif
 				xmlFreeNode(simnode);
 				return NULL;
@@ -114,10 +116,9 @@ xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata, uin
 		}
 	}
 
-	if ((write_all == TRUE) || (simdata->reader != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(simnode, "Reader", simdata->reader) == NULL)
-		{
+	if ((write_all == TRUE) || (simdata->reader != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (simnode, "Reader", simdata->reader) == NULL) {
 #ifdef WRITE_EAP_SIM_DEBUG
 			printf("Couldn't create <Reader> node for SIM!\n");
 #endif
@@ -127,8 +128,8 @@ xmlNodePtr xsupconfwrite_eap_sim_create_tree(struct config_eap_sim *simdata, uin
 	}
 
 	if (xsupconfwrite_common_write_bool(simnode, "Auto_Realm",
-		simdata->auto_realm, FALSE, write_all, TRUE) == NULL)
-	{
+					    simdata->auto_realm, FALSE,
+					    write_all, TRUE) == NULL) {
 		xmlFreeNode(simnode);
 		return NULL;
 	}

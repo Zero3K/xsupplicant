@@ -24,43 +24,43 @@
 #include "xsupconfig_parse.h"
 #include "xsupconfig_parse_eap_otp.h"
 
-void *xsupconfig_parse_eap_otp(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_otp(void **attr, uint8_t config_type,
+			       xmlNodePtr node)
 {
-  struct config_eap_method *meth;
+	struct config_eap_method *meth;
 
-  meth = (*attr);
+	meth = (*attr);
 
-  if (meth == NULL)
-  {
-	meth = xsupconfig_alloc_method(meth, "EAP-OTP");
-	(*attr) = meth;
-  }
-  else
-  {
-	  meth = xsupconfig_alloc_method(meth, "EAP-OTP");
-  }
+	if (meth == NULL) {
+		meth = xsupconfig_alloc_method(meth, "EAP-OTP");
+		(*attr) = meth;
+	} else {
+		meth = xsupconfig_alloc_method(meth, "EAP-OTP");
+	}
 
-  if (meth == NULL) return NULL;
+	if (meth == NULL)
+		return NULL;
 
 #ifdef PARSE_DEBUG
-  printf("Parsing method 'EAP-OTP'.\n");
+	printf("Parsing method 'EAP-OTP'.\n");
 #endif
 
-  meth->method_num = EAP_TYPE_OTP;
-  meth->method_data = malloc(sizeof(struct config_pwd_only));
-  if (meth->method_data == NULL)
-    {
-      printf("Couldn't allocate memory to store EAP-OTP data!"
-	     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	meth->method_num = EAP_TYPE_OTP;
+	meth->method_data = malloc(sizeof(struct config_pwd_only));
+	if (meth->method_data == NULL) {
+		printf("Couldn't allocate memory to store EAP-OTP data!"
+		       "  (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  memset(meth->method_data, 0x00, sizeof(struct config_pwd_only));
+	memset(meth->method_data, 0x00, sizeof(struct config_pwd_only));
 
-  return meth->method_data;
+	return meth->method_data;
 }
 
 parser eap_otp[] = {
-  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
+	{"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing}
+	,
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

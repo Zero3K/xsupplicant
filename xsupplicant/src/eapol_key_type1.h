@@ -24,12 +24,14 @@
 #define REKEY_PROB_TIMEOUT  30
 
 struct key_packet {
-  uint8_t key_descr;          /**< Key Descriptor Type (802.1x - 7.6.1) */
-  uint8_t key_length[2];      /**< Key Length (802.1x - 7.6.2)          */
-  uint8_t replay_counter[8];  /**< Replay Counter (802.1x - 7.6.3)      */
-  uint8_t key_iv[16];         /**< Key IV (802.1x - 7.6.4)              */
-  uint8_t key_index;          /**< Key Index (802.1x - 7.6.5)           */
-  uint8_t key_signature[16];  /**< Key Signature (802.1x - 7.6.6)       */
+	uint8_t key_descr;    /**< Key Descriptor Type (802.1x - 7.6.1) */
+	uint8_t key_length[2];/**< Key Length (802.1x - 7.6.2)          */
+	uint8_t replay_counter[8];
+			      /**< Replay Counter (802.1x - 7.6.3)      */
+	uint8_t key_iv[16];   /**< Key IV (802.1x - 7.6.4)              */
+	uint8_t key_index;    /**< Key Index (802.1x - 7.6.5)           */
+	uint8_t key_signature[16];
+			      /**< Key Signature (802.1x - 7.6.6)       */
 };
 
 void eapol_key_type1_process(context *);

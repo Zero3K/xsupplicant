@@ -38,7 +38,7 @@
 #endif
 
 #ifndef WINDOWS
-int ipc_events_in_use = FALSE;    // This is our dirty hack for a platform agnostic mutex. ;)
+int ipc_events_in_use = FALSE;	// This is our dirty hack for a platform agnostic mutex. ;)
 #warning You should consider implementing proper mutex locking for your platform!
 #else
 HANDLE ipcLock = INVALID_HANDLE_VALUE;
@@ -51,17 +51,16 @@ HANDLE ipcLock = INVALID_HANDLE_VALUE;
  **/
 int ipc_events_lock()
 {
-	while (ipc_events_in_use == TRUE)
-	{
+	while (ipc_events_in_use == TRUE) {
 #ifdef WINDOWS
-		Sleep(0);    // On windows, this should cause this thread to give up it's remaining time slice.  (Assuming something else is ready to run.)
+		Sleep(0);	// On windows, this should cause this thread to give up it's remaining time slice.  (Assuming something else is ready to run.)
 #else
-		usleep(500);  // Sleep a half second.
+		usleep(500);	// Sleep a half second.
 #endif
 	}
 
 #ifdef WINDOWS
-//	Sleep(0);  // Give up the remainder of our time slice, so we don't hit a race condition on the lock below.
+//      Sleep(0);  // Give up the remainder of our time slice, so we don't hit a race condition on the lock below.
 #endif
 
 	// Lock the channel.
@@ -90,18 +89,17 @@ void ipc_events_deinit()
 #else
 void ipc_events_init()
 {
-	ipcLock = CreateMutex( NULL, FALSE, NULL);  // New mutex that isn't owned by anyone.
-	if (ipcLock == INVALID_HANDLE_VALUE)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't init IPC event system locking mutex!\n");
+	ipcLock = CreateMutex(NULL, FALSE, NULL);	// New mutex that isn't owned by anyone.
+	if (ipcLock == INVALID_HANDLE_VALUE) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't init IPC event system locking mutex!\n");
 		return;
 	}
 }
 
 void ipc_events_deinit()
 {
-	if (ipcLock != INVALID_HANDLE_VALUE)
-	{
+	if (ipcLock != INVALID_HANDLE_VALUE) {
 		CloseHandle(ipcLock);
 		ipcLock = INVALID_HANDLE_VALUE;
 	}
@@ -116,22 +114,24 @@ int ipc_events_lock()
 {
 	DWORD dwWaitResult;
 
-	if (ipcLock == INVALID_HANDLE_VALUE) return -1;  // We aren't inited yet (or have already deinited).
+	if (ipcLock == INVALID_HANDLE_VALUE)
+		return -1;	// We aren't inited yet (or have already deinited).
 
 	// Wait for our mutex to be available!
 	dwWaitResult = WaitForSingleObject(ipcLock, INFINITE);
 
-	switch (dwWaitResult)
-	{
+	switch (dwWaitResult) {
 	case WAIT_OBJECT_0:
 #ifdef LOCK_DEBUG
 		debug_printf(DEBUG_IPC, "Acquired IPC event lock.\n");
-#endif LOCK_DEBUG
+#endif	/* LOCK_DEBUG */
 		return 0;
 		break;
 
 	default:
-		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error acquiring IPC event lock!  (Error %d)\n", GetLastError());
+		debug_printf(DEBUG_IPC,
+			     "!!!!!!!!!!!! Error acquiring IPC event lock!  (Error %d)\n",
+			     GetLastError());
 		break;
 	}
 
@@ -145,12 +145,12 @@ int ipc_events_lock()
  **/
 int ipc_events_unlock()
 {
-	if (!ReleaseMutex(ipcLock))
-	{
-		debug_printf(DEBUG_IPC, "!!!!!!!!!!!! Error releasing IPC event lock!  (Error %d)\n", GetLastError());
+	if (!ReleaseMutex(ipcLock)) {
+		debug_printf(DEBUG_IPC,
+			     "!!!!!!!!!!!! Error releasing IPC event lock!  (Error %d)\n",
+			     GetLastError());
 		return -1;
 	}
-
 #ifdef LOCK_DEBUG
 	debug_printf(DEBUG_IPC, "Released IPC event lock.\n");
 #endif
@@ -167,8 +167,8 @@ int ipc_events_unlock()
  **/
 void ipc_events_chomp(char *logmsg)
 {
-	if (logmsg[strlen(logmsg)-1] == '\n')
-		logmsg[strlen(logmsg)-1] = 0x00;
+	if (logmsg[strlen(logmsg) - 1] == '\n')
+		logmsg[strlen(logmsg) - 1] = 0x00;
 }
 
 /**
@@ -186,68 +186,65 @@ int ipc_events_log_msg(char *logmsg)
 	xmlDocPtr indoc = NULL;
 	int retval = IPC_SUCCESS;
 	context *ctx = NULL;
-	
+
 	// DO NOT xsup_assert here!  It will cause an infinite loop that will lead to a stack overflow!
-	if (logmsg == NULL) return IPC_FAILURE;
+	if (logmsg == NULL)
+		return IPC_FAILURE;
 
 #ifdef WINDOWS
 	// If we don't have a valid IPC handle, don't bother trying to send this data.
-	if (ipcLock == INVALID_HANDLE_VALUE) return IPC_SUCCESS;
+	if (ipcLock == INVALID_HANDLE_VALUE)
+		return IPC_SUCCESS;
 #endif
 
 	ctx = event_core_get_active_ctx();
-	if (ctx == NULL) return IPC_FAILURE;
+	if (ctx == NULL)
+		return IPC_FAILURE;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return IPC_FAILURE;
+	if (indoc == NULL)
+		return IPC_FAILURE;
 
 	t = xmlDocGetRootElement(indoc);
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-	t = xmlNewChild(t, NULL, (xmlChar *)"Log", NULL);
-	if (t == NULL) 
-	{
+	t = xmlNewChild(t, NULL, (xmlChar *) "Log", NULL);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-	if ((ctx != NULL) && (ctx->intName != NULL))
-	{
-		if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)ctx->intName) == NULL) 
-		{
+	if ((ctx != NULL) && (ctx->intName != NULL)) {
+		if (xmlNewChild
+		    (t, NULL, (xmlChar *) "Interface",
+		     (xmlChar *) ctx->intName) == NULL) {
 			retval = IPC_FAILURE;
 			goto done;
 		}
-	}
-	else
-	{
-		if (xmlNewChild(t, NULL, (xmlChar *)"Interface", NULL) == NULL)
-		{
+	} else {
+		if (xmlNewChild(t, NULL, (xmlChar *) "Interface", NULL) == NULL) {
 			retval = IPC_FAILURE;
 			goto done;
 		}
 	}
 
-	ipc_events_chomp(logmsg);  // Remove a \n from the line, if it is there.
+	ipc_events_chomp(logmsg);	// Remove a \n from the line, if it is there.
 
-	t = xmlNewChild(t, NULL, (xmlChar *)"Message", (xmlChar *)logmsg);
-	if (t == NULL)
-	{
+	t = xmlNewChild(t, NULL, (xmlChar *) "Message", (xmlChar *) logmsg);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-done:
+ done:
 	xmlFreeDoc(indoc);
 
 	return retval;
@@ -265,23 +262,23 @@ done:
 int ipc_events_send(xmlDocPtr indoc)
 {
 	char *retbuf = NULL;
-	int retsize  = 0;
-	int retval   = XENONE;
+	int retsize = 0;
+	int retval = XENONE;
 
 	if (!xsup_assert((indoc != NULL), "indoc != NULL", FALSE))
 		return -1;
 
-	if (ipc_events_lock() != 0) return -1;   // We got an error acquiring the lock for the mutex, so bail out!
+	if (ipc_events_lock() != 0)
+		return -1;	// We got an error acquiring the lock for the mutex, so bail out!
 
 	// Then, put the document back in to a format to be sent.
-	xmlDocDumpFormatMemory(indoc, (xmlChar **)&retbuf, &retsize, 0);
+	xmlDocDumpFormatMemory(indoc, (xmlChar **) & retbuf, &retsize, 0);
 
 	retval = xsup_ipc_send_all(retbuf, retsize);
 
-	if (ipc_events_unlock() != 0)
-	{
+	if (ipc_events_unlock() != 0) {
 		FREE(retbuf);
-		return -1;   // We got an error releasing the mutex.  THIS IS REALLY BAD!
+		return -1;	// We got an error releasing the mutex.  THIS IS REALLY BAD!
 	}
 
 	FREE(retbuf);
@@ -304,7 +301,7 @@ int ipc_events_send(xmlDocPtr indoc)
  * \retval IPC_TIMEOUT on timeout
  **/
 #if 0
-int ipc_event_str_only(context *ctx, char *loglevel, long int logtype)
+int ipc_event_str_only(context * ctx, char *loglevel, long int logtype)
 {
 	xmlDocPtr indoc = NULL;
 	xmlNodePtr n = NULL, t = NULL;
@@ -317,29 +314,27 @@ int ipc_event_str_only(context *ctx, char *loglevel, long int logtype)
 		return -1;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return -1;
+	if (indoc == NULL)
+		return -1;
 
 	n = xmlDocGetRootElement(indoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_FAILURE;
 		goto str_only_done;
 	}
 
 	t = ipc_events_build_log_msg(ctx, loglevel, logtype, n);
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto str_only_done;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		retval = IPC_FAILURE;
 		goto str_only_done;
 	}
 
-str_only_done:
+ str_only_done:
 	xmlFreeDoc(indoc);
 
 	return retval;
@@ -361,7 +356,8 @@ str_only_done:
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_tag_msg(context *ctx, char *loglevel, long int logtype, char *tag, char *value)
+int ipc_events_tag_msg(context * ctx, char *loglevel, long int logtype,
+		       char *tag, char *value)
 {
 	xmlDocPtr indoc = NULL;
 	xmlNodePtr n = NULL, t = NULL;
@@ -380,40 +376,36 @@ int ipc_events_tag_msg(context *ctx, char *loglevel, long int logtype, char *tag
 		return IPC_FAILURE;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return -1;
+	if (indoc == NULL)
+		return -1;
 
 	n = xmlDocGetRootElement(indoc);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		retval = IPC_FAILURE;
 		goto tag_msg_done;
 	}
 
 	t = ipc_events_build_log_msg(ctx, loglevel, logtype, n);
-	if (t == NULL)
-	{
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto tag_msg_done;
 	}
 
-	if (xmlNewChild(t, NULL, tag, value) == NULL)
-	{
+	if (xmlNewChild(t, NULL, tag, value) == NULL) {
 		retval = IPC_FAILURE;
 		goto tag_msg_done;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		retval = IPC_FAILURE;
 		goto tag_msg_done;
 	}
 
-tag_msg_done:
+ tag_msg_done:
 	xmlFreeDoc(indoc);
 
 	return retval;
 }
-
 
 /**
  * \brief Send an "Attempting to associate" log message.
@@ -424,13 +416,15 @@ tag_msg_done:
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_attempting_to_associate(context *ctx)
+int ipc_events_attempting_to_associate(context * ctx)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return IPC_FAILURE;
 
-	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL, IPC_EVENT_LOG_ATTEMPTING_TO_ASSOCIATE, 
-							  "SSID", ((wireless_ctx *)(ctx->intTypeData))->cur_essid);
+	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL,
+				  IPC_EVENT_LOG_ATTEMPTING_TO_ASSOCIATE, "SSID",
+				  ((wireless_ctx *) (ctx->intTypeData))->
+				  cur_essid);
 }
 
 /**
@@ -442,13 +436,14 @@ int ipc_events_attempting_to_associate(context *ctx)
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_cant_get_interface_capabilities(context *ctx)
+int ipc_events_cant_get_interface_capabilities(context * ctx)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return IPC_FAILURE;
 
-	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL, IPC_EVENT_LOG_CANT_GET_CAPABILITIES,
-		"Interface", ctx->intName);
+	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL,
+				  IPC_EVENT_LOG_CANT_GET_CAPABILITIES,
+				  "Interface", ctx->intName);
 }
 
 /**
@@ -460,12 +455,13 @@ int ipc_events_cant_get_interface_capabilities(context *ctx)
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_scanning(context *ctx)
+int ipc_events_scanning(context * ctx)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return IPC_FAILURE;
 
-	return ipc_event_str_only(ctx, LOG_LEVEL_NORMAL, IPC_EVENT_LOG_SCANNING);
+	return ipc_event_str_only(ctx, LOG_LEVEL_NORMAL,
+				  IPC_EVENT_LOG_SCANNING);
 }
 
 /**
@@ -478,7 +474,7 @@ int ipc_events_scanning(context *ctx)
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_authenticated(context *ctx, int phase)
+int ipc_events_authenticated(context * ctx, int phase)
 {
 	char txtphase[10];
 
@@ -487,8 +483,9 @@ int ipc_events_authenticated(context *ctx, int phase)
 
 	sprintf((char *)&txtphase, "%d", phase);
 
-	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL, IPC_EVENT_LOG_AUTHENTICATED, 
-							  "Phase", txtphase);
+	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL,
+				  IPC_EVENT_LOG_AUTHENTICATED, "Phase",
+				  txtphase);
 }
 
 /**
@@ -501,7 +498,7 @@ int ipc_events_authenticated(context *ctx, int phase)
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_authentication_failed(context *ctx, int phase)
+int ipc_events_authentication_failed(context * ctx, int phase)
 {
 	char txtphase[10];
 
@@ -510,8 +507,9 @@ int ipc_events_authentication_failed(context *ctx, int phase)
 
 	sprintf((char *)&txtphase, "%d", phase);
 
-	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL, IPC_EVENT_LOG_AUTHENTICATION_FAILED, 
-							  "Phase", txtphase);
+	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL,
+				  IPC_EVENT_LOG_AUTHENTICATION_FAILED, "Phase",
+				  txtphase);
 }
 
 /**
@@ -523,13 +521,15 @@ int ipc_events_authentication_failed(context *ctx, int phase)
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_associated(context *ctx)
+int ipc_events_associated(context * ctx)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return IPC_FAILURE;
 
-	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL, IPC_EVENT_LOG_ASSOCIATED, 
-							  "SSID", ((wireless_ctx *)(ctx->intTypeData))->cur_essid);
+	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL,
+				  IPC_EVENT_LOG_ASSOCIATED, "SSID",
+				  ((wireless_ctx *) (ctx->intTypeData))->
+				  cur_essid);
 }
 
 /**
@@ -541,7 +541,7 @@ int ipc_events_associated(context *ctx)
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_starting_authentication(context *ctx, int phase)
+int ipc_events_starting_authentication(context * ctx, int phase)
 {
 	char txtphase[10];
 
@@ -550,10 +550,11 @@ int ipc_events_starting_authentication(context *ctx, int phase)
 
 	sprintf((char *)&txtphase, "%d", phase);
 
-	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL, IPC_EVENT_LOG_STARTING_AUTH, 
-							  "Phase", txtphase);
+	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL,
+				  IPC_EVENT_LOG_STARTING_AUTH, "Phase",
+				  txtphase);
 }
-#endif // 0
+#endif				// 0
 
 /**
  * \brief Notify all attached UIs that a state machine has transitioned to a new
@@ -569,8 +570,8 @@ int ipc_events_starting_authentication(context *ctx, int phase)
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_statemachine_transition(context *ctx, int statemachine, 
-									   int oldstate, int newstate)
+int ipc_events_statemachine_transition(context * ctx, int statemachine,
+				       int oldstate, int newstate)
 {
 	xmlDocPtr indoc;
 	xmlNodePtr t = NULL, root = NULL;
@@ -581,68 +582,66 @@ int ipc_events_statemachine_transition(context *ctx, int statemachine,
 		return IPC_FAILURE;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return IPC_FAILURE;
+	if (indoc == NULL)
+		return IPC_FAILURE;
 
 	root = xmlDocGetRootElement(indoc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = IPC_FAILURE;
 		goto statemachine_transition_ipc_done;
 	}
 
-	t = xmlNewChild(root, NULL, (xmlChar *)"State_Transition", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(root, NULL, (xmlChar *) "State_Transition", NULL);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto statemachine_transition_ipc_done;
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)ctx->intName) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Interface",
+	     (xmlChar *) ctx->intName) == NULL) {
 		retval = IPC_FAILURE;
 		goto statemachine_transition_ipc_done;
 	}
 
 	sprintf((char *)&temp, "%d", statemachine);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Statemachine", (xmlChar *)temp) == NULL) 
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Statemachine", (xmlChar *) temp)
+	    == NULL) {
 		retval = IPC_FAILURE;
 		goto statemachine_transition_ipc_done;
 	}
 
 	sprintf((char *)&temp, "%d", oldstate);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Old_State", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Old_State", (xmlChar *) temp) ==
+	    NULL) {
 		retval = IPC_FAILURE;
 		goto statemachine_transition_ipc_done;
 	}
 
 	sprintf((char *)&temp, "%d", newstate);
-	if (xmlNewChild(t, NULL, (xmlChar *)"New_State", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "New_State", (xmlChar *) temp) ==
+	    NULL) {
 		retval = IPC_FAILURE;
 		goto statemachine_transition_ipc_done;
 	}
-
 #ifdef HAVE_TNC
-	if(ctx->tnc_data != NULL)
-	{
+	if (ctx->tnc_data != NULL) {
 		sprintf((char *)&temp, "%d", ctx->tnc_data->connectionID);
-		if (xmlNewChild(t, NULL, (xmlChar *)"TNC_Connection_ID", (xmlChar *)temp) == NULL)
-		{
+		if (xmlNewChild
+		    (t, NULL, (xmlChar *) "TNC_Connection_ID",
+		     (xmlChar *) temp) == NULL) {
 			retval = IPC_FAILURE;
 			goto statemachine_transition_ipc_done;
 		}
 	}
-#endif // HAVE_TNC
+#endif				// HAVE_TNC
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		retval = IPC_FAILURE;
 		goto statemachine_transition_ipc_done;
 	}
 
-statemachine_transition_ipc_done:
+ statemachine_transition_ipc_done:
 	xmlFreeDoc(indoc);
 
 	return retval;
@@ -660,7 +659,7 @@ statemachine_transition_ipc_done:
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-void ipc_events_error(context *ctx, unsigned int erridx, char *param)
+void ipc_events_error(context * ctx, unsigned int erridx, char *param)
 {
 	context *myctx = NULL;
 	char temp[100];
@@ -668,49 +667,43 @@ void ipc_events_error(context *ctx, unsigned int erridx, char *param)
 	xmlNodePtr t = NULL, root = NULL, n = NULL;
 	xmlDocPtr indoc = NULL;
 
-	if (ctx == NULL)
-	{
+	if (ctx == NULL) {
 		myctx = event_core_get_active_ctx();
-	}
-	else
-	{
+	} else {
 		myctx = ctx;
 	}
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return;
+	if (indoc == NULL)
+		return;
 
 	root = xmlDocGetRootElement(indoc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		goto done;
 	}
 
-	t = xmlNewChild(root, NULL, (xmlChar *)"Error_Event", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(root, NULL, (xmlChar *) "Error_Event", NULL);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", erridx);
-	n = xmlNewChild(t, NULL, (xmlChar *)"Error_Code", (xmlChar *)temp);
-	if (n == NULL)
-	{
+	n = xmlNewChild(t, NULL, (xmlChar *) "Error_Code", (xmlChar *) temp);
+	if (n == NULL) {
 		goto done;
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"Argument", (xmlChar *)param) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Argument", (xmlChar *) param) ==
+	    NULL) {
 		goto done;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		goto done;
 	}
 
-done:
+ done:
 	xmlFreeDoc(indoc);
 
 	return;
@@ -725,7 +718,7 @@ done:
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-int ipc_events_scan_complete(context *ctx)
+int ipc_events_scan_complete(context * ctx)
 {
 	xmlDocPtr indoc;
 	xmlNodePtr t = NULL, root = NULL;
@@ -735,35 +728,34 @@ int ipc_events_scan_complete(context *ctx)
 		return IPC_FAILURE;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return IPC_FAILURE;
+	if (indoc == NULL)
+		return IPC_FAILURE;
 
 	root = xmlDocGetRootElement(indoc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = IPC_FAILURE;
 		goto scan_complete_done;
 	}
 
-	t = xmlNewChild(root, NULL, (xmlChar *)"Wireless_Scan_Complete", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(root, NULL, (xmlChar *) "Wireless_Scan_Complete", NULL);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto scan_complete_done;
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)ctx->intName) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Interface",
+	     (xmlChar *) ctx->intName) == NULL) {
 		retval = IPC_FAILURE;
 		goto scan_complete_done;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		retval = IPC_FAILURE;
 		goto scan_complete_done;
 	}
 
-scan_complete_done:
+ scan_complete_done:
 	xmlFreeDoc(indoc);
 
 	return retval;
@@ -793,47 +785,48 @@ int ipc_events_request_eap_upwd(char *eapmethod, char *chalstr)
 		return IPC_FAILURE;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return IPC_FAILURE;
+	if (indoc == NULL)
+		return IPC_FAILURE;
 
 	root = xmlDocGetRootElement(indoc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-	t = xmlNewChild(root, NULL, (xmlChar *)"EAP_Password_Request", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(root, NULL, (xmlChar *) "EAP_Password_Request", NULL);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"Connection_Name", (xmlChar *)ctx->conn_name) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Connection_Name",
+	     (xmlChar *) ctx->conn_name) == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"EAP_Method", (xmlChar *)eapmethod) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "EAP_Method",
+	     (xmlChar *) eapmethod) == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"Challenge_String", (xmlChar *)chalstr) == NULL)
-	{
+	if (xmlNewChild
+	    (t, NULL, (xmlChar *) "Challenge_String",
+	     (xmlChar *) chalstr) == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
-done:
+ done:
 	xmlFreeDoc(indoc);
 
 	return retval;
@@ -851,7 +844,7 @@ done:
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-void ipc_events_ui(context *ctx, unsigned int uiidx, char *param)
+void ipc_events_ui(context * ctx, unsigned int uiidx, char *param)
 {
 	context *myctx = NULL;
 	char temp[100];
@@ -859,57 +852,51 @@ void ipc_events_ui(context *ctx, unsigned int uiidx, char *param)
 	xmlNodePtr t = NULL, root = NULL, n = NULL;
 	xmlDocPtr indoc = NULL;
 
-	if (ctx == NULL)
-	{
+	if (ctx == NULL) {
 		myctx = event_core_get_active_ctx();
-	}
-	else
-	{
+	} else {
 		myctx = ctx;
 	}
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return;
+	if (indoc == NULL)
+		return;
 
 	root = xmlDocGetRootElement(indoc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		goto done;
 	}
 
-	t = xmlNewChild(root, NULL, (xmlChar *)"UI_Event", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(root, NULL, (xmlChar *) "UI_Event", NULL);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", uiidx);
-	n = xmlNewChild(t, NULL, (xmlChar *)"Event_Code", (xmlChar *)&temp);
-	if (n == NULL)
-	{
+	n = xmlNewChild(t, NULL, (xmlChar *) "Event_Code", (xmlChar *) & temp);
+	if (n == NULL) {
 		goto done;
 	}
 
-	if (ctx != NULL)
-	{
-		if (xmlNewChild(t, NULL, (xmlChar *)"Interface", (xmlChar *)ctx->intName) == NULL)
-		{
+	if (ctx != NULL) {
+		if (xmlNewChild
+		    (t, NULL, (xmlChar *) "Interface",
+		     (xmlChar *) ctx->intName) == NULL) {
 			goto done;
 		}
 	}
 
-	if (xmlNewChild(t, NULL, (xmlChar *)"Parameter", (xmlChar *)param) == NULL)
-	{
-		goto done;
-	}
-		
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Parameter", (xmlChar *) param) ==
+	    NULL) {
 		goto done;
 	}
 
-done:
+	if (ipc_events_send(indoc) != XENONE) {
+		goto done;
+	}
+
+ done:
 	xmlFreeDoc(indoc);
 
 	return;
@@ -940,40 +927,37 @@ void ipc_events_imc_event(uint32_t oid, uint32_t notification)
 	xmlDocPtr indoc = NULL;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return;
+	if (indoc == NULL)
+		return;
 
 	root = xmlDocGetRootElement(indoc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		goto done;
 	}
 
-	t = xmlNewChild(root, NULL, (xmlChar *)"TNC_Event", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(root, NULL, (xmlChar *) "TNC_Event", NULL);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", oid);
-	n = xmlNewChild(t, NULL, (xmlChar *)"OUI", (xmlChar *)temp);
-	if (n == NULL)
-	{
+	n = xmlNewChild(t, NULL, (xmlChar *) "OUI", (xmlChar *) temp);
+	if (n == NULL) {
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", notification);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Notification", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Notification", (xmlChar *) temp)
+	    == NULL) {
 		goto done;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		goto done;
 	}
 
-done:
+ done:
 	xmlFreeDoc(indoc);
 
 	return;
@@ -997,7 +981,8 @@ done:
  * \retval IPC_FAILURE on error
  * \retval IPC_TIMEOUT on timeout
  **/
-void ipc_events_imc_request_event(uint32_t imcID, uint32_t connID, uint32_t oid, uint32_t request)
+void ipc_events_imc_request_event(uint32_t imcID, uint32_t connID, uint32_t oid,
+				  uint32_t request)
 {
 	char temp[100];
 	int retval = IPC_SUCCESS;
@@ -1005,52 +990,48 @@ void ipc_events_imc_request_event(uint32_t imcID, uint32_t connID, uint32_t oid,
 	xmlDocPtr indoc = NULL;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return;
+	if (indoc == NULL)
+		return;
 
 	root = xmlDocGetRootElement(indoc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		goto done;
 	}
 
-	t = xmlNewChild(root, NULL, (xmlChar *)"TNC_Request_Event", NULL);
-	if (t == NULL)
-	{
+	t = xmlNewChild(root, NULL, (xmlChar *) "TNC_Request_Event", NULL);
+	if (t == NULL) {
 		retval = IPC_FAILURE;
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", imcID);
-	if (xmlNewChild(t, NULL, (xmlChar *)"imcID", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "imcID", (xmlChar *) temp) == NULL) {
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", connID);
-	if (xmlNewChild(t, NULL, (xmlChar *)"connID", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "connID", (xmlChar *) temp) ==
+	    NULL) {
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", oid);
-	n = xmlNewChild(t, NULL, (xmlChar *)"OUI", (xmlChar *)temp);
-	if (n == NULL)
-	{
+	n = xmlNewChild(t, NULL, (xmlChar *) "OUI", (xmlChar *) temp);
+	if (n == NULL) {
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", request);
-	if (xmlNewChild(t, NULL, (xmlChar *)"Request", (xmlChar *)temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, (xmlChar *) "Request", (xmlChar *) temp) ==
+	    NULL) {
 		goto done;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		goto done;
 	}
 
-done:
+ done:
 	xmlFreeDoc(indoc);
 
 	return;
@@ -1061,7 +1042,8 @@ done:
  *
  * @param[in] batchlist   A linked list containing the batch that we want to send to the UI.
  **/
-void ipc_events_send_tnc_batch(void *batchlist, uint32_t imcID, uint32_t connID, uint32_t oui, uint32_t msg)
+void ipc_events_send_tnc_batch(void *batchlist, uint32_t imcID, uint32_t connID,
+			       uint32_t oui, uint32_t msg)
 {
 #ifdef HAVE_TNC
 	xmlNodePtr t = NULL, root = NULL, n = NULL, b = NULL;
@@ -1072,125 +1054,118 @@ void ipc_events_send_tnc_batch(void *batchlist, uint32_t imcID, uint32_t connID,
 #endif
 
 #ifndef HAVE_TNC
-	debug_printf(DEBUG_NORMAL, "Attempt to call %s() when TNC support is not built!?\n", __FUNCTION__);
+	debug_printf(DEBUG_NORMAL,
+		     "Attempt to call %s() when TNC support is not built!?\n",
+		     __FUNCTION__);
 	return;
 #else
 
-	numitems = liblist_num_nodes((genlist *)batchlist);
+	numitems = liblist_num_nodes((genlist *) batchlist);
 
-	cur = (tnc_msg_batch *)batchlist;
+	cur = (tnc_msg_batch *) batchlist;
 
 	indoc = ipc_callout_build_doc();
-	if (indoc == NULL) return;
+	if (indoc == NULL)
+		return;
 
 	root = xmlDocGetRootElement(indoc);
-	if (root == NULL) 
-	{
+	if (root == NULL) {
 		goto done;
 	}
 
 	t = xmlNewChild(root, NULL, "TNC_Request_Batch_Event", NULL);
-	if (t == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't create TNC_Request_Batch_Event node!\n");
+	if (t == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't create TNC_Request_Batch_Event node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", imcID);
-	if (xmlNewChild(t, NULL, "imcID", temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, "imcID", temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create <imcID> node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", connID);
-	if (xmlNewChild(t, NULL, "connID", temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, "connID", temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create <connID> node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", oui);
-	if (xmlNewChild(t, NULL, "OUI", temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, "OUI", temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create OUI node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", msg);
-	if (xmlNewChild(t, NULL, "MsgID", temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, "MsgID", temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create MsgID node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", numitems);
-	if (xmlNewChild(t, NULL, "Items", temp) == NULL)
-	{
+	if (xmlNewChild(t, NULL, "Items", temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create <Items> node!\n");
 		goto done;
 	}
 
 	n = xmlNewChild(t, NULL, "Batch", NULL);
-	if (n == NULL)
-	{
+	if (n == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create <Batch> tag!\n");
 		goto done;
 	}
-
 	// Iterate through the list, and build all of the nodes.
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		b = xmlNewChild(n, NULL, "Item", NULL);
-		if (b == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't create <Item> tag!\n");
+		if (b == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't create <Item> tag!\n");
 			goto done;
 		}
 
 		sprintf((char *)&temp, "%d", cur->imcID);
-		if (xmlNewChild(b, NULL, "imcID", temp) == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't create <imcID> tag!\n");
+		if (xmlNewChild(b, NULL, "imcID", temp) == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't create <imcID> tag!\n");
 			goto done;
 		}
 
 		sprintf((char *)&temp, "%d", cur->connectionID);
-		if (xmlNewChild(b, NULL, "connectionID", temp) == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't create <connectionID> tag!\n");
+		if (xmlNewChild(b, NULL, "connectionID", temp) == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't create <connectionID> tag!\n");
 			goto done;
 		}
 
 		sprintf((char *)&temp, "%d", cur->oui);
-		if (xmlNewChild(b, NULL, "OUI", temp) == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't create <OUI> tag!\n");
+		if (xmlNewChild(b, NULL, "OUI", temp) == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't create <OUI> tag!\n");
 			goto done;
 		}
 
 		sprintf((char *)&temp, "%d", cur->msgid);
-		if (xmlNewChild(b, NULL, "MsgID", temp) == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't create <MsgID> tag!\n");
+		if (xmlNewChild(b, NULL, "MsgID", temp) == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't create <MsgID> tag!\n");
 			goto done;
 		}
 
-		if (xmlNewChild(b, NULL, "Parameter", cur->parameter) == NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Couldn't create <Parameter> tag!\n");
+		if (xmlNewChild(b, NULL, "Parameter", cur->parameter) == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't create <Parameter> tag!\n");
 			goto done;
 		}
 
 		cur = cur->next;
 	}
 
-	if (ipc_events_send(indoc) != XENONE)
-	{
+	if (ipc_events_send(indoc) != XENONE) {
 		goto done;
 	}
 
-done:
+ done:
 	xmlFreeDoc(indoc);
 
 	return;

@@ -14,4 +14,4 @@
 int xsupgui_mac_utils_is_valid_mac(char *);
 void xsupgui_mac_utils_convert_mac(char *, char *);
 
-#endif // __XSUPGUI_MAC_UTILS__
+#endif				// __XSUPGUI_MAC_UTILS__

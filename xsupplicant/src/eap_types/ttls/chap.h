@@ -15,7 +15,6 @@
 void chap_check(eap_type_data *);
 void chap_process(eap_type_data *, uint8_t *, uint16_t);
 void chap_buildResp(eap_type_data *, uint8_t *, uint16_t *);
-void chap_deinit(eap_type_data *eapdata);
+void chap_deinit(eap_type_data * eapdata);
 
 #endif
-

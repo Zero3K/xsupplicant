@@ -82,42 +82,45 @@ struct int_starting_data *startup;
  **/
 int cardif_linux_get_mac_by_name_no_ctx(char *intname, char *intmac)
 {
-  struct ifreq ifr;
-  int sock = -1;
-  int retval = XENONE;
- 
-  sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_EAPOL));
-  if (sock < 0) return XEGENERROR;
+	struct ifreq ifr;
+	int sock = -1;
+	int retval = XENONE;
 
-  memset(&ifr, 0x00, sizeof(ifr));
+	sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_EAPOL));
+	if (sock < 0)
+		return XEGENERROR;
 
-  if (strlen(intname) == 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid interface name in %s():%d\n",
-		   __FUNCTION__, __LINE__);
-      close(sock);
-      return XEGENERROR;
-    }
+	memset(&ifr, 0x00, sizeof(ifr));
 
-  ifr.ifr_ifindex = if_nametoindex(intname);
+	if (strlen(intname) == 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid interface name in %s():%d\n",
+			     __FUNCTION__, __LINE__);
+		close(sock);
+		return XEGENERROR;
+	}
 
-  // Tell the ifreq struct which interface we want to use.
-  Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), intname, strlen(intname)+1);
+	ifr.ifr_ifindex = if_nametoindex(intname);
 
-  // Get our MAC address.
-  retval = ioctl(sock, SIOCGIFHWADDR, &ifr);
-  if (retval < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Error getting hardware (MAC) address for "
-		   "interface %s!\n", intname);
-      debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno, strerror(errno));
-    }
+	// Tell the ifreq struct which interface we want to use.
+	Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), intname,
+		strlen(intname) + 1);
 
-  memcpy(intmac, (char *)&ifr.ifr_hwaddr.sa_data[0], 6);
+	// Get our MAC address.
+	retval = ioctl(sock, SIOCGIFHWADDR, &ifr);
+	if (retval < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Error getting hardware (MAC) address for "
+			     "interface %s!\n", intname);
+		debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno,
+			     strerror(errno));
+	}
 
-  close(sock);
+	memcpy(intmac, (char *)&ifr.ifr_hwaddr.sa_data[0], 6);
 
-  return XENONE;
+	close(sock);
+
+	return XENONE;
 }
 
 /**
@@ -134,45 +137,47 @@ int cardif_linux_get_mac_by_name_no_ctx(char *intname, char *intmac)
  **/
 int cardif_linux_get_mac_by_name(char *intname, char *intmac)
 {
-  struct ifreq ifr;
-  struct lin_sock_data *sockData = NULL;
-  int retval = XENONE;
-  context *ctx = NULL;
- 
-  ctx = event_core_get_active_ctx();
+	struct ifreq ifr;
+	struct lin_sock_data *sockData = NULL;
+	int retval = XENONE;
+	context *ctx = NULL;
 
-  if (ctx == NULL) return cardif_linux_get_mac_by_name_no_ctx(intname, intmac);
+	ctx = event_core_get_active_ctx();
 
-  sockData = ctx->sockData;
+	if (ctx == NULL)
+		return cardif_linux_get_mac_by_name_no_ctx(intname, intmac);
 
-  memset(&ifr, 0x00, sizeof(ifr));
+	sockData = ctx->sockData;
 
-  if (strlen(intname) == 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid interface name in %s():%d\n",
-		   __FUNCTION__, __LINE__);
-      return XEGENERROR;
-    }
+	memset(&ifr, 0x00, sizeof(ifr));
 
-  ifr.ifr_ifindex = if_nametoindex(intname);
+	if (strlen(intname) == 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid interface name in %s():%d\n",
+			     __FUNCTION__, __LINE__);
+		return XEGENERROR;
+	}
 
-  // Tell the ifreq struct which interface we want to use.
-  Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), intname, strlen(intname)+1);
+	ifr.ifr_ifindex = if_nametoindex(intname);
 
-  // Get our MAC address.
-  retval = ioctl(sockData->sockInt, SIOCGIFHWADDR, &ifr);
-  if (retval < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Error getting hardware (MAC) address for "
-		   "interface %s!\n", intname);
-      debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno, strerror(errno));
-    }
+	// Tell the ifreq struct which interface we want to use.
+	Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), intname,
+		strlen(intname) + 1);
 
-  memcpy(intmac, (char *)&ifr.ifr_hwaddr.sa_data[0], 6);
+	// Get our MAC address.
+	retval = ioctl(sockData->sockInt, SIOCGIFHWADDR, &ifr);
+	if (retval < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Error getting hardware (MAC) address for "
+			     "interface %s!\n", intname);
+		debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno,
+			     strerror(errno));
+	}
 
-  return XENONE;
+	memcpy(intmac, (char *)&ifr.ifr_hwaddr.sa_data[0], 6);
+
+	return XENONE;
 }
-
 
 /**
  * Clear all keys, and accept unencrypted traffic again.
@@ -180,29 +185,28 @@ int cardif_linux_get_mac_by_name(char *intname, char *intmac)
  * @param[in] ctx   The context that contains the interface that we want
  *                  to allow unencrypted traffic on again.
  **/
-void cardif_linux_clear_keys(context *ctx)
+void cardif_linux_clear_keys(context * ctx)
 {
-  int i;
+	int i;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  debug_printf(DEBUG_INT, "Clearing keys!\n");
+	debug_printf(DEBUG_INT, "Clearing keys!\n");
 
-  debug_printf(DEBUG_INT, "Allowing unencrypted frames again.\n");
-  cardif_drop_unencrypted(ctx, 0);
-  
-  // Clear the PTK.
-  debug_printf(DEBUG_INT, "Clearing PTK.\n");
-  cardif_delete_key(ctx, 0, 1);
+	debug_printf(DEBUG_INT, "Allowing unencrypted frames again.\n");
+	cardif_drop_unencrypted(ctx, 0);
 
-  for (i=0;i<4;i++)
-    {
-      debug_printf(DEBUG_INT, "Clearing key index %d.\n", i);
-      cardif_delete_key(ctx, i, 0);
-    }
+	// Clear the PTK.
+	debug_printf(DEBUG_INT, "Clearing PTK.\n");
+	cardif_delete_key(ctx, 0, 1);
 
-  cardif_linux_wext_enc_disable(ctx);
+	for (i = 0; i < 4; i++) {
+		debug_printf(DEBUG_INT, "Clearing key index %d.\n", i);
+		cardif_delete_key(ctx, i, 0);
+	}
+
+	cardif_linux_wext_enc_disable(ctx);
 }
 
 /**
@@ -215,38 +219,35 @@ void cardif_linux_clear_keys(context *ctx)
  * \retval IS_UNASSOCIATED when the interface isn't associated
  * \retval IS_ASSOCIATED when the interface is associated
  **/
-int cardif_check_associated(context *ctx)
+int cardif_check_associated(context * ctx)
 {
-  char newmac[6], curbssid[6];
+	char newmac[6], curbssid[6];
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  // If we are wired, this function doesn't do anything useful.
-  if (ctx->intType != ETH_802_11_INT) return XENONE;
+	// If we are wired, this function doesn't do anything useful.
+	if (ctx->intType != ETH_802_11_INT)
+		return XENONE;
 
-  cardif_GetBSSID(ctx, curbssid);
+	cardif_GetBSSID(ctx, curbssid);
 
-  memset(newmac, 0x00, 6);
-  if (memcmp(newmac, curbssid, 6) == 0)
-    {
-      return IS_UNASSOCIATED;
-    }
+	memset(newmac, 0x00, 6);
+	if (memcmp(newmac, curbssid, 6) == 0) {
+		return IS_UNASSOCIATED;
+	}
 
-  memset(newmac, 0x44, 6);
-  if (memcmp(newmac, curbssid, 6) == 0)
-    {
-      return IS_UNASSOCIATED;
-    }
+	memset(newmac, 0x44, 6);
+	if (memcmp(newmac, curbssid, 6) == 0) {
+		return IS_UNASSOCIATED;
+	}
 
-  memset(newmac, 0xFF, 6);
-  if (memcmp(newmac, curbssid, 6) == 0)
-    {
-      return IS_UNASSOCIATED;
-    }
-
-  //Otherwise, we are associated.
-  return IS_ASSOCIATED;
+	memset(newmac, 0xFF, 6);
+	if (memcmp(newmac, curbssid, 6) == 0) {
+		return IS_UNASSOCIATED;
+	}
+	//Otherwise, we are associated.
+	return IS_ASSOCIATED;
 }
 
 /**
@@ -255,32 +256,28 @@ int cardif_check_associated(context *ctx)
  *
  * @param[in] driver   A number that identifies the driver that we want to use.
  **/
-void cardif_set_driver(char driver, context *ctx)
+void cardif_set_driver(char driver, context * ctx)
 {
-  switch (driver)
-    {
-    case DRIVER_NONE:
-      wireless = NULL;
-      break;
+	switch (driver) {
+	case DRIVER_NONE:
+		wireless = NULL;
+		break;
 
 #ifndef DISABLE_LIBNL
-    case DRIVER_NL80211:
-        if ( driver_nl80211_init(ctx) )
-        {
-                return;
-        }
-                else
-        {
-                wireless = &cardif_linux_nl80211_driver;
-        }
-        break;
-#endif // DISABLE_LIBNL
+	case DRIVER_NL80211:
+		if (driver_nl80211_init(ctx)) {
+			return;
+		} else {
+			wireless = &cardif_linux_nl80211_driver;
+		}
+		break;
+#endif				// DISABLE_LIBNL
 
-    default:
-    case DRIVER_WEXT:
-      wireless = &cardif_linux_wext_driver;
-      break;
-    }
+	default:
+	case DRIVER_WEXT:
+		wireless = &cardif_linux_wext_driver;
+		break;
+	}
 }
 
 /**
@@ -299,169 +296,168 @@ void cardif_set_driver(char driver, context *ctx)
  * \retval XEGENERROR on general error
  * \retval XENONE on success
  **/
-int cardif_init(context *ctx, char driver)
+int cardif_init(context * ctx, char driver)
 {
-  struct ifreq ifr;
-  struct lin_sock_data *sockData;
-  int retval;
-  struct config_globals *globals;
-  wireless_ctx *wctx = NULL;
-  wctx = (wireless_ctx *) ctx->intTypeData;
+	struct ifreq ifr;
+	struct lin_sock_data *sockData;
+	int retval;
+	struct config_globals *globals;
+	wireless_ctx *wctx = NULL;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  // Get the information about the global settings from the config file.
-  globals = config_get_globals();
+	// Get the information about the global settings from the config file.
+	globals = config_get_globals();
 
-  if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
-    return XEGENERROR;
+	if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
+		return XEGENERROR;
 
-  debug_printf(DEBUG_INT, "Initializing socket for interface %s..\n",
-	       ctx->intName);
+	debug_printf(DEBUG_INT, "Initializing socket for interface %s..\n",
+		     ctx->intName);
 
-  // Allocate memory for the things we need.
-  ctx->sockData = (void *)Malloc(sizeof(struct lin_sock_data));
-  if (ctx->sockData == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Error allocating memory!\n");
-      return XEMALLOC;
-    }
-
-  sockData = ctx->sockData;
-
-  // Establish a socket handle.
-  sockData->sockInt = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_EAPOL));
-  if (sockData->sockInt < 0)
-    {
-      debug_printf(DEBUG_NORMAL, 
-		   "Couldn't initialize raw socket for interface %s!\n",
-		   ctx->intName);
-      return XENOSOCK;
-    }        
-
-  // Build our link layer socket struct, so we can bind it to a specific
-  // interface.
-  sockData->sll.sll_family = PF_PACKET;
-  sockData->sll.sll_ifindex = if_nametoindex(ctx->intName);
-  sockData->sll.sll_protocol = htons(ETH_P_EAPOL);
-
-  // Bind to the interface.
-  retval = bind(sockData->sockInt, (const struct sockaddr *)&sockData->sll, 
-		sizeof(struct sockaddr_ll));
-  if (retval < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Error binding raw socket to interface %s!\n",
-		   ctx->intName);
-      return XESOCKOP;
-    }
-
-  memset(&ifr, 0x00, sizeof(ifr));
-
-  if (strlen(ctx->intName) == 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid interface name in %s():%d\n",
-                   __FUNCTION__, __LINE__);
-      return XEGENERROR;
-    }
-
-  ifr.ifr_ifindex = if_nametoindex(ctx->intName);
-
-  // Tell the ifreq struct which interface we want to use.
-  Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), ctx->intName, 
-	  strlen(ctx->intName)+1);
-
-  // Get our MAC address.  (Needed for sending frames out correctly.)
-  retval = ioctl(sockData->sockInt, SIOCGIFHWADDR, &ifr);
-  if (retval < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Error getting hardware (MAC) address for interface %s!\n",
-		   ctx->intName);
-      debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno, strerror(errno)); 
-      return XENOTINT;
-    }
-
-  // Store a copy of our source MAC for later use.
-  memcpy((char *)&ctx->source_mac[0], (char *)&ifr.ifr_hwaddr.sa_data[0], 6);
-
-  // Check if we want ALLMULTI mode, and enable it.
-  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ALLMULTI))
-    {
-      if (strlen(ctx->intName) == 0)
-        {
-          debug_printf(DEBUG_NORMAL, "Invalid interface name in %s():%d\n",
-                       __FUNCTION__, __LINE__);
-          return XEGENERROR;
-        }
-
-      // Tell the ifreq struct which interface we want to use.
-      Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), ctx->intName, 
-	      strlen(ctx->intName)+1);
-
-      if (ioctl(sockData->sockInt, SIOCGIFFLAGS, &ifr) < 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't determine if ALLMULTI is enabled!\n");
-	} else {
-	  if (ifr.ifr_flags & IFF_ALLMULTI)
-	    {
-	      debug_printf(DEBUG_INT, "Allmulti mode is already enabled on this device!\n");
-	      ctx->flags |= ALLMULTI;
-	    } else {
-	      debug_printf(DEBUG_INT, "Allmulti is currently disabled on this device!\n");
-	      ctx->flags &= ~ALLMULTI;
-	    }
+	// Allocate memory for the things we need.
+	ctx->sockData = (void *)Malloc(sizeof(struct lin_sock_data));
+	if (ctx->sockData == NULL) {
+		debug_printf(DEBUG_NORMAL, "Error allocating memory!\n");
+		return XEMALLOC;
 	}
 
-      debug_printf(DEBUG_INT, "Turning on ALLMULTI mode.\n");
-      ifr.ifr_flags |= IFF_ALLMULTI;
-      if (ioctl(sockData->sockInt, SIOCSIFFLAGS, &ifr) < 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't set ALLMULTI mode on this interface!  We will continue anyway!\n");
+	sockData = ctx->sockData;
+
+	// Establish a socket handle.
+	sockData->sockInt = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_EAPOL));
+	if (sockData->sockInt < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't initialize raw socket for interface %s!\n",
+			     ctx->intName);
+		return XENOSOCK;
 	}
-    }
+	// Build our link layer socket struct, so we can bind it to a specific
+	// interface.
+	sockData->sll.sll_family = PF_PACKET;
+	sockData->sll.sll_ifindex = if_nametoindex(ctx->intName);
+	sockData->sll.sll_protocol = htons(ETH_P_EAPOL);
 
-  // Set up wireless card drivers.
-  cardif_set_driver(driver,ctx);
-
-  if (cardif_int_is_wireless(ctx) == TRUE)
-    {
-      debug_printf(DEBUG_INT, "Interface is wireless.\n");
-      ctx->intType = ETH_802_11_INT;
-
-      if (context_create_wireless_ctx((wireless_ctx **)&ctx->intTypeData, 0) != XENONE)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't create wireless context for "
-		       "interface!\n");
-	  ipc_events_error(ctx, IPC_EVENT_ERROR_CANT_CREATE_WIRELESS_CTX, ctx->desc);
-	  return -1;
+	// Bind to the interface.
+	retval =
+	    bind(sockData->sockInt, (const struct sockaddr *)&sockData->sll,
+		 sizeof(struct sockaddr_ll));
+	if (retval < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Error binding raw socket to interface %s!\n",
+			     ctx->intName);
+		return XESOCKOP;
 	}
 
-      cardif_disassociate(ctx, 0);
+	memset(&ifr, 0x00, sizeof(ifr));
 
-      ctx->intType = ETH_802_11_INT;
+	if (strlen(ctx->intName) == 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid interface name in %s():%d\n",
+			     __FUNCTION__, __LINE__);
+		return XEGENERROR;
+	}
 
-      wctx = (wireless_ctx *) ctx->intTypeData;
-      if (wctx != NULL) {
-        wctx->pmkids_supported = 1;
-        pmksa_cache_init(ctx);
-      }
+	ifr.ifr_ifindex = if_nametoindex(ctx->intName);
 
-    }
+	// Tell the ifreq struct which interface we want to use.
+	Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), ctx->intName,
+		strlen(ctx->intName) + 1);
 
-  ctx->sendframe = Malloc(FRAMESIZE);
-  if (ctx->sendframe == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store frames "
-		   "to be sent.\n");
-      return XEMALLOC;
-    }
+	// Get our MAC address.  (Needed for sending frames out correctly.)
+	retval = ioctl(sockData->sockInt, SIOCGIFHWADDR, &ifr);
+	if (retval < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Error getting hardware (MAC) address for interface %s!\n",
+			     ctx->intName);
+		debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno,
+			     strerror(errno));
+		return XENOTINT;
+	}
+	// Store a copy of our source MAC for later use.
+	memcpy((char *)&ctx->source_mac[0], (char *)&ifr.ifr_hwaddr.sa_data[0],
+	       6);
 
-  cardif_linux_rtnetlink_set_linkmode(ctx, IF_LINK_MODE_DORMANT);
+	// Check if we want ALLMULTI mode, and enable it.
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ALLMULTI)) {
+		if (strlen(ctx->intName) == 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Invalid interface name in %s():%d\n",
+				     __FUNCTION__, __LINE__);
+			return XEGENERROR;
+		}
+		// Tell the ifreq struct which interface we want to use.
+		Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name),
+			ctx->intName, strlen(ctx->intName) + 1);
 
-  event_core_register(cardif_get_socket(ctx), ctx, eapol_withframe,
-                      LOW_PRIORITY, "frame handler");
-	  
-  return XENONE;
+		if (ioctl(sockData->sockInt, SIOCGIFFLAGS, &ifr) < 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't determine if ALLMULTI is enabled!\n");
+		} else {
+			if (ifr.ifr_flags & IFF_ALLMULTI) {
+				debug_printf(DEBUG_INT,
+					     "Allmulti mode is already enabled on this device!\n");
+				ctx->flags |= ALLMULTI;
+			} else {
+				debug_printf(DEBUG_INT,
+					     "Allmulti is currently disabled on this device!\n");
+				ctx->flags &= ~ALLMULTI;
+			}
+		}
+
+		debug_printf(DEBUG_INT, "Turning on ALLMULTI mode.\n");
+		ifr.ifr_flags |= IFF_ALLMULTI;
+		if (ioctl(sockData->sockInt, SIOCSIFFLAGS, &ifr) < 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't set ALLMULTI mode on this interface!  We will continue anyway!\n");
+		}
+	}
+	// Set up wireless card drivers.
+	cardif_set_driver(driver, ctx);
+
+	if (cardif_int_is_wireless(ctx) == TRUE) {
+		debug_printf(DEBUG_INT, "Interface is wireless.\n");
+		ctx->intType = ETH_802_11_INT;
+
+		if (context_create_wireless_ctx
+		    ((wireless_ctx **) & ctx->intTypeData, 0) != XENONE) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't create wireless context for "
+				     "interface!\n");
+			ipc_events_error(ctx,
+					 IPC_EVENT_ERROR_CANT_CREATE_WIRELESS_CTX,
+					 ctx->desc);
+			return -1;
+		}
+
+		cardif_disassociate(ctx, 0);
+
+		ctx->intType = ETH_802_11_INT;
+
+		wctx = (wireless_ctx *) ctx->intTypeData;
+		if (wctx != NULL) {
+			wctx->pmkids_supported = 1;
+			pmksa_cache_init(ctx);
+		}
+
+	}
+
+	ctx->sendframe = Malloc(FRAMESIZE);
+	if (ctx->sendframe == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't allocate memory to store frames "
+			     "to be sent.\n");
+		return XEMALLOC;
+	}
+
+	cardif_linux_rtnetlink_set_linkmode(ctx, IF_LINK_MODE_DORMANT);
+
+	event_core_register(cardif_get_socket(ctx), ctx, eapol_withframe,
+			    LOW_PRIORITY, "frame handler");
+
+	return XENONE;
 }
 
 /**
@@ -474,55 +470,53 @@ int cardif_init(context *ctx, char driver)
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on success (or nothing to do)
  **/
-int cardif_do_wireless_scan(context *ctx, char passive)
+int cardif_do_wireless_scan(context * ctx, char passive)
 {
-  wireless_ctx *wctx = NULL;
-   int resval = 0;
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	wireless_ctx *wctx = NULL;
+	int resval = 0;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
-		   FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
+			 FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) 
-    {
-      debug_printf(DEBUG_INT, "No valid wireless calls struct! (%s:%d)\n",
-		   __FUNCTION__, __LINE__);
-      return XEMALLOC;
-    }
+	if (wireless == NULL) {
+		debug_printf(DEBUG_INT,
+			     "No valid wireless calls struct! (%s:%d)\n",
+			     __FUNCTION__, __LINE__);
+		return XEMALLOC;
+	}
 
-  if (wireless->scan == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "No scan function defined!\n");
-      return XEMALLOC;
-    }
+	if (wireless->scan == NULL) {
+		debug_printf(DEBUG_NORMAL, "No scan function defined!\n");
+		return XEMALLOC;
+	}
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  // If we are already scanning, then we shouldn't get here, but go ahead 
-  // and ignore it anyway.
-  if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING) )
-    {
-      debug_printf(DEBUG_INT, "Got a request to start a new scan when one is"
-		   " already in progress!  Ignoring!\n");
-      return XENONE;
-    }
+	// If we are already scanning, then we shouldn't get here, but go ahead 
+	// and ignore it anyway.
+	if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {
+		debug_printf(DEBUG_INT,
+			     "Got a request to start a new scan when one is"
+			     " already in progress!  Ignoring!\n");
+		return XENONE;
+	}
 
-  SET_FLAG(wctx->flags, WIRELESS_SCANNING);
-  //This is moved to cardif_linux_rtnetlink_check_nets() to allow the cache to be used till
-  //we actually get the data from scanning
-  //config_ssid_clear(wctx);
+	SET_FLAG(wctx->flags, WIRELESS_SCANNING);
+	//This is moved to cardif_linux_rtnetlink_check_nets() to allow the cache to be used till
+	//we actually get the data from scanning
+	//config_ssid_clear(wctx);
 
- resval = wireless->scan(ctx, passive);
+	resval = wireless->scan(ctx, passive);
 
-  if (resval != XENONE)
-  {
-          // We had an error trying to scan, so clear the scanning flag.
-          UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
-  }
+	if (resval != XENONE) {
+		// We had an error trying to scan, so clear the scanning flag.
+		UNSET_FLAG(wctx->flags, WIRELESS_SCANNING);
+	}
 
-  return resval;
+	return resval;
 }
 
 /**
@@ -536,22 +530,24 @@ int cardif_do_wireless_scan(context *ctx, char passive)
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on success
  **/
-int cardif_disassociate(context *ctx, int reason_code)
+int cardif_disassociate(context * ctx, int reason_code)
 {
-  wireless_ctx *wctx = NULL;
-  wctx = (wireless_ctx *) ctx->intTypeData;
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	wireless_ctx *wctx = NULL;
+	wctx = (wireless_ctx *) ctx->intTypeData;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if(TEST_FLAG(ctx->flags, INT_GONE)) 
-	return XENONE;
+	if (TEST_FLAG(ctx->flags, INT_GONE))
+		return XENONE;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->disassociate == NULL) return XEMALLOC;
+	if (wireless->disassociate == NULL)
+		return XEMALLOC;
 
-  debug_printf(DEBUG_INT, "Called %s\n", __FUNCTION__);
-  return wireless->disassociate(ctx, reason_code);
+	debug_printf(DEBUG_INT, "Called %s\n", __FUNCTION__);
+	return wireless->disassociate(ctx, reason_code);
 }
 
 /**
@@ -563,16 +559,16 @@ int cardif_disassociate(context *ctx, int reason_code)
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on success
  **/
-int cardif_get_socket(context *ctx)
+int cardif_get_socket(context * ctx)
 {
-  struct lin_sock_data *sockData;
+	struct lin_sock_data *sockData;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  return sockData->sockInt;
+	return sockData->sockInt;
 }
 
 /**
@@ -587,98 +583,102 @@ int cardif_get_socket(context *ctx)
  * \retval XENONE on success
  * \retval XEGENERROR on general error
  **/
-int cardif_deinit(context *ctx)
+int cardif_deinit(context * ctx)
 {
-  struct ifreq ifr;
-  uint16_t int16;
-  struct lin_sock_data *sockData;
-  uint8_t all0s[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	struct ifreq ifr;
+	uint16_t int16;
+	struct lin_sock_data *sockData;
+	uint8_t all0s[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_rtnetlink_set_operstate(ctx, XIF_OPER_UP);
-  if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_rtnetlink_set_linkmode(ctx, XIF_LINK_MODE_DEFAULT);
+	if (!TEST_FLAG(ctx->flags, INT_GONE))
+		cardif_linux_rtnetlink_set_operstate(ctx, XIF_OPER_UP);
+	if (!TEST_FLAG(ctx->flags, INT_GONE))
+		cardif_linux_rtnetlink_set_linkmode(ctx, XIF_LINK_MODE_DEFAULT);
 
+	FREE(ctx->sendframe);
+	FREE(ctx->recvframe);
 
-  FREE(ctx->sendframe);
-  FREE(ctx->recvframe);
-  
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  debug_printf(DEBUG_INT | DEBUG_DEINIT, "Cleaning up interface %s...\n",ctx->intName);
+	debug_printf(DEBUG_INT | DEBUG_DEINIT, "Cleaning up interface %s...\n",
+		     ctx->intName);
 
-  if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_rtnetlink_cleanup(ctx);
+	if (!TEST_FLAG(ctx->flags, INT_GONE))
+		cardif_linux_rtnetlink_cleanup(ctx);
 
-  if (ctx->intType == ETH_802_11_INT)
-  {
-    pmksa_cache_deinit(ctx);
-    // Remove all of the keys that we have set.
-    if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_clear_keys(ctx);
+	if (ctx->intType == ETH_802_11_INT) {
+		pmksa_cache_deinit(ctx);
+		// Remove all of the keys that we have set.
+		if (!TEST_FLAG(ctx->flags, INT_GONE))
+			cardif_linux_clear_keys(ctx);
 
-    debug_printf(DEBUG_INT, "Turning off WPA support/state.\n");
+		debug_printf(DEBUG_INT, "Turning off WPA support/state.\n");
 
-    // Clear the WPA IE.
-    if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_linux_wext_set_wpa_ie(ctx, NULL, 0);
+		// Clear the WPA IE.
+		if (!TEST_FLAG(ctx->flags, INT_GONE))
+			cardif_linux_wext_set_wpa_ie(ctx, NULL, 0);
 
-    if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_disable_wpa_state(ctx);
+		if (!TEST_FLAG(ctx->flags, INT_GONE))
+			cardif_disable_wpa_state(ctx);
 
-    // Reset the MAC address to all 0s.  (This tells the driver to
-    // scan for new associations.
-    if (!TEST_FLAG(ctx->flags, INT_GONE)) cardif_setBSSID(ctx, all0s);
-  }
-
-  // Check if we want ALLMULTI mode, and enable it.
-  if (TEST_FLAG(ctx->flags, ALLMULTI))
-    {
-      memset(&ifr, 0x00, sizeof(ifr));
-
-      // Tell the ifreq struct which interface we want to use.
-      Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), ctx->intName, 
-	      strlen(ctx->intName)+1);
-
-      if (strlen(ifr.ifr_name) == 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Invalid interface name in %s():%d\n",
-		       __FUNCTION__, __LINE__);
-	  return XEGENERROR;
+		// Reset the MAC address to all 0s.  (This tells the driver to
+		// scan for new associations.
+		if (!TEST_FLAG(ctx->flags, INT_GONE))
+			cardif_setBSSID(ctx, all0s);
 	}
+	// Check if we want ALLMULTI mode, and enable it.
+	if (TEST_FLAG(ctx->flags, ALLMULTI)) {
+		memset(&ifr, 0x00, sizeof(ifr));
 
-      if (ioctl(sockData->sockInt, SIOCGIFFLAGS, &ifr) < 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "Couldn't get interface flags!\n");
-	} else {
-	  // Check if allmulti was disabled when we started.  If it was,
-	  // then disable it again, so everything is good.
-	  if (!(ctx->flags & ALLMULTI))
-	    {
-	      debug_printf(DEBUG_INT, "Turning off ALLMULTI mode!\n");
+		// Tell the ifreq struct which interface we want to use.
+		Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name),
+			ctx->intName, strlen(ctx->intName) + 1);
 
-	      int16 = ifr.ifr_flags;
-
-	      // ANDing the flags with 0xfdff will turn off the ALLMULTI flag.
-	      ifr.ifr_flags = (int16 & 0xfdff);
-	      if (ioctl(sockData->sockInt, SIOCSIFFLAGS, &ifr) < 0)
-		{
-		  debug_printf(DEBUG_NORMAL, "Couldn't set ALLMULTI mode on this interface!  We will continue anyway!\n");
+		if (strlen(ifr.ifr_name) == 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Invalid interface name in %s():%d\n",
+				     __FUNCTION__, __LINE__);
+			return XEGENERROR;
 		}
-	    }
-	}
-    }
 
-  close(sockData->sockInt);
+		if (ioctl(sockData->sockInt, SIOCGIFFLAGS, &ifr) < 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Couldn't get interface flags!\n");
+		} else {
+			// Check if allmulti was disabled when we started.  If it was,
+			// then disable it again, so everything is good.
+			if (!(ctx->flags & ALLMULTI)) {
+				debug_printf(DEBUG_INT,
+					     "Turning off ALLMULTI mode!\n");
+
+				int16 = ifr.ifr_flags;
+
+				// ANDing the flags with 0xfdff will turn off the ALLMULTI flag.
+				ifr.ifr_flags = (int16 & 0xfdff);
+				if (ioctl(sockData->sockInt, SIOCSIFFLAGS, &ifr)
+				    < 0) {
+					debug_printf(DEBUG_NORMAL,
+						     "Couldn't set ALLMULTI mode on this interface!  We will continue anyway!\n");
+				}
+			}
+		}
+	}
+
+	close(sockData->sockInt);
 
 #ifndef DISABLE_LIBNL
-  if (driver_nl80211_deinit(ctx) )
-        {
-                debug_printf(DEBUG_DEINIT,"nl80211 Driver De-init Failed\n");
-        }
-#endif  // DISABLE_LIBNL
+	if (driver_nl80211_deinit(ctx)) {
+		debug_printf(DEBUG_DEINIT, "nl80211 Driver De-init Failed\n");
+	}
+#endif				// DISABLE_LIBNL
 
-  // Now clean up the memory.
-  FREE(ctx->sockData);
+	// Now clean up the memory.
+	FREE(ctx->sockData);
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -697,19 +697,21 @@ int cardif_deinit(context *ctx)
  * \retval XEMALLOC on memory allocation error.
  * \retval XENONE on success
  **/
-int cardif_set_wep_key(context *ctx, uint8_t *key, int keylen, int index)
+int cardif_set_wep_key(context * ctx, uint8_t * key, int keylen, int index)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((key != NULL), "key != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((key != NULL), "key != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->set_wep_key == NULL) return XEMALLOC;
+	if (wireless->set_wep_key == NULL)
+		return XEMALLOC;
 
-  return wireless->set_wep_key(ctx, key, keylen, index);
+	return wireless->set_wep_key(ctx, key, keylen, index);
 }
 
 /**
@@ -721,16 +723,18 @@ int cardif_set_wep_key(context *ctx, uint8_t *key, int keylen, int index)
  * \retval XENONE on success
  **/
 
-int cardif_set_freq( context *ctx )
+int cardif_set_freq(context * ctx)
 {
-   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-        return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->set_freq == NULL) return XEMALLOC;
+	if (wireless->set_freq == NULL)
+		return XEMALLOC;
 
-  return wireless->set_freq(ctx);
+	return wireless->set_freq(ctx);
 }
 
 /**
@@ -749,18 +753,20 @@ int cardif_set_freq( context *ctx )
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on success
  **/
-int cardif_set_tkip_key(context *ctx, char *addr,  int keyidx, int settx, 
+int cardif_set_tkip_key(context * ctx, char *addr, int keyidx, int settx,
 			char *key, int keylen)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->set_tkip_key == NULL) return XEMALLOC;
+	if (wireless->set_tkip_key == NULL)
+		return XEMALLOC;
 
-  return wireless->set_tkip_key(ctx, (uint8_t *) addr, keyidx, settx, 
-				key, keylen);
+	return wireless->set_tkip_key(ctx, (uint8_t *) addr, keyidx, settx,
+				      key, keylen);
 }
 
 /**
@@ -779,18 +785,20 @@ int cardif_set_tkip_key(context *ctx, char *addr,  int keyidx, int settx,
  * \retval XEMALLOC on memory allocation error.
  * \retval XENONE on success
  **/
-int cardif_set_ccmp_key(context *ctx, char *addr, int keyidx,
+int cardif_set_ccmp_key(context * ctx, char *addr, int keyidx,
 			int settx, char *key, int keylen)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->set_ccmp_key == NULL) return XEMALLOC;
+	if (wireless->set_ccmp_key == NULL)
+		return XEMALLOC;
 
-  return wireless->set_ccmp_key(ctx, (uint8_t *) addr, keyidx, settx,
-				key, keylen);
+	return wireless->set_ccmp_key(ctx, (uint8_t *) addr, keyidx, settx,
+				      key, keylen);
 }
 
 /**
@@ -804,16 +812,18 @@ int cardif_set_ccmp_key(context *ctx, char *addr, int keyidx,
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on success
  **/
-int cardif_delete_key(context *ctx, int key_idx, int set_tx)
+int cardif_delete_key(context * ctx, int key_idx, int set_tx)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->delete_key == NULL) return XEMALLOC;
+	if (wireless->delete_key == NULL)
+		return XEMALLOC;
 
-  return wireless->delete_key(ctx, key_idx, set_tx);
+	return wireless->delete_key(ctx, key_idx, set_tx);
 }
 
 /**
@@ -825,27 +835,27 @@ int cardif_delete_key(context *ctx, int key_idx, int set_tx)
  * @param[in] ctx   The context that contains the interface that we want to
  *                  attempt an association on.
  **/
-void cardif_associate(context *ctx)
+void cardif_associate(context * ctx)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  if (wireless == NULL) 
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid wireless structure in %s() at %d.\n",
-		   __FUNCTION__, __LINE__);
-      return;
-    }
+	if (wireless == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid wireless structure in %s() at %d.\n",
+			     __FUNCTION__, __LINE__);
+		return;
+	}
 
-  if (wireless->associate == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Attempted to associate using an invalid "
-		   "wireless driver struct in %s() at %d.\n", __FUNCTION__,
-		   __LINE__);
-      return;
-    }
+	if (wireless->associate == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Attempted to associate using an invalid "
+			     "wireless driver struct in %s() at %d.\n",
+			     __FUNCTION__, __LINE__);
+		return;
+	}
 
-  wireless->associate(ctx);
+	wireless->associate(ctx);
 }
 
 /**
@@ -867,28 +877,27 @@ void cardif_associate(context *ctx)
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on success
  **/
-int cardif_GetSSID(context *ctx, char *ssid_name, unsigned int ssid_buf_size)
+int cardif_GetSSID(context * ctx, char *ssid_name, unsigned int ssid_buf_size)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((ssid_name != NULL), "ssid_name != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ssid_name != NULL), "ssid_name != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) 
-    {
-      debug_printf(DEBUG_NORMAL, "No valid call to get SSID for this driver!"
-		   "\n");
-      return XEMALLOC;
-    }
+	if (wireless == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "No valid call to get SSID for this driver!" "\n");
+		return XEMALLOC;
+	}
 
-  if ((ctx == NULL) || (ssid_name == NULL)) 
-  {
-    debug_printf(DEBUG_INT, "NULL value passed to %s!\n", __FUNCTION__);
-    return XEMALLOC;
-  }
+	if ((ctx == NULL) || (ssid_name == NULL)) {
+		debug_printf(DEBUG_INT, "NULL value passed to %s!\n",
+			     __FUNCTION__);
+		return XEMALLOC;
+	}
 
-  return wireless->get_ssid(ctx, ssid_name, ssid_buf_size);
+	return wireless->get_ssid(ctx, ssid_name, ssid_buf_size);
 }
 
 /******************************************
@@ -898,29 +907,31 @@ int cardif_GetSSID(context *ctx, char *ssid_name, unsigned int ssid_buf_size)
  * we should return an error.
  *
  ******************************************/
-int cardif_GetBSSID(context *thisint, char *bssid_dest)
+int cardif_GetBSSID(context * thisint, char *bssid_dest)
 {
-  if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((bssid_dest != NULL), "bssid_dest != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((bssid_dest != NULL), "bssid_dest != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return -1;
+	if (wireless == NULL)
+		return -1;
 
-  if (thisint == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid interface data structure passed to %s!\n", __FUNCTION__);
-      return -1;
-    }
+	if (thisint == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid interface data structure passed to %s!\n",
+			     __FUNCTION__);
+		return -1;
+	}
 
-  if (bssid_dest == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid bssid_dest in %s!\n", __FUNCTION__);
-      return -1;
-    }
+	if (bssid_dest == NULL) {
+		debug_printf(DEBUG_NORMAL, "Invalid bssid_dest in %s!\n",
+			     __FUNCTION__);
+		return -1;
+	}
 
-  return wireless->get_bssid(thisint, bssid_dest);
+	return wireless->get_bssid(thisint, bssid_dest);
 }
 
 /**
@@ -936,58 +947,54 @@ int cardif_GetBSSID(context *thisint, char *bssid_dest)
  * \retval XENONE on success
  * \retval XEGENERROR on general error
  **/
-int cardif_get_if_state(context *ctx)
+int cardif_get_if_state(context * ctx)
 {
-  int retVal;
-  struct ifreq ifr;
-  struct lin_sock_data *sockData = NULL;
+	int retVal;
+	struct ifreq ifr;
+	struct lin_sock_data *sockData = NULL;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return XEMALLOC;
 
-  memset(&ifr, 0x00, sizeof(ifr));
-  Strncpy(ifr.ifr_name, sizeof(ifr.ifr_name), ctx->intName, 
-	  strlen(ctx->intName)+1);
+	memset(&ifr, 0x00, sizeof(ifr));
+	Strncpy(ifr.ifr_name, sizeof(ifr.ifr_name), ctx->intName,
+		strlen(ctx->intName) + 1);
 
-  if (strlen(ifr.ifr_name) == 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid interface name in %s():%d\n",
-                   __FUNCTION__, __LINE__);
-      return XEGENERROR;
-    }
+	if (strlen(ifr.ifr_name) == 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid interface name in %s():%d\n",
+			     __FUNCTION__, __LINE__);
+		return XEGENERROR;
+	}
 
-  retVal = ioctl(sockData->sockInt, SIOCGIFFLAGS, &ifr);
-  if (retVal < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Interface %s not found!\n", ctx->intName);
-      return FALSE;
-    }
-  if (ctx->intType == ETH_802_11_INT)
-  {
-	if ((ifr.ifr_flags & IFF_UP) == IFF_UP) 
-	{
-      	return TRUE;
-    	} else {
-      SET_FLAG(ctx->flags, WAS_DOWN);
-      return FALSE;
-    }
-  }
-  else
-  {
-  	if (((ifr.ifr_flags & IFF_UP) == IFF_UP) && (sockData->flag_link_state == 1))
-    	{
-      	return TRUE;
-    	} else {
-      	SET_FLAG(ctx->flags, WAS_DOWN);
-      	return FALSE;
-    	}
-  }
-  return XENONE;
+	retVal = ioctl(sockData->sockInt, SIOCGIFFLAGS, &ifr);
+	if (retVal < 0) {
+		debug_printf(DEBUG_NORMAL, "Interface %s not found!\n",
+			     ctx->intName);
+		return FALSE;
+	}
+	if (ctx->intType == ETH_802_11_INT) {
+		if ((ifr.ifr_flags & IFF_UP) == IFF_UP) {
+			return TRUE;
+		} else {
+			SET_FLAG(ctx->flags, WAS_DOWN);
+			return FALSE;
+		}
+	} else {
+		if (((ifr.ifr_flags & IFF_UP) == IFF_UP)
+		    && (sockData->flag_link_state == 1)) {
+			return TRUE;
+		} else {
+			SET_FLAG(ctx->flags, WAS_DOWN);
+			return FALSE;
+		}
+	}
+	return XENONE;
 }
 
 /**
@@ -1000,29 +1007,29 @@ int cardif_get_if_state(context *ctx)
  * \retval TRUE if link is up
  * \retval FALSE if link is down
  **/
-int cardif_get_link_state(context *ctx)
+int cardif_get_link_state(context * ctx)
 {
-  int result = 0;
-  struct lin_sock_data *sockData = NULL;
+	int result = 0;
+	struct lin_sock_data *sockData = NULL;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (TEST_FLAG(ctx->flags, INT_GONE)) return FALSE;  // The interface isn't there, so it can't be up. ;)
+	if (TEST_FLAG(ctx->flags, INT_GONE))
+		return FALSE;	// The interface isn't there, so it can't be up. ;)
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return XEMALLOC;
 
 #warning This is a stub.  Need to implement.
 
-  if (result == 0)
-    {
-      return TRUE;
-    }
+	if (result == 0) {
+		return TRUE;
+	}
 
-  return FALSE;
+	return FALSE;
 }
 
 /**
@@ -1040,86 +1047,81 @@ int cardif_get_link_state(context *ctx)
  * \retval XEGENERROR on general error
  * \retval >0 on success
  **/
-int cardif_sendframe(context *ctx)
+int cardif_sendframe(context * ctx)
 {
-  char nomac[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  int retval;
-  struct lin_sock_data *sockData;
-  uint16_t pad;
+	char nomac[] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+	int retval;
+	struct lin_sock_data *sockData;
+	uint16_t pad;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return XEMALLOC;
 
-  if (ctx->send_size == 0) 
-    {
-      debug_printf(DEBUG_INT, "%s:%d -- Nothing to send!\n",
-		   __FUNCTION__, __LINE__);
-      return XENONE;
-    }
+	if (ctx->send_size == 0) {
+		debug_printf(DEBUG_INT, "%s:%d -- Nothing to send!\n",
+			     __FUNCTION__, __LINE__);
+		return XENONE;
+	}
 
-  if (ctx->conn == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "No connection information available!\n");
-      return XENONE;
-    }
+	if (ctx->conn == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "No connection information available!\n");
+		return XENONE;
+	}
+	// The frame we are handed in shouldn't have a src/dest, so put it in.
+	memcpy(&ctx->sendframe[0], &ctx->dest_mac[0], 6);
+	memcpy(&ctx->sendframe[6], &ctx->source_mac[0], 6);
 
-  // The frame we are handed in shouldn't have a src/dest, so put it in.
-  memcpy(&ctx->sendframe[0], &ctx->dest_mac[0], 6);
-  memcpy(&ctx->sendframe[6], &ctx->source_mac[0], 6);
+	if (ctx->conn == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "No connection information available!  Can't"
+			     " complete authentication!\n");
+		return XEGENERROR;
+	}
 
-  if (ctx->conn == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "No connection information available!  Can't"
-		   " complete authentication!\n");
-      return XEGENERROR;
-    }
+	if (memcmp(nomac, (char *)&ctx->conn->dest_mac[0], 6) != 0) {
+		debug_printf(DEBUG_INT,
+			     "Static MAC address defined!  Using it!\n");
+		memcpy(&ctx->sendframe[0], &ctx->conn->dest_mac[0], 6);
+	}
+	// Make sure the frame is large enough.
+	if (ctx->send_size < 64) {
+		pad = 64 - ctx->send_size;
+		debug_printf(DEBUG_INT,
+			     "Padding frame to 64 bytes by adding %d byte"
+			     "(s).\n", pad);
+		memset(&ctx->sendframe[ctx->send_size + 1], 0x00, pad);
+		ctx->send_size += pad;
+	}
 
-  if (memcmp(nomac, (char *)&ctx->conn->dest_mac[0], 6) != 0)
-    {
-      debug_printf(DEBUG_INT, "Static MAC address defined!  Using it!\n");
-      memcpy(&ctx->sendframe[0], &ctx->conn->dest_mac[0], 6);
-    }
+	debug_printf(DEBUG_INT, "Frame to be sent (%d) : \n", ctx->send_size);
+	debug_hex_dump(DEBUG_INT, ctx->sendframe, ctx->send_size);
 
-  // Make sure the frame is large enough.
-  if (ctx->send_size < 64)
-    {
-      pad = 64 - ctx->send_size;
-      debug_printf(DEBUG_INT, "Padding frame to 64 bytes by adding %d byte"
-		   "(s).\n", pad);
-      memset(&ctx->sendframe[ctx->send_size+1], 0x00, pad);
-      ctx->send_size += pad;
-    }
+	snmp_dot1xSuppEapolFramesTx();
 
-  debug_printf(DEBUG_INT, "Frame to be sent (%d) : \n",
-	       ctx->send_size);
-  debug_hex_dump(DEBUG_INT, ctx->sendframe, ctx->send_size);
+	retval = sendto(sockData->sockInt, ctx->sendframe, ctx->send_size, 0,
+			NULL, 0);
+	if (retval <= 0) {
+		debug_printf(DEBUG_NORMAL, "Couldn't send frame! (%s)\n",
+			     strerror(errno));
+	}
 
-  snmp_dot1xSuppEapolFramesTx();
+	memset(ctx->sendframe, 0x00, FRAMESIZE);
+	ctx->send_size = 0;
 
-  retval = sendto(sockData->sockInt, ctx->sendframe, ctx->send_size, 0,
-		  NULL, 0);
-  if (retval <= 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't send frame! (%s)\n", strerror(errno));
-    }
+	// Clear out the receive buffer so we don't accidently try to process it
+	// again.
+	if (ctx->recvframe != NULL) {
+		memset(ctx->recvframe, 0x00, FRAMESIZE);
+		ctx->recv_size = 0;
+	}
 
-  memset(ctx->sendframe, 0x00, FRAMESIZE);
-  ctx->send_size = 0;
-  
-  // Clear out the receive buffer so we don't accidently try to process it
-  // again.
-  if (ctx->recvframe != NULL)
-    {
-      memset(ctx->recvframe, 0x00, FRAMESIZE);
-      ctx->recv_size = 0;
-    }
-
-  return retval;
+	return retval;
 }
 
 /**
@@ -1135,115 +1137,111 @@ int cardif_sendframe(context *ctx)
  * \retval XENOFRAMES if there are no frames to be had
  * \retval >0 if a frame was received
  **/
-int cardif_getframe(context *ctx)
+int cardif_getframe(context * ctx)
 {
-  int newsize=0;
-  char dot1x_default_dest[6] = {0x01, 0x80, 0xc2, 0x00, 0x00, 0x03};
-  struct lin_sock_data *sockData;
-  uint8_t *resultframe;
-  int resultsize;
-  struct config_globals *globals;
+	int newsize = 0;
+	char dot1x_default_dest[6] = { 0x01, 0x80, 0xc2, 0x00, 0x00, 0x03 };
+	struct lin_sock_data *sockData;
+	uint8_t *resultframe;
+	int resultsize;
+	struct config_globals *globals;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  globals = config_get_globals();
+	globals = config_get_globals();
 
-  if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
+		return XEMALLOC;
 
-  sockData = ctx->sockData;
+	sockData = ctx->sockData;
 
-  if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((sockData != NULL), "sockData != NULL", FALSE))
+		return XEMALLOC;
 
-  errno = 0;
-  resultsize = FRAMESIZE; /* overflows resultframe if too large, or should we increase resultframe instead? */
+	errno = 0;
+	resultsize = FRAMESIZE;	/* overflows resultframe if too large, or should we increase resultframe instead? */
 
-  FREE(ctx->recvframe);
+	FREE(ctx->recvframe);
 
-  resultframe = Malloc(FRAMESIZE);
-  if (resultframe == NULL)
-    {
-      debug_printf(DEBUG_INT, "Couldn't allocate memory for incoming frame!\n");
-      return -1;
-    }
-
-  newsize = recvfrom(sockData->sockInt, resultframe, resultsize, 0, 0, 0);
-  if (newsize <= 0)
-    {
-      if ((errno != EAGAIN) && (errno != ENETDOWN))
-	{
-	  debug_printf(DEBUG_NORMAL, "Error (%d) : %s  (%s:%d)\n", errno,
-		       strerror(errno), __FUNCTION__, __LINE__);
+	resultframe = Malloc(FRAMESIZE);
+	if (resultframe == NULL) {
+		debug_printf(DEBUG_INT,
+			     "Couldn't allocate memory for incoming frame!\n");
+		return -1;
 	}
-      return XENOFRAMES;
-    } else {
-      debug_printf(DEBUG_INT, "Got Frame (%d) : \n", newsize);
-      debug_hex_dump(DEBUG_INT, resultframe, newsize);
-    }
 
-  snmp_dot1xSuppEapolFramesRx();
-
-  // Make sure that the frame we got is for us..
-  if ((memcmp(&ctx->source_mac[0], &resultframe[0], 6) == 0) ||
-      ((memcmp(&resultframe[0], &dot1x_default_dest[0], 6) == 0) &&
-       (memcmp(&resultframe[6], &ctx->source_mac[0], 6) != 0)))
-    {
-      // Since we now know this frame is for us, record the address it
-      // came from.
-      snmp_dot1xSuppLastEapolFrameSource((uint8_t *)&resultframe[6]);
-
-      resultsize = newsize;
-
-      switch (globals->destination)
-	{
-	case DEST_AUTO:
-	  // If it is a wired interface, only change the destination if
-	  // the recieved frame destination isn't the multicast address.
-	  if (ctx->intType == ETH_802_11_INT)
-	    {
-	      if (memcmp(&resultframe[0], dot1x_default_dest, 6) == 0)
-		{
-		  break;
+	newsize = recvfrom(sockData->sockInt, resultframe, resultsize, 0, 0, 0);
+	if (newsize <= 0) {
+		if ((errno != EAGAIN) && (errno != ENETDOWN)) {
+			debug_printf(DEBUG_NORMAL, "Error (%d) : %s  (%s:%d)\n",
+				     errno, strerror(errno), __FUNCTION__,
+				     __LINE__);
 		}
-	      // Otherwise, fall through.
-	    }
-	  else
-	    {
-	      break;
-	    }
-
-	case DEST_SOURCE:
-	  if (memcmp(ctx->dest_mac, &resultframe[6], 6) != 0)
-	    {
-	      debug_printf(DEBUG_INT, "Changing destination mac to source.\n");
-	    }
-	  memcpy(ctx->dest_mac, &resultframe[6], 6);
-	  break;
-
-	case DEST_MULTICAST:
-	  memcpy(ctx->dest_mac, dot1x_default_dest, 6);
-	  break;
-
-	case DEST_BSSID:
-	  cardif_GetBSSID(ctx, ctx->dest_mac);
-	  break;
-
-	default:
-	  debug_printf(DEBUG_NORMAL, "Unknown destination mode!\n");
-	  break;
+		return XENOFRAMES;
+	} else {
+		debug_printf(DEBUG_INT, "Got Frame (%d) : \n", newsize);
+		debug_hex_dump(DEBUG_INT, resultframe, newsize);
 	}
 
-      ctx->recv_size = newsize;
+	snmp_dot1xSuppEapolFramesRx();
 
-      ctx->recvframe = resultframe;
-      return newsize;
-    }
+	// Make sure that the frame we got is for us..
+	if ((memcmp(&ctx->source_mac[0], &resultframe[0], 6) == 0) ||
+	    ((memcmp(&resultframe[0], &dot1x_default_dest[0], 6) == 0) &&
+	     (memcmp(&resultframe[6], &ctx->source_mac[0], 6) != 0))) {
+		// Since we now know this frame is for us, record the address it
+		// came from.
+		snmp_dot1xSuppLastEapolFrameSource((uint8_t *) &
+						   resultframe[6]);
 
-  // Otherwise it isn't for us. 
-  debug_printf(DEBUG_INT, "Got a frame, not for us.\n");
-  return XENOFRAMES;
+		resultsize = newsize;
+
+		switch (globals->destination) {
+		case DEST_AUTO:
+			// If it is a wired interface, only change the destination if
+			// the recieved frame destination isn't the multicast address.
+			if (ctx->intType == ETH_802_11_INT) {
+				if (memcmp
+				    (&resultframe[0], dot1x_default_dest,
+				     6) == 0) {
+					break;
+				}
+				// Otherwise, fall through.
+			} else {
+				break;
+			}
+
+		case DEST_SOURCE:
+			if (memcmp(ctx->dest_mac, &resultframe[6], 6) != 0) {
+				debug_printf(DEBUG_INT,
+					     "Changing destination mac to source.\n");
+			}
+			memcpy(ctx->dest_mac, &resultframe[6], 6);
+			break;
+
+		case DEST_MULTICAST:
+			memcpy(ctx->dest_mac, dot1x_default_dest, 6);
+			break;
+
+		case DEST_BSSID:
+			cardif_GetBSSID(ctx, ctx->dest_mac);
+			break;
+
+		default:
+			debug_printf(DEBUG_NORMAL,
+				     "Unknown destination mode!\n");
+			break;
+		}
+
+		ctx->recv_size = newsize;
+
+		ctx->recvframe = resultframe;
+		return newsize;
+	}
+	// Otherwise it isn't for us. 
+	debug_printf(DEBUG_INT, "Got a frame, not for us.\n");
+	return XENOFRAMES;
 }
 
 /**
@@ -1256,18 +1254,21 @@ int cardif_getframe(context *ctx)
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on success
  **/
-int cardif_enable_wpa_state(context *ctx)
+int cardif_enable_wpa_state(context * ctx)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->wpa_state == NULL) return XEMALLOC;
+	if (wireless->wpa_state == NULL)
+		return XEMALLOC;
 
-  debug_printf(DEBUG_INT, "WPA: Enabling WPA state on interface %s.\n",ctx->intName);
+	debug_printf(DEBUG_INT, "WPA: Enabling WPA state on interface %s.\n",
+		     ctx->intName);
 
-  return wireless->wpa_state(ctx, TRUE);
+	return wireless->wpa_state(ctx, TRUE);
 }
 
 /**
@@ -1280,16 +1281,18 @@ int cardif_enable_wpa_state(context *ctx)
  * \retval XENONE on success
  * \retval XEMALLOC on memory allocation failure
  **/
-int cardif_disable_wpa_state(context *ctx)
+int cardif_disable_wpa_state(context * ctx)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->wpa_state == NULL) return XEMALLOC;
+	if (wireless->wpa_state == NULL)
+		return XEMALLOC;
 
-  return wireless->wpa_state(ctx, FALSE);
+	return wireless->wpa_state(ctx, FALSE);
 }
 
 /**
@@ -1301,16 +1304,18 @@ int cardif_disable_wpa_state(context *ctx)
  * \retval XENONE on success
  * \retval XEMALLOC on memory allocation failure
  **/
-int cardif_enable_wpa(context *ctx)
+int cardif_enable_wpa(context * ctx)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  debug_printf(DEBUG_INT, "WPA: Enabling WPA on interface %s.\n",ctx->intName);
+	debug_printf(DEBUG_INT, "WPA: Enabling WPA on interface %s.\n",
+		     ctx->intName);
 
-  return wireless->wpa(ctx, TRUE);
+	return wireless->wpa(ctx, TRUE);
 }
 
 /**
@@ -1324,29 +1329,29 @@ int cardif_enable_wpa(context *ctx)
  * \retval XENONE on success, or not needed
  * \retval XEMALLOC on memory allocation failure
  **/
-int cardif_wep_associate(context *ctx, int zeros)
+int cardif_wep_associate(context * ctx, int zeros)
 {
-  wireless_ctx *wctx;
+	wireless_ctx *wctx;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
-		   FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
+			 FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  if (!config_ssid_using_wep(wctx))
-    {
-      debug_printf(DEBUG_INT, "Doing WPA/WPA2 mode! Not "
-		   "setting/unsetting keys.\n");
-      return XENONE;
-    }
+	if (!config_ssid_using_wep(wctx)) {
+		debug_printf(DEBUG_INT, "Doing WPA/WPA2 mode! Not "
+			     "setting/unsetting keys.\n");
+		return XENONE;
+	}
 
-  return wireless->wep_associate(ctx, zeros); 
+	return wireless->wep_associate(ctx, zeros);
 }
 
 /**
@@ -1359,49 +1364,53 @@ int cardif_wep_associate(context *ctx, int zeros)
  **/
 int cardif_validate(char *interface)
 {
-  int sd, res;
-  struct ifreq ifr;
+	int sd, res;
+	struct ifreq ifr;
 
-  if (!xsup_assert((interface != NULL), "interface != NULL", FALSE))
-    return FALSE;
+	if (!xsup_assert((interface != NULL), "interface != NULL", FALSE))
+		return FALSE;
 
-  memset(&ifr, 0x00, sizeof(ifr));
-  Strncpy(ifr.ifr_name, sizeof(ifr.ifr_name), interface, strlen(interface)+1);
+	memset(&ifr, 0x00, sizeof(ifr));
+	Strncpy(ifr.ifr_name, sizeof(ifr.ifr_name), interface,
+		strlen(interface) + 1);
 
-  if (strlen(ifr.ifr_name) == 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid interface name in %s():%d\n",
-                   __FUNCTION__, __LINE__);
-      return FALSE;
-    }
-
-  sd = socket(PF_PACKET, SOCK_RAW, 0);
-  if (sd < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Unable to obtain a handle to a socket at %s():%d!\n", __FUNCTION__, __LINE__);
-      return FALSE;
-    }
-
-  res = ioctl(sd, SIOCGIFHWADDR, &ifr);
-  close(sd);
-
-  if (res < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't get information for interface %s!\n",interface);
-    } else {
-      switch (ifr.ifr_hwaddr.sa_family)
-	{
-	case ARPHRD_ETHER:
-	case ARPHRD_IEEE80211:
-	  return TRUE;
-
-	default:
-	  debug_printf(DEBUG_NORMAL, "Unknown interface type %d!\n", ifr.ifr_hwaddr.sa_family);
-	  break;
+	if (strlen(ifr.ifr_name) == 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid interface name in %s():%d\n",
+			     __FUNCTION__, __LINE__);
+		return FALSE;
 	}
-    }
 
-  return FALSE;
+	sd = socket(PF_PACKET, SOCK_RAW, 0);
+	if (sd < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to obtain a handle to a socket at %s():%d!\n",
+			     __FUNCTION__, __LINE__);
+		return FALSE;
+	}
+
+	res = ioctl(sd, SIOCGIFHWADDR, &ifr);
+	close(sd);
+
+	if (res < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't get information for interface %s!\n",
+			     interface);
+	} else {
+		switch (ifr.ifr_hwaddr.sa_family) {
+		case ARPHRD_ETHER:
+		case ARPHRD_IEEE80211:
+			return TRUE;
+
+		default:
+			debug_printf(DEBUG_NORMAL,
+				     "Unknown interface type %d!\n",
+				     ifr.ifr_hwaddr.sa_family);
+			break;
+		}
+	}
+
+	return FALSE;
 }
 
 /**
@@ -1416,16 +1425,18 @@ int cardif_validate(char *interface)
  * \retval XENONE on success
  * \retval XEMALLOC on memory allocation failure
  **/
-int cardif_countermeasures(context *ctx, char endis)
+int cardif_countermeasures(context * ctx, char endis)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (wireless->countermeasures == NULL) return XEMALLOC;
+	if (wireless->countermeasures == NULL)
+		return XEMALLOC;
 
-  return wireless->countermeasures(ctx, endis);
+	return wireless->countermeasures(ctx, endis);
 }
 
 /**
@@ -1440,24 +1451,26 @@ int cardif_countermeasures(context *ctx, char endis)
  * \retval XEMALLOC on memory allocation error.
  * \retval XENONE on success
  **/
-int cardif_drop_unencrypted(context *ctx, char endis)
+int cardif_drop_unencrypted(context * ctx, char endis)
 {
-  wireless_ctx *wctx = NULL;
+	wireless_ctx *wctx = NULL;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
-		   FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
+			 FALSE))
+		return XEMALLOC;
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  if (wireless == NULL) return XEMALLOC;
+	if (wireless == NULL)
+		return XEMALLOC;
 
-  if (config_ssid_using_wep(wctx)) return XENONE;
-  
-  return wireless->drop_unencrypted(ctx, endis);
+	if (config_ssid_using_wep(wctx))
+		return XENONE;
+
+	return wireless->drop_unencrypted(ctx, endis);
 }
 
 /**
@@ -1476,219 +1489,218 @@ int cardif_drop_unencrypted(context *ctx, char endis)
  **/
 #define PROC_WIRELESS_FILE  "/proc/net/wireless"
 
-int cardif_int_is_wireless(context *ctx)
+int cardif_int_is_wireless(context * ctx)
 {
-  FILE *fp;
-  char line[1000], *lineptr=NULL;
-  int done;
+	FILE *fp;
+	char line[1000], *lineptr = NULL;
+	int done;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  done = FALSE;
+	done = FALSE;
 
-  fp = fopen(PROC_WIRELESS_FILE, "r");
-  if (fp == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't access /proc/net/wireless!  (You probably don't have wireless extensions enabled!)\n");
-      return -1;
-    }
-
-  memset(line, 0x00, 1000);
-
-  while ((!done) && (fgets(line, 999, fp) != NULL))
-    { 
-      lineptr = strchr(line, ':');
-      
-      if (lineptr != NULL)
-	{
-	  
-	  *lineptr = '\0';
-	  lineptr = &line[0];
-	  
-	  while (*lineptr == ' ') lineptr++;  // Strip out blanks.
-	  if (lineptr != NULL)
-	    {
-	      if (strcmp(lineptr, ctx->intName) == 0) done=TRUE;
-	    }
+	fp = fopen(PROC_WIRELESS_FILE, "r");
+	if (fp == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't access /proc/net/wireless!  (You probably don't have wireless extensions enabled!)\n");
+		return -1;
 	}
-    }
-  fclose(fp);
-  
-  if ((lineptr != NULL) && (strcmp(lineptr, ctx->intName) == 0))
-    {
-      debug_printf(DEBUG_INT, "Interface %s is wireless!\n", ctx->intName);
-      return TRUE;
-    } else {
-      debug_printf(DEBUG_INT, "Interface %s is NOT wireless!\n", ctx->intName);
-      return FALSE;
-    }
 
-  return XENONE;   // No errors.
+	memset(line, 0x00, 1000);
+
+	while ((!done) && (fgets(line, 999, fp) != NULL)) {
+		lineptr = strchr(line, ':');
+
+		if (lineptr != NULL) {
+
+			*lineptr = '\0';
+			lineptr = &line[0];
+
+			while (*lineptr == ' ')
+				lineptr++;	// Strip out blanks.
+			if (lineptr != NULL) {
+				if (strcmp(lineptr, ctx->intName) == 0)
+					done = TRUE;
+			}
+		}
+	}
+	fclose(fp);
+
+	if ((lineptr != NULL) && (strcmp(lineptr, ctx->intName) == 0)) {
+		debug_printf(DEBUG_INT, "Interface %s is wireless!\n",
+			     ctx->intName);
+		return TRUE;
+	} else {
+		debug_printf(DEBUG_INT, "Interface %s is NOT wireless!\n",
+			     ctx->intName);
+		return FALSE;
+	}
+
+	return XENONE;		// No errors.
 }
 
 int is_wireless(char *intname)
 {
-  FILE *fp;
-  char line[1000], *lineptr=NULL;
-  int done;
+	FILE *fp;
+	char line[1000], *lineptr = NULL;
+	int done;
 
-  if (!xsup_assert((intname != NULL), "intname != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((intname != NULL), "intname != NULL", FALSE))
+		return XEMALLOC;
 
-  done = FALSE;
+	done = FALSE;
 
-  fp = fopen(PROC_WIRELESS_FILE, "r");
-  if (fp == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't access /proc/net/wireless!  (You probably don't have wireless extensions enabled!)\n");
-      return -1;
-    }
+	fp = fopen(PROC_WIRELESS_FILE, "r");
+	if (fp == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't access /proc/net/wireless!  (You probably don't have wireless extensions enabled!)\n");
+		return -1;
+	}
 
-  memset(line, 0x00, 1000);
+	memset(line, 0x00, 1000);
 
-  while ((!done) && (fgets(line, 999, fp) != NULL))
-    {
-      lineptr = strchr(line, ':');
+	while ((!done) && (fgets(line, 999, fp) != NULL)) {
+		lineptr = strchr(line, ':');
 
-      if (lineptr != NULL)
-        {
+		if (lineptr != NULL) {
 
-          *lineptr = '\0';
-          lineptr = &line[0];
+			*lineptr = '\0';
+			lineptr = &line[0];
 
-          while (*lineptr == ' ') lineptr++;  // Strip out blanks.
-          if (lineptr != NULL)
-            {
-              if (strcmp(lineptr, intname) == 0) done=TRUE;
-            }
-        }
-    }
-  fclose(fp);
+			while (*lineptr == ' ')
+				lineptr++;	// Strip out blanks.
+			if (lineptr != NULL) {
+				if (strcmp(lineptr, intname) == 0)
+					done = TRUE;
+			}
+		}
+	}
+	fclose(fp);
 
-  if ((lineptr != NULL) && (strcmp(lineptr, intname) == 0))
-    {
-      debug_printf(DEBUG_INT, "Interface %s is wireless!\n", intname);
-      return TRUE;
-    } else {
-      debug_printf(DEBUG_INT, "Interface %s is NOT wireless!\n", intname);
-      return FALSE;
-    }
+	if ((lineptr != NULL) && (strcmp(lineptr, intname) == 0)) {
+		debug_printf(DEBUG_INT, "Interface %s is wireless!\n", intname);
+		return TRUE;
+	} else {
+		debug_printf(DEBUG_INT, "Interface %s is NOT wireless!\n",
+			     intname);
+		return FALSE;
+	}
 
-  return XENONE;   // No errors.
+	return XENONE;		// No errors.
 }
 
 /***********************************************
  * Get the MAC address of an interface
  ***********************************************/
-static int _getmac(char *dest, char *ifname) 
+static int _getmac(char *dest, char *ifname)
 {
-  struct ifreq ifr;
-  int sock = -1;
-  int retval;
+	struct ifreq ifr;
+	int sock = -1;
+	int retval;
 
-  debug_printf(DEBUG_INT, "Looking for MAC address for %s!\n", ifname);
+	debug_printf(DEBUG_INT, "Looking for MAC address for %s!\n", ifname);
 
-  sock = socket(PF_PACKET, SOCK_RAW, 0);
-  if (sock < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Couldn't establish socket needed to query "
-		   "interface %s for it's MAC address.\n", ifname);
-      return FALSE;
-    }
+	sock = socket(PF_PACKET, SOCK_RAW, 0);
+	if (sock < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't establish socket needed to query "
+			     "interface %s for it's MAC address.\n", ifname);
+		return FALSE;
+	}
 
-  memset(&ifr, 0x00, sizeof(ifr));
+	memset(&ifr, 0x00, sizeof(ifr));
 
-  if (strlen(ifname) == 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid interface name in %s():%d\n",
-                   __FUNCTION__, __LINE__);
-      return FALSE;
-    }
+	if (strlen(ifname) == 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid interface name in %s():%d\n",
+			     __FUNCTION__, __LINE__);
+		return FALSE;
+	}
 
-  ifr.ifr_ifindex = if_nametoindex(ifname);
+	ifr.ifr_ifindex = if_nametoindex(ifname);
 
-  // Tell the ifreq struct which interface we want to use.
-  Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), ifname,
-          strlen(ifname)+1);
-  printf("Interface : %s\n", ifr.ifr_name);
+	// Tell the ifreq struct which interface we want to use.
+	Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), ifname,
+		strlen(ifname) + 1);
+	printf("Interface : %s\n", ifr.ifr_name);
 
-  // Get our MAC address.  (Needed for sending frames out correctly.)
-  retval = ioctl(sock, SIOCGIFHWADDR, &ifr);
-  if (retval < 0)
-    {
-      debug_printf(DEBUG_NORMAL, "Error getting hardware (MAC) address for interface %s!\n", ifname);
-      debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno, strerror(errno));
+	// Get our MAC address.  (Needed for sending frames out correctly.)
+	retval = ioctl(sock, SIOCGIFHWADDR, &ifr);
+	if (retval < 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Error getting hardware (MAC) address for interface %s!\n",
+			     ifname);
+		debug_printf(DEBUG_NORMAL, "Error was (%d) : %s\n", errno,
+			     strerror(errno));
 
-      close(sock);
-      return FALSE;
-    }
+		close(sock);
+		return FALSE;
+	}
+	// Store a copy of our source MAC for later use.
+	memcpy(dest, (char *)&ifr.ifr_hwaddr.sa_data[0], 6);
 
-  // Store a copy of our source MAC for later use.
-  memcpy(dest, (char *)&ifr.ifr_hwaddr.sa_data[0], 6);
-
-  close(sock);
-  return TRUE;
+	close(sock);
+	return TRUE;
 }
-
 
 /**
  * \todo Finish the documentation here!
  **/
-int cardif_get_wpa_ie(context *ctx, char *iedata, int *ielen)
+int cardif_get_wpa_ie(context * ctx, char *iedata, int *ielen)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((ielen != NULL), "ielen != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ielen != NULL), "ielen != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((wireless != NULL), "wireless != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((wireless != NULL), "wireless != NULL", FALSE))
+		return XEMALLOC;
 
-  if (wireless->get_wpa_ie == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "No function defined for wireless->get_wpa_ie()!\n");
-      return XEMALLOC;
-    }
+	if (wireless->get_wpa_ie == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "No function defined for wireless->get_wpa_ie()!\n");
+		return XEMALLOC;
+	}
 
-  return wireless->get_wpa_ie(ctx, iedata, ielen);
+	return wireless->get_wpa_ie(ctx, iedata, ielen);
 }
 
-int cardif_get_wpa2_ie(context *ctx, uint8_t *iedata, uint8_t *ielen) 
+int cardif_get_wpa2_ie(context * ctx, uint8_t * iedata, uint8_t * ielen)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!xsup_assert((ielen != NULL), "ielen != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ielen != NULL), "ielen != NULL", FALSE))
+		return XEMALLOC;
 
-  if (!wireless)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid wireless function pointers.\n");
-      return XEMALLOC;
-    }
+	if (!wireless) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid wireless function pointers.\n");
+		return XEMALLOC;
+	}
 
-  if (iedata == NULL)
-    {
-      debug_printf(DEBUG_NORMAL, "Invalid memory for IE data! (%s:%d)\n",
-		   __FUNCTION__, __LINE__);
-      return XEMALLOC;
-    }
+	if (iedata == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Invalid memory for IE data! (%s:%d)\n",
+			     __FUNCTION__, __LINE__);
+		return XEMALLOC;
+	}
 
-  if (!wireless->get_wpa2_ie)
-    {
-      debug_printf(DEBUG_NORMAL, "No valid function to get WPA2 IE!\n");
-      return XEMALLOC;
-    }
+	if (!wireless->get_wpa2_ie) {
+		debug_printf(DEBUG_NORMAL,
+			     "No valid function to get WPA2 IE!\n");
+		return XEMALLOC;
+	}
 
-  return wireless->get_wpa2_ie(ctx, iedata, (uint16_t *)ielen);
+	return wireless->get_wpa2_ie(ctx, iedata, (uint16_t *) ielen);
 }
 
 /**
@@ -1704,33 +1716,30 @@ int cardif_get_wpa2_ie(context *ctx, uint8_t *iedata, uint8_t *ielen)
  * \retval XENONE on success
  * \retval XEMALLOC on error
  **/
-int cardif_clear_keys(context *ctx)
+int cardif_clear_keys(context * ctx)
 {
-  int retVal = 0, i;
+	int retVal = 0, i;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  // Clear the TX key.
-  retVal = cardif_delete_key(ctx, 0, 1);
-  if (retVal != XENONE) 
-    {
-      debug_printf(DEBUG_NORMAL, "Error clearing default TX key!\n");
-      return retVal;
-    }
-
-  // Now, clear out the broadcast/multicast/group key(s).
-  for (i=0;i<4;i++)
-    {
-      retVal = cardif_delete_key(ctx, i, 0);
-      if (retVal != XENONE)
-	{
-	  debug_printf(DEBUG_NORMAL, "Error clearing key %d!\n", i);
-	  return retVal;
+	// Clear the TX key.
+	retVal = cardif_delete_key(ctx, 0, 1);
+	if (retVal != XENONE) {
+		debug_printf(DEBUG_NORMAL, "Error clearing default TX key!\n");
+		return retVal;
 	}
-    }
+	// Now, clear out the broadcast/multicast/group key(s).
+	for (i = 0; i < 4; i++) {
+		retVal = cardif_delete_key(ctx, i, 0);
+		if (retVal != XENONE) {
+			debug_printf(DEBUG_NORMAL, "Error clearing key %d!\n",
+				     i);
+			return retVal;
+		}
+	}
 
-  return XENONE;
+	return XENONE;
 }
 
 /**
@@ -1742,32 +1751,33 @@ int cardif_clear_keys(context *ctx)
  * @param[in] reason   The reason code for a disassociation  as specified by 
  *                     the IEEE 802.11  standards documents.
  **/
-void cardif_reassociate(context *ctx, uint8_t reason)
+void cardif_reassociate(context * ctx, uint8_t reason)
 {
-  wireless_ctx *wctx;
+	wireless_ctx *wctx;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
-    return;
+	if (!xsup_assert
+	    ((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
+		return;
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  if (!config_ssid_using_wep(wctx))
-    {
-      debug_printf(DEBUG_NORMAL, "SSID '%s' is WPA/WPA2 capable. WPA/WPA2 is "
-		   "enabled on this connection.\n", wctx->cur_essid);
-      
-      // Since we are doing WPA/WPA2, we need to disassociate from 
-      // the network, and reassociate with WPA/WPA2 set up.
-      cardif_enable_wpa(ctx);
-      cardif_enable_wpa_state(ctx);
+	if (!config_ssid_using_wep(wctx)) {
+		debug_printf(DEBUG_NORMAL,
+			     "SSID '%s' is WPA/WPA2 capable. WPA/WPA2 is "
+			     "enabled on this connection.\n", wctx->cur_essid);
 
-      cardif_clear_keys(ctx);
-    }
+		// Since we are doing WPA/WPA2, we need to disassociate from 
+		// the network, and reassociate with WPA/WPA2 set up.
+		cardif_enable_wpa(ctx);
+		cardif_enable_wpa_state(ctx);
 
-  cardif_associate(ctx);  
+		cardif_clear_keys(ctx);
+	}
+
+	cardif_associate(ctx);
 }
 
 /**
@@ -1779,12 +1789,12 @@ void cardif_reassociate(context *ctx, uint8_t reason)
  * \retval XENONE on success
  * \retval !XENONE on error
  **/
-int cardif_enc_disable(context *ctx)
+int cardif_enc_disable(context * ctx)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return XEMALLOC;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
 
-  return wireless->enc_disable(ctx);
+	return wireless->enc_disable(ctx);
 }
 
 /**
@@ -1794,26 +1804,25 @@ int cardif_enc_disable(context *ctx)
  * @param[in] ctx   The context that contains the interface that we want to
  *                  get the abilities for.
  **/
-void cardif_get_abilities(context *ctx)
+void cardif_get_abilities(context * ctx)
 {
-  wireless_ctx *wctx = NULL;
+	wireless_ctx *wctx = NULL;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
-		   FALSE))
-    return;
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
+			 FALSE))
+		return;
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  if (!wireless->enc_capabilities)
-    {
-      wctx->enc_capa = 0;
-      return;
-    }
+	if (!wireless->enc_capabilities) {
+		wctx->enc_capa = 0;
+		return;
+	}
 
-  wireless->enc_capabilities(ctx);
+	wireless->enc_capabilities(ctx);
 }
 
 /**
@@ -1824,20 +1833,19 @@ void cardif_get_abilities(context *ctx)
  * @param[in,out] new_bssid   A pointer to a buffer of at least 6 bytes that
  *                            will return the BSSID of the AP.
  **/
-void cardif_setBSSID(context *ctx, uint8_t *new_bssid)
+void cardif_setBSSID(context * ctx, uint8_t * new_bssid)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((new_bssid != NULL), "new_bssid != NULL", FALSE))
-    return;
+	if (!xsup_assert((new_bssid != NULL), "new_bssid != NULL", FALSE))
+		return;
 
-  if (!wireless->setbssid)
-    {
-      return;
-    }
+	if (!wireless->setbssid) {
+		return;
+	}
 
-  wireless->setbssid(ctx, new_bssid);
+	wireless->setbssid(ctx, new_bssid);
 }
 
 /**
@@ -1848,19 +1856,19 @@ void cardif_setBSSID(context *ctx, uint8_t *new_bssid)
  * @param[in] newstate   The new operstate for the interface pointed to by
  *                       "ctx".
  **/
-void cardif_operstate(context *ctx, uint8_t newstate)
+void cardif_operstate(context * ctx, uint8_t newstate)
 {
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  if (!wireless->set_operstate)
-    {
-      debug_printf(DEBUG_INT, "No function defined to set operstate. (This "
-		   "is probably nothing to worry about.\n");
-      return;
-    }
+	if (!wireless->set_operstate) {
+		debug_printf(DEBUG_INT,
+			     "No function defined to set operstate. (This "
+			     "is probably nothing to worry about.\n");
+		return;
+	}
 
-  wireless->set_operstate(ctx, newstate);
+	wireless->set_operstate(ctx, newstate);
 }
 
 /******************************************************************
@@ -1875,21 +1883,20 @@ void cardif_operstate(context *ctx, uint8_t newstate)
  ******************************************************************/
 void cardif_wait_for_int(char *intname)
 {
-  int idx = -1;
+	int idx = -1;
 
-  if (!xsup_assert((intname != NULL), "intname != NULL", FALSE))
-    return;
+	if (!xsup_assert((intname != NULL), "intname != NULL", FALSE))
+		return;
 
-  idx = if_nametoindex(intname);
-  if (idx < 1)
-    {
-      debug_printf(DEBUG_NORMAL, "Waiting for interface to be inserted, or "
-		   "driver to be loaded.\n");
-      while (if_nametoindex(intname) < 1)
-	{
-	  sleep(1);
+	idx = if_nametoindex(intname);
+	if (idx < 1) {
+		debug_printf(DEBUG_NORMAL,
+			     "Waiting for interface to be inserted, or "
+			     "driver to be loaded.\n");
+		while (if_nametoindex(intname) < 1) {
+			sleep(1);
+		}
 	}
-    }
 }
 
 /**
@@ -1901,112 +1908,105 @@ void cardif_wait_for_int(char *intname)
  * @param[in] ctx   A pointer to the context that contains the interface
  *                  that the passive scan timer timed out on.
  **/
-void cardif_passive_scan_timeout(context *ctx)
+void cardif_passive_scan_timeout(context * ctx)
 {
-  struct config_globals *globals;
-  uint8_t *mac;
-  char *ssid;
-  wireless_ctx *wctx;
+	struct config_globals *globals;
+	uint8_t *mac;
+	char *ssid;
+	wireless_ctx *wctx;
 
-  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
-		   FALSE))
-    return;
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
+			 FALSE))
+		return;
 
-  wctx = (wireless_ctx *)ctx->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
-  if (!TEST_FLAG(wctx->flags, WIRELESS_PASV_SCANNING))
-    {
-     if (!TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
-	{
-	  timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, 5);
-	  cardif_do_wireless_scan(ctx, 1);
-	  SET_FLAG(wctx->flags, WIRELESS_PASV_SCANNING);
+	if (!TEST_FLAG(wctx->flags, WIRELESS_PASV_SCANNING)) {
+		if (!TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {
+			timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, 5);
+			cardif_do_wireless_scan(ctx, 1);
+			SET_FLAG(wctx->flags, WIRELESS_PASV_SCANNING);
+		} else {
+			debug_printf(DEBUG_NORMAL,
+				     "Got a request to start a new passive scan "
+				     "when a previous one has not completed!\n");
+		}
+	} else {
+		// If the scanning flag is no longer set, then we need to make a decision
+		// about how to associate.
+		debug_printf(DEBUG_NORMAL,
+			     "Looking for the best network to connect to.\n");
+		// Clear the passive scanning flag.
+		UNSET_FLAG(ctx->flags, WIRELESS_PASV_SCANNING);
+
+		// Reset the timer so that we scan again.
+
+		globals = config_get_globals();
+
+		if (!globals) {
+			debug_printf(DEBUG_NORMAL,
+				     "No global data!  Passive scanning will"
+				     " be broken until the next time an authentication "
+				     "completes.\n");
+		} else {
+			debug_printf(DEBUG_INT,
+				     "Resetting passive scan timer.\n");
+			timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER,
+						globals->passive_timeout);
+
+		}
+
+		ssid = config_ssid_get_desired_ssid(ctx);
+
+		if (ssid == NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "No valid SSID was returned.  Either "
+				     "there is something wrong with your configuration, or"
+				     " the passive scan didn't find a network that is "
+				     "currently configured.\n");
+			return;
+		}
+
+		if (strcmp(ssid, wctx->cur_essid) != 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "The best AP to connect to appears to be"
+				     " in a different ESSID!  It is likely that your card"
+				     " doesn't support the needed passive scanning flags."
+				     "\n");
+			// Don't do anything with the result.
+		} else {
+			// We got a valid result.  So, see if it is a different AP.  If it
+			// is, then jump to it.
+			mac = config_ssid_get_mac(wctx);
+
+			if (mac == NULL) {
+				debug_printf(DEBUG_NORMAL,
+					     "Couldn't determine the MAC "
+					     "address for the desired SSID found in a passive "
+					     "scan.  You may not be associated to the best AP, "
+					     "but your network should continue to work.\n");
+				return;
+			}
+
+			if (memcmp(ctx->dest_mac, mac, 6) != 0) {
+				debug_printf(DEBUG_INT,
+					     "Jumpping to a BSSID with a better "
+					     "signal.  (BSSID : ");
+				debug_hex_printf(DEBUG_INT, mac, 6);
+				debug_printf_nl(DEBUG_INT, ")\n");
+
+				// Then change our BSSIDs.
+				cardif_setBSSID(ctx, mac);
+			} else {
+				debug_printf(DEBUG_INT,
+					     "We are connected to the best "
+					     "BSSID already.\n");
+			}
+		}
 	}
-      else
-	{
-	  debug_printf(DEBUG_NORMAL, "Got a request to start a new passive scan "
-		       "when a previous one has not completed!\n");
-	}
-    }
-  else
-    {
-      // If the scanning flag is no longer set, then we need to make a decision
-      // about how to associate.
-      debug_printf(DEBUG_NORMAL, "Looking for the best network to connect to.\n");
-      // Clear the passive scanning flag.
-      UNSET_FLAG(ctx->flags, WIRELESS_PASV_SCANNING);
-
-      // Reset the timer so that we scan again.
-      
-      globals = config_get_globals();
-      
-      if (!globals)
-	{
-	  debug_printf(DEBUG_NORMAL, "No global data!  Passive scanning will"
-		       " be broken until the next time an authentication "
-		       "completes.\n");
-	}
-      else
-	{
-	  debug_printf(DEBUG_INT, "Resetting passive scan timer.\n");
-	  timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, globals->passive_timeout);
-	  
-	}
-
-      ssid = config_ssid_get_desired_ssid(ctx);
-
-      if (ssid == NULL)
-        {
-          debug_printf(DEBUG_NORMAL, "No valid SSID was returned.  Either "
-                       "there is something wrong with your configuration, or"
-                       " the passive scan didn't find a network that is "
-                       "currently configured.\n");
-          return;
-        }
-
-      if (strcmp(ssid, wctx->cur_essid) != 0)
-	{
-	  debug_printf(DEBUG_NORMAL, "The best AP to connect to appears to be"
-		       " in a different ESSID!  It is likely that your card"
-		       " doesn't support the needed passive scanning flags."
-		       "\n");
-	  // Don't do anything with the result.
-	} 
-      else
-	{
-	  // We got a valid result.  So, see if it is a different AP.  If it
-	  // is, then jump to it.
-	  mac = config_ssid_get_mac(wctx);
-
-          if (mac == NULL)
-            {
-              debug_printf(DEBUG_NORMAL, "Couldn't determine the MAC "
-                           "address for the desired SSID found in a passive "
-                           "scan.  You may not be associated to the best AP, "
-                           "but your network should continue to work.\n");
-              return;
-            }
-
-	  if (memcmp(ctx->dest_mac, mac, 6) != 0)
-	    {
-	      debug_printf(DEBUG_INT, "Jumpping to a BSSID with a better "
-			   "signal.  (BSSID : ");
-	      debug_hex_printf(DEBUG_INT, mac, 6);
-	      debug_printf_nl(DEBUG_INT, ")\n");
-
-	      // Then change our BSSIDs.
-	      cardif_setBSSID(ctx, mac);
-	    }
-	  else
-	    {
-	      debug_printf(DEBUG_INT, "We are connected to the best "
-			   "BSSID already.\n");
-	    }
-	}
-    }
 }
 
 /*
@@ -2016,22 +2016,22 @@ void cardif_passive_scan_timeout(context *ctx)
     returns the singnal strength of the interface. 
 */
 
-int cardif_get_signal_strength_percent(context *ctx)
+int cardif_get_signal_strength_percent(context * ctx)
 {
- wireless_ctx *wctx = NULL;
-  struct found_ssids *working = NULL;
-  int signalStr = 0;
+	wireless_ctx *wctx = NULL;
+	struct found_ssids *working = NULL;
+	int signalStr = 0;
 
-  wctx = (wireless_ctx *) ctx->intTypeData;
-  working = config_ssid_find_by_name(wctx, wctx->cur_essid);
+	wctx = (wireless_ctx *) ctx->intTypeData;
+	working = config_ssid_find_by_name(wctx, wctx->cur_essid);
 
-  if (working)
-  {
-    signalStr = working->strength;
-  }
-  return signalStr;
+	if (working) {
+		signalStr = working->strength;
+	}
+	return signalStr;
 
 }
+
 /*
         This is function called when UI request for IPAddress.
         
@@ -2039,69 +2039,69 @@ int cardif_get_signal_strength_percent(context *ctx)
         
         returns the pointer to the IPaddress or NULL. 
 */
-char *cardif_get_ip(context *ctx)
+char *cardif_get_ip(context * ctx)
 {
 
- char *ipaddress = NULL;
-  char *tmpaddr = NULL;
-  int sock;
-  struct ifreq ifr;
-  struct sockaddr_in *ifaddr;
+	char *ipaddress = NULL;
+	char *tmpaddr = NULL;
+	int sock;
+	struct ifreq ifr;
+	struct sockaddr_in *ifaddr;
 
- if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return NULL;
 
-  sock = socket(AF_INET, SOCK_DGRAM, 0);
-  memset(&ifr, 0, sizeof(struct ifreq));
-  strncpy(ifr.ifr_name, ctx->intName, IF_NAMESIZE);
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
+	memset(&ifr, 0, sizeof(struct ifreq));
+	strncpy(ifr.ifr_name, ctx->intName, IF_NAMESIZE);
 
- if (ioctl(sock, SIOCGIFADDR, &ifr) == -1)
-  {
-    debug_printf(DEBUG_NORMAL, "Failed to get IP Address of %s returning NULL\n", ctx->intName);
-  }
- {
-    ifaddr = (struct sockaddr_in *)&ifr.ifr_addr;
-    close(sock);
-    ipaddress = Malloc(20);
-    if (ipaddress != NULL)
-    {
-      tmpaddr = inet_ntoa(ifaddr->sin_addr);
-      memcpy(ipaddress, tmpaddr, 20);
-    }
-    debug_printf(DEBUG_NORMAL, "Got IP Address of %s = %s\n", ctx->intName, ipaddress);
-  }
-  return ipaddress;
+	if (ioctl(sock, SIOCGIFADDR, &ifr) == -1) {
+		debug_printf(DEBUG_NORMAL,
+			     "Failed to get IP Address of %s returning NULL\n",
+			     ctx->intName);
+	}
+	{
+		ifaddr = (struct sockaddr_in *)&ifr.ifr_addr;
+		close(sock);
+		ipaddress = Malloc(20);
+		if (ipaddress != NULL) {
+			tmpaddr = inet_ntoa(ifaddr->sin_addr);
+			memcpy(ipaddress, tmpaddr, 20);
+		}
+		debug_printf(DEBUG_NORMAL, "Got IP Address of %s = %s\n",
+			     ctx->intName, ipaddress);
+	}
+	return ipaddress;
 }
 
-
-char *cardif_get_netmask(context *ctx)
+char *cardif_get_netmask(context * ctx)
 {
-  // XXX  FINISH!
-  return NULL;
+	// XXX  FINISH!
+	return NULL;
 }
 
-char *cardif_get_gw(context *ctx)
+char *cardif_get_gw(context * ctx)
 {
-  // XXX  FINISH!
-  return NULL;
+	// XXX  FINISH!
+	return NULL;
 }
 
-char *cardif_get_dns1(context *ctx)
+char *cardif_get_dns1(context * ctx)
 {
-  // XXX FINISH!
-  return NULL;
+	// XXX FINISH!
+	return NULL;
 }
 
-char *cardif_get_dns2(context *ctx)
+char *cardif_get_dns2(context * ctx)
 {
-  // XXX FINISH!
-  return NULL;
+	// XXX FINISH!
+	return NULL;
 }
 
-char *cardif_get_dns3(context *ctx)
+char *cardif_get_dns3(context * ctx)
 {
-  // XXX FINISH!
-  return NULL;
+	// XXX FINISH!
+	return NULL;
 }
 
 /**
@@ -2109,25 +2109,26 @@ char *cardif_get_dns3(context *ctx)
  **/
 void cardif_linux_add_interface(char *ifname, int ifindex)
 {
-  char mac[6];
+	char mac[6];
 
-  // Make sure we aren't looking at any loopback interfaces.
-  if( is_wireless(ifname ) == TRUE )
-  {
-    if(_getmac(( char *)&mac, ifname ) == TRUE )
-    {
-      debug_printf(DEBUG_INT, "Wireless Interface %d named %s.\n", ifindex, ifname);
-      interfaces_add (ifname, ifname, mac, is_wireless (ifname));
-    }
-  }
-  else if (strncasecmp (ifname, "eth", 3 ) == 0 )
-  {
-    if(_getmac(( char *)&mac,ifname ) == TRUE )
-    {
-      debug_printf(DEBUG_INT, "Wired Interface %d named %s.\n", ifindex, ifname);
-      interfaces_add (ifname, ifname, mac, is_wireless (ifname));
-    }
-  }
+	// Make sure we aren't looking at any loopback interfaces.
+	if (is_wireless(ifname) == TRUE) {
+		if (_getmac((char *)&mac, ifname) == TRUE) {
+			debug_printf(DEBUG_INT,
+				     "Wireless Interface %d named %s.\n",
+				     ifindex, ifname);
+			interfaces_add(ifname, ifname, mac,
+				       is_wireless(ifname));
+		}
+	} else if (strncasecmp(ifname, "eth", 3) == 0) {
+		if (_getmac((char *)&mac, ifname) == TRUE) {
+			debug_printf(DEBUG_INT,
+				     "Wired Interface %d named %s.\n", ifindex,
+				     ifname);
+			interfaces_add(ifname, ifname, mac,
+				       is_wireless(ifname));
+		}
+	}
 }
 
 /**
@@ -2136,24 +2137,25 @@ void cardif_linux_add_interface(char *ifname, int ifindex)
  **/
 void cardif_enum_ints()
 {
-  struct if_nameindex *ifnames;
-  int i = 0;
+	struct if_nameindex *ifnames;
+	int i = 0;
 
-  ifnames = if_nameindex();
-  if (ifnames == NULL)
-  {
-    debug_printf(DEBUG_NORMAL, "Got an error with if_nameindex() call!\n");
-    debug_printf(DEBUG_NORMAL, "Are there no interfaces on this machine?\n");
-    return;
-  }
+	ifnames = if_nameindex();
+	if (ifnames == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Got an error with if_nameindex() call!\n");
+		debug_printf(DEBUG_NORMAL,
+			     "Are there no interfaces on this machine?\n");
+		return;
+	}
 
-  while ((ifnames[i].if_index != 0) && (ifnames[i].if_name != NULL))
-  {
-    cardif_linux_add_interface(ifnames[i].if_name, ifnames[i].if_index);
-    i++;
-  }
+	while ((ifnames[i].if_index != 0) && (ifnames[i].if_name != NULL)) {
+		cardif_linux_add_interface(ifnames[i].if_name,
+					   ifnames[i].if_index);
+		i++;
+	}
 
-  if_freenameindex(ifnames);
+	if_freenameindex(ifnames);
 }
 
 /**
@@ -2168,7 +2170,7 @@ void cardif_enum_ints()
  **/
 char *cardif_find_description(char *intname)
 {
-  return strdup(intname);
+	return strdup(intname);
 }
 
 /**
@@ -2183,19 +2185,20 @@ char *cardif_find_description(char *intname)
  **/
 char *cardif_get_mac_str(char *intname)
 {
-  uint8_t mac[6];
-  char *resmac = NULL;
+	uint8_t mac[6];
+	char *resmac = NULL;
 
-  if (cardif_linux_get_mac_by_name(intname, (char *)&mac) != 0) return NULL;
+	if (cardif_linux_get_mac_by_name(intname, (char *)&mac) != 0)
+		return NULL;
 
-  resmac = Malloc(25);
-  if (resmac == NULL) return NULL;
+	resmac = Malloc(25);
+	if (resmac == NULL)
+		return NULL;
 
-  sprintf(resmac, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2]\
-	  , mac[3],
-	  mac[4], mac[5]);
+	sprintf(resmac, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2]
+		, mac[3], mac[4], mac[5]);
 
-  return resmac;
+	return resmac;
 }
 
 /**
@@ -2210,7 +2213,7 @@ char *cardif_get_mac_str(char *intname)
  **/
 int cardif_is_wireless_by_name(char *intname)
 {
-  return is_wireless(intname);
+	return is_wireless(intname);
 }
 
 /**
@@ -2221,136 +2224,125 @@ int cardif_is_wireless_by_name(char *intname)
  * \retval 0 on success
  * \retval -1 on failure
  **/
-int cardif_get_uptime(uint64_t *uptime)
+int cardif_get_uptime(uint64_t * uptime)
 {
-  struct utmp intEnt;
-  struct timeval curTime;
-  struct utmp *bTimePtr;
+	struct utmp intEnt;
+	struct timeval curTime;
+	struct utmp *bTimePtr;
 
-  bTimePtr = NULL;
-  setutent();
-  intEnt.ut_type = BOOT_TIME;
-  bTimePtr = getutid( &intEnt );
+	bTimePtr = NULL;
+	setutent();
+	intEnt.ut_type = BOOT_TIME;
+	bTimePtr = getutid(&intEnt);
 
-  if( bTimePtr == NULL )
-  {
-      return -1;
-  }
+	if (bTimePtr == NULL) {
+		return -1;
+	}
 
-  if( gettimeofday( &curTime, NULL ) != 0 )
-  {
-        return -1;
-  }
+	if (gettimeofday(&curTime, NULL) != 0) {
+		return -1;
+	}
 
-  *uptime = ( curTime.tv_sec ) - ( bTimePtr->ut_tv.tv_sec );
-  return 0;
+	*uptime = (curTime.tv_sec) - (bTimePtr->ut_tv.tv_sec);
+	return 0;
 }
 
-int cardif_get_freq(context *ctx, uint32_t *freq) 
+int cardif_get_freq(context * ctx, uint32_t * freq)
 {
-        return 0;
+	return 0;
 }
 
-int cardif_apply_pmkid_data(context *ctx, pmksa_list *list)
+int cardif_apply_pmkid_data(context * ctx, pmksa_list * list)
 {
-        if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return FALSE;
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return FALSE;
 
+	if (wireless == NULL)
+		return XEMALLOC;
 
+	if (wireless->apply_pmkid_data == NULL)
+		return XEMALLOC;
 
-  if (wireless == NULL) return XEMALLOC;
-
-
-
-  if (wireless->apply_pmkid_data == NULL) return XEMALLOC;
-
-
-
-  return wireless->apply_pmkid_data(ctx, list);
+	return wireless->apply_pmkid_data(ctx, list);
 
 }
 
-int cardif_validate_connection( context *intdata )
+int cardif_validate_connection(context * intdata)
 {
-	     wireless_ctx * wctx = NULL;
-         uint16_t abilities = 0;
-         int retVal = FALSE;
+	wireless_ctx *wctx = NULL;
+	uint16_t abilities = 0;
+	int retVal = FALSE;
 
-            if ( !xsup_assert(( intdata != NULL ), "intdata != NULL ", FALSE )) return FALSE;
+	if (!xsup_assert((intdata != NULL), "intdata != NULL ", FALSE))
+		return FALSE;
 
-            wctx =( wireless_ctx * ) intdata->intTypeData;
+	wctx = (wireless_ctx *) intdata->intTypeData;
 
+	if (!xsup_assert((wctx != NULL), "wctx != NULL ", FALSE))
+		return FALSE;
 
-	    if( !xsup_assert(( wctx != NULL ), "wctx != NULL ", FALSE ) ) return FALSE;	
-           
-		abilities = config_ssid_get_ssid_abilities ( wctx );
+	abilities = config_ssid_get_ssid_abilities(wctx);
 
-            switch (intdata->conn->association.auth_type)
-            {
-                case AUTH_NONE:
-		  debug_printf(DEBUG_NORMAL, "Checking AUTH_NONE.\n");
-                     if( ( abilities  & ABIL_ENC)  && ( intdata->conn != NULL ))
-                     {
-					  if( intdata->conn->association.txkey != 0)
-					  {
-                                	debug_printf(DEBUG_NORMAL,"WEP  Connection \n" );
-                                	retVal = TRUE;
-					  }
-                         	
-                     }
-                     else if(  ( config_ssid_get_ssid_abilities ( wctx ) == 0 ) && ( intdata->conn != NULL ))
-                     {
-				if( intdata->conn->association.txkey == 0 )
-				{
-                                	debug_printf(DEBUG_NORMAL,"OPEN  Connection \n" );
-                                	retVal = TRUE;
-                                	
-				}
-                     }
-                    break;
-               case AUTH_PSK:
-		 debug_printf(DEBUG_INT, "Checking AUTH_PSK (%x)\n", abilities);
-                       if( ( abilities & ABIL_WPA_PSK ) && ( abilities & ABIL_WPA_IE ) )
-                       {
-                                debug_printf(DEBUG_NORMAL, " WPA_PSK connection with WPA1 \n");
-                                retVal = TRUE;
-			
-                       }
-                      else if( ( abilities & ABIL_RSN_PSK ) && ( abilities & ABIL_RSN_IE ) )
-                      {
-                                debug_printf(DEBUG_NORMAL, " WPA_PSK connection with WPA2\n");
-                                retVal = TRUE;
-                                
-                      }
-		      break;
+	switch (intdata->conn->association.auth_type) {
+	case AUTH_NONE:
+		debug_printf(DEBUG_NORMAL, "Checking AUTH_NONE.\n");
+		if ((abilities & ABIL_ENC) && (intdata->conn != NULL)) {
+			if (intdata->conn->association.txkey != 0) {
+				debug_printf(DEBUG_NORMAL,
+					     "WEP  Connection \n");
+				retVal = TRUE;
+			}
 
-               case AUTH_EAP: /* here i'm checking it for enterprise  and dynamic wep */
-               case AUTH_UNKNOWN:
-	    default:
-	      debug_printf(DEBUG_INT, "Checking AUTH_* (default case)\n");
-                       if( ( abilities & ABIL_WPA_DOT1X ) && ( abilities & ABIL_WPA_IE ) )
-                       {
-                                debug_printf(DEBUG_NORMAL, " WPA_DOT1X connection with WPA1 \n");
-                                retVal = TRUE;
-                                
-                       }
-                      else if( ( abilities & ABIL_RSN_DOT1X ) && ( abilities & ABIL_RSN_IE ) )
-                      {
-                                debug_printf(DEBUG_NORMAL, " WPA_DOT1X connection with WPA2\n");
-                                retVal = TRUE;
-                      }
-                     else if(( abilities & ABIL_ENC ) && ( intdata->prof != NULL ))
-                     {		
-					if( intdata->prof->name != NULL )
-					{
-			       	     	debug_printf(DEBUG_NORMAL,"DYNAMIC WEP Connection \n" );
-                               	retVal = TRUE;	
-					}
-                               
-                     }
-		      break;
-             }
+		} else if ((config_ssid_get_ssid_abilities(wctx) == 0)
+			   && (intdata->conn != NULL)) {
+			if (intdata->conn->association.txkey == 0) {
+				debug_printf(DEBUG_NORMAL,
+					     "OPEN  Connection \n");
+				retVal = TRUE;
 
- return retVal;
+			}
+		}
+		break;
+	case AUTH_PSK:
+		debug_printf(DEBUG_INT, "Checking AUTH_PSK (%x)\n", abilities);
+		if ((abilities & ABIL_WPA_PSK) && (abilities & ABIL_WPA_IE)) {
+			debug_printf(DEBUG_NORMAL,
+				     " WPA_PSK connection with WPA1 \n");
+			retVal = TRUE;
+
+		} else if ((abilities & ABIL_RSN_PSK)
+			   && (abilities & ABIL_RSN_IE)) {
+			debug_printf(DEBUG_NORMAL,
+				     " WPA_PSK connection with WPA2\n");
+			retVal = TRUE;
+
+		}
+		break;
+
+	case AUTH_EAP:		/* here i'm checking it for enterprise  and dynamic wep */
+	case AUTH_UNKNOWN:
+	default:
+		debug_printf(DEBUG_INT, "Checking AUTH_* (default case)\n");
+		if ((abilities & ABIL_WPA_DOT1X) && (abilities & ABIL_WPA_IE)) {
+			debug_printf(DEBUG_NORMAL,
+				     " WPA_DOT1X connection with WPA1 \n");
+			retVal = TRUE;
+
+		} else if ((abilities & ABIL_RSN_DOT1X)
+			   && (abilities & ABIL_RSN_IE)) {
+			debug_printf(DEBUG_NORMAL,
+				     " WPA_DOT1X connection with WPA2\n");
+			retVal = TRUE;
+		} else if ((abilities & ABIL_ENC) && (intdata->prof != NULL)) {
+			if (intdata->prof->name != NULL) {
+				debug_printf(DEBUG_NORMAL,
+					     "DYNAMIC WEP Connection \n");
+				retVal = TRUE;
+			}
+
+		}
+		break;
+	}
+
+	return retVal;
 }
-
-

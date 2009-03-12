@@ -25,7 +25,6 @@
 #include "xsupconfcheck_common.h"
 #include "xsupconfcheck_int.h"
 
-
 /**
  * \brief Check an interface for validity.
  *
@@ -44,33 +43,36 @@ int xsupconfcheck_int_check(struct xsup_interfaces *checkint, int log)
 
 	liveint = xsupconfcheck_common_is_live_int(checkint->description);
 
-	if (liveint == NULL)
-	{
+	if (liveint == NULL) {
 		errmsg = malloc(strlen(checkint->description) + 100);
-		if (errmsg != NULL)
-		{
-			sprintf(errmsg, "Interface '%s' isn't available on this machine.", checkint->description);
-			if (log == TRUE) error_prequeue_add(errmsg);
+		if (errmsg != NULL) {
+			sprintf(errmsg,
+				"Interface '%s' isn't available on this machine.",
+				checkint->description);
+			if (log == TRUE)
+				error_prequeue_add(errmsg);
 			free(errmsg);
 		}
 
-		retval = -1;   // We have an error that should be in the queue.
+		retval = -1;	// We have an error that should be in the queue.
 		return retval;
 	}
 
-	if (memcmp(liveint->mac, checkint->mac, 6) != 0)
-	{
-		if (log == TRUE) error_prequeue_add("Interface configured has a different MAC address that the one in the configuration file!");
+	if (memcmp(liveint->mac, checkint->mac, 6) != 0) {
+		if (log == TRUE)
+			error_prequeue_add
+			    ("Interface configured has a different MAC address that the one in the configuration file!");
 		retval = -1;
 	}
-
 	// Verify that if the interface is configured as wireless that the OS tells us it is.
-	if ((checkint->flags & CONFIG_INTERFACE_IS_WIRELESS) == CONFIG_INTERFACE_IS_WIRELESS)
+	if ((checkint->flags & CONFIG_INTERFACE_IS_WIRELESS) ==
+	    CONFIG_INTERFACE_IS_WIRELESS)
 		is_wireless = 1;
 
-	if (liveint->is_wireless != is_wireless)
-	{
-		if (log == TRUE) error_prequeue_add("Interface is configured as wireless, but the interface claims that it isn't.");
+	if (liveint->is_wireless != is_wireless) {
+		if (log == TRUE)
+			error_prequeue_add
+			    ("Interface is configured as wireless, but the interface claims that it isn't.");
 		retval = -1;
 	}
 

@@ -15,4 +15,4 @@ extern parser conn_ip[];
 
 void *xsupconfig_parse_conn_ip(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_CONN_IP_H__
+#endif				// __XSUPCONFIG_PARSE_CONN_IP_H__

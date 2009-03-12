@@ -78,4 +78,4 @@
 #define IPC_EVENT_ERROR_WMI_ASYNC_FAILED_STR                   "Failed to execute async method '%s'."
 #define IPC_EVENT_ERROR_WZC_ATTACH_FAILED_STR				   "Failed to connect to the WZC control channel."
 
-#endif // __IPC_EVENTS_ERRORS_H__
+#endif				// __IPC_EVENTS_ERRORS_H__

@@ -34,7 +34,6 @@
 // Uncomment the #define below to enable textual debug output.
 // #define WRITE_EAP_AKA_DEBUG 1
 
-
 /**
  * \brief Create an EAP-AKA block for the configuration file in a format
  *        that libxml2 can understand.
@@ -51,69 +50,72 @@
  * \retval xmlNodePtr containing the AKA configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_aka *akadata, uint8_t config_type,
-										     char write_all)
+xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_aka * akadata,
+					     uint8_t config_type,
+					     char write_all)
 {
 	xmlNodePtr akanode = NULL;
 	char *temp = NULL;
 	uint16_t ressize;
-		
-	if (akadata == NULL) return NULL;
+
+	if (akadata == NULL)
+		return NULL;
 
 	akanode = xsupconfwrite_common_newSibling(NULL, "Type", "AKA");
-	if (akanode == NULL)
-	{
+	if (akanode == NULL) {
 #ifdef WRITE_EAP_AKA_DEBUG
 		printf("Couldn't create <Type> node for AKA!\n");
 #endif
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (akadata->password != NULL))
-	{
-		if ((akadata->password != NULL) && (pwcrypt_funcs_available() == TRUE))
-		{
+	if ((write_all == TRUE) || (akadata->password != NULL)) {
+		if ((akadata->password != NULL)
+		    && (pwcrypt_funcs_available() == TRUE)) {
 			// Write the encrypted version.
-			if (pwcrypt_encrypt(config_type, (uint8_t *)akadata->password, strlen(akadata->password), (uint8_t **)&temp, &ressize) != 0)
-			{
+			if (pwcrypt_encrypt
+			    (config_type, (uint8_t *) akadata->password,
+			     strlen(akadata->password), (uint8_t **) & temp,
+			     &ressize) != 0) {
 				// Couldn't encrypt the data.  So write the cleartext version.
-				if (xmlNewChild(akanode, NULL, (xmlChar *)"Encrypted_Password", (xmlChar *)akadata->password) == NULL)
-				{
+				if (xmlNewChild
+				    (akanode, NULL,
+				     (xmlChar *) "Encrypted_Password",
+				     (xmlChar *) akadata->password) == NULL) {
 #ifdef WRITE_EAP_AKA_DEBUG
-					printf("Couldn't create <Encrypted_Password> node.\n");
+					printf
+					    ("Couldn't create <Encrypted_Password> node.\n");
 #endif
 					xmlFreeNode(akanode);
 					return NULL;
 				}
-			}
-			else
-			{
+			} else {
 				// For AKA, the "password" is a PIN, so we shouldn't need to worry about the existance of an & in it.
-				if (xsupconfwrite_common_newSibling(akanode, "Password", akadata->password) == NULL)
-				{
+				if (xsupconfwrite_common_newSibling
+				    (akanode, "Password",
+				     akadata->password) == NULL) {
 #ifdef WRITE_EAP_AKA_DEBUG
-					printf("Couldn't create <Password> node for AKA.\n");
+					printf
+					    ("Couldn't create <Password> node for AKA.\n");
 #endif
 					return NULL;
 				}
 			}
-		}
-		else
-		{
-			if (xsupconfwrite_common_newSibling(akanode, "Password", akadata->password) == NULL)
-			{
+		} else {
+			if (xsupconfwrite_common_newSibling
+			    (akanode, "Password", akadata->password) == NULL) {
 #ifdef WRITE_EAP_AKA_DEBUG
-				printf("Couldn't create <Password> node for AKA.\n");
+				printf
+				    ("Couldn't create <Password> node for AKA.\n");
 #endif
 				return NULL;
 			}
 		}
 	}
 
-	if ((write_all == TRUE) || (akadata->reader != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(akanode, "Reader", akadata->reader) == NULL)
-		{
+	if ((write_all == TRUE) || (akadata->reader != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (akanode, "Reader", akadata->reader) == NULL) {
 #ifdef WRITE_EAP_AKA_DEBUG
 			printf("Couldn't create <Reader> node for AKA!\n");
 #endif
@@ -122,8 +124,8 @@ xmlNodePtr xsupconfwrite_eap_aka_create_tree(struct config_eap_aka *akadata, uin
 	}
 
 	if (xsupconfwrite_common_write_bool(akanode, "Auto_Realm",
-		akadata->auto_realm, FALSE, write_all, TRUE) == NULL)
-	{
+					    akadata->auto_realm, FALSE,
+					    write_all, TRUE) == NULL) {
 		xmlFreeNode(akanode);
 		return NULL;
 	}

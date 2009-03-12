@@ -35,37 +35,38 @@
  *  Return an ACK message.
  *
  ***************************************************************/
-uint8_t *eap_type_common_buildAck(eap_type_data *eapdata, uint8_t eap_method)
+uint8_t *eap_type_common_buildAck(eap_type_data * eapdata, uint8_t eap_method)
 {
-  struct eap_header *eaphdr;
-  uint8_t reqId;
-  uint8_t *ackres;
-  uint16_t total_size;
+	struct eap_header *eaphdr;
+	uint8_t reqId;
+	uint8_t *ackres;
+	uint16_t total_size;
 
-  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+		return NULL;
 
-  if (!xsup_assert((eapdata->eapReqData != NULL),
-                   "eapdata->eapReqData != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((eapdata->eapReqData != NULL),
+			 "eapdata->eapReqData != NULL", FALSE))
+		return NULL;
 
-  eaphdr = (struct eap_header *)eapdata->eapReqData;
-  reqId = eaphdr->eap_identifier;
+	eaphdr = (struct eap_header *)eapdata->eapReqData;
+	reqId = eaphdr->eap_identifier;
 
-  ackres = Malloc(1 + sizeof(struct eap_header));
-  if (ackres == NULL) return NULL;
+	ackres = Malloc(1 + sizeof(struct eap_header));
+	if (ackres == NULL)
+		return NULL;
 
-  eaphdr = (struct eap_header *)ackres;
+	eaphdr = (struct eap_header *)ackres;
 
-  eaphdr->eap_code = EAP_RESPONSE_PKT;
-  eaphdr->eap_identifier = reqId;
-  total_size = 1 + sizeof(struct eap_header);
-  eaphdr->eap_length = htons(total_size);
-  eaphdr->eap_type = eap_method;
+	eaphdr->eap_code = EAP_RESPONSE_PKT;
+	eaphdr->eap_identifier = reqId;
+	total_size = 1 + sizeof(struct eap_header);
+	eaphdr->eap_length = htons(total_size);
+	eaphdr->eap_type = eap_method;
 
-  ackres[sizeof(struct eap_header)] = 0x00;
+	ackres[sizeof(struct eap_header)] = 0x00;
 
-  return ackres;
+	return ackres;
 }
 
 /************************************************************************
@@ -73,13 +74,13 @@ uint8_t *eap_type_common_buildAck(eap_type_data *eapdata, uint8_t eap_method)
  * Set values that we need to set when we have a failure.
  *
  ************************************************************************/
-void eap_type_common_fail(eap_type_data *eapdata)
+void eap_type_common_fail(eap_type_data * eapdata)
 {
-  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
-    return;
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+		return;
 
-  eapdata->decision = EAP_FAIL;
-  eapdata->ignore = TRUE;
+	eapdata->decision = EAP_FAIL;
+	eapdata->ignore = TRUE;
 }
 
 /************************************************************************
@@ -87,16 +88,16 @@ void eap_type_common_fail(eap_type_data *eapdata)
  * Get the request ID from an EAP packet.
  *
  ************************************************************************/
-uint8_t eap_type_common_get_eap_reqid(uint8_t *packet)
+uint8_t eap_type_common_get_eap_reqid(uint8_t * packet)
 {
-  struct eap_header *eaphdr;
+	struct eap_header *eaphdr;
 
-  if (!xsup_assert((packet != NULL), "packet != NULL", FALSE))
-    return 0;
+	if (!xsup_assert((packet != NULL), "packet != NULL", FALSE))
+		return 0;
 
-  eaphdr = (struct eap_header *)packet;
+	eaphdr = (struct eap_header *)packet;
 
-  return eaphdr->eap_identifier;
+	return eaphdr->eap_identifier;
 }
 
 /*************************************************************************
@@ -104,16 +105,16 @@ uint8_t eap_type_common_get_eap_reqid(uint8_t *packet)
  * Return the EAP length from a given packet.
  *
  *************************************************************************/
-uint16_t eap_type_common_get_eap_length(uint8_t *packet)
+uint16_t eap_type_common_get_eap_length(uint8_t * packet)
 {
-  struct eap_header *eaphdr;
+	struct eap_header *eaphdr;
 
-  if (!xsup_assert((packet != NULL), "packet != NULL", FALSE))
-    return 0;
+	if (!xsup_assert((packet != NULL), "packet != NULL", FALSE))
+		return 0;
 
-  eaphdr = (struct eap_header *)packet;
+	eaphdr = (struct eap_header *)packet;
 
-  return ntohs(eaphdr->eap_length);
+	return ntohs(eaphdr->eap_length);
 }
 
 /**************************************************************************
@@ -123,9 +124,9 @@ uint16_t eap_type_common_get_eap_length(uint8_t *packet)
  * keying material, and LEAP.)
  *
  **************************************************************************/
-uint8_t eap_type_common_get_common_key_len(eap_type_data *eapdata)
+uint8_t eap_type_common_get_common_key_len(eap_type_data * eapdata)
 {
-  return COMMON_KEY_LEN;
+	return COMMON_KEY_LEN;
 }
 
 /**************************************************************************
@@ -134,9 +135,9 @@ uint8_t eap_type_common_get_common_key_len(eap_type_data *eapdata)
  * material.
  *
  **************************************************************************/
-uint8_t eap_type_common_get_zero_len(eap_type_data *eapdata)
+uint8_t eap_type_common_get_zero_len(eap_type_data * eapdata)
 {
-  return 0;
+	return 0;
 }
 
 /**************************************************************************
@@ -144,34 +145,35 @@ uint8_t eap_type_common_get_zero_len(eap_type_data *eapdata)
  * Convert an array of uint8_t to a string.
  *
  **************************************************************************/
-char *eap_type_common_convert_hex(uint8_t *inhex, uint16_t insize)
+char *eap_type_common_convert_hex(uint8_t * inhex, uint16_t insize)
 {
-  uint16_t strsize = 0, i;
-  char *retstr = NULL;
-  char bytes[3];
+	uint16_t strsize = 0, i;
+	char *retstr = NULL;
+	char bytes[3];
 
-  if (!xsup_assert((inhex != NULL), "inhex != NULL", FALSE))
-    return NULL;
+	if (!xsup_assert((inhex != NULL), "inhex != NULL", FALSE))
+		return NULL;
 
-  strsize = (insize * 2)+1;
+	strsize = (insize * 2) + 1;
 
-  retstr = (char *)Malloc(strsize);
-  if (retstr == NULL) return NULL;
+	retstr = (char *)Malloc(strsize);
+	if (retstr == NULL)
+		return NULL;
 
-  memset(&bytes, 0x00, 3);
+	memset(&bytes, 0x00, 3);
 
-  for (i=0;i<insize;i++)
-    {
-      sprintf(bytes, "%02X", inhex[i]);
-      if (Strcat(retstr, strsize, bytes) != 0)
-	{
-	  fprintf(stderr, "Refusing to overflow string!\n");
-	  ipc_events_error(NULL, IPC_EVENT_ERROR_OVERFLOW_ATTEMPTED, (char *)__FUNCTION__);
-	  return NULL;
+	for (i = 0; i < insize; i++) {
+		sprintf(bytes, "%02X", inhex[i]);
+		if (Strcat(retstr, strsize, bytes) != 0) {
+			fprintf(stderr, "Refusing to overflow string!\n");
+			ipc_events_error(NULL,
+					 IPC_EVENT_ERROR_OVERFLOW_ATTEMPTED,
+					 (char *)__FUNCTION__);
+			return NULL;
+		}
 	}
-    }
 
-  return retstr;
+	return retstr;
 }
 
 /**************************************************************************
@@ -180,12 +182,12 @@ char *eap_type_common_convert_hex(uint8_t *inhex, uint16_t insize)
  *  EAP type reaches INIT state.
  *
  **************************************************************************/
-void eap_type_common_init_eap_data(eap_type_data *eapdata)
+void eap_type_common_init_eap_data(eap_type_data * eapdata)
 {
-  eapdata->ignore = FALSE;
-  eapdata->eapKeyAvailable = FALSE;
-  eapdata->altAccept = FALSE;
-  eapdata->altReject = FALSE;
+	eapdata->ignore = FALSE;
+	eapdata->eapKeyAvailable = FALSE;
+	eapdata->altAccept = FALSE;
+	eapdata->altReject = FALSE;
 }
 
 /**
@@ -212,15 +214,15 @@ char *eap_type_common_get_username(void *config)
 {
 	struct config_pwd_only *pwd = NULL;
 
-	if (config == NULL) return NULL;
+	if (config == NULL)
+		return NULL;
 
 	pwd = (struct config_pwd_only *)config;
 
-	if (TEST_FLAG(pwd->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS))
-	{
-		if (logon_creds_username_available() == TRUE) return logon_creds_get_username();
+	if (TEST_FLAG(pwd->flags, CONFIG_PWD_ONLY_USE_LOGON_CREDS)) {
+		if (logon_creds_username_available() == TRUE)
+			return logon_creds_get_username();
 	}
 
 	return NULL;
 }
-

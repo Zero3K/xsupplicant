@@ -15,4 +15,4 @@ extern parser conn_association[];
 
 void *xsupconfig_parse_conn_association(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_CONN_ASSOCIATION_H__
+#endif				// __XSUPCONFIG_PARSE_CONN_ASSOCIATION_H__

@@ -35,7 +35,6 @@
 // Uncomment the #define below to enable textual debug output.
 // #define WRITE_EAP_PEAP_DEBUG 1
 
-
 /**
  * \brief Create a EAP-PEAP block for the configuration file in a format
  *        that libxml2 can understand.
@@ -50,8 +49,9 @@
  * \retval xmlNodePtr containing the PEAP configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, uint8_t config_type,
-								 		      char write_all)
+xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap * peapdata,
+					      uint8_t config_type,
+					      char write_all)
 {
 	xmlNodePtr peapnode = NULL;
 	xmlNodePtr p2node = NULL;
@@ -60,103 +60,108 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 	char tempstatic[10];
 	uint16_t ressize;
 
-		
-	if (peapdata == NULL) return NULL;
+	if (peapdata == NULL)
+		return NULL;
 
 	peapnode = xsupconfwrite_common_newSibling(NULL, "Type", "PEAP");
-	if (peapnode == NULL)
-	{
+	if (peapnode == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
 		printf("Couldn't create <Type> node for PEAP!\n");
 #endif
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (peapdata->user_cert != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(peapnode, "User_Certificate", peapdata->user_cert) == NULL)
-		{
+	if ((write_all == TRUE) || (peapdata->user_cert != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (peapnode, "User_Certificate",
+		     peapdata->user_cert) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
-			printf("Couldn't create <User_Certificate> node for PEAP!\n");
+			printf
+			    ("Couldn't create <User_Certificate> node for PEAP!\n");
 #endif
 			xmlFreeNode(peapnode);
 			return NULL;
 		}
 	}
 
-	if ((write_all == TRUE) || (peapdata->trusted_server != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(peapnode, "Trusted_Server", peapdata->trusted_server) == NULL)
-		{
+	if ((write_all == TRUE) || (peapdata->trusted_server != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (peapnode, "Trusted_Server",
+		     peapdata->trusted_server) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
-			printf("Couldn't create <Trusted_Server> node for PEAP!\n");
+			printf
+			    ("Couldn't create <Trusted_Server> node for PEAP!\n");
 #endif
 			xmlFreeNode(peapnode);
 			return NULL;
 		}
 	}
 
-	if ((write_all == TRUE) || (peapdata->crl_dir != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(peapnode, "CRL_Directory", peapdata->crl_dir) == NULL)
-		{
+	if ((write_all == TRUE) || (peapdata->crl_dir != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (peapnode, "CRL_Directory", peapdata->crl_dir) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
-			printf("Couldn't create <CRL_Directory> node for PEAP!\n");
+			printf
+			    ("Couldn't create <CRL_Directory> node for PEAP!\n");
 #endif
 			xmlFreeNode(peapnode);
 			return NULL;
 		}
 	}
 
-	if ((write_all == TRUE) || (peapdata->user_key != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(peapnode, "User_Key_File", peapdata->user_key) == NULL)
-		{
+	if ((write_all == TRUE) || (peapdata->user_key != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (peapnode, "User_Key_File", peapdata->user_key) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
-			printf("Couldn't create <User_Key_File> node for PEAP!\n");
+			printf
+			    ("Couldn't create <User_Key_File> node for PEAP!\n");
 #endif
 			xmlFreeNode(peapnode);
 			return NULL;
 		}
 	}
 
-	if ((write_all == TRUE) || (peapdata->user_key_pass != NULL))
-	{
-		if ((peapdata->user_key_pass != NULL) && (pwcrypt_funcs_available() == TRUE))
-		{
+	if ((write_all == TRUE) || (peapdata->user_key_pass != NULL)) {
+		if ((peapdata->user_key_pass != NULL)
+		    && (pwcrypt_funcs_available() == TRUE)) {
 			// Write the encrypted version.
-			if (pwcrypt_encrypt(config_type, (uint8_t *)peapdata->user_key_pass, strlen(peapdata->user_key_pass), (uint8_t **)&temp, &ressize) != 0)
-			{
+			if (pwcrypt_encrypt
+			    (config_type, (uint8_t *) peapdata->user_key_pass,
+			     strlen(peapdata->user_key_pass),
+			     (uint8_t **) & temp, &ressize) != 0) {
 				// Couldn't encrypt the data.  So write the cleartext version.
-				xsupconfwrite_convert_amp(peapdata->user_key_pass, &temp);
-				if (xsupconfwrite_common_newSibling(peapnode, "User_Key_Password", temp) == NULL)
-				{
+				xsupconfwrite_convert_amp(peapdata->
+							  user_key_pass, &temp);
+				if (xsupconfwrite_common_newSibling
+				    (peapnode, "User_Key_Password",
+				     temp) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
-					printf("Couldn't create <User_Key_Password> node for PEAP!\n");
+					printf
+					    ("Couldn't create <User_Key_Password> node for PEAP!\n");
+#endif
+					xmlFreeNode(peapnode);
+					return NULL;
+				}
+			} else {
+				if (xsupconfwrite_common_newSibling
+				    (peapnode, "Encrypted_User_Key_Password",
+				     temp) == NULL) {
+#ifdef WRITE_EAP_PEAP_DEBUG
+					printf
+					    ("Couldn't create <Encrypted_User_Key_Password> node.\n");
 #endif
 					xmlFreeNode(peapnode);
 					return NULL;
 				}
 			}
-			else
-			{
-				if (xsupconfwrite_common_newSibling(peapnode, "Encrypted_User_Key_Password", temp) == NULL)
-				{
+		} else {
+			xsupconfwrite_convert_amp(peapdata->user_key_pass,
+						  &temp);
+			if (xsupconfwrite_common_newSibling
+			    (peapnode, "User_Key_Password", temp) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
-					printf("Couldn't create <Encrypted_User_Key_Password> node.\n");
-#endif
-					xmlFreeNode(peapnode);
-					return NULL;
-				}
-			}
-		}
-		else
-		{
-			xsupconfwrite_convert_amp(peapdata->user_key_pass, &temp);
-			if (xsupconfwrite_common_newSibling(peapnode, "User_Key_Password", temp) == NULL)
-			{
-#ifdef WRITE_EAP_PEAP_DEBUG
-				printf("Couldn't create <User_Key_Password> node for PEAP!\n");
+				printf
+				    ("Couldn't create <User_Key_Password> node for PEAP!\n");
 #endif
 				xmlFreeNode(peapnode);
 				free(temp);
@@ -167,33 +172,35 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		}
 	}
 
-	if (xsupconfwrite_common_write_bool(peapnode, "Machine_Authentication_Mode",
-		TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH), FALSE, write_all, TRUE) == NULL)
-	{
+	if (xsupconfwrite_common_write_bool
+	    (peapnode, "Machine_Authentication_Mode",
+	     TEST_FLAG(peapdata->flags, FLAGS_PEAP_MACHINE_AUTH), FALSE,
+	     write_all, TRUE) == NULL) {
 		xmlFreeNode(peapnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_common_write_bool(peapnode, "Use_Logon_Credentials", 
-		TEST_FLAG(peapdata->flags, FLAGS_PEAP_USE_LOGON_CREDS), FALSE, write_all, TRUE) == NULL)
-	{
+	if (xsupconfwrite_common_write_bool(peapnode, "Use_Logon_Credentials",
+					    TEST_FLAG(peapdata->flags,
+						      FLAGS_PEAP_USE_LOGON_CREDS),
+					    FALSE, write_all, TRUE) == NULL) {
 		xmlFreeNode(peapnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_common_write_bool(peapnode, "Session_Resume", 
-		TEST_FLAG(peapdata->flags, EAP_TLS_FLAGS_SESSION_RESUME), FALSE, write_all, TRUE) == NULL)
-	{
+	if (xsupconfwrite_common_write_bool(peapnode, "Session_Resume",
+					    TEST_FLAG(peapdata->flags,
+						      EAP_TLS_FLAGS_SESSION_RESUME),
+					    FALSE, write_all, TRUE) == NULL) {
 		xmlFreeNode(peapnode);
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (peapdata->chunk_size != 0))
-	{
+	if ((write_all == TRUE) || (peapdata->chunk_size != 0)) {
 		sprintf((char *)&tempstatic, "%d", peapdata->chunk_size);
 
-		if (xsupconfwrite_common_newSibling(peapnode, "Chunk_Size", tempstatic) == NULL)
-		{
+		if (xsupconfwrite_common_newSibling
+		    (peapnode, "Chunk_Size", tempstatic) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
 			printf("Couldn't create <Chunk_Size> node for PEAP!\n");
 #endif
@@ -202,50 +209,52 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		}
 	}
 
-	if ((write_all == TRUE) || (peapdata->random_file != NULL))
-	{
-		if (xsupconfwrite_common_newSibling(peapnode, "Random_File", peapdata->random_file) == NULL)
-		{
+	if ((write_all == TRUE) || (peapdata->random_file != NULL)) {
+		if (xsupconfwrite_common_newSibling
+		    (peapnode, "Random_File", peapdata->random_file) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
-			printf("Couldn't create <Random_File> node for PEAP!\n");
+			printf
+			    ("Couldn't create <Random_File> node for PEAP!\n");
 #endif
 			xmlFreeNode(peapnode);
 			return NULL;
 		}
 	}
 
-	if (xsupconfwrite_common_write_bool(peapnode, "Validate_Certificate", 
-		TEST_FLAG(peapdata->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT), TRUE, write_all, TRUE) == NULL)
-	{
+	if (xsupconfwrite_common_write_bool(peapnode, "Validate_Certificate",
+					    TEST_FLAG(peapdata->flags,
+						      FLAGS_PEAP_VALIDATE_SERVER_CERT),
+					    TRUE, write_all, TRUE) == NULL) {
 		xmlFreeNode(peapnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_common_write_bool(peapnode, "Proper_PEAP_V1_Keying", 
-		TEST_FLAG(peapdata->flags, FLAGS_PEAP_PROPER_PEAPV1_KEYS), FALSE, write_all, TRUE) == NULL)
-	{
+	if (xsupconfwrite_common_write_bool(peapnode, "Proper_PEAP_V1_Keying",
+					    TEST_FLAG(peapdata->flags,
+						      FLAGS_PEAP_PROPER_PEAPV1_KEYS),
+					    FALSE, write_all, TRUE) == NULL) {
 		xmlFreeNode(peapnode);
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (peapdata->force_peap_version != 0xff))
-	{
-		sprintf((char *)&tempstatic, "%d", peapdata->force_peap_version);
-		if (xsupconfwrite_common_newSibling(peapnode, "Force_PEAP_Version", tempstatic) == NULL)
-		{
+	if ((write_all == TRUE) || (peapdata->force_peap_version != 0xff)) {
+		sprintf((char *)&tempstatic, "%d",
+			peapdata->force_peap_version);
+		if (xsupconfwrite_common_newSibling
+		    (peapnode, "Force_PEAP_Version", tempstatic) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
-			printf("Couldn't create <Force_PEAP_Version> node for PEAP!\n");
+			printf
+			    ("Couldn't create <Force_PEAP_Version> node for PEAP!\n");
 #endif
 			xmlFreeNode(peapnode);
 			return NULL;
 		}
 	}
 
-	if ((write_all == TRUE) || (peapdata->identity != NULL))
-	{
+	if ((write_all == TRUE) || (peapdata->identity != NULL)) {
 		xsupconfwrite_convert_amp(peapdata->identity, &temp);
-		if (xsupconfwrite_common_newSibling(peapnode, "Inner_ID", temp) == NULL)
-		{
+		if (xsupconfwrite_common_newSibling(peapnode, "Inner_ID", temp)
+		    == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
 			printf("Couldn't create <Inner_ID> node for PEAP!\n");
 #endif
@@ -257,9 +266,8 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		free(temp);
 	}
 
-	p2node = xmlNewNode(NULL, (xmlChar *)"Phase2");
-	if (p2node == NULL)
-	{
+	p2node = xmlNewNode(NULL, (xmlChar *) "Phase2");
+	if (p2node == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
 		printf("Couldn't create <Phase2> node for PEAP!\n");
 #endif
@@ -268,8 +276,7 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 	}
 
 	p2node = xmlAddSibling(peapnode, p2node);
-	if (p2node == NULL)
-	{
+	if (p2node == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
 		printf("Couldn't add <Phase2> node to PEAP!\n");
 #endif
@@ -277,9 +284,10 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		return NULL;
 	}
 
-	eapnode = xsupconfwrite_eap_create_tree(peapdata->phase2, config_type, write_all);
-	if (eapnode == NULL)
-	{
+	eapnode =
+	    xsupconfwrite_eap_create_tree(peapdata->phase2, config_type,
+					  write_all);
+	if (eapnode == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
 		printf("Couldn't create phase 2 <EAP> data for PEAP!\n");
 #endif
@@ -287,8 +295,7 @@ xmlNodePtr xsupconfwrite_eap_peap_create_tree(struct config_eap_peap *peapdata, 
 		return NULL;
 	}
 
-	if (xmlAddChild(p2node, eapnode) == NULL)
-	{
+	if (xmlAddChild(p2node, eapnode) == NULL) {
 #ifdef WRITE_EAP_PEAP_DEBUG
 		printf("Couldn't add phase 2 EAP data to PEAP!\n");
 #endif

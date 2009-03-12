@@ -48,26 +48,28 @@
 #endif
 
 struct phase2_handler {
-  char *phase2name;
-  void (*check)(eap_type_data *);
-  void (*process)(eap_type_data *, uint8_t *, uint16_t);
-  void (*buildResp)(eap_type_data *, uint8_t *, uint16_t *);
-  void (*deinit)(eap_type_data *);
-  ttls_phase2_type phase2type;
+	char *phase2name;
+	void (*check) (eap_type_data *);
+	void (*process) (eap_type_data *, uint8_t *, uint16_t);
+	void (*buildResp) (eap_type_data *, uint8_t *, uint16_t *);
+	void (*deinit) (eap_type_data *);
+	ttls_phase2_type phase2type;
 };
 
 struct phase2_handler phase2types[] = {
-  {"PAP", pap_check, pap_process, pap_buildResp, pap_deinit, TTLS_PHASE2_PAP},
-  {"CHAP", chap_check, chap_process, chap_buildResp, chap_deinit,
-   TTLS_PHASE2_CHAP},
-  {"MS-CHAP", mschap_check, mschap_process, mschap_buildResp, mschap_deinit,
-   TTLS_PHASE2_MSCHAP},
-  {"MS-CHAPv2", mschapv2_check, mschapv2_process, mschapv2_buildResp,
-   mschapv2_deinit, TTLS_PHASE2_MSCHAPV2},
-  {"EAP", ttls_eap_check, ttls_eap_process, ttls_eap_buildResp,
-   ttls_eap_deinit, TTLS_PHASE2_EAP},
+	{"PAP", pap_check, pap_process, pap_buildResp, pap_deinit,
+	 TTLS_PHASE2_PAP},
+	{"CHAP", chap_check, chap_process, chap_buildResp, chap_deinit,
+	 TTLS_PHASE2_CHAP},
+	{"MS-CHAP", mschap_check, mschap_process, mschap_buildResp,
+	 mschap_deinit,
+	 TTLS_PHASE2_MSCHAP},
+	{"MS-CHAPv2", mschapv2_check, mschapv2_process, mschapv2_buildResp,
+	 mschapv2_deinit, TTLS_PHASE2_MSCHAPV2},
+	{"EAP", ttls_eap_check, ttls_eap_process, ttls_eap_buildResp,
+	 ttls_eap_deinit, TTLS_PHASE2_EAP},
 
-  {NULL, NULL, NULL, NULL, NULL, -1}
+	{NULL, NULL, NULL, NULL, NULL, -1}
 };
 
 /************************************************************************
@@ -76,28 +78,27 @@ struct phase2_handler phase2types[] = {
  *  for the configured one.
  *
  ************************************************************************/
-signed char ttls_phase2_get_idx(eap_type_data *eapdata)
+signed char ttls_phase2_get_idx(eap_type_data * eapdata)
 {
-  struct config_eap_ttls *userdata = NULL;
-  uint8_t i = 0;
+	struct config_eap_ttls *userdata = NULL;
+	uint8_t i = 0;
 
-  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
-    return -1;
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+		return -1;
 
-  if (!xsup_assert((eapdata->eap_conf_data != NULL), 
-		   "eapdata->eap_conf_data != NULL", FALSE))
-    return -1;
+	if (!xsup_assert((eapdata->eap_conf_data != NULL),
+			 "eapdata->eap_conf_data != NULL", FALSE))
+		return -1;
 
-  userdata = (struct config_eap_ttls *)eapdata->eap_conf_data;
+	userdata = (struct config_eap_ttls *)eapdata->eap_conf_data;
 
-  // We need to see what phase 2 method we should use.
-  while ((phase2types[i].phase2type != -1) &&
-         (userdata->phase2_type != phase2types[i].phase2type))
-    {
-      i++;
-    }
+	// We need to see what phase 2 method we should use.
+	while ((phase2types[i].phase2type != -1) &&
+	       (userdata->phase2_type != phase2types[i].phase2type)) {
+		i++;
+	}
 
-  return i;
+	return i;
 }
 
 /*************************************************************************
@@ -106,18 +107,19 @@ signed char ttls_phase2_get_idx(eap_type_data *eapdata)
  *  is ready to be used.
  *
  *************************************************************************/
-void ttls_phase2_check(eap_type_data *eapdata)
+void ttls_phase2_check(eap_type_data * eapdata)
 {
-  signed char idx = 0;
+	signed char idx = 0;
 
-  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
-    return;
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+		return;
 
-  idx = ttls_phase2_get_idx(eapdata);
+	idx = ttls_phase2_get_idx(eapdata);
 
-  if (phase2types[idx].check == NULL) return;
+	if (phase2types[idx].check == NULL)
+		return;
 
-  phase2types[idx].check(eapdata);
+	phase2types[idx].check(eapdata);
 }
 
 /*************************************************************************
@@ -125,77 +127,66 @@ void ttls_phase2_check(eap_type_data *eapdata)
  *  Process any incoming data that we may have.
  *
  *************************************************************************/
-void ttls_phase2_process(eap_type_data *eapdata, uint8_t *indata, 
+void ttls_phase2_process(eap_type_data * eapdata, uint8_t * indata,
 			 uint16_t insize)
 {
-  signed char idx = 0;
-  uint8_t *eapdiameter = NULL;
-  struct tls_vars *mytls_vars = NULL;
+	signed char idx = 0;
+	uint8_t *eapdiameter = NULL;
+	struct tls_vars *mytls_vars = NULL;
 
-  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
-    return;
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL",
-		   FALSE))
-    {
-      eapdata->ignore = TRUE;
-      return;
-    }
+	if (!xsup_assert
+	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
+		eapdata->ignore = TRUE;
+		return;
+	}
 
-  mytls_vars = (struct tls_vars *)eapdata->eap_data;
+	mytls_vars = (struct tls_vars *)eapdata->eap_data;
 
 #if HAVE_OSC_TNC
-  if (ttls_tnc_do_process(eapdata, indata, insize) == TRUE)
-    {
-      // We consumed indata.
-      return;
-    }
-      
+	if (ttls_tnc_do_process(eapdata, indata, insize) == TRUE) {
+		// We consumed indata.
+		return;
+	}
 #endif
 
-  if (indata != NULL)
-    {
-      eapdiameter = ttls_eap_get_eap(indata, insize);
-  
-      if (eapdiameter == NULL)
-	{
-	  idx = ttls_phase2_get_idx(eapdata);
+	if (indata != NULL) {
+		eapdiameter = ttls_eap_get_eap(indata, insize);
+
+		if (eapdiameter == NULL) {
+			idx = ttls_phase2_get_idx(eapdata);
+		} else {
+			idx = 0;
+			while ((phase2types[idx].phase2type != -1) &&
+			       (TTLS_PHASE2_EAP != phase2types[idx].phase2type))
+			{
+				idx++;
+			}
+		}
+	} else {
+		idx = ttls_phase2_get_idx(eapdata);
 	}
-      else
-	{
-	  idx = 0;
-	  while ((phase2types[idx].phase2type != -1) &&
-		 (TTLS_PHASE2_EAP != phase2types[idx].phase2type))
-	    {
-	      idx++;
-	    }
+
+	if (idx != mytls_vars->last_eap_type) {
+		phase2types[mytls_vars->last_eap_type].deinit(eapdata);
+
+		if (phase2types[idx].check != NULL) {
+			phase2types[idx].check(eapdata);
+		}
 	}
-    }
-  else
-    {
-      idx = ttls_phase2_get_idx(eapdata);
-    }
 
-  if (idx != mytls_vars->last_eap_type)
-    {
-      phase2types[mytls_vars->last_eap_type].deinit(eapdata);
+	mytls_vars->last_eap_type = idx;
 
-      if (phase2types[idx].check != NULL)
-	{
-	  phase2types[idx].check(eapdata);
+	if (phase2types[idx].process == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "No processing function call available!\n");
+		eap_type_common_fail(eapdata);
+		return;
 	}
-    }
 
-  mytls_vars->last_eap_type = idx;
-
-  if (phase2types[idx].process == NULL) 
-    {
-      debug_printf(DEBUG_NORMAL, "No processing function call available!\n");
-      eap_type_common_fail(eapdata);
-      return;
-    }
-
-  phase2types[idx].process(eapdata, indata, insize);
+	phase2types[idx].process(eapdata, indata, insize);
 }
 
 /*************************************************************************
@@ -203,51 +194,48 @@ void ttls_phase2_process(eap_type_data *eapdata, uint8_t *indata,
  * Build a phase 2 response packet.
  *
  *************************************************************************/
-void ttls_phase2_buildResp(eap_type_data *eapdata, uint8_t *res, 
-			   uint16_t *res_size)
+void ttls_phase2_buildResp(eap_type_data * eapdata, uint8_t * res,
+			   uint16_t * res_size)
 {
-  struct tls_vars *mytls_vars;
-  signed char idx = 0;
+	struct tls_vars *mytls_vars;
+	signed char idx = 0;
 
-  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
-    {
-      *res_size = 0;
-      return;
-    }
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE)) {
+		*res_size = 0;
+		return;
+	}
 
-  if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL",
-		   FALSE))
-    {
-      eap_type_common_fail(eapdata);
-      return;
-    }
+	if (!xsup_assert
+	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
+		eap_type_common_fail(eapdata);
+		return;
+	}
 
-  mytls_vars = (struct tls_vars *)eapdata->eap_data;
+	mytls_vars = (struct tls_vars *)eapdata->eap_data;
 
 #if HAVE_OSC_TNC
-  *res_size = 0;
+	*res_size = 0;
 
-  ttls_tnc_buildResp(eapdata, res, res_size);
+	ttls_tnc_buildResp(eapdata, res, res_size);
 
-  if ((*res_size) > 0)
-    {
-      // We got TNC data.  So, return.
-      return;
-    }
+	if ((*res_size) > 0) {
+		// We got TNC data.  So, return.
+		return;
+	}
 #endif
 
-  //  idx = ttls_phase2_get_idx(eapdata);
-  idx = mytls_vars->last_eap_type;
+	//  idx = ttls_phase2_get_idx(eapdata);
+	idx = mytls_vars->last_eap_type;
 
-  if (phase2types[idx].buildResp == NULL) 
-    {
-      debug_printf(DEBUG_NORMAL, "No function defined to build a result "
-		   "packet!\n");
-      *res_size = 0;
-      return;
-    }
+	if (phase2types[idx].buildResp == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "No function defined to build a result "
+			     "packet!\n");
+		*res_size = 0;
+		return;
+	}
 
-  phase2types[idx].buildResp(eapdata, res, res_size);
+	phase2types[idx].buildResp(eapdata, res, res_size);
 }
 
 /**************************************************************************
@@ -255,17 +243,17 @@ void ttls_phase2_buildResp(eap_type_data *eapdata, uint8_t *res,
  *  Call a phase 2 deinit.
  *
  **************************************************************************/
-void ttls_phase2_deinit(eap_type_data *eapdata)
+void ttls_phase2_deinit(eap_type_data * eapdata)
 {
-  signed char idx = 0;
+	signed char idx = 0;
 
-  if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
-    return;
+	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
+		return;
 
-  idx = ttls_phase2_get_idx(eapdata);
+	idx = ttls_phase2_get_idx(eapdata);
 
-  if (phase2types[idx].deinit == NULL) return;
+	if (phase2types[idx].deinit == NULL)
+		return;
 
-  phase2types[idx].deinit(eapdata);
+	phase2types[idx].deinit(eapdata);
 }
-

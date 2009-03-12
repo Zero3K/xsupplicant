@@ -51,43 +51,43 @@
 // If a WEP key sits around for more than the timeout below, we should barf
 // out a warning letting the user know that their data isn't as secure as
 // it could be.
-#define STALE_KEY_WARN_TIMEOUT 600   // 10 minutes.
+#define STALE_KEY_WARN_TIMEOUT 600	// 10 minutes.
 
 // The amount of time we should wait before we assume an authentication will
 // not be able to succeed.
-#define AUTHENTICATION_TIMEOUT  32   // 32 seconds.
+#define AUTHENTICATION_TIMEOUT  32	// 32 seconds.
 
 // The length of time to wait before we assume an assocation failed. (Defined
 // by 802.11i section 8.1.3 as dot11RSNAConfigSA-Timeout.)  Default is 60, but
 // we may want to provide the ability to change this in the future.
-#define ASSOCIATION_TIMEOUT           60    // in seconds.
+#define ASSOCIATION_TIMEOUT           60	// in seconds.
 
 // The amount of time that needs to pass before we assume a connection is dead, and ask the user if we should
 // roam to a new one.
-#define DEAD_CONN_TIMEOUT			  15    // in seconds.
+#define DEAD_CONN_TIMEOUT			  15	// in seconds.
 
 // The length of time to wait before we attempt another passive scan.
-#define PASSIVE_TIMEOUT               30   // in seconds.
+#define PASSIVE_TIMEOUT               30	// in seconds.
 
 // The length of time to wait before we attempt another active scan.
-#define RESCAN_TIMEOUT                30    // in seconds.
+#define RESCAN_TIMEOUT                30	// in seconds.
 
 // The length of time to stay in HELD state.
-#define HELD_STATE_TIMEOUT            60    // in seconds.
+#define HELD_STATE_TIMEOUT            60	// in seconds.
 
 // The length of time before we assume a PSK connection will fail.
-#define PSK_FAILURE_TIMEOUT			  10    // in seconds.
+#define PSK_FAILURE_TIMEOUT			  10	// in seconds.
 
 // The maximum number of starts to send before we assume that we are on a device that doesn't
 // understand 802.1X, and switch to authenticated state.
 #define MAX_STARTS                    3
 
 // The default size (in MB) to roll the log file at.
-#define LOG_SIZE_TO_ROLL              10    // MB
-#define OLD_LOGS_TO_KEEP              3     // How many old log files should we keep around.
+#define LOG_SIZE_TO_ROLL              10	// MB
+#define OLD_LOGS_TO_KEEP              3	// How many old log files should we keep around.
 
-#define PMKSA_DEFAULT_AGEOUT_TIME     300   ///< The amount of time to keep a stale PMKSA around when the AP isn't visible anymore.
-#define PMKSA_CACHE_REFRESH           10    ///< The amount of time between cache refresh/updates.
+#define PMKSA_DEFAULT_AGEOUT_TIME     300	///< The amount of time to keep a stale PMKSA around when the AP isn't visible anymore.
+#define PMKSA_CACHE_REFRESH           10	///< The amount of time between cache refresh/updates.
 
 /*** EAP Type IDs (Only for EAP types that are implemented!!) ***/
 
@@ -103,8 +103,8 @@
 #define EAP_TYPE_AKA        23
 #define EAP_TYPE_PEAP       25
 #define EAP_TYPE_MSCHAPV2   26
-#define EAP_TYPE_TNC        38   /* tentative assignment per TNC_IFT_v1_0_r3 */
-                                 /* (Section 7.1.3, page 27) */
+#define EAP_TYPE_TNC        38	/* tentative assignment per TNC_IFT_v1_0_r3 */
+				 /* (Section 7.1.3, page 27) */
 #define EAP_TYPE_FAST       43
 #define EAP_TYPE_PSK		47
 
@@ -115,7 +115,7 @@
 #define TTLS_PHASE2_MSCHAPv2  4
 
 int config_system_setup(char *);
-int config_load_user_config(char *);					
+int config_load_user_config(char *);
 void config_destroy();
 struct config_connection *config_get_connections(uint8_t);
 struct config_profiles *config_get_profiles(uint8_t);
@@ -202,6 +202,5 @@ void dump_config_data();
 int config_change_pwd(struct config_eap_method *, char *);
 void delete_config_trusted_server(void **);
 void delete_config_interface(void **);
-
 
 #endif

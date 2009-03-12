@@ -33,52 +33,53 @@
  * need to determine what type of key it is, and call the correct handler.
  *
  *************************************************/
-void processKey(context *thisint)
+void processKey(context * thisint)
 {
-  struct key_packet *keydata;
-  uint8_t *inframe;
+	struct key_packet *keydata;
+	uint8_t *inframe;
 
-  if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
-    return;
+	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+		return;
 
-  inframe = thisint->recvframe;
+	inframe = thisint->recvframe;
 
-  keydata = (struct key_packet *)&inframe[OFFSET_TO_EAP];
+	keydata = (struct key_packet *)&inframe[OFFSET_TO_EAP];
 
-  switch (keydata->key_descr)
-    {
-    case RC4_KEY_TYPE:
-      eapol_key_type1_process(thisint);
-      break;
+	switch (keydata->key_descr) {
+	case RC4_KEY_TYPE:
+		eapol_key_type1_process(thisint);
+		break;
 
-    case WPA2_KEY_TYPE:                    // WPA2/802.11i keying
+	case WPA2_KEY_TYPE:	// WPA2/802.11i keying
 #ifndef DARWIN_WIRELESS
-      eapol_key_type2_process(thisint);
+		eapol_key_type2_process(thisint);
 #else
-      debug_printf(DEBUG_KEY_STATE, "Ignoring key frame!\n");
-      FREE(thisint->recvframe);
-      thisint->recv_size = 0;
+		debug_printf(DEBUG_KEY_STATE, "Ignoring key frame!\n");
+		FREE(thisint->recvframe);
+		thisint->recv_size = 0;
 #endif
-      break;
-      
-    case WPA_KEY_TYPE:
+		break;
+
+	case WPA_KEY_TYPE:
 #ifndef DARWIN_WIRELESS
-      eapol_key_type254_process(thisint);
+		eapol_key_type254_process(thisint);
 #else
-      debug_printf(DEBUG_KEY_STATE, "Ignoring key frame!\n");
-      FREE(thisint->recvframe);
-      thisint->recv_size = 0;
+		debug_printf(DEBUG_KEY_STATE, "Ignoring key frame!\n");
+		FREE(thisint->recvframe);
+		thisint->recv_size = 0;
 #endif
-      break;
+		break;
 
-    default:
-      debug_printf(DEBUG_NORMAL, "Unknown EAPoL Key Descriptor (%d)!\n",
-		   keydata->key_descr);
-	  ipc_events_error(thisint, IPC_EVENT_ERROR_UNKNOWN_EAPOL_KEY_TYPE, NULL);
-      break;
-    }
+	default:
+		debug_printf(DEBUG_NORMAL,
+			     "Unknown EAPoL Key Descriptor (%d)!\n",
+			     keydata->key_descr);
+		ipc_events_error(thisint,
+				 IPC_EVENT_ERROR_UNKNOWN_EAPOL_KEY_TYPE, NULL);
+		break;
+	}
 
-  thisint->recv_size = 0;  // Make sure we don't try to process it again.
+	thisint->recv_size = 0;	// Make sure we don't try to process it again.
 }
 
 /*************************************************
@@ -87,24 +88,22 @@ void processKey(context *thisint)
  * Depending on the state, we may need to process a key.
  *
  *************************************************/
-void key_statemachine_run(context *thisint)
+void key_statemachine_run(context * thisint)
 {
-  if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
-    return;
+	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+		return;
 
-  if (!xsup_assert((thisint->statemachine != NULL), 
-		   "thisint->statemachine != NULL", FALSE))
-    return;
+	if (!xsup_assert((thisint->statemachine != NULL),
+			 "thisint->statemachine != NULL", FALSE))
+		return;
 
-  if ((thisint->statemachine->initialize == TRUE) ||
-      (thisint->statemachine->portEnabled == FALSE))
-    {
-      // Do the NO_KEY_RECIEVE part of the state machine.
-    }
+	if ((thisint->statemachine->initialize == TRUE) ||
+	    (thisint->statemachine->portEnabled == FALSE)) {
+		// Do the NO_KEY_RECIEVE part of the state machine.
+	}
 
-  if (thisint->statemachine->rxKey == TRUE)
-    {
-      processKey(thisint);
-      thisint->statemachine->rxKey = FALSE;
-    }
+	if (thisint->statemachine->rxKey == TRUE) {
+		processKey(thisint);
+		thisint->statemachine->rxKey = FALSE;
+	}
 }

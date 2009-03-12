@@ -185,7 +185,8 @@ int xsupgui_send_to_event(unsigned char *buffer, int bufsize)
  *  \retval REQUEST_FAILURE for error 
  *  \retval REQUEST_TIMEOUT for timeout waiting for a response.
  **/
-int xsupgui_send(unsigned char *buffer, int bufptr, unsigned char **retbuf, int *retsize)
+int xsupgui_send(unsigned char *buffer, int bufptr, unsigned char **retbuf,
+		 int *retsize)
 {
 #ifdef WINDOWS
 	return xsupgui_windows_send(buffer, bufptr, retbuf, retsize);

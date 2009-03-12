@@ -16,12 +16,10 @@
 #define WIRELESS_MANAGER  0x02
 
 // Severity levels that can be used to notify the UI.
-#define WARNING           1          ///< There are droppings from another supplicant or manager that, if activated, can cause problems.
-#define BLOCKER           2          ///< The supplicant won't be able to run unless this is fixed.
+#define WARNING           1	///< There are droppings from another supplicant or manager that, if activated, can cause problems.
+#define BLOCKER           2	///< The supplicant won't be able to run unless this is fixed.
 
 int supdetect_check_for_other_supplicants();
 int supdetect_numinstances(char *);
 
-#endif // __SUPDETECT_H__
-
-
+#endif				// __SUPDETECT_H__

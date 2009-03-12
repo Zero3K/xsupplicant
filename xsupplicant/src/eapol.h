@@ -28,6 +28,6 @@ void eapol_build_header(context *, int, int, char *);
 int eapol_execute(context *);
 int eapol_withframe(context *, int);
 uint8_t eapol_get_eapol_ver(context *);
-int eapol_get_eap_type(context *ctx);
+int eapol_get_eap_type(context * ctx);
 
 #endif

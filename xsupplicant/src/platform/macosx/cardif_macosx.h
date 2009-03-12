@@ -14,7 +14,6 @@
 #ifndef _CARDIF_MACOSX_H_
 #define _CARDIF_MACOSX_H_
 
-
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <net/if_dl.h>
@@ -22,8 +21,8 @@
 // We need a couple of pieces of data to make use of this interface.
 // Define them here.
 struct darwin_sock_data {
-  int sockInt;
-  char *wireless_blob;
+	int sockInt;
+	char *wireless_blob;
 };
 
 int cardif_macosx_manual_events(context *);

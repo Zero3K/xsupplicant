@@ -43,11 +43,11 @@
 
 #include <sys/types.h>
 
-#define EAPOL_802_1_X_FAMILY    0x8021ec /* XXX needs official number! */
+#define EAPOL_802_1_X_FAMILY    0x8021ec	/* XXX needs official number! */
 
-int	ndrv_socket(char * ifname);
-int	ndrv_socket_bind(int s, u_long family, u_short ether_type);
-int	ndrv_socket_add_multicast(int s, struct sockaddr_dl * dl_p);
-int	ndrv_socket_remove_multicast(int s, struct sockaddr_dl * dl_p);
+int ndrv_socket(char *ifname);
+int ndrv_socket_bind(int s, u_long family, u_short ether_type);
+int ndrv_socket_add_multicast(int s, struct sockaddr_dl *dl_p);
+int ndrv_socket_remove_multicast(int s, struct sockaddr_dl *dl_p);
 
-#endif _S_NDRV_SOCKET_H
+#endif	/* _S_NDRV_SOCKET_H */

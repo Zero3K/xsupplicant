@@ -65,7 +65,7 @@
 // We need a couple of pieces of data to make use of this interface.
 // Define them here.
 struct gen_sock_data {
-  pcap_t *pcap_descr;
+	pcap_t *pcap_descr;
 };
 
 #endif

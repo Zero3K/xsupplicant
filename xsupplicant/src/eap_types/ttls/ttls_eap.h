@@ -18,7 +18,6 @@ void ttls_eap_check(eap_type_data *);
 void ttls_eap_process(eap_type_data *, uint8_t *, uint16_t);
 uint8_t *ttls_eap_get_eap(uint8_t *, uint16_t);
 void ttls_eap_buildResp(eap_type_data *, uint8_t *, uint16_t *);
-void ttls_eap_deinit(eap_type_data *eapdata);
+void ttls_eap_deinit(eap_type_data * eapdata);
 
 #endif
-

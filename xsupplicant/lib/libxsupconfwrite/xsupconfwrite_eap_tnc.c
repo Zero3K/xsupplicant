@@ -36,7 +36,6 @@
 // Uncomment the #define below to enable textual debug output.
 // #define WRITE_EAP_TNC_DEBUG 1
 
-
 /**
  * \brief Create an EAP-TNC block for the configuration file in a format
  *        that libxml2 can understand.
@@ -51,28 +50,27 @@
  * \retval xmlNodePtr containing the TNC configuration tree in a format that is used by 
  *         libxml2.
  **/
-xmlNodePtr xsupconfwrite_eap_tnc_create_tree(struct config_eap_tnc *tncdata, 
-										     char write_all)
+xmlNodePtr xsupconfwrite_eap_tnc_create_tree(struct config_eap_tnc * tncdata,
+					     char write_all)
 {
 	xmlNodePtr tncnode = NULL;
 	char tempstatic[10];
-		
-	if (tncdata == NULL) return NULL;
+
+	if (tncdata == NULL)
+		return NULL;
 
 	tncnode = xsupconfwrite_common_newSibling(NULL, "Type", "TNC");
-	if (tncnode == NULL)
-	{
+	if (tncnode == NULL) {
 #ifdef WRITE_EAP_TNC_DEBUG
 		printf("Couldn't create <Type> node for TNC!\n");
 #endif
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (tncdata->frag_size))
-	{
+	if ((write_all == TRUE) || (tncdata->frag_size)) {
 		sprintf((char *)&tempstatic, "%d", tncdata->frag_size);
-		if (xsupconfwrite_common_newSibling(tncnode, "Chunk_Size", tempstatic) == NULL)
-		{
+		if (xsupconfwrite_common_newSibling
+		    (tncnode, "Chunk_Size", tempstatic) == NULL) {
 #ifdef WRITE_EAP_TNC_DEBUG
 			printf("Couldn't create <Chunk_Size> node for TNC.\n");
 #endif

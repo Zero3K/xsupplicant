@@ -11,4 +11,4 @@
 
 int xsupconfcheck_int_check(struct xsup_interfaces *, int);
 
-#endif // _XSUPCONFCHECK_INT_H_
+#endif				// _XSUPCONFCHECK_INT_H_

@@ -39,9 +39,9 @@ int error_prequeue_add(char *errmsg)
 	err_prequeue *cur = NULL;
 
 	cur = Malloc(sizeof(cur));
-	if (cur == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Couldn't queue error to be sent to the UI!\n");
+	if (cur == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Couldn't queue error to be sent to the UI!\n");
 		return -1;
 	}
 
@@ -51,7 +51,7 @@ int error_prequeue_add(char *errmsg)
 	// Write this message to the log file.
 	debug_printf(DEBUG_NORMAL, "%s\n", errmsg);
 
-	liblist_add_to_tail((genlist **)&queue_head, (genlist *)cur);
+	liblist_add_to_tail((genlist **) & queue_head, (genlist *) cur);
 
 	return 0;
 }
@@ -65,7 +65,8 @@ node_delete_func error_prequeue_delete_node(void **node)
 {
 	err_prequeue *cur = NULL;
 
-	if ((node == NULL) || ((*node) == NULL)) return NULL;
+	if ((node == NULL) || ((*node) == NULL))
+		return NULL;
 
 	cur = (*node);
 
@@ -82,7 +83,8 @@ node_delete_func error_prequeue_delete_node(void **node)
  **/
 int error_prequeue_flush()
 {
-	liblist_delete_list((genlist **)&queue_head, (node_delete_func)&error_prequeue_delete_node);
+	liblist_delete_list((genlist **) & queue_head,
+			    (node_delete_func) & error_prequeue_delete_node);
 
 	return 0;
 }
@@ -95,7 +97,7 @@ int error_prequeue_flush()
  **/
 int error_prequeue_events_available()
 {
-	return liblist_num_nodes((genlist *)queue_head);
+	return liblist_num_nodes((genlist *) queue_head);
 }
 
 /**
@@ -112,5 +114,3 @@ err_prequeue *error_prequeue_get_head()
 {
 	return queue_head;
 }
-
-

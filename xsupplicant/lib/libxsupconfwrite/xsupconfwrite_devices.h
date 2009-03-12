@@ -10,7 +10,4 @@
 
 xmlNodePtr xsupconfwrite_devices_create_tree(struct xsup_devices *, char);
 
-#endif // __XSUPCONFWRITE_DEVICES_H__
-
-
-
+#endif				// __XSUPCONFWRITE_DEVICES_H__

@@ -22,7 +22,6 @@
 #define INITIALIZE   7
 #define RECEIVE      8
 
-
 void backend_sm_init(context *);
 void backend_sm_reinit(context *);
 int backend_sm_run(context *);

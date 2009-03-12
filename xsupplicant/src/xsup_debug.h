@@ -49,12 +49,10 @@
 #define DEBUG_TNC            BIT(21)
 #define DEBUG_TNC_IMC        BIT(22)
 #define DEBUG_PLUGINS        BIT(23)
-#define DEBUG_VERBOSE        BIT(24)    // Debug Normal (and then some. ;)
-#define DEBUG_NULL           BIT(25)    // Special debug level for sending messages to plugins, but not the log (This one should always be last in order to allow our test program to be a success.)
+#define DEBUG_VERBOSE        BIT(24)	// Debug Normal (and then some. ;)
+#define DEBUG_NULL           BIT(25)	// Special debug level for sending messages to plugins, but not the log (This one should always be last in order to allow our test program to be a success.)
 
-
-
-#define DEBUG_ALL            0x7fffffff  // Enable ALL flags that are defined above.
+#define DEBUG_ALL            0x7fffffff	// Enable ALL flags that are defined above.
 
 int logpath_changed(char *newpath);
 int logfile_setup();

@@ -19,7 +19,7 @@
  * @param[in,out] addtolist   The list that we want to add a node to.
  * @param[in] newnode   The node that we want to add to the list.
  **/
-void liblist_add_to_head(genlist **addtolist, genlist *newnode)
+void liblist_add_to_head(genlist ** addtolist, genlist * newnode)
 {
 	newnode->next = (*addtolist);
 	(*addtolist) = newnode;
@@ -31,19 +31,19 @@ void liblist_add_to_head(genlist **addtolist, genlist *newnode)
  * @param[in,out] addtolist   The list that we want to add a node to.
  * @param[in] newnode   The node that we want to add to the end of the list.
  **/
-void liblist_add_to_tail(genlist **addtolist, genlist *newnode)
+void liblist_add_to_tail(genlist ** addtolist, genlist * newnode)
 {
 	genlist *cur = NULL;
 
-	if ((*addtolist) == NULL)
-	{
+	if ((*addtolist) == NULL) {
 		(*addtolist) = newnode;
 		return;
 	}
 
 	cur = (*addtolist);
 
-	while (cur->next != NULL) cur = cur->next;
+	while (cur->next != NULL)
+		cur = cur->next;
 
 	cur->next = newnode;
 }
@@ -54,15 +54,16 @@ void liblist_add_to_tail(genlist **addtolist, genlist *newnode)
  * @param[in,out] parent   The parent node whose child we want to delete.
  * @param[in] delfunc   The function to call to properly delete the child node.
  **/
-void liblist_delete_child_node(genlist *parent, node_delete_func delfunc)
+void liblist_delete_child_node(genlist * parent, node_delete_func delfunc)
 {
 	genlist *cur = NULL;
 
-	if (parent->next == NULL) return;  // Do nothing.
+	if (parent->next == NULL)
+		return;		// Do nothing.
 
 	cur = parent->next->next;
 
-	(*delfunc)((void **)&parent->next);
+	(*delfunc) ((void **)&parent->next);
 
 	parent->next = cur;
 }
@@ -73,18 +74,17 @@ void liblist_delete_child_node(genlist *parent, node_delete_func delfunc)
  * @param[in,out] list   The list that we want to delete.
  * @param[in] delfunc   The function to call to properly delete each node in the list.
  **/
-void liblist_delete_list(genlist **list, node_delete_func delfunc)
+void liblist_delete_list(genlist ** list, node_delete_func delfunc)
 {
 	genlist *cur = NULL, *next = NULL;
 
 	cur = (*list);
 
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		next = cur;
 		cur = cur->next;
 
-		(*delfunc)((void **)&next);
+		(*delfunc) ((void **)&next);
 	}
 
 	(*list) = NULL;
@@ -97,17 +97,17 @@ void liblist_delete_list(genlist **list, node_delete_func delfunc)
  *
  * \retval >=0 the number of nodes in the list.
  **/
-unsigned int liblist_num_nodes(genlist *list)
+unsigned int liblist_num_nodes(genlist * list)
 {
 	genlist *cur = NULL;
 	unsigned int count = 0;
 
-	if (list == NULL) return 0;
+	if (list == NULL)
+		return 0;
 
 	cur = list;
 
-	while (cur != NULL)
-	{
+	while (cur != NULL) {
 		count++;
 		cur = cur->next;
 	}

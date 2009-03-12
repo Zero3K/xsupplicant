@@ -25,302 +25,287 @@
 #include "xsupconfig_parse_eap_fast.h"
 #include "xsupconfig_parse_eap_fast_phase2.h"
 
-void *xsupconfig_parse_eap_fast(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast(void **attr, uint8_t config_type,
+				xmlNodePtr node)
 {
-  struct config_eap_method *meth = NULL;
+	struct config_eap_method *meth = NULL;
 
-  meth = (*attr);
+	meth = (*attr);
 
-  if (meth == NULL)
-  {
-	meth = xsupconfig_alloc_method(meth, "EAP-FAST");
-	(*attr) = meth;
-  }
-  else
-  {
-	  meth = xsupconfig_alloc_method(meth, "EAP-FAST");
-  }
+	if (meth == NULL) {
+		meth = xsupconfig_alloc_method(meth, "EAP-FAST");
+		(*attr) = meth;
+	} else {
+		meth = xsupconfig_alloc_method(meth, "EAP-FAST");
+	}
 
-  if (meth == NULL) return NULL;
-
+	if (meth == NULL)
+		return NULL;
 
 #ifdef PARSE_DEBUG
-  printf("Parsing method 'EAP-FAST'.\n");
+	printf("Parsing method 'EAP-FAST'.\n");
 #endif
 
-  meth->method_num = EAP_TYPE_FAST;
-  meth->method_data = malloc(sizeof(struct config_eap_fast));
-  if (meth->method_data == NULL)
-    {
-      printf("Couldn't allocate memory to store EAP-FAST data in network! "
-	     " (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	meth->method_num = EAP_TYPE_FAST;
+	meth->method_data = malloc(sizeof(struct config_eap_fast));
+	if (meth->method_data == NULL) {
+		printf
+		    ("Couldn't allocate memory to store EAP-FAST data in network! "
+		     " (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  memset(meth->method_data, 0x00, sizeof(struct config_eap_fast));
+	memset(meth->method_data, 0x00, sizeof(struct config_eap_fast));
 
-  ((struct config_eap_fast *)(meth->method_data))->flags = EAP_FAST_PROVISION_ALLOWED | EAP_FAST_PROVISION_AUTHENTICATED;
+	((struct config_eap_fast *)(meth->method_data))->flags =
+	    EAP_FAST_PROVISION_ALLOWED | EAP_FAST_PROVISION_AUTHENTICATED;
 
-  return meth->method_data;
+	return meth->method_data;
 }
 
-void *xsupconfig_parse_eap_fast_provision(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_provision(void **attr, uint8_t config_type,
+					  xmlNodePtr node)
 {
-  struct config_eap_fast *fast = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
+	struct config_eap_fast *fast = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Allow provisioning : %s\n", value);
+	printf("Allow provisioning : %s\n", value);
 #endif
 
-  fast = (*attr);
+	fast = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
+	if (result == 1) {
 		SET_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED);
-    }
-  else if (result == 0)
-    {
+	} else if (result == 0) {
 		UNSET_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED);
-    }
-  else
-    {
-      xsupconfig_common_log("Invalid value was passed for 'Allow_Provision'!  (Line %ld)\n"
-	     "   Will use the default value of yes.\n",
-	     xsupconfig_parse_get_line_num());
+	} else {
+		xsupconfig_common_log
+		    ("Invalid value was passed for 'Allow_Provision'!  (Line %ld)\n"
+		     "   Will use the default value of yes.\n",
+		     xsupconfig_parse_get_line_num());
 		SET_FLAG(fast->flags, EAP_FAST_PROVISION_ALLOWED);
-    }
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return fast;
+	return fast;
 }
 
-void *xsupconfig_parse_eap_fast_pac_file(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_pac_file(void **attr, uint8_t config_type,
+					 xmlNodePtr node)
 {
-  struct config_eap_fast *fast = NULL; 
-  char *value = NULL;
+	struct config_eap_fast *fast = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("PAC file location : %s\n", value);
+	printf("PAC file location : %s\n", value);
 #endif
 
-  fast = (*attr);
+	fast = (*attr);
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		fast->pac_location = NULL;
-	}
-	else
-	{
-	    fast->pac_location = _strdup(value);
+	} else {
+		fast->pac_location = _strdup(value);
 		xmlFree(value);
 	}
 
-  return fast;
+	return fast;
 }
 
-void *xsupconfig_parse_eap_fast_innerid(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_innerid(void **attr, uint8_t config_type,
+					xmlNodePtr node)
 {
-  struct config_eap_fast *fast = NULL;
-  char *value = NULL;
+	struct config_eap_fast *fast = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Inner ID : %s\n", value);
+	printf("Inner ID : %s\n", value);
 #endif
 
-  fast = (*attr);
+	fast = (*attr);
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		fast->innerid = NULL;
-	}
-	else
-	{
+	} else {
 		fast->innerid = _strdup(value);
 		xmlFree(value);
 	}
 
-  return fast;
+	return fast;
 }
 
-void *xsupconfig_parse_eap_fast_chunk_size(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_chunk_size(void **attr, uint8_t config_type,
+					   xmlNodePtr node)
 {
-  struct config_eap_fast *fast = NULL;
-  char *value = NULL;
+	struct config_eap_fast *fast = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Chunk Size : %s\n", value);
+	printf("Chunk Size : %s\n", value);
 #endif
 
-  fast = (*attr);
+	fast = (*attr);
 
-  if (xsupconfig_common_is_number(value) == 0)
-    {
-      xsupconfig_common_log("Value assigned to 'Chunk_Size' is not a number!  (Line %ld)\n"
-	     "  Using default!\n", xsupconfig_parse_get_line_num());
-    }
-  else
-    {
-      fast->chunk_size = atoi(value);
-    }
+	if (xsupconfig_common_is_number(value) == 0) {
+		xsupconfig_common_log
+		    ("Value assigned to 'Chunk_Size' is not a number!  (Line %ld)\n"
+		     "  Using default!\n", xsupconfig_parse_get_line_num());
+	} else {
+		fast->chunk_size = atoi(value);
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return fast;
+	return fast;
 }
 
-void *xsupconfig_parse_eap_fast_allow_anon_provision(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_allow_anon_provision(void **attr,
+						     uint8_t config_type,
+						     xmlNodePtr node)
 {
-  struct config_eap_fast *fast = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
+	struct config_eap_fast *fast = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Allow anonymous provisioning : %s\n", value);
+	printf("Allow anonymous provisioning : %s\n", value);
 #endif
 
-  fast = (*attr);
+	fast = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
+	if (result == 1) {
 		SET_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS);
-    }
-  else if (result == 0)
-    {
+	} else if (result == 0) {
 		UNSET_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS);
-    }
-  else
-    {
-      xsupconfig_common_log("Invalid value was passed for 'Allow_Anonymous_Provision'!  (Line %ld)\n"
-	     "   Will use the default value of no.\n",
-	     xsupconfig_parse_get_line_num());
+	} else {
+		xsupconfig_common_log
+		    ("Invalid value was passed for 'Allow_Anonymous_Provision'!  (Line %ld)\n"
+		     "   Will use the default value of no.\n",
+		     xsupconfig_parse_get_line_num());
 		UNSET_FLAG(fast->flags, EAP_FAST_PROVISION_ANONYMOUS);
-    }
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return fast;
+	return fast;
 }
 
-void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_allow_auth_provision(void **attr,
+						     uint8_t config_type,
+						     xmlNodePtr node)
 {
-  struct config_eap_fast *fast = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
+	struct config_eap_fast *fast = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Allow authenticated provisioning : %s\n", value);
+	printf("Allow authenticated provisioning : %s\n", value);
 #endif
 
-  fast = (*attr);
+	fast = (*attr);
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1)
-    {
+	if (result == 1) {
 		SET_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
-    }
-  else if (result == 0)
-    {
+	} else if (result == 0) {
 		UNSET_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
-    }
-  else
-    {
-      xsupconfig_common_log("Invalid value was passed for 'Allow_Authenticated_Provision'!  (Line %ld)\n"
-	     "   Will use the default value of yes.\n",
-	     xsupconfig_parse_get_line_num());
+	} else {
+		xsupconfig_common_log
+		    ("Invalid value was passed for 'Allow_Authenticated_Provision'!  (Line %ld)\n"
+		     "   Will use the default value of yes.\n",
+		     xsupconfig_parse_get_line_num());
 		SET_FLAG(fast->flags, EAP_FAST_PROVISION_AUTHENTICATED);
-    }
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return fast;
+	return fast;
 }
 
-void *xsupconfig_parse_eap_fast_trusted_server(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_trusted_server(void **attr, uint8_t config_type,
+					       xmlNodePtr node)
 {
-  struct config_eap_fast *fast = NULL;
-  char *value = NULL;
+	struct config_eap_fast *fast = NULL;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  fast = (*attr);
+	fast = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("FAST Trusted Server : %s\n", value);
+	printf("FAST Trusted Server : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		fast->trusted_server = NULL;
-	}
-	else
-	{
+	} else {
 		fast->trusted_server = _strdup(value);
 		xmlFree(value);
 	}
 
-  return fast;
+	return fast;
 }
 
-void *xsupconfig_parse_eap_fast_validate_cert(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_validate_cert(void **attr, uint8_t config_type,
+					      xmlNodePtr node)
 {
-  struct config_eap_fast *fast = NULL;
-  uint8_t result = 0;
-  char *value = NULL;
+	struct config_eap_fast *fast = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
-  fast = (*attr);
+	fast = (*attr);
 
 #ifdef PARSE_DEBUG
-  printf("FAST certificate validation : %s\n", value);
+	printf("FAST certificate validation : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result > 1)
-    {
-      xsupconfig_common_log("Invalid value was passed for 'Validate_Certificate'!  Will use "
-	     "the default value of yes.  (Config line %ld)\n",
-	     xsupconfig_parse_get_line_num());
-	  SET_FLAG(fast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
-    }
-  else
-    {
+	if (result > 1) {
+		xsupconfig_common_log
+		    ("Invalid value was passed for 'Validate_Certificate'!  Will use "
+		     "the default value of yes.  (Config line %ld)\n",
+		     xsupconfig_parse_get_line_num());
+		SET_FLAG(fast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
+	} else {
 		if (result == 1)
 			SET_FLAG(fast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
 		else
 			UNSET_FLAG(fast->flags, EAP_FAST_VALIDATE_SERVER_CERT);
-    }
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return fast;
+	return fast;
 }
 
-void *xsupconfig_parse_eap_fast_logon_creds(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_fast_logon_creds(void **attr, uint8_t config_type,
+					    xmlNodePtr node)
 {
 	struct config_eap_fast *fast = NULL;
 	char *value = NULL;
@@ -328,45 +313,62 @@ void *xsupconfig_parse_eap_fast_logon_creds(void **attr, uint8_t config_type, xm
 
 	fast = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("Use logon creds : %s\n", value);
+	printf("Use logon creds : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
- 
-    if (result == 1)
-    {
-      SET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
-    }
-  else if (result == 0)
-    {
-      UNSET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
-    }
-  else
-    {
-		xsupconfig_common_log("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
-			xsupconfig_parse_get_line_num());
-      UNSET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
-    }
+	result = xsupconfig_common_yesno(value);
 
-  xmlFree(value);
+	if (result == 1) {
+		SET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
+	} else if (result == 0) {
+		UNSET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
+	} else {
+		xsupconfig_common_log
+		    ("Unknown value for <Use_Logon_Credentials> at line %ld.  Using default of NO.",
+		     xsupconfig_parse_get_line_num());
+		UNSET_FLAG(fast->flags, EAP_FAST_USE_LOGON_CREDS);
+	}
 
-  return fast;
+	xmlFree(value);
+
+	return fast;
 }
 
 parser eap_fast[] = {
-  {"Allow_Provision", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_provision},
-  {"Allow_Anonymous_Provision", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_allow_anon_provision},
-  {"Allow_Authenticated_Provision", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_allow_auth_provision},
-  {"PAC_File", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_pac_file},
-  {"Chunk_Size", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_chunk_size},
-  {"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_innerid},
-  {"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_trusted_server},
-  {"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_logon_creds},
-  {"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_fast_validate_cert},
-  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
-  {"Phase2", (struct conf_parse_struct *)&fast_phase2, TRUE, OPTION_ANY_CONFIG, xsupcommon_do_nothing},
+	{"Allow_Provision", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_provision}
+	,
+	{"Allow_Anonymous_Provision", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_allow_anon_provision}
+	,
+	{"Allow_Authenticated_Provision", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_allow_auth_provision}
+	,
+	{"PAC_File", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_pac_file}
+	,
+	{"Chunk_Size", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_chunk_size}
+	,
+	{"Inner_ID", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_innerid}
+	,
+	{"Trusted_Server", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_trusted_server}
+	,
+	{"Use_Logon_Credentials", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_logon_creds}
+	,
+	{"Validate_Certificate", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_fast_validate_cert}
+	,
+	{"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupcommon_do_nothing}
+	,
+	{"Phase2", (struct conf_parse_struct *)&fast_phase2, TRUE,
+	 OPTION_ANY_CONFIG, xsupcommon_do_nothing},
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

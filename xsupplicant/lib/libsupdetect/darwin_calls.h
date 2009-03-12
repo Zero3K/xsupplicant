@@ -13,10 +13,9 @@
 #ifndef __DARWIN_CALLS_H__
 #define __DARWIN_CALLS_H__
 
-int supdetect_check_process_list(sup_fingerprints *search);
+int supdetect_check_process_list(sup_fingerprints * search);
 int os_strange_checks();
 
+#endif				// __DARWIN_CALLS_H__
 
-#endif // __DARWIN_CALLS_H__
-
-#endif // DARWIN
+#endif				// DARWIN

@@ -27,36 +27,42 @@
 #include "xsupconfig_common.h"
 #include "xsupconfig.h"
 
-void *xsupconfig_parse_connections(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_connections(void **attr, uint8_t config_type,
+				   xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
-  printf("Parsing connections..\n");
+	printf("Parsing connections..\n");
 #endif
 
-  conf_connections = NULL;
+	conf_connections = NULL;
 
-  return NULL;
+	return NULL;
 }
 
-void *xsupconfig_parse_user_connections(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_user_connections(void **attr, uint8_t config_type,
+					xmlNodePtr node)
 {
 #ifdef PARSE_DEBUG
-  printf("Parsing connections..\n");
+	printf("Parsing connections..\n");
 #endif
 
-  conf_user_connections = NULL;
+	conf_user_connections = NULL;
 
-  return NULL;
+	return NULL;
 }
-  
+
 parser connections[] = {
-  {"Connection", (struct conf_parse_struct *)&connection, TRUE, OPTION_ANY_CONFIG,
-  xsupconfig_parse_connection},
+	{"Connection", (struct conf_parse_struct *)&connection, TRUE,
+	 OPTION_ANY_CONFIG,
+	 xsupconfig_parse_connection},
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};
 
 parser user_connections[] = {
-  {"Connection", (struct conf_parse_struct *)&connection, TRUE, OPTION_ANY_CONFIG,
-  xsupconfig_parse_user_connection},
+	{"Connection", (struct conf_parse_struct *)&connection, TRUE,
+	 OPTION_ANY_CONFIG,
+	 xsupconfig_parse_user_connection},
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

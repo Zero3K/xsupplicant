@@ -11,7 +11,4 @@
 
 xmlNodePtr xsupconfwrite_interface_create_tree(struct xsup_interfaces *, char);
 
-#endif // __XSUPCONFWRITE_INTERFACE_H__
-
-
-
+#endif				// __XSUPCONFWRITE_INTERFACE_H__

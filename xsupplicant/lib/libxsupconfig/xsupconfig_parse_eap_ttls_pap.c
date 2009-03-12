@@ -25,98 +25,102 @@
 #include "xsupconfig_common.h"
 #include "pwd_crypt.h"
 
-void *xsupconfig_parse_eap_ttls_pap(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_pap(void **attr, uint8_t config_type,
+				    xmlNodePtr node)
 {
-  struct config_eap_ttls *ttls = NULL;
+	struct config_eap_ttls *ttls = NULL;
 
-  ttls = (*attr);
+	ttls = (*attr);
 
-  if (ttls == NULL)
-    {
-      xsupconfig_common_log("Invalid TTLS phase 1!  You cannot have TTLS phase 2 data without"
-	     " having a phase 1!  (This is likely a bug in the parser code!)"
-	     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	if (ttls == NULL) {
+		xsupconfig_common_log
+		    ("Invalid TTLS phase 1!  You cannot have TTLS phase 2 data without"
+		     " having a phase 1!  (This is likely a bug in the parser code!)"
+		     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  ttls->phase2_data = malloc(sizeof(struct config_pwd_only));
-  if (ttls->phase2_data == NULL)
-    {
-      printf("Couldn't allocate memory to store PAP configuration for "
-	     "EAP-TTLS!  (Line %ld)\n", xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	ttls->phase2_data = malloc(sizeof(struct config_pwd_only));
+	if (ttls->phase2_data == NULL) {
+		printf
+		    ("Couldn't allocate memory to store PAP configuration for "
+		     "EAP-TTLS!  (Line %ld)\n",
+		     xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  memset(ttls->phase2_data, 0x00, sizeof(struct config_pwd_only));
+	memset(ttls->phase2_data, 0x00, sizeof(struct config_pwd_only));
 
-  return ttls->phase2_data;
+	return ttls->phase2_data;
 }
 
-void *xsupconfig_parse_eap_ttls_pap_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_pap_password(void **attr, uint8_t config_type,
+					     xmlNodePtr node)
 {
-  struct config_pwd_only *pap = NULL;
-  char *value = NULL;
+	struct config_pwd_only *pap = NULL;
+	char *value = NULL;
 
-  pap = (*attr);
+	pap = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("PAP Password : %s\n", value);
+	printf("PAP Password : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		pap->password = NULL;
-	}
-	else
-	{
+	} else {
 		pap->password = _strdup(value);
 		xmlFree(value);
 	}
 
-  return pap;
+	return pap;
 }
 
-void *xsupconfig_parse_eap_ttls_enc_pap_password(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_eap_ttls_enc_pap_password(void **attr,
+						 uint8_t config_type,
+						 xmlNodePtr node)
 {
-  struct config_pwd_only *pap = NULL;
-  char *value = NULL;
-  uint16_t size = 0;
+	struct config_pwd_only *pap = NULL;
+	char *value = NULL;
+	uint16_t size = 0;
 
-  pap = (*attr);
+	pap = (*attr);
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("PAP Password : %s\n", value);
+	printf("PAP Password : %s\n", value);
 #endif
 
-  	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		xmlFree(value);
 		return pap;
 	}
 
-  if (pwcrypt_decrypt(config_type, (uint8_t *)value, strlen(value), (uint8_t **)&pap->password, &size) != 0)
-  {
-	  xmlFree(value);
-	  pap->password = NULL;
-	  return pap;
-  }
+	if (pwcrypt_decrypt
+	    (config_type, (uint8_t *) value, strlen(value),
+	     (uint8_t **) & pap->password, &size) != 0) {
+		xmlFree(value);
+		pap->password = NULL;
+		return pap;
+	}
 
-  if ((pap->password != NULL) && (strlen(pap->password) == 0))
-  {
-	  FREE(pap->password);
-  }
+	if ((pap->password != NULL) && (strlen(pap->password) == 0)) {
+		FREE(pap->password);
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return pap;
+	return pap;
 }
 
 parser eap_ttls_pap[] = {
-  {"Password", NULL, FALSE, OPTION_ANY_CONFIG,
-   &xsupconfig_parse_eap_ttls_pap_password},
-  {"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG, &xsupconfig_parse_eap_ttls_enc_pap_password}};
+	{"Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_ttls_pap_password}
+	,
+	{"Encrypted_Password", NULL, FALSE, OPTION_ANY_CONFIG,
+	 &xsupconfig_parse_eap_ttls_enc_pap_password}
+};

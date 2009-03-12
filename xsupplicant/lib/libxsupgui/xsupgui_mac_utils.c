@@ -21,7 +21,6 @@
 
 #include <libxml/parser.h>
 
-
 #include "libxsupconfig/xsupconfig_common.h"
 
 /**
@@ -42,17 +41,16 @@ int xsupgui_mac_utils_is_valid_mac(char *inhexstr)
 	int i;
 
 	// A valid MAC should be 17 characters.
-	if (strlen(inhexstr) != 17) return 0;
+	if (strlen(inhexstr) != 17)
+		return 0;
 
-	for (i=0; i<17; i++)
-	{
-		if ((i == 2) || (i == 5) || (i == 8) || (i == 11) || (i == 14))
-		{
-			if (is_delim(inhexstr[i]) == 0) return 0;
-		}
-		else
-		{
-			if (is_hex(inhexstr[i]) == 0) return 0;
+	for (i = 0; i < 17; i++) {
+		if ((i == 2) || (i == 5) || (i == 8) || (i == 11) || (i == 14)) {
+			if (is_delim(inhexstr[i]) == 0)
+				return 0;
+		} else {
+			if (is_hex(inhexstr[i]) == 0)
+				return 0;
 		}
 	}
 
@@ -70,16 +68,15 @@ int xsupgui_mac_utils_is_valid_mac(char *inhexstr)
  **/
 void xsupgui_mac_utils_convert_mac(char *instr, char *mac)
 {
-	if (strlen(instr) != 17)
-	{
+	if (strlen(instr) != 17) {
 		printf("Invalid string passed to %s()!\n", __FUNCTION__);
 		return;
 	}
 
-  mac[0] = ((ctonib(instr[0]) << 4) | ctonib(instr[1]));
-  mac[1] = ((ctonib(instr[3]) << 4) | ctonib(instr[4]));
-  mac[2] = ((ctonib(instr[6]) << 4) | ctonib(instr[7]));
-  mac[3] = ((ctonib(instr[9]) << 4) | ctonib(instr[10]));
-  mac[4] = ((ctonib(instr[12]) << 4) | ctonib(instr[13]));
-  mac[5] = ((ctonib(instr[15]) << 4) | ctonib(instr[16]));
+	mac[0] = ((ctonib(instr[0]) << 4) | ctonib(instr[1]));
+	mac[1] = ((ctonib(instr[3]) << 4) | ctonib(instr[4]));
+	mac[2] = ((ctonib(instr[6]) << 4) | ctonib(instr[7]));
+	mac[3] = ((ctonib(instr[9]) << 4) | ctonib(instr[10]));
+	mac[4] = ((ctonib(instr[12]) << 4) | ctonib(instr[13]));
+	mac[5] = ((ctonib(instr[15]) << 4) | ctonib(instr[16]));
 }

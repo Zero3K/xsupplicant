@@ -15,11 +15,9 @@
  *
  *******************************************************************/
 
-
 #ifndef SIMD5_H_
 #define SIMD5_H_
 
 int do_v0_at_mac(eap_type_data *, char *, char *, int, int, char *);
 
 #endif
-

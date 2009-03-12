@@ -55,7 +55,7 @@ char Strncpy(char *dest, unsigned int, const char *src, size_t n);
  *  This function combines malloc() and memset(). It returns NULL in case of
  *  an error on allocating memory. It should used like malloc().
  */
-void* Malloc(size_t size);
+void *Malloc(size_t size);
 
 /**
  * Determine if a value is TRUE or FALSE, and return a text string that can be displayed

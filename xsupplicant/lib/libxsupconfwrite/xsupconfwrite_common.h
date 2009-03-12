@@ -10,9 +10,8 @@
 
 xmlNodePtr xsupconfwrite_common_newSibling(xmlNodePtr, char *, char *);
 int xsupconfwrite_convert_amp(char *, char **);
-xmlNodePtr xsupconfwrite_common_write_bool(xmlNodePtr xmlNode, char *nodeName, int yesno, int defaultval, int forcewrite, int sibling);
+xmlNodePtr xsupconfwrite_common_write_bool(xmlNodePtr xmlNode, char *nodeName,
+					   int yesno, int defaultval,
+					   int forcewrite, int sibling);
 
-#endif // __XSUPCONFWRITE_COMMON_H__
-
-
-
+#endif				// __XSUPCONFWRITE_COMMON_H__

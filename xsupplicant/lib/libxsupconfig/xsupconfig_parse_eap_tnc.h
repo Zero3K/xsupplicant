@@ -15,4 +15,4 @@ extern parser eap_tnc[];
 
 void *xsupconfig_parse_eap_tnc(void **, uint8_t, xmlNodePtr);
 
-#endif  // __XSUPCONFIG_PARSE_EAP_TNC_H__
+#endif				// __XSUPCONFIG_PARSE_EAP_TNC_H__

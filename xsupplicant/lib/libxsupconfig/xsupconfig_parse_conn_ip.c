@@ -26,48 +26,49 @@
 #include "xsupconfig_parse_conn_association.h"
 
 multichoice ip_type_choices[] = {
-  { 0,   "DHCP" },
-  { 1,   "STATIC" },
-  { 2,   "NONE" },
-  { -1, NULL}};
+	{0, "DHCP"},
+	{1, "STATIC"},
+	{2, "NONE"},
+	{-1, NULL}
+};
 
-void *xsupconfig_parse_conn_ip(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip(void **attr, uint8_t config_type,
+			       xmlNodePtr node)
 {
-  return (*attr);
+	return (*attr);
 }
 
-void *xsupconfig_parse_conn_ip_type(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_type(void **attr, uint8_t config_type,
+				    xmlNodePtr node)
 {
-  struct config_connection *conn = NULL;
-  int result = 0;
-  char *value = NULL;
+	struct config_connection *conn = NULL;
+	int result = 0;
+	char *value = NULL;
 
-  value = (char *)xmlNodeGetContent(node);
+	value = (char *)xmlNodeGetContent(node);
 
 #ifdef PARSE_DEBUG
-  printf("IP Allocation Type : %s\n", value);
+	printf("IP Allocation Type : %s\n", value);
 #endif
 
-  conn = (*attr);
+	conn = (*attr);
 
-  xsupconfig_common_upcase(value);
+	xsupconfig_common_upcase(value);
 
-  result = xsupconfig_common_select_from_list(ip_type_choices, value);
+	result = xsupconfig_common_select_from_list(ip_type_choices, value);
 
-  if (result == -1)
-  {
-	  xsupconfig_common_log("Unknown IP address allocation type '%s' in line %ld.  Defaulting to DHCP.",
-		  value, xsupconfig_parse_get_line_num());
-	  conn->ip.type = 0;
-  }
-  else
-  {
-	  conn->ip.type = result;
-  }
-  
-  xmlFree(value);
+	if (result == -1) {
+		xsupconfig_common_log
+		    ("Unknown IP address allocation type '%s' in line %ld.  Defaulting to DHCP.",
+		     value, xsupconfig_parse_get_line_num());
+		conn->ip.type = 0;
+	} else {
+		conn->ip.type = result;
+	}
 
-  return conn;
+	xmlFree(value);
+
+	return conn;
 }
 
 /**
@@ -84,20 +85,25 @@ static int xsupconfig_parse_is_addr_valid(char *ipstr)
 
 	sscanf(ipstr, "%d.%d.%d.%d", &oct1, &oct2, &oct3, &oct4);
 
-	if ((oct1 < 0) || (oct1 > 0xff)) return FALSE;
-	if ((oct2 < 0) || (oct2 > 0xff)) return FALSE;
-	if ((oct3 < 0) || (oct3 > 0xff)) return FALSE;
-	if ((oct4 < 0) || (oct4 > 0xff)) return FALSE;
+	if ((oct1 < 0) || (oct1 > 0xff))
+		return FALSE;
+	if ((oct2 < 0) || (oct2 > 0xff))
+		return FALSE;
+	if ((oct3 < 0) || (oct3 > 0xff))
+		return FALSE;
+	if ((oct4 < 0) || (oct4 > 0xff))
+		return FALSE;
 
 	return TRUE;
 }
 
-void *xsupconfig_parse_conn_ip_addr(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_addr(void **attr, uint8_t config_type,
+				    xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
 	xmlChar *content = NULL;
-	
+
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
@@ -108,21 +114,16 @@ void *xsupconfig_parse_conn_ip_addr(void **attr, uint8_t config_type, xmlNodePtr
 	printf("IP Address is : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->ip.ipaddr = NULL;
-	}
-	else
-	{
-		if (xsupconfig_parse_is_addr_valid(value) == TRUE)
-		{
+	} else {
+		if (xsupconfig_parse_is_addr_valid(value) == TRUE) {
 			conn->ip.ipaddr = value;
-		}
-		else
-		{
-			xsupconfig_common_log("IP address specified at line %ld is invalid.",
-				xsupconfig_parse_get_line_num());
+		} else {
+			xsupconfig_common_log
+			    ("IP address specified at line %ld is invalid.",
+			     xsupconfig_parse_get_line_num());
 			conn->ip.ipaddr = NULL;
 		}
 	}
@@ -130,12 +131,13 @@ void *xsupconfig_parse_conn_ip_addr(void **attr, uint8_t config_type, xmlNodePtr
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_netmask(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_netmask(void **attr, uint8_t config_type,
+				       xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
 	xmlChar *content = NULL;
-	
+
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
@@ -146,21 +148,16 @@ void *xsupconfig_parse_conn_ip_netmask(void **attr, uint8_t config_type, xmlNode
 	printf("IP Netmask is : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->ip.netmask = NULL;
-	}
-	else
-	{
-		if (xsupconfig_parse_is_addr_valid(value) == TRUE)
-		{
+	} else {
+		if (xsupconfig_parse_is_addr_valid(value) == TRUE) {
 			conn->ip.netmask = value;
-		}
-		else
-		{
-			xsupconfig_common_log("Netmask defined at line %ld is invalid.",
-				xsupconfig_parse_get_line_num());
+		} else {
+			xsupconfig_common_log
+			    ("Netmask defined at line %ld is invalid.",
+			     xsupconfig_parse_get_line_num());
 			conn->ip.netmask = NULL;
 		}
 	}
@@ -168,12 +165,13 @@ void *xsupconfig_parse_conn_ip_netmask(void **attr, uint8_t config_type, xmlNode
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_gateway(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_gateway(void **attr, uint8_t config_type,
+				       xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
 	xmlChar *content = NULL;
-	
+
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
@@ -184,21 +182,16 @@ void *xsupconfig_parse_conn_ip_gateway(void **attr, uint8_t config_type, xmlNode
 	printf("IP Gateway is : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->ip.gateway = NULL;
-	}
-	else
-	{
-		if (xsupconfig_parse_is_addr_valid(value) == TRUE)
-		{
+	} else {
+		if (xsupconfig_parse_is_addr_valid(value) == TRUE) {
 			conn->ip.gateway = value;
-		}
-		else
-		{
-			xsupconfig_common_log("IP Gateway defined at line %ld is invalid.",
-				xsupconfig_parse_get_line_num());
+		} else {
+			xsupconfig_common_log
+			    ("IP Gateway defined at line %ld is invalid.",
+			     xsupconfig_parse_get_line_num());
 			conn->ip.gateway = NULL;
 		}
 	}
@@ -206,12 +199,13 @@ void *xsupconfig_parse_conn_ip_gateway(void **attr, uint8_t config_type, xmlNode
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_dns1(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_dns1(void **attr, uint8_t config_type,
+				    xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
 	xmlChar *content = NULL;
-	
+
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
@@ -222,21 +216,16 @@ void *xsupconfig_parse_conn_ip_dns1(void **attr, uint8_t config_type, xmlNodePtr
 	printf("DNS1 Address is : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->ip.dns1 = NULL;
-	}
-	else
-	{
-		if (xsupconfig_parse_is_addr_valid(value) == TRUE)
-		{
+	} else {
+		if (xsupconfig_parse_is_addr_valid(value) == TRUE) {
 			conn->ip.dns1 = value;
-		}
-		else
-		{
-			xsupconfig_common_log("The DNS address specified at line %ld is invalid.",
-				xsupconfig_parse_get_line_num());
+		} else {
+			xsupconfig_common_log
+			    ("The DNS address specified at line %ld is invalid.",
+			     xsupconfig_parse_get_line_num());
 			conn->ip.dns1 = NULL;
 		}
 	}
@@ -244,12 +233,13 @@ void *xsupconfig_parse_conn_ip_dns1(void **attr, uint8_t config_type, xmlNodePtr
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_dns2(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_dns2(void **attr, uint8_t config_type,
+				    xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
 	xmlChar *content = NULL;
-	
+
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
@@ -260,21 +250,16 @@ void *xsupconfig_parse_conn_ip_dns2(void **attr, uint8_t config_type, xmlNodePtr
 	printf("DNS2 Address is : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->ip.dns2 = NULL;
-	}
-	else
-	{
-		if (xsupconfig_parse_is_addr_valid(value) == TRUE)
-		{
+	} else {
+		if (xsupconfig_parse_is_addr_valid(value) == TRUE) {
 			conn->ip.dns2 = value;
-		}
-		else
-		{
-			xsupconfig_common_log("The DNS address specified at line %ld is invalid.",
-				xsupconfig_parse_get_line_num());
+		} else {
+			xsupconfig_common_log
+			    ("The DNS address specified at line %ld is invalid.",
+			     xsupconfig_parse_get_line_num());
 			conn->ip.dns2 = NULL;
 		}
 	}
@@ -282,12 +267,13 @@ void *xsupconfig_parse_conn_ip_dns2(void **attr, uint8_t config_type, xmlNodePtr
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_dns3(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_dns3(void **attr, uint8_t config_type,
+				    xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
 	xmlChar *content = NULL;
-	
+
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
@@ -298,21 +284,16 @@ void *xsupconfig_parse_conn_ip_dns3(void **attr, uint8_t config_type, xmlNodePtr
 	printf("DNS3 Address is : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->ip.dns3 = NULL;
-	}
-	else
-	{
-		if (xsupconfig_parse_is_addr_valid(value) == TRUE)
-		{
+	} else {
+		if (xsupconfig_parse_is_addr_valid(value) == TRUE) {
 			conn->ip.dns3 = value;
-		}
-		else
-		{
-			xsupconfig_common_log("The DNS address specified at line %ld is invalid.",
-				xsupconfig_parse_get_line_num());
+		} else {
+			xsupconfig_common_log
+			    ("The DNS address specified at line %ld is invalid.",
+			     xsupconfig_parse_get_line_num());
 			conn->ip.dns3 = NULL;
 		}
 	}
@@ -320,12 +301,13 @@ void *xsupconfig_parse_conn_ip_dns3(void **attr, uint8_t config_type, xmlNodePtr
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_search_domain(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_search_domain(void **attr, uint8_t config_type,
+					     xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
 	xmlChar *content = NULL;
-	
+
 	conn = (*attr);
 
 	content = xmlNodeGetContent(node);
@@ -336,25 +318,23 @@ void *xsupconfig_parse_conn_ip_search_domain(void **attr, uint8_t config_type, x
 	printf("Search Domain is : %s\n", value);
 #endif
 
-	if ((value == NULL) || (strlen(value) == 0))
-	{
+	if ((value == NULL) || (strlen(value) == 0)) {
 		free(value);
 		conn->ip.search_domain = NULL;
-	}
-	else
-	{
+	} else {
 		conn->ip.search_domain = value;
 	}
 
 	return conn;
 }
 
-void *xsupconfig_parse_conn_ip_renew_on_reauth(void **attr, uint8_t config_type, xmlNodePtr node)
+void *xsupconfig_parse_conn_ip_renew_on_reauth(void **attr, uint8_t config_type,
+					       xmlNodePtr node)
 {
 	struct config_connection *conn = NULL;
 	char *value = NULL;
 	uint8_t result = 0;
-	
+
 	conn = (*attr);
 
 	value = (char *)xmlNodeGetContent(node);
@@ -363,37 +343,48 @@ void *xsupconfig_parse_conn_ip_renew_on_reauth(void **attr, uint8_t config_type,
 	printf("Renew on Reauth : %s\n", value);
 #endif
 
-  result = xsupconfig_common_yesno(value);
+	result = xsupconfig_common_yesno(value);
 
-  if (result == 1) 
-    {
+	if (result == 1) {
 		conn->ip.renew_on_reauth = TRUE;
-    }
-  else if (result == 0)
-    {
+	} else if (result == 0) {
 		conn->ip.renew_on_reauth = FALSE;
-    }
-  else
-    {
-		xsupconfig_common_log("Unknown reauthentication setting of '%s' at line %ld.  Defaulting to NO.",
-			value, xsupconfig_parse_get_line_num());
+	} else {
+		xsupconfig_common_log
+		    ("Unknown reauthentication setting of '%s' at line %ld.  Defaulting to NO.",
+		     value, xsupconfig_parse_get_line_num());
 		conn->ip.renew_on_reauth = FALSE;
-    }
+	}
 
-  xmlFree(value);
+	xmlFree(value);
 
-  return conn;
+	return conn;
 }
 
 parser conn_ip[] = {
-  {"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_type},
-  {"IP_Address", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_addr},
-  {"Netmask", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_netmask},
-  {"Gateway", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_gateway},
-  {"DNS1", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns1},
-  {"DNS2", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns2},
-  {"DNS3", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns3},
-  {"Search_Domain", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_search_domain},
-  {"Renew_DHCP_on_Reauthentication", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_renew_on_reauth},
+	{"Type", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_type}
+	,
+	{"IP_Address", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_conn_ip_addr}
+	,
+	{"Netmask", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_conn_ip_netmask}
+	,
+	{"Gateway", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_conn_ip_gateway}
+	,
+	{"DNS1", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns1}
+	,
+	{"DNS2", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns2}
+	,
+	{"DNS3", NULL, FALSE, OPTION_ANY_CONFIG, xsupconfig_parse_conn_ip_dns3}
+	,
+	{"Search_Domain", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_conn_ip_search_domain}
+	,
+	{"Renew_DHCP_on_Reauthentication", NULL, FALSE, OPTION_ANY_CONFIG,
+	 xsupconfig_parse_conn_ip_renew_on_reauth}
+	,
 
-  {NULL, NULL, FALSE, 0, NULL}};
+	{NULL, NULL, FALSE, 0, NULL}
+};

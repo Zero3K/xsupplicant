@@ -34,12 +34,11 @@
  **/
 void xsupconfig_common_upcase(char *strtoconvert)
 {
-  int i;
+	int i;
 
-  for (i=0;i<strlen(strtoconvert);i++)
-    {
-      strtoconvert[i] = toupper(strtoconvert[i]);
-    }
+	for (i = 0; i < strlen(strtoconvert); i++) {
+		strtoconvert[i] = toupper(strtoconvert[i]);
+	}
 }
 
 /**
@@ -54,12 +53,14 @@ void xsupconfig_common_upcase(char *strtoconvert)
  **/
 uint8_t xsupconfig_common_yesno(char *yesno)
 {
-  xsupconfig_common_upcase(yesno);
+	xsupconfig_common_upcase(yesno);
 
-  if (strcmp(yesno, "YES") == 0)  return 1;
-  if (strcmp(yesno, "NO") == 0)  return 0;
+	if (strcmp(yesno, "YES") == 0)
+		return 1;
+	if (strcmp(yesno, "NO") == 0)
+		return 0;
 
-  return 2;
+	return 2;
 }
 
 /**
@@ -75,18 +76,17 @@ uint8_t xsupconfig_common_yesno(char *yesno)
  * \retval int   An integer value from a multichoice structure that matches the
  *               string passed in by request.
  **/
-int xsupconfig_common_select_from_list(multichoice list_choices[], 
+int xsupconfig_common_select_from_list(multichoice list_choices[],
 				       char *request)
 {
-  int i = 0;
+	int i = 0;
 
-  while ((list_choices[i].text != NULL) && (strcmp(list_choices[i].text,
-						   request) != 0))
-    {
-      i++;
-    }
+	while ((list_choices[i].text != NULL) && (strcmp(list_choices[i].text,
+							 request) != 0)) {
+		i++;
+	}
 
-  return list_choices[i].value;
+	return list_choices[i].value;
 }
 
 /**
@@ -99,14 +99,14 @@ int xsupconfig_common_select_from_list(multichoice list_choices[],
  **/
 uint8_t xsupconfig_common_is_number(char *number)
 {
-  int i;
+	int i;
 
-  for (i=0; i < strlen(number); i++)
-    {
-      if ((number[i] < '0') || (number[i] > '9')) return 0;
-    }
+	for (i = 0; i < strlen(number); i++) {
+		if ((number[i] < '0') || (number[i] > '9'))
+			return 0;
+	}
 
-  return 1;
+	return 1;
 }
 
 /**
@@ -132,34 +132,33 @@ void *xsupcommon_do_nothing(void **attr, uint8_t config_type, xmlNodePtr node)
  * \retval NULL on error
  * \retval ptr to the newly created structure.
  **/
-struct config_eap_method *xsupconfig_alloc_method(struct config_eap_method *mymeth,
-						  char *eaptype)
+struct config_eap_method *xsupconfig_alloc_method(struct config_eap_method
+						  *mymeth, char *eaptype)
 {
-  struct config_eap_method *meth, *cur;
+	struct config_eap_method *meth, *cur;
 
-  meth = malloc(sizeof(struct config_eap_method));
-  if (meth == NULL)
-    {
-      printf("Couldn't allocate memory to store method %s."
-	     "  (At line %ld)\n", eaptype,
-	     xsupconfig_parse_get_line_num());
-      exit(2);
-    }
+	meth = malloc(sizeof(struct config_eap_method));
+	if (meth == NULL) {
+		printf("Couldn't allocate memory to store method %s."
+		       "  (At line %ld)\n", eaptype,
+		       xsupconfig_parse_get_line_num());
+		exit(2);
+	}
 
-  memset(meth, 0x00, sizeof(struct config_eap_method));
+	memset(meth, 0x00, sizeof(struct config_eap_method));
 
-  if (mymeth == NULL)
-    {
+	if (mymeth == NULL) {
 		return meth;
-    }
+	}
 
-  cur = mymeth;
+	cur = mymeth;
 
-  while (cur->next != NULL) cur = cur->next;
+	while (cur->next != NULL)
+		cur = cur->next;
 
-  cur->next = meth;
+	cur->next = meth;
 
-  return meth;
+	return meth;
 }
 
 /**
@@ -171,22 +170,22 @@ struct config_eap_method *xsupconfig_alloc_method(struct config_eap_method *myme
  **/
 char ctonib(char cnib)
 {
-  char retVal=0x00;
-  char testval=0x00;
+	char retVal = 0x00;
+	char testval = 0x00;
 
-  if ((cnib>='0') && (cnib<='9'))
-    {
-      retVal = cnib - '0';
-    } else {
-      testval = toupper(cnib);
-      if ((testval>='A') && (testval<='F'))
-	{
-	  retVal = ((testval - 'A') +10);
+	if ((cnib >= '0') && (cnib <= '9')) {
+		retVal = cnib - '0';
 	} else {
-	  printf("Error in conversion!  (Check ctonibble()) -- %02x\n",testval);
+		testval = toupper(cnib);
+		if ((testval >= 'A') && (testval <= 'F')) {
+			retVal = ((testval - 'A') + 10);
+		} else {
+			printf
+			    ("Error in conversion!  (Check ctonibble()) -- %02x\n",
+			     testval);
+		}
 	}
-    }
-  return retVal;
+	return retVal;
 }
 
 /**
@@ -199,9 +198,10 @@ char ctonib(char cnib)
  **/
 int is_hex(char inchar)
 {
-	if (((inchar >= 'A') && (inchar <= 'F')) || 
-		((inchar >='0') && (inchar <= '9')) ||
-		((inchar >='a') && (inchar <= 'f'))) return TRUE;
+	if (((inchar >= 'A') && (inchar <= 'F')) ||
+	    ((inchar >= '0') && (inchar <= '9')) ||
+	    ((inchar >= 'a') && (inchar <= 'f')))
+		return TRUE;
 
 	return FALSE;
 }
@@ -216,7 +216,8 @@ int is_hex(char inchar)
  **/
 int is_delim(char inchar)
 {
-	if ((inchar == ':') || (inchar = '-')) return TRUE;
+	if ((inchar == ':') || (inchar = '-'))
+		return TRUE;
 
 	return FALSE;
 }
@@ -239,17 +240,16 @@ int xsupconfig_common_is_valid_mac(char *inhexstr)
 	int i;
 
 	// A valid MAC should be 17 characters.
-	if (strlen(inhexstr) != 17) return FALSE;
+	if (strlen(inhexstr) != 17)
+		return FALSE;
 
-	for (i=0; i<17; i++)
-	{
-		if ((i == 2) || (i == 5) || (i == 8) || (i == 11) || (i == 14))
-		{
-			if (is_delim(inhexstr[i]) == FALSE) return FALSE;
-		}
-		else
-		{
-			if (is_hex(inhexstr[i]) == FALSE) return FALSE;
+	for (i = 0; i < 17; i++) {
+		if ((i == 2) || (i == 5) || (i == 8) || (i == 11) || (i == 14)) {
+			if (is_delim(inhexstr[i]) == FALSE)
+				return FALSE;
+		} else {
+			if (is_hex(inhexstr[i]) == FALSE)
+				return FALSE;
 		}
 	}
 
@@ -267,18 +267,17 @@ int xsupconfig_common_is_valid_mac(char *inhexstr)
  **/
 void xsupconfig_common_convert_mac(char *instr, char *mac)
 {
-	if (strlen(instr) != 17)
-	{
+	if (strlen(instr) != 17) {
 		printf("Invalid string passed to %s()!\n", __FUNCTION__);
 		return;
 	}
 
-  mac[0] = ((ctonib(instr[0]) << 4) | ctonib(instr[1]));
-  mac[1] = ((ctonib(instr[3]) << 4) | ctonib(instr[4]));
-  mac[2] = ((ctonib(instr[6]) << 4) | ctonib(instr[7]));
-  mac[3] = ((ctonib(instr[9]) << 4) | ctonib(instr[10]));
-  mac[4] = ((ctonib(instr[12]) << 4) | ctonib(instr[13]));
-  mac[5] = ((ctonib(instr[15]) << 4) | ctonib(instr[16]));
+	mac[0] = ((ctonib(instr[0]) << 4) | ctonib(instr[1]));
+	mac[1] = ((ctonib(instr[3]) << 4) | ctonib(instr[4]));
+	mac[2] = ((ctonib(instr[6]) << 4) | ctonib(instr[7]));
+	mac[3] = ((ctonib(instr[9]) << 4) | ctonib(instr[10]));
+	mac[4] = ((ctonib(instr[12]) << 4) | ctonib(instr[13]));
+	mac[5] = ((ctonib(instr[15]) << 4) | ctonib(instr[16]));
 }
 
 /**
@@ -294,13 +293,13 @@ xmlNodePtr xsupconfig_common_find_node(xmlNodePtr head, char *nodename)
 {
 	xmlNodePtr cur_node = NULL;
 
-	if ((head == NULL) || (nodename == NULL)) return NULL;
+	if ((head == NULL) || (nodename == NULL))
+		return NULL;
 
-	for (cur_node = head; cur_node; cur_node = cur_node->next)
-	{
-		if ((cur_node->type == XML_ELEMENT_NODE) && (strcmp((char *)cur_node->name, nodename) == 0))
-		{
-			return cur_node;			
+	for (cur_node = head; cur_node; cur_node = cur_node->next) {
+		if ((cur_node->type == XML_ELEMENT_NODE)
+		    && (strcmp((char *)cur_node->name, nodename) == 0)) {
+			return cur_node;
 		}
 	}
 
@@ -321,21 +320,18 @@ void xsupconfig_common_log(char *fmt, ...)
 
 	va_start(ap, fmt);
 
-	logmsg = malloc(strlen(fmt) + 1024);  // Should be enough.
-	if (logmsg == NULL)
-	{
-		debug_printf(DEBUG_NORMAL, "Unable to allocate memory to create configuration parse error string.\n");
+	logmsg = malloc(strlen(fmt) + 1024);	// Should be enough.
+	if (logmsg == NULL) {
+		debug_printf(DEBUG_NORMAL,
+			     "Unable to allocate memory to create configuration parse error string.\n");
 		return;
 	}
 
 	vsnprintf(logmsg, (strlen(fmt) + 1024), fmt, ap);
 
-	if (xsup_common_in_startup() == TRUE)
-	{
+	if (xsup_common_in_startup() == TRUE) {
 		error_prequeue_add(logmsg);
-	}
-	else
-	{
+	} else {
 		debug_printf(DEBUG_NORMAL, "%s\n", logmsg);
 	}
 
