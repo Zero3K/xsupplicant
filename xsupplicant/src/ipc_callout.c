@@ -1572,10 +1572,11 @@ int ipc_callout_get_ssid(xmlNodePtr innode, xmlNodePtr * outnode)
 						outnode);
 
 	return ipc_callout_some_response_str("Get_SSID", "SSID",
-					     ((wireless_ctx *) (ctx->
-								intTypeData))->
-					     cur_essid, "SSID_Name",
-					     ctx->intName, outnode);
+					     ((wireless_ctx
+					       *)
+					      (ctx->intTypeData))->cur_essid,
+					     "SSID_Name", ctx->intName,
+					     outnode);
 }
 
 /**
@@ -3600,15 +3601,15 @@ int ipc_callout_enum_profiles(xmlNodePtr innode, xmlNodePtr * outnode)
 
 	count = 0;
 	if ((config_type & CONFIG_LOAD_GLOBAL) == CONFIG_LOAD_GLOBAL) {
-		count +=
-		    liblist_num_nodes((genlist *)
-				      config_get_profiles(CONFIG_LOAD_GLOBAL));
+		count += liblist_num_nodes((genlist *)
+					   config_get_profiles
+					   (CONFIG_LOAD_GLOBAL));
 	}
 
 	if ((config_type & CONFIG_LOAD_USER) == CONFIG_LOAD_USER) {
-		count +=
-		    liblist_num_nodes((genlist *)
-				      config_get_profiles(CONFIG_LOAD_USER));
+		count += liblist_num_nodes((genlist *)
+					   config_get_profiles
+					   (CONFIG_LOAD_USER));
 	}
 
 	sprintf((char *)&res, "%d", count);
@@ -4860,8 +4861,8 @@ int ipc_callout_is_trusted_server_in_use(char *name)
 	while (ctx != NULL) {
 		if ((ctx->conn != NULL) && (ctx->prof != NULL)) {
 			tsname =
-			    ipc_callout_helper_get_tsname_from_profile(ctx->
-								       prof);
+			    ipc_callout_helper_get_tsname_from_profile
+			    (ctx->prof);
 			if ((tsname != NULL) && (strcmp(tsname, name) == 0)) {
 				return TRUE;
 			}
@@ -5526,8 +5527,8 @@ int ipc_callout_set_interface_config(xmlNodePtr innode, xmlNodePtr * outnode)
 			if (status == 0)	// No context was found.  Let's see if the interface is alive.
 			{
 				intname =
-				    interfaces_get_name_from_mac((char *)newif->
-								 mac);
+				    interfaces_get_name_from_mac((char *)
+								 newif->mac);
 				if (intname != NULL) {
 					// But the interface is alive, so we need to bind it.
 					// This is usually a case where a second interface of the same hardware
@@ -5538,8 +5539,7 @@ int ipc_callout_set_interface_config(xmlNodePtr innode, xmlNodePtr * outnode)
 					     NULL, 0) != 0) {
 						debug_printf(DEBUG_NORMAL,
 							     "Couldn't initialize interface '%s'!\n",
-							     newif->
-							     description);
+							     newif->description);
 					}
 				}
 			}
@@ -7871,8 +7871,8 @@ int ipc_callout_set_conn_lock(xmlNodePtr innode, xmlNodePtr * outnode)
 #ifdef HAVE_TNC
 		if (ctx->tnc_data != NULL) {
 			if (imc_disconnect_callback != NULL)
-				imc_disconnect_callback(ctx->tnc_data->
-							connectionID);
+				imc_disconnect_callback(ctx->
+							tnc_data->connectionID);
 
 			libtnc_tncc_DeleteConnection(ctx->tnc_data);
 

@@ -10,7 +10,7 @@
     
 #ifdef WINDOWS
 #include <windows.h>
-#endif	/*  */
+#endif				/*  */
     
 #include "xsup_common.h"
 #include "ipaddr_common.h"

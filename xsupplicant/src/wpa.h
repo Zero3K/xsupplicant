@@ -48,8 +48,8 @@ struct wpa_ie_struct {
 #endif
 
 int wpa_parse_ie(char *);
-void wpa_gen_ie(context *, char *);
-void wpa_gen_ie_caps(context *, char *);
+void wpa_gen_ie(context *, uint8_t *);
+void wpa_gen_ie_caps(context *, uint8_t *);
 char *wpa_minmax(char *, char *, int, char);
 uint8_t wpa_get_pairwise_crypt(context *);
 uint8_t wpa_get_group_crypt(context *);

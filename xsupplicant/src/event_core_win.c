@@ -866,8 +866,8 @@ void event_core()
 				if (GetLastError() == ERROR_BROKEN_PIPE) {
 					active_ctx = events[i].ctx;
 					events[i].func_to_call(events[i].ctx,
-							       events[i].
-							       devHandle);
+							       events
+							       [i].devHandle);
 				}
 
 				if ((err == ERROR_OPERATION_ABORTED)
@@ -884,8 +884,8 @@ void event_core()
 					    EVENT_PRIMARY) {
 						// This is how we restart I/O on a primary event handler.
 						cardif_cancel_io(events[i].ctx);
-						cardif_restart_io(events[i].
-								  ctx);
+						cardif_restart_io(events
+								  [i].ctx);
 						events[i].silent++;
 					}
 
@@ -901,23 +901,23 @@ void event_core()
 						debug_printf(DEBUG_VERBOSE,
 							     "The interface '%s' went in to a strange state.  We will terminate it's context.  If you want to "
 							     "use this interface, you need to repair it, or unplug it and plug it back in.\n",
-							     events[i].ctx->
-							     desc);
+							     events[i].
+							     ctx->desc);
 
 						ipc_events_ui(events[i].ctx,
 							      IPC_EVENT_INTERFACE_REMOVED,
-							      events[i].ctx->
-							      desc);
+							      events[i].
+							      ctx->desc);
 
 						events[i].ctx->flags |=
 						    INT_GONE;
 
 						// Make sure we deregister both primary and secondary handlers.  (Always deregister the secondary first!)
-						event_core_deregister(events[i].
-								      devHandle,
+						event_core_deregister(events
+								      [i].devHandle,
 								      EVENT_SECONDARY);
-						event_core_deregister(events[i].
-								      devHandle,
+						event_core_deregister(events
+								      [i].devHandle,
 								      EVENT_PRIMARY);
 					}
 				}
@@ -955,8 +955,7 @@ void event_core()
 
 		for (i = 0; i < num_event_slots; i++) {
 			if ((events[i].ctx != NULL)
-			    && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT)))
-			{
+			    && (!TEST_FLAG(events[i].flags, EVENT_IGNORE_INT))) {
 				active_ctx = events[i].ctx;
 				events[i].ctx->statemachine->tick = TRUE;
 				events[i].ctx->tick = TRUE;
@@ -979,17 +978,15 @@ void event_core()
 				    (events[i].flags, EVENT_IGNORE_INT)) {
 					if ((events[i].ctx->conn != NULL)
 					    &&
-					    ((events[i].
-					      flags & EVENT_PRIMARY) ==
-					     EVENT_PRIMARY)) {
+					    ((events[i].flags & EVENT_PRIMARY)
+					     == EVENT_PRIMARY)) {
 						statemachine_run(events[i].ctx);
 					} else {
 						if (events[i].ctx->eap_state !=
 						    NULL) {
-							events[i].ctx->
-							    eap_state->
-							    eap_sm_state =
-							    DISCONNECTED;
+							events[i].
+							    ctx->eap_state->eap_sm_state
+							    = DISCONNECTED;
 						}
 					}
 				}
@@ -1279,8 +1276,8 @@ void event_core_cancel_sleep()
 			if ((events[i].flags & EVENT_PRIMARY) == EVENT_PRIMARY) {
 				cardif_restart_io(events[i].ctx);
 			} else {
-				cardif_windows_restart_int_events(events[i].
-								  ctx);
+				cardif_windows_restart_int_events(events
+								  [i].ctx);
 			}
 
 			events[i].flags &= (~EVENT_IGNORE_INT);
@@ -1315,14 +1312,10 @@ void event_core_waking_up()
 				if (events[i].ctx->tnc_data != NULL) {
 					if (imc_disconnect_callback != NULL)
 						imc_disconnect_callback(events
-									[i].
-									ctx->
-									tnc_data->
-									connectionID);
+									[i].ctx->tnc_data->connectionID);
 
-					libtnc_tncc_DeleteConnection(events[i].
-								     ctx->
-								     tnc_data);
+					libtnc_tncc_DeleteConnection(events
+								     [i].ctx->tnc_data);
 
 					events[i].ctx->tnc_data = NULL;
 				}
@@ -1345,11 +1338,11 @@ void event_core_waking_up()
 
 				// Clear our timers.
 				if (events[i].ctx->statemachine != NULL) {
-					events[i].ctx->statemachine->
-					    to_authenticated = 0;
+					events[i].ctx->
+					    statemachine->to_authenticated = 0;
 					// Cause our state machines to reset to a known state.
-					events[i].ctx->statemachine->
-					    initialize = TRUE;
+					events[i].ctx->
+					    statemachine->initialize = TRUE;
 				}
 
 				if (events[i].ctx->eap_state != NULL)
@@ -1370,13 +1363,13 @@ void event_core_waking_up()
 					    == TRUE) {
 						ipc_events_ui(NULL,
 							      IPC_EVENT_UI_LINK_UP,
-							      events[i].ctx->
-							      desc);
+							      events[i].
+							      ctx->desc);
 					} else {
 						ipc_events_ui(NULL,
 							      IPC_EVENT_UI_LINK_DOWN,
-							      events[i].ctx->
-							      desc);
+							      events[i].
+							      ctx->desc);
 					}
 
 					UNSET_FLAG(events[i].ctx->flags,
@@ -1387,44 +1380,44 @@ void event_core_waking_up()
 					// when we wake up.
 					if (cardif_get_link_state(events[i].ctx)
 					    == TRUE) {
-						if (events[i].ctx->
-						    statemachine != NULL)
-							events[i].ctx->
-							    statemachine->
-							    portEnabled = TRUE;
+						if (events[i].
+						    ctx->statemachine != NULL)
+							events[i].
+							    ctx->statemachine->portEnabled
+							    = TRUE;
 
 						if (events[i].ctx->eap_state !=
 						    NULL)
-							events[i].ctx->
-							    eap_state->
-							    portEnabled = TRUE;
+							events[i].
+							    ctx->eap_state->portEnabled
+							    = TRUE;
 
 						ipc_events_ui(NULL,
 							      IPC_EVENT_UI_LINK_UP,
-							      events[i].ctx->
-							      desc);
+							      events[i].
+							      ctx->desc);
 					} else {
-						if (events[i].ctx->
-						    statemachine != NULL)
-							events[i].ctx->
-							    statemachine->
-							    portEnabled = FALSE;
+						if (events[i].
+						    ctx->statemachine != NULL)
+							events[i].
+							    ctx->statemachine->portEnabled
+							    = FALSE;
 
 						if (events[i].ctx->eap_state !=
 						    NULL)
-							events[i].ctx->
-							    eap_state->
-							    portEnabled = FALSE;
+							events[i].
+							    ctx->eap_state->portEnabled
+							    = FALSE;
 
 						ipc_events_ui(NULL,
 							      IPC_EVENT_UI_LINK_DOWN,
-							      events[i].ctx->
-							      desc);
+							      events[i].
+							      ctx->desc);
 					}
 				}
 			} else {
-				cardif_windows_restart_int_events(events[i].
-								  ctx);
+				cardif_windows_restart_int_events(events
+								  [i].ctx);
 			}
 
 			events[i].flags &= (~EVENT_IGNORE_INT);
@@ -1604,8 +1597,8 @@ void event_core_win_do_user_logoff()
 						if (imc_disconnect_callback !=
 						    NULL)
 							imc_disconnect_callback
-							    (ctx->tnc_data->
-							     connectionID);
+							    (ctx->
+							     tnc_data->connectionID);
 
 						libtnc_tncc_DeleteConnection
 						    (ctx->tnc_data);
@@ -1629,8 +1622,8 @@ void event_core_win_do_user_logoff()
 					     events[i].ctx->conn->name) !=
 					    NULL) {
 						// Drop the connection.
-						context_disconnect(events[i].
-								   ctx);
+						context_disconnect(events
+								   [i].ctx);
 					}
 				}
 			}
@@ -1771,16 +1764,16 @@ void event_core_change_wireless(config_globals * newsettings)
 					if (TEST_FLAG
 					    (events[i].flags,
 					     EVENT_IGNORE_INT)) {
-						cardif_restart_io(events[i].
-								  ctx);
+						cardif_restart_io(events
+								  [i].ctx);
 						events[i].flags &=
 						    (~EVENT_IGNORE_INT);
 
 						if (events[i].ctx->intType ==
 						    ETH_802_11_INT) {
 							wctx =
-							    events[i].ctx->
-							    intTypeData;
+							    events[i].
+							    ctx->intTypeData;
 							memset(wctx->cur_bssid,
 							       0x00, 6);
 						}
@@ -1819,13 +1812,12 @@ void event_core_change_os_ctrl_state(void *param)
 			if (events[i].ctx != NULL) {
 				if ((events[i].flags & EVENT_PRIMARY) ==
 				    EVENT_PRIMARY) {
-					windows_int_ctrl_take_ctrl(events[i].
-								   ctx);
+					windows_int_ctrl_take_ctrl(events
+								   [i].ctx);
 					cardif_restart_io(events[i].ctx);
 				} else {
 					cardif_windows_restart_int_events(events
-									  [i].
-									  ctx);
+									  [i].ctx);
 				}
 
 				events[i].flags &= (~EVENT_IGNORE_INT);
@@ -1851,9 +1843,8 @@ void event_core_change_os_ctrl_state(void *param)
 
 					if (events[i].ctx->intType ==
 					    ETH_802_11_INT) {
-						config_ssid_clear(events[i].
-								  ctx->
-								  intTypeData);
+						config_ssid_clear(events
+								  [i].ctx->intTypeData);
 						wireless_sm_change_state
 						    (UNASSOCIATED,
 						     events[i].ctx);
@@ -1866,8 +1857,7 @@ void event_core_change_os_ctrl_state(void *param)
 				if ((events[i].flags & EVENT_PRIMARY) ==
 				    EVENT_PRIMARY)
 					windows_int_ctrl_give_to_windows(events
-									 [i].
-									 ctx);
+									 [i].ctx);
 				cardif_cancel_io(events[i].ctx);
 				events[i].flags |= EVENT_IGNORE_INT;
 			}

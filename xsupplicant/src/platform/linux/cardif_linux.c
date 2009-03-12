@@ -1647,7 +1647,7 @@ static int _getmac(char *dest, char *ifname)
 /**
  * \todo Finish the documentation here!
  **/
-int cardif_get_wpa_ie(context * ctx, char *iedata, int *ielen)
+int cardif_get_wpa_ie(context * ctx, uint8_t * iedata, uint8_t * ielen)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
@@ -1700,7 +1700,7 @@ int cardif_get_wpa2_ie(context * ctx, uint8_t * iedata, uint8_t * ielen)
 		return XEMALLOC;
 	}
 
-	return wireless->get_wpa2_ie(ctx, iedata, (uint16_t *) ielen);
+	return wireless->get_wpa2_ie(ctx, iedata, ielen);
 }
 
 /**

@@ -137,8 +137,8 @@ void ProcessDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
 					lpEventData)->dwSessionId,
 				      ((PWTSSESSION_NOTIFICATION)
 					lpEventData)->cbSize);
-			if (((PWTSSESSION_NOTIFICATION) lpEventData)->
-			      dwSessionId == 0)
+			if (((PWTSSESSION_NOTIFICATION)
+			       lpEventData)->dwSessionId == 0)
 				 {
 				event_core_user_logged_on();
 				}
@@ -150,8 +150,8 @@ void ProcessDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
 					lpEventData)->dwSessionId,
 				      ((PWTSSESSION_NOTIFICATION)
 					lpEventData)->cbSize);
-			if (((PWTSSESSION_NOTIFICATION) lpEventData)->
-			      dwSessionId == 0)
+			if (((PWTSSESSION_NOTIFICATION)
+			       lpEventData)->dwSessionId == 0)
 				 {
 				event_core_user_logged_off();
 				}
@@ -163,8 +163,8 @@ void ProcessDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
 					lpEventData)->dwSessionId,
 				      ((PWTSSESSION_NOTIFICATION)
 					lpEventData)->cbSize);
-			if (((PWTSSESSION_NOTIFICATION) lpEventData)->
-			      dwSessionId == 0)
+			if (((PWTSSESSION_NOTIFICATION)
+			       lpEventData)->dwSessionId == 0)
 				 {
 				event_core_user_logged_on();
 				}
@@ -176,8 +176,8 @@ void ProcessDeviceEvent(DWORD dwEventType, LPVOID lpEventData)
 					lpEventData)->dwSessionId,
 				      ((PWTSSESSION_NOTIFICATION)
 					lpEventData)->cbSize);
-			if (((PWTSSESSION_NOTIFICATION) lpEventData)->
-			      dwSessionId == 0)
+			if (((PWTSSESSION_NOTIFICATION)
+			       lpEventData)->dwSessionId == 0)
 				 {
 				event_core_user_logged_off();
 				}

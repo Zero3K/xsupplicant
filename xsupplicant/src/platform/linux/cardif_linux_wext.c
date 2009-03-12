@@ -290,11 +290,10 @@ int cardif_linux_wext_enc_disable(context * thisint)
 /**
  * Create the WPA2 Information Element.
  **/
-int cardif_linux_wext_get_wpa2_ie(context * thisint, unsigned char *iedata,
-				  uint16_t * ielen)
+int cardif_linux_wext_get_wpa2_ie(context * thisint, uint8_t * iedata,
+				  uint8_t * ielen)
 {
 	wireless_ctx *wctx = NULL;
-	int intIelen = 0;
 
 	wctx = (wireless_ctx *) thisint->intTypeData;
 
@@ -310,9 +309,7 @@ int cardif_linux_wext_get_wpa2_ie(context * thisint, unsigned char *iedata,
 #if WIRELESS_EXT > 17
 
 	// Should we use capabilities here?
-	wpa2_gen_ie(thisint, iedata, &intIelen);
-
-	(*ielen) = intIelen;
+	wpa2_gen_ie(thisint, iedata, ielen);
 
 	if (wctx->okc == 1) {
 		printf("okc flag\n");
@@ -342,7 +339,8 @@ int cardif_linux_wext_get_wpa2_ie(context * thisint, unsigned char *iedata,
 /**
  *  Generate the WPA1 Information Element
  **/
-int cardif_linux_wext_get_wpa_ie(context * thisint, char *iedata, int *ielen)
+int cardif_linux_wext_get_wpa_ie(context * thisint,
+				 uint8_t * iedata, uint8_t * ielen)
 {
 	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
 		return XEMALLOC;
@@ -356,7 +354,7 @@ int cardif_linux_wext_get_wpa_ie(context * thisint, char *iedata, int *ielen)
 #if WIRELESS_EXT > 17
 
 	wpa_gen_ie(thisint, iedata);
-	*ielen = 24;
+	(*ielen) = 24;
 
 	debug_printf(DEBUG_INT, "Setting WPA IE : ");
 	debug_hex_printf(DEBUG_INT, (uint8_t *) iedata, *ielen);
@@ -913,8 +911,9 @@ int cardif_linux_wext_wep_associate(context * intdata, int zero_keys)
 	while (if_indextoname(index, ifname)) {
 		if (strncmp(ifname, "wifi", 4) == 0) {
 			if ((intdata->conn != NULL) && (intdata->prof != NULL)) {
-				if ((intdata->conn->association.
-				     association_type == ASSOC_TYPE_OPEN)
+				if ((intdata->conn->
+				     association.association_type ==
+				     ASSOC_TYPE_OPEN)
 				    && (intdata->conn->association.auth_type !=
 					AUTH_NONE)
 				    && (intdata->prof->name != NULL)
@@ -1450,8 +1449,7 @@ void cardif_linux_wext_associate(context * ctx)
 	uint8_t *bssid;
 #if WIRELESS_EXT > 17
 	int akm = 0;
-	uint16_t len = 0;
-	int wlen = 0;
+	uint8_t len = 0;
 	uint32_t cipher, alg;
 	uint8_t wpaie[255];
 #endif
@@ -1538,8 +1536,7 @@ void cardif_linux_wext_associate(context * ctx)
 #endif
 	} else if (config_ssid_get_ssid_abilities(wctx) & ABIL_WPA_IE) {
 #if WIRELESS_EXT > 17
-		cardif_linux_wext_get_wpa_ie(ctx, (char *)wpaie, &wlen);
-		len = wlen;
+		cardif_linux_wext_get_wpa_ie(ctx, wpaie, &len);
 		if (cardif_linux_wext_set_iwauth(ctx, IW_AUTH_WPA_VERSION,
 						 IW_AUTH_WPA_VERSION_WPA,
 						 "WPA version") < 0) {
@@ -1816,8 +1813,7 @@ int xsupplicant_driver_pmksa(context * ctx, uint8_t * bssid, uint8_t * pmkid,
 	iwr.u.data.pointer = (caddr_t) & pmksa;
 
 	iwr.u.data.length = sizeof(pmksa);
-	if (ioctl(sockData->sockInt, SIOCSIWPMKSA, &iwr) < 0)
-	{
+	if (ioctl(sockData->sockInt, SIOCSIWPMKSA, &iwr) < 0) {
 		debug_printf(DEBUG_INT, "ioctl [SIOCSIWPMKSA] not supported\n");
 
 		return -1;
@@ -1840,38 +1836,33 @@ int cardif_linux_wireless_apply_pmkids(context * ctx, pmksa_list * pmklist)
 		printf("apply_list is NULL\n");
 	}
 
-	if (wctx->pmkids_supported > 0)
-	{
+	if (wctx->pmkids_supported > 0) {
 
 		for (i = (wctx->pmkids_supported - 1); i >= 0; i--) {
 			if (pmklist[i].cache_element != NULL) {
 				xsupplicant_driver_pmksa(ctx,
-							 pmklist[i].
-							 cache_element->
-							 authenticator_mac,
-							 pmklist[i].
-							 cache_element->pmkid,
-							 IW_PMKSA_ADD);
+							 pmklist
+							 [i].cache_element->authenticator_mac,
+							 pmklist
+							 [i].cache_element->
+							 pmkid, IW_PMKSA_ADD);
 			}
 
 		}
 
 	}
 #if 0
-	if ((wctx->pmkids_supported > 0) && (numelems > 0))
-	{
+	if ((wctx->pmkids_supported > 0) && (numelems > 0)) {
 
-		for (i = 1; i <= numelems; i++)
-		{
+		for (i = 1; i <= numelems; i++) {
 			if (pmklist[i].cache_element != NULL) {
 				printf("deepak cache_element not NULL\n");
 				xsupplicant_driver_pmksa(ctx,
-							 pmklist[i].
-							 cache_element->
-							 authenticator_mac,
-							 pmklist[i].
-							 cache_element->pmkid,
-							 IW_PMKSA_ADD);
+							 pmklist
+							 [i].cache_element->authenticator_mac,
+							 pmklist
+							 [i].cache_element->
+							 pmkid, IW_PMKSA_ADD);
 			}
 
 		}

@@ -94,8 +94,8 @@ int xsup_ipc_win_create_pipe(int i)
 	if (pSA != NULL) {
 		if (ConvertStringSecurityDescriptorToSecurityDescriptor(szSD,
 									SDDL_REVISION_1,
-									&(pSA->
-									  lpSecurityDescriptor),
+									&
+									(pSA->lpSecurityDescriptor),
 									NULL) ==
 		    0) {
 			debug_printf(DEBUG_NORMAL,
@@ -341,8 +341,9 @@ int xsup_ipc_win_event(context * ctx, HANDLE hdl)
 							     "Disconnected PIPE on handle %d.\n",
 							     pipes[i].hdl);
 						pipes[i].flags = 0;
-						event_core_deregister(pipes[i].
-								      hdl, 0);
+						event_core_deregister(pipes
+								      [i].hdl,
+								      0);
 						CloseHandle(pipes[i].hevent);
 						CloseHandle(pipes[i].hdl);
 						pipes[i].hevent =

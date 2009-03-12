@@ -301,10 +301,10 @@ uint8_t wpa_get_group_crypt(context * ctx)
 	return -1;
 }
 
-void wpa_gen_ie(context * ctx, char *iedata)
+void wpa_gen_ie(context * ctx, uint8_t * iedata)
 {
-	struct config_globals *globals;
-	wireless_ctx *wctx;
+	struct config_globals *globals = NULL;
+	wireless_ctx *wctx = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
@@ -414,7 +414,7 @@ void wpa_gen_ie(context * ctx, char *iedata)
 	}
 }
 
-void wpa_gen_ie_caps(context * ctx, char *iedata)
+void wpa_gen_ie_caps(context * ctx, uint8_t * iedata)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;

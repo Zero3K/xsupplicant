@@ -124,7 +124,7 @@ int ipc_events_lock()
 	case WAIT_OBJECT_0:
 #ifdef LOCK_DEBUG
 		debug_printf(DEBUG_IPC, "Acquired IPC event lock.\n");
-#endif	/* LOCK_DEBUG */
+#endif				/* LOCK_DEBUG */
 		return 0;
 		break;
 
@@ -423,8 +423,8 @@ int ipc_events_attempting_to_associate(context * ctx)
 
 	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL,
 				  IPC_EVENT_LOG_ATTEMPTING_TO_ASSOCIATE, "SSID",
-				  ((wireless_ctx *) (ctx->intTypeData))->
-				  cur_essid);
+				  ((wireless_ctx *) (ctx->
+						     intTypeData))->cur_essid);
 }
 
 /**
@@ -528,8 +528,8 @@ int ipc_events_associated(context * ctx)
 
 	return ipc_events_tag_msg(ctx, LOG_LEVEL_NORMAL,
 				  IPC_EVENT_LOG_ASSOCIATED, "SSID",
-				  ((wireless_ctx *) (ctx->intTypeData))->
-				  cur_essid);
+				  ((wireless_ctx *) (ctx->
+						     intTypeData))->cur_essid);
 }
 
 /**

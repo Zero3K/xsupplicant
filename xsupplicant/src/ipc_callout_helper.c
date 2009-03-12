@@ -11,9 +11,9 @@
     
 #ifdef WINDOWS
 #include "stdintwin.h"
-#else	/*  */
+#else				/*  */
 #include <stdint.h>
-#endif	/*  */
+#endif				/*  */
     
 #include <string.h>
 #include <stdlib.h>
@@ -169,11 +169,10 @@ int ipc_callout_helper_build_connection_list(uint8_t config_type,
 			 {
 			sprintf((char *)&res, "%d",
 				 cur->association.auth_type);
-		}
-		    if (xmlNewChild
-				  (t, NULL,
-					   (xmlChar *) "Authentication",
-					   (xmlChar *) res) == NULL)
+			}
+		if (xmlNewChild
+		      (t, NULL,
+		       (xmlChar *) "Authentication", (xmlChar *) res) == NULL)
 			 {
 			return IPC_ERROR_CANT_ALLOCATE_NODE;
 			}
@@ -494,18 +493,18 @@ char *ipc_callout_helper_get_tsname_from_profile(config_profiles * cur)
 		    // Only TLS, TTLS, and PEAP use trusted servers, so ignore the rest.
 	case EAP_TYPE_TLS:
 		tsname =
-		    ((struct config_eap_tls *)(cur->method->method_data))->
-		    trusted_server;
+		    ((struct config_eap_tls *)(cur->method->
+					       method_data))->trusted_server;
 		break;
 	case EAP_TYPE_TTLS:
 		tsname =
-		    ((struct config_eap_ttls *)(cur->method->method_data))->
-		    trusted_server;
+		    ((struct config_eap_ttls *)(cur->method->
+						method_data))->trusted_server;
 		break;
 	case EAP_TYPE_PEAP:
 		tsname =
-		    ((struct config_eap_peap *)(cur->method->method_data))->
-		    trusted_server;
+		    ((struct config_eap_peap *)(cur->method->
+						method_data))->trusted_server;
 		break;
 		}
 	return tsname;
@@ -529,34 +528,30 @@ char *ipc_callout_helper_get_tsname_from_profile(config_profiles * cur)
 		case EAP_TYPE_TTLS:
 			if (confprof->method->method_data != NULL)
 				tsname =
-				    ((struct config_eap_ttls *)(confprof->
-								method->
-								method_data))->
-				    trusted_server;
+				    ((struct config_eap_ttls
+				      *)
+				     (confprof->method->method_data))->trusted_server;
 			break;
 		case EAP_TYPE_TLS:
 			if (confprof->method->method_data != NULL)
 				tsname =
-				    ((struct config_eap_tls *)(confprof->
-							       method->
-							       method_data))->
-				    trusted_server;
+				    ((struct config_eap_tls
+				      *)
+				     (confprof->method->method_data))->trusted_server;
 			break;
 		case EAP_TYPE_PEAP:
 			if (confprof->method->method_data != NULL)
 				tsname =
-				    ((struct config_eap_peap *)(confprof->
-								method->
-								method_data))->
-				    trusted_server;
+				    ((struct config_eap_peap
+				      *)
+				     (confprof->method->method_data))->trusted_server;
 			break;
 		case EAP_TYPE_FAST:
 			if (confprof->method->method_data != NULL)
 				tsname =
-				    ((struct config_eap_fast *)(confprof->
-								method->
-								method_data))->
-				    trusted_server;
+				    ((struct config_eap_fast
+				      *)
+				     (confprof->method->method_data))->trusted_server;
 			break;
 			}
 		if (tsname != NULL)
@@ -573,13 +568,12 @@ char *ipc_callout_helper_get_tsname_from_profile(config_profiles * cur)
 					     NULL)
 						 {
 						FREE(((struct config_eap_ttls
-							*)(confprof->method->
-							   method_data))->
-						      trusted_server);
+							*)(confprof->
+							   method->method_data))->trusted_server);
 						((struct config_eap_ttls
-						   *)(confprof->method->
-						      method_data))->
-			     trusted_server = _strdup(newname);
+						   *)(confprof->
+						      method->method_data))->trusted_server
+			     = _strdup(newname);
 						}
 					break;
 				case EAP_TYPE_TLS:
@@ -587,13 +581,12 @@ char *ipc_callout_helper_get_tsname_from_profile(config_profiles * cur)
 					     NULL)
 						 {
 						FREE(((struct config_eap_tls
-							*)(confprof->method->
-							   method_data))->
-						      trusted_server);
+							*)(confprof->
+							   method->method_data))->trusted_server);
 						((struct config_eap_tls
-						   *)(confprof->method->
-						      method_data))->
-			      trusted_server = _strdup(newname);
+						   *)(confprof->
+						      method->method_data))->trusted_server
+			      = _strdup(newname);
 						}
 					break;
 				case EAP_TYPE_PEAP:
@@ -601,13 +594,12 @@ char *ipc_callout_helper_get_tsname_from_profile(config_profiles * cur)
 					     NULL)
 						 {
 						FREE(((struct config_eap_peap
-							*)(confprof->method->
-							   method_data))->
-						      trusted_server);
+							*)(confprof->
+							   method->method_data))->trusted_server);
 						((struct config_eap_peap
-						   *)(confprof->method->
-						      method_data))->
-			     trusted_server = _strdup(newname);
+						   *)(confprof->
+						      method->method_data))->trusted_server
+			     = _strdup(newname);
 						}
 					break;
 				case EAP_TYPE_FAST:
@@ -615,13 +607,12 @@ char *ipc_callout_helper_get_tsname_from_profile(config_profiles * cur)
 					     NULL)
 						 {
 						FREE(((struct config_eap_fast
-							*)(confprof->method->
-							   method_data))->
-						      trusted_server);
+							*)(confprof->
+							   method->method_data))->trusted_server);
 						((struct config_eap_fast
-						   *)(confprof->method->
-						      method_data))->
-			     trusted_server = _strdup(newname);
+						   *)(confprof->
+						      method->method_data))->trusted_server
+			     = _strdup(newname);
 						}
 					break;
 					}

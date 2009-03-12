@@ -313,7 +313,7 @@ uint8_t wpa2_get_group_crypt(context * ctx)
  * Generate the IE needed to associate correctly to a WPA2 network.
  *
  **************************************************************************/
-void wpa2_gen_ie(context * ctx, unsigned char *iedata, int *ielen)
+void wpa2_gen_ie(context * ctx, uint8_t * iedata, uint8_t * ielen)
 {
 	struct config_globals *globals = NULL;
 	wireless_ctx *wctx = NULL;
@@ -347,9 +347,6 @@ void wpa2_gen_ie(context * ctx, unsigned char *iedata, int *ielen)
 	iedata[2] = 0x01;
 	iedata[3] = 0x00;
 
-	debug_printf(DEBUG_INT, "Created IE DUMP :\n");
-	debug_hex_printf(DEBUG_INT, iedata, 4);
-
 	// The group key cipher suite.
 	memcpy(&iedata[4], wpa2oui, 3);
 
@@ -363,9 +360,6 @@ void wpa2_gen_ie(context * ctx, unsigned char *iedata, int *ielen)
 
 	debug_printf(DEBUG_KEY, "Using Group Cipher Suite : ");
 	wpa_print_cipher_suite(DEBUG_KEY, iedata[7]);
-
-	debug_printf(DEBUG_INT, "Created IE DUMP :\n");
-	debug_hex_printf(DEBUG_INT, iedata, 8);
 
 	// We can only support 1 pairwise cipher suite!
 	iedata[8] = 0x01;
@@ -417,9 +411,6 @@ void wpa2_gen_ie(context * ctx, unsigned char *iedata, int *ielen)
 	// The authenticated key management suite.
 	memcpy(&iedata[16], wpa2oui, 3);
 
-	debug_printf(DEBUG_INT, "Created IE DUMP :\n");
-	debug_hex_printf(DEBUG_INT, iedata, 19);
-
 	if (ctx->conn->association.auth_type == AUTH_PSK) {
 		iedata[19] = 2;	// PSK
 		debug_printf(DEBUG_KEY, "Using PSK.\n");
@@ -444,12 +435,9 @@ void wpa2_gen_ie(context * ctx, unsigned char *iedata, int *ielen)
 	iedata[21] = 0x00;
 
 	(*ielen) = 22;
-
-	debug_printf(DEBUG_INT, "Created IE DUMP :\n");
-	debug_hex_printf(DEBUG_INT, iedata, (*ielen));
 }
 
-void wpa2_gen_ie_caps(context * thisint, char *iedata)
+void wpa2_gen_ie_caps(context * thisint, uint8_t *iedata)
 {
 	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
 		return;

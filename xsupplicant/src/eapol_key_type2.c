@@ -844,8 +844,8 @@ void eapol_key_type2_do_gtk(context * intdata)
 		debug_hex_dump(DEBUG_KEY, keydata, value16);
 
 		if (eapol_key_type2_process_keydata(intdata, keydata, value16,
-						    ntohs(inkeydata->
-							  key_length),
+						    ntohs
+						    (inkeydata->key_length),
 						    inkeydata->key_rsc, version,
 						    TRUE)
 		    != XENONE) {
@@ -1060,9 +1060,9 @@ void eapol_key_type2_do_type1(context * intdata)
 	}
 	wctx->okc = 0;
 
-	memcpy(&intdata->
-	       sendframe[OFFSET_TO_EAPOL + 4 + sizeof(struct wpa2_key_packet)],
-	       &wpa_ie, ielen);
+	memcpy(&intdata->sendframe
+	       [OFFSET_TO_EAPOL + 4 + sizeof(struct wpa2_key_packet)], &wpa_ie,
+	       ielen);
 	value16 = ielen;
 	value16 = htons(value16);
 	intdata->send_size += ielen;
@@ -1309,8 +1309,8 @@ void eapol_key_type2_do_type3(context * intdata)
 		debug_hex_dump(DEBUG_KEY, keydata, keylen);
 
 		if (eapol_key_type2_process_keydata(intdata, keydata, keylen,
-						    ntohs(inkeydata->
-							  key_length),
+						    ntohs
+						    (inkeydata->key_length),
 						    inkeydata->key_rsc, version,
 						    TRUE) != XENONE) {
 			debug_printf(DEBUG_NORMAL,

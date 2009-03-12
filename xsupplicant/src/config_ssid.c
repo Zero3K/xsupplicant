@@ -569,8 +569,7 @@ struct found_ssids *config_ssid_find_best_ssid(context * ctx)
 	    && (win_impersonate_is_user_on_console() == FALSE)) {
 		conn =
 		    config_find_connection(CONFIG_LOAD_GLOBAL,
-					   globals->
-					   wirelessMachineAuthConnection);
+					   globals->wirelessMachineAuthConnection);
 		if (conn != NULL) {
 			machineAuth_wireless = _strdup(conn->ssid);
 		}

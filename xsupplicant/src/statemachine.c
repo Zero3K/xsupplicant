@@ -669,8 +669,9 @@ int statemachine_change_to_connecting(context * ctx)
 			// So, check for that case, and decide if we want to send it or not.
 			if (ctx->intType == ETH_802_11_INT) {
 				if (ctx->intTypeData != NULL) {
-					if (((wireless_ctx *) ctx->
-					     intTypeData)->rsn_ie == NULL) {
+					if (((wireless_ctx *)
+					     ctx->intTypeData)->rsn_ie ==
+					    NULL) {
 						txStart(ctx);
 					}
 				} else {
@@ -997,8 +998,7 @@ int statemachine_change_to_authenticated(context * ctx)
 					      DEBUG_VERBOSE),
 					     "Resetting passive scan timer.\n");
 				timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER,
-							globals->
-							passive_timeout);
+							globals->passive_timeout);
 			}
 		}
 	}

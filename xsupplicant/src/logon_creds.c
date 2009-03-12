@@ -13,9 +13,9 @@
     
 #ifdef WINDOWS
 #include "stdintwin.h"
-#else	/*  */
+#else				/*  */
 #include <stdint.h>
-#endif	/*  */
+#endif				/*  */
     
 #include "xsup_common.h"
 #include "../lib/libxsupconfig/xsupconfig.h"

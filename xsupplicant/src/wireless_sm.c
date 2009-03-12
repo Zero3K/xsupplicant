@@ -879,8 +879,8 @@ void wireless_sm_change_to_associating(context * ctx)
 		if (config_ssid_using_wep(wctx)) {
 			// Do any setup that is needed to enter the new state.
 			cardif_wep_associate(ctx,
-					     (wctx->
-					      flags & WIRELESS_ZEROS_ON_ROAM));
+					     (wctx->flags &
+					      WIRELESS_ZEROS_ON_ROAM));
 			debug_printf(DEBUG_PHYSICAL_STATE,
 				     "Listed SSID is %s\n", wctx->cur_essid);
 		} else {
@@ -898,8 +898,8 @@ void wireless_sm_change_to_associating(context * ctx)
 			cardif_reassociate(ctx, 1);
 		} else {
 			cardif_wep_associate(ctx,
-					     (wctx->
-					      flags & WIRELESS_ZEROS_ON_ROAM));
+					     (wctx->flags &
+					      WIRELESS_ZEROS_ON_ROAM));
 		}
 	}
 
@@ -1466,9 +1466,7 @@ void wireless_sm_do_active_scan(context * ctx)
 					     CONFIG_NET_DEST_MAC)) {
 						// We need to search again, by MAC address this time.
 						config_ssid_get_by_mac(ctx,
-								       ctx->
-								       conn->
-								       dest_mac);
+								       ctx->conn->dest_mac);
 					}
 
 					ipc_events_ui(ctx,
@@ -1509,8 +1507,8 @@ void wireless_sm_do_active_scan(context * ctx)
 							// We need to search again, by MAC address this time.
 							config_ssid_get_by_mac
 							    (ctx,
-							     ctx->conn->
-							     dest_mac);
+							     ctx->
+							     conn->dest_mac);
 						}
 					} else {
 						debug_printf(DEBUG_NORMAL,

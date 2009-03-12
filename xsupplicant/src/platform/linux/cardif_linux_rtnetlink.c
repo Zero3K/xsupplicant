@@ -1315,8 +1315,7 @@ int cardif_linux_rtnetlink_check_event(context * ctx, int sock)
 				debug_printf(DEBUG_INT,
 					     "Got an RTM_NEWLINK!\n");
 				cardif_linux_rtnetlink_do_link(nlhead,
-							       nlhead->
-							       nlmsg_len,
+							       nlhead->nlmsg_len,
 							       INT_NEW);
 				break;
 
@@ -1324,8 +1323,7 @@ int cardif_linux_rtnetlink_check_event(context * ctx, int sock)
 				debug_printf(DEBUG_INT,
 					     "Got an RTM_DELLINK!\n");
 				cardif_linux_rtnetlink_do_link(nlhead,
-							       nlhead->
-							       nlmsg_len,
+							       nlhead->nlmsg_len,
 							       INT_DEL);
 				break;
 			}
@@ -1596,23 +1594,15 @@ void cardif_linux_rtnetlink_do_link(struct nlmsghdr *msg, int len, int type)
 			// This is a non-wireless event. (Ignore it.)
 			debug_printf(DEBUG_INT, "IFLA_IFNAME event.\n");
 			if (type == INT_NEW) {
-				cardif_linux_rtnetlink_new_ifla_ifname(ifinfo->
-								       ifi_index,
-								       ((char *)
-									rtattr)
-								       + rtalen,
-								       rtattr->
-								       rta_len -
-								       rtalen);
+				cardif_linux_rtnetlink_new_ifla_ifname
+				    (ifinfo->ifi_index, ((char *)
+							 rtattr)
+				     + rtalen, rtattr->rta_len - rtalen);
 			} else if (type == INT_DEL) {
-				cardif_linux_rtnetlink_del_ifla_ifname(ifinfo->
-								       ifi_index,
-								       ((char *)
-									rtattr)
-								       + rtalen,
-								       rtattr->
-								       rta_len -
-								       rtalen);
+				cardif_linux_rtnetlink_del_ifla_ifname
+				    (ifinfo->ifi_index, ((char *)
+							 rtattr)
+				     + rtalen, rtattr->rta_len - rtalen);
 			}
 			break;
 

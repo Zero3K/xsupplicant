@@ -302,8 +302,8 @@ void event_core()
 			if (events[i].socket == result) {
 				if (events[i].func_to_call) {
 					events[i].func_to_call(ctx,
-							       events[i].
-							       socket);
+							       events
+							       [i].socket);
 				}
 			}
 		}
@@ -344,12 +344,12 @@ void event_core()
 						active_ctx = events[i].ctx;
 
 						if (events[i].ctx != NULL) {
-							if (events[i].ctx->
-							    recvframe != NULL) {
-								if (events[i].
-								    ctx->
-								    recv_size !=
-								    0) {
+							if (events[i].
+							    ctx->recvframe !=
+							    NULL) {
+								if (events
+								    [i].ctx->recv_size
+								    != 0) {
 									debug_printf
 									    (DEBUG_NORMAL,
 									     "There was an "
@@ -363,14 +363,14 @@ void event_core()
 								}
 							}
 
-							FREE(events[i].ctx->
-							     recvframe);
+							FREE(events[i].
+							     ctx->recvframe);
 						}
 
-						events[i].
-						    func_to_call(events[i].ctx,
-								 events[i].
-								 socket);
+						events[i].func_to_call(events
+								       [i].ctx,
+								       events
+								       [i].socket);
 						active_ctx = NULL;
 					}
 				}
@@ -415,8 +415,8 @@ void event_core()
 				}
 			} else {
 				wctx =
-				    (wireless_ctx *) ((events[i].ctx)->
-						      intTypeData);
+				    (wireless_ctx
+				     *) ((events[i].ctx)->intTypeData);
 				if (wctx != NULL)
 					wireless_sm_do_state(events[i].ctx);
 			}

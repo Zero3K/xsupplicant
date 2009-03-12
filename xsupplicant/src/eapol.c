@@ -181,8 +181,8 @@ int eapol_execute(context * workint)
 				snmp_inc_dot1xSuppInvalidEapolFramesRx();
 				workint->recv_size = 0;
 			} else {
-				snmp_dot1xSuppLastEapolFrameVersion(temp->
-								    eapol_version);
+				snmp_dot1xSuppLastEapolFrameVersion
+				    (temp->eapol_version);
 				workint->eapol_version = temp->eapol_version;
 
 				switch (temp->eapol_type) {

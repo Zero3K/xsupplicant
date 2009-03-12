@@ -133,10 +133,10 @@ struct cardif_funcs {
 	int (*drop_unencrypted) (context *, char);
 
 	// Return the WPA IE we need for this driver.
-	int (*get_wpa_ie) (context *, char *, int *);
+	int (*get_wpa_ie) (context *, uint8_t *, uint8_t *);
 
 	// Return the WPA2 IE we need for this driver.
-	int (*get_wpa2_ie) (context *, unsigned char *, uint16_t *);
+	int (*get_wpa2_ie) (context *, uint8_t *, uint8_t *);
 
 	// Disable encryption.
 	int (*enc_disable) (context *);
@@ -220,7 +220,7 @@ int cardif_disable_wpa_state(context *);
 int cardif_enable_wpa_state(context *);
 int cardif_drop_unencrypted(context *, char);
 int cardif_countermeasures(context *, char);
-int cardif_get_wpa_ie(context *, char *, int *);
+int cardif_get_wpa_ie(context *, uint8_t *, uint8_t *);
 int cardif_get_wpa2_ie(context *, uint8_t *, uint8_t *);
 int cardif_clear_keys(context *);
 int cardif_check_associated(context *);

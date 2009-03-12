@@ -11,7 +11,7 @@
 #include <windows.h>
     
 #include "stdintwin.h"
-#else	/*  */
+#else				/*  */
 #include <string.h>
 #endif				// WINDOWS
     
@@ -825,8 +825,7 @@ void pmksa_apply_cache(context * ctx)
 					    pmksa_add_to_int_cache_list(ctx,
 									ssids,
 									apply_list,
-									wctx->
-									pmkids_supported);
+									wctx->pmkids_supported);
 					}
 				}
 			}

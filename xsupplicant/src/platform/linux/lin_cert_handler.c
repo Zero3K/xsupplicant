@@ -697,27 +697,22 @@ int get_pemfl_count_and_build_list(const char *pathname)
 										    malloc
 										    (sizeof
 										     (PEMFL_LIST));
-										pl_ca_list->
-										    filename
+										pl_ca_list->filename
 										    =
 										    strdup
 										    (abs_flpath);
-										pl_ca_list->
-										    fl_index
+										pl_ca_list->fl_index
 										    =
 										    pemcnt;
-										pl_ca_list->
-										    next
+										pl_ca_list->next
 										    =
 										    NULL;
 									} else {
 										while
-										    (tmp_pl->
-										     next)
+										    (tmp_pl->next)
 											tmp_pl
 											    =
-											    tmp_pl->
-											    next;
+											    tmp_pl->next;
 										new_pemfl
 										    =
 										    (PEMFL_LIST
@@ -725,21 +720,17 @@ int get_pemfl_count_and_build_list(const char *pathname)
 										    malloc
 										    (sizeof
 										     (PEMFL_LIST));
-										new_pemfl->
-										    filename
+										new_pemfl->filename
 										    =
 										    strdup
 										    (abs_flpath);
-										new_pemfl->
-										    fl_index
+										new_pemfl->fl_index
 										    =
 										    pemcnt;
-										new_pemfl->
-										    next
+										new_pemfl->next
 										    =
 										    NULL;
-										tmp_pl->
-										    next
+										tmp_pl->next
 										    =
 										    new_pemfl;
 									}

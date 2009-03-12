@@ -145,8 +145,8 @@ void context_destroy(context * ctx)
 	wireless_sm_deinit(ctx->intTypeData);
 
 	if (ctx->intType == ETH_802_11_INT) {
-		context_destroy_wireless_ctx((wireless_ctx **) & ctx->
-					     intTypeData);
+		context_destroy_wireless_ctx((wireless_ctx **) &
+					     ctx->intTypeData);
 	}
 	// Only call deinit if the interface isn't gone.
 	cardif_deinit(ctx);
@@ -294,22 +294,18 @@ char config_build(context * ctx, char *network_name)
 				pGlobals = config_get_globals();
 
 				if (ctx->intType == ETH_802_11_INT) {
-					if (pGlobals->
-					    wirelessMachineAuthConnection !=
-					    NULL)
+					if (pGlobals->wirelessMachineAuthConnection != NULL)
 						result =
 						    config_find_connection
 						    (CONFIG_LOAD_GLOBAL,
-						     pGlobals->
-						     wirelessMachineAuthConnection);
+						     pGlobals->wirelessMachineAuthConnection);
 				} else {
-					if (pGlobals->
-					    wiredMachineAuthConnection != NULL)
+					if (pGlobals->wiredMachineAuthConnection
+					    != NULL)
 						result =
 						    config_find_connection
 						    (CONFIG_LOAD_GLOBAL,
-						     pGlobals->
-						     wiredMachineAuthConnection);
+						     pGlobals->wiredMachineAuthConnection);
 				}
 
 				// If the machine auth connection wasn't found, then try to find the interface default.

@@ -147,25 +147,23 @@ int getopts(int argc, char **argv, struct options opts[], char **args)
 					if (*argv[option_index] == '-') {
 						int optionSeeker;
 						for (optionSeeker = 0;
-						     opts[optionSeeker].
-						     description;
+						     opts
+						     [optionSeeker].description;
 						     optionSeeker++) {
-							if ((opts[optionSeeker].
-							     name
+							if ((opts
+							     [optionSeeker].name
 							     &&
 							     !strcmp(opts
-								     [optionSeeker].
-								     name,
+								     [optionSeeker].name,
 								     (argv
 								      [option_index]
 								      + 2)))
 							    ||
-							    (opts[optionSeeker].
-							     shortName
+							    (opts
+							     [optionSeeker].shortName
 							     &&
 							     !strcmp(opts
-								     [optionSeeker].
-								     shortName,
+								     [optionSeeker].shortName,
 								     (argv
 								      [option_index]
 								      + 1)))) {

@@ -495,8 +495,10 @@ void eapol_key_type254_do_type1(context * ctx)
 {
 	struct wpa_key_packet *inkeydata = NULL, *outkeydata = NULL;
 	uint16_t keyflags, len, value16;
-	int version, ielen;
-	char key[16], wpa_ie[26];
+	int version;
+	uint8_t ielen;
+	char key[16];
+	uint8_t wpa_ie[26];
 	char zeros[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	wireless_ctx *wctx = NULL;
 
@@ -550,8 +552,7 @@ void eapol_key_type254_do_type1(context * ctx)
 
 	ctx->statemachine->PTK = (uint8_t *) eapol_key_type254_gen_ptk(ctx,
 								       (char *)
-								       &inkeydata->
-								       key_nonce);
+								       &inkeydata->key_nonce);
 
 	outkeydata->key_descriptor = WPA_KEY_TYPE;
 
@@ -577,9 +578,9 @@ void eapol_key_type254_do_type1(context * ctx)
 
 	cardif_get_wpa_ie(ctx, wpa_ie, &ielen);
 
-	memcpy(&ctx->
-	       sendframe[OFFSET_TO_EAPOL + 4 + sizeof(struct wpa_key_packet)],
-	       &wpa_ie, ielen);
+	memcpy(&ctx->sendframe
+	       [OFFSET_TO_EAPOL + 4 + sizeof(struct wpa_key_packet)], &wpa_ie,
+	       ielen);
 	value16 = ielen;
 	value16 = htons(value16);
 	ctx->send_size += ielen;

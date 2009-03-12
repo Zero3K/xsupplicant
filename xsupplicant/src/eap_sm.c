@@ -1093,11 +1093,12 @@ void eap_sm_change_to_get_method(eap_sm * sm)
 				// We changed EAP methods.  So clean up after the old one.
 				eapstruct = eap_sm_find_method(sm->lastMethod);
 				if (eapstruct != -1) {
-					if ((eaphandlers[eapstruct].
-					     eap_deinit != NULL)
+					if ((eaphandlers[eapstruct].eap_deinit
+					     != NULL)
 					    && (sm->active != NULL)) {
-						eaphandlers[eapstruct].
-						    eap_deinit(sm->active);
+						eaphandlers
+						    [eapstruct].eap_deinit(sm->
+									   active);
 						if (sm->eapKeyData != NULL)
 							FREE(sm->eapKeyData);
 						sm->eapKeyData = NULL;
@@ -1210,16 +1211,16 @@ void eap_sm_change_to_method(eap_sm * sm)
 
 			// Only do this once after we have transitioned from not having a key, to having one.  Otherwise,
 			// we end up wasting a lot of time regenerating key data over and over in phase 2.
-			if ((eaphandlers[eapstruct].
-			     eap_isKeyAvailable(sm->active))
+			if ((eaphandlers[eapstruct].eap_isKeyAvailable
+			     (sm->active))
 			    && (keyavail == FALSE)) {
 				FREE(sm->eapKeyData);	// Make sure we don't leak memory on keys.
 				sm->eapKeyData =
-				    eaphandlers[eapstruct].eap_getKey(sm->
-								      active);
+				    eaphandlers[eapstruct].
+				    eap_getKey(sm->active);
 				sm->eapKeyLen =
-				    eaphandlers[eapstruct].eap_getKeyLen(sm->
-									 active);
+				    eaphandlers[eapstruct].
+				    eap_getKeyLen(sm->active);
 
 				eap_sm_sync_e_to_ll(sm);
 			}
@@ -1452,8 +1453,8 @@ void eap_sm_prepopulate_id(eap_sm * sm)
 
 	if (eaphandlers[idx].eap_get_special_username != NULL) {
 		username =
-		    eaphandlers[idx].eap_get_special_username(sm->curMethods->
-							      method_data);
+		    eaphandlers[idx].eap_get_special_username(sm->
+							      curMethods->method_data);
 		if (username != NULL) {
 			// If we have a username, we want to use it no matter what.
 			sm->ident = username;
@@ -2036,8 +2037,7 @@ void eap_sm_deinit(eap_sm ** sm)
 				eapstruct =
 				    eap_sm_find_method((*sm)->lastMethod);
 				if (eaphandlers[eapstruct].eap_deinit != NULL) {
-					eaphandlers[eapstruct].
-					    eap_deinit((*sm)->active);
+					eaphandlers[eapstruct].eap_deinit((*sm)->active);
 					FREE((*sm)->eapKeyData);
 					(*sm)->eapKeyAvailable = FALSE;
 				}
