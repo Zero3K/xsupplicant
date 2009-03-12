@@ -301,7 +301,7 @@ void config_ssid_update_abilities(wireless_ctx *wctx, uint16_t newabil)
  *                  want to update the frequency for.
  * @param[in] newfreq   The new value for the frequency.
  **/
-void config_ssid_add_freq(wireless_ctx *wctx, unsigned int newfreq)
+void config_ssid_add_freq(wireless_ctx *wctx, double newfreq)
 {
 	struct found_ssids *working = NULL;
 
@@ -317,6 +317,7 @@ void config_ssid_add_freq(wireless_ctx *wctx, unsigned int newfreq)
     }
 
   working->freq = newfreq;
+  debug_printf(DEBUG_PHYSICAL_STATE, "Frequency set to %lf\n", working->freq);
 }
 
 /**
@@ -381,17 +382,18 @@ void config_ssid_dump(wireless_ctx *wctx)
 	  debug_printf(DEBUG_PHYSICAL_STATE, "Quality : %d     ", cur->quality);
 	  if (cur->signal > 0)
 	    {
-	      debug_printf_nl(DEBUG_PHYSICAL_STATE, "Signal level : %d dBm",
+	      debug_printf_nl(DEBUG_PHYSICAL_STATE, "Signal level : %d dBm\n",
 			      cur->signal);
 	    }
 
 	  if (cur->noise > 0)
 	    {
-	      debug_printf_nl(DEBUG_PHYSICAL_STATE, "Noise level : %d dBm",
+	      debug_printf_nl(DEBUG_PHYSICAL_STATE, "Noise level : %d dBm\n",
 			      cur->noise);
 	    }
-
 	  debug_printf_nl(DEBUG_PHYSICAL_STATE, "\n");
+	  debug_printf(DEBUG_PHYSICAL_STATE, "Freq : %lf\n", cur->freq);
+
 
 	  if ((cur->wpa_ie != NULL) && ((cur->wpa_ie_len > 0) && (cur->wpa_ie_len < 255)))
 	    {
@@ -492,33 +494,6 @@ struct found_ssids *config_ssid_find_by_name(wireless_ctx *wctx, char *ssid_name
 
   return cur;
 }
-
-/**
- * \brief Given an SSID name, set the pointer to the active SSID configuration.
- *
- * \note If there is more than one AP visible, this won't necessarily find
- * the one that we are really connected to.  We mostly need this to have useful
- * information about the SSID, which should be the same between APs.
- *
- * @param[in] wctx   The wireless context that we want to update the active
- *                   SSID pointer for.
- * @param[in] ssid_name   The SSID name that we want to become the active 
- *                        SSID.
- *
- * \warning If the requested SSID is unavailable, the active SSID will be
- *          set to NULL!
- **/
-/*
-void config_ssid_set_active_ssid(wireless_ctx *wctx, char *ssid_name)
-{
-  if (!xsup_assert((ssid_name != NULL), "ssid_name != NULL", FALSE))
-    return;
-
-  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return;
-
-  wctx->active_ssid = config_ssid_find_by_name(wctx, ssid_name);
-}
-*/
 
 /**
  * \brief See if the ESSID requested is one that we know about in our list.

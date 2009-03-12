@@ -838,6 +838,11 @@ void ConnectDlg::connectWirelessConnection(void)
 	// If the connection is already the active one, then ignore it.
 	if (!XSupWrapper::isConnectionActive(m_currentWirelessAdapterName, m_pWirelessConnectionList->currentText(), true))
 	{
+	  if (m_currentWirelessAdapterName.isEmpty())
+	    {
+	      m_currentWirelessAdapterName = m_pWirelessAdapterList->currentText();
+	    }
+
 		if ((result = XSupWrapper::connectToConnection(m_currentWirelessAdapterName, m_pWirelessConnectionList->currentText())) != REQUEST_SUCCESS)
 		{
 			switch (result)

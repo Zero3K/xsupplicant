@@ -1035,6 +1035,9 @@ void cardif_linux_clear_keys(context *);
 int cardif_linux_wext_disassociate(context *intdata, int reason)
 {
   wireless_ctx *wctx = NULL;
+  char randomssid[31];
+  int i = 0;
+
 #if WIRELESS_EXT > 17
   if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
     return XEMALLOC;
@@ -1043,13 +1046,19 @@ int cardif_linux_wext_disassociate(context *intdata, int reason)
   cardif_linux_wext_mlme(intdata, IW_MLME_DISASSOC, reason);
 #endif
 
-  debug_printf(DEBUG_NORMAL, "!!!!!!!!! Setting invalid SSID!\n");
-  cardif_linux_wext_set_ssid(intdata, "unlikelyssid");
+  // Set our SSID to something invalid to make sure we disassociate, and don't
+  // later try to automagically reassociate again.
+  for (i = 0; i < 30; i++)
+    {
+      randomssid[i] = (char)(((float)(rand() % 87))+35);
+    }
+  randomssid[30] = 0x00;
+
+  cardif_linux_wext_set_ssid(intdata, randomssid);
   cardif_linux_clear_keys(intdata);
   wctx = (wireless_ctx *)intdata->intTypeData;
   if (wctx)
   {
-    debug_printf(DEBUG_NORMAL, "Set assoc_type to UNKNOWN\n");
     wctx->assoc_type = ASSOC_TYPE_UNKNOWN;
     memset(wctx->cur_bssid, 0x00, 6);
   }

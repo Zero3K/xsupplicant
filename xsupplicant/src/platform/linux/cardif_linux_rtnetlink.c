@@ -808,14 +808,16 @@ void cardif_linux_rtnetlink_process_SIOCGIWSCAN(context *ctx)
 
   wctx = (wireless_ctx *)ctx->intTypeData;
 
+  /*
   if (!TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
     {
       debug_printf(DEBUG_NORMAL, "Got an SIOCGIWSCAN in a scan result!? "
 		   "Contact your wireless card driver maintainer!\n");
     } else {
+  */
       debug_printf(DEBUG_INT, "Wireless scan complete!\n");
       cardif_linux_rtnetlink_check_nets(ctx);
-    }
+      //    }
 }
 
 /**********************************************************************
@@ -1008,7 +1010,7 @@ void cardif_linux_rtnetlink_process_SIOCGIWFREQ(context *ctx, struct iw_event *i
   if (strstr(buffer, "Channel") != NULL)
     {
     //ignore the Channel information
-    debug_printf(DEBUG_INT, "Channel %s\n", buffer);
+    debug_printf(DEBUG_INT, "Channel : %s\n", buffer);
     return;
     }
   else if (strstr(buffer, "Freq") != NULL)

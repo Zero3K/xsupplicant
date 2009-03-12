@@ -25,7 +25,7 @@ struct found_ssids {
   uint8_t *rsn_ie;
   uint8_t rsn_ie_len;
   uint8_t mac[6];
-  unsigned int freq;
+  double freq;
   unsigned char quality;
   char signal;
   char noise;
@@ -50,7 +50,7 @@ uint8_t *config_ssid_get_mac_with_freq(wireless_ctx *wctx, double freq);
 double config_ssid_get_best_freq(wireless_ctx *wctx);
 
 // Functions to add information to an existing ESSID node.
-void config_ssid_add_freq(wireless_ctx *, unsigned int);
+void config_ssid_add_freq(wireless_ctx *, double);
 void config_ssid_add_bssid(wireless_ctx *, char *);
 void config_ssid_add_rsn_ie(wireless_ctx *, uint8_t *, uint8_t);
 void config_ssid_add_wpa_ie(wireless_ctx *, uint8_t *, uint8_t);
