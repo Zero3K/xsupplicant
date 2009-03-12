@@ -751,6 +751,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 
 			process_hex(&custom[7], (iwe->len - 7), temp);
 			wpa_parse_ie(temp);
+			cardif_linux_rtnetlink_parse_ies(ctx, temp, temp[1]);
 
 			config_ssid_add_wpa_ie(wctx, (uint8_t *) temp,
 					       ((iwe->u.data.length - 7) / 2));
@@ -763,6 +764,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 
 			process_hex(&custom[7], (iwe->len - 7), temp);
 			wpa2_parse_ie(temp);
+			cardif_linux_rtnetlink_parse_ies(ctx, temp, temp[1]);
 
 			config_ssid_add_rsn_ie(wctx, (uint8_t *) temp,
 					       ((iwe->u.data.length - 7) / 2));
