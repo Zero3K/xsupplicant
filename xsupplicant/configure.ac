@@ -424,6 +424,7 @@ AC_CONFIG_FILES([Makefile
 		lib/libxsupconfig/Makefile
 		lib/libxsupconfwrite/Makefile
 		lib/libxsupconfcheck/Makefile
+		lib/libcrashdump/Makefile
 		tools/ipctest/Makefile
 		tools/ipcevents/Makefile
 		tools/connect-tool/Makefile

@@ -3,6 +3,7 @@ CORELIBS = @CORELIBS@
 MORELIBS = @MORELIBS@ -L${top_builddir}/lib/libxsupconfig -lxsupconfig \
 	   -L${top_builddir}/lib/libxsupconfwrite -lxsupconfwrite \
 	   -L${top_builddir}/lib/liblist -llist \
+	   -L${top_builddir}/lib/libcrashdump -lcrashdump \
 	   -L${top_builddir}/lib/libsupdetect -lsupdetect \
 	   -L${top_builddir}/lib/libxsupconfcheck -lxsupconfcheck @DARWINLIBS@
 MOREDEFS = @MOREDEFS@

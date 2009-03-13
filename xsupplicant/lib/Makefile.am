@@ -1,1 +1,1 @@
-SUBDIRS = libxsupgui libxsupconfig libxsupconfwrite liblist libsupdetect libxsupconfcheck
+SUBDIRS = libxsupgui libxsupconfig libxsupconfwrite liblist libsupdetect libxsupconfcheck libcrashdump

@@ -10,6 +10,8 @@
 
 #ifdef WINDOWS
 #define _CRT_SECURE_NO_WARNINGS
+#else
+#define _strdup  strdup
 #endif
 
 #include <stdio.h>
@@ -18,8 +20,10 @@
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
+#ifdef WINDOWS
 #include <direct.h>
 #include <io.h>
+#endif
 
 #include "zip.h"
 #include "crashdump.h"
@@ -186,7 +190,11 @@ int crashdump_store_file_in_zip(char *filename, zipFile * zf)
 	}
 
 	memset(&zi, 0x00, sizeof(zi));
+#ifdef WINDOWS
 	filetime(filename, &zi.tmz_date, &zi.dosDate);	// Get the date/time of the file.
+#else
+#warning Implement for your OS!
+#endif  // WINDOWS
 
 	// Find the filename part of the file in the list.
 	x = (int)strlen(filename);
@@ -285,7 +293,11 @@ void crashdump_gather_files(char *destoverride)
 		path_to_use = zipdumppath;
 	}
 
+#ifdef WINDOWS
 	fill_win32_filefunc(&ffunc);
+#else
+#warning Implement for your OS!
+#endif // WINDOWS
 
 #ifdef DEBUG
 	fprintf(tempf, "File func done.\n");
