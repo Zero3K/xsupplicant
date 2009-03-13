@@ -2295,7 +2295,7 @@ int cardif_drop_unencrypted(context * ctx, char endis)
  * \retval XEMALLOC on memory allocation error
  * \retval XENONE on sucess
  **/
-int cardif_get_wpa_ie(context * ctx, char *iedata, int *ielen)
+int cardif_get_wpa_ie(context * ctx, uint8_t *iedata, uint8_t *ielen)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
@@ -2357,7 +2357,7 @@ int cardif_get_wpa2_ie(context * intdata, uint8_t * iedata, uint8_t * ielen)
 		return XEMALLOC;
 	}
 
-	return wireless->get_wpa2_ie(intdata, iedata, (uint16_t *) ielen);
+	return wireless->get_wpa2_ie(intdata, iedata, ielen);
 }
 
 /**

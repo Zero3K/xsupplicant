@@ -24,40 +24,44 @@
 #include "stdafx.h"
 #include "WifiStandardImages.h"
 #include "TableImageDelegate.h"
-void TableImageDelegate::paint(QPainter * painter,
-				const QStyleOptionViewItem & option,
-				const QModelIndex & index) const const 
-{
-	if (qVariantCanConvert < WifiStandardImages > (index.data()) == true)
-		 {
-		WifiStandardImages wifiImages =
-		    qVariantValue < WifiStandardImages > (index.data());
-		if (option.state & QStyle::State_Selected)
-			painter->fillRect(option.rect,
-					   option.palette.highlight());
-		wifiImages.paint(painter, option.rect, option.palette);
-		}
-	
-	else
-		 {
-		QItemDelegate::paint(painter, option, index);
-		}
-}
 
-QSize TableImageDelegate::sizeHint(const QStyleOptionViewItem & option,
-				     const QModelIndex & index) const const 
+void TableImageDelegate::paint(QPainter * painter,
+				const QStyleOptionViewItem & option,
+				const QModelIndex & index) const 
 {
-	if (qVariantCanConvert < WifiStandardImages > (index.data()) == true)
-		 {
-		WifiStandardImages wifiImages =
-		    qVariantValue < WifiStandardImages > (index.data());
-		return wifiImages.sizeHint();
-		}
-	
-	else
-		 {
-		return QItemDelegate::sizeHint(option, index);
-		}
-}
+	if (qVariantCanConvert < WifiStandardImages > (index.data()) == true)	
+	 {		
+		WifiStandardImages wifiImages =
+				    qVariantValue < WifiStandardImages > (index.data());
+
+		if (option.state & QStyle::State_Selected)			
+				painter->fillRect(option.rect,
+								   option.palette.highlight());
+
+		wifiImages.paint(painter, option.rect, option.palette);
+	}
+	else	
+	{	
+		QItemDelegate::paint(painter, option, index);
+	}
+}
+
+
+
+QSize TableImageDelegate::sizeHint(const QStyleOptionViewItem & option,
+				     const QModelIndex & index) const
+{
+	if (qVariantCanConvert < WifiStandardImages > (index.data()) == true)	
+	{	
+		WifiStandardImages wifiImages =
+				    qVariantValue < WifiStandardImages > (index.data());
+		
+		return wifiImages.sizeHint();
+	}
+	else		
+	{	
+		return QItemDelegate::sizeHint(option, index);
+	}
+}
 
 

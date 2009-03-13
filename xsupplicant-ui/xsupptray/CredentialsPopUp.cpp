@@ -39,13 +39,18 @@
 #include "XSupWrapper.h"
 #include "Emitter.h"
 #include "CredentialsManager.h"
-extern "C"  {
+
+extern "C" 
+ {
 	
 #include "libxsupgui/xsupgui_request.h"
-}   
+} 
+ 
+ 
 // initialize static member variable
  CredentialsManager * CredentialsPopUp::m_pCredManager = NULL;
-
+
+
 //! Constructor
 /*!
   \brief Sets up the fields   
@@ -56,27 +61,48 @@
   \param[in] parent
   \return nothing
 */ 
- CredentialsPopUp::CredentialsPopUp(QString connName, QString deviceName, QWidget * parent, Emitter * e) :
-QWidget(parent), m_connName(connName), m_deviceName(deviceName),
-m_supplicant(this), m_pEmitter(e) 
+ CredentialsPopUp::CredentialsPopUp(QString connName, QString deviceName, QWidget * parent, Emitter * e) 
+:
+QWidget(parent), 
+m_connName(connName), m_deviceName(deviceName),
+m_supplicant(this), 
+m_pEmitter(e) 
 {
-	m_pRealForm = NULL;
-	m_pDialog = NULL;
-	m_pDialogMsg = NULL;
-	m_pButtonBox = NULL;
-	m_pUsername = NULL;
-	m_pPassword = NULL;
-	p_user = NULL;
-	p_pass = NULL;
-	m_pWEPCombo = NULL;
-	m_pRememberCreds = NULL;
-	conn_type = 0;
-	m_ignoreNoPwd = false;
-	if (m_pCredManager == NULL)
-		m_pCredManager = new CredentialsManager(e);
-}
+	
+m_pRealForm = NULL;
+	
+m_pDialog = NULL;
+	
+m_pDialogMsg = NULL;
+	
+m_pButtonBox = NULL;
+	
+m_pUsername = NULL;
+	
+m_pPassword = NULL;
+	
+p_user = NULL;
+	
+p_pass = NULL;
+	
+m_pWEPCombo = NULL;
+	
+m_pRememberCreds = NULL;
+	
+conn_type = 0;
+	
+m_ignoreNoPwd = false;
+	
 
-
+if (m_pCredManager == NULL)
+		
+m_pCredManager = new CredentialsManager(e);
+
+}
+
+
+
+
 //! Destructor
 /*!
   \brief Clears out whatever needs to be cleared out
@@ -84,188 +110,310 @@ m_supplicant(this), m_pEmitter(e)
 */ 
     CredentialsPopUp::~CredentialsPopUp() 
 {
-	if (p_user != NULL)
+	
+if (p_user != NULL)
 		free(p_user);
-	if (p_pass != NULL)
+	
+if (p_pass != NULL)
 		free(p_pass);
-	if (m_pButtonBox != NULL)
-		 {
-		Util::myDisconnect(m_pButtonBox, SIGNAL(accepted()), this,
+	
+
+if (m_pButtonBox != NULL)
+		
+ {
+		
+Util::myDisconnect(m_pButtonBox, SIGNAL(accepted()), this,
 				    SLOT(slotOkayBtn()));
-		Util::myDisconnect(m_pButtonBox, SIGNAL(rejected()), this,
+		
+Util::myDisconnect(m_pButtonBox, SIGNAL(rejected()), this,
 				    SLOT(slotDisconnectBtn()));
-		}
-	if (m_pWEPCombo != NULL)
-		Util::myDisconnect(m_pWEPCombo,
+		
+}
+	
+
+if (m_pWEPCombo != NULL)
+		
+Util::myDisconnect(m_pWEPCombo,
 				    SIGNAL(currentIndexChanged(int)), this,
 				    SLOT(slotWEPComboChange(int)));
-	if (m_pRealForm != NULL)
-		 {
-		Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this,
-				    SLOT(slotDisconnectBtn()));
-		delete m_pRealForm;
-		}
-}
+	
 
-bool CredentialsPopUp::create() 
+if (m_pRealForm != NULL)
+		
+ {
+		
+Util::myDisconnect(m_pRealForm, SIGNAL(rejected()), this,
+				    SLOT(slotDisconnectBtn()));
+		
+delete m_pRealForm;
+		
+}
+
+}
+
+
+
+bool CredentialsPopUp::create() 
 {
-	int authtype = 0;
-	if (xsupgui_request_get_connection_upw
+	
+int authtype = 0;
+	
+
+if (xsupgui_request_get_connection_upw
 	      (m_connName.toAscii().data(), &p_user, &p_pass,
 	       &authtype) != XENONE)
-		 {
-		QMessageBox::critical(this, tr("Credentials Error"),
+		
+ {
+		
+QMessageBox::critical(this, tr("Credentials Error"),
 				       tr
 				       ("Unable to determine the type of network that needs credentials."));
-		return false;
-		}
-	
+		
+return false;
+		
+}
+	
+
 	    // Depending on the type of network in use, display the proper dialog.
 	    if (authtype == AUTH_PSK)
-		 {
-		m_doingPsk = true;
-		m_doingWEP = false;
-		return createPSK();
-		}
+		
+ {
+		
+m_doingPsk = true;
+		
+m_doingWEP = false;
+		
+return createPSK();
+		
+}
 	
 	else if (authtype == AUTH_EAP)
-		 {
-		m_doingPsk = false;
-		m_doingWEP = false;
-		if (isPINType())
-			 {
-			return createPIN();
-			}
+		
+ {
+		
+m_doingPsk = false;
+		
+m_doingWEP = false;
+		
+
+if (isPINType())
+			
+ {
+			
+return createPIN();
+			
+}
 		
 		else
-			 {
-			return createUPW();
-			}
-		}
+			
+ {
+			
+return createUPW();
+			
+}
+		
+}
 	
 	else if (authtype == AUTH_NONE)
-		 {
+		
+ {
 		
 		    // WEP
 		    m_doingPsk = false;
-		m_doingWEP = true;
-		return createWEP();
-		}
-	return false;
-}
+		
+m_doingWEP = true;
+		
+return createWEP();
+		
+}
+	
+return false;
 
-
+}
+
+
+
 /**
  * \brief Create the dialog to prompt for a PIN code.
  **/ 
     bool CredentialsPopUp::createPIN() 
 {
-	m_pRealForm = FormLoader::buildform("PINWindow.ui");
-	if (m_pRealForm == NULL)
+	
+m_pRealForm = FormLoader::buildform("PINWindow.ui");
+	
+
+if (m_pRealForm == NULL)
 		return false;
-	
+	
+
 	    // If the user hits the "X" button in the title bar, close us out gracefully.
 	    Util::myConnect(m_pRealForm, SIGNAL(rejected()), this,
 			    SLOT(slotDisconnectBtn()));
-	
+	
+
 	    // At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
 	    m_pUsername = NULL;
-	m_pPassword =
+	
+
+m_pPassword =
 	    qFindChild < QLineEdit * >(m_pRealForm, "dataFieldPassword");
-	if (m_pPassword == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pPassword == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'dataFieldPassword' label."));
-		return false;
-		}
-	m_pButtonBox =
+		
+return false;
+		
+}
+	
+
+m_pButtonBox =
 	    qFindChild < QDialogButtonBox * >(m_pRealForm, "buttonBox");
-	if (m_pButtonBox == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pButtonBox == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'buttonBox' DialogButtonBox"));
-		return false;
-		}
+		
+return false;
+		
+}
 	
 	else
-		 {
-		Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this,
+		
+ {
+		
+Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this,
 				 SLOT(slotOkayBtn()));
-		Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this,
+		
+Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this,
 				 SLOT(slotDisconnectBtn()));
-		}
-	m_pDialogMsg = qFindChild < QLabel * >(m_pRealForm, "labelDialogMsg");
-	if (m_pDialogMsg != NULL)
-		 {
-		QString networkName = "";
-		
+		
+}
+	
+
+m_pDialogMsg = qFindChild < QLabel * >(m_pRealForm, "labelDialogMsg");
+	
+
+if (m_pDialogMsg != NULL)
+		
+ {
+		
+QString networkName = "";
+		
+
 		    // if we have the name of the connection, try to retrieve the SSID of the network
 		    // so that we can correctly prompt the user
 		    if (m_connName.isEmpty() == false)
-			 {
-			config_connection * pConnection = NULL;
-			conn_type = CONFIG_LOAD_USER;
-			if (m_supplicant.
+			
+ {
+			
+config_connection * pConnection = NULL;
+			
+conn_type = CONFIG_LOAD_USER;
+			
+if (m_supplicant.
 			     getConfigConnection(conn_type, m_connName,
 						 &pConnection, false) == true)
-				 {
-				if (pConnection != NULL
+				
+ {
+				
+if (pConnection != NULL
 				     && pConnection->ssid != NULL)
-					networkName = pConnection->ssid;
-				if (pConnection != NULL)
-					m_supplicant.
+					
+networkName = pConnection->ssid;
+				
+if (pConnection != NULL)
+					
+m_supplicant.
 					    freeConfigConnection(&pConnection);
-				}
+				
+}
 			
 			else
-				 {
-				conn_type = CONFIG_LOAD_GLOBAL;
-				if (m_supplicant.
+				
+ {
+				
+conn_type = CONFIG_LOAD_GLOBAL;
+				
+if (m_supplicant.
 				     getConfigConnection(conn_type, m_connName,
 							 &pConnection,
 							 false) == true)
-					 {
-					if (pConnection != NULL
+					
+ {
+					
+if (pConnection != NULL
 					     && pConnection->ssid != NULL)
-						networkName =
+						
+networkName =
 						    pConnection->ssid;
-					if (pConnection != NULL)
-						m_supplicant.
+					
+if (pConnection != NULL)
+						
+m_supplicant.
 						    freeConfigConnection
 						    (&pConnection);
-					}
-				}
-			}
-		
+					
+}
+				
+}
+			
+}
+		
+
 		    // if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
 		    // prompt message
 		    QString dlgMsg;
-		if (networkName.isEmpty() == false)
-			 {
-			dlgMsg.
+		
+if (networkName.isEmpty() == false)
+			
+ {
+			
+dlgMsg.
 			    append(tr
 				   ("The network \"%1\" requires a (U)SIM PIN to connect").
 				   arg(networkName));
-			}
+			
+}
 		
 		else
-			 {
-			dlgMsg.
+			
+ {
+			
+dlgMsg.
 			    append(tr
 				   ("The network you are trying to connect to requires a (U)SIM PIN to connect"));
-			}
-		m_pDialogMsg->setText(dlgMsg);
-		}
-	setupWindow();
-	
+			
+}
+		
+m_pDialogMsg->setText(dlgMsg);
+		
+}
+	
+
+setupWindow();
+	
+
 	    // Then, populate some data.
 	    updateData();
-	return true;
-}
+	
 
-
+return true;
+
+}
+
+
+
 /**
  * \brief Determine if the EAP method used in this connection uses a PIN.
  *
@@ -274,622 +422,1017 @@ m_supplicant(this), m_pEmitter(e)
  **/ 
     bool CredentialsPopUp::isPINType() 
 {
-	config_connection * conn_config = NULL;
-	config_profiles * prof_config = NULL;
-	bool result = false;
-	int resval = 0;
-	if (conn_type == 0)
-		 {
-		conn_type = CONFIG_LOAD_USER;
-		resval =
+	
+config_connection * conn_config = NULL;
+	
+config_profiles * prof_config = NULL;
+	
+bool result = false;
+	
+int resval = 0;
+	
+
+if (conn_type == 0)
+		
+ {
+		
+conn_type = CONFIG_LOAD_USER;
+		
+resval =
 		    xsupgui_request_get_connection_config(conn_type,
 							  m_connName.toAscii().
 							  data(), &conn_config);
-		if (resval != REQUEST_SUCCESS)
-			 {
-			conn_type = CONFIG_LOAD_GLOBAL;
-			resval =
+		
+if (resval != REQUEST_SUCCESS)
+			
+ {
+			
+conn_type = CONFIG_LOAD_GLOBAL;
+			
+resval =
 			    xsupgui_request_get_connection_config(conn_type,
 								  m_connName.
 								  toAscii().
 								  data(),
 								  &conn_config);
-			if (resval != REQUEST_SUCCESS)
-				 {
-				conn_type = 0;
-				}
-			}
-		}
+			
+if (resval != REQUEST_SUCCESS)
+				
+ {
+				
+conn_type = 0;
+				
+}
+			
+}
+		
+}
 	
 	else
-		 {
-		resval =
+		
+ {
+		
+resval =
 		    xsupgui_request_get_connection_config(conn_type,
 							  m_connName.toAscii().
 							  data(), &conn_config);
-		}
-	if (resval == REQUEST_SUCCESS)
-		 {
-		resval =
+		
+}
+	
+
+if (resval == REQUEST_SUCCESS)
+		
+ {
+		
+resval =
 		    xsupgui_request_get_profile_config(CONFIG_LOAD_USER,
 						       conn_config->profile,
 						       &prof_config);
-		if (resval != REQUEST_SUCCESS)
-			 {
-			resval =
+		
+if (resval != REQUEST_SUCCESS)
+			
+ {
+			
+resval =
 			    xsupgui_request_get_profile_config
 			    (CONFIG_LOAD_GLOBAL, conn_config->profile,
 			     &prof_config);
-			}
-		if (resval == REQUEST_SUCCESS)
-			 {
-			if ((prof_config->method != NULL) && 
-			     ((prof_config->method->method_num == EAP_TYPE_SIM)
-			      || (prof_config->method->method_num ==
-				   EAP_TYPE_AKA)))
-				 {
-				result = true;
-				}
-			xsupgui_request_free_profile_config(&prof_config);
-			}
-		xsupgui_request_free_connection_config(&conn_config);
-		}
-	return result;
-}
+			
+}
+		
 
-bool CredentialsPopUp::createWEP() 
+if (resval == REQUEST_SUCCESS)
+			
+ {
+			
+if ((prof_config->method != NULL) && 
+			     ((prof_config->method->method_num == EAP_TYPE_SIM)
+			      || 
+(prof_config->method->method_num ==
+				   EAP_TYPE_AKA)))
+				
+ {
+				
+result = true;
+				
+}
+			
+
+xsupgui_request_free_profile_config(&prof_config);
+			
+}
+		
+
+xsupgui_request_free_connection_config(&conn_config);
+		
+}
+	
+
+return result;
+
+}
+
+
+
+bool CredentialsPopUp::createWEP() 
 {
-	m_pRealForm = FormLoader::buildform("WEPWindow.ui");
-	if (m_pRealForm == NULL)
-		return false;
-	
+	
+m_pRealForm = FormLoader::buildform("WEPWindow.ui");
+	
+
+if (m_pRealForm == NULL)
+		
+return false;
+	
+
 	    // cache off pointers to UI objects
 	    m_pDialogMsg =
 	    qFindChild < QLabel * >(m_pRealForm, "labelDialogMsg");
-	m_pWEPCombo =
+	
+m_pWEPCombo =
 	    qFindChild < QComboBox * >(m_pRealForm, "comboBoxKeyType");
-	m_pPassword =
+	
+m_pPassword =
 	    qFindChild < QLineEdit * >(m_pRealForm, "dataFieldPassword");
-	if (m_pPassword == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+if (m_pPassword == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'upwPassword' label."));
-		return false;
-		}
-	m_pRememberCreds =
+		
+return false;
+		
+}
+	
+
+m_pRememberCreds =
 	    qFindChild < QCheckBox * >(m_pRealForm, "checkBoxRemember");
-	if (m_pRememberCreds == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+if (m_pRememberCreds == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'rememberCredentials' checkbox."));
-		return false;
-		}
-	m_pButtonBox =
+		
+return false;
+		
+}
+	
+
+m_pButtonBox =
 	    qFindChild < QDialogButtonBox * >(m_pRealForm, "buttonBox");
-	if (m_pButtonBox == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pButtonBox == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'buttonBox' DialogButtonBox"));
-		return false;
-		}
-	
+		
+return false;
+		
+}
+	
+
 	    // dynamically populate text
 	    QLabel * pLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "labelKeyType");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Password Type:"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelPassword");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Password:"));
-	if (m_pRememberCreds != NULL)
-		m_pRememberCreds->setText(tr("Remember Password"));
-	if (m_pWEPCombo != NULL)
-		 {
-		m_pWEPCombo->clear();
-		m_pWEPCombo->addItem(tr("40-bit HEX"));
-		m_pWEPCombo->addItem(tr("104-bit HEX"));
-		}
-	if (m_pDialogMsg != NULL)
-		 {
-		QString networkName = "";
-		
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Password Type:"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelPassword");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Password:"));
+	
+
+if (m_pRememberCreds != NULL)
+		
+m_pRememberCreds->setText(tr("Remember Password"));
+	
+
+if (m_pWEPCombo != NULL)
+		
+ {
+		
+m_pWEPCombo->clear();
+		
+m_pWEPCombo->addItem(tr("40-bit HEX"));
+		
+m_pWEPCombo->addItem(tr("104-bit HEX"));
+		
+}
+	
+
+if (m_pDialogMsg != NULL)
+		
+ {
+		
+QString networkName = "";
+		
+
 		    // if we have the name of the connection, try to retrieve the SSID of the network
 		    // so that we can correctly prompt the user
 		    if (m_connName.isEmpty() == false)
-			 {
-			config_connection * pConnection = NULL;
-			conn_type = CONFIG_LOAD_USER;
-			if (m_supplicant.
+			
+ {
+			
+config_connection * pConnection = NULL;
+			
+conn_type = CONFIG_LOAD_USER;
+			
+if (m_supplicant.
 			     getConfigConnection(conn_type, m_connName,
 						 &pConnection, false) == true)
-				 {
-				if (pConnection != NULL
+				
+ {
+				
+if (pConnection != NULL
 				     && pConnection->ssid != NULL)
-					networkName = pConnection->ssid;
-				if (TEST_FLAG
+					
+networkName = pConnection->ssid;
+				
+
+if (TEST_FLAG
 				      (pConnection->flags,
 				       CONFIG_VOLATILE_CONN))
-					m_pRememberCreds->setEnabled(false);
-				if (pConnection != NULL)
-					m_supplicant.
+					
+m_pRememberCreds->setEnabled(false);
+				
+
+if (pConnection != NULL)
+					
+m_supplicant.
 					    freeConfigConnection(&pConnection);
-				}
+				
+}
 			
 			else
-				 {
-				conn_type = CONFIG_LOAD_GLOBAL;
-				if (m_supplicant.
+				
+ {
+				
+conn_type = CONFIG_LOAD_GLOBAL;
+				
+if (m_supplicant.
 				     getConfigConnection(conn_type, m_connName,
 							 &pConnection,
 							 false) == true)
-					 {
-					if (pConnection != NULL
+					
+ {
+					
+if (pConnection != NULL
 					     && pConnection->ssid != NULL)
-						networkName =
+						
+networkName =
 						    pConnection->ssid;
-					if (TEST_FLAG
+					
+
+if (TEST_FLAG
 					      (pConnection->flags,
 					       CONFIG_VOLATILE_CONN))
-						m_pRememberCreds->
+						
+m_pRememberCreds->
 						    setEnabled(false);
-					if (pConnection != NULL)
-						m_supplicant.
+					
+
+if (pConnection != NULL)
+						
+m_supplicant.
 						    freeConfigConnection
 						    (&pConnection);
-					}
-				}
-			}
-		
+					
+}
+				
+}
+			
+}
+		
+
 		    // if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
 		    // prompt message
 		    QString dlgMsg;
-		if (networkName.isEmpty() == false)
-			 {
-			dlgMsg.
+		
+if (networkName.isEmpty() == false)
+			
+ {
+			
+dlgMsg.
 			    append(tr
 				   ("The network \"%1\" requires a WEP password to connect").
 				   arg(networkName));
-			}
+			
+}
 		
 		else
-			 {
-			dlgMsg.
+			
+ {
+			
+dlgMsg.
 			    append(tr
 				   ("The network you are trying to connect to requires a WEP password"));
-			}
-		m_pDialogMsg->setText(dlgMsg);
-		}
-	
+			
+}
+		
+m_pDialogMsg->setText(dlgMsg);
+		
+}
+	
+
 	    // set up event handling        
 	    
 	    // If the user hits the "X" button in the title bar, close us out gracefully.
 	    Util::myConnect(m_pRealForm, SIGNAL(rejected()), this,
 			    SLOT(slotDisconnectBtn()));
-	if (m_pButtonBox != NULL)
-		 {
-		Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this,
-				 SLOT(slotOkayBtn()));
-		Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this,
-				 SLOT(slotDisconnectBtn()));
-		}
-	if (m_pWEPCombo != NULL) {
-		Util::myConnect(m_pWEPCombo, SIGNAL(currentIndexChanged(int)),
-				 this, SLOT(slotWEPComboChange(int)));
-		m_pWEPCombo->setCurrentIndex(0);
-		this->slotWEPComboChange(0);
-	}
-	setupWindow();
-	return true;
-}
+	
 
-bool CredentialsPopUp::createUPW() 
+if (m_pButtonBox != NULL)
+		
+ {
+		
+Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this,
+				 SLOT(slotOkayBtn()));
+		
+Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this,
+				 SLOT(slotDisconnectBtn()));
+		
+}
+	
+
+if (m_pWEPCombo != NULL) {
+		
+Util::myConnect(m_pWEPCombo, SIGNAL(currentIndexChanged(int)),
+				 this, SLOT(slotWEPComboChange(int)));
+		
+m_pWEPCombo->setCurrentIndex(0);
+		
+this->slotWEPComboChange(0);
+	
+}
+	
+
+setupWindow();
+	
+
+return true;
+
+}
+
+
+
+bool CredentialsPopUp::createUPW() 
 {
 	
 #ifdef WINDOWS
 	struct config_profiles *pProfile = NULL;
 	
-#endif	/*  */
-	    m_pRealForm = FormLoader::buildform("UPWWindow.ui");
-	if (m_pRealForm == NULL)
+#endif	/* 
+ */
+	    
+m_pRealForm = FormLoader::buildform("UPWWindow.ui");
+	
+
+if (m_pRealForm == NULL)
 		return false;
-	
+	
+
 	    // If the user hits the "X" button in the title bar, close us out gracefully.
 	    Util::myConnect(m_pRealForm, SIGNAL(rejected()), this,
 			    SLOT(slotDisconnectBtn()));
-	
+	
+
 	    // At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
 	    m_pUsername =
 	    qFindChild < QLineEdit * >(m_pRealForm, "dataFieldUserName");
-	if (m_pUsername == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pUsername == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'upwUsername' label."));
-		return false;
-		}
-	m_pPassword =
+		
+return false;
+		
+}
+	
+
+m_pPassword =
 	    qFindChild < QLineEdit * >(m_pRealForm, "dataFieldPassword");
-	if (m_pPassword == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pPassword == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'upwPassword' label."));
-		return false;
-		}
-	m_pRememberCreds =
+		
+return false;
+		
+}
+	
+
+m_pRememberCreds =
 	    qFindChild < QCheckBox * >(m_pRealForm, "checkBoxRemember");
-	if (m_pRememberCreds == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+if (m_pRememberCreds == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'rememberCredentials' checkbox."));
-		return false;
-		}
-	m_pButtonBox =
+		
+return false;
+		
+}
+	
+
+m_pButtonBox =
 	    qFindChild < QDialogButtonBox * >(m_pRealForm, "buttonBox");
-	if (m_pButtonBox == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pButtonBox == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'buttonBox' DialogButtonBox"));
-		return false;
-		}
+		
+return false;
+		
+}
 	
 	else
-		 {
-		Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this,
+		
+ {
+		
+Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this,
 				 SLOT(slotOkayBtn()));
-		Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this,
+		
+Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this,
 				 SLOT(slotDisconnectBtn()));
-		}
-	m_pDialogMsg = qFindChild < QLabel * >(m_pRealForm, "labelDialogMsg");
-	if (m_pDialogMsg != NULL)
-		 {
-		QString networkName = "";
-		
+		
+}
+	
+
+m_pDialogMsg = qFindChild < QLabel * >(m_pRealForm, "labelDialogMsg");
+	
+
+if (m_pDialogMsg != NULL)
+		
+ {
+		
+QString networkName = "";
+		
+
 		    // if we have the name of the connection, try to retrieve the SSID of the network
 		    // so that we can correctly prompt the user
 		    if (m_connName.isEmpty() == false)
-			 {
-			config_connection * pConnection = NULL;
-			conn_type = CONFIG_LOAD_USER;
-			if (m_supplicant.
+			
+ {
+			
+config_connection * pConnection = NULL;
+			
+conn_type = CONFIG_LOAD_USER;
+			
+if (m_supplicant.
 			     getConfigConnection(conn_type, m_connName,
 						 &pConnection, false) == true)
-				 {
-				if (pConnection != NULL
+				
+ {
+				
+if (pConnection != NULL
 				     && pConnection->ssid != NULL)
-					networkName = pConnection->ssid;
+					
+networkName = pConnection->ssid;
 				
 #ifndef WINDOWS
 				    if (pConnection != NULL)
-					m_supplicant.
+					
+m_supplicant.
 					    freeConfigConnection(&pConnection);
 				
 #endif				// WINDOWS
 				}
 			
 			else
-				 {
-				conn_type = CONFIG_LOAD_GLOBAL;
-				if (m_supplicant.
+				
+ {
+				
+conn_type = CONFIG_LOAD_GLOBAL;
+				
+if (m_supplicant.
 				     getConfigConnection(conn_type, m_connName,
 							 &pConnection,
 							 false) == true)
-					 {
-					if (pConnection != NULL
+					
+ {
+					
+if (pConnection != NULL
 					     && pConnection->ssid != NULL)
-						networkName =
+						
+networkName =
 						    pConnection->ssid;
 					
 #ifndef WINDOWS
 					    if (pConnection != NULL)
-						m_supplicant.
+						
+m_supplicant.
 						    freeConfigConnection
 						    (&pConnection);
 					
 #endif				// WINDOWS
 					}
-				}
-			
+				
+}
+			
+
 #ifdef WINDOWS
 			    // If we are on Windows, and we are attempting to do a TLS auth we don't need to prompt for the
 			    // password, just the username.
 			    if (pConnection->profile != NULL)
-				 {
-				if (m_supplicant.
+				
+ {
+				
+if (m_supplicant.
 				     getConfigProfile(CONFIG_LOAD_USER,
 						      QString(pConnection->
 							      profile),
 						      &pProfile,
 						      false) == false)
-					m_supplicant.
+					
+m_supplicant.
 					    getConfigProfile(CONFIG_LOAD_GLOBAL,
 							     QString
 							     (pConnection->
 							      profile),
 							     &pProfile, false);
-				if (pProfile->method->method_num ==
+				
+
+if (pProfile->method->method_num ==
 				      EAP_TYPE_TLS)
-					 {
-					m_pPassword->setEnabled(false);
-					m_ignoreNoPwd = true;
-					}
-				xsupgui_request_free_profile_config
+					
+ {
+					
+m_pPassword->setEnabled(false);
+					
+m_ignoreNoPwd = true;
+					
+}
+				
+
+xsupgui_request_free_profile_config
 				    (&pProfile);
-				}
-			if (pConnection != NULL)
-				m_supplicant.
+				
+}
+			
+
+if (pConnection != NULL)
+				
+m_supplicant.
 				    freeConfigConnection(&pConnection);
 			
-#endif	/*  */
+#endif	/* 
+ */
 			}
-		
+		
+
 		    // if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
 		    // prompt message
 		    QString dlgMsg;
-		if (networkName.isEmpty() == false)
-			 {
-			dlgMsg.
+		
+if (networkName.isEmpty() == false)
+			
+ {
+			
+dlgMsg.
 			    append(tr
 				   ("The 802.1X network \"%1\" requires a username and password to connect").
 				   arg(networkName));
-			}
+			
+}
 		
 		else
-			 {
-			dlgMsg.
+			
+ {
+			
+dlgMsg.
 			    append(tr
 				   ("The network you are attempting to connect to requires a username and password"));
-			}
-		m_pDialogMsg->setText(dlgMsg);
-		}
-	setupWindow();
-	
+			
+}
+		
+m_pDialogMsg->setText(dlgMsg);
+		
+}
+	
+
+setupWindow();
+	
+
 	    // Then, populate some data.
 	    updateData();
-	return true;
-}
+	
 
-bool CredentialsPopUp::createPSK() 
+return true;
+
+}
+
+
+
+bool CredentialsPopUp::createPSK() 
 {
-	m_pRealForm = FormLoader::buildform("PSKWindow.ui");
-	if (m_pRealForm == NULL)
+	
+m_pRealForm = FormLoader::buildform("PSKWindow.ui");
+	
+
+if (m_pRealForm == NULL)
 		return false;
-	
+	
+
 	    // If the user hits the "X" button in the title bar, close us out gracefully.
 	    Util::myConnect(m_pRealForm, SIGNAL(rejected()), this,
 			    SLOT(slotDisconnectBtn()));
-	
+	
+
 	    // At this point, the form is loaded in to memory, but we need to locate a couple of fields that we want to be able to edit.
 	    m_pUsername = NULL;
-	m_pPassword =
+	
+
+m_pPassword =
 	    qFindChild < QLineEdit * >(m_pRealForm, "dataFieldPassword");
-	if (m_pPassword == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pPassword == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'dataFieldPassword' label."));
-		return false;
-		}
-	m_pRememberCreds =
+		
+return false;
+		
+}
+	
+
+m_pRememberCreds =
 	    qFindChild < QCheckBox * >(m_pRealForm, "checkBoxRemember");
-	if (m_pRememberCreds == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pRememberCreds == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'rememberCredentials' checkbox."));
-		return false;
-		}
-	m_pButtonBox =
+		
+return false;
+		
+}
+	
+
+m_pButtonBox =
 	    qFindChild < QDialogButtonBox * >(m_pRealForm, "buttonBox");
-	if (m_pButtonBox == NULL)
-		 {
-		QMessageBox::critical(this, tr("Form Design Error!"),
+	
+
+if (m_pButtonBox == NULL)
+		
+ {
+		
+QMessageBox::critical(this, tr("Form Design Error!"),
 				       tr
 				       ("The form loaded for the 'Credentials Popup' did not contain the 'buttonBox' DialogButtonBox"));
-		return false;
-		}
+		
+return false;
+		
+}
 	
 	else
-		 {
-		Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this,
+		
+ {
+		
+Util::myConnect(m_pButtonBox, SIGNAL(accepted()), this,
 				 SLOT(slotOkayBtn()));
-		Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this,
+		
+Util::myConnect(m_pButtonBox, SIGNAL(rejected()), this,
 				 SLOT(slotDisconnectBtn()));
-		}
-	m_pDialogMsg = qFindChild < QLabel * >(m_pRealForm, "labelDialogMsg");
-	if (m_pDialogMsg != NULL)
-		 {
-		QString networkName = "";
-		
+		
+}
+	
+
+m_pDialogMsg = qFindChild < QLabel * >(m_pRealForm, "labelDialogMsg");
+	
+
+if (m_pDialogMsg != NULL)
+		
+ {
+		
+QString networkName = "";
+		
+
 		    // if we have the name of the connection, try to retrieve the SSID of the network
 		    // so that we can correctly prompt the user
 		    if (m_connName.isEmpty() == false)
-			 {
-			config_connection * pConnection = NULL;
-			conn_type = CONFIG_LOAD_USER;
-			if (m_supplicant.
+			
+ {
+			
+config_connection * pConnection = NULL;
+			
+conn_type = CONFIG_LOAD_USER;
+			
+if (m_supplicant.
 			     getConfigConnection(conn_type, m_connName,
 						 &pConnection, false) == true)
-				 {
-				if (pConnection != NULL
+				
+ {
+				
+if (pConnection != NULL
 				     && pConnection->ssid != NULL)
-					networkName = pConnection->ssid;
-				if (TEST_FLAG
+					
+networkName = pConnection->ssid;
+				
+
+if (TEST_FLAG
 				      (pConnection->flags,
 				       CONFIG_VOLATILE_CONN))
-					m_pRememberCreds->setEnabled(false);
-				if (pConnection != NULL)
-					m_supplicant.
+					
+m_pRememberCreds->setEnabled(false);
+				
+
+if (pConnection != NULL)
+					
+m_supplicant.
 					    freeConfigConnection(&pConnection);
-				}
+				
+}
 			
 			else
-				 {
-				conn_type = CONFIG_LOAD_GLOBAL;
-				if (m_supplicant.
+				
+ {
+				
+conn_type = CONFIG_LOAD_GLOBAL;
+				
+if (m_supplicant.
 				     getConfigConnection(conn_type, m_connName,
 							 &pConnection,
 							 false) == true)
-					 {
-					if (pConnection != NULL
+					
+ {
+					
+if (pConnection != NULL
 					     && pConnection->ssid != NULL)
-						networkName =
+						
+networkName =
 						    pConnection->ssid;
-					if (TEST_FLAG
+					
+
+if (TEST_FLAG
 					      (pConnection->flags,
 					       CONFIG_VOLATILE_CONN))
-						m_pRememberCreds->
+						
+m_pRememberCreds->
 						    setEnabled(false);
-					if (pConnection != NULL)
-						m_supplicant.
+					
+
+if (pConnection != NULL)
+						
+m_supplicant.
 						    freeConfigConnection
 						    (&pConnection);
-					}
-				}
-			}
-		
+					
+}
+				
+}
+			
+}
+		
+
 		    // if we were able to get a meaningful SSID, use it in the prompt. Otherwise use a generic
 		    // prompt message
 		    QString dlgMsg;
-		if (networkName.isEmpty() == false)
-			 {
-			dlgMsg.
+		
+if (networkName.isEmpty() == false)
+			
+ {
+			
+dlgMsg.
 			    append(tr
 				   ("The network \"%1\" requires a WPA password to connect").
 				   arg(networkName));
-			}
+			
+}
 		
 		else
-			 {
-			dlgMsg.
+			
+ {
+			
+dlgMsg.
 			    append(tr
 				   ("The network you are trying to connect to requires a WPA password"));
-			}
-		m_pDialogMsg->setText(dlgMsg);
-		}
-	setupWindow();
-	
+			
+}
+		
+m_pDialogMsg->setText(dlgMsg);
+		
+}
+	
+
+setupWindow();
+	
+
 	    // Then, populate some data.
 	    updateData();
-	return true;
-}
+	
 
-void CredentialsPopUp::slotDisconnectBtn() 
+return true;
+
+}
+
+
+
+void CredentialsPopUp::slotDisconnectBtn() 
 {
-	m_supplicant.networkDisconnect(m_deviceName, true);
-	emit close();
-} void CredentialsPopUp::slotOkayBtn() 
+	
+m_supplicant.networkDisconnect(m_deviceName, true);
+	
+
+emit close();
+
+} 
+
+void CredentialsPopUp::slotOkayBtn() 
 {
-	config_connection * cconf = NULL;
-	int result = 0;
-	if (m_doingWEP == true)
-		 {
+	
+config_connection * cconf = NULL;
+	
+int result = 0;
+	
+
+if (m_doingWEP == true)
+		
+ {
 		
 		    // check if valid key is input
 		    if (!m_pPassword->hasAcceptableInput())
-			 {
-			int numDigits = 0;
-			if (m_pWEPCombo->currentIndex() == 0)
-				numDigits = 10;
+			
+ {
+			
+int numDigits = 0;
+			
+if (m_pWEPCombo->currentIndex() == 0)
+				
+numDigits = 10;
 			
 			else if (m_pWEPCombo->currentIndex() == 1)
-				numDigits = 26;
-			QString message =
+				
+numDigits = 26;
+			
+
+QString message =
 			    tr
 			    ("Please input a WEP password containing %1 hexadecimal (0-9, A-F) digits").
 			    arg(numDigits);
-			QMessageBox::warning(m_pRealForm,
+			
+QMessageBox::warning(m_pRealForm,
 					      tr("Invalid WEP Password"),
 					      message);
-			return;
-			}
+			
+
+return;
+			
+}
 		
 		else
-			 {
+			
+ {
 			
 			    // Set our WEP password.                
 			    if (xsupgui_request_set_connection_pw
 				(m_connName.toAscii().data(),
 				 m_pPassword->text().toAscii().data()) !=
 				XENONE)
-				 {
-				QMessageBox::critical(this, tr("Error"),
+				
+ {
+				
+QMessageBox::critical(this, tr("Error"),
 						       tr
 						       ("Unable to set your WEP password."));
-				}
+				
+}
 			
 			else
-				 {
-				if (conn_type == 0)
-					 {
-					conn_type = CONFIG_LOAD_USER;
-					result =
+				
+ {
+				
+if (conn_type == 0)
+					
+ {
+					
+conn_type = CONFIG_LOAD_USER;
+					
+result =
 					    xsupgui_request_get_connection_config
 					    (CONFIG_LOAD_USER,
 					     m_connName.toAscii().data(),
 					     &cconf);
-					if (result != REQUEST_SUCCESS)
-						 {
-						conn_type = CONFIG_LOAD_GLOBAL;
-						result =
+					
+if (result != REQUEST_SUCCESS)
+						
+ {
+						
+conn_type = CONFIG_LOAD_GLOBAL;
+						
+result =
 						    xsupgui_request_get_connection_config
 						    (CONFIG_LOAD_GLOBAL,
 						     m_connName.toAscii().
 						     data(), &cconf);
-						if (result != REQUEST_SUCCESS)
+						
+if (result != REQUEST_SUCCESS)
 							conn_type = 0;
-						}
-					}
+						
+}
+					
+}
 				
 				else
-					 {
-					result =
+					
+ {
+					
+result =
 					    xsupgui_request_get_connection_config
 					    (conn_type,
 					     m_connName.toAscii().data(),
 					     &cconf);
-					}
-				if (result != REQUEST_SUCCESS)
-					 {
-					QMessageBox::critical(this,
+					
+}
+				
+
+if (result != REQUEST_SUCCESS)
+					
+ {
+					
+QMessageBox::critical(this,
 							       tr("Error"),
 							       tr
 							       ("Couldn't determine which interface the desired connection is bound to!"));
-					}
+					
+}
 				
 				else
-					 {
-					if (xsupgui_request_set_connection
+					
+ {
+					
+if (xsupgui_request_set_connection
 					     (m_deviceName.toAscii().data(),
 					      m_connName.toAscii().data()) !=
 					     REQUEST_SUCCESS)
-						 {
-						QMessageBox::critical(this,
+						
+ {
+						
+QMessageBox::critical(this,
 								       tr
 								       ("Error"),
 								       tr
 								       ("Couldn't set connection!\n"));
-						}
+						
+}
 					
 					else
-						 {
+						
+ {
 						
 						    // if "remember credentials" is checked, make sure this isn't marked as volatile
 						    if (m_pRememberCreds->
 							checkState() ==
 							Qt::Checked)
-							 {
+							
+ {
 							
 							    // if "remember credentials" is checked, pass credentials to Credentials Manager to store off
 							    // if we connect successfully
 							    if (m_pCredManager
 								!= NULL)
-								m_pCredManager->
+								
+m_pCredManager->
 								    storeCredentials
 								    (conn_type,
 								     m_connName,
@@ -897,143 +1440,219 @@ m_supplicant(this), m_pEmitter(e)
 								     QString(),
 								     m_pPassword->
 								     text());
-							}
-						}
-					}
-				xsupgui_request_free_connection_config
+							
+}
+						
+}
+					
+}
+				
+
+xsupgui_request_free_connection_config
 				    (&cconf);
-				}
-			}
-		}
+				
+}
+			
+}
+		
+}
 	
 	else if (m_doingPsk)
-		 {
-		if (m_pPassword->text() == "")
-			 {
-			QMessageBox::information(this,
+		
+ {
+		
+if (m_pPassword->text() == "")
+			
+ {
+			
+QMessageBox::information(this,
 						  tr("Invalid Credentials"),
 						  tr
 						  ("Please enter a valid PSK before attempting to connect to this network."));
-			return;
-			}
-		
+			
+return;
+			
+}
+		
+
 		    // Set our PSK.         
 		    if (xsupgui_request_set_connection_pw
 			(m_connName.toAscii().data(),
 			 m_pPassword->text().toAscii().data()) != XENONE)
-			 {
-			QMessageBox::critical(this, tr("Error"),
+			
+ {
+			
+QMessageBox::critical(this, tr("Error"),
 					       tr
 					       ("Unable to set your PSK password."));
-			}
+			
+}
 		
 		else
-			 {
-			if (conn_type == 0)
-				 {
-				conn_type = CONFIG_LOAD_USER;
-				result =
+			
+ {
+			
+if (conn_type == 0)
+				
+ {
+				
+conn_type = CONFIG_LOAD_USER;
+				
+result =
 				    xsupgui_request_get_connection_config
 				    (CONFIG_LOAD_USER,
 				     m_connName.toAscii().data(), &cconf);
-				if (result != REQUEST_SUCCESS)
-					 {
-					conn_type = CONFIG_LOAD_GLOBAL;
-					result =
+				
+if (result != REQUEST_SUCCESS)
+					
+ {
+					
+conn_type = CONFIG_LOAD_GLOBAL;
+					
+result =
 					    xsupgui_request_get_connection_config
 					    (CONFIG_LOAD_GLOBAL,
 					     m_connName.toAscii().data(),
 					     &cconf);
-					if (result != REQUEST_SUCCESS)
+					
+if (result != REQUEST_SUCCESS)
 						conn_type = 0;
-					}
-				}
+					
+}
+				
+}
 			
 			else
-				 {
-				result =
+				
+ {
+				
+result =
 				    xsupgui_request_get_connection_config
 				    (conn_type, m_connName.toAscii().data(),
 				     &cconf);
-				}
-			if (result != REQUEST_SUCCESS)
-				 {
-				QMessageBox::critical(this, tr("Error"),
+				
+}
+			
+
+if (result != REQUEST_SUCCESS)
+				
+ {
+				
+QMessageBox::critical(this, tr("Error"),
 						       tr
 						       ("Couldn't determine which interface the desired connection is bound to!"));
-				}
+				
+}
 			
 			else
-				 {
-				if ((result =
+				
+ {
+				
+if ((result =
 				      xsupgui_request_set_connection
 				      (m_deviceName.toAscii().data(),
 				       m_connName.toAscii().data())) !=
 				     REQUEST_SUCCESS)
-					 {
-					switch (result)
-						 {
-					case IPC_ERROR_INTERFACE_NOT_FOUND:
-						QMessageBox::critical(this,
+					
+ {
+					
+switch (result)
+						
+ {
+					
+case IPC_ERROR_INTERFACE_NOT_FOUND:
+						
+QMessageBox::critical(this,
 								       tr
 								       ("Connection Error"),
 								       tr
 								       ("The requested interface is no longer available."));
-						break;
-					case IPC_ERROR_INVALID_CONN_NAME:
-						QMessageBox::critical(this,
+						
+break;
+					
+
+case IPC_ERROR_INVALID_CONN_NAME:
+						
+QMessageBox::critical(this,
 								       tr
 								       ("Connection Error"),
 								       tr
 								       ("The connection name requested is invalid."));
-						break;
-					case IPC_ERROR_SSID_NOT_FOUND:
-						QMessageBox::critical(this,
+						
+break;
+					
+
+case IPC_ERROR_SSID_NOT_FOUND:
+						
+QMessageBox::critical(this,
 								       tr
 								       ("Connection Error"),
 								       tr
 								       ("The requested wireless network was not found."));
-						break;
-					case IPC_ERROR_INVALID_PROF_NAME:
-						QMessageBox::critical(this,
+						
+break;
+					
+
+case IPC_ERROR_INVALID_PROF_NAME:
+						
+QMessageBox::critical(this,
 								       tr
 								       ("Connection Error"),
 								       tr
 								       ("The connection you are attempting to connect to is missing a profile."));
-						break;
-					case IPC_ERROR_INVALID_CONTEXT:
-						QMessageBox::critical(this,
+						
+break;
+					
+
+case IPC_ERROR_INVALID_CONTEXT:
+						
+QMessageBox::critical(this,
 								       tr
 								       ("Connection Error"),
 								       tr
 								       ("The context for this connection is missing or corrupt."));
-						break;
-					case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
-						m_supplicant.
+						
+break;
+					
+
+case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
+						
+m_supplicant.
 						    getAndDisplayErrors();
-						break;
-					default:
-						QMessageBox::critical(this,
+						
+break;
+					
+
+default:
+						
+QMessageBox::critical(this,
 								       tr
 								       ("Connection Error"),
 								       tr
 								       ("Unable to establish a connection.  Error : %1").
 								       arg
 								       (result));
-						break;
-						}
-					}
+						
+break;
+						
+}
+					
+}
 				
 				else
-					 {
-					if (m_pRememberCreds->checkState() ==
+					
+ {
+					
+if (m_pRememberCreds->checkState() ==
 					     Qt::Checked)
-						 {
+						
+ {
 						
 						    // if "remember credentials" is checked, pass credentials to Credentials Manager to store off
 						    // if we connect successfully
 						    if (m_pCredManager != NULL)
-							m_pCredManager->
+							
+m_pCredManager->
 							    storeCredentials
 							    (conn_type,
 							     m_connName,
@@ -1041,81 +1660,123 @@ m_supplicant(this), m_pEmitter(e)
 							     QString(),
 							     m_pPassword->
 							     text());
-						}
-					}
-				xsupgui_request_free_connection_config
+						
+}
+					
+}
+				
+
+xsupgui_request_free_connection_config
 				    (&cconf);
-				}
-			}
-		}
+				
+}
+			
+}
+		
+}
 	
 	else
-		 {
-		if (m_pUsername != NULL)
-			 {
-			if (m_pUsername->text() == "")
-				 {
-				if ((m_pPassword->text() == "")
+		
+ {
+		
+if (m_pUsername != NULL)
+			
+ {
+			
+if (m_pUsername->text() == "")
+				
+ {
+				
+if ((m_pPassword->text() == "")
 				     && (m_ignoreNoPwd == false))
-					 {
-					QMessageBox::information(this,
+					
+ {
+					
+QMessageBox::information(this,
 								  tr
 								  ("Invalid Credentials"),
 								  tr
 								  ("Please enter a user name and password before attempting to connect to this network."));
-					return;
-					}
+					
+return;
+					
+}
 				
 				else
-					 {
-					QMessageBox::information(this,
+					
+ {
+					
+QMessageBox::information(this,
 								  tr
 								  ("Invalid Credentials"),
 								  tr
 								  ("Please enter a user name before attempting to connect to this network."));
-					return;
-					}
-				}
-			if ((m_pPassword->text() == "")
+					
+return;
+					
+}
+				
+}
+			
+
+if ((m_pPassword->text() == "")
 			      && (m_ignoreNoPwd == false))
-				 {
-				QMessageBox::information(this,
+				
+ {
+				
+QMessageBox::information(this,
 							  tr
 							  ("Invalid Credentials"),
 							  tr
 							  ("Please enter a password before attempting to connect to this network."));
-				return;
-				}
-			}
+				
+return;
+				
+}
+			
+}
 		
 		else
-			 {
+			
+ {
 			
 			    // It is acceptible to have no PIN needed on a (U)SIM.
 			    if (isPINType() == false)
-				 {
-				QMessageBox::information(this,
+				
+ {
+				
+QMessageBox::information(this,
 							  tr
 							  ("Invalid Credentials"),
 							  tr
 							  ("Please enter a valid password before attempting to connect to this network."));
-				return;
-				}
-			}
-		if (isPINType() == true)
-			 {
-			result =
+				
+return;
+				
+}
+			
+}
+		
+
+if (isPINType() == true)
+			
+ {
+			
+result =
 			    xsupgui_request_set_connection_upw(m_connName.
 							       toAscii().data(),
 							       NULL,
 							       m_pPassword->
 							       text().toAscii().
 							       data());
-			}
+			
+}
 		
 		else
-			 {
-			result =
+			
+ {
+			
+result =
 			    xsupgui_request_set_connection_upw(m_connName.
 							       toAscii().data(),
 							       m_pUsername->
@@ -1124,89 +1785,128 @@ m_supplicant(this), m_pEmitter(e)
 							       m_pPassword->
 							       text().toAscii().
 							       data());
-			}
-		
+			
+}
+		
+
 		    // Set our username/password.
 		    if (result != XENONE)
-			 {
-			if (isPINType() == true)
-				 {
-				QMessageBox::critical(this, tr("Error"),
+			
+ {
+			
+if (isPINType() == true)
+				
+ {
+				
+QMessageBox::critical(this, tr("Error"),
 						       tr
 						       ("Unable to set your PIN."));
-				}
+				
+}
 			
 			else
-				 {
-				QMessageBox::critical(this, tr("Error"),
+				
+ {
+				
+QMessageBox::critical(this, tr("Error"),
 						       tr
 						       ("Unable to set your username and password."));
-				}
-			}
+				
+}
+			
+}
 		
 		else
-			 {
-			if (conn_type == 0)
-				 {
-				conn_type = CONFIG_LOAD_USER;
-				result =
+			
+ {
+			
+if (conn_type == 0)
+				
+ {
+				
+conn_type = CONFIG_LOAD_USER;
+				
+result =
 				    xsupgui_request_get_connection_config
 				    (CONFIG_LOAD_USER,
 				     m_connName.toAscii().data(), &cconf);
-				if (result != REQUEST_SUCCESS)
-					 {
-					conn_type = CONFIG_LOAD_GLOBAL;
-					result =
+				
+if (result != REQUEST_SUCCESS)
+					
+ {
+					
+conn_type = CONFIG_LOAD_GLOBAL;
+					
+result =
 					    xsupgui_request_get_connection_config
 					    (CONFIG_LOAD_GLOBAL,
 					     m_connName.toAscii().data(),
 					     &cconf);
-					if (result != REQUEST_SUCCESS)
+					
+if (result != REQUEST_SUCCESS)
 						conn_type = 0;
-					}
-				}
+					
+}
+				
+}
 			
 			else
-				 {
-				result =
+				
+ {
+				
+result =
 				    xsupgui_request_get_connection_config
 				    (conn_type, m_connName.toAscii().data(),
 				     &cconf);
-				}
-			if (result != REQUEST_SUCCESS)
-				 {
-				QMessageBox::critical(this, tr("Error"),
+				
+}
+			
+
+if (result != REQUEST_SUCCESS)
+				
+ {
+				
+QMessageBox::critical(this, tr("Error"),
 						       tr
 						       ("Couldn't determine which interface the desired connection is bound to!"));
-				}
+				
+}
 			
 			else
-				 {
-				if (xsupgui_request_set_connection
+				
+ {
+				
+if (xsupgui_request_set_connection
 				     (m_deviceName.toAscii().data(),
 				      m_connName.toAscii().data()) !=
 				     REQUEST_SUCCESS)
-					 {
-					QMessageBox::critical(this,
+					
+ {
+					
+QMessageBox::critical(this,
 							       tr("Error"),
 							       tr
 							       ("Couldn't set connection!\n"));
-					}
+					
+}
 				
 				else
-					 {
+					
+ {
 					
 					    // if "remember credentials" is checked, make sure this isn't marked as volatile
 					    if ((m_pRememberCreds != NULL)
 						&& (m_pRememberCreds->
 						    checkState() ==
 						    Qt::Checked))
-						 {
+						
+ {
 						
 						    // if "remember credentials" is checked, pass credentials to Credentials Manager to store off
 						    // if we connect successfully
 						    if (m_pCredManager != NULL)
-							m_pCredManager->
+							
+m_pCredManager->
 							    storeCredentials
 							    (conn_type,
 							     m_connName,
@@ -1215,92 +1915,156 @@ m_supplicant(this), m_pEmitter(e)
 							     text(),
 							     m_pPassword->
 							     text());
-						}
-					}
-				}
-			xsupgui_request_free_connection_config(&cconf);
-			}
-		}
-	emit close();
-}
+						
+}
+					
+}
+				
+}
+			
 
-void CredentialsPopUp::show() 
+xsupgui_request_free_connection_config(&cconf);
+			
+}
+		
+}
+	
+
+emit close();
+
+}
+
+
+
+void CredentialsPopUp::show() 
 {
 	
 	    // This will cause the window to come to the front if it is already built.
 	    if (m_pRealForm->isVisible() == true)
 		m_pRealForm->hide();
-	m_pRealForm->show();
-}
+	
 
-void CredentialsPopUp::setupWindow() 
+m_pRealForm->show();
+
+}
+
+
+
+void CredentialsPopUp::setupWindow() 
 {
-	Qt::WindowFlags flags;
-	flags = m_pRealForm->windowFlags();
-	flags &= (~Qt::WindowContextHelpButtonHint);
-	m_pRealForm->setWindowFlags(flags);
-} 
+	
+Qt::WindowFlags flags;
+	
+
+flags = m_pRealForm->windowFlags();
+	
+flags &= (~Qt::WindowContextHelpButtonHint);
+	
+m_pRealForm->setWindowFlags(flags);
+
+} 
+
 
 /**
  * \brief Grab the connection data, and show the username field if it is populated.
  **/ 
 void CredentialsPopUp::updateData() 
 {
-	QString temp;
-	if (p_user != NULL)
-		 {
-		if (m_pUsername != NULL)
-			 {
-			temp = p_user;
-			m_pUsername->setText(temp);
-			}
-		}
-	if (p_pass != NULL)	// Which it always should!
-	{
-		if (m_pPassword != NULL)
-			 {
-			temp = p_pass;
-			m_pPassword->setText(temp);
-			}
-	}
-}
+	
+QString temp;
+	
 
-void CredentialsPopUp::slotWEPComboChange(int newVal) 
+if (p_user != NULL)
+		
+ {
+		
+if (m_pUsername != NULL)
+			
+ {
+			
+temp = p_user;
+			
+m_pUsername->setText(temp);
+			
+}
+		
+}
+	
+
+if (p_pass != NULL)	// Which it always should!
+	{
+		
+if (m_pPassword != NULL)
+			
+ {
+			
+temp = p_pass;
+			
+m_pPassword->setText(temp);
+			
+}
+	
+}
+
+}
+
+
+
+void CredentialsPopUp::slotWEPComboChange(int newVal) 
 {
-	QLabel * pLabel =
+	
+QLabel * pLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "labelPasswordSize");
-	if (newVal == 0)
-		 {
+	
+if (newVal == 0)
+		
+ {
 		
 		    // WEP 40
 		    m_pPassword->
 		    setValidator(new
 				 QRegExpValidator(QRegExp("^[A-Fa-f0-9]{10}$"),
 						  m_pPassword));
-		if (pLabel != NULL)
-			pLabel->setText(tr("(10 digits)"));
-		}
+		
+if (pLabel != NULL)
+			
+pLabel->setText(tr("(10 digits)"));
+		
+}
 	
 	else if (newVal == 1)
-		 {
+		
+ {
 		
 		    // WEP 104
 		    m_pPassword->
 		    setValidator(new
 				 QRegExpValidator(QRegExp("^[A-Fa-f0-9]{26}$"),
 						  m_pPassword));
-		if (pLabel != NULL)
-			pLabel->setText(tr("(26 digits)"));
-		}
-}
+		
+if (pLabel != NULL)
+			
+pLabel->setText(tr("(26 digits)"));
+		
+}
 
-void CredentialsPopUp::clearCredentialsManager() 
+}
+
+
+
+void CredentialsPopUp::clearCredentialsManager() 
 {
-	if (m_pCredManager != NULL)
-		 {
-		delete m_pCredManager;
-		m_pCredManager = NULL;
-		}
-}
+	
+if (m_pCredManager != NULL)
+		
+ {
+		
+delete m_pCredManager;
+		
+m_pCredManager = NULL;
+		
+}
+
+}
 
 

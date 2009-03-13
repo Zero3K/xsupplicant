@@ -37,27 +37,58 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QStringList>
- class ConnectionSelectDlg:public QWidget  {
- Q_OBJECT  public:ConnectionSelectDlg(QWidget * parent, QWidget * parentWindow,
+ 
+class ConnectionSelectDlg:public QWidget 
+ {
+ 
+Q_OBJECT 
+ 
+public:
+ConnectionSelectDlg(QWidget * parent, QWidget * parentWindow,
 			     const QStringList & connections,
 			     QString adapterToUse);
-	~ConnectionSelectDlg();
-	void show(void);
-	bool create(void);
- signals:void close(void);
- private:bool initUI(void);
- private slots:void okay(void);
-	void cancel(void);
- private:QWidget * m_pParent;
-	QWidget * m_pParentWindow;
-	QWidget * m_pRealForm;
-	
+	
+~ConnectionSelectDlg();
+	
+void show(void);
+	
+bool create(void);
+ 
+
+signals:
+void close(void);
+ 
+
+private:
+bool initUI(void);
+ 
+
+private slots:
+void okay(void);
+	
+void cancel(void);
+ 
+
+private:
+QWidget * m_pParent;
+	
+QWidget * m_pParentWindow;
+	
+QWidget * m_pRealForm;
+	
+
 	    // pointers to UI elements
 	    QComboBox * m_pConnectionCombo;
-	QDialogButtonBox * m_pButtonBox;
-	QStringList m_connectionList;
-	QString m_adapterToUse;
-};
+	
+QDialogButtonBox * m_pButtonBox;
+	
 
-
+QStringList m_connectionList;
+	
+QString m_adapterToUse;
+
+};
+
+
+
 #endif

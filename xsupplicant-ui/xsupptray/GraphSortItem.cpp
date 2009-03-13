@@ -23,15 +23,20 @@
     
 #include "stdafx.h"
 #include "GraphSortItem.h"
-    GraphSortItem::GraphSortItem(int wval)
+    
+GraphSortItem::GraphSortItem(int wval)
 {
-	weight_val = wval;
-} bool GraphSortItem::operator <(const QTableWidgetItem & tocomp) const const 
+	weight_val = wval;
+} 
+
+bool GraphSortItem::operator <(const QTableWidgetItem & tocomp) const
 {
-	GraphSortItem * mycast = (GraphSortItem *) & tocomp;
-	if (weight_val < mycast->weight_val)
-		return true;
-	return false;
-}
+	GraphSortItem * mycast = (GraphSortItem *) & tocomp;
+	
+	if (weight_val < mycast->weight_val)
+			return true;
+	
+	return false;
+}
 
 

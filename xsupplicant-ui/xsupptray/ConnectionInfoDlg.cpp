@@ -43,773 +43,1328 @@ extern "C" {
 #include "xsupgui_request.h"
 };
 
-#endif	/*  */
- ConnectionInfoDlg::ConnectionInfoDlg(QWidget * parent, QWidget * parentWindow, Emitter * e, QTime * parentTime) :
+#endif	/* 
+ */
+ 
+ConnectionInfoDlg::ConnectionInfoDlg(QWidget * parent, QWidget * parentWindow, Emitter * e, QTime * parentTime) 
+:
 QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow),
 m_pEmitter(e) 
 {
-	m_wirelessAdapter = false;
-	m_days = 0;
-	m_time = parentTime;
-} ConnectionInfoDlg::~ConnectionInfoDlg() 
+	
+m_wirelessAdapter = false;
+	
+m_days = 0;
+	
+m_time = parentTime;
+
+} 
+
+ConnectionInfoDlg::~ConnectionInfoDlg() 
 {
-	if (m_pCloseButton != NULL)
-		Util::myDisconnect(m_pCloseButton, SIGNAL(clicked()),
+	
+if (m_pCloseButton != NULL)
+		
+Util::myDisconnect(m_pCloseButton, SIGNAL(clicked()),
 				    m_pRealForm, SLOT(hide()));
-	if (m_pDisconnectButton != NULL)
-		Util::myDisconnect(m_pDisconnectButton, SIGNAL(clicked()),
+	
+
+if (m_pDisconnectButton != NULL)
+		
+Util::myDisconnect(m_pDisconnectButton, SIGNAL(clicked()),
 				    this, SLOT(disconnect()));
-	if (m_pRenewIPButton != NULL)
-		Util::myDisconnect(m_pRenewIPButton, SIGNAL(clicked()), this,
+	
+
+if (m_pRenewIPButton != NULL)
+		
+Util::myDisconnect(m_pRenewIPButton, SIGNAL(clicked()), this,
 				    SLOT(renewIP()));
-	Util::myDisconnect((const QObject *)m_pEmitter,
+	
+
+Util::myDisconnect((const QObject *)m_pEmitter,
 			     SIGNAL(signalStateChange
 				    (const QString &, int, int, int,
-				     unsigned int)), this,
+				     unsigned int)), 
+this,
 			     SLOT(stateChange
 				  (const QString &, int, int, int,
 				   unsigned int)));
-	Util::myDisconnect((const QObject *)m_pEmitter,
+	
+
+Util::myDisconnect((const QObject *)m_pEmitter,
 			     SIGNAL(signalIPAddressSet()), this,
 			     SLOT(updateIPAddress()));
-	Util::myDisconnect((const QObject *)m_pEmitter,
+	
+
+Util::myDisconnect((const QObject *)m_pEmitter,
 			     SIGNAL(signalSignalStrength(const QString &, int)),
 			     this,
 			     SLOT(slotSignalUpdate(const QString &, int)));
-	if (m_pRealForm != NULL)
-		delete m_pRealForm;
-}
+	
 
-bool ConnectionInfoDlg::create(void) 
+if (m_pRealForm != NULL)
+		
+delete m_pRealForm;
+
+}
+
+
+
+bool ConnectionInfoDlg::create(void) 
 {
-	return this->initUI();
-}
+	
+return this->initUI();
 
-void ConnectionInfoDlg::show(void) 
+}
+
+
+
+void ConnectionInfoDlg::show(void) 
 {
-	if (m_pRealForm != NULL)
-		m_pRealForm->show();
-}
+	
+if (m_pRealForm != NULL)
+		
+m_pRealForm->show();
 
-bool ConnectionInfoDlg::initUI(void) 
+}
+
+
+
+bool ConnectionInfoDlg::initUI(void) 
 {
 	
 	    // load form
 	    m_pRealForm =
 	    FormLoader::buildform("ConnectionInfoWindow.ui", m_pParentWindow);
-	if (m_pRealForm == NULL)
-		return false;
-	Qt::WindowFlags flags;
-	
+	
+if (m_pRealForm == NULL)
+		
+return false;
+	
+
+Qt::WindowFlags flags;
+	
+
 	    // set window flags so minimizeable and context help thingy is turned off
 	    flags = m_pRealForm->windowFlags();
-	flags &= ~Qt::WindowContextHelpButtonHint;
-	flags &= ~Qt::WindowMinimizeButtonHint;
-	m_pRealForm->setWindowFlags(flags);
-	
+	
+flags &= ~Qt::WindowContextHelpButtonHint;
+	
+flags &= ~Qt::WindowMinimizeButtonHint;
+	
+m_pRealForm->setWindowFlags(flags);
+	
+
 	    // cache off pointers to UI objects
 	    m_pCloseButton =
 	    qFindChild < QPushButton * >(m_pRealForm, "buttonClose");
-	m_pDisconnectButton =
+	
+m_pDisconnectButton =
 	    qFindChild < QPushButton * >(m_pRealForm, "buttonDisconnect");
-	m_pRenewIPButton =
+	
+m_pRenewIPButton =
 	    qFindChild < QPushButton * >(m_pRealForm, "buttonRenewIP");
-	m_pAdapterNameLabel =
+	
+m_pAdapterNameLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "dataFieldAdapter");
-	m_pIPAddressLabel =
+	
+m_pIPAddressLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "dataFieldIPAddress");
-	m_pStatusLabel =
+	
+m_pStatusLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "dataFieldStatus");
-	m_pTimerLabel = qFindChild < QLabel * >(m_pRealForm, "dataFieldTimer");
-	m_pSSIDLabel = qFindChild < QLabel * >(m_pRealForm, "dataFieldSSID");
-	m_pSignalLabel =
+	
+m_pTimerLabel = qFindChild < QLabel * >(m_pRealForm, "dataFieldTimer");
+	
+m_pSSIDLabel = qFindChild < QLabel * >(m_pRealForm, "dataFieldSSID");
+	
+m_pSignalLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "dataFieldSignalStrength");
-	m_pSignalIcon =
+	
+m_pSignalIcon =
 	    qFindChild < QLabel * >(m_pRealForm, "dataFieldSignalIcon");
-	m_pSecurityLabel =
+	
+m_pSecurityLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "dataFieldAssociationMode");
-	m_pEncryptionLabel =
+	
+m_pEncryptionLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "dataFieldEncryption");
-	
+	
+
 	    // dynamically populate text
-	    if (m_pCloseButton != NULL)
-		m_pCloseButton->setText(tr("Close"));
-	if (m_pDisconnectButton != NULL)
-		m_pDisconnectButton->setText(tr("Disconnect"));
-	if (m_pRenewIPButton != NULL)
-		m_pRenewIPButton->setText(tr("Renew IP"));
-	QLabel * pLabel;
-	pLabel =
+	    
+if (m_pCloseButton != NULL)
+		
+m_pCloseButton->setText(tr("Close"));
+	
+
+if (m_pDisconnectButton != NULL)
+		
+m_pDisconnectButton->setText(tr("Disconnect"));
+	
+
+if (m_pRenewIPButton != NULL)
+		
+m_pRenewIPButton->setText(tr("Renew IP"));
+	
+
+QLabel * pLabel;
+	
+pLabel =
 	    qFindChild < QLabel * >(m_pRealForm, "headerConnectionStatus");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Connection Details"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelAdapter");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Adapter:"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelIPAddress");
-	if (pLabel != NULL)
-		pLabel->setText(tr("IP Address:"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelStatus");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Status:"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelTimer");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Time Connected:"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelSSID");
-	if (pLabel != NULL)
-		pLabel->setText(tr("SSID:"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelSignalStrength");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Signal Strength:"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelAssociationMode");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Security:"));
-	pLabel = qFindChild < QLabel * >(m_pRealForm, "labelEncryption");
-	if (pLabel != NULL)
-		pLabel->setText(tr("Encryption:"));
-	
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Connection Details"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelAdapter");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Adapter:"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelIPAddress");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("IP Address:"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelStatus");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Status:"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelTimer");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Time Connected:"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelSSID");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("SSID:"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelSignalStrength");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Signal Strength:"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelAssociationMode");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Security:"));
+	
+
+pLabel = qFindChild < QLabel * >(m_pRealForm, "labelEncryption");
+	
+if (pLabel != NULL)
+		
+pLabel->setText(tr("Encryption:"));
+	
+
 	    // set up event handling
 	    if (m_pCloseButton != NULL)
-		Util::myConnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm,
+		
+Util::myConnect(m_pCloseButton, SIGNAL(clicked()), m_pRealForm,
 				 SLOT(hide()));
-	if (m_pDisconnectButton != NULL)
-		Util::myConnect(m_pDisconnectButton, SIGNAL(clicked()), this,
+	
+
+if (m_pDisconnectButton != NULL)
+		
+Util::myConnect(m_pDisconnectButton, SIGNAL(clicked()), this,
 				 SLOT(disconnect()));
-	if (m_pRenewIPButton != NULL)
-		Util::myConnect(m_pRenewIPButton, SIGNAL(clicked()), this,
+	
+
+if (m_pRenewIPButton != NULL)
+		
+Util::myConnect(m_pRenewIPButton, SIGNAL(clicked()), this,
 				 SLOT(renewIP()));
-	Util::myConnect((const QObject *)m_pEmitter,
+	
+
+Util::myConnect((const QObject *)m_pEmitter,
 			  SIGNAL(signalSignalStrength(const QString &, int)),
 			  this, SLOT(slotSignalUpdate(const QString &, int)));
-	Util::myConnect((const QObject *)m_pEmitter,
+	
+
+Util::myConnect((const QObject *)m_pEmitter,
 			  SIGNAL(signalStateChange
 				 (const QString &, int, int, int,
-				  unsigned int)), this,
+				  unsigned int)), 
+this,
 			  SLOT(stateChange
 			       (const QString &, int, int, int, unsigned int)));
-	Util::myConnect((const QObject *)m_pEmitter,
+	
+
+Util::myConnect((const QObject *)m_pEmitter,
 			  SIGNAL(signalIPAddressSet()), this,
 			  SLOT(updateIPAddress()));
-	
+	
+
 	    // other initializations
 	    
 	    // load icons for signal strength
 	    QPixmap * p;
-	p = FormLoader::loadicon("signal_0.png");
-	if (p != NULL)
-		 {
-		m_signalIcons[0] = *p;
-		delete p;
-		}
-	p = FormLoader::loadicon("signal_1.png");
-	if (p != NULL)
-		 {
-		m_signalIcons[1] = *p;
-		delete p;
-		}
-	p = FormLoader::loadicon("signal_2.png");
-	if (p != NULL)
-		 {
-		m_signalIcons[2] = *p;
-		delete p;
-		}
-	p = FormLoader::loadicon("signal_3.png");
-	if (p != NULL)
-		 {
-		m_signalIcons[3] = *p;
-		delete p;
-		}
-	p = FormLoader::loadicon("signal_4.png");
-	if (p != NULL)
-		 {
-		m_signalIcons[4] = *p;
-		delete p;
-		}
-	return true;
-}
+	
 
-void ConnectionInfoDlg::disconnect(void) 
+p = FormLoader::loadicon("signal_0.png");
+	
+if (p != NULL)
+		
+ {
+		
+m_signalIcons[0] = *p;
+		
+delete p;
+		
+}
+	
+
+p = FormLoader::loadicon("signal_1.png");
+	
+if (p != NULL)
+		
+ {
+		
+m_signalIcons[1] = *p;
+		
+delete p;
+		
+}
+	
+
+p = FormLoader::loadicon("signal_2.png");
+	
+if (p != NULL)
+		
+ {
+		
+m_signalIcons[2] = *p;
+		
+delete p;
+		
+}
+	
+
+p = FormLoader::loadicon("signal_3.png");
+	
+if (p != NULL)
+		
+ {
+		
+m_signalIcons[3] = *p;
+		
+delete p;
+		
+}
+	
+
+p = FormLoader::loadicon("signal_4.png");
+	
+if (p != NULL)
+		
+ {
+		
+m_signalIcons[4] = *p;
+		
+delete p;
+		
+}
+	
+
+return true;
+
+}
+
+
+
+void ConnectionInfoDlg::disconnect(void) 
 {
-	if (xsupgui_request_disconnect_connection
+	
+if (xsupgui_request_disconnect_connection
 	     (m_curAdapterName.toAscii().data()) != REQUEST_SUCCESS)
-		 {
-		QMessageBox::critical(NULL, tr("Error Disconnecting"),
-				       tr
+		
+ {
+		
+QMessageBox::critical(NULL, tr("Error Disconnecting"),
+				       
+tr
 				       ("An error occurred while disconnecting device '%1'.\n").
 				       arg(m_curAdapter));
-		}
-}
+		
+}
 
-void ConnectionInfoDlg::renewIP(void) 
+}
+
+
+
+void ConnectionInfoDlg::renewIP(void) 
 {
-	xsupgui_request_dhcp_release_renew(m_curAdapterName.toAscii().data());
-} void ConnectionInfoDlg::setAdapter(const QString & adapterDesc) 
+	
+xsupgui_request_dhcp_release_renew(m_curAdapterName.toAscii().data());
+
+} 
+
+void ConnectionInfoDlg::setAdapter(const QString & adapterDesc) 
 {
-	m_curAdapter = adapterDesc;
-	if (m_curAdapter.isEmpty())
-		this->clearUI();
+	
+m_curAdapter = adapterDesc;
+	
+
+if (m_curAdapter.isEmpty())
+		
+this->clearUI();
 	
 	else
-		 {
-		char *pDeviceName = NULL;
-		int retVal;
-		retVal =
+		
+ {
+		
+char *pDeviceName = NULL;
+		
+int retVal;
+		
+
+retVal =
 		    xsupgui_request_get_devname(m_curAdapter.toAscii().data(),
 						&pDeviceName);
-		if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
-			m_curAdapterName = pDeviceName;
+		
+if (retVal == REQUEST_SUCCESS && pDeviceName != NULL)
+			
+m_curAdapterName = pDeviceName;
 		
 		else
-			m_curAdapterName = "";
-		if (pDeviceName != NULL)
-			free(pDeviceName);
-		config_interfaces * pInterface;
-		retVal =
+			
+m_curAdapterName = "";
+		
+
+if (pDeviceName != NULL)
+			
+free(pDeviceName);
+		
+
+config_interfaces * pInterface;
+		
+retVal =
 		    xsupgui_request_get_interface_config(m_curAdapter.toAscii().
 							 data(), &pInterface);
-		if (retVal == REQUEST_SUCCESS && pInterface != NULL)
-			 {
-			if ((pInterface->
+		
+if (retVal == REQUEST_SUCCESS && pInterface != NULL)
+			
+ {
+			
+if ((pInterface->
 			      flags & CONFIG_INTERFACE_IS_WIRELESS) ==
 			     CONFIG_INTERFACE_IS_WIRELESS)
-				 {
-				m_wirelessAdapter = true;
-				if (m_pAdapterNameLabel != NULL)
-					 {
-					QString adapterText;
-					adapterText =
+				
+ {
+				
+m_wirelessAdapter = true;
+				
+if (m_pAdapterNameLabel != NULL)
+					
+ {
+					
+QString adapterText;
+					
+adapterText =
 					    Util::
 					    removePacketSchedulerFromName
 					    (m_curAdapter);
-					m_pAdapterNameLabel->
+					
+m_pAdapterNameLabel->
 					    setText(adapterText);
-					}
-				this->updateWirelessState();
-				}
+					
+}
+				
+this->updateWirelessState();
+				
+}
 			
 			else
-				 {
-				m_wirelessAdapter = false;
-				if (m_pAdapterNameLabel != NULL)
-					 {
-					QString adapterText;
-					adapterText =
+				
+ {
+				
+m_wirelessAdapter = false;
+				
+if (m_pAdapterNameLabel != NULL)
+					
+ {
+					
+QString adapterText;
+					
+adapterText =
 					    Util::
 					    removePacketSchedulerFromName
 					    (m_curAdapter);
-					m_pAdapterNameLabel->
+					
+m_pAdapterNameLabel->
 					    setText(adapterText);
-					}
-				this->updateWiredState();
-				}
-			this->updateIPAddress();
-			}
+					
+}
+				
+this->updateWiredState();
+				
+}
+			
+this->updateIPAddress();
+			
+}
 		
 		else
-			 {
-			this->clearUI();
-			}
-		if (pInterface != NULL)
-			xsupgui_request_free_interface_config(&pInterface);
-		}
-}
+			
+ {
+			
+this->clearUI();
+			
+}
+		
 
-void ConnectionInfoDlg::updateWirelessState(void) 
+if (pInterface != NULL)
+			
+xsupgui_request_free_interface_config(&pInterface);
+		
+}
+
+}
+
+
+
+void ConnectionInfoDlg::updateWirelessState(void) 
 {
-	Util::ConnectionStatus status = Util::status_idle;
-	if (m_curAdapterName.isEmpty() == false)
-		 {
-		int state = 0;
-		int retVal = 0;
-		
+	
+Util::ConnectionStatus status = Util::status_idle;
+	
+if (m_curAdapterName.isEmpty() == false)
+		
+ {
+		
+int state = 0;
+		
+int retVal = 0;
+		
+
 		    // get name of connection that's bound
 		char *connName = NULL;
-		config_connection * pConn = NULL;
-		retVal =
+		
+config_connection * pConn = NULL;
+		
+
+retVal =
 		    xsupgui_request_get_conn_name_from_int(m_curAdapterName.
 							   toAscii().data(),
 							   &connName);
-		if (retVal == REQUEST_SUCCESS && connName != NULL)
-			 {
+		
+if (retVal == REQUEST_SUCCESS && connName != NULL)
+			
+ {
 			
 			    // get connection info so we can look at it when deciding 
 			    bool success =
 			    XSupWrapper::getConfigConnection(CONFIG_LOAD_USER,
 							     QString(connName),
 							     &pConn);
-			if (success == false)
+			
+if (success == false)
 				success =
 				    XSupWrapper::
 				    getConfigConnection(CONFIG_LOAD_GLOBAL,
 							QString(connName),
 							&pConn);
-			if (success == false && pConn != NULL)
-				 {
-				XSupWrapper::freeConfigConnection(&pConn);
-				pConn = NULL;
-				}
-			}
+			
+
+if (success == false && pConn != NULL)
+				
+ {
+				
+XSupWrapper::freeConfigConnection(&pConn);
+				
+pConn = NULL;
+				
+}
+			
+}
 		
 		else
-			 {
-			if (connName != NULL)
-				free(connName);
-			}
-		if ((pConn != NULL)
+			
+ {
+			
+if (connName != NULL)
+				
+free(connName);
+			
+}
+		
+
+if ((pConn != NULL)
 		      &&
 		      (xsupgui_request_get_physical_state
 		       (m_curAdapterName.toAscii().data(),
 			&state) == REQUEST_SUCCESS))
-			 {
-			if (state != WIRELESS_ASSOCIATED
+			
+ {
+			
+if (state != WIRELESS_ASSOCIATED
 			     || (pConn != NULL
 				 && pConn->association.auth_type != AUTH_EAP))
-				 {
-				status =
+				
+ {
+				
+status =
 				    Util::
 				    getConnectionStatusFromPhysicalState(state);
-				}
+				
+}
 			
 			else
-				 {
+				
+ {
 				
 				    // only check with dot1X state machine if it's a dot1X connection
 				    if (xsupgui_request_get_1x_state
 					(m_curAdapterName.toAscii().data(),
 					 &state) == REQUEST_SUCCESS)
-					status =
+					
+status =
 					    Util::
 					    getConnectionStatusFromDot1XState
 					    (state);
-				}
-			}
-		if (m_pStatusLabel != NULL)
-			m_pStatusLabel->
+				
+}
+			
+}
+		
+
+if (m_pStatusLabel != NULL)
+			
+m_pStatusLabel->
 			    setText(Util::
 				    getConnectionTextFromConnectionState
 				    (status));
-		if (status == Util::status_connected)
-			this->startConnectedTimer();
+		
+
+if (status == Util::status_connected)
+			
+this->startConnectedTimer();
 		
 		else
-			this->stopAndClearTimer();
-		if (status == Util::status_idle)
-			 {
-			if (m_pSSIDLabel != NULL)
-				m_pSSIDLabel->setText("");
-			if (m_pSignalIcon != NULL)
-				m_pSignalIcon->clear();
-			if (m_pSignalLabel != NULL)
-				m_pSignalLabel->setText("");
-			if (m_pIPAddressLabel != NULL)
-				m_pIPAddressLabel->setText("");
-			if (m_pSecurityLabel != NULL)
-				m_pSecurityLabel->setText("");
-			if (m_pEncryptionLabel != NULL)
-				m_pEncryptionLabel->setText("");
-			}
+			
+this->stopAndClearTimer();
+		
+
+if (status == Util::status_idle)
+			
+ {
+			
+if (m_pSSIDLabel != NULL)
+				
+m_pSSIDLabel->setText("");
+			
+if (m_pSignalIcon != NULL)
+				
+m_pSignalIcon->clear();
+			
+if (m_pSignalLabel != NULL)
+				
+m_pSignalLabel->setText("");
+			
+if (m_pIPAddressLabel != NULL)
+				
+m_pIPAddressLabel->setText("");
+			
+if (m_pSecurityLabel != NULL)
+				
+m_pSecurityLabel->setText("");
+			
+if (m_pEncryptionLabel != NULL)
+				
+m_pEncryptionLabel->setText("");
+			
+}
 		
 		else
-			 {
-			if (pConn != NULL)
-				 {
-				if (m_pSSIDLabel != NULL)
-					m_pSSIDLabel->
+			
+ {
+			
+if (pConn != NULL)
+				
+ {
+				
+if (m_pSSIDLabel != NULL)
+					
+m_pSSIDLabel->
 					    setText(QString(pConn->ssid));
-				if (m_pSecurityLabel != NULL)
-					 {
-					int authType;
-					retVal =
+				
+
+if (m_pSecurityLabel != NULL)
+					
+ {
+					
+int authType;
+					
+
+retVal =
 					    xsupgui_request_get_association_type
 					    (m_curAdapterName.toAscii().data(),
 					     &authType);
-					if (retVal == REQUEST_SUCCESS)
-						 {
+					
+if (retVal == REQUEST_SUCCESS)
+						
+ {
 						
 						    // either no security or WEP
 						    if (authType ==
 							ASSOC_TYPE_OPEN)
-							 {
-							int keyType;
-							retVal =
+							
+ {
+							
+int keyType;
+							
+retVal =
 							    xsupgui_request_get_pairwise_key_type
 							    (m_curAdapterName.
 							     toAscii().data(),
 							     &keyType);
-							if (retVal ==
+							
+if (retVal ==
 							     REQUEST_SUCCESS)
-								 {
-								if (keyType ==
+								
+ {
+								
+if (keyType ==
 								     CIPHER_WEP40
 								     || keyType
 								     ==
 								     CIPHER_WEP104)
-									m_pSecurityLabel->
+									
+m_pSecurityLabel->
 									    setText
 									    (tr
 									     ("WEP"));
 								
 								else
-									m_pSecurityLabel->
+									
+m_pSecurityLabel->
 									    setText
 									    (tr
 									     ("None"));
-								}
+								
+}
 							
 							else
-								m_pSecurityLabel->
+								
+m_pSecurityLabel->
 								    setText(tr
 									    ("<Unknown>"));
-							}
+							
+
+}
 						
 						else if (authType ==
 							 ASSOC_TYPE_WPA1)
-							 {
+							
+ {
 							
 							    // find out if PSK or not
 							    if (pConn->
 								association.
 								auth_type ==
 								AUTH_EAP)
-								m_pSecurityLabel->
+								
+m_pSecurityLabel->
 								    setText(tr
 									    ("WPA-Enterprise"));
 							
 							else
-								m_pSecurityLabel->
+								
+m_pSecurityLabel->
 								    setText(tr
 									    ("WPA-Personal"));
-							}
+							
+}
 						
 						else if (authType ==
 							 ASSOC_TYPE_WPA2)
-							 {
+							
+ {
 							
 							    // find out if PSK or not
 							    if (pConn->
 								association.
 								auth_type ==
 								AUTH_EAP)
-								m_pSecurityLabel->
+								
+m_pSecurityLabel->
 								    setText(tr
 									    ("WPA2-Enterprise"));
 							
 							else
-								m_pSecurityLabel->
+								
+m_pSecurityLabel->
 								    setText(tr
 									    ("WPA2-Personal"));
-							}
-						}
+							
+}
+						
+}
 					
 					else
-						m_pSecurityLabel->
+						
+m_pSecurityLabel->
 						    setText(tr("<Unknown>"));
-					}
-				if (m_pEncryptionLabel != NULL)
-					 {
-					int keyType;
-					QString encryptionText;
-					retVal =
+					
+}
+				
+if (m_pEncryptionLabel != NULL)
+					
+ {
+					
+int keyType;
+					
+QString encryptionText;
+					
+
+retVal =
 					    xsupgui_request_get_pairwise_key_type
 					    (m_curAdapterName.toAscii().data(),
 					     &keyType);
-					if (retVal == REQUEST_SUCCESS)
-						 {
-						switch (keyType)	// keyType contains the value for the encryption method we are using.
+					
+if (retVal == REQUEST_SUCCESS)
+						
+ {
+						
+switch (keyType)	// keyType contains the value for the encryption method we are using.
 						{
-						case CIPHER_NONE:
-							encryptionText =
+						
+case CIPHER_NONE:
+							
+encryptionText =
 							    tr("None");
-							break;
-						case CIPHER_WEP40:
+							
+break;
+						
+
+case CIPHER_WEP40:
 							
 							    // TODO: check profile for key length
 #ifdef WINDOWS
 							    encryptionText = tr("WEP");	// Windows doesn't let us tell between WEP40 & WEP104.
-#else	/*  */
+#else	/* 
+ */
 							    encryptionText =
 							    tr("WEP40");
 							
-#endif	/*  */
+#endif	/* 
+ */
 							    break;
-						case CIPHER_TKIP:
-							encryptionText =
+						
+
+case CIPHER_TKIP:
+							
+encryptionText =
 							    tr("TKIP");
-							break;
-						case CIPHER_CCMP:
-							encryptionText =
+							
+break;
+						
+
+case CIPHER_CCMP:
+							
+encryptionText =
 							    tr("CCMP");
-							break;
-						case CIPHER_WEP104:
+							
+break;
+						
+
+case CIPHER_WEP104:
 							
 							    // TODO: check profile for key length
 #ifdef WINDOWS
 							    encryptionText = tr("WEP");	// Windows doesn't let us tell between WEP40 & WEP104.
-#else	/*  */
+#else	/* 
+ */
 							    encryptionText =
 							    tr("WEP104");
 							
-#endif	/*  */
+#endif	/* 
+ */
 							    break;
-						default:
-							encryptionText =
+						
+
+default:
+							
+encryptionText =
 							    tr("<Unknown>");
-							break;
-						}
-						m_pEncryptionLabel->
+							
+break;
+						
+}
+						
+m_pEncryptionLabel->
 						    setText(encryptionText);
-						}
-					
+						
+}
+					
+
 					else
-						m_pEncryptionLabel->
+						
+m_pEncryptionLabel->
 						    setText(tr("<Unknown>"));
-					}
-				}
+					
+}
+				
+}
 			
 			else
-				 {
-				if (m_pSecurityLabel != NULL)
-					m_pSecurityLabel->
+				
+ {
+				
+if (m_pSecurityLabel != NULL)
+					
+m_pSecurityLabel->
 					    setText(tr("<Unknown>"));
-				if (m_pSSIDLabel != NULL)
-					m_pSSIDLabel->setText("<Unknown>");
-				if (m_pEncryptionLabel != NULL)
-					m_pEncryptionLabel->
+				
+if (m_pSSIDLabel != NULL)
+					
+m_pSSIDLabel->setText("<Unknown>");
+				
+if (m_pEncryptionLabel != NULL)
+					
+m_pEncryptionLabel->
 					    setText(tr("<Unknown>"));
-				}
-			this->updateWirelessSignalStrength();
-			this->updateIPAddress();
-			}
-		if (pConn != NULL)
-			 {
-			XSupWrapper::freeConfigConnection(&pConn);
-			pConn = NULL;
-			}
-		if (connName != NULL)
-			 {
-			free(connName);
-			connName = NULL;
-			}
-		}
+				
+}
+			
+
+this->updateWirelessSignalStrength();
+			
+this->updateIPAddress();
+			
+}
+		
+
+if (pConn != NULL)
+			
+ {
+			
+XSupWrapper::freeConfigConnection(&pConn);
+			
+pConn = NULL;
+			
+}
+		
+if (connName != NULL)
+			
+ {
+			
+free(connName);
+			
+connName = NULL;
+			
+}
+		
+}
 	
 	else
-		 {
+		
+ {
 		
 		    // if can't get data, just clear everything out
 		    if (m_pSSIDLabel != NULL)
-			m_pSSIDLabel->setText("");
-		if (m_pSignalIcon != NULL)
-			m_pSignalIcon->clear();
-		if (m_pSignalLabel != NULL)
-			m_pSignalLabel->setText("");
-		if (m_pIPAddressLabel != NULL)
-			m_pIPAddressLabel->setText("");
-		if (m_pSecurityLabel != NULL)
-			m_pSecurityLabel->setText("");
-		if (m_pEncryptionLabel != NULL)
-			m_pEncryptionLabel->setText("");
-		}
-	if (m_pDisconnectButton != NULL)
-		m_pDisconnectButton->setEnabled(status != Util::status_idle);
-	if (m_pRenewIPButton != NULL)
-		m_pRenewIPButton->setEnabled(status != Util::status_idle);
-}
+			
+m_pSSIDLabel->setText("");
+		
+if (m_pSignalIcon != NULL)
+			
+m_pSignalIcon->clear();
+		
+if (m_pSignalLabel != NULL)
+			
+m_pSignalLabel->setText("");
+		
+if (m_pIPAddressLabel != NULL)
+			
+m_pIPAddressLabel->setText("");
+		
+if (m_pSecurityLabel != NULL)
+			
+m_pSecurityLabel->setText("");
+		
+if (m_pEncryptionLabel != NULL)
+			
+m_pEncryptionLabel->setText("");
+		
+}
+	
 
-void ConnectionInfoDlg::updateWiredState(void) 
+if (m_pDisconnectButton != NULL)
+		
+m_pDisconnectButton->setEnabled(status != Util::status_idle);
+	
+if (m_pRenewIPButton != NULL)
+		
+m_pRenewIPButton->setEnabled(status != Util::status_idle);
+
+}
+
+
+
+void ConnectionInfoDlg::updateWiredState(void) 
 {
-	Util::ConnectionStatus status = Util::status_idle;
-	if (m_curAdapterName.isEmpty() == false)
-		 {
-		int retval = 0;
-		int state = 0;
-		retval =
+	
+Util::ConnectionStatus status = Util::status_idle;
+	
+
+if (m_curAdapterName.isEmpty() == false)
+		
+ {
+		
+int retval = 0;
+		
+int state = 0;
+		
+
+retval =
 		    xsupgui_request_get_1x_state(m_curAdapterName.toAscii().
 						 data(), &state);
-		if (retval == REQUEST_SUCCESS)
-			 {
-			status =
+		
+if (retval == REQUEST_SUCCESS)
+			
+ {
+			
+status =
 			    Util::getConnectionStatusFromDot1XState(state);
-			if (m_pStatusLabel != NULL)
-				m_pStatusLabel->
+			
+if (m_pStatusLabel != NULL)
+				
+m_pStatusLabel->
 				    setText(Util::
 					    getConnectionTextFromConnectionState
 					    (status));
-			if (status == Util::status_connected)
-				this->startConnectedTimer();
+			
+if (status == Util::status_connected)
+				
+this->startConnectedTimer();
 			
 			else
-				this->stopAndClearTimer();
-			}
-		}
-	if (m_pDisconnectButton != NULL)
-		m_pDisconnectButton->setEnabled(status != Util::status_idle);
-	if (m_pRenewIPButton != NULL)
-		m_pRenewIPButton->setEnabled(status != Util::status_idle);
-	
+				
+this->stopAndClearTimer();
+			
+}
+		
+}
+	
+
+if (m_pDisconnectButton != NULL)
+		
+m_pDisconnectButton->setEnabled(status != Util::status_idle);
+	
+if (m_pRenewIPButton != NULL)
+		
+m_pRenewIPButton->setEnabled(status != Util::status_idle);
+	
+
 	    // unused state fields  
 	    if (m_pSSIDLabel != NULL)
-		m_pSSIDLabel->setText("");
-	if (m_pSecurityLabel != NULL)
-		m_pSecurityLabel->setText("");
-	if (m_pEncryptionLabel != NULL)
-		m_pEncryptionLabel->setText("");
-	if (m_pSignalLabel != NULL)
-		m_pSignalLabel->setText("");
-	if (m_pSignalIcon != NULL)
-		m_pSignalIcon->clear();
-}
+		
+m_pSSIDLabel->setText("");
+	
+if (m_pSecurityLabel != NULL)
+		
+m_pSecurityLabel->setText("");
+	
+if (m_pEncryptionLabel != NULL)
+		
+m_pEncryptionLabel->setText("");
+	
+if (m_pSignalLabel != NULL)
+		
+m_pSignalLabel->setText("");
+	
+if (m_pSignalIcon != NULL)
+		
+m_pSignalIcon->clear();
 
-void ConnectionInfoDlg::stopAndClearTimer(void) 
+}
+
+
+
+void ConnectionInfoDlg::stopAndClearTimer(void) 
 {
-	m_days = 0;
-	m_time->setHMS(0, 0, 0);
-	this->showTime();
-} void ConnectionInfoDlg::startConnectedTimer(void) 
+	
+m_days = 0;
+	
+m_time->setHMS(0, 0, 0);
+	
+this->showTime();
+
+} 
+
+void ConnectionInfoDlg::startConnectedTimer(void) 
 {
-	this->showTime();
-} void ConnectionInfoDlg::showTime(void) 
+	
+this->showTime();
+
+} 
+
+void ConnectionInfoDlg::showTime(void) 
 {
-	QString timeString;
-	if (m_days > 0)
-		timeString =
+	
+QString timeString;
+	
+
+if (m_days > 0)
+		
+timeString =
 		    QString("%1d, %2").arg(m_days).arg(m_time->
 						       toString(Qt::TextDate));
 	
 	else
-		timeString = QString("%1").arg(m_time->toString(Qt::TextDate));
-	if (m_pTimerLabel != NULL)
-		m_pTimerLabel->setText(timeString);
-}
+		
+timeString = QString("%1").arg(m_time->toString(Qt::TextDate));
+	
 
-void ConnectionInfoDlg::timerUpdate(void) 
+if (m_pTimerLabel != NULL)
+		
+m_pTimerLabel->setText(timeString);
+
+}
+
+
+
+void ConnectionInfoDlg::timerUpdate(void) 
 {
 	
 //      this->updateElapsedTime();
 	    this->showTime();
-} void ConnectionInfoDlg::stateChange(const QString & intName, int, int, int,
+
+} 
+
+void ConnectionInfoDlg::stateChange(const QString & intName, int, int, int,
 					 unsigned int) 
 {
 	
 	    // We only care if it is the adapter that is currently displayed.
 	    if (intName == m_curAdapterName)
-		 {
-		if (m_wirelessAdapter == true)
-			this->updateWirelessState();
+		
+ {
+		
+if (m_wirelessAdapter == true)
+			
+this->updateWirelessState();
 		
 		else
-			this->updateWiredState();
-		}
-}
+			
+this->updateWiredState();
+		
+}
 
-void ConnectionInfoDlg::clearUI(void) 
-{
-	if (m_pAdapterNameLabel != NULL)
-		m_pAdapterNameLabel->setText("");
-	if (m_pIPAddressLabel != NULL)
-		m_pIPAddressLabel->setText("");
-	if (m_pStatusLabel != NULL)
-		m_pStatusLabel->setText("");
-	if (m_pTimerLabel != NULL)
-		m_pTimerLabel->setText("");
-	if (m_pSSIDLabel != NULL)
-		m_pSSIDLabel->setText("");
-	if (m_pSecurityLabel != NULL)
-		m_pSecurityLabel->setText("");
-	if (m_pEncryptionLabel != NULL)
-		m_pEncryptionLabel->setText("");
-	if (m_pSignalLabel != NULL)
-		m_pSignalLabel->setText("");
-	if (m_pSignalIcon != NULL)
-		m_pSignalIcon->clear();
-}
+}
 
-void ConnectionInfoDlg::updateIPAddress(void) 
+
+void ConnectionInfoDlg::clearUI(void) 
 {
-	int retVal;
-	QString ipText = "0.0.0.0";
-	if (m_curAdapterName.isEmpty() == false)
-		 {
-		ipinfo_type * pInfo;
-		retVal =
+	
+if (m_pAdapterNameLabel != NULL)
+		
+m_pAdapterNameLabel->setText("");
+	
+if (m_pIPAddressLabel != NULL)
+		
+m_pIPAddressLabel->setText("");
+	
+if (m_pStatusLabel != NULL)
+		
+m_pStatusLabel->setText("");
+	
+if (m_pTimerLabel != NULL)
+		
+m_pTimerLabel->setText("");
+	
+if (m_pSSIDLabel != NULL)
+		
+m_pSSIDLabel->setText("");
+	
+if (m_pSecurityLabel != NULL)
+		
+m_pSecurityLabel->setText("");
+	
+if (m_pEncryptionLabel != NULL)
+		
+m_pEncryptionLabel->setText("");
+	
+if (m_pSignalLabel != NULL)
+		
+m_pSignalLabel->setText("");
+	
+if (m_pSignalIcon != NULL)
+		
+m_pSignalIcon->clear();
+
+}
+
+
+void ConnectionInfoDlg::updateIPAddress(void) 
+{
+	
+int retVal;
+	
+QString ipText = "0.0.0.0";
+	
+
+if (m_curAdapterName.isEmpty() == false)
+		
+ {
+		
+ipinfo_type * pInfo;
+		
+retVal =
 		    xsupgui_request_get_ip_info(m_curAdapterName.toAscii().
 						data(), &pInfo);
-		if (retVal == REQUEST_SUCCESS && pInfo != NULL)
-			ipText = pInfo->ipaddr;
-		if (pInfo != NULL)
-			xsupgui_request_free_ip_info(&pInfo);
-		}
-	if (m_pIPAddressLabel != NULL)
-		m_pIPAddressLabel->setText(ipText);
-}
+		
+if (retVal == REQUEST_SUCCESS && pInfo != NULL)
+			
+ipText = pInfo->ipaddr;
+		
+if (pInfo != NULL)
+			
+xsupgui_request_free_ip_info(&pInfo);
+		
+}
+	
 
-void ConnectionInfoDlg::updateWirelessSignalStrength(void) 
+if (m_pIPAddressLabel != NULL)
+		
+m_pIPAddressLabel->setText(ipText);
+
+}
+
+
+
+void ConnectionInfoDlg::updateWirelessSignalStrength(void) 
 {
-	int retval;
-	int strength;
-	retval =
+	
+int retval;
+	
+int strength;
+	
+
+retval =
 	    xsupgui_request_get_signal_strength_percent(m_curAdapterName.
 							toAscii().data(),
 							&strength);
-	if (retval == REQUEST_SUCCESS)
-		 {
-		if (m_pSignalLabel != NULL)
-			m_pSignalLabel->setText(QString("%1%").arg(strength));
-		if (m_pSignalIcon != NULL)
-			 {
-			if (strength <= 11)
-				m_pSignalIcon->setPixmap(m_signalIcons[0]);
+	
+if (retval == REQUEST_SUCCESS)
+		
+ {
+		
+if (m_pSignalLabel != NULL)
+			
+m_pSignalLabel->setText(QString("%1%").arg(strength));
+		
+
+if (m_pSignalIcon != NULL)
+			
+ {
+			
+if (strength <= 11)
+				
+m_pSignalIcon->setPixmap(m_signalIcons[0]);
 			
 			else if (strength <= 37)
-				m_pSignalIcon->setPixmap(m_signalIcons[1]);
+				
+m_pSignalIcon->setPixmap(m_signalIcons[1]);
 			
 			else if (strength <= 62)
-				m_pSignalIcon->setPixmap(m_signalIcons[2]);
+				
+m_pSignalIcon->setPixmap(m_signalIcons[2]);
 			
 			else if (strength <= 88)
-				m_pSignalIcon->setPixmap(m_signalIcons[3]);
+				
+m_pSignalIcon->setPixmap(m_signalIcons[3]);
 			
 			else
-				m_pSignalIcon->setPixmap(m_signalIcons[4]);
-			}
-		}
+				
+m_pSignalIcon->setPixmap(m_signalIcons[4]);
+			
+}
+		
+}
 	
 	else
-		 {
-		if (m_pSignalLabel != NULL)
-			m_pSignalLabel->setText(QString("0%"));
-		if (m_pSignalIcon != NULL)
-			m_pSignalIcon->setPixmap(m_signalIcons[0]);
-		}
-}
+		
+ {
+		
+if (m_pSignalLabel != NULL)
+			
+m_pSignalLabel->setText(QString("0%"));
+		
+if (m_pSignalIcon != NULL)
+			
+m_pSignalIcon->setPixmap(m_signalIcons[0]);
+		
+}
 
-void ConnectionInfoDlg::slotSignalUpdate(const QString & intName,
+}
+
+
+
+void ConnectionInfoDlg::slotSignalUpdate(const QString & intName,
 					   int sigStrength) 
 {
-	if (intName == m_curAdapterName)
-		 {
-		if (m_pSignalLabel != NULL)
-			m_pSignalLabel->setText(QString("%1%").
+	
+if (intName == m_curAdapterName)
+		
+ {
+		
+if (m_pSignalLabel != NULL)
+			
+m_pSignalLabel->setText(QString("%1%").
 						 arg(sigStrength));
-		if (m_pSignalIcon != NULL)
-			 {
-			if (sigStrength <= 11)
-				m_pSignalIcon->setPixmap(m_signalIcons[0]);
+		
+
+if (m_pSignalIcon != NULL)
+			
+ {
+			
+if (sigStrength <= 11)
+				
+m_pSignalIcon->setPixmap(m_signalIcons[0]);
 			
 			else if (sigStrength <= 37)
-				m_pSignalIcon->setPixmap(m_signalIcons[1]);
+				
+m_pSignalIcon->setPixmap(m_signalIcons[1]);
 			
 			else if (sigStrength <= 62)
-				m_pSignalIcon->setPixmap(m_signalIcons[2]);
+				
+m_pSignalIcon->setPixmap(m_signalIcons[2]);
 			
 			else if (sigStrength <= 88)
-				m_pSignalIcon->setPixmap(m_signalIcons[3]);
+				
+m_pSignalIcon->setPixmap(m_signalIcons[3]);
 			
 			else
-				m_pSignalIcon->setPixmap(m_signalIcons[4]);
-			m_pSignalIcon->setToolTip(tr("Signal Strength: %1%").
-						    arg(sigStrength));
-			}
-		}
-}
+				
+m_pSignalIcon->setPixmap(m_signalIcons[4]);
+			
 
-
+m_pSignalIcon->setToolTip(tr("Signal Strength: %1%").
+						    arg(sigStrength));
+			
+}
+		
+}
+
+}
+
+
+

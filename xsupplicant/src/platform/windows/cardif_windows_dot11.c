@@ -599,7 +599,7 @@ int cardif_windows_dot11_get_ies(context * ctx, char *ies, int *ie_size)
  **/
 int cardif_windows_dot11_find_wpa2_ie(context * ctx, uint8_t * in_ie,
 				      uint16_t in_size, uint8_t * out_ie,
-				      uint16_t * out_size)
+				      uint8_t * out_size)
 {
 	const char wpa2oui[3] = { 0x00, 0x0f, 0xac };
 	unsigned int i;
@@ -660,7 +660,7 @@ int cardif_windows_dot11_find_wpa2_ie(context * ctx, uint8_t * in_ie,
  * Get the WPA2 Information Element.
  **/
 int cardif_windows_dot11_get_wpa2_ie(context * ctx, uint8_t * iedata,
-				     uint16_t * ielen)
+				     uint8_t * ielen)
 {
 	char ie_buf[65535];
 	int ie_size = 65535;
@@ -685,7 +685,7 @@ int cardif_windows_dot11_get_wpa2_ie(context * ctx, uint8_t * iedata,
 void cardif_windows_dot11_parse_ies(context * ctx, uint8_t * iedata, int ielen)
 {
 	int i = 0;
-	uint16_t wpalen;
+	uint8_t wpalen;
 	uint8_t wpaie[255];
 	uint8_t abilities = 0;
 	uint8_t authtypes = 0;
@@ -964,7 +964,7 @@ int cardif_windows_dot11_find_wpa_ie(context * ctx, uint8_t * in_ie,
 /**
  *  Generate the WPA1 Information Element
  **/
-int cardif_windows_dot11_get_wpa_ie(context * ctx, char *iedata, int *ielen)
+int cardif_windows_dot11_get_wpa_ie(context * ctx, uint8_t *iedata, uint8_t *ielen)
 {
 	uint8_t ie_buf[65535];
 	unsigned int ie_size = 65535;

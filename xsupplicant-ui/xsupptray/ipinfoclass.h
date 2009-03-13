@@ -43,8 +43,10 @@ extern "C" {
 #include "libxsupgui/xsupgui_events_state.h"
 }
 #include <QtGui>
-//!\class IpInfoClass/*!\brief Class to hold the IP information
-*/ class IPInfoClass:QObject
+//!\class IpInfoClass
+//!\brief Class to hold the IP information
+
+class IPInfoClass:QObject
 {
  private:
 	QString m_ipAddress;
