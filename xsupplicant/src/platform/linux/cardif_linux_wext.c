@@ -40,6 +40,10 @@
 #include "wpa.h"
 #include "wpa2.h"
 
+#ifdef ENABLE_MOKO
+#include "platform/linux/cardif_linux_moko.h"
+#endif
+
 #ifdef USE_EFENCE
 #include <efence.h>
 #endif
@@ -1667,6 +1671,7 @@ int cardif_linux_wext_drop_unencrypted(context * intdata, char endis)
 	return XENONE;
 }
 
+#ifndef ENABLE_MOKO
 void cardif_linux_wext_enc_capabilities(context * intdata)
 {
 #if WIRELESS_EXT > 17
@@ -1694,8 +1699,7 @@ void cardif_linux_wext_enc_capabilities(context * intdata)
 	wctx->enc_capa = 0;
 
 	memset(&wrq, 0x00, sizeof(wrq));
-//  Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
-//        sizeof(intdata->intName)+1);
+
 	strncpy((char *)&wrq.ifr_name, intdata->intName,
 		sizeof(intdata->intName) + 1);
 
@@ -1719,6 +1723,7 @@ void cardif_linux_wext_enc_capabilities(context * intdata)
 			     "Couldn't get encryption capabilites!\n");
 		return;
 	}
+
 	// Otherwise, determine what we have.
 	range = (struct iw_range *)buffer;
 
@@ -1744,6 +1749,8 @@ void cardif_linux_wext_enc_capabilities(context * intdata)
 	wctx->enc_capa = 0;
 #endif
 }
+
+#endif  // ENABLE_MOKO
 
 int cardif_linux_wext_delete_key(context * intdata, int key_idx, int set_tx)
 {
