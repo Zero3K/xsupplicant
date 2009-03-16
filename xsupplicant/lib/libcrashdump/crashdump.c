@@ -36,7 +36,11 @@
 #define unlink  _unlink
 #endif
 
-//#define DEBUG   1   ///< Uncomment this to have a file written with debug output.
+#define DEBUG   1   ///< Uncomment this to have a file written with debug output.
+
+#ifdef DEBUG
+	FILE *tempf = NULL;
+#endif
 
 typedef struct {
 	char *filename;
@@ -280,10 +284,11 @@ void crashdump_gather_files(char *destoverride)
 	int err = 0;
 
 #ifdef DEBUG
-	FILE *tempf = NULL;
 
 #ifdef WINDOWS
 	tempf = fopen("c:\\outdata.txt", "w");
+#elif LINUX
+	tempf = fopen("/tmp/outdata.txt", "w");
 #else
 #warning Open the file in the right place for your OS!
 #endif
@@ -299,6 +304,8 @@ void crashdump_gather_files(char *destoverride)
 
 #ifdef WINDOWS
 	fill_win32_filefunc(&ffunc);
+#elif LINUX
+	fill_fopen_filefunc(&ffunc);
 #else
 #warning Implement for your OS!
 #endif // WINDOWS

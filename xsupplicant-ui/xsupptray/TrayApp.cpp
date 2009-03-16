@@ -1579,7 +1579,11 @@ void TrayApp::slotCreateTroubleticket()
 		return;
 	}
 
+#ifdef WINDOWS
 	err = m_supplicant.createTroubleTicket((char *)path, "c:\\", 1);
+#else
+	err = m_supplicant.createTroubleTicket((char *)path, "/tmp/", 1);
+#endif
 
 	switch (err) {
 	case REQUEST_SUCCESS:
