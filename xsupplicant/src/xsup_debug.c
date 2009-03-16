@@ -41,6 +41,7 @@
 #include "ipc_events.h"
 #include "xsup_debug.h"
 #include "buildnum.h"
+#include "libcrashdump/crashdump.h"
 
 #ifndef VERSION
 #include "version.h"
@@ -427,11 +428,11 @@ static int rotate_log_files()
 				FREE(new_filename);
 				return -1;
 			} else {
-#ifdef WINDOWS
+#if (WINDOWS || LINUX)
 				crashdump_add_file(new_filename, 0);
 #else
-#warning Need to implement crash dump file handlingfor this platform.
-#endif				// WINDOWS
+#warning Need to implement crash dump file handling for this platform.
+#endif				// (WINDOWS || LINUX)
 			}
 
 			FREE(new_filename);
@@ -684,11 +685,11 @@ int logfile_setup()
 
 		fprintf(logfile, "XSupplicant %s.%s\n\n", VERSION, BUILDNUM);
 
-#ifdef WINDOWS
+#if (WINDOWS || LINUX)
 		crashdump_add_file(tempstr, 0);
 #else
-#warning Need to implement crash dump file handlingfor this platform.
-#endif				// WINDOWS
+#warning Need to implement crash dump file handling for this platform.
+#endif				// (WINDOWS || LINUX)
 
 		if (active_logfile != NULL)
 			free(active_logfile);

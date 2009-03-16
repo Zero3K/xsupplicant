@@ -6,7 +6,7 @@ if FRAMER_LINUX
 		\
 		linux/cardif_linux.c linux/cardif_linux_rtnetlink.c \
 		linux/cardif_linux_nl80211.c linux/cardif_linux_nl80211.h \
-		linux/cardif_linux_wext.c
+		linux/cardif_linux_wext.c linux/tthandler.c 
 endif
 if FRAMER_DARWIN
   FRAMER_SRCS = macosx/cardif_macosx.h macosx/cardif_macosx_wireless.h \

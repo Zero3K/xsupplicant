@@ -24,11 +24,13 @@
 
 extern PCCERT_CONTEXT cert_find_by_long_name(char *certname);
 
-#else
+#elif LINUX
+
 void cert_find_by_long_name(char *certname)
 {
 }
 
+#else
 #warning You need to define a certificate handler!
 #endif
 

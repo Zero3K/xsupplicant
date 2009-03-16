@@ -561,7 +561,7 @@ void event_core_load_user_config()
 					     "Loaded new user specific configuration.\n");
 
 				// Save the path so we can grab it for a trouble ticket or crash dump.
-#ifdef WINDOWS
+#if (WINDOWS || LINUX)
 				crashdump_add_curuser_conf(conf_path);
 #else
 #warning Add this for your OS!

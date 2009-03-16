@@ -52,10 +52,8 @@ void tthandler_troubleticket_thread(void *data)
 		FREE(tempdata);
 		}
 	
-#ifdef WINDOWS
 	    crashdump_gather_files(tempdata->ttpath);
 	
-#endif				// WINDOWS
 	    ipc_events_ui(NULL, IPC_EVENT_UI_TROUBLETICKET_DONE, NULL);
 	FREE(tempdata->tempdir);
 	FREE(tempdata->ttpath);

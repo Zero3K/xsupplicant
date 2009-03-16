@@ -751,7 +751,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 
 			process_hex(&custom[7], (iwe->len - 7), temp);
 			wpa_parse_ie(temp);
-			cardif_linux_rtnetlink_parse_ies(ctx, temp, temp[1]);
+			cardif_linux_rtnetlink_parse_ies(ctx, (uint8_t)temp, (int)temp[1]);
 
 			config_ssid_add_wpa_ie(wctx, (uint8_t *) temp,
 					       ((iwe->u.data.length - 7) / 2));
@@ -764,7 +764,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 
 			process_hex(&custom[7], (iwe->len - 7), temp);
 			wpa2_parse_ie(temp);
-			cardif_linux_rtnetlink_parse_ies(ctx, temp, temp[1]);
+			cardif_linux_rtnetlink_parse_ies(ctx, (uint8_t)temp, (int)temp[1]);
 
 			config_ssid_add_rsn_ie(wctx, (uint8_t *) temp,
 					       ((iwe->u.data.length - 7) / 2));
@@ -1096,7 +1096,6 @@ void cardif_linux_rtnetlink_process_scan_token(context * ctx,
 		break;
 
 	case IWEVGENIE:
-#warning Check this!
 		if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {
 			cardif_linux_rtnetlink_process_IWEVGENIE(ctx, iwe);
 		}
@@ -1217,7 +1216,6 @@ void cardif_linux_rtnetlink_process_token(context * ctx, struct iw_event *iwe)
 		break;
 
 	case IWEVGENIE:
-#warning Check this!
 		if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {
 			cardif_linux_rtnetlink_process_IWEVGENIE(ctx, iwe);
 		}

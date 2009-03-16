@@ -82,11 +82,11 @@ uint8_t load_plugins()
 	cwd = NULL;
 
 	if (diagnose_logfile != NULL) {
-#ifdef WINDOWS
+#if (WINDOWS || LINUX)
 		crashdump_add_file(diagnose_logfile, 1);
 #else
 #warning Need to implement crash dump file handling for this platform.
-#endif				// WINDOWS
+#endif				// (WINDOWS || LINUX)
 
 		free(diagnose_logfile);
 		diagnose_logfile = NULL;
@@ -94,6 +94,8 @@ uint8_t load_plugins()
 #ifdef WINDOWS
 	// XXX Fix this later
 	crashdump_add_file("C:\\supdetlog.log", 0);
+#elif LINUX
+	// Not currently used.
 #else
 #warning Need to implement crash dump file handling for this platform.
 #endif				// WINDOWS
@@ -273,14 +275,14 @@ int plugin_hook_trouble_ticket_dump_file(char *path)
 					if ((*hook) (plugin_logfile) != 0) {
 						total_failures++;
 					} else {
-#ifdef WINDOWS
+#if (WINDOWS || LINUX)
 						// The dump succeeded, add this file to the trouble ticket zip.
 						// and set the unlink flag to 1 so the file gets deleted.
 						crashdump_add_file
 						    (plugin_logfile, 1);
 #else
 #warning Need to implement crash dump file handlingfor this platform.
-#endif				// WINDOWS
+#endif				// (WINDOWS || LINUX)
 
 					}
 				} else {

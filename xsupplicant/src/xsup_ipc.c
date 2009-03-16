@@ -414,9 +414,6 @@ int xsup_ipc_send_all(char *message, int msglen)
  ***********************************************************/
 void xsup_ipc_send_eap_notify(char *notify)
 {
-#warning Still needed?
-#if 0
-#endif
 }
 
 /**************************************************************************

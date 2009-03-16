@@ -65,6 +65,8 @@
 #include "platform/windows/tthandler.h"
 #include "platform/windows/wzc_ctrl.h"
 #include "platform/windows/wlanapi_interface.h"
+#elif LINUX
+#include "platform/linux/tthandler.h"
 #endif
 
 // XXX These can be removed once ipc_callout_eap_cert_state() has moved to the proper location.
@@ -7618,11 +7620,11 @@ int ipc_callout_request_create_trouble_ticket(xmlNodePtr innode,
 	if (fh != NULL)
 		fclose(fh);
 
-#ifdef WINDOWS
+#if (WINDOWS || LINUX)
 	tthandler_create_troubleticket(temp_data_path, tt_data_path);
 #else
 #warning Need to implement crash dump file handling for this platform.
-#endif				// WINDOWS
+#endif				// (WINDOWS || LINUX)
 
 	xmlFree(temp_data_path);
 	xmlFree(tt_data_path);

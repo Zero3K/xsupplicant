@@ -282,7 +282,11 @@ void crashdump_gather_files(char *destoverride)
 #ifdef DEBUG
 	FILE *tempf = NULL;
 
+#ifdef WINDOWS
 	tempf = fopen("c:\\outdata.txt", "w");
+#else
+#warning Open the file in the right place for your OS!
+#endif
 	fprintf(tempf, "Started dumping data.\n");
 	fflush(tempf);
 #endif

@@ -83,19 +83,6 @@ AC_ARG_ENABLE(experimental,
   [],
   [enable_experimental="no"])
 
-AC_ARG_ENABLE(gnutls,
-  AS_HELP_STRING([--enable-gnutls],
-    [enable the use of GNU-TLS 1.4.0 or later.]),
-  [],
-  [enable_gnutls="no"])
-
-AC_ARG_ENABLE(osc-tnc,
-  AS_HELP_STRING([--enable-osc-tnc],
-    [enable use of the libtnc IMC libraries for run-time Network Access ]\
-    [Control with Radiator TNC plug-in modules]),
-  [],
-  [enable_osc_tnc="no"])
-
 AC_ARG_ENABLE(tnc,
   AS_HELP_STRING([--enable-tnc],
     [enable use of the libtnc IMC libraries for run-time Network Access ]\
@@ -170,19 +157,16 @@ AC_ARG_ENABLE(net80211,
   [disable_net80211="yes"],
   [])
 
+AC_ARG_ENABLE(moko-support,
+  AS_HELP_STRING([--enable-moko-support],
+    [build with extra tweaks needed to run on the Moko platform]),
+    [disable_net80211="yes" enable_moko="yes"],
+    [])
 
 ########### CONFIGURE TESTS #############
 
 dnl enable experimental code? (not currently used)
 AS_IF([test "$enable_experimental" = yes], AC_DEFINE(EXPERIMENTAL), [])
-
-dnl check for osc-tnc
-AS_IF([test "$enable_osc_tnc" = yes],
-  [ AC_CHECK_HEADER(libtnc.h,
-      [ MORELIBS="$MORELIBS -ltnc" ],
-      AC_MSG_ERROR([The TNC library is required to use TNC support!])) 
-    AC_DEFINE(HAVE_OSC_TNC)],
-  [])
 
 dnl check for tnc
 AS_IF([test "$enable_tnc" = yes],
@@ -200,15 +184,15 @@ AS_IF([test "$enable_efence" = yes],
     AC_DEFINE(USE_EFENCE)],
   [])
 
-dnl check for gnutls (needs a better check)
-AS_IF([test "$enable_gnutls" = yes],
-  [AC_DEFINE(USE_GNUTLS) LIBS="$LIBS -lgnutls"],
-  [])
-
 dnl check for direct radius
 AS_IF([test "$enable_direct_radius" = yes],
   [AC_DEFINE(USE_DIRECT_RADIUS) RADIUS="yes"],
   [RADIUS="no"])
+
+dnl check for moko features
+AS_IF([test "$enable_moko" = yes],
+  [AC_DEFINE(ENABLE_MOKO)],
+  [])
 
 dnl check for eap-fast
 AS_IF([test "$enable_eap_fast" = yes], AC_DEFINE(EAP_FAST), [])
