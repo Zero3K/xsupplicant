@@ -529,7 +529,6 @@ void cardif_linux_rtnetlink_process_SIOCGIWESSID(context * ctx,
 	memcpy(essid, iwe->u.essid.pointer, iwe->u.essid.length);
 	essid[iwe->u.essid.length] = '\0';
 
-#warning Check this!
 	if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {
 		debug_printf(DEBUG_INT, "ESSID : %s\n", essid);
 
@@ -569,14 +568,6 @@ void cardif_linux_rtnetlink_process_SIOCSIWESSID(context * ctx,
 	memcpy(essid, iwe->u.essid.pointer, iwe->u.essid.length);
 	essid[iwe->u.essid.length] = '\0';
 
-	/*
-	   #warning Check this!
-	   if (TEST_FLAG(wctx->flags, WIRELESS_SCANNING))
-	   {
-	   debug_printf(DEBUG_NORMAL, "Got an SSID set request from a scan!? "
-	   "Notify your driver maintainer!\n");
-	   } else {
-	 */
 	debug_printf(DEBUG_INT, "ESSID set .. name : %s\n", essid);
 
 	if ((essid == NULL) || (wctx->cur_essid == NULL) ||
@@ -750,8 +741,8 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 			config_ssid_update_abilities(wctx, ABIL_WPA_IE);
 			debug_printf(DEBUG_INT, "AP appears to support WPA!\n");
 
-			process_hex(&custom[7], (iwe->len - 7), temp);
-			wpa_parse_ie(temp);
+			process_hex(&custom[7], (iwe->len - 7), (char *)temp);
+			wpa_parse_ie((char *)temp);
 			ielen = temp[1];
 			debug_printf(DEBUG_INT, "IE Length = %d\n", ielen);
 			cardif_linux_rtnetlink_parse_ies(ctx, temp, ielen);
@@ -765,8 +756,8 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 			debug_printf(DEBUG_INT,
 				     "AP appears to support WPA2/802.11i!\n");
 
-			process_hex(&custom[7], (iwe->len - 7), temp);
-			wpa2_parse_ie(temp);
+			process_hex(&custom[7], (iwe->len - 7), (char *)temp);
+			wpa2_parse_ie((char *)temp);
 			ielen = temp[1];
 			debug_printf(DEBUG_INT, "IE Length = %d\n", ielen);
 			cardif_linux_rtnetlink_parse_ies(ctx, temp, ielen);
@@ -784,7 +775,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 		temp[iwe->u.data.length] = '\0';
 		debug_printf(DEBUG_INT, "Custom Data : \n");
 		debug_hex_dump(DEBUG_INT, temp, iwe->u.data.length);
-		cardif_linux_rtnetlink_check_custom(ctx, temp);
+		cardif_linux_rtnetlink_check_custom(ctx, (char *)temp);
 	}
 }
 
