@@ -10,6 +10,9 @@
  *
  * Copyright (C) 2005 - 2008 Jaco Kroon
  */
+
+#ifndef ENABLE_MOKO
+
 #ifndef _GNU_SOURCE
 # define _GNU_SOURCE
 #endif
@@ -154,3 +157,4 @@ static void __attribute((constructor)) init(void) {
 }
 #endif
 
+#endif // ENABLE_MOKO

@@ -9,16 +9,20 @@ char *dumploc = NULL;
 
 void crash_handler_install(char *dumpname)
 {
+#ifndef ENABLE_MOKO
   if (dumploc != NULL)
     free(dumploc);
 
   dumploc = strdup(dumpname);
 
   setup_sigsegv();
+#endif
 }
 
 void crash_handler_cleanup()
 {
+#ifndef ENABLE_MOKO
   free(dumploc);
+#endif
 }
 

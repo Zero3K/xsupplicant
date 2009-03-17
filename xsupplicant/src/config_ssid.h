@@ -35,7 +35,7 @@ struct found_ssids {
 
 void config_ssid_clear(wireless_ctx *);
 char *config_ssid_get_desired_ssid(context *);
-uint8_t config_ssid_get_ssid_abilities(wireless_ctx *);
+uint16_t config_ssid_get_ssid_abilities(wireless_ctx *);
 void config_ssid_get_wpa_ie(wireless_ctx *, uint8_t **, uint8_t *);
 void config_ssid_get_rsn_ie(wireless_ctx *, uint8_t **, uint8_t *);
 unsigned int config_ssid_get_freq(wireless_ctx *);

@@ -724,8 +724,9 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 					       struct iw_event *iwe)
 {
 	char custom[IW_CUSTOM_MAX + 1];
-	char temp[IW_CUSTOM_MAX + 1];
+	uint8_t temp[IW_CUSTOM_MAX + 1];
 	wireless_ctx *wctx = NULL;
+	int ielen = 0;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
@@ -751,9 +752,11 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 
 			process_hex(&custom[7], (iwe->len - 7), temp);
 			wpa_parse_ie(temp);
-			cardif_linux_rtnetlink_parse_ies(ctx, (uint8_t)temp, (int)temp[1]);
+			ielen = temp[1];
+			debug_printf(DEBUG_INT, "IE Length = %d\n", ielen);
+			cardif_linux_rtnetlink_parse_ies(ctx, temp, ielen);
 
-			config_ssid_add_wpa_ie(wctx, (uint8_t *) temp,
+			config_ssid_add_wpa_ie(wctx, temp,
 					       ((iwe->u.data.length - 7) / 2));
 		}
 
@@ -764,9 +767,11 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 
 			process_hex(&custom[7], (iwe->len - 7), temp);
 			wpa2_parse_ie(temp);
-			cardif_linux_rtnetlink_parse_ies(ctx, (uint8_t)temp, (int)temp[1]);
+			ielen = temp[1];
+			debug_printf(DEBUG_INT, "IE Length = %d\n", ielen);
+			cardif_linux_rtnetlink_parse_ies(ctx, temp, ielen);
 
-			config_ssid_add_rsn_ie(wctx, (uint8_t *) temp,
+			config_ssid_add_rsn_ie(wctx, temp,
 					       ((iwe->u.data.length - 7) / 2));
 		}
 	} else {
@@ -778,7 +783,7 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 		memcpy(temp, custom, iwe->u.data.length);
 		temp[iwe->u.data.length] = '\0';
 		debug_printf(DEBUG_INT, "Custom Data : \n");
-		debug_hex_dump(DEBUG_INT, (uint8_t *) temp, iwe->u.data.length);
+		debug_hex_dump(DEBUG_INT, temp, iwe->u.data.length);
 		cardif_linux_rtnetlink_check_custom(ctx, temp);
 	}
 }

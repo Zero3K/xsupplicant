@@ -57,9 +57,28 @@ struct found_ssids *config_ssid_find_by_wctx(wireless_ctx * wctx)
 	// Start at the top of the list.
 	cur = wctx->ssid_cache;
 
-	while ((cur != NULL) && (strcmp(wctx->cur_essid, cur->ssid_name) != 0)
-	       && (memcmp(wctx->cur_bssid, cur->mac, 6) != 0)) {
-		cur = cur->next;
+	while (cur != NULL)
+	  {
+	    if (cur->ssid_name != NULL)
+	      {
+		if (strcmp(wctx->cur_essid, cur->ssid_name) == 0)
+		  {
+		    if (memcmp(wctx->cur_bssid, "\x00\x00\x00\x00\x00\x00", 6) == 0)
+		      {
+			debug_printf(DEBUG_PHYSICAL_STATE, "Found wildcard version of BSSID!\n");
+			break;
+		      }
+
+		    if (memcmp(wctx->cur_bssid, cur->mac, 6) == 0)
+		      {
+			debug_printf(DEBUG_PHYSICAL_STATE, "Found specific SSID/BSSID pair!\n");
+			break;
+		      }
+		  }
+	      }
+
+	    // Otherwise, keep going.
+	    cur = cur->next;
 	}
 
 	return cur;
@@ -310,8 +329,6 @@ void config_ssid_add_freq(wireless_ctx * wctx, double newfreq)
 	}
 
 	working->freq = newfreq;
-	debug_printf(DEBUG_PHYSICAL_STATE, "Frequency set to %lf\n",
-		     working->freq);
 }
 
 /**
@@ -484,12 +501,19 @@ struct found_ssids *config_ssid_find_by_name(wireless_ctx * wctx,
 	cur = wctx->ssid_cache;
 
 	while (cur != NULL) {
+	  /*
 		if ((cur->ssid_name != NULL)
 		    && (strcmp(ssid_name, cur->ssid_name) != 0)) {
 			cur = cur->next;
 		} else {
 			break;
 		}
+	  */
+	  if ((cur->ssid_name != NULL) &&
+	      (strcmp(ssid_name, cur->ssid_name) == 0))
+	    break;
+
+	  cur = cur->next;
 	}
 
 	if (cur != NULL) {
@@ -796,10 +820,10 @@ char *config_ssid_get_desired_ssid(context * ctx)
  * @param[in] wctx   The wireless context that contains the information that 
  *                   we need to return.
  *
- * \retval uint8_t A byte containing flags that indicate the capabilities of
+ * \retval uint16_t A byte containing flags that indicate the capabilities of
  *                 the active SSID.
  **/
-uint8_t config_ssid_get_ssid_abilities(wireless_ctx * wctx)
+uint16_t config_ssid_get_ssid_abilities(wireless_ctx * wctx)
 {
 	struct found_ssids *ssid = NULL;
 
@@ -1039,9 +1063,7 @@ double config_ssid_get_best_freq(wireless_ctx * wctx)
 				     "Found hidden SSID\n");
 		}
 		if ((cur->ssid_name != NULL)
-		    && (strcmp(wctx->cur_essid, cur->ssid_name) != 0)) {
-			cur = cur->next;
-		} else {
+		    && (strcmp(wctx->cur_essid, cur->ssid_name) == 0)) {
 			if (first) {
 				best = cur;
 				first = 0;
@@ -1050,8 +1072,9 @@ double config_ssid_get_best_freq(wireless_ctx * wctx)
 					best = cur;
 				}
 			}
-			cur = cur->next;
 		}
+		
+		cur = cur->next;
 	}
 
 	if (best == NULL) {
