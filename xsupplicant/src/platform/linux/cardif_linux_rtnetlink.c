@@ -1522,7 +1522,7 @@ void cardif_linux_rtnetlink_del_ifla_ifname(int ifindex, char *data, int len)
 #ifdef HAVE_TNC
 	// If we are using a TNC enabled build, signal the IMC to clean up.
 	if (imc_disconnect_callback != NULL)
-		imc_disconnect_callback(ctx->tnc_connID);
+		imc_disconnect_callback(ctx->tnc_data->connectionID);
 #endif
 
 	ctx->flags |= INT_GONE;

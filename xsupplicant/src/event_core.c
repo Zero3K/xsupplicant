@@ -70,6 +70,9 @@ int num_event_slots = MAX_EVENTS;
 time_t last_check = 0;
 context *active_ctx = NULL;
 
+void (*imc_ui_connect_callback) () = NULL;
+void (*imc_notify_callback) () = NULL;
+
 void global_deinit();		// In xsup_driver.c, there is no header we can include so this prototype keeps the compiler from complaining.
 
 /**
@@ -606,4 +609,89 @@ context *event_core_locate_by_connection(char *matchstr)
 void event_core_set_active_ctx(context * ctx)
 {
 	active_ctx = ctx;
+}
+
+/**
+ * \brief Determine if the machine is going to sleep.
+ *
+ * \retval TRUE if we are going to sleep (or already asleep ;)
+ **/
+int event_core_get_sleep_state()
+{
+  // XXX Add this for Linux!
+  /*
+	if ((sleep_state == PWR_STATE_SLEEPING)
+	    || (sleep_state == PWR_STATE_HELD))
+		return TRUE;
+  */
+	return FALSE;
+}
+
+/**
+ * \brief Register a callback to notify an IMC when the UI connects to the supplicant.
+ *
+ * @param[in] callback   The callback that we want to call when the UI connects to the supplicant
+ *
+ * \warning Currently we only allow a single IMC to request this callback!  In the future
+ *          we may need to extend this!
+ *
+ * \todo Extend this to allow more than one callback to register.
+ *
+ * \retval 0 on success
+ * \retval 1 if another IMC has already registered.
+ **/
+uint32_t event_core_register_ui_connect_callback(void *callback)
+{
+	if (imc_ui_connect_callback != NULL)
+		return 1;
+
+	imc_ui_connect_callback = callback;
+
+	return 0;
+}
+
+/**
+ * \brief Register a callback to notify an IMC when a user logs on to the Windows console.
+ *
+ * @param[in] callback   The callback that we want to call when a user logs in.
+ *
+ * \warning Currently we only allow a single IMC to request this callback!  In the future
+ *          we may need to extend this!
+ *
+ * \todo Extend this to allow more than one callback to register.
+ *
+ * \retval 0 on success
+ * \retval 1 if another IMC has already registered.
+ **/
+uint32_t event_core_register_disconnect_callback(void *callback)
+{
+	if (imc_disconnect_callback != NULL)
+		return 1;
+
+	imc_disconnect_callback = callback;
+
+	return 0;
+}
+
+/**
+ * \brief Register a callback to notify an IMC when a user logs on to the Windows console.
+ *
+ * @param[in] callback   The callback that we want to call when a user logs in.
+ *
+ * \warning Currently we only allow a single IMC to request this callback!  In the future
+ *          we may need to extend this!
+ *
+ * \todo Extend this to allow more than one callback to register.
+ *
+ * \retval 0 on success
+ * \retval 1 if another IMC has already registered.
+ **/
+uint32_t event_core_register_imc_logon_callback(void *callback)
+{
+	if (imc_notify_callback != NULL)
+		return 1;
+
+	imc_notify_callback = callback;
+
+	return 0;
 }

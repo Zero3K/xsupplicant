@@ -33,5 +33,9 @@ context *event_core_locate_by_desc(char *);
 void event_core_load_user_config();
 void event_core_change_wireless(config_globals * newsettings);
 context *event_core_locate_by_connection(char *matchstr);
+int event_core_get_sleep_state();
+uint32_t event_core_register_ui_connect_callback(void *callback);
+uint32_t event_core_register_imc_logon_callback(void *callback);
+uint32_t event_core_register_disconnect_callback(void *callback);
 
 #endif
