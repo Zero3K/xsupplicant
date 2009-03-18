@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;UNSAFE_DUMPS;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -64,7 +64,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
@@ -267,7 +267,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS"
 				RuntimeLibrary="2"
 				StructMemberAlignment="0"
@@ -285,7 +285,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 			/>
 			<Tool
@@ -479,7 +479,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;IMC_EXPORTS;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -501,7 +501,7 @@
 				AdditionalOptions="/FIXED:NO"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT;LIBCMT"
 				GenerateDebugInformation="true"
@@ -710,7 +710,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -731,7 +731,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_service.exe"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT;LIBCMT"
 				GenerateDebugInformation="true"
@@ -936,7 +936,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;IMC_EXPORTS;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS"
 				RuntimeLibrary="2"
 				StructMemberAlignment="0"
@@ -954,7 +954,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT"
 			/>
@@ -1150,7 +1150,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS"
 				RuntimeLibrary="2"
 				StructMemberAlignment="0"
@@ -1170,7 +1170,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib libxsupconfcheck.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_service.exe"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
@@ -1592,7 +1592,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;IMC_EXPORTS;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;EXPERIMENTAL"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -1614,7 +1614,7 @@
 				AdditionalOptions="/FIXED:NO"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT;LIBCMT"
 				GenerateDebugInformation="true"
@@ -1822,7 +1822,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS;EAP_SIM_ENABLE"
 				RuntimeLibrary="2"
 				StructMemberAlignment="0"
@@ -1842,7 +1842,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib libxsupconfcheck.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_service.exe"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
@@ -2271,7 +2271,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;IMC_EXPORTS;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;EXPERIMENTAL"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
@@ -2293,7 +2293,7 @@
 				AdditionalOptions="/FIXED:NO"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Debug&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT;LIBCMT"
 				GenerateDebugInformation="true"
@@ -2501,7 +2501,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
+				AdditionalIncludeDirectories="&quot;$(MSPLATFORMSDK)\Include&quot;;&quot;$(LIBTNCDIR)\src\libtnc&quot;;..\..\lib\libxsupconfwrite;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;C:\WinDDK\3790.1830\inc\wxp;&quot;$(OPENSSLDIR)\include&quot;;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS;EAP_SIM_ENABLE;EXPERIMENTAL"
 				RuntimeLibrary="2"
 				StructMemberAlignment="0"
@@ -2521,7 +2521,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib ws2_32.lib wbemuuid.lib libtnc.lib crypt32.lib libsupdetect.lib liblist.lib libxsupconfcheck.lib iphlpapi.lib shlwapi.lib setupapi.lib wtsapi32.lib winscard.lib"
 				OutputFile="$(OutDir)\$(ProjectName)_service.exe"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
+				AdditionalLibraryDirectories="&quot;$(MSPLATFORMSDK)\Lib&quot;;&quot;$(LIBTNCDIR)\vs2005\libtnc\Release&quot;;&quot;$(OPENSSLDIR)\lib&quot;;&quot;$(OutDir)&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"

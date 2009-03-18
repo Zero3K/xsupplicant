@@ -66,7 +66,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -275,7 +275,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -483,7 +483,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -692,7 +692,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -895,7 +895,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1106,7 +1106,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1748,7 +1748,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -2174,7 +2174,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -2385,7 +2385,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib liblist.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;$(ZLIBDIR)\lib&quot;;&quot;$(ICONVDIR)\lib&quot;;&quot;$(LIBXML2DIR)\lib&quot;;&quot;$(MSPLATFORMSDK)\Lib&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>

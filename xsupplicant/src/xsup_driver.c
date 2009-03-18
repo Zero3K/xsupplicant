@@ -644,7 +644,7 @@ int main(int argc, char *argv[])
 
 #ifdef WINDOWS
 	crashdump_init("\\xsupcrashdmp-" BUILDNUM ".zip");
-#elsif LINUX
+#elif LINUX
 	crashdump_init("/tmp/xsupcrashdmp-" BUILDNUM ".zip");
 #else
 #warning Need to implement crash dump file handling for this platform.
