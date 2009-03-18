@@ -19,47 +19,43 @@
     
 #ifdef WINDOWS
 #pragma pack(1)
-#endif	/*  */
+#endif
     
 #ifdef WINDOWS
-    typedef struct {
-	uint16_t tlv_type;
-	uint16_t tlv_length;
-} peap_tlv_header;
-
-#else	/*  */
-    typedef struct {
-	uint16_t tlv_type;
-	uint16_t tlv_length;
-} peap_tlv_header __attribute__ ((__packed__));
-
-#endif	/*  */
+typedef struct {	
+	uint16_t tlv_type;
+	uint16_t tlv_length;
+} peap_tlv_header;
+#else 
+typedef struct {	
+	uint16_t tlv_type;
+	uint16_t tlv_length;
+} peap_tlv_header __attribute__ ((__packed__));
+#endif
     
 #ifdef WINDOWS
-    typedef struct {
-	uint8_t reserved;
-	uint8_t version;
-	uint8_t recvVersion;
-	uint8_t subType;
-	uint8_t nonce[32];
-	uint8_t compoundMac[20];
-} peap_tlv_cryptobinding_data;
-
-#else	/*  */
-    typedef struct {
-	uint8_t reserved;
-	uint8_t version;
-	uint8_t recvVersion;
-	uint8_t subType;
-	uint8_t nonce[32];
-	uint8_t compoundMac[20];
-} peap_tlv_cryptobinding_data __attribute__ ((__packed__));
-
-#endif	/*  */
+typedef struct {	
+	uint8_t reserved;
+	uint8_t version;
+	uint8_t recvVersion;
+	uint8_t subType;
+	uint8_t nonce[32];
+	uint8_t compoundMac[20];
+} peap_tlv_cryptobinding_data;
+#else	
+typedef struct {	
+	uint8_t reserved;
+	uint8_t version;
+	uint8_t recvVersion;
+	uint8_t subType;
+	uint8_t nonce[32];
+	uint8_t compoundMac[20];
+} peap_tlv_cryptobinding_data __attribute__ ((__packed__));
+#endif	
     
 #ifdef WINDOWS
 #pragma pack()
-#endif	/*  */
+#endif	
     
 #define PEAP_TLV_TYPE_FLAGS  0xc000
     
@@ -77,8 +73,12 @@
 #define PEAP_CRYPTOBINDING_IPMK_SEED_STR      "Inner Methods Compound Keys"
 #define PEAP_CRYPTOBINDING_IPMK_SEED_STR_LEN  27
 #define PEAP_CRYPTOBINDING_IPMK_SEED_LEN      59
+
+#define PEAP_CRYPTOBINDING_TLV_SIZE			  56
+
 int peap_extensions_process(eap_type_data * eapdata, struct phase2_data *p2d,
-			    uint8_t * in, uint16_t in_size, uint8_t * out,
+			    uint8_t * in, uint16_t in_size, uint8_t * out,
 			    uint16_t * out_size);
-
+
+
 #endif				// _PEAP_EXTENSIONS_H_

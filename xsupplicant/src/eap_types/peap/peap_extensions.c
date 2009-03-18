@@ -190,7 +190,61 @@ uint8_t * prf_plus(uint8_t * key, uint8_t * seed, uint8_t len)
 	return Tn;
 }
 
+/**
+ * \brief Create the cryptobinding response to send to the server.
+ *
+ * @param[in] ipmk   The already calculated IPMK.
+ * @param[out] out   A pointer to a memory buffer offset where we can safely write our result TLV data to.
+ * @param[out] out_size   A pointer to an integer that will be incremented by the size of the TLV we write back.
+ **/
+void peap_extensions_build_cryptobinding_result(uint8_t *ipmk, uint8_t *out, uint16_t *outsize)
+{
+	peap_tlv_header * tlvdata = NULL;	
+	peap_tlv_cryptobinding_data * cryptodata = NULL;
+	uint8_t tohash_data[61];
+	uint8_t *cmk = NULL;	// Reference pointer (DON'T FREE!)
+	unsigned int mdlen = 0;
+	uint8_t mac[20];
 
+	tlvdata = (peap_tlv_header *)out;
+	memset(out, 0x00, 61);			// zero our buffer.
+
+	tlvdata->tlv_type = htons(PEAP_TLV_CRYPTOBINDING);
+	tlvdata->tlv_length = htons(PEAP_CRYPTOBINDING_TLV_SIZE);
+
+	cryptodata = (peap_tlv_cryptobinding_data *)&out[sizeof(peap_tlv_header)];
+
+	cryptodata->version = 0;
+	cryptodata->recvVersion = 0;
+	cryptodata->subType = 1;		// This is a response.
+	RAND_bytes(cryptodata->nonce, 32);
+	
+	// zero everything out.
+	memset(tohash_data, 0x00, sizeof(tohash_data));
+
+	memcpy(tohash_data, out, 60);
+	out[60] = EAP_TYPE_PEAP;
+	
+	cmk = ipmk + 40;
+
+	HMAC(EVP_sha1(), cmk, 20, &tohash_data[0], 61,
+		  (unsigned char *)&mac, 
+			&mdlen);
+
+	if (mdlen != 20)	
+	{
+		debug_printf(DEBUG_NORMAL,
+			      "Unable to compute the Compound MAC.  SHA-1 didn't return 20 bytes of data!\n");
+		return;
+	}
+
+	memcpy(cryptodata->compoundMac, mac, 20);
+
+	(*outsize) = 60;
+
+	debug_printf(DEBUG_AUTHTYPES, "Returning (%d) :\n", (*outsize));
+	debug_hex_dump(DEBUG_AUTHTYPES, out, (*outsize));
+}
 
 /**
  * \brief Process a Cryptobinding TLV.
@@ -304,9 +358,9 @@ void peap_extensions_process_cryptobinding_tlv(eap_type_data * eapdata,
 		return;
 	}
 	
-	tk = mytls_vars->keyblock;	// First 60 bytes
+	tk = mytls_vars->keyblock;	// First 40 bytes
 	debug_printf(DEBUG_AUTHTYPES, "TK : \n");
-	debug_hex_dump(DEBUG_AUTHTYPES, tk, 60);
+	debug_hex_dump(DEBUG_AUTHTYPES, tk, 40);
 
 	memset(&isk[0], 0x00, 64);
 	
@@ -355,6 +409,7 @@ void peap_extensions_process_cryptobinding_tlv(eap_type_data * eapdata,
 	{
 		debug_printf(DEBUG_NORMAL,
 			      "Unable to compute the Compound MAC.  SHA-1 didn't return 20 bytes of data!\n");
+		FREE(ipmk);
 		return;
 	}
 	
@@ -362,8 +417,19 @@ void peap_extensions_process_cryptobinding_tlv(eap_type_data * eapdata,
 	debug_printf(DEBUG_AUTHTYPES, "Compound MAC : ");
 	debug_hex_printf(DEBUG_AUTHTYPES, mac, 20);
 #endif	
+
+	if (memcmp(cryptodata->compoundMac, mac, 20) != 0)
+	{
+		debug_printf(DEBUG_NORMAL, "The cryptobinding MAC sent by the server appears to be invalid.\n");
+		FREE(ipmk);
+		return;
+	}
+
+	debug_printf(DEBUG_AUTHTYPES, "The compound MAC matches.\n");
 	    
-	    // TODO : Finish implementation of Cryptobinding.
+
+	peap_extensions_build_cryptobinding_result(ipmk, out, out_size);
+	FREE(ipmk);
 }
 
 
@@ -441,6 +507,59 @@ void peap_extensions_process_result_tlv(struct phase2_data *p2d, uint8_t * in,
 	}
 }
 
+void do_tests()
+{
+	uint8_t tk[60] = { 0x73, 0x8B, 0xB5, 0xF4, 0x62, 0xD5, 0x8E, 0x7E, 0xD8, 0x44, 0xE1, 0xF0, 0x0D, 0x0E,
+		0xBE, 0x50, 0xC5, 0x0A, 0x20, 0x50, 0xDE, 0x11, 0x99, 0x77, 0x10, 0xD6, 0x5F, 0x45, 0xFB, 0x5F, 0xBA,
+		0xB7, 0xE3, 0x18, 0x1E, 0x92, 0x4F, 0x42, 0x97, 0x38, 0xDE, 0x40, 0xC8, 0x46, 0xCD, 0xF5, 0x0B, 0xCB,
+		0xF9, 0xCE, 0xDB, 0x1E, 0x85, 0x1D, 0x22, 0x52, 0x45, 0x3B, 0xDF, 0x63 };
+
+	uint8_t isk[32] = { 0x67, 0x3E, 0x96, 0x14, 0x01, 0xBE, 0xFB, 0xA5, 0x60, 0x71, 0x7B, 0x3B, 0x5D, 0xDD, 0x40,
+		0x38, 0x65, 0x67, 0xF9, 0xF4, 0x16, 0xFD, 0x3E, 0x9D, 0xFC, 0x71, 0x16, 0x3B, 0xDF, 0xF2, 0xFA, 0x95 };
+
+	uint8_t tohash_data[61] = { 0x00, 0x0C, 0x00, 0x38, 0x00, 0x00, 0x00, 0x00, 0xBD, 0xA7, 0xA5, 0x99, 0xFA, 0x81, 0x65,
+		0x21, 0xAD, 0x30, 0x64, 0xC2, 0xBD, 0xDB, 0xD1, 0x6E, 0xAA, 0x94, 0x9E, 0x7D, 0x98, 0xA8, 0xD7, 0x94, 0x31,
+		0x47, 0xCF, 0x42, 0x5D, 0x85, 0xDA, 0x7B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x19 };
+
+	char *ipmk_root = "Inner Methods Compound Keys";
+	uint8_t ipmk_seed[64];
+	uint8_t ipmks_len;
+	uint8_t *ipmk = NULL;
+	uint8_t *cmk = NULL;
+	uint8_t mac[20];	
+	unsigned int mdlen = 0;
+
+	memset(&ipmk_seed[0], 0x00, 64);
+
+	memcpy(&ipmk_seed[0], ipmk_root, strlen(ipmk_root));
+	memcpy(&ipmk_seed[strlen(ipmk_root)], isk, 32);
+	ipmks_len = strlen(ipmk_root)+32;
+
+	ipmk = prf_plus(tk, ipmk_seed, 60);
+
+	cmk = ipmk + 40;
+	
+	debug_printf(DEBUG_AUTHTYPES, "IPMK : ");
+	debug_hex_printf(DEBUG_AUTHTYPES, ipmk, 40);
+	debug_printf(DEBUG_AUTHTYPES, "CMK : ");
+	debug_hex_printf(DEBUG_AUTHTYPES, cmk, 20);
+
+	HMAC(EVP_sha1(), cmk, 20, &tohash_data[0], 61,
+		  (unsigned char *)&mac, 
+			&mdlen);
+
+	if (mdlen != 20)	
+	{
+		debug_printf(DEBUG_NORMAL,
+			      "Unable to compute the Compound MAC.  SHA-1 didn't return 20 bytes of data!\n");
+		return;
+	}
+	
+	debug_printf(DEBUG_AUTHTYPES, "Compound MAC : ");
+	debug_hex_printf(DEBUG_AUTHTYPES, mac, 20);
+
+}
 
 /**
  * \brief Process a Result TLV.
@@ -479,7 +598,9 @@ int peap_extensions_process(eap_type_data * eapdata, struct phase2_data *p2d,
 	
 	if (!xsup_assert((out_size != NULL), "out_size != NULL", FALSE))
 		return XEGENERROR;
-	
+
+	do_tests();
+
 	dataofs = sizeof(struct eap_header);
 	outdataofs = sizeof(struct eap_header);
 	
