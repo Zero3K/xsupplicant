@@ -636,18 +636,6 @@ void eapfast_process_phase2(eap_type_data * eapdata, int buffer)
 		break;
 
 	default:
-	  /*
-		resbuf = Malloc(bufsiz);
-		if (resbuf == NULL) {
-			debug_printf(DEBUG_NORMAL,
-				     "Couldn't allocate memory needed to "
-				     "store decrypted data!\n");
-			eap_type_common_fail(eapdata);
-			break;
-		}
-
-		resout = bufsiz;
-	  */
 		if (tls_funcs_decrypt(eapdata->eap_data, &resbuf, &resout) !=
 		    XENONE) {
 			debug_printf(DEBUG_NORMAL, "Decryption failed!\n");

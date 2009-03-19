@@ -343,18 +343,6 @@ void eappeap_process(eap_type_data * eapdata)
 
 		default:
 			// Data to be decrypted.
-		  /*
-			resbuf = Malloc(decryptReadyBufSize);
-			if (resbuf == NULL) {
-				debug_printf(DEBUG_NORMAL,
-					     "Couldn't allocate memory needed to"
-					     " store decrypted data!\n");
-				ipc_events_malloc_failed(NULL);
-				eap_type_common_fail(eapdata);
-				break;
-			}
-			bufsiz = decryptReadyBufSize;
-		  */
 			if (tls_funcs_decrypt
 			    (eapdata->eap_data, &resbuf,
 			     (uint16_t *) & bufsiz) != XENONE) {
