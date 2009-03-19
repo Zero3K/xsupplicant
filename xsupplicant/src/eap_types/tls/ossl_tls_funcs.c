@@ -90,7 +90,8 @@ char *get_cert_common_name(SSL * ssl_ctx)
 	char *commonName = NULL;
 	X509 *server_cert;
 
-	TRACE if (!xsup_assert((ssl_ctx != NULL), "ssl_ctx != NULL", FALSE))
+	TRACE 
+	  if (!xsup_assert((ssl_ctx != NULL), "ssl_ctx != NULL", FALSE))
 		return NULL;
 
 	// Get our certificate.
@@ -1955,27 +1956,29 @@ int tls_funcs_decrypt(struct tls_vars *mytls_vars, uint8_t ** outdata,
 
 	while (done == FALSE)
 	  {
-	    rc = SSL_read(mytls_vars->ssl, tempPtr, &fragSize);
+	    rc = SSL_read(mytls_vars->ssl, tempPtr, fragSize);
 	    if (rc < 0) {
 		debug_printf(DEBUG_NORMAL,
-			     "Failed to get decyrpted data from OpenSSL." "\n");
+			     "Failed to get decrypted data from OpenSSL." "\n");
 		tls_funcs_process_error();
 		return XEMALLOC;
 	    }
 
-	    if (rc > 0) (*outsize) += fragSize;
+	    if (rc > 0) (*outsize) += rc;
 
-	    if (rc != value32)
+	    if (rc != fragSize)
 	      {
 		done = TRUE;
 	      }
 	    else
 	      {
 		retdata = realloc(retdata, ((*outsize)+fragSize));
-		tempPtr+=fragSize;
+		tempPtr = (uint8_t *)&retdata[(*outsize)];
 	      }
 
 	  }
+
+	(*outdata) = retdata;
 
 	return XENONE;
 }
