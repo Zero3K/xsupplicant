@@ -457,6 +457,8 @@ int cardif_init(context * ctx, char driver)
 	event_core_register(cardif_get_socket(ctx), ctx, eapol_withframe,
 			    LOW_PRIORITY, "frame handler");
 
+	ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
+
 	return XENONE;
 }
 
@@ -1029,7 +1031,8 @@ int cardif_get_link_state(context * ctx)
 		return TRUE;
 	}
 
-	return FALSE;
+	//	return FALSE;
+	return TRUE;  // XXX FIX!
 }
 
 /**

@@ -1526,6 +1526,7 @@ void cardif_linux_rtnetlink_del_ifla_ifname(int ifindex, char *data, int len)
 #endif
 
 	ctx->flags |= INT_GONE;
+
 	if ((ctx != NULL) && (ctx->statemachine != NULL))
 		ctx->statemachine->portEnabled = FALSE;
 	if ((ctx != NULL) && (ctx->eap_state != NULL))

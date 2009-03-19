@@ -1263,10 +1263,12 @@ int statemachine_run(context * ctx)
 		statemachine_check_global_transition(ctx);
 	}
 #ifndef WINDOWS
-	ctx->statemachine->portEnabled = cardif_get_if_state(ctx);
+	//	ctx->statemachine->portEnabled = cardif_get_if_state(ctx);
 #endif
 //  ctx->statemachine->portEnabled = cardif_get_if_state(ctx);
-//  ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
+#ifndef WINDOWS
+  ctx->statemachine->portEnabled = cardif_get_link_state(ctx);
+#endif
 
 #ifndef WINDOWS
 	if (ctx->statemachine->portEnabled == FALSE) {
