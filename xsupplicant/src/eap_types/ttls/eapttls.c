@@ -320,6 +320,7 @@ void eapttls_process(eap_type_data * eapdata)
 
 		default:
 			// Data to be decrypted.
+		  /*
 			resbuf = Malloc(bufsiz);
 			if (resbuf == NULL) {
 				debug_printf(DEBUG_NORMAL,
@@ -331,9 +332,9 @@ void eapttls_process(eap_type_data * eapdata)
 			}
 
 			resout = bufsiz;
-
+		  */
 			if (tls_funcs_decrypt
-			    (eapdata->eap_data, resbuf, &resout) != XENONE) {
+			    (eapdata->eap_data, &resbuf, &resout) != XENONE) {
 				debug_printf(DEBUG_NORMAL,
 					     "Decryption failed!\n");
 				eap_type_common_fail(eapdata);

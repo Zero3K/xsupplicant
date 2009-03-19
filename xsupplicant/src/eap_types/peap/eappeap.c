@@ -343,6 +343,7 @@ void eappeap_process(eap_type_data * eapdata)
 
 		default:
 			// Data to be decrypted.
+		  /*
 			resbuf = Malloc(decryptReadyBufSize);
 			if (resbuf == NULL) {
 				debug_printf(DEBUG_NORMAL,
@@ -353,9 +354,9 @@ void eappeap_process(eap_type_data * eapdata)
 				break;
 			}
 			bufsiz = decryptReadyBufSize;
-
+		  */
 			if (tls_funcs_decrypt
-			    (eapdata->eap_data, resbuf,
+			    (eapdata->eap_data, &resbuf,
 			     (uint16_t *) & bufsiz) != XENONE) {
 				debug_printf(DEBUG_NORMAL,
 					     "Decryption failed!\n");

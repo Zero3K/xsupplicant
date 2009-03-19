@@ -1881,22 +1881,26 @@ int tls_funcs_decrypt_ready(struct tls_vars *mytls_vars)
  * Danielle Brevi.
  *
  ************************************************************************/
-int tls_funcs_decrypt(struct tls_vars *mytls_vars, uint8_t * indata,
-		      uint16_t * insize)
+int tls_funcs_decrypt(struct tls_vars *mytls_vars, uint8_t ** outdata,
+		      uint16_t * outsize)
 {
 	int rc = 0;
-	uint8_t *toencrypt = NULL;
+	uint8_t *todecrypt = NULL;
 	uint32_t value32 = 0;
 	uint32_t expected = 0;
+	uint8_t *retdata = NULL;
+	int done = FALSE;
+	uint8_t *tempPtr = NULL;
+	unsigned int fragSize = 0;
 
 	TRACE
 	    if (!xsup_assert((mytls_vars != NULL), "mytls_vars != NULL", FALSE))
 		return -1;
 
-	if (!xsup_assert((indata != NULL), "indata != NULL", FALSE))
+	if (!xsup_assert((outdata != NULL), "outdata != NULL", FALSE))
 		return -1;
 
-	if (!xsup_assert((insize != NULL), "insize != NULL", FALSE))
+	if (!xsup_assert((outsize != NULL), "outsize != NULL", FALSE))
 		return -1;
 
 	// Determine how much data we have to push in.
@@ -1908,7 +1912,7 @@ int tls_funcs_decrypt(struct tls_vars *mytls_vars, uint8_t * indata,
 	expected = value32;
 
 	// Then, dequeue it all.
-	if (queue_dequeue(&mytls_vars->tlsinqueue, &toencrypt, &value32) != 0) {
+	if (queue_dequeue(&mytls_vars->tlsinqueue, &todecrypt, &value32) != 0) {
 		debug_printf(DEBUG_NORMAL, "Couldn't dequeue data!\n");
 		return -1;
 	}
@@ -1916,7 +1920,7 @@ int tls_funcs_decrypt(struct tls_vars *mytls_vars, uint8_t * indata,
 	if (queue_destroy(&mytls_vars->tlsinqueue) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't destroy queue!  We will leak memory!\n");
-		FREE(toencrypt);
+		FREE(todecrypt);
 		return -1;
 	}
 
@@ -1925,31 +1929,53 @@ int tls_funcs_decrypt(struct tls_vars *mytls_vars, uint8_t * indata,
 		debug_printf(DEBUG_NORMAL,
 			     "We didn't dequeue the amount of data we were expecting.  Something "
 			     "is *SERIOUSLY* wrong!\n");
-		FREE(toencrypt);
+		FREE(todecrypt);
 		return -1;
 	}
 
-	rc = BIO_write(mytls_vars->ssl_in, toencrypt, value32);
+	rc = BIO_write(mytls_vars->ssl_in, todecrypt, value32);
 	if (rc < 0) {
 		debug_printf(DEBUG_NORMAL, "Failed to send data to OpenSSL for "
 			     "decryption.\n");
-		FREE(toencrypt);
+		FREE(todecrypt);
 		return -1;
 	}
 
-	FREE(toencrypt);
+	FREE(todecrypt);
 
-	memset(indata, 0x00, (*insize));
+	fragSize = value32;           // Start out assuming there is no compression on the buffer.
+	retdata = Malloc(fragSize);
+	if (retdata == NULL)
+	  {
+	    debug_printf(DEBUG_NORMAL, "Unable to allocate memory to store decrypted data!\n");
+	    return XEMALLOC;
+	  }
+	tempPtr = retdata;
+	(*outsize) = 0;
 
-	rc = SSL_read(mytls_vars->ssl, indata, (*insize));
-	if (rc < 0) {
+	while (done == FALSE)
+	  {
+	    rc = SSL_read(mytls_vars->ssl, tempPtr, &fragSize);
+	    if (rc < 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Failed to get decyrpted data from OpenSSL." "\n");
 		tls_funcs_process_error();
 		return XEMALLOC;
-	}
+	    }
 
-	(*insize) = rc;
+	    if (rc > 0) (*outsize) += fragSize;
+
+	    if (rc != value32)
+	      {
+		done = TRUE;
+	      }
+	    else
+	      {
+		retdata = realloc(retdata, ((*outsize)+fragSize));
+		tempPtr+=fragSize;
+	      }
+
+	  }
 
 	return XENONE;
 }

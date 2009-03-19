@@ -78,7 +78,7 @@ uint8_t *tls_funcs_gen_keyblock(struct tls_vars *, uint8_t, uint8_t *,
 				uint16_t);
 int tls_funcs_buffer(struct tls_vars *, uint8_t *, uint16_t);
 int tls_funcs_decrypt_ready(struct tls_vars *);
-int tls_funcs_decrypt(struct tls_vars *, uint8_t *, uint16_t *);
+int tls_funcs_decrypt(struct tls_vars *, uint8_t **, uint16_t *);
 int tls_funcs_load_random(struct tls_vars *, char *);
 void tls_funcs_deinit(struct tls_vars *);
 int tls_funcs_get_keyblock_len(struct tls_vars *);
