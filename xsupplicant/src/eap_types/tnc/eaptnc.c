@@ -441,11 +441,9 @@ uint8_t *eaptnc_buildResp(eap_type_data * eapdata)
 	uint8_t *resdata = NULL, *resdataptr = NULL, *retdata = NULL, *dataptr =
 	    NULL, *dequeue_data = NULL;
 	struct eap_header *eaphdr = NULL;
-	uint32_t value32 = 0, cpysize = 0, extra = 0, totalsize = 0, queuesize =
-	    0, res_size = 0, retlen = 0;
+	uint32_t cpysize = 0, queuesize = 0, res_size = 0, retlen = 0;
 	uint16_t value16 = 0;
 	struct tnc_data *tnc = NULL;
-	uint8_t *tosend = NULL;
 	int maxsize = TNC_MAX_FRAG;
 	int more = 0;
 	int athead = 0;

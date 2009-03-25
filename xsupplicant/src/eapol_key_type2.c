@@ -1401,6 +1401,12 @@ void eapol_key_type2_determine_key(context * intdata)
 	    (keyflags & WPA2_KEY_MIC_FLAG) && (keyflags & WPA2_INSTALL_FLAG)) {
 		debug_printf(DEBUG_KEY, "Key Packet #3 (response) :\n");
 		eapol_key_type2_do_type3(intdata);
+#ifdef LINUX
+		if(TEST_FLAG(((wireless_ctx *)intdata->intTypeData)->flags, WIRELESS_SM_DOING_PSK ))
+		  {
+		    UNSET_FLAG(((wireless_ctx *)intdata->intTypeData)->flags,WIRELESS_SM_DOING_PSK );              
+		  }
+#endif
 	} else if ((keyflags & WPA2_PAIRWISE_KEY)
 		   && (keyflags & WPA2_KEY_ACK_FLAG)) {
 		debug_printf(DEBUG_KEY, "Key Packet #1 (response) :\n");

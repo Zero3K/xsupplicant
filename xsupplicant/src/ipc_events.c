@@ -626,7 +626,7 @@ int ipc_events_statemachine_transition(context * ctx, int statemachine,
 	}
 #ifdef HAVE_TNC
 	if (ctx->tnc_data != NULL) {
-		sprintf((char *)&temp, "%d", ctx->tnc_data->connectionID);
+	  sprintf((char *)&temp, "%d", (uint32_t)ctx->tnc_data->connectionID);
 		if (xmlNewChild
 		    (t, NULL, (xmlChar *) "TNC_Connection_ID",
 		     (xmlChar *) temp) == NULL) {
@@ -1073,7 +1073,7 @@ void ipc_events_send_tnc_batch(void *batchlist, uint32_t imcID, uint32_t connID,
 		goto done;
 	}
 
-	t = xmlNewChild(root, NULL, "TNC_Request_Batch_Event", NULL);
+	t = xmlNewChild(root, NULL, (xmlChar *)"TNC_Request_Batch_Event", NULL);
 	if (t == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't create TNC_Request_Batch_Event node!\n");
@@ -1081,43 +1081,43 @@ void ipc_events_send_tnc_batch(void *batchlist, uint32_t imcID, uint32_t connID,
 	}
 
 	sprintf((char *)&temp, "%d", imcID);
-	if (xmlNewChild(t, NULL, "imcID", temp) == NULL) {
+	if (xmlNewChild(t, NULL, (xmlChar *)"imcID", (xmlChar *)temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create <imcID> node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", connID);
-	if (xmlNewChild(t, NULL, "connID", temp) == NULL) {
+	if (xmlNewChild(t, NULL, (xmlChar *)"connID", (xmlChar *)temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create <connID> node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", oui);
-	if (xmlNewChild(t, NULL, "OUI", temp) == NULL) {
+	if (xmlNewChild(t, NULL, (xmlChar *)"OUI", (xmlChar *)temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create OUI node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", msg);
-	if (xmlNewChild(t, NULL, "MsgID", temp) == NULL) {
+	if (xmlNewChild(t, NULL, (xmlChar *)"MsgID", (xmlChar *)temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create MsgID node!\n");
 		goto done;
 	}
 
 	sprintf((char *)&temp, "%d", numitems);
-	if (xmlNewChild(t, NULL, "Items", temp) == NULL) {
+	if (xmlNewChild(t, NULL, (xmlChar *)"Items", (xmlChar *)temp) == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create <Items> node!\n");
 		goto done;
 	}
 
-	n = xmlNewChild(t, NULL, "Batch", NULL);
+	n = xmlNewChild(t, NULL, (xmlChar *)"Batch", NULL);
 	if (n == NULL) {
 		debug_printf(DEBUG_NORMAL, "Couldn't create <Batch> tag!\n");
 		goto done;
 	}
 	// Iterate through the list, and build all of the nodes.
 	while (cur != NULL) {
-		b = xmlNewChild(n, NULL, "Item", NULL);
+	        b = xmlNewChild(n, NULL, (xmlChar *)"Item", NULL);
 		if (b == NULL) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't create <Item> tag!\n");
@@ -1125,34 +1125,34 @@ void ipc_events_send_tnc_batch(void *batchlist, uint32_t imcID, uint32_t connID,
 		}
 
 		sprintf((char *)&temp, "%d", cur->imcID);
-		if (xmlNewChild(b, NULL, "imcID", temp) == NULL) {
+		if (xmlNewChild(b, NULL, (xmlChar *)"imcID", (xmlChar *)temp) == NULL) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't create <imcID> tag!\n");
 			goto done;
 		}
 
 		sprintf((char *)&temp, "%d", cur->connectionID);
-		if (xmlNewChild(b, NULL, "connectionID", temp) == NULL) {
+		if (xmlNewChild(b, NULL, (xmlChar *)"connectionID", (xmlChar *)temp) == NULL) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't create <connectionID> tag!\n");
 			goto done;
 		}
 
 		sprintf((char *)&temp, "%d", cur->oui);
-		if (xmlNewChild(b, NULL, "OUI", temp) == NULL) {
+		if (xmlNewChild(b, NULL, (xmlChar *)"OUI", (xmlChar *)temp) == NULL) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't create <OUI> tag!\n");
 			goto done;
 		}
 
 		sprintf((char *)&temp, "%d", cur->msgid);
-		if (xmlNewChild(b, NULL, "MsgID", temp) == NULL) {
+		if (xmlNewChild(b, NULL, (xmlChar *)"MsgID", (xmlChar *)temp) == NULL) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't create <MsgID> tag!\n");
 			goto done;
 		}
 
-		if (xmlNewChild(b, NULL, "Parameter", cur->parameter) == NULL) {
+		if (xmlNewChild(b, NULL, (xmlChar *)"Parameter", (xmlChar *)cur->parameter) == NULL) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't create <Parameter> tag!\n");
 			goto done;

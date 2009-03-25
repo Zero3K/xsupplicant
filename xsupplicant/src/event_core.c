@@ -33,6 +33,7 @@
 #include "ipc_events_index.h"
 #include "ipc_events.h"
 #include "platform/platform.h"
+#include "libcrashdump/crashdump.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -334,6 +335,9 @@ void event_core()
 	}
 
 	if (result > 0) {
+	        // See if logs need to be rolled.
+	        xsup_debug_check_log_roll();
+
 		for (i = 0; i < MAX_EVENTS; i++) {
 			if (events[i].socket > 0) {
 				if (FD_ISSET(events[i].socket, &rfds)) {

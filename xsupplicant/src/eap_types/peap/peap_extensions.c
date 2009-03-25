@@ -23,6 +23,7 @@
 #endif	
     
 #include <openssl/hmac.h>
+#include <openssl/rand.h>
     
 #include "libxsupconfig/xsupconfig_structs.h"
 #include "src/xsup_common.h"

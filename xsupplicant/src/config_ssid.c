@@ -248,6 +248,41 @@ void config_ssid_add_rsn_ie(wireless_ctx * wctx, uint8_t * rsn_ie, uint8_t len)
 }
 
 /**
+ * \brief Add a newly discovered WME IE to a SSID node.
+ *
+ * @param[in] wctx   A pointer to the wireless context that contains the 
+ *                   structure that we want to add this WME IE to.
+ * @param[in] rsn_ie   A pointer to a string of octets that make up the 
+ *                     RSN IE to store.
+ * @param[in] len   The length of the WME IE that we want to store.
+ **/
+void config_ssid_add_wme_ie(wireless_ctx *wctx, uint8_t *wme_ie, uint8_t len)
+{
+	struct found_ssids *working = NULL;
+
+	working = wctx->temp_ssid;
+
+  if ((!working) || (working->wme_ie))
+    {
+      debug_printf(DEBUG_PHYSICAL_STATE, "Found new ESSID block, adding...\n");
+	  wctx->temp_ssid = config_ssid_init_new_node(wctx);
+	  working = wctx->temp_ssid;
+    }
+
+  working->wme_ie = (uint8_t *)Malloc(len);
+  if (!working->wme_ie)
+    {
+      debug_printf(DEBUG_NORMAL, "Couldn't allocate memory to store the WME "
+		   "IE!  Xsupplicant will not be able to use this ESSID! "
+		   "(%s:%d)\n", __FUNCTION__, __LINE__);
+	  ipc_events_malloc_failed(NULL);
+      return;
+    }
+  memcpy(working->wme_ie, wme_ie, len);
+  working->wme_ie_len = len;
+}
+
+/**
  * \brief Add the BSSID to the ESSID node.
  *
  * @param[in] wctx   A pointer to the wireless context that contains the 
@@ -449,6 +484,7 @@ void config_ssid_free_node(void **inptr)
 	FREE(node->ssid_name);
 	FREE(node->wpa_ie);
 	FREE(node->rsn_ie);
+	FREE(node->wme_ie);
 
 	FREE((*inptr));
 }

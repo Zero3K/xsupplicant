@@ -74,6 +74,10 @@
 #include "eap_types/tls/tls_funcs.h"
 // XXX (End)
 
+#ifdef USE_TNC
+#include "eap_types/tnc/tnc_compliance_callbacks.h"
+#endif
+
 #ifdef WINDOWS
 #include <windows.h>
 #include "event_core_win.h"
@@ -6490,9 +6494,7 @@ int ipc_callout_get_tnc_request_response(xmlNodePtr innode,
 	return IPC_FAILURE;
 #else
 	xmlNodePtr n = NULL, t = NULL;
-	context *ctx = NULL;
 	char *value = NULL;
-	int tf = FALSE;
 	uint32_t imcID, connID, oui, response, notification;
 
 	if (innode == NULL)
@@ -7910,8 +7912,7 @@ int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr innode,
 					IPC_ERROR_NOT_SUPPORTED, outnode);
 #else
 	xmlNodePtr n = NULL, t = NULL;
-	int retval = IPC_SUCCESS, retval2 = IPC_SUCCESS;
-	char *iface = NULL;
+	int retval = IPC_SUCCESS;
 	context *ctx = NULL;
 	int newval = 0;
 	char *temp = NULL;
@@ -7962,7 +7963,7 @@ int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr innode,
 						outnode);
 	}
 
-	n = xmlNewNode(NULL, "Interface_From_TNC_Conn_ID");
+	n = xmlNewNode(NULL, (xmlChar *)"Interface_From_TNC_Conn_ID");
 	if (n == NULL) {
 		debug_printf(DEBUG_IPC,
 			     "Couldn't create <Interface_From_TNC_Conn_ID node.\n");
@@ -7973,7 +7974,7 @@ int ipc_callout_get_interface_from_tnc_connid(xmlNodePtr innode,
 	}
 	// Otherwise, we should have what we need to know.
 	ipc_callout_convert_amp(ctx->intName, &temp);
-	if (xmlNewChild(n, NULL, "Interface_Name", temp) == NULL) {
+	if (xmlNewChild(n, NULL, (xmlChar *)"Interface_Name", (xmlChar *)temp) == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't create <Interface_Name> node!\n");
 		free(temp);

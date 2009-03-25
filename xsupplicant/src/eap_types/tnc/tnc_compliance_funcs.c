@@ -18,6 +18,8 @@
 #ifdef WINDOWS
 #include <windows.h>
 #include "../../stdintwin.h"
+#else
+#include <string.h>
 #endif
 
 #include "libxsupconfig/xsupconfig_structs.h"
@@ -29,6 +31,8 @@
 #include "../../ipc_events_index.h"
 #include "../../wireless_sm.h"
 #include "tnc_compliance_funcs.h"
+#include "../../platform/cardif.h"
+#include "../../statemachine.h"
 
 #ifdef WINDOWS
 #include "../../event_core_win.h"

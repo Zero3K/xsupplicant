@@ -31,6 +31,8 @@ struct found_ssids {
 	char noise;
 	uint8_t strength;
 	uint8_t radioTypes;
+        uint8_t *wme_ie;
+        uint8_t wme_ie_len;
 };
 
 void config_ssid_clear(wireless_ctx *);

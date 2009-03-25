@@ -213,12 +213,8 @@ int xsupgui_ud_recv_event(unsigned char **result, int *resultsize)
 	if (cread < 0)
 		return IPC_ERROR_UNABLE_TO_READ;	// Got an error.
 
-	if (cread == 0) {
-		printf("No data available!\n");
+	if (cread == 0) 
 		return REQUEST_TIMEOUT;
-	}
-
-	printf("Event : \n %s\n", resdata);
 
 	(*resultsize) = cread;
 	(*result) = resdata;
@@ -250,6 +246,9 @@ int xsupgui_ud_recv(unsigned char **result, int *resultsize)
 	int offset = 0;
 	ipc_header *hdr = NULL;
 	uint32_t value32 = 0;
+
+	(*result) = NULL;
+	(*resultsize) = 0;
 
 	if (ipc_sock < 0)
 		return IPC_ERROR_CTRL_NOT_CONNECTED;
@@ -286,7 +285,6 @@ int xsupgui_ud_recv(unsigned char **result, int *resultsize)
 
 		if (cread == 0) {
 			free(resdata);
-			printf("No data available!\n");
 			return IPC_ERROR_RECV_IPC_RUNT;
 		}
 
@@ -325,7 +323,7 @@ int xsupgui_ud_recv(unsigned char **result, int *resultsize)
 			return REQUEST_SUCCESS;
 		}
 
-		if ((resdata[0] && IPC_MSG_TOTAL_SIZE) == IPC_MSG_TOTAL_SIZE) {
+		if ((resdata[0] & IPC_MSG_TOTAL_SIZE) == IPC_MSG_TOTAL_SIZE) {
 			// We need to allocate memory.
 			if (data != NULL) {
 				return IPC_ERROR_NOT_INITIALIZED;

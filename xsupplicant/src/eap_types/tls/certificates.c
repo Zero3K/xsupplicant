@@ -543,7 +543,7 @@ int certificates_load_root(struct tls_vars *mytls_vars,
 		return XENONE;
 	}
 
-	if (strcmp(svr->store_type, "DIRECTORY") == 0) {
+	if (strcmp(svr->store_type, "LINUX") == 0) {
 		// Get the certificate out of an OpenSSL directory.
 		for (i = 0; i < svr->num_locations; i++) {
 			if (tls_funcs_load_root_certs
