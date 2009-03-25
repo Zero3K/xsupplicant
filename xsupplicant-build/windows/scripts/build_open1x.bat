@@ -56,6 +56,7 @@ set OPENSSLDIR=%OPENSSLDIR%
 set ZLIBDIR=%ZLIBDIR%
 set LIBTNCDIR=%LIBTNCDIR%
 set NUIOUSERDIR=%NUIOUSERDIR%
+set MSPLATFORMSDK=%MSPLATFORMSDK%
 
 if [%LIBXML2DIR%]==[] (
 	set LIBXML2DIR=%OPEN1X_LIBRARY_ROOT%\libxml2-2.6.30+.win32
@@ -75,6 +76,10 @@ if [%LIBTNCDIR%]==[] (
 
 if [%NUIOUSERDIR%]==[] (
 	set NUIOUSERDIR=C:\WinDDK\6000\src\network\ndis\ndisprot\5x\sys
+)
+
+if [%MSPLATFORMSDK%]==[] (
+        set MSPLATFORMSDK="c:\Program Files\Microsoft SDKs\Windows\v6.0"
 )
 
 rem ---- Open1X ----
