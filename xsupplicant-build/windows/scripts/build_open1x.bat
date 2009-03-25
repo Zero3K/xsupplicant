@@ -79,7 +79,7 @@ if [%NUIOUSERDIR%]==[] (
 )
 
 if [%MSPLATFORMSDK%]==[] (
-        set MSPLATFORMSDK="c:\Program Files\Microsoft SDKs\Windows\v6.0"
+        set MSPLATFORMSDK=C:\Program Files\Microsoft SDKs\Windows\v6.0
 )
 
 rem ---- Open1X ----
