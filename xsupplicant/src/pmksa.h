@@ -9,19 +9,24 @@
     
 #ifndef __PMKSA_H__
 #define __PMKSA_H__
-    typedef struct {
-	pmksa_cache_element * cache_element;
-	struct found_ssids *ssid_element;
-} pmksa_list;
-void pmksa_cache_init(context * ctx);
-void pmksa_cache_deinit(context * ctx);
-int pmksa_add(context * ctx, uint8_t * aMac);
-void pmksa_cache_update(context * ctx);
-void pmksa_init_cache_update(context * ctx);
-void pmksa_delete(context * ctx, pmksa_cache_element * toDelete);
-int pmksa_populate_keydata(context * ctx, uint8_t * pmkid);
-void pmksa_generate_okc_data(context * ctx);
-void pmksa_dump_cache(context * ctx);
-void pmksa_apply_cache(context * ctx);
-
+typedef struct {
+	pmksa_cache_element * cache_element;
+	struct found_ssids *ssid_element;
+} pmksa_list;
+
+#ifdef LINUX
+#define SIOCSIWPMKSA_NOT_SUPPORTED 95
+#endif
+
+void pmksa_cache_init(context * ctx);
+void pmksa_cache_deinit(context * ctx);
+int pmksa_add(context * ctx, uint8_t * aMac);
+void pmksa_cache_update(context * ctx);
+void pmksa_init_cache_update(context * ctx);
+void pmksa_delete(context * ctx, pmksa_cache_element * toDelete);
+int pmksa_populate_keydata(context * ctx, uint8_t * pmkid);
+void pmksa_generate_okc_data(context * ctx);
+void pmksa_dump_cache(context * ctx);
+void pmksa_apply_cache(context * ctx);
+
 #endif				// __PMKSA_H__

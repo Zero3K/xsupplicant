@@ -19,6 +19,8 @@
 #define IF_LINK_MODE_DEFAULT  0
 #endif
 
+#define ASSOCREQIE_LENGTH_WITH_PMKID 54
+
 void cardif_linux_rtnetlink_init();
 void cardif_linux_rtnetlink_cleanup();
 int cardif_linux_rtnetlink_check_event(context *, int);

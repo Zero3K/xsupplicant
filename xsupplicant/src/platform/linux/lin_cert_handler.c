@@ -288,18 +288,13 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 		casa[cert_index].location = tmp_ca_list->filename;
 		strcpy(tmp_str, tmp_ca_list->filename);
 		sz = strlen(tmp_ca_list->filename);
-		while (tmp_str[sz - 1] != '/')
-			sz--;
-		casa[cert_index].certname =
-		    (char *)malloc(sizeof(char) *
-				   (strlen(tmp_ca_list->filename) - sz + 1));
-		while (tmp_str[sz])
-			casa[cert_index].certname[i++] = tmp_str[sz++];
-		casa[cert_index].certname[i] = '\0';
+
 		cert_handler_get_info_from_store(NULL, tmp_ca_list->filename,
 						 &ci);
 		casa[cert_index].friendlyname =
 		    getFriendlyname(ci.O, tmp_ca_list->fl_index);
+		casa[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(casa[cert_index].friendlyname)));
+		strcpy(casa[cert_index].certname, casa[cert_index].friendlyname);
 		casa[cert_index].commonname = ci.CN;
 		casa[cert_index].issuer = getIssuername(tmp_ca_list->filename);
 		ctm = time(NULL);

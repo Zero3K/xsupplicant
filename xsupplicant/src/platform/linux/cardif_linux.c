@@ -2110,9 +2110,10 @@ char *cardif_get_dns3(context * ctx)
 /**
  * \brief Add given interface to interface cache
  **/
-void cardif_linux_add_interface(char *ifname, int ifindex)
+int cardif_linux_add_interface(char *ifname, int ifindex)
 {
 	char mac[6];
+	int ret = FALSE;
 
 	// Make sure we aren't looking at any loopback interfaces.
 	if (is_wireless(ifname) == TRUE) {
@@ -2122,6 +2123,7 @@ void cardif_linux_add_interface(char *ifname, int ifindex)
 				     ifindex, ifname);
 			interfaces_add(ifname, ifname, mac,
 				       is_wireless(ifname));
+			ret = TRUE;
 		}
 	} else if (strncasecmp(ifname, "eth", 3) == 0) {
 		if (_getmac((char *)&mac, ifname) == TRUE) {
@@ -2130,8 +2132,11 @@ void cardif_linux_add_interface(char *ifname, int ifindex)
 				     ifname);
 			interfaces_add(ifname, ifname, mac,
 				       is_wireless(ifname));
+			ret = TRUE;
 		}
 	}
+
+	return ret;
 }
 
 /**
@@ -2349,3 +2354,4 @@ int cardif_validate_connection(context * intdata)
 
 	return retVal;
 }
+

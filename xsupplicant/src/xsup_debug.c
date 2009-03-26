@@ -85,9 +85,12 @@ int next_logroll_check = LOGCHECK_INTERVAL;	///<  This will be decremented by a 
  **/
 void xsup_debug_check_log_roll()
 {
-#ifdef WINDOWS
 	struct config_globals *globals = NULL;
+#ifdef WINDOWS
 	struct stat64 statdata;
+#else
+	struct stat statdata;
+#endif
 	uint64_t size = 0;
 
 	next_logroll_check--;
@@ -108,7 +111,11 @@ void xsup_debug_check_log_roll()
 	// Stat the log file and see how big it is.
 	memset(&statdata, 0x00, sizeof(statdata));
 
+#ifdef WINDOWS
 	if (stat64(active_logfile, &statdata) != 0) {
+#else
+	  if (stat(active_logfile, &statdata) != 0) {
+#endif
 		next_logroll_check = LOGCHECK_INTERVAL;
 		return;
 	}
@@ -137,7 +144,6 @@ void xsup_debug_check_log_roll()
 	}
 
 	next_logroll_check = LOGCHECK_INTERVAL;
-#endif
 }
 
 /**
@@ -325,8 +331,11 @@ static int rotate_log_files()
 			DEFAULT_LOG_NAME, temp, DEFAULT_LOG_EXT);
 	}
 #else
-	sprintf(full_filename, "%s/%s.%s", globals->logpath, DEFAULT_LOG_NAME,
-		temp);
+	if (atoi(temp) == 0)
+	  sprintf(full_filename, "%s/%s", globals->logpath, DEFAULT_LOG_NAME);
+	else
+	  sprintf(full_filename, "%s/%s.%s", globals->logpath, DEFAULT_LOG_NAME,
+		  temp);
 #endif
 
 	if (file_exists(full_filename) == TRUE) {

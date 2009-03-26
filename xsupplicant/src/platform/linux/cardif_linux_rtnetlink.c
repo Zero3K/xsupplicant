@@ -1,9 +1,9 @@
 /**
- * File: cardif_linux_rtnetlink.c
+ * \file cardif_linux_rtnetlink.c
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * Authors: chris@open1x.org
+ * \authors chris@open1x.org
  *
  **/
 
@@ -765,6 +765,12 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 			config_ssid_add_rsn_ie(wctx, temp,
 					       ((iwe->u.data.length - 7) / 2));
 		}
+
+		if( strncmp("wme_ie=", custom, 7 ) == 0 )
+		  {
+		    process_hex(&custom[7], (iwe->len -7), (char *)temp);
+		    config_ssid_add_wme_ie(wctx, ( uint8_t *) temp, (( iwe->u.data.length - 7 )/2 ));		
+		  }
 	} else {
 		Strncpy(custom, IW_CUSTOM_MAX + 1, iwe->u.data.pointer,
 			iwe->u.data.length + 1);
@@ -842,7 +848,7 @@ void cardif_linux_rtnetlink_process_IWEVASSOCREQIE(context * ctx,
 	iedata = iwe->u.data.pointer;
 	ielen = iwe->u.data.length;
 
-	if (ielen >= 54) {
+	if (ielen >= ASSOCREQIE_LENGTH_WITH_PMKID) {
 		wctx->pmkid_used = (uint8_t *) malloc(16);
 		memcpy(wctx->pmkid_used, &iedata[(ielen - 16)], 16);
 		wctx->okc = 1;
@@ -1421,6 +1427,7 @@ void cardif_linux_rtnetlink_new_ifla_ifname(int ifindex, char *data, int len)
 	uint8_t flags = 0;
 	context *ctx = NULL;
 	struct xsup_interfaces *confints = NULL;
+	int sock = 0;
 
 	debug_printf(DEBUG_NORMAL,
 		     "Processing NEWLINK on %d for interface insertion\n",
@@ -1446,8 +1453,14 @@ void cardif_linux_rtnetlink_new_ifla_ifname(int ifindex, char *data, int len)
 			     intname);
 		return;
 	}
+
 	//Initialize the interface
-	cardif_linux_add_interface(intname, ifindex);
+	if (cardif_linux_add_interface(intname, ifindex) == 0)
+	  {
+	    //Ignoring the interface, may be it is neither wireless nor wired
+	    debug_printf(DEBUG_NORMAL, "Ignoring the interface, %s is not what we want to manage\n", intname);
+	    return;
+	  }
 
 	confints = config_get_config_ints();
 	while ((confints != NULL) && (memcmp(mac, confints->mac, 6) != 0)) {
@@ -1465,7 +1478,19 @@ void cardif_linux_rtnetlink_new_ifla_ifname(int ifindex, char *data, int len)
 		if (context_init_interface(&ctx, intname, intname, NULL, flags)
 		    != XENONE) {
 			debug_printf(DEBUG_NORMAL,
-				     "Couldn't allocate context to manage newly inserted interface!\n");
+				     "Couldn't allocate context to manage newly inserted interface %s, we will not manage it!\n", intname);
+			interfaces_delete(intname);
+			if (ctx != NULL)
+			  {
+			    ctx->flags |= INT_GONE;
+			    sock = cardif_get_socket(ctx);
+			    if (sock >= 0)
+			      {
+				event_core_deregister(sock);
+			      }
+			    context_destroy(ctx);
+			  }
+			return;
 		} else {
 			// Add it to the event loop.
 			debug_printf(DEBUG_NORMAL,
@@ -1590,7 +1615,7 @@ void cardif_linux_rtnetlink_do_link(struct nlmsghdr *msg, int len, int type)
 		case IFLA_IFNAME:
 			// This is a non-wireless event. (Ignore it.)
 			debug_printf(DEBUG_INT, "IFLA_IFNAME event.\n");
-			if (type == INT_NEW) {
+			if ((type == INT_NEW) && (ifinfo->ifi_change != 0xFFFFFFFF)) {
 				cardif_linux_rtnetlink_new_ifla_ifname
 				    (ifinfo->ifi_index, ((char *)
 							 rtattr)
@@ -1795,7 +1820,18 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
 				debug_printf(DEBUG_INT,
 					     "Interface is %s DOWN, DOWN with %x.\n",
 					     intName, wctx->flags);
+
+				// We dropped our connection, so we want to reset our state machines.
 				ctx->auths = 0;
+				ctx->statemachine->initialize = TRUE;
+				ctx->eap_state->eapRestart = TRUE;
+				
+				ctx->eap_state->portEnabled = FALSE;
+				ctx->statemachine->portEnabled = FALSE;
+				if (TEST_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ))
+				  {
+				    memset(ctx->dest_mac, 0x00, sizeof(ctx->dest_mac));
+				  }
 
 				if (TEST_FLAG
 				    (wctx->flags, WIRELESS_SM_DOING_PSK)) {
@@ -1805,16 +1841,7 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
 						   WIRELESS_SM_DOING_PSK);
 				}
 
-				memset(ctx->dest_mac, 0x00,
-				       sizeof(ctx->dest_mac));
 				wireless_sm_change_state(UNASSOCIATED, ctx);
-
-				// We dropped our connection, so we want to reset our state machines.
-				ctx->statemachine->initialize = TRUE;
-				ctx->eap_state->eapRestart = TRUE;
-
-				ctx->eap_state->portEnabled = FALSE;
-				ctx->statemachine->portEnabled = FALSE;
 			}
 		}
 
@@ -2197,7 +2224,7 @@ void cardif_linux_rtnetlink_set_operstate(context * ctx, uint8_t newstate)
 	send(rtnl_sock, (void *)&opstate, sizeof(opstate), 0);
 
 	if (newstate == XIF_OPER_UP) {
-		if (ctx->conn->ip.type == CONFIG_IP_USE_STATIC) {
+	  if ((ctx->conn != NULL) && (ctx->conn->ip.type == CONFIG_IP_USE_STATIC)) {
 			debug_printf(DEBUG_NORMAL, "IP = %s,NM = %s,GW = %s \n",
 				     ctx->conn->ip.ipaddr,
 				     ctx->conn->ip.netmask,
@@ -2206,10 +2233,10 @@ void cardif_linux_rtnetlink_set_operstate(context * ctx, uint8_t newstate)
 				if (setnm(ctx->intName, ctx->conn->ip.netmask))
 					return;
 			}
+			else
 			{
 				return;
 			}
-
 		}
 	}
 }

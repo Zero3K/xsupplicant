@@ -19,7 +19,7 @@ struct lin_sock_data {
 	uint8_t flag_link_state;
 };
 
-void cardif_linux_add_interface(char *ifname, int ifindex);
+int cardif_linux_add_interface(char *ifname, int ifindex);
 int cardif_linux_get_mac_by_name_no_ctx(char *intname, char *intmac);
 
 #endif
