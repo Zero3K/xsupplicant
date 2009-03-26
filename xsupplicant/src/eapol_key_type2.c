@@ -1058,7 +1058,10 @@ void eapol_key_type2_do_type1(context * intdata)
 		intdata->send_size = 0;
 		return;
 	}
+
+#ifdef LINUX
 	wctx->okc = 0;
+#endif
 
 	memcpy(&intdata->sendframe
 	       [OFFSET_TO_EAPOL + 4 + sizeof(struct wpa2_key_packet)], &wpa_ie,
