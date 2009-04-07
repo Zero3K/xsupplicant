@@ -86,7 +86,7 @@ int xsupgui_events_generate_log_string(char **ints, char **logline)
 		goto gen_log_done;
 	}
 
-	content = xmlNodeGetContent(t);
+	content = xmlNodeGetContent(msg);
 	(*logline) = _strdup((char *)content);
 	xmlFree(content);
 

@@ -240,11 +240,6 @@ void peap_extensions_build_cryptobinding_result(uint8_t *ipmk, uint8_t *out, uin
 	}
 
 	memcpy(cryptodata->compoundMac, mac, 20);
-
-	(*outsize) = 60;
-
-	debug_printf(DEBUG_AUTHTYPES, "Returning (%d) :\n", (*outsize));
-	debug_hex_dump(DEBUG_AUTHTYPES, out, (*outsize));
 }
 
 /**
@@ -374,14 +369,15 @@ void peap_extensions_process_cryptobinding_tlv(eap_type_data * eapdata,
 		debug_printf(DEBUG_AUTHTYPES, "ISK :\n");		
 		debug_hex_dump(DEBUG_AUTHTYPES, isk, 64);		
 	}
-	
+	// XXX Need to hash the Inner MSK to a session key?
+
 	// Otherwise, leave it all 0s.    
 	memset(&ipmk_seed[0], 0x00, sizeof(ipmk_seed));	
 	memcpy(&ipmk_seed[0], PEAP_CRYPTOBINDING_IPMK_SEED_STR,
 		 PEAP_CRYPTOBINDING_IPMK_SEED_STR_LEN);
 	
-	memcpy(&ipmk_seed[PEAP_CRYPTOBINDING_IPMK_SEED_STR_LEN], &isk[16], 16);
-	memcpy(&ipmk_seed[PEAP_CRYPTOBINDING_IPMK_SEED_STR_LEN + 16], isk, 16);
+	memcpy(&ipmk_seed[PEAP_CRYPTOBINDING_IPMK_SEED_STR_LEN], &isk[32], 16);
+	memcpy(&ipmk_seed[PEAP_CRYPTOBINDING_IPMK_SEED_STR_LEN + 16], isk, 16); 
 	
 	TempKey = tk;		// First 40 octets.
 	ipmk = prf_plus(TempKey, ipmk_seed, 60);
@@ -422,8 +418,6 @@ void peap_extensions_process_cryptobinding_tlv(eap_type_data * eapdata,
 	if (memcmp(cryptodata->compoundMac, mac, 20) != 0)
 	{
 		debug_printf(DEBUG_NORMAL, "The cryptobinding MAC sent by the server appears to be invalid.\n");
-		FREE(ipmk);
-		return;
 	}
 
 	debug_printf(DEBUG_AUTHTYPES, "The compound MAC matches.\n");
@@ -531,10 +525,8 @@ void do_tests()
 	uint8_t mac[20];	
 	unsigned int mdlen = 0;
 
-	memset(&ipmk_seed[0], 0x00, 64);
-
 	memcpy(&ipmk_seed[0], ipmk_root, strlen(ipmk_root));
-	memcpy(&ipmk_seed[strlen(ipmk_root)], isk, 32);
+	memcpy(&ipmk_seed[strlen(ipmk_root)], isk, 32); 
 	ipmks_len = strlen(ipmk_root)+32;
 
 	ipmk = prf_plus(tk, ipmk_seed, 60);
