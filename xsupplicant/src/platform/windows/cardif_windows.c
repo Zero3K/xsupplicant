@@ -825,31 +825,50 @@ void cardif_set_driver(char driver)
  * @param[in] ctx   The context that we want to determine the friendly name of.
  *
  **/
-void cardif_windows_get_friendly_name(context *ctx)
+wchar_t *cardif_windows_get_friendly_name(uint8_t *mac)
 {
 	DWORD dwRetVal = 0;
 	ULONG adaptLen = 0;
-	IP_ADAPTER_ADDRESSES adapterAddresses;
+	PIP_ADAPTER_ADDRESSES pAdapterAddresses = NULL;
 	PIP_ADAPTER_ADDRESSES pCurAdapt = NULL;
+	wchar_t *retval = NULL;
 
 	adaptLen = sizeof(IP_ADAPTER_ADDRESSES);
 
-	dwRetVal = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, &adapterAddresses, &adaptLen);
+	dwRetVal = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, pAdapterAddresses, &adaptLen);
+	if (dwRetVal != ERROR_BUFFER_OVERFLOW)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to allocate memory needed to determine the friendly name of the adapter.\n");
+		return NULL;
+	}
+
+	pAdapterAddresses = Malloc(adaptLen);
+
+	dwRetVal = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, pAdapterAddresses, &adaptLen);
 	if (dwRetVal == ERROR_SUCCESS)
 	{
-		pCurAdapt = (PIP_ADAPTER_ADDRESSES) &adapterAddresses;
+		pCurAdapt = (PIP_ADAPTER_ADDRESSES) pAdapterAddresses;
 
 		while (pCurAdapt != NULL)
 		{
-			if (memcmp(ctx->source_mac, pCurAdapt->PhysicalAddress, pCurAdapt->PhysicalAddressLength) == 0)
+			if (memcmp(mac, pCurAdapt->PhysicalAddress, pCurAdapt->PhysicalAddressLength) == 0)
 			{
 				// This is the NIC we want.
-				ctx->friendlyName = wcsdup(pCurAdapt->FriendlyName);
-				debug_printf(DEBUG_AUTHTYPES, "Found friendly name for %s : %ws\n", ctx->desc, pCurAdapt->FriendlyName);
+				retval = wcsdup(pCurAdapt->FriendlyName);
 				break;
 			}
+
+			pCurAdapt = pCurAdapt->Next;
 		}
 	}
+	else
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to get adapter addresses!!! (Error : %d)\n", dwRetVal);
+	}
+
+	FREE(pAdapterAddresses);
+	
+	return retval;
 }
 
 /**
@@ -1089,9 +1108,6 @@ int cardif_init(context * ctx, char driver)
 
 	FREE(mac);
 	FREE(intdesc);
-
-	// If there is a "friendly name" get it.
-	cardif_windows_get_friendly_name(ctx);
 
 	SET_FLAG(ctx->flags, DHCP_RELEASE_RENEW);
 
@@ -2791,6 +2807,8 @@ void ListDevs(HANDLE devHandle)
 	uint8_t mac[6];
 	char *name = NULL, *desc = NULL;
 	int size = 0;
+	wchar_t *friendlyName = NULL;
+	char *fNameUTF8 = NULL;
 
 	// Allocate enough memory to store the result.
 	pQueryBinding = Malloc(1024);
@@ -2815,7 +2833,17 @@ void ListDevs(HANDLE devHandle)
 					    pQueryBinding->DeviceDescrOffset));
 
 		if (get_mac_by_name(name, mac) == XENONE) {
-			interfaces_add(name, desc, mac, is_wireless(name));
+			friendlyName = cardif_windows_get_friendly_name(mac);
+			if (friendlyName != NULL)
+			{
+				fNameUTF8 = Malloc(wcslen(friendlyName)*2);
+				if (fNameUTF8 != NULL)
+					WideCharToMultiByte(CP_UTF8, 0, friendlyName, wcslen(friendlyName), fNameUTF8, (wcslen(friendlyName)*2), NULL, NULL);
+			}
+
+			interfaces_add(name, desc, fNameUTF8, mac, is_wireless(name));
+			FREE(friendlyName);
+			FREE(fNameUTF8);
 		}
 
 		FREE(name);

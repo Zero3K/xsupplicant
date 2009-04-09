@@ -781,6 +781,14 @@ int ipc_callout_enum_live_interfaces(xmlNodePtr innode, xmlNodePtr * outnode)
 		}
 		free(temp);
 
+		if (xmlNewChild(t, NULL, (xmlChar *)"Interface_Friendly_Name",
+			(xmlChar *)intcache->friendlyName) == NULL) {
+				xmlFreeNode(n);
+				free(temp);
+				return ipc_callout_create_error(NULL, "Interface_Live_List",
+					IPC_ERROR_CANT_ALLOCATE_NODE, outnode);
+		}
+
 		sprintf((char *)&res, "%d", intcache->is_wireless);
 		if (xmlNewChild
 		    (t, NULL, (xmlChar *) "Interface_Is_Wireless",

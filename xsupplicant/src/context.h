@@ -288,11 +288,6 @@ typedef struct context_data {
    */
 	char *desc;
 
-	/** A "friendly name" for the adapter for situations where the description doesn't provide
-	 * unique information.  (Again, looking at you Windows!)
-	 */
-	wchar_t *friendlyName;
-
   /** This is a global tick, not a state machine tick!
    */
 	uint8_t tick;

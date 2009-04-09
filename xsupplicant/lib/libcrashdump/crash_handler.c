@@ -134,13 +134,6 @@ void GetLogicalAddress(void *addr, char *fModule, DWORD buflen, DWORD * section,
 	}
 }
 
-/*    struct FINDCHILDREN : TI_FINDCHILDREN_PARAMS
-    {
-        ULONG   MoreChildIds[1024];
-        FINDCHILDREN(){Count = sizeof(MoreChildIds) / sizeof(MoreChildIds[0]);}
-    } children;
-*/
-
 char *FormatOutputValue(char *pszCurrBuffer,
 			BasicType basicType, DWORD64 length, PVOID pAddress)
 {

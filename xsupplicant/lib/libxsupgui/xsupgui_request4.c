@@ -177,6 +177,8 @@ int xsupgui_request_free_int_enum(int_enum ** data)
 			free(intenum[i].name);
 		if (intenum[i].desc != NULL)
 			free(intenum[i].desc);
+		if (intenum[i].friendlyName != NULL)
+			free(intenum[i].friendlyName);
 
 		i++;
 	}

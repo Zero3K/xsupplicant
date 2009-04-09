@@ -51,7 +51,7 @@ struct interfaces *interfaces_alloc(struct interfaces **root_int)
 /**
  *  Add information about an interface to our interface cache.
  **/
-int interfaces_add(char *intname, char *desc, char *mac,
+int interfaces_add(char *intname, char *desc, char *friendlyName, char *mac, 
 		   unsigned char is_wireless)
 {
 	struct interfaces *cur = NULL;
@@ -65,6 +65,7 @@ int interfaces_add(char *intname, char *desc, char *mac,
 
 	cur->intname = _strdup(intname);
 	cur->desc = _strdup(desc);
+	if (friendlyName != NULL) cur->friendlyName = _strdup(friendlyName);
 	memcpy(&cur->mac, mac, 6);
 	cur->is_wireless = is_wireless;
 	cur->next = NULL;

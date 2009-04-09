@@ -281,7 +281,7 @@ void doint_list(int_enum * data)
 	}
 
 	while (data[i].name != NULL) {
-		printf("(%d) %s\n\t%s\n", i + 1, data[i].desc, data[i].name);
+		printf("(%d) %s\n\t%s\n\t%s\n", i + 1, data[i].desc, data[i].name, data[i].friendlyName);
 		if (data[i].is_wireless == 1) {
 			printf("\t\tInterface is Wireless!\n");
 		} else {
@@ -2219,6 +2219,7 @@ void nt(char *test)
 
 int main(int argc, char *argv[])
 {
+	/*
 	struct options opts[] = {
 		{1, "connection", "Force the connection to use", "C", 1},
 		{2, "interface", "Use this interface", "i", 1}
@@ -2249,7 +2250,7 @@ int main(int argc, char *argv[])
 		printf("\n");
 		return 1;
 	}
-
+*/
 	printf("Connecting to xsupplicant..\n");
 	if (xsupgui_connect() != 0) {
 		printf("Error connecting socket/pipe!\n");
@@ -2264,6 +2265,9 @@ int main(int argc, char *argv[])
 //      do_get_user_is_admin();
 //      enum_sc_readers();
 //      create_conn();
+	nt("Enumerate Interfaces");
+	doint_enum();
+	nt("Get User Certs");
 	getusercerts();
 	nt("Terminate Supplicant");
 	doterminate();

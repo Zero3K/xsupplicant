@@ -214,6 +214,7 @@
 typedef struct {
 	char *name;
 	char *desc;
+	char *friendlyName;
 	unsigned char is_wireless;
 } int_enum;
 

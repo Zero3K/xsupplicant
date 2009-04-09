@@ -17,11 +17,12 @@ struct interfaces {
 
 	char *intname;
 	char *desc;
+	char *friendlyName;		// The "friendly name" of this interface.  Mainly used for Windows when the interface name and description aren't unique enough.
 	char mac[6];
 	unsigned char is_wireless;
 };
 
-int interfaces_add(char *, char *, char *, unsigned char);
+int interfaces_add(char *, char *, char *, char *, unsigned char);
 int interfaces_delete(char *);
 struct interfaces *interfaces_get_cache_head();
 char *interfaces_get_name_from_mac(char *);

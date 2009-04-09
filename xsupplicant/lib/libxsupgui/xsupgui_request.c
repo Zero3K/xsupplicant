@@ -580,7 +580,7 @@ int xsupgui_request_enum_live_ints(int_enum ** retints)
 		numints = atoi((char *)content);
 
 		if (content != NULL)
-			free(content);
+			xmlFree(content);
 	} else {
 		done = IPC_ERROR_BAD_RESPONSE_DATA;
 		goto finish_enum_ints;
@@ -616,7 +616,9 @@ int xsupgui_request_enum_live_ints(int_enum ** retints)
 			goto finish_enum_ints;
 		}
 
-		ints[i].name = (char *)xmlNodeGetContent(t);
+		content = xmlNodeGetContent(t);
+		ints[i].name = strdup(content);
+		xmlFree(content);
 
 		t = xsupgui_request_find_node(n->children,
 					      "Interface_Description");
@@ -627,7 +629,22 @@ int xsupgui_request_enum_live_ints(int_enum ** retints)
 			goto finish_enum_ints;
 		}
 
-		ints[i].desc = (char *)xmlNodeGetContent(t);
+		content = xmlNodeGetContent(t);
+		ints[i].desc = strdup(content);
+		xmlFree(content);
+
+		t = xsupgui_request_find_node(n->children,
+						"Interface_Friendly_Name");
+		if (t == NULL) {
+			if (ints != NULL)
+				free(ints);
+			done = IPC_ERROR_BAD_RESPONSE_DATA;
+			goto finish_enum_ints;
+		}
+
+		content = xmlNodeGetContent(t);
+		ints[i].friendlyName = strdup(content);
+		xmlFree(content);
 
 		t = xsupgui_request_find_node(n->children,
 					      "Interface_Is_Wireless");
@@ -644,7 +661,7 @@ int xsupgui_request_enum_live_ints(int_enum ** retints)
 		} else {
 			ints[i].is_wireless = atoi((char *)content);
 			if (content != NULL)
-				free(content);
+				xmlFree(content);
 		}
 
 		n = n->next;
