@@ -198,7 +198,7 @@ typedef struct {
 	uint8_t *rsn_ie;
 	uint8_t strength;	// 0 - 100% used to avoid sending signal strength events that aren't needed.
 	char *cur_essid;
-        double freq;
+    double freq;
 	uint8_t cur_bssid[6];
 	struct found_ssids *ssid_cache;	// All SSIDs found on this interface.
 
@@ -230,9 +230,9 @@ typedef struct {
 	uint8_t *pmkid_used;
 #ifdef LINUX
 	int okc;
-        int ielen;
-        uint8_t *pmkid_ptr;
-        uint8_t *pmksa_add_ioctl_supported;
+    int ielen;
+    uint8_t *pmkid_ptr;
+    uint8_t *pmksa_add_ioctl_supported;
 #endif
 
 } wireless_ctx;
@@ -287,6 +287,11 @@ typedef struct context_data {
    *  provide any useful information.  (I'm looking at you Windows! ;)
    */
 	char *desc;
+
+	/** A "friendly name" for the adapter for situations where the description doesn't provide
+	 * unique information.  (Again, looking at you Windows!)
+	 */
+	wchar_t *friendlyName;
 
   /** This is a global tick, not a state machine tick!
    */

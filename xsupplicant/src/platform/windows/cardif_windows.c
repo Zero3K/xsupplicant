@@ -819,7 +819,38 @@ void cardif_set_driver(char driver)
 	// Windows only has one driver API interface.
 }
 
-//void cardif_windows_get_events(void *pValue);
+/**
+ * \brief Determine the "Friendly name" of the interface
+ *
+ * @param[in] ctx   The context that we want to determine the friendly name of.
+ *
+ **/
+void cardif_windows_get_friendly_name(context *ctx)
+{
+	DWORD dwRetVal = 0;
+	ULONG adaptLen = 0;
+	IP_ADAPTER_ADDRESSES adapterAddresses;
+	PIP_ADAPTER_ADDRESSES pCurAdapt = NULL;
+
+	adaptLen = sizeof(IP_ADAPTER_ADDRESSES);
+
+	dwRetVal = GetAdaptersAddresses(AF_UNSPEC, 0, NULL, &adapterAddresses, &adaptLen);
+	if (dwRetVal == ERROR_SUCCESS)
+	{
+		pCurAdapt = (PIP_ADAPTER_ADDRESSES) &adapterAddresses;
+
+		while (pCurAdapt != NULL)
+		{
+			if (memcmp(ctx->source_mac, pCurAdapt->PhysicalAddress, pCurAdapt->PhysicalAddressLength) == 0)
+			{
+				// This is the NIC we want.
+				ctx->friendlyName = wcsdup(pCurAdapt->FriendlyName);
+				debug_printf(DEBUG_AUTHTYPES, "Found friendly name for %s : %ws\n", ctx->desc, pCurAdapt->FriendlyName);
+				break;
+			}
+		}
+	}
+}
 
 /**
  * \brief Prepare an interface to send and receive frames.
@@ -950,6 +981,7 @@ int cardif_init(context * ctx, char driver)
 			FREE(mac);
 			return -1;
 		}
+
 		// If we have our destination set to AUTO, then preset our destination
 		// address.
 		if (globals->destination == DEST_AUTO) {
@@ -999,7 +1031,7 @@ int cardif_init(context * ctx, char driver)
 		FREE(mac);
 		return XEMALLOC;
 	}
-#if 1
+
 	sockData->osver = cardif_windows_get_os_ver();
 	switch (sockData->osver) {
 	case 0:
@@ -1020,7 +1052,6 @@ int cardif_init(context * ctx, char driver)
 		cardif_windows_dot11_set_pwr_mgmt(ctx);
 		break;
 	}
-#endif
 
 	cardif_windows_setup_int_events(ctx);
 
@@ -1058,6 +1089,9 @@ int cardif_init(context * ctx, char driver)
 
 	FREE(mac);
 	FREE(intdesc);
+
+	// If there is a "friendly name" get it.
+	cardif_windows_get_friendly_name(ctx);
 
 	SET_FLAG(ctx->flags, DHCP_RELEASE_RENEW);
 
