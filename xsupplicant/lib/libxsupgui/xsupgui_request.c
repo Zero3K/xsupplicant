@@ -617,7 +617,7 @@ int xsupgui_request_enum_live_ints(int_enum ** retints)
 		}
 
 		content = xmlNodeGetContent(t);
-		ints[i].name = strdup(content);
+		ints[i].name = strdup((char *)content);
 		xmlFree(content);
 
 		t = xsupgui_request_find_node(n->children,
@@ -630,7 +630,7 @@ int xsupgui_request_enum_live_ints(int_enum ** retints)
 		}
 
 		content = xmlNodeGetContent(t);
-		ints[i].desc = strdup(content);
+		ints[i].desc = strdup((char *)content);
 		xmlFree(content);
 
 		t = xsupgui_request_find_node(n->children,
@@ -643,7 +643,7 @@ int xsupgui_request_enum_live_ints(int_enum ** retints)
 		}
 
 		content = xmlNodeGetContent(t);
-		ints[i].friendlyName = strdup(content);
+		ints[i].friendlyName = strdup((char *)content);
 		xmlFree(content);
 
 		t = xsupgui_request_find_node(n->children,

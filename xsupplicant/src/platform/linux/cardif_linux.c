@@ -2121,7 +2121,7 @@ int cardif_linux_add_interface(char *ifname, int ifindex)
 			debug_printf(DEBUG_INT,
 				     "Wireless Interface %d named %s.\n",
 				     ifindex, ifname);
-			interfaces_add(ifname, ifname, mac,
+			interfaces_add(ifname, ifname, NULL, mac,
 				       is_wireless(ifname));
 			ret = TRUE;
 		}
@@ -2130,7 +2130,7 @@ int cardif_linux_add_interface(char *ifname, int ifindex)
 			debug_printf(DEBUG_INT,
 				     "Wired Interface %d named %s.\n", ifindex,
 				     ifname);
-			interfaces_add(ifname, ifname, mac,
+			interfaces_add(ifname, ifname, NULL, mac,
 				       is_wireless(ifname));
 			ret = TRUE;
 		}
