@@ -4,9 +4,6 @@
  * \file xsupgui_events_state.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupgui_events_state.c,v 1.3 2007/10/17 07:00:46 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:46 $
  **/
 
 #include <stdio.h>

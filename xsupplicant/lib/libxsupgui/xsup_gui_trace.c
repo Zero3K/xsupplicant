@@ -6,9 +6,6 @@
  * \file xsup_gui_trace.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsup_gui_trace.c,v 1.2 2007/09/24 02:12:22 galimorerpg Exp $
- * $Date: 2007/09/24 02:12:22 $
  **/
 
 #include <stdio.h>

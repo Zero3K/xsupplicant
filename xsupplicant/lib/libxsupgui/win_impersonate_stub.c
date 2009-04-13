@@ -8,11 +8,12 @@
  * library, this isn't needed since the UI will be running as the desktop user, and the encryption functions
  * already take care of the case when we need to encrypt with the machine's private encryption password.
  **/  
-int win_impersonate_desktop_user() 
-{
-	return 0;
-}
 
-void win_impersonate_back_to_self() 
+int win_impersonate_desktop_user() 
 {
-} 
+	return 0;
+}
+
+void win_impersonate_back_to_self() 
+{
+} 

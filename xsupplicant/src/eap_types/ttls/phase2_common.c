@@ -6,9 +6,6 @@
  * \file phase2_common.c
  *
  * \author chris@open1x.org
- *
- * $Id: phase2_common.c,v 1.4 2007/10/20 09:19:27 galimorerpg Exp $
- * $Date: 2007/10/20 09:19:27 $
  **/
 #include <string.h>
 

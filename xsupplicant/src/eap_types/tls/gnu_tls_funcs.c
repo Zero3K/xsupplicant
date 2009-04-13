@@ -6,19 +6,6 @@
  * \file gnu_tls_funcs.c
  *
  * \author chris@open1x.org
- *
- * $Id: gnu_tls_funcs.c,v 1.3 2008/01/26 01:20:00 chessing Exp $
- * $Date: 2008/01/26 01:20:00 $
- * $Log: gnu_tls_funcs.c,v $
- * Revision 1.3  2008/01/26 01:20:00  chessing
- * Finished syncing the commits between 1_3_START_BRANCH and HEAD.
- *
- * Revision 1.1.2.23  2007/04/20 18:35:54  chessing
- * Work on the debug/trace output.  Added a WHOLE BUNCH of new debug levels.  Fixed a couple of small bugs, and cleaned out some cruft.
- *
- * Revision 1.1.2.22  2007/02/07 07:17:40  chessing
- * Updated my e-mail address in all source files.  Replaced strcpy() with a safer version.  Updated Strncpy() to be a little safer.
- *
  **/
 #ifdef USE_GNUTLS
 
