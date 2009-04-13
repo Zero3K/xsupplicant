@@ -29,30 +29,37 @@
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
  **/  
-    
+
 #include "stdafx.h"
-    
+
 #include "CreateTT.h"
- CreateTT::CreateTT(Emitter * pEmitter, XSupCalls * pSupplicant, QWidget * parent) :
+
+CreateTT::CreateTT(Emitter * pEmitter, XSupCalls * pSupplicant, QWidget * parent) :
 QDialog(parent)
-    
 {
-	Qt::WindowFlags flags;
-	flags = windowFlags();
-	flags &= (~Qt::WindowContextHelpButtonHint);
-	setWindowFlags(flags);
-	m_pSupplicant = pSupplicant;
-	m_pEmitter = pEmitter;
-	setWindowTitle(tr("Create Trouble Ticket"));
-	m_pText =
-	    new
-	    QLabel(tr
-		   ("Please wait. . .  XSupplicant is creating your trouble ticket. . ."));
-	m_pLayout = new QVBoxLayout(this);
-	m_pLayout->addWidget(m_pText);
-	setLayout(m_pLayout);
-} CreateTT::~CreateTT() 
+	Qt::WindowFlags flags;
+
+	flags = windowFlags();
+	flags &= (~Qt::WindowContextHelpButtonHint);
+
+	setWindowFlags(flags);
+
+	m_pSupplicant = pSupplicant;
+	m_pEmitter = pEmitter;
+
+	setWindowTitle(tr("Create Trouble Ticket"));
+
+	m_pText = new QLabel(tr("Please wait. . .  XSupplicant is creating your trouble ticket. . ."));
+
+	m_pLayout = new QVBoxLayout(this);
+	m_pLayout->addWidget(m_pText);
+
+	setLayout(m_pLayout);
+} 
+
+CreateTT::~CreateTT() 
 {
-	delete m_pLayout;
-	delete m_pText;
-} 
+	delete m_pLayout;
+	delete m_pText;
+} 
+

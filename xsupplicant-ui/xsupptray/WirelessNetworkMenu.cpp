@@ -29,85 +29,92 @@
  *   and distribute your source code for those products under the GPL, please contact
  *   Nortel Networks for an OEM Commercial License.
  **/  
-    
+
 #include "stdafx.h"
-    
+
 #include "WirelessNetworkMenu.h"
 #include "TrayApp.h"
 #include "SSIDList.h"
 #include "FormLoader.h"
 #include <algorithm>
- WirelessNetworkMenu::WirelessNetworkMenu(const QString & adapterDesc, const QString & menuTitle, TrayApp * trayApp):
+
+WirelessNetworkMenu::WirelessNetworkMenu(const QString & adapterDesc, const QString & menuTitle, TrayApp * trayApp) :
 QWidget(trayApp), m_adapterDesc(adapterDesc),
 m_pTrayApp(trayApp) 
 {
-	m_pMenu = new QMenu(menuTitle);
-	if (m_pMenu != NULL)
-		Util::myConnect(m_pMenu, SIGNAL(triggered(QAction *)), this,
-				 SLOT(handleMenuSelection(QAction *)));
-	QPixmap * p;
-	p = FormLoader::loadicon("lockedstate_bw.png");
-	if (p != NULL)
-		 {
-		m_lockIcon.addPixmap(*p);
-		delete p;
-		}
-}
+	m_pMenu = new QMenu(menuTitle);
 
-WirelessNetworkMenu::~WirelessNetworkMenu() 
-{
-	if (m_pMenu != NULL) {
-		Util::myDisconnect(m_pMenu, SIGNAL(triggered(QAction *)), this,
-				    SLOT(handleMenuSelection(QAction *)));
-		delete m_pMenu;
-	}
-}
+	if (m_pMenu != NULL)
+		Util::myConnect(m_pMenu, SIGNAL(triggered(QAction *)), this,
+			SLOT(handleMenuSelection(QAction *)));
 
-QMenu * WirelessNetworkMenu::menu(void) 
-{
-	return m_pMenu;
-}
+	QPixmap * p;
 
-void WirelessNetworkMenu::populate(void) 
+	p = FormLoader::loadicon("lockedstate_bw.png");
+
+	if (p != NULL)
+	{
+		m_lockIcon.addPixmap(*p);
+		delete p;
+	}
+}
+
+
+WirelessNetworkMenu::~WirelessNetworkMenu() 
 {
-	if (m_pMenu != NULL)
-		 {
-		QList < WirelessNetworkInfo > networkList;
-		
-		    // get list of available networks
-		    networkList = SSIDList::getNetworkInfo(m_adapterDesc);
-		if (networkList.empty() == true)
-			 {
-			QAction * act;
-			act = m_pMenu->addAction(tr("No Networks Found"));
-			if (act != NULL)
-				act->setEnabled(false);
-			}
-		
+	if (m_pMenu != NULL) {
+		Util::myDisconnect(m_pMenu, SIGNAL(triggered(QAction *)), this,
+			SLOT(handleMenuSelection(QAction *)));
+		delete m_pMenu;
+	}
+}
+
+
+QMenu * WirelessNetworkMenu::menu(void) 
+{
+	return m_pMenu;
+}
+
+void WirelessNetworkMenu::populate(void) 
+{
+	if (m_pMenu != NULL)
+	{
+		QList < WirelessNetworkInfo > networkList;
+
+		// get list of available networks
+		networkList = SSIDList::getNetworkInfo(m_adapterDesc);
+
+		if (networkList.empty() == true)
+		{
+			QAction * act;
+			act = m_pMenu->addAction(tr("No Networks Found"));
+
+			if (act != NULL)
+				act->setEnabled(false);
+		}
 		else
-			 {
-			std::sort(networkList.begin(), networkList.end());
-			for (int i = 0; i < networkList.size(); i++)
-				 {
-				if (networkList.at(i).m_assoc_modes ==
-				     WirelessNetworkInfo::SECURITY_NONE)
-					m_pMenu->addAction(networkList.at(i).
-							    m_name);
-				
-				else
-					 {
-					m_pMenu->addAction(m_lockIcon,
-							    networkList.at(i).
-							    m_name);
-					}
-				}
-			}
-		}
-}
+		{
+			std::sort(networkList.begin(), networkList.end());
 
-void WirelessNetworkMenu::handleMenuSelection(QAction * action) 
+			for (int i = 0; i < networkList.size(); i++)
+			{
+				if (networkList.at(i).m_assoc_modes ==
+					WirelessNetworkInfo::SECURITY_NONE)
+					m_pMenu->addAction(networkList.at(i).m_name);
+				else
+				{
+					m_pMenu->addAction(m_lockIcon,
+						networkList.at(i).m_name);
+				}
+			}
+		}
+	}
+}
+
+
+void WirelessNetworkMenu::handleMenuSelection(QAction * action) 
 {
-	if (m_pTrayApp != NULL && action != NULL
-	     && action->text().isEmpty() == false)
-		m_pTrayApp->connectToNetwork(action->text(), m_adapterDesc);
-}
+	if (m_pTrayApp != NULL && action != NULL
+		&& action->text().isEmpty() == false)
+		m_pTrayApp->connectToNetwork(action->text(), m_adapterDesc);
+}
