@@ -1,12 +1,12 @@
-/*******************************************************************
+/**
  *
  * Licensed under a dual GPL/BSD license.   (See LICENSE file for more info.)
  *
- * File: xsupconfig_common.h
+ * \file xsupconfig_common.h
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef __XSUPCONFIG_COMMON_H__
 #define __XSUPCONFIG_COMMON_H__

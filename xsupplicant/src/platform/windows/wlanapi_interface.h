@@ -21,10 +21,11 @@
 #define WLANAPI_INT_NOT_FOUND       -5	///< The desired interface wasn't found.
 #define WLANAPI_ALREADY_SET			 1	///< The desired state is already set on the interface.
 #define WLANAPI_DIDNT_TAKE          -6	///< We successfully set the state, but it didn't take.
-int wlanapi_interface_disconnect();
-int wlanapi_interface_connect();
-int wlanapi_interface_disable_wzc(char *desc);
-int wlanapi_interface_enable_wzc(char *desc);
-
+
+int wlanapi_interface_disconnect();
+int wlanapi_interface_connect();
+int wlanapi_interface_disable_wzc(char *desc);
+int wlanapi_interface_enable_wzc(char *desc);
+
 #endif				// _WLANAPI_INTERFACE_H_
     

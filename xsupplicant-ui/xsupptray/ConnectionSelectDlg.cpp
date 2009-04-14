@@ -47,12 +47,10 @@ ConnectionSelectDlg::ConnectionSelectDlg(QWidget * parent,
 										 QWidget * parentWindow,
 										 const QStringList &
 										 connections,
-										 QString adapterToUse)
-
-										 :QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow),
-										 m_connectionList(connections), m_adapterToUse(adapterToUse) 
+										 QString adapterToUse) :
+QWidget(parent), m_pParent(parent), m_pParentWindow(parentWindow),
+ m_connectionList(connections), m_adapterToUse(adapterToUse) 
 {
-
 } 
 
 ConnectionSelectDlg::~ConnectionSelectDlg(void) 
@@ -99,9 +97,7 @@ bool ConnectionSelectDlg::initUI(void)
 	m_pConnectionCombo = qFindChild < QComboBox * >(m_pRealForm, "comboBoxConnection");
 	m_pButtonBox = qFindChild < QDialogButtonBox * >(m_pRealForm, "buttonBox");
 
-
 	// dynamically populate text
-
 	// !!! TODO: would be nice to include the network name here
 	QLabel * pLabel = qFindChild < QLabel * >(m_pRealForm, "labelDialogMsg");
 
@@ -109,7 +105,6 @@ bool ConnectionSelectDlg::initUI(void)
 		pLabel->setText(tr("More than one connection profile is configured for this network.  Please indicate which should be used to connect"));
 
 	// set up event-handling
-
 	// If the user hits the "X" button in the title bar, close us out gracefully.
 	Util::myConnect(m_pRealForm, SIGNAL(rejected()), this,
 		SLOT(cancel()));

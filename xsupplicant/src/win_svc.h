@@ -12,13 +12,14 @@
 #define _WIN_SVC_H_
     
 #ifdef BUILD_SERVICE
-int win_svc_init();
-void win_svc_status_stopping();
-void win_svc_error_dup();
-void win_svc_basic_init_failed();
-void win_svc_running();
-void win_svc_init_failed(int retval);
-
+
+int win_svc_init();
+void win_svc_status_stopping();
+void win_svc_error_dup();
+void win_svc_basic_init_failed();
+void win_svc_running();
+void win_svc_init_failed(int retval);
+
 #endif				// BUILD_SERVICE
     
 #endif				// _WIN_SVC_H_

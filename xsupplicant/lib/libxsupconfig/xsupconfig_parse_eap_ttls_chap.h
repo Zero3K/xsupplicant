@@ -6,7 +6,7 @@
  *
  * \author chris@open1x.org
  *
- *******************************************************************/
+ **/
 
 #ifndef __XSUPCONFIG_PARSE_EAP_TTLS_CHAP_H__
 #define __XSUPCONFIG_PARSE_EAP_TTLS_CHAP_H__

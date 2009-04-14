@@ -4,8 +4,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupconfcheck_profile.h,v 1.2 2007/09/24 02:12:20 galimorerpg Exp $
- * $Date: 2007/09/24 02:12:20 $
  **/
 #ifndef __XSUPCONFCHECK_PROFILE_H__
 #define __XSUPCONFCHECK_PROFILE_H__

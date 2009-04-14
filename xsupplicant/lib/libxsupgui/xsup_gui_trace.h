@@ -6,8 +6,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsup_gui_trace.h,v 1.2 2007/09/24 02:12:22 galimorerpg Exp $
- * $Date: 2007/09/24 02:12:22 $
  */
 
 #ifndef _XSUP_GUI_TRACE_H_
