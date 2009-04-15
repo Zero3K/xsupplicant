@@ -1091,9 +1091,10 @@ int ipc_callout_some_state_response(char *request_state, char *response_state,
 	if (!xsup_assert((response_key != NULL), "response_key != NULL", FALSE))
 		return IPC_FAILURE;
 
+	/*  -- Some callers use this function with a NULL device, which is allowable.
 	if (!xsup_assert((device != NULL), "device != NULL", FALSE))
 		return IPC_FAILURE;
-
+*/
 	sprintf((char *)&resultstr, "%d", state_value);
 
 	n = xmlNewNode(NULL, (xmlChar *) response_state);

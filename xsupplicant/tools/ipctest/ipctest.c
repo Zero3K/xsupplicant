@@ -2262,7 +2262,7 @@ int main(int argc, char *argv[])
 #endif
 
 #if 1
-//      do_get_user_is_admin();
+      do_get_user_is_admin();
 //      enum_sc_readers();
 //      create_conn();
 	nt("Enumerate Interfaces");
