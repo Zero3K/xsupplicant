@@ -1161,7 +1161,7 @@ void CredentialsPopUp::slotWEPComboChange(int newVal)
 	else if (newVal == 1)
 	{
 		// WEP 104
-		m_pPassword->setValidator(newQRegExpValidator(QRegExp("^[A-Fa-f0-9]{26}$"),
+		m_pPassword->setValidator(new QRegExpValidator(QRegExp("^[A-Fa-f0-9]{26}$"),
 			m_pPassword));
 
 		if (pLabel != NULL)
