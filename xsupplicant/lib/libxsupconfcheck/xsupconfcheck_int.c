@@ -58,21 +58,21 @@ int xsupconfcheck_int_check(struct xsup_interfaces *checkint, int log)
 		return retval;
 	}
 
+	/*  -- Removed for bug 2017972
 	if (memcmp(liveint->mac, checkint->mac, 6) != 0) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("Interface configured has a different MAC address that the one in the configuration file!");
+			error_prequeue_add("Interface configured has a different MAC address that the one in the configuration file!");
 		retval = -1;
 	}
+	*/
+
 	// Verify that if the interface is configured as wireless that the OS tells us it is.
-	if ((checkint->flags & CONFIG_INTERFACE_IS_WIRELESS) ==
-	    CONFIG_INTERFACE_IS_WIRELESS)
+	if ((checkint->flags & CONFIG_INTERFACE_IS_WIRELESS) == CONFIG_INTERFACE_IS_WIRELESS)
 		is_wireless = 1;
 
 	if (liveint->is_wireless != is_wireless) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("Interface is configured as wireless, but the interface claims that it isn't.");
+			error_prequeue_add("Interface is configured as wireless, but the interface claims that it isn't.");
 		retval = -1;
 	}
 

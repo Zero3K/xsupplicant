@@ -74,17 +74,18 @@ void *xsupconfig_parse_interface_description(void **attr, uint8_t config_type,
 			check = conf_devices->interf;
 		}
 
+/*  -- Removed for bug 2017972
 		while (check != NULL) {
 			if (check->description != NULL) {
 				if (strcmp(check->description, value) == 0) {
-					xsupconfig_common_log
-					    ("There is more than one interface with the description of '%s'.  This should have only happened if you manually modified the configuration file.  If you have, you should manually remove (or rename) the duplicate interface that you don't want to use.\n",
+					xsupconfig_common_log("There is more than one interface with the description of '%s'.  This should have only happened if you manually modified the configuration file.  If you have, you should manually remove (or rename) the duplicate interface that you don't want to use.\n",
 					     value);
 				}
 			}
 
 			check = check->next;
 		}
+		*/
 	}
 
 	if ((value == NULL) || (strlen(value) == 0)) {
