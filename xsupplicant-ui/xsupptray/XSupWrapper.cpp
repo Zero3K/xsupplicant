@@ -955,12 +955,15 @@ QVector < QString > XSupWrapper::getWirelessAdapters(void)
 		while (pInterfaceList[i].desc != NULL)
 		{
 			if (pInterfaceList[i].is_wireless == TRUE)
-				adapterVec.	push_back(QString(pInterfaceList[i].desc));
+#ifdef WINDOWS
+				adapterVec.push_back((QString(pInterfaceList[i].desc)+QString("   - (")+QString::fromUtf8(pInterfaceList[i].friendlyName)+QString(")")));
+#else
+				adapterVec.push_back(QString(pInterfaceList[i].desc));
+#endif
 
 			++i;
 		}
 	}
-
 	if (pInterfaceList != NULL)
 		xsupgui_request_free_int_enum(&pInterfaceList);
 
@@ -984,7 +987,11 @@ QVector < QString > XSupWrapper::getWiredAdapters(void)
 		while (pInterfaceList[i].desc != NULL)
 		{
 			if (pInterfaceList[i].is_wireless == FALSE)
+#ifdef WINDOWS
+				adapterVec.push_back((QString(pInterfaceList[i].desc)+QString("   - (")+QString::fromUtf8(pInterfaceList[i].friendlyName)+QString(")")));
+#else
 				adapterVec.push_back(QString(pInterfaceList[i].desc));
+#endif
 
 			++i;
 		}
@@ -997,6 +1004,7 @@ QVector < QString > XSupWrapper::getWiredAdapters(void)
 	return adapterVec;
 }
 
+
 QVector < QString >
 XSupWrapper::getConnectionListForAdapter(bool isWireless) 
 {
@@ -1005,7 +1013,7 @@ XSupWrapper::getConnectionListForAdapter(bool isWireless)
 	int configIsWireless = 0;
 	char *showanyway = NULL;
 	struct config_globals *globals = NULL;
-	conn_enum * pConn;
+	conn_enum * pConn = NULL;
 	int retVal;
 
 	if (isWireless)
@@ -1029,9 +1037,7 @@ XSupWrapper::getConnectionListForAdapter(bool isWireless)
 		xsupgui_request_free_config_globals(&globals);
 	}
 
-	retVal =
-		xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL |
-		CONFIG_LOAD_USER), &pConn);
+	retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL | CONFIG_LOAD_USER), &pConn);
 
 	if (retVal == REQUEST_SUCCESS && pConn != NULL)
 	{
@@ -1052,37 +1058,27 @@ XSupWrapper::getConnectionListForAdapter(bool isWireless)
 			if ((wantWireless == configIsWireless)
 				|| ((showanyway != NULL)
 				&& (pConn[i].name != NULL)
-				&& 
-				(strcmp(pConn[i].name, showanyway) ==
-				0)))
+				&& (strcmp(pConn[i].name, showanyway) == 0)))
 			{
 				bool success;
 				config_connection * pConfig;
 
-				success =
-					XSupWrapper::getConfigConnection(pConn[i].
-					config_type,
-					QString
-					(pConn[i].
-					name),
+				success = XSupWrapper::getConfigConnection(pConn[i].config_type,
+					QString(pConn[i].name),
 					&pConfig);
 
 				if (success == true && pConfig != NULL)
 				{
-					if ((pConfig->
-						flags & CONFIG_VOLATILE_CONN) ==
-						0)
+					if ((pConfig->flags & CONFIG_VOLATILE_CONN) == 0)
 						retVector.
 						append(QString
 						(pConn[i].name));
 				}
 				else
-					retVector.
-					append(QString(pConn[i].name));
+					retVector.append(QString(pConn[i].name));
 
 				if (pConfig != NULL)
-					XSupWrapper::
-					freeConfigConnection(&pConfig);
+					XSupWrapper::freeConfigConnection(&pConfig);
 			}
 			++i;
 		}
@@ -1122,9 +1118,7 @@ bool XSupWrapper::isConnectionActive(const QString & interfaceName,
 		char *pName = NULL;
 
 		// See if a connection is bound to the interface in question.
-		retval =
-			xsupgui_request_get_conn_name_from_int(interfaceName.
-			toAscii().data(),
+		retval = xsupgui_request_get_conn_name_from_int(interfaceName.toAscii().data(),
 			&pName);
 
 		if ((retval == REQUEST_SUCCESS) && (pName != NULL))
@@ -1137,14 +1131,11 @@ bool XSupWrapper::isConnectionActive(const QString & interfaceName,
 
 				if (isWireless == true)
 				{
-					if (xsupgui_request_get_physical_state
-						(interfaceName.toAscii().data(),
+					if (xsupgui_request_get_physical_state(interfaceName.toAscii().data(),
 						&state) == REQUEST_SUCCESS)
 					{
-						if ((state !=
-							WIRELESS_INT_STOPPED)
-							&& (state !=
-							WIRELESS_INT_HELD))
+						if ((state != WIRELESS_INT_STOPPED)
+							&& (state != WIRELESS_INT_HELD))
 							isActive = true;
 					}
 				}
@@ -1184,11 +1175,8 @@ int XSupWrapper::connectToConnection(const QString & interfaceName,
 
 	if (interfaceName.isEmpty() == false)
 	{
-		retval =
-			xsupgui_request_set_connection(interfaceName.toAscii().
-			data(),
-			connectionName.toAscii().
-			data());
+		retval = xsupgui_request_set_connection(interfaceName.toAscii().data(),
+			connectionName.toAscii().data());
 
 	}
 

@@ -245,10 +245,13 @@ QString Util::removePacketSchedulerFromName(char *fullName)
 	// Remove the stuff after the '-' to show to the user
 	// Add the full name in the data
 	QString partialName = fullName;
+	/*
 	int pos = partialName.indexOf(" - Packet Scheduler Miniport", 0);
 	if (pos >= 0) {
 		partialName.truncate(pos);
 	}
+	*/
+	partialName.remove(" - Packet Scheduler Miniport");
 	return partialName;
 }
 
@@ -257,10 +260,12 @@ QString Util::removePacketSchedulerFromName(const QString & fullName)
 	// Remove the stuff after the '-' to show to the user
 	// Add the full name in the data
 	QString partialName = fullName;
-	int pos = partialName.indexOf(" - Packet Scheduler Miniport", 0);
+/*	int pos = partialName.indexOf(" - Packet Scheduler Miniport", 0);
 	if (pos >= 0) {
 		partialName.truncate(pos);
-	}
+	}*/
+	partialName.remove(" - Packet Scheduler Miniport");
+
 	return partialName;
 }
 
