@@ -121,11 +121,12 @@ int eaptls_init(eap_type_data * eapdata)
 
 	ctx = event_core_get_active_ctx();
 	if (ctx == NULL) {
-		debug_printf(DEBUG_NORMAL, "No valid user password found!\n");
+		debug_printf(DEBUG_NORMAL, "No context found for this interface!\n");
 		eap_type_common_fail(eapdata);
 		return XEGENERROR;
 	}
 
+#ifndef WINDOWS
 	if (ctx->prof->temp_password == NULL) {
 		if (userdata->user_key_pass == NULL) {
 			debug_printf(DEBUG_NORMAL,
@@ -138,12 +139,12 @@ int eaptls_init(eap_type_data * eapdata)
 	} else {
 		password = _strdup(ctx->prof->temp_password);
 	}
+#endif  // WINDOWS
 
 	mytls_vars->certs_loaded &= ~ROOT_CERTS_LOADED;
 	mytls_vars->handshake_done = FALSE;
 
-	if (certificates_load_user
-	    (mytls_vars, userdata->store_type, userdata->user_cert,
+	if (certificates_load_user(mytls_vars, userdata->store_type, userdata->user_cert,
 	     userdata->user_key, password) != XENONE) {
 		debug_printf(DEBUG_NORMAL, "Error loading user certificate!\n");
 		eap_type_common_fail(eapdata);
