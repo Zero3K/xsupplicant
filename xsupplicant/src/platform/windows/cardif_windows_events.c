@@ -295,8 +295,6 @@ void cardif_windows_int_event_connect(context * ctx)
 					ctx->desc, bssid[0], bssid[1],
 					bssid[2], bssid[3], bssid[4],
 					bssid[5]);
-
-				cardif_windows_check_unexpected_change(ctx, NULL);
 			}
 			else
 			{

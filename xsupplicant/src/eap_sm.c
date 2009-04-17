@@ -1467,6 +1467,9 @@ void eap_sm_prepopulate_id(eap_sm * sm)
 		if (ctx == NULL)
 			return;	// Nothing we can do.
 
+		if (ctx->prof == NULL)
+			return;	// Nothing we can do.
+
 		if (ctx->prof->identity != NULL) {
 			sm->ident = ctx->prof->identity;
 		} else if (ctx->prof->temp_username != NULL) {
