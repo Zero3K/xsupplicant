@@ -124,7 +124,7 @@ int load_sim_config()
 	if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
 	  {
 		  printf("Couldn't determine the path to the local common app data.\n");
-		  return NULL;
+		  return -30;
 	  }
 
 	path = malloc(strlen(szMyPath)+strlen("usim.txt")+3);
