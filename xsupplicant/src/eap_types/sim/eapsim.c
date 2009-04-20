@@ -304,6 +304,11 @@ uint8_t eapsim_init(eap_type_data * eapdata)
 	}
 
 	ctx = event_core_get_active_ctx();
+	if (ctx == NULL)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to get active context.\n");
+		return FALSE;
+	}
 
 	simdata = eapdata->eap_data;
 
@@ -325,6 +330,7 @@ uint8_t eapsim_init(eap_type_data * eapdata)
 		context_disconnect(ctx);
 		return FALSE;
 	}
+
 	// Wait 20 seconds for the smartcard to become ready.
 	if (sm_handler_wait_card_ready(&simdata->shdl, 20) != 0) {
 		debug_printf(DEBUG_NORMAL, "Smart Card wasn't ready after 20 "

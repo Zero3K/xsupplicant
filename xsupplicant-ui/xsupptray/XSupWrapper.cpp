@@ -1177,8 +1177,9 @@ int XSupWrapper::connectToConnection(const QString & interfaceName,
 	{
 		retval = xsupgui_request_set_connection(interfaceName.toAscii().data(),
 			connectionName.toAscii().data());
-
 	}
+	else
+		retval = IPC_ERROR_INVALID_INTERFACE;
 
 	return retval;
 }

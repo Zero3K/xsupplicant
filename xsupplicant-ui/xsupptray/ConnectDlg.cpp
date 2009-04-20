@@ -957,12 +957,6 @@ void ConnectDlg::connectWirelessConnection(void)
 				   m_pWirelessConnectionList->currentText(),
 				   true))
 	{
-		/*
-		if (m_currentWirelessAdapterName.isEmpty())
-		{
-			m_currentWirelessAdapterName = m_pWirelessAdapterList->currentText();
-		}
-		*/
 		if ((result = XSupWrapper::connectToConnection(m_currentWirelessAdapterName,
 					   m_pWirelessConnectionList->currentText())) != REQUEST_SUCCESS)
 		{
@@ -996,6 +990,12 @@ void ConnectDlg::connectWirelessConnection(void)
 				QMessageBox::critical(this,
 						       tr("Connection Error"),
 						       tr("The context for this connection is missing or corrupt."));
+				break;
+
+			case IPC_ERROR_INVALID_INTERFACE:
+				QMessageBox::critical(this,
+								tr("Connection Error"),
+								tr("An internal error caused the UI to believe no interface was selected.  Please report this to the developers!"));
 				break;
 			
 			case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
@@ -1049,6 +1049,12 @@ void ConnectDlg::connectWiredConnection(void)
 				QMessageBox::critical(this,
 						       tr("Connection Error"),
 						       tr("The context for this connection is missing or corrupt."));
+				break;
+
+			case IPC_ERROR_INVALID_INTERFACE:
+				QMessageBox::critical(this,
+								tr("Connection Error"),
+								tr("An internal error caused the UI to believe no interface was selected.  Please report this to the developers!"));
 				break;
 			
 			case IPC_ERROR_NEW_ERRORS_IN_QUEUE:
