@@ -87,12 +87,6 @@ uint8_t eapfast_init(eap_type_data * eapdata)
 		return FALSE;
 	}
 
-	if (tls_funcs_build_new_session(mytls_vars) != XENONE) {
-		debug_printf(DEBUG_NORMAL,
-			     "Couldn't initialize SSL context!\n");
-		return FALSE;
-	}
-
 	if ((TEST_FLAG(fastconf->flags, EAP_FAST_PROVISION_AUTHENTICATED))
 	    && ((mytls_vars->certs_loaded & ROOT_CERTS_LOADED) == 0x00)) {
 		if (!TEST_FLAG(fastconf->flags, EAP_FAST_VALIDATE_SERVER_CERT)) {
@@ -132,8 +126,7 @@ uint8_t eapfast_init(eap_type_data * eapdata)
 
 	FREE(mytls_vars->keyblock);
 
-	fastphase2 =
-	    (struct eapfast_phase2 *)Malloc(sizeof(struct eapfast_phase2));
+	fastphase2 = (struct eapfast_phase2 *)Malloc(sizeof(struct eapfast_phase2));
 	if (fastphase2 == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error allocating memory for EAP-FAST phase"
@@ -168,8 +161,7 @@ uint8_t eapfast_get_ver(eap_type_data * eapdata)
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return 0;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
 		return 0;
 
 	mytls_vars = (struct tls_vars *)eapdata->eap_data;
@@ -197,8 +189,7 @@ void eapfast_set_ver(eap_type_data * eapdata, uint8_t ver)
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
 		eap_type_common_fail(eapdata);
 		return;
 	}
@@ -260,8 +251,7 @@ void eapfast_check(eap_type_data * eapdata)
 		}
 	}
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
 		eap_type_common_fail(eapdata);
 		return;
 	}
@@ -608,8 +598,7 @@ void eapfast_process_phase2(eap_type_data * eapdata, int buffer)
 		resout = eap_type_common_get_eap_length(eapdata->eapReqData);
 
 		if (tls_funcs_buffer(eapdata->eap_data,
-				     &eapdata->
-				     eapReqData[sizeof(struct eap_header)],
+				     &eapdata->eapReqData[sizeof(struct eap_header)],
 				     resout) != XENONE) {
 			debug_printf(DEBUG_NORMAL,
 				     "There was an error buffering data "
@@ -795,18 +784,14 @@ void eapfast_process(eap_type_data * eapdata)
 
 		if (eapdata->eapReqData[sizeof(struct eap_header)] ==
 		    EAPTLS_START) {
-			if (eapfast_get_aid
-			    (&eapdata->
-			     eapReqData[sizeof(struct eap_header) + 1], &aid,
+			if (eapfast_get_aid(&eapdata->eapReqData[sizeof(struct eap_header) + 1], &aid,
 			     &aid_len) == TRUE) {
 				debug_printf(DEBUG_AUTHTYPES,
 					     "Got AID (%d byte(s)) : ",
 					     aid_len);
 				debug_hex_printf(DEBUG_AUTHTYPES, aid, aid_len);
 
-				phase2 =
-				    (struct eapfast_phase2 *)mytls_vars->
-				    phase2data;
+				phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
 
 				FREE(phase2->aid);
 				phase2->aid = Malloc(aid_len + 2);
@@ -820,8 +805,7 @@ void eapfast_process(eap_type_data * eapdata)
 				phase2->aid_len = aid_len;
 				memcpy(phase2->aid, aid, phase2->aid_len);
 
-				if (eapfast_check_pac(eapdata, aid, aid_len) ==
-				    FALSE) {
+				if (eapfast_check_pac(eapdata, aid, aid_len) == FALSE) {
 					debug_printf(DEBUG_AUTHTYPES,
 						     "Couldn't locate a PAC. "
 						     "We will provision one.\n");
@@ -831,40 +815,30 @@ void eapfast_process(eap_type_data * eapdata)
 					mytls_vars->pac_length = 0;
 
 					// We don't have a PAC, are we allowed to provision one?
-					if (TEST_FLAG
-					    (fastconf->flags,
+					if (TEST_FLAG(fastconf->flags,
 					     EAP_FAST_PROVISION_ALLOWED)) {
 						phase2->provisioning = TRUE;
 
-						if (TEST_FLAG
-						    (fastconf->flags,
+						if (TEST_FLAG(fastconf->flags,
 						     EAP_FAST_PROVISION_AUTHENTICATED))
 						{
 							// Do authenticated mode.
-							debug_printf
-							    (DEBUG_NORMAL,
+							debug_printf(DEBUG_NORMAL,
 							     "Doing authenticated provisioning mode.\n");
-							phase2->
-							    anon_provisioning =
+							phase2->anon_provisioning =
 							    FALSE;
 						} else
-						    if (TEST_FLAG
-							(fastconf->flags,
+						    if (TEST_FLAG(fastconf->flags,
 							 EAP_FAST_PROVISION_ANONYMOUS))
 						{
 							// Set our cipher suite to only allow Anon-DH mode, which should force
 							// any authenticator in to anonymous provisioning, or a failure case.
-							debug_printf
-							    (DEBUG_NORMAL,
+							debug_printf(DEBUG_NORMAL,
 							     "Doing unauthenticated provisioning mode.\n");
-							tls_funcs_set_cipher_list
-							    (mytls_vars,
+							tls_funcs_set_cipher_list(mytls_vars,
 							     "ADH-AES128-SHA");
-							phase2->
-							    anon_provisioning =
-							    TRUE;
-							eapfast_check_and_build_mschapv2
-							    (eapdata);
+							phase2->anon_provisioning = TRUE;
+							eapfast_check_and_build_mschapv2(eapdata);
 						}
 					} else {
 						phase2->provisioning = FALSE;

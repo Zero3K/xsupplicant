@@ -61,13 +61,13 @@ struct eapol_minus_type {
  * Calculate the MIC value for a key packet, and return it.
  *
  ************************************************************************/
-void mic_process(char *key, int keylen, char *datain, int insize, int version,
+void mic_process(char *key, int keylen, char *datain, int insize, uint16_t version,
 		 char *mic)
 {
 	char *sha_hmac = NULL;
-	struct eapol_minus_type *header;
-	int i;
-	uint16_t rlen;
+	struct eapol_minus_type *header = NULL;
+	int i = 0;
+	uint16_t rlen = 0;
 
 	if (!xsup_assert((key != NULL), "key != NULL", FALSE))
 		return;

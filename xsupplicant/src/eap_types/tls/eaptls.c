@@ -182,7 +182,7 @@ int eaptls_init(eap_type_data * eapdata)
 void eaptls_check(eap_type_data * eapdata)
 {
 	struct eap_header *myeap;
-	struct config_eap_tls *tlsconf;
+	struct config_eap_tls *tlsconf = NULL;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return;

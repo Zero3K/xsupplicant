@@ -347,8 +347,7 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 	int mode = 0, ressize = 0;
 	uint8_t *tempdata = NULL;
 
-	TRACE
-	    if (!xsup_assert((mytls_vars != NULL), "mytls_vars != NULL", FALSE))
+	if (!xsup_assert((mytls_vars != NULL), "mytls_vars != NULL", FALSE))
 		return XEMALLOC;
 
 	debug_printf(DEBUG_TLS_CORE, "Got TLS Start!\n");
@@ -365,15 +364,16 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 
 		mytls_vars->resumable = TRUE;
 
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
 		if (mytls_vars->cipher_list != NULL) {
-			if (SSL_set_cipher_list
-			    (mytls_vars->ssl, mytls_vars->cipher_list) != 1) {
+			if (SSL_set_cipher_list(mytls_vars->ssl, mytls_vars->cipher_list) != 1) {
 				// The cipher type wasn't allowed. (Probably not compiled in.)
 				debug_printf(DEBUG_NORMAL,
 					     "Unable to set allowed ciphers to '%s'.\n");
 				return -1;
 			}
 		}
+#endif
 	} else {
 		// We already established a connection, so we probably we need to
 		// resume the session.
@@ -389,10 +389,20 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 				SSL_free(mytls_vars->ssl);
 
 				// Set up a new session.  
-				resval =
-				    tls_funcs_build_new_session(mytls_vars);
+				resval = tls_funcs_build_new_session(mytls_vars);
 				if (resval != XENONE)
 					return resval;
+
+#ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
+				if (mytls_vars->cipher_list != NULL) {
+					if (SSL_set_cipher_list(mytls_vars->ssl, mytls_vars->cipher_list) != 1) {
+						// The cipher type wasn't allowed. (Probably not compiled in.)
+						debug_printf(DEBUG_NORMAL,
+							     "Unable to set allowed ciphers to '%s'.\n");
+						return -1;
+					}
+				}
+#endif
 			} else {
 				debug_printf(DEBUG_TLS_CORE,
 					     "Got session information, trying "
@@ -433,6 +443,15 @@ int ossl_funcs_do_start(struct tls_vars *mytls_vars)
 				mytls_vars->ssl = SSL_new(mytls_vars->ctx);
 
 #ifdef OPENSSL_HELLO_EXTENSION_SUPPORTED
+				if (mytls_vars->cipher_list != NULL) {
+					if (SSL_set_cipher_list(mytls_vars->ssl, mytls_vars->cipher_list) != 1) {
+						// The cipher type wasn't allowed. (Probably not compiled in.)
+						debug_printf(DEBUG_NORMAL,
+							     "Unable to set allowed ciphers to '%s'.\n");
+						return -1;
+					}
+				}
+
 				if (mytls_vars->pac == NULL) {
 					SSL_set_options(mytls_vars->ssl,
 							(SSL_OP_NO_SSLv2 |

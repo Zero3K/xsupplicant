@@ -1015,12 +1015,11 @@ void eapmschapv2_process(eap_type_data * eapdata)
 		}
 
 		if ((eapmschapv2_is_password_avail(ctx, eapconf) == FALSE) &&
-		    (!TEST_FLAG
-		     (eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))) {
+		    (!TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_MACHINE_AUTH))) {
 			debug_printf(DEBUG_NORMAL,
 				     "No password available for EAP-MSCHAPv2! (Trying to request one.)\n");
-			if (ipc_events_request_eap_upwd
-			    ("EAP-MSCHAPv2",
+
+			if (ipc_events_request_eap_upwd("EAP-MSCHAPv2",
 			     "Please enter your password.") != IPC_SUCCESS) {
 				debug_printf(DEBUG_NORMAL,
 					     "Couldn't request password from UI!  Failing.\n");
@@ -1060,20 +1059,16 @@ void eapmschapv2_process(eap_type_data * eapdata)
 						    Malloc(myFrame->eaplen);
 						if (myFrame->eappkt != NULL) {
 							memcpy(myFrame->eappkt,
-							       eapdata->
-							       eapReqData,
+							       eapdata->eapReqData,
 							       myFrame->eaplen);
 						}
 
-						ctx->pwd_callback =
-						    eapmschapv2_pwd_callback;
-						ctx->p2_pwd_callback =
-						    eapmschapv2_p2_pwd_callback;
+						ctx->pwd_callback = eapmschapv2_pwd_callback;
+						ctx->p2_pwd_callback = eapmschapv2_p2_pwd_callback;
 
 						// Since we return ignore, our EAP ID won't get updated.  But we need it to, so we
 						// update it manually here.  (That way we discard retransmissions.)
-						ctx->eap_state->lastId =
-						    ctx->eap_state->reqId;
+						ctx->eap_state->lastId = ctx->eap_state->reqId;
 					}
 
 					return;
@@ -1082,9 +1077,7 @@ void eapmschapv2_process(eap_type_data * eapdata)
 		}
 	}
 
-	challenge =
-	    (struct mschapv2_challenge *)&eapdata->
-	    eapReqData[sizeof(struct eap_header)];
+	challenge = (struct mschapv2_challenge *)&eapdata->eapReqData[sizeof(struct eap_header)];
 
 	switch (challenge->OpCode) {
 	case MS_CHAPV2_CHALLENGE:
@@ -1139,8 +1132,7 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data * eapdata)
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return NULL;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
 		return NULL;
 
 	if (!xsup_assert((eapdata->eapReqData != NULL),
@@ -1294,8 +1286,7 @@ uint8_t *eapmschapv2_failure_resp(eap_type_data * eapdata)
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return NULL;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
 		return NULL;
 
 	if (!xsup_assert((eapdata->eapReqData != NULL),
@@ -1344,7 +1335,7 @@ uint8_t *eapmschapv2_failure_resp(eap_type_data * eapdata)
  ******************************************************************/
 uint8_t *eapmschapv2_buildResp(eap_type_data * eapdata)
 {
-	struct mschapv2_challenge *challenge;
+	struct mschapv2_challenge *challenge = NULL;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return NULL;
@@ -1353,9 +1344,7 @@ uint8_t *eapmschapv2_buildResp(eap_type_data * eapdata)
 			 "eapdata->eapReqData != NULL", FALSE))
 		return NULL;
 
-	challenge =
-	    (struct mschapv2_challenge *)&eapdata->
-	    eapReqData[sizeof(struct eap_header)];
+	challenge = (struct mschapv2_challenge *)&eapdata->eapReqData[sizeof(struct eap_header)];
 
 	switch (challenge->OpCode) {
 	case MS_CHAPV2_CHALLENGE:
