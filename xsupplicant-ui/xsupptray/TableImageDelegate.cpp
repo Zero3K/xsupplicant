@@ -22,6 +22,7 @@
  **/  
     
 #include "stdafx.h"
+#include <QModelIndex>
 #include "WifiStandardImages.h"
 #include "TableImageDelegate.h"
 

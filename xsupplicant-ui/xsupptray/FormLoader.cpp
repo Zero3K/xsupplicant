@@ -48,8 +48,7 @@ FormLoader::~FormLoader()
 QWidget *FormLoader::buildform(QString formname, QWidget * parent /* = NULL */ )
 {
 	QUiLoader loader;	// Used to load the .ui file to generate the form.
-	QString shortpath =
-	    QApplication::applicationDirPath() + "/Skins/Default/";
+	QString shortpath = skinpath();
 	QString fullpath = shortpath + formname;
 	QWidget *m_pForm = NULL;
 
@@ -71,7 +70,7 @@ QWidget *FormLoader::buildform(QString formname, QWidget * parent /* = NULL */ )
 QPixmap *FormLoader::loadicon(QString iconname)
 {
 	QString path = iconpath() + iconname;
-	QPixmap *p;
+	QPixmap *p = NULL;
 
 	p = new QPixmap(path);
 
@@ -80,7 +79,11 @@ QPixmap *FormLoader::loadicon(QString iconname)
 
 QString FormLoader::skinpath()
 {
+#ifdef __APPLE__
+        return QString("/Library/Application Support/XSupplicant") + QString("/Skins/Default/");
+#else
 	return QApplication::applicationDirPath() + QString("/Skins/Default/");
+#endif // __APPLE__
 }
 
 QString FormLoader::iconpath()

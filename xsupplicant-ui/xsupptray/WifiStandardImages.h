@@ -27,6 +27,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QMap>
+#include <QMetaType>
     
 class WifiStandardImages 
  {
