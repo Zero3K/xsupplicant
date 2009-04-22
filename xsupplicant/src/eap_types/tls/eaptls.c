@@ -89,10 +89,9 @@ int eaptls_init(eap_type_data * eapdata)
 	if (mytls_vars->sessionkeyconst == NULL)
 		return XEMALLOC;
 
-	if (Strncpy
-	    ((char *)mytls_vars->sessionkeyconst,
+	if (Strncpy((char *)mytls_vars->sessionkeyconst,
 	     TLS_SESSION_KEY_CONST_SIZE + 1, TLS_SESSION_KEY_CONST,
-	     TLS_SESSION_KEY_CONST_SIZE) != 0) {
+	     TLS_SESSION_KEY_CONST_SIZE + 1) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Attempt to overflow destination string in %s() at %d!\n",
 			     __FUNCTION__, __LINE__);
