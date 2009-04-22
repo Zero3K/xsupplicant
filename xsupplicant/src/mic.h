@@ -15,7 +15,7 @@
 /* How long should we wait when we enable countermeasures. */
 #define MIC_COUNTERMEASURE_TIMEOUT   60
 
-void mic_process(char *, int, char *, int, int, char *);
+void mic_process(char *, int, char *, int, uint16_t, char *);
 int mic_wpa_validate(char *, int, char *, int);
 void mic_wpa_populate(char *, int, char *, int);
 void mic_disable_countermeasures(context *);

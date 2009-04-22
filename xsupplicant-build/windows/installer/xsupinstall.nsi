@@ -250,6 +250,23 @@ Function un.CheckAdmin
 
 FunctionEnd   ; un.CheckAdmin
 
+
+Function un.DeleteConfigs
+	
+	MessageBox MB_YESNO "Would you like to delete the existing configuration files?" IDNO un_delete_configs_cont
+
+	SetShellVarContext All
+	Delete $APPDATA\xsupplicant.conf
+
+	SetShellVarContext current
+	Delete $LOCALAPPDATA\xsupplicant\xsupplicant.user.conf
+	Delete $LOCALAPPDATA\xsupplicant\pac_file.xml
+	RMDir $LOCALAPPDATA\xsupplicant
+	;fall through.
+un_delete_configs_cont:
+	; Move on to the next command.
+FunctionEnd  ; un.DeleteConfigs
+
 Function CheckWinVer
 
 	ClearErrors
@@ -581,6 +598,7 @@ Section "Uninstall"
 
 	Call un.CheckAdmin
         Call un.ExtrasPreInstall
+	Call un.DeleteConfigs
 
         DetailPrint "Shutting down the XSupplicant UI..."
         push "XSupplicantUI.exe"
