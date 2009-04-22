@@ -508,6 +508,11 @@ Section "3G Soft SIM" SoftSIM
      SetShellVarContext All
      CreateShortCut "$SMPROGRAMS\${TARGET}\3G Soft SIM Manager.lnk" $INSTDIR\softsim_ui_plugin.exe
 
+     SetOutPath $INSTDIR\Docs
+
+     File "${SRCDIR}\xsupplicant-ui\Doc\Using the 3G Soft SIM.pdf"
+     CreateShortCut "$SMPROGRAMS\${TARGET}\Docs\Using the 3G Soft SIM.lnk" "$INSTDIR\Docs\Using the 3G Soft SIM.pdf"
+
      DetailPrint "Adding 3G Soft SIM to the configuration file..."
      nsExec::Exec '$INSTDIR\xsupplicant_plugin_installer -n "3G Soft SIM" -p "SoftSIM3G.dll" -d "Provides a software emulated 3G USIM card for use in testing EAP-AKA."'
 
@@ -522,6 +527,11 @@ Section "2G Soft SIM" SoftSIM2
 
      SetOutPath $INSTDIR
      File "${SRCDIR}\xsupplicant-ui\release\softsim_ui_plugin.exe"
+
+     SetOutPath $INSTDIR\Docs
+
+     File "${SRCDIR}\xsupplicant-ui\Doc\Using the 2G Soft SIM.pdf"
+     CreateShortCut "$SMPROGRAMS\${TARGET}\Docs\Using the 2G Soft SIM.lnk" "$INSTDIR\Docs\Using the 2G Soft SIM.pdf"
 
      DetailPrint "Adding 2G Soft SIM to the configuration file..."
      nsExec::Exec '$INSTDIR\xsupplicant_plugin_installer -n "2G Soft SIM" -p "SoftSIM2G.dll" -d "Provides a software emulated 2G SIM card for use in testing EAP-SIM."'
@@ -557,7 +567,7 @@ SectionEnd
 
 LangString DESC_SoftSIM ${LANG_ENGLISH} "Install the optional 3G USIM software emulator."
 LangString DESC_XSupplicant ${LANG_ENGLISH} "Install the core XSupplicant programs."
-LangString DESC_SoftSIM2G ${LANG_ENGLISH} "Install the option 2G SIM software emulator."
+LangString DESC_SoftSIM2G ${LANG_ENGLISH} "Install the optional 2G SIM software emulator."
 LangString DESC_GINA ${LANG_ENGLISH} "Install pGINA and the XSupplicant authentication plugin."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
