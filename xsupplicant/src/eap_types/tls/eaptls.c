@@ -80,12 +80,10 @@ int eaptls_init(eap_type_data * eapdata)
 
 	mytls_vars = (struct tls_vars *)eapdata->eap_data;
 
-	mytls_vars->resume =
-	    TEST_FLAG(userdata->flags, EAP_TLS_FLAGS_SESSION_RESUME);
+	mytls_vars->resume = TEST_FLAG(userdata->flags, EAP_TLS_FLAGS_SESSION_RESUME);
 	mytls_vars->verify_cert = TRUE;
 
-	mytls_vars->sessionkeyconst =
-	    (uint8_t *) Malloc(TLS_SESSION_KEY_CONST_SIZE + 1);
+	mytls_vars->sessionkeyconst = (uint8_t *) Malloc(TLS_SESSION_KEY_CONST_SIZE + 1);
 	if (mytls_vars->sessionkeyconst == NULL)
 		return XEMALLOC;
 

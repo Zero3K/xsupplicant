@@ -2014,8 +2014,7 @@ void TrayApp::connectToNetwork(const QString & networkName,
 			QString connName = networkName;
 			connName.append(tr("_Connection"));
 			config_connection *pNewConn;
-			if (XSupWrapper::
-			    createNewConnection(connName, &pNewConn)
+			if (XSupWrapper::createNewConnection(connName, &pNewConn)
 			    && pNewConn != NULL) {
 				bool runWizard = false;
 

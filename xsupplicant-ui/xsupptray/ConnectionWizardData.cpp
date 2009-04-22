@@ -951,10 +951,8 @@ bool ConnectionWizardData::toProfileData(config_profiles ** retProfile,
 }
 
 
-bool ConnectionWizardData::toConnectionData(config_connection **
-											retConnection,
-											config_profiles const *const
-											pProfile)
+bool ConnectionWizardData::toConnectionData(config_connection ** retConnection,
+											config_profiles const *const pProfile)
 {
 	config_connection * pConn;
 	bool success = true;
@@ -965,8 +963,8 @@ bool ConnectionWizardData::toConnectionData(config_connection **
 
 	pConn = NULL;
 
-	success = XSupWrapper::createNewConnection(m_connectionName, &pConn,
-		m_newConnection = false);
+	success = XSupWrapper::createNewConnection(m_connectionName, &pConn, !m_newConnection);
+		//m_newConnection = false);
 
 	if (success == false)
 	{
@@ -1203,8 +1201,7 @@ bool ConnectionWizardData::toSupplicantProfiles(config_connection **
 }
 
 
-bool ConnectionWizardData::
-initFromSupplicantProfiles(unsigned char config_type,
+bool ConnectionWizardData::initFromSupplicantProfiles(unsigned char config_type,
 						   config_connection const *const pConfig,
 						   config_profiles const *const pProfile,
 						   config_trusted_server const *const pServer)
