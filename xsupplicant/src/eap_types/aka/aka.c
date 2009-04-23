@@ -50,6 +50,18 @@
 
 char *do_sha1(char *tohash, int size);
 
+/**
+ * \brief Parse an AT_IDENTITY attribute.
+ *
+ * @param[in] mydata   A pointer to the memory for temporarily storing transaction data.
+ * @param[in] dataoffs   A pointer to the packet we are parsing.
+ * @param[in/out] packet_offset   The offset in the packet that we are working from.  Once this
+ *									value has been processed, this should be incremented to point
+ *									to the next attribute in the packet.
+ *
+ * \retval XEMALLOC if there was an error with memory allocation.  (i.e. One of the pointers is NULL.)
+ * \retval XENONE on success.
+ **/
 int aka_do_at_identity(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 		       uint16_t * packet_offset)
 {
@@ -61,8 +73,7 @@ int aka_do_at_identity(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 	if (!xsup_assert((dataoffs != NULL), "dataoffs != NULL", FALSE))
 		return XEMALLOC;
 
-	if (!xsup_assert
-	    ((packet_offset != NULL), "packet_offset != NULL", FALSE))
+	if (!xsup_assert((packet_offset != NULL), "packet_offset != NULL", FALSE))
 		return XEMALLOC;
 
 	debug_printf(DEBUG_AUTHTYPES, "Got an AT_IDENTITY (of some sort).\n");
@@ -72,6 +83,18 @@ int aka_do_at_identity(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 	return XENONE;
 }
 
+/**
+ * \brief Parse an AT_RAND attribute.
+ *
+ * @param[in] mydata   A pointer to the memory for temporarily storing transaction data.
+ * @param[in] dataoffs   A pointer to the packet we are parsing.
+ * @param[in/out] packet_offset   The offset in the packet that we are working from.  Once this
+ *									value has been processed, this should be incremented to point
+ *									to the next attribute in the packet.
+ *
+ * \retval XEMALLOC if there was an error with memory allocation.  (i.e. One of the pointers is NULL.)
+ * \retval XENONE on success.
+ **/
 int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 		   uint16_t * packet_offset)
 {
@@ -83,8 +106,7 @@ int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 	if (!xsup_assert((dataoffs != NULL), "dataoffs != NULL", FALSE))
 		return XEMALLOC;
 
-	if (!xsup_assert
-	    ((packet_offset != NULL), "packet_offset != NULL", FALSE))
+	if (!xsup_assert((packet_offset != NULL), "packet_offset != NULL", FALSE))
 		return XEMALLOC;
 
 	debug_printf(DEBUG_AUTHTYPES, "Got an AT_RAND.\n");
@@ -99,6 +121,17 @@ int aka_do_at_rand(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 	return XENONE;
 }
 
+/**
+ * \brief Handle skipping of an attribute we don't know how to handle.
+ *
+ * @param[in] dataoffs   A pointer to the packet we are parsing.
+ * @param[in/out] packet_offset   The offset in the packet that we are working from.  Once this
+ *									value has been processed, this should be incremented to point
+ *									to the next attribute in the packet.
+ *
+ * \retval XEMALLOC if there was an error with memory allocation.  (i.e. One of the pointers is NULL.)
+ * \retval XENONE on success.
+ **/
 int aka_skip_not_implemented(uint8_t * dataoffs, uint16_t * packet_offset)
 {
 	struct typelengthres *typelenres = NULL;
@@ -106,8 +139,7 @@ int aka_skip_not_implemented(uint8_t * dataoffs, uint16_t * packet_offset)
 	if (!xsup_assert((dataoffs != NULL), "dataoffs != NULL", FALSE))
 		return XEMALLOC;
 
-	if (!xsup_assert
-	    ((packet_offset != NULL), "packet_offset != NULL", FALSE))
+	if (!xsup_assert((packet_offset != NULL), "packet_offset != NULL", FALSE))
 		return XEMALLOC;
 
 	typelenres = (struct typelengthres *)&dataoffs[*packet_offset];
@@ -118,10 +150,22 @@ int aka_skip_not_implemented(uint8_t * dataoffs, uint16_t * packet_offset)
 	return XENONE;
 }
 
+/**
+ * \brief Parse an AT_AUTN attribute.
+ *
+ * @param[in] mydata   A pointer to the memory for temporarily storing transaction data.
+ * @param[in] dataoffs   A pointer to the packet we are parsing.
+ * @param[in/out] packet_offset   The offset in the packet that we are working from.  Once this
+ *									value has been processed, this should be incremented to point
+ *									to the next attribute in the packet.
+ *
+ * \retval XEMALLOC if there was an error with memory allocation.  (i.e. One of the pointers is NULL.)
+ * \retval XENONE on success.
+ **/
 int aka_do_at_autn(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 		   uint16_t * packet_offset)
 {
-	struct typelengthres *typelenres;
+	struct typelengthres *typelenres = NULL;
 
 	if (!xsup_assert((mydata != NULL), "mydata != NULL", FALSE))
 		return XEMALLOC;
@@ -129,8 +173,7 @@ int aka_do_at_autn(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 	if (!xsup_assert((dataoffs != NULL), "dataoffs != NULL", FALSE))
 		return XEMALLOC;
 
-	if (!xsup_assert
-	    ((packet_offset != NULL), "packet_offset != NULL", FALSE))
+	if (!xsup_assert((packet_offset != NULL), "packet_offset != NULL", FALSE))
 		return XEMALLOC;
 
 	debug_printf(DEBUG_AUTHTYPES, "Got AT_AUTN!\n");
@@ -145,6 +188,18 @@ int aka_do_at_autn(struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 	return XENONE;
 }
 
+/**
+ * \brief Parse an AT_MAC attribute.
+ *
+ * @param[in] mydata   A pointer to the memory for temporarily storing transaction data.
+ * @param[in] dataoffs   A pointer to the packet we are parsing.
+ * @param[in/out] packet_offset   The offset in the packet that we are working from.  Once this
+ *									value has been processed, this should be incremented to point
+ *									to the next attribute in the packet.
+ *
+ * \retval XEMALLOC if there was an error with memory allocation.  (i.e. One of the pointers is NULL.)
+ * \retval XENONE on success.
+ **/
 int aka_do_at_mac(eap_type_data * eapdata,
 		  struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 		  int insize, uint16_t * packet_offset, char *username)
@@ -165,8 +220,7 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	if (!xsup_assert((dataoffs != NULL), "dataoffs != NULL", FALSE))
 		return XEMALLOC;
 
-	if (!xsup_assert
-	    ((packet_offset != NULL), "packet_offset != NULL", FALSE))
+	if (!xsup_assert((packet_offset != NULL), "packet_offset != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((username != NULL), "username != NULL", FALSE))
@@ -214,8 +268,7 @@ int aka_do_at_mac(eap_type_data * eapdata,
 		return XEMALLOC;
 	}
 
-	if (Strncpy
-	    (tohash, (strlen(username) + 33), username,
+	if (Strncpy(tohash, (strlen(username) + 33), username,
 	     strlen(username) + 1) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Attempt to overflow buffer in %s() at %d!\n",
@@ -323,6 +376,15 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	return XENONE;
 }
 
+/**
+ * \brief Create a sync failure respose to send to the server.
+ *
+ * @param[in] mydata   A pointer to the temporary data buffer for this AKA transaction.
+ * @param[in] reqId    The request ID used in the EAP request for this packet.
+ *
+ * \retval NULL on error
+ * \retval uint8_t* The result packet containing the sync failure response.
+ **/
 uint8_t *aka_do_sync_fail(struct aka_eaptypedata * mydata, uint8_t reqId)
 {
 	struct typelength *typelen = NULL;
@@ -375,6 +437,13 @@ uint8_t *aka_do_sync_fail(struct aka_eaptypedata * mydata, uint8_t reqId)
 
 /**
  * \brief Build an AKA response Identity message.
+ *
+ * @param[in] mydata   A pointer to the temporary data buffer for this AKA transaction.
+ * @param[in] reqId    The request ID used in the EAP request for this packet.
+ * @param[in] imsi     The IMSI from the SIM card we are using.
+ *
+ * \retval NULL on error.
+ * \retval uint8_t* a pointer to the resulting packet to send to the server.
  **/
 uint8_t *aka_resp_identity(struct aka_eaptypedata * mydata, uint8_t reqId,
 			   char *imsi)

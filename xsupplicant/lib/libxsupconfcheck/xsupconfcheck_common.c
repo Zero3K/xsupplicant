@@ -6,9 +6,6 @@
  * \file xsupconfcheck_int.c
  *
  * \author chris@open1x.org
- *
- * $Id: xsupconfcheck_common.c,v 1.3 2007/10/17 07:00:39 galimorerpg Exp $
- * $Date: 2007/10/17 07:00:39 $
  **/
 
 #include <stdio.h>

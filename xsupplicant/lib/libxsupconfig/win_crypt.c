@@ -31,9 +31,13 @@ int pwcrypt_funcs_available()
 }
 
 /**
+ * \brief Convert an array of uint8_t to a string.
  *
- * Convert an array of uint8_t to a string.
+ * @param[in] inhex  An array of binary data that we want to convert to a hex string.
+ * @param[in] insize The length of the data pointed to by inhex.
  *
+ * \retval NULL on error
+ * \retval char* a pointer to a string representation of the binary data.
  **/
 char *convert_hex_to_str(uint8_t * inhex, uint16_t insize)
 {
@@ -124,6 +128,13 @@ int pwcrypt_encrypt(uint8_t config_type, uint8_t * toencdata, uint16_t toenclen,
 	return -1;
 }
 
+/**
+ * \brief Convert a single character to it's hex nibble.
+ *
+ * @param[in] cnib   A single character in the range '0'..'9','A'..'F'.
+ *
+ * \retval char  The binary value of the hex is returned in the lower nibble.  On error, the result is undefined.
+ **/
 char ctonibble1(char cnib)
 {
 	char retVal = 0x00;
@@ -136,15 +147,20 @@ char ctonibble1(char cnib)
 		if ((testval >= 'A') && (testval <= 'F')) {
 			retVal = ((testval - 'A') + 10);
 		} else {
-			printf
-			    ("Error in conversion!  (Check ctonibble1()) -- %02x\n",
+			printf("Error in conversion!  (Check ctonibble1()) -- %02x\n",
 			     testval);
 		}
 	}
 	return retVal;
 }
 
-// Convert an ASCII hex string to it's binary version.
+/**
+ * \brief Convert an ASCII hex string to it's binary version.
+ *
+ * @param[in] instr   A string representation of data we want to convert to binary.
+ * @param[in/out] outstr   A pointer that will return the pointer to the binary data.
+ * @param[in/out] rsize    A pointer to an int that will return the length of the data pointed to by outstr.
+ **/
 void str2hex(char *instr, uint8_t ** outstr, int *rsize)
 {
 	int i;

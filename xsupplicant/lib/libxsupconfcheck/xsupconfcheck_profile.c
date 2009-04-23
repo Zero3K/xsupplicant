@@ -68,29 +68,25 @@ int xsupconfcheck_profile_eap_tls(struct config_eap_tls *tls,
 
 	if (tls->trusted_server == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("You must define a trusted server to use EAP-TLS.");
+			error_prequeue_add("You must define a trusted server to use EAP-TLS.");
 		retval = -1;
 	}
 
 	if (tls->store_type == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("A store type for your certificate must be specified to use EAP-TLS.");
+			error_prequeue_add("A store type for your certificate must be specified to use EAP-TLS.");
 		retval = -1;
 	}
 
 	if (tls->user_cert == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("A user certificate file must be specified to use EAP-TLS.");
+			error_prequeue_add("A user certificate file must be specified to use EAP-TLS.");
 		retval = -1;
 	}
 #ifndef WINDOWS
 	if (tls->user_key == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("A user key file must be specified to use EAP-TLS.");
+			error_prequeue_add("A user key file must be specified to use EAP-TLS.");
 		retval = -1;
 	}
 
@@ -120,15 +116,13 @@ int xsupconfcheck_profile_eap_sim(struct config_eap_sim *sim,
 
 	if (sim == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("You must configure EAP-SIM before using it.");
+			error_prequeue_add("You must configure EAP-SIM before using it.");
 		return -1;
 	}
 
 	if (sim->reader == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("You must have a SIM card reader configured before attempting to use EAP-SIM.");
+			error_prequeue_add("You must have a SIM card reader configured before attempting to use EAP-SIM.");
 		retval = -1;
 	}
 
@@ -154,8 +148,7 @@ int xsupconfcheck_profile_eap_aka(struct config_eap_aka *aka,
 
 	if (aka == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("You must configure EAP-AKA before using it.");
+			error_prequeue_add("You must configure EAP-AKA before using it.");
 		retval = -1;
 	}
 
@@ -181,16 +174,14 @@ int xsupconfcheck_profile_eap_ttls(struct config_eap_ttls *ttls,
 
 	if (ttls == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("There is no TTLS configuration defined for this profile.");
+			error_prequeue_add("There is no TTLS configuration defined for this profile.");
 		return -1;
 	}
 
 	if ((TEST_FLAG(ttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT))
 	    && (ttls->trusted_server == NULL)) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("There is no trusted server defined even though you want to validate the server certificate.");
+			error_prequeue_add("There is no trusted server defined even though you want to validate the server certificate.");
 		retval = -1;
 	} else {
 		if (TEST_FLAG(ttls->flags, TTLS_FLAGS_VALIDATE_SERVER_CERT)) {
@@ -204,15 +195,13 @@ int xsupconfcheck_profile_eap_ttls(struct config_eap_ttls *ttls,
 
 	if ((ttls->user_cert != NULL) && (ttls->user_key == NULL)) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("The profile is configured to use a user certificate with TTLS, but there is no user key file defined.");
+			error_prequeue_add("The profile is configured to use a user certificate with TTLS, but there is no user key file defined.");
 		retval = -1;
 	}
 
 	if ((ttls->user_key != NULL) && (ttls->user_key_pass == NULL)) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("The profile is configured to use a user certificate with TTLS, but there is no password for the private key.");
+			error_prequeue_add("The profile is configured to use a user certificate with TTLS, but there is no password for the private key.");
 		retval = PROFILE_NEED_UPW;
 	}
 
@@ -226,18 +215,15 @@ int xsupconfcheck_profile_eap_ttls(struct config_eap_ttls *ttls,
 	case TTLS_PHASE2_MSCHAP:
 	case TTLS_PHASE2_MSCHAPV2:
 		if (((ttls->phase2_data == NULL)
-		     || (((struct config_pwd_only *)ttls->phase2_data)->
-			 password == NULL)) && (prof->temp_password == NULL)) {
+		     || (((struct config_pwd_only *)ttls->phase2_data)->password == NULL)) && (prof->temp_password == NULL)) {
 			if (log == TRUE)
-				error_prequeue_add
-				    ("There is no password defined for the TTLS phase 2 method.");
+				error_prequeue_add("There is no password defined for the TTLS phase 2 method.");
 			retval = PROFILE_NEED_UPW;
 		}
 		break;
 
 	case TTLS_PHASE2_EAP:
-		switch (xsupconfcheck_profile_check_eap_method
-			(ttls->phase2_data, prof, log)) {
+		switch (xsupconfcheck_profile_check_eap_method(ttls->phase2_data, prof, log)) {
 		case PROFILE_NEED_UPW:
 			retval = PROFILE_NEED_UPW;
 			break;
@@ -253,8 +239,7 @@ int xsupconfcheck_profile_eap_ttls(struct config_eap_ttls *ttls,
 
 	default:
 		if (log == TRUE)
-			error_prequeue_add
-			    ("The TTLS phase 2 method defined is unknown.");
+			error_prequeue_add("The TTLS phase 2 method defined is unknown.");
 		retval = -1;
 		break;
 	}
@@ -266,6 +251,8 @@ int xsupconfcheck_profile_eap_ttls(struct config_eap_ttls *ttls,
  * \brief Check to see if we have EAP-PEAP configured correctly.
  *
  * @param[in] peap   The structure that contains data for the EAP-PEAP authentication type.
+ * @param[in] prof   The profile structure that contains the PEAP configuration we are checking.
+ * @param[in] log	 A TRUE/FALSE value that indicates if we should queue the results to send to the UI.
  *
  * \retval 0 on success
  * \retval -1 on failure
@@ -277,16 +264,14 @@ int xsupconfcheck_profile_eap_peap(struct config_eap_peap *peap,
 
 	if (peap == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("There is no configuration for EAP-PEAP.");
+			error_prequeue_add("There is no configuration for EAP-PEAP.");
 		return -1;
 	}
 
 	if ((TEST_FLAG(peap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT))
 	    && (peap->trusted_server == NULL)) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("There is no trusted server defined, but the profile is configured to validate the certificate.");
+			error_prequeue_add("There is no trusted server defined, but the profile is configured to validate the certificate.");
 		retval = -1;
 	} else {
 		if (TEST_FLAG(peap->flags, FLAGS_PEAP_VALIDATE_SERVER_CERT)) {
@@ -300,15 +285,13 @@ int xsupconfcheck_profile_eap_peap(struct config_eap_peap *peap,
 
 	if ((peap->user_cert != NULL) && (peap->user_key == NULL)) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("The profile is configured to use a user certificate with PEAP, but there is no user key file defined.");
+			error_prequeue_add("The profile is configured to use a user certificate with PEAP, but there is no user key file defined.");
 		retval = -1;
 	}
 
 	if ((peap->user_key != NULL) && (peap->user_key_pass == NULL)) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("The profile is configured to use a user certificate with PEAP, but there is no password for the private key.");
+			error_prequeue_add("The profile is configured to use a user certificate with PEAP, but there is no password for the private key.");
 		retval = -1;
 	}
 
@@ -332,6 +315,8 @@ int xsupconfcheck_profile_eap_peap(struct config_eap_peap *peap,
  * \brief Check to see if we have EAP-MSCHAPv2 configured correctly.
  *
  * @param[in] mscv2   The structure that contains data for the EAP-MSCHAPv2 authentication type.
+ * @param[in] prof    The profile that contains the EAP-MSCHAPv2 authentication data.
+ * @param[in] log     A TRUE/FALSE value that indicates if we should queue the results to send to the UI.
  *
  * \retval 0 on success
  * \retval -1 on failure
@@ -343,8 +328,7 @@ int xsupconfcheck_profile_eap_mschapv2(struct config_eap_mschapv2 *mscv2,
 
 	if (mscv2 == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("There is no configuration for EAP-MSCHAPv2.");
+			error_prequeue_add("There is no configuration for EAP-MSCHAPv2.");
 		return -1;
 	}
 
@@ -361,6 +345,8 @@ int xsupconfcheck_profile_eap_mschapv2(struct config_eap_mschapv2 *mscv2,
  * \brief Check to see if we have EAP-FAST configured correctly.
  *
  * @param[in] fast   The structure that contains data for the EAP-FAST authentication type.
+ * @param[in] prof	 The profile that contains the EAP-FAST authentication data.
+ * @param[in] log    A TRUE/FALSE value that indicates if we should queue the results to send to the UI.
  *
  * \retval 0 on success
  * \retval -1 on failure
@@ -372,15 +358,13 @@ int xsupconfcheck_profile_eap_fast(struct config_eap_fast *fast,
 
 	if (fast == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("There is no configuration set for EAP-FAST.");
+			error_prequeue_add("There is no configuration set for EAP-FAST.");
 		return -1;
 	}
 
 	if (fast->phase2 == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("There is no phase 2 configuration defined for EAP-FAST.");
+			error_prequeue_add("There is no phase 2 configuration defined for EAP-FAST.");
 		retval = -1;
 	}
 
@@ -390,8 +374,7 @@ int xsupconfcheck_profile_eap_fast(struct config_eap_fast *fast,
 		if (prof->temp_password == NULL)
 			retval = PROFILE_NEED_UPW;
 	} else {
-		switch (xsupconfcheck_profile_check_eap_method
-			(fast->phase2, prof, log)) {
+		switch (xsupconfcheck_profile_check_eap_method(fast->phase2, prof, log)) {
 		case PROFILE_NEED_UPW:
 			retval = PROFILE_NEED_UPW;
 			break;
@@ -413,6 +396,8 @@ int xsupconfcheck_profile_eap_fast(struct config_eap_fast *fast,
  *
  * @param[in] myeap   The EAP method structure that contains information about which EAP method
  *                    we need to validate.
+ * @param[in] prof    The profile that contains the EAP method we want to check on.
+ * @param[in] log     A TRUE/FALSE value that indicates if we should queue the results to send to the UI.
  *
  * \retval 0 on success
  * \retval -1 on failure
@@ -427,8 +412,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 
 	if (myeap->method_data == NULL) {
 		if (log == TRUE)
-			error_prequeue_add
-			    ("No method data is configured for the EAP method.");
+			error_prequeue_add("No method data is configured for the EAP method.");
 		return -1;
 	}
 
@@ -441,8 +425,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 	case EAP_TYPE_MD5:
 	case EAP_TYPE_LEAP:
 	case EAP_TYPE_PSK:
-		switch (xsupconfcheck_profile_pwd_only
-			(myeap->method_data, prof, log)) {
+		switch (xsupconfcheck_profile_pwd_only(myeap->method_data, prof, log)) {
 		case PROFILE_NEED_UPW:
 			retval = PROFILE_NEED_UPW;
 			break;
@@ -457,8 +440,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 		break;
 
 	case EAP_TYPE_TLS:
-		switch (xsupconfcheck_profile_eap_tls
-			(myeap->method_data, prof, log)) {
+		switch (xsupconfcheck_profile_eap_tls(myeap->method_data, prof, log)) {
 		case PROFILE_NEED_UPW:
 			retval = PROFILE_NEED_UPW;
 			break;
@@ -473,8 +455,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 		break;
 
 	case EAP_TYPE_AKA:
-		switch (xsupconfcheck_profile_eap_aka
-			(myeap->method_data, prof, log)) {
+		switch (xsupconfcheck_profile_eap_aka(myeap->method_data, prof, log)) {
 		case PROFILE_NEED_PIN:
 			retval = PROFILE_NEED_PIN;
 			break;
@@ -490,8 +471,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 		break;
 
 	case EAP_TYPE_SIM:
-		switch (xsupconfcheck_profile_eap_sim
-			(myeap->method_data, prof, log)) {
+		switch (xsupconfcheck_profile_eap_sim(myeap->method_data, prof, log)) {
 		case PROFILE_NEED_PIN:
 			retval = PROFILE_NEED_PIN;
 			break;
@@ -507,8 +487,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 		break;
 
 	case EAP_TYPE_TTLS:
-		switch (xsupconfcheck_profile_eap_ttls
-			(myeap->method_data, prof, log)) {
+		switch (xsupconfcheck_profile_eap_ttls(myeap->method_data, prof, log)) {
 		case PROFILE_NEED_UPW:
 			retval = PROFILE_NEED_UPW;
 			break;
@@ -524,8 +503,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 		break;
 
 	case EAP_TYPE_PEAP:
-		switch (xsupconfcheck_profile_eap_peap
-			(myeap->method_data, prof, log)) {
+		switch (xsupconfcheck_profile_eap_peap(myeap->method_data, prof, log)) {
 		case PROFILE_NEED_UPW:
 			retval = PROFILE_NEED_UPW;
 			break;
@@ -541,8 +519,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 		break;
 
 	case EAP_TYPE_MSCHAPV2:
-		switch (xsupconfcheck_profile_eap_mschapv2
-			(myeap->method_data, prof, log)) {
+		switch (xsupconfcheck_profile_eap_mschapv2(myeap->method_data, prof, log)) {
 		case PROFILE_NEED_UPW:
 			retval = PROFILE_NEED_UPW;
 			break;
@@ -558,8 +535,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 		break;
 
 	case EAP_TYPE_FAST:
-		switch (xsupconfcheck_profile_eap_fast
-			(myeap->method_data, prof, log)) {
+		switch (xsupconfcheck_profile_eap_fast(myeap->method_data, prof, log)) {
 		case PROFILE_NEED_UPW:
 			retval = PROFILE_NEED_UPW;
 			break;
@@ -576,8 +552,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
 
 	default:
 		if (log == TRUE)
-			error_prequeue_add
-			    ("Unknown EAP type configured.  Please update xsupconfcheck_profile_check_eap_method().");
+			error_prequeue_add("Unknown EAP type configured.  Please update xsupconfcheck_profile_check_eap_method().");
 		retval = -1;
 		break;
 	}
@@ -589,6 +564,7 @@ int xsupconfcheck_profile_check_eap_method(config_eap_method * myeap,
  * \brief Check a profile to make sure it is valid.
  *
  * @param[in] myprof   The profile structure that contains the data we want to check.
+ * @param[in] log	   A TRUE/FALSE value that indicates if we should queue the results to be sent to the UI.
  *
  * \retval 0 on success
  * \retval -1 on failure
@@ -602,37 +578,31 @@ int xsupconfcheck_profile_check(struct config_profiles *myprof, int log)
 	if ((myprof->identity == NULL) && (myprof->temp_username == NULL)) {
 		if (myprof->method == NULL) {
 			if (log == TRUE)
-				error_prequeue_add
-				    ("Profile doesn't have a configuration.");
+				error_prequeue_add("Profile doesn't have a configuration.");
 			return -1;
 		}
 
 		if ((myprof->method->method_num != EAP_TYPE_SIM)
 		    && (myprof->method->method_num != EAP_TYPE_AKA)) {
 			if (myprof->method->method_num == EAP_TYPE_PEAP) {
-				peapdata =
-				    (struct config_eap_peap *)myprof->method->
-				    method_data;
+				peapdata = (struct config_eap_peap *)myprof->method->method_data;
 				if (!TEST_FLAG
 				    (peapdata->flags,
 				     FLAGS_PEAP_MACHINE_AUTH)) {
 					if (log == TRUE)
-						error_prequeue_add
-						    ("Profile is missing a valid username.");
+						error_prequeue_add("Profile is missing a valid username.");
 					retval = PROFILE_NEED_UPW;
 				}
 			} else {
 				// XXX If we are doing TLS here and are on Windows, we need to know the username, but not the password.
 				if (log == TRUE)
-					error_prequeue_add
-					    ("Profile is missing a valid username.");
+					error_prequeue_add("Profile is missing a valid username.");
 				retval = PROFILE_NEED_UPW;
 			}
 		}
 	}
 	// Verify that the other data is valid.
-	switch (xsupconfcheck_profile_check_eap_method
-		(myprof->method, myprof, log)) {
+	switch (xsupconfcheck_profile_check_eap_method(myprof->method, myprof, log)) {
 	case PROFILE_NEED_PIN:
 		retval = PROFILE_NEED_PIN;
 		break;

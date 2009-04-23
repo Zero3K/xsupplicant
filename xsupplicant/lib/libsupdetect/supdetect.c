@@ -70,12 +70,6 @@ sup_fingerprints supsearch[] = {
 #error You need to define fingerprints for this OS!
 #endif
 
-void *callback = NULL;
-
-void supdetect_bind_callback(found_callback cb)
-{
-}
-
 /**
  * \brief Convert a mixed case string to an all upper case string.
  * 

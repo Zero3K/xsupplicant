@@ -110,8 +110,7 @@ void *xsupconfig_parse_trusted_server_name(void **attr, uint8_t config_type,
 					    malloc(strlen(value) +
 						   strlen(" (dup)") + 1);
 					if (newname == NULL) {
-						xsupconfig_common_log
-						    ("Couldn't allocate memory to store duplicate trusted server!\n");
+						xsupconfig_common_log("Couldn't allocate memory to store duplicate trusted server!\n");
 					} else {
 						memset(newname, 0x00, len);
 						strcpy(newname, value);

@@ -8,6 +8,7 @@
  * \author chris@open1x.org
  *
  **/
+
 #ifdef WINDOWS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -65,6 +66,7 @@ int xsupconfcheck_ts_file_exists(char *filename)
  *        pieces needed.
  *
  * @param[in] ts   The trusted server structure that we want to check.
+ * @param[in] log  A TRUE/FALSE value that indicates if we should queue the results to send to the UI.
  *
  * \retval 0 on success
  * \retval -1 on failure

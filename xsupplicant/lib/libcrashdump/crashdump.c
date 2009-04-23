@@ -56,6 +56,8 @@ char *zipdumppath;		///< The full path (including filename) to where we want the
 
 /**
  * \brief Init the crashdump library by setting any variable state that we need to set.
+ *
+ * @param[in] zipdumppath_in   The path that we want to put the resulting zipped dump file in.
  **/
 void crashdump_init(char *zipdumppath_in)
 {
@@ -66,6 +68,8 @@ void crashdump_init(char *zipdumppath_in)
 
 /**
  * \brief Add the current user's configuration to the crash list.
+ *
+ * @param[in] conf_path   The path to the current user's configuration file.
  **/
 void crashdump_add_curuser_conf(char *conf_path)
 {

@@ -35,7 +35,9 @@ xmlNode *curnode = NULL;	// A pointer that will be used to determine the
 		      // line number for a node in case we need it.
 
 /**
- *  Return the line number for the XML node we are working with.
+ *  \brief Return the line number for the XML node we are working with.
+ *
+ * \retval long  The line number that contains the error.
  **/
 long xsupconfig_parse_get_line_num()
 {
@@ -43,7 +45,12 @@ long xsupconfig_parse_get_line_num()
 }
 
 /**
- *  Ask xmlReadFile to load the XML file that we will use for configuration.
+ *  \brief Ask xmlReadFile to load the XML file that we will use for configuration.
+ *
+ * @param[in] filename   The path and filename that we want to open and parse.
+ *
+ * \retval NULL on error.
+ * \retval xmlDocPtr  A pointer to an xmlDocPtr structure that represents the XML file that was read.
  **/
 xmlDocPtr loadConfig(char *filename)
 {
@@ -90,11 +97,16 @@ xmlDocPtr loadConfig(char *filename)
 }
 
 /**
- *  Determine if this parser section we are looking at is a 'terminator'
- *  section.  If it is, return TRUE.  If not, return FALSE.
+ *  \brief Determine if this parser section we are looking at is a 'terminator'
+ *  section.  
  *
  *  A 'terminator' section is determined by having a value of NULL in 
  *  all locations except for 'descend', which should be set to FALSE.
+ *
+ * @param[in] data   A parser structure that contains information about the data node we are checking.
+ *
+ * \retval TRUE if the data node is a terminating node.
+ * \retval FALSE if the data node is not a terminating node.
  **/
 char xsupconfig_is_terminator(parser data)
 {
@@ -111,8 +123,13 @@ char xsupconfig_is_terminator(parser data)
 }
 
 /**
- *  Recursively parse the XML data, and build our configuration structure 
+ *  \brief Recursively parse the XML data, and build our configuration structure 
  *  in memory.
+ *
+ * @param[in] node  A pointer to the root node that we want to parse from.
+ * @param[in] val   An array of parser options that are understood for the current level of the XML data.
+ * @param[in] parse_type   A value that indicates if we are parsing global, or user specific data.
+ * @param[in] data   The resulting data from the parse.
  **/
 void xsupconfig_parse(xmlNode * node, parser val[], uint8_t parse_type,
 		      void **data)
@@ -133,9 +150,7 @@ void xsupconfig_parse(xmlNode * node, parser val[], uint8_t parse_type,
 
 			while (done == FALSE) {
 				if ((val[i].name != NULL)
-				    &&
-				    (strcmp(val[i].name, (char *)cur_node->name)
-				     == 0))
+				    && (strcmp(val[i].name, (char *)cur_node->name) == 0))
 					done = TRUE;
 
 				if (xsupconfig_is_terminator(val[i]) == TRUE)
@@ -149,8 +164,7 @@ void xsupconfig_parse(xmlNode * node, parser val[], uint8_t parse_type,
 				if ((val[i].process != NULL)
 				    && (val[i].config_allowed & parse_type)) {
 					if (val[i].descend == TRUE) {
-						next_data =
-						    (*val[i].process) (data,
+						next_data = (*val[i].process) (data,
 								       parse_type,
 								       cur_node);
 					} else {
@@ -163,11 +177,8 @@ void xsupconfig_parse(xmlNode * node, parser val[], uint8_t parse_type,
 
 				if (val[i].descend == TRUE) {
 					if (val[i].config_allowed & parse_type) {
-						xsupconfig_parse(cur_node->
-								 children,
-								 (parser *)
-								 val[i].
-								 parsedata,
+						xsupconfig_parse(cur_node->children,
+								 (parser *)val[i].parsedata,
 								 parse_type,
 								 &next_data);
 					}
@@ -177,23 +188,19 @@ void xsupconfig_parse(xmlNode * node, parser val[], uint8_t parse_type,
 				    && (val[i].parsedata != NULL)
 				    && (val[i].config_allowed & parse_type)) {
 					xsupconfig_parse(cur_node,
-							 (parser *) val[i].
-							 parsedata, parse_type,
+							 (parser *) val[i].parsedata, parse_type,
 							 &next_data);
 				}
 
 				if ((val[i].process == NULL)
 				    && (val[i].descend == FALSE)) {
-					printf
-					    ("Not sure what to do with node '%s'.\n",
+					printf("Not sure what to do with node '%s'.\n",
 					     cur_node->name);
-					xsupconfig_common_log
-					    ("Found node '%s' in the configuration file.  But not sure how to process it.",
+					xsupconfig_common_log("Found node '%s' in the configuration file.  But not sure how to process it.",
 					     cur_node->name);
 				}
 			} else {
-				xsupconfig_common_log
-				    ("Unknown configuration file tag '%s' at line %ld.",
+				xsupconfig_common_log("Unknown configuration file tag '%s' at line %ld.",
 				     cur_node->name, cur_node->line);
 			}
 		}
@@ -203,6 +210,11 @@ void xsupconfig_parse(xmlNode * node, parser val[], uint8_t parse_type,
 		(*data) = next_data;
 }
 
+/**
+ * \brief Parse the global and network level data.
+ *
+ * This is dummy function that only serves as a place holder.
+ **/
 void *xsupconfig_parse_global_and_network(void **attr, uint8_t config_type,
 					  xmlNodePtr node)
 {
@@ -222,6 +234,7 @@ void *xsupconfig_parse_global_and_network(void **attr, uint8_t config_type,
 
 	return NULL;
 }
+
 
 parser global_and_network[] = {
 	{"Globals", (struct conf_parse_struct *)&globals, TRUE,

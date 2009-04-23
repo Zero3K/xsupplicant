@@ -226,6 +226,11 @@ int ipcevents_get_ui_string(int uievt, char **desc)
 	return 0;
 }
 
+int crashdump_add_file(char *temp, char temp2)
+{
+	return 0;
+}
+
 int main()
 {
 	long int result = 0;
@@ -242,8 +247,7 @@ int main()
 	// Attempt to connect to the supplicant's event pipe.  Try once a second so
 	// that we don't overload the CPU by spinning.
 	while (xsupgui_connect_event_listener() != 0) {
-		printf
-		    ("Supplicant doesn't appear to be alive.  Will check again in 1 second.\n");
+		printf("Supplicant doesn't appear to be alive.  Will check again in 1 second.\n");
 #ifdef WINDOWS
 		Sleep(1000);
 #else
