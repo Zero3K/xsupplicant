@@ -153,7 +153,7 @@ UAC_ElevationAborted:
 UAC_Success:
   StrCmp 1 $3 +4 ; Admin?
   StrCmp 3 $1 0 UAC_ElevationAborted ; Try again?
-  MessageBox mb_iconstop "User needs to have administrator rights in order to install application, abortin!"
+  MessageBox mb_iconstop "User needs to have administrator rights in order to install application, aborting!"
   goto UAC_Elevate
 
 ;------------- End Vista Bits ----------------

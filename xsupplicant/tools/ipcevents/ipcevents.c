@@ -226,16 +226,11 @@ int ipcevents_get_ui_string(int uievt, char **desc)
 	return 0;
 }
 
-int crashdump_add_file(char *temp, char temp2)
-{
-	return 0;
-}
-
 int main()
 {
 	long int result = 0;
-	char *logline, *ints, *connname, *eapmethod, *chalstr, *arg;
-	char *intname;
+	char *logline = NULL, *ints = NULL, *connname = NULL, *eapmethod = NULL, *chalstr = NULL, *arg = NULL;
+	char *intname = NULL;
 	int cur_debug_level = 10;	///< The user defined debug level in use.
 	int sm = 0, oldstate = 0, newstate = 0, evttype = 0;
 	uint32_t value321, value322, value323, value324, tncconnectionid;

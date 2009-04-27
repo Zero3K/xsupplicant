@@ -437,6 +437,8 @@ int cardif_windows_wmi_post_insert_bind(wchar_t * name)
 	char is_wireless = 0;
 	context *ctx = NULL;
 	uint8_t flags;
+	wchar_t *friendlyName = NULL;
+	char *fNameUTF8 = NULL;
 
 	intname = cardif_windows_find_os_name_from_desc(name);
 	intdesc = uni_to_ascii(name);
@@ -463,6 +465,14 @@ int cardif_windows_wmi_post_insert_bind(wchar_t * name)
 	}
 
 	is_wireless = cardif_is_wireless_by_name(intname);
+
+	friendlyName = cardif_windows_get_friendly_name(mac);
+	if (friendlyName != NULL)
+	{
+		fNameUTF8 = Malloc(wcslen(friendlyName)*2);
+		if (fNameUTF8 != NULL)
+			WideCharToMultiByte(CP_UTF8, 0, friendlyName, wcslen(friendlyName), fNameUTF8, (wcslen(friendlyName)*2), NULL, NULL);
+	}
 
 	if (interfaces_add(intname, intdesc, mac, is_wireless) != 0) {
 		debug_printf(DEBUG_NORMAL,
