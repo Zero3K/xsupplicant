@@ -226,6 +226,13 @@ int ipcevents_get_ui_string(int uievt, char **desc)
 	return 0;
 }
 
+#ifdef WINDOWS
+int crashdump_add_file(char *temp, char temp2)
+{
+	return 0;
+}
+#endif
+
 int main()
 {
 	long int result = 0;

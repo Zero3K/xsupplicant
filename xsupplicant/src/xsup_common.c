@@ -48,9 +48,10 @@ char Strncpy(char *dest, unsigned int destsize, const char *src, size_t n)
 		return -1;
 
 	if (n > destsize) {
+#ifndef EXTERNAL_USE
 		debug_printf(DEBUG_NORMAL,
 			     "Attempt to overflow the destination buffer!\n");
-
+#endif
 		return -1;
 	}
 #ifdef WINDOWS
@@ -125,7 +126,9 @@ char xsup_common_strcpy(char *deststr, unsigned int deststr_len, char *srcstr)
 {
 	if (strlen(srcstr) + 1 > deststr_len)
 	{
+#ifndef EXTERNAL_USE
 		debug_printf(DEBUG_NORMAL, "Attempted to overflow the destination buffer!\n");
+#endif
 		return -1;
 	}
 
@@ -166,7 +169,9 @@ int Strcat(char *result, unsigned int ressize, char *append)
 		return -1;	// Gotta have some kind of buffer.
 
 	if (strlen(append) + 1 > (ressize - strlen(result))) {
+#ifndef EXTERNAL_USE
 		debug_printf(DEBUG_NORMAL, "Would overflow the string!\n");
+#endif
 		return -1;
 	}
 #ifdef WINDOWS
