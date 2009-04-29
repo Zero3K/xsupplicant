@@ -119,28 +119,23 @@ TrayApp::~TrayApp()
 				   SIGNAL(signalSupErrorEvent(const QString &)),
 				   this, SLOT(slotSupError(const QString &)));
 		Util::myDisconnect(m_pEmitter,
-				   SIGNAL(signalSupWarningEvent
-					  (const QString &)), this,
+				   SIGNAL(signalSupWarningEvent(const QString &)), this,
 				   SLOT(slotSupWarning(const QString &)));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowConfig()), this,
 				   SLOT(slotLaunchConfig()));
 		Util::myDisconnect(m_pEmitter, SIGNAL(signalShowLog()), this,
 				   SLOT(slotViewLog()));
 		Util::myDisconnect(m_pEmitter,
-				   SIGNAL(signalRequestUPW
-					  (const QString &, const QString &)),
+				   SIGNAL(signalRequestUPW(const QString &, const QString &)),
 				   this,
-				   SLOT(slotRequestUPW
-					(const QString &, const QString &)));
+				   SLOT(slotRequestUPW(const QString &, const QString &)));
 		Util::myDisconnect(m_pEmitter,
 				   SIGNAL(signalBadPSK(const QString &)), this,
 				   SLOT(handleBadPSK(const QString &)));
 		Util::myDisconnect(m_pEmitter,
-				   SIGNAL(signalBadCreds
-					  (const QString &, const QString &)),
+				   SIGNAL(signalBadCreds(const QString &, const QString &)),
 				   this,
-				   SLOT(handleBadCreds
-					(const QString &, const QString &)));
+				   SLOT(handleBadCreds(const QString &, const QString &)));
 		Util::myDisconnect(m_pEmitter,
 				   SIGNAL(signalOtherSupplicantDetected
 					  (const QString &)), this,
@@ -1483,12 +1478,10 @@ void TrayApp::slotRequestUPW(const QString & intName, const QString & connName)
 {
 	// Only do something if it isn't already showing.
 	if (m_pCreds == NULL) {
-		m_pCreds =
-		    new CredentialsPopUp(connName, intName, this, m_pEmitter);
+		m_pCreds = new CredentialsPopUp(connName, intName, this, m_pEmitter);
 		if (m_pCreds == NULL) {
 			QMessageBox::critical(this, tr("Error"),
-					      tr
-					      ("There was an error creating the credentials pop up."));
+					      tr("There was an error creating the credentials pop up."));
 			return;
 		}
 
@@ -2354,18 +2347,8 @@ void TrayApp::handleBadPSK(const QString & intName)
 // if we fail on 802.1X authentication, alert user and reprompt for creds
 void TrayApp::handleBadCreds(const QString & intName, const QString & connName)
 {
-	char *adaptName = NULL;
-
-	if (xsupgui_request_get_devdesc(intName.toAscii().data(), &adaptName) ==
-	    REQUEST_SUCCESS) {
-		// re-prompt for credentials
-		this->slotRequestUPW(adaptName, connName);
-		free(adaptName);
-	} else {
-		QMessageBox::critical(this, tr("Request Failed"),
-				      tr
-				      ("Unable to translate an adapter name to an adapter description when the 802.1X authentication failed!"));
-	}
+	// re-prompt for credentials
+	this->slotRequestUPW(intName, connName);
 }
 
 void TrayApp::promptConnectionSelection(const QStringList & connList,

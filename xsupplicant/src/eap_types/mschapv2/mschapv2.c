@@ -437,8 +437,7 @@ void GenerateNTResponse(char *AuthenticatorChallenge, char *PeerChallenge,
 			 "AuthenticatorChallenge != NULL", FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((PeerChallenge != NULL), "PeerChallenge != NULL", FALSE))
+	if (!xsup_assert((PeerChallenge != NULL), "PeerChallenge != NULL", FALSE))
 		return;
 
 	if (!xsup_assert((UserName != NULL), "UserName != NULL", FALSE))

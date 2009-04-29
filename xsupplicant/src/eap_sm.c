@@ -538,12 +538,11 @@ int eap_sm_find_method(uint8_t reqMethod)
  **/
 void parseEapReq(eap_sm * sm)
 {
-	struct eap_header *eapdata;
+	struct eap_header *eapdata = NULL;
 
 	xsup_assert((sm != NULL), "sm != NULL", TRUE);
 
-	if (!xsup_assert
-	    ((sm->eapReqData != NULL), "sm->eapReqData != NULL", FALSE))
+	if (!xsup_assert((sm->eapReqData != NULL), "sm->eapReqData != NULL", FALSE))
 		return;
 
 	eapdata = (struct eap_header *)sm->eapReqData;
@@ -814,8 +813,7 @@ void eap_sm_change_to_received(eap_sm * sm)
 		if (sm->reqId != sm->lastId) {
 			if ((!((sm->lastId == 0xff) && (sm->reqId == 0x00))) ||
 			    ((sm->reqId - 1) == sm->lastId)) {
-				if (TEST_FLAG
-				    (globals->flags,
+				if (TEST_FLAG(globals->flags,
 				     CONFIG_GLOBALS_FRIENDLY_WARNINGS)) {
 					debug_printf(DEBUG_NORMAL,
 						     "Your authenticator sent an incorrect"
@@ -850,8 +848,7 @@ void eap_sm_change_to_received(eap_sm * sm)
 			if (((sm->lastId != 0xff)) ||
 			    ((sm->reqId - 1) == sm->lastId)) {
 
-				if (TEST_FLAG
-				    (globals->flags,
+				if (TEST_FLAG(globals->flags,
 				     CONFIG_GLOBALS_FRIENDLY_WARNINGS)) {
 					debug_printf(DEBUG_NORMAL,
 						     "Your authenticator sent an incorrect"
@@ -932,6 +929,7 @@ void eap_sm_change_to_received(eap_sm * sm)
 		eap_sm_change_state(sm, EAP_METHOD);
 		return;
 	}
+
 	// Otherwise, discard the packet.
 	debug_printf(DEBUG_NORMAL, "Packet discarded because it didn't trigger "
 		     "proper state options.\n");
@@ -1600,6 +1598,8 @@ void eap_sm_change_to_identity(eap_sm * sm)
 	processIdentity(sm);
 
 	FREE(sm->eapRespData);
+
+	sm->selectedMethod = NONE;
 
 	sm->eapRespData = buildIdentity(sm->reqId, sm->ident);
 

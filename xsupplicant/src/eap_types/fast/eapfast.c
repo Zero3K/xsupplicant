@@ -847,16 +847,12 @@ void eapfast_process(eap_type_data * eapdata)
 						eap_type_common_fail(eapdata);
 					}
 				} else {
-					phase2 =
-					    (struct eapfast_phase2 *)
-					    mytls_vars->phase2data;
+					phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
 					phase2->provisioning = FALSE;
 
 					// We have a PAC, so configure TLS, and move on.
-					mytls_vars->pac =
-					    phase2->pacs->pac_opaque;
-					mytls_vars->pac_length =
-					    phase2->pacs->pac_opaque_len;
+					mytls_vars->pac = phase2->pacs->pac_opaque;
+					mytls_vars->pac_length = phase2->pacs->pac_opaque_len;
 
 					// Let us know that we need to "hand parse" the Server 
 					// Hello packet to get the server random.
@@ -885,8 +881,7 @@ void eapfast_process(eap_type_data * eapdata)
 				     phase2->aid);
 			eapdata->methodState = MAY_CONT;
 
-			if (eapfast_delete_pac
-			    (eapdata, phase2->aid, phase2->aid_len) == FALSE) {
+			if (eapfast_delete_pac(eapdata, phase2->aid, phase2->aid_len) == FALSE) {
 				debug_printf(DEBUG_NORMAL,
 					     "Unable to delete PAC!\n");
 				eapdata->methodState = DONE;
