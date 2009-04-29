@@ -109,8 +109,7 @@ uint8_t eapfast_init(eap_type_data * eapdata)
 		} else {
 			mytls_vars->verify_cert = TRUE;
 
-			if (certificates_load_root
-			    (mytls_vars, fastconf->trusted_server) != XENONE) {
+			if (certificates_load_root(mytls_vars, fastconf->trusted_server) != XENONE) {
 				debug_printf(DEBUG_NORMAL,
 					     "Unable to load root certificate(s)!\n");
 				return FALSE;
@@ -230,6 +229,8 @@ void eapfast_set_ver(eap_type_data * eapdata, uint8_t ver)
  ****************************************************************/
 void eapfast_check(eap_type_data * eapdata)
 {
+	struct eapfast_phase2 *fastphase2 = NULL;
+
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return;
 
@@ -782,8 +783,8 @@ void eapfast_process(eap_type_data * eapdata)
 		debug_printf(DEBUG_AUTHTYPES,
 			     "(EAP-FAST) Processing packet.\n");
 
-		if (eapdata->eapReqData[sizeof(struct eap_header)] ==
-		    EAPTLS_START) {
+		if (eapdata->eapReqData[sizeof(struct eap_header)] == EAPTLS_START) {
+
 			if (eapfast_get_aid(&eapdata->eapReqData[sizeof(struct eap_header) + 1], &aid,
 			     &aid_len) == TRUE) {
 				debug_printf(DEBUG_AUTHTYPES,
@@ -825,10 +826,8 @@ void eapfast_process(eap_type_data * eapdata)
 							// Do authenticated mode.
 							debug_printf(DEBUG_NORMAL,
 							     "Doing authenticated provisioning mode.\n");
-							phase2->anon_provisioning =
-							    FALSE;
-						} else
-						    if (TEST_FLAG(fastconf->flags,
+							phase2->anon_provisioning = FALSE;
+						} else if (TEST_FLAG(fastconf->flags,
 							 EAP_FAST_PROVISION_ANONYMOUS))
 						{
 							// Set our cipher suite to only allow Anon-DH mode, which should force
@@ -849,6 +848,8 @@ void eapfast_process(eap_type_data * eapdata)
 				} else {
 					phase2 = (struct eapfast_phase2 *)mytls_vars->phase2data;
 					phase2->provisioning = FALSE;
+					phase2->anon_provisioning = FALSE;
+					eapmschapv2_set_eap_fast_anon_mode(eapdata, FALSE);
 
 					// We have a PAC, so configure TLS, and move on.
 					mytls_vars->pac = phase2->pacs->pac_opaque;

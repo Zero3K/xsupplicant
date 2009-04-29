@@ -134,8 +134,7 @@ void eapfast_phase2_deinit(eap_type_data * eapdata)
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
 		return;
 
 	debug_printf(DEBUG_AUTHTYPES, "(EAP-FAST) Phase 2 deinit.\n");
@@ -968,8 +967,7 @@ uint16_t eapfast_phase2_eap_process(eap_type_data * eapdata, uint8_t * indata,
 					 MSCHAPv2_ServerChallenge, 16);
 
 			// Tweak MS-CHAPv2 to work properly for provisioning.
-			if (eapmschapv2_set_challenges
-			    (phase2->pkeys->MSCHAPv2_ClientChallenge,
+			if (eapmschapv2_set_challenges(phase2->pkeys->MSCHAPv2_ClientChallenge,
 			     phase2->pkeys->MSCHAPv2_ServerChallenge) != TRUE) {
 				debug_printf(DEBUG_NORMAL,
 					     "Couldn't configure challenge values"
@@ -998,14 +996,11 @@ uint16_t eapfast_phase2_eap_process(eap_type_data * eapdata, uint8_t * indata,
 
 	if ((phase2->sm->eapRespData != NULL) && (phase2->result_data != NULL)) {
 		// Build up the response data.
-		eapsize =
-		    eap_type_common_get_eap_length(phase2->sm->eapRespData);
+		eapsize = eap_type_common_get_eap_length(phase2->sm->eapRespData);
 
 		memcpy(&phase2->result_data[phase2->result_size + 4],
 		       phase2->sm->eapRespData, eapsize);
-		fasttlv =
-		    (struct eapfast_tlv *)&phase2->result_data[phase2->
-							       result_size];
+		fasttlv = (struct eapfast_tlv *)&phase2->result_data[phase2->result_size];
 
 		fasttlv->type = htons(FAST_EAP_PAYLOAD_TLV | MANDATORY_TLV);
 		fasttlv->length = htons(eapsize);
@@ -1109,8 +1104,7 @@ uint16_t eapfast_phase2_process_result_tlv(eap_type_data * eapdata,
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return 0;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
 		eap_type_common_fail(eapdata);
 		return 0;
 	}
@@ -1123,8 +1117,7 @@ uint16_t eapfast_phase2_process_result_tlv(eap_type_data * eapdata,
 	if (ntohs(fasttlv->length) != 2) {
 		debug_printf(DEBUG_NORMAL,
 			     "Got an invalid TLV_RESULT message!\n");
-		temp =
-		    eapfast_phase2_gen_error_tlv(FAST_UNEXPECTED_TLVS_EXCHANGED,
+		temp = eapfast_phase2_gen_error_tlv(FAST_UNEXPECTED_TLVS_EXCHANGED,
 						 (ntohs(fasttlv->type) &
 						  MANDATORY_TLV));
 
@@ -1141,8 +1134,7 @@ uint16_t eapfast_phase2_process_result_tlv(eap_type_data * eapdata,
 			     "Got an invalid result value in TLV_RESULT "
 			     "message!  (Value was %d)\n",
 			     ntohs(fasttlv->status));
-		temp =
-		    eapfast_phase2_gen_error_tlv(FAST_UNEXPECTED_TLVS_EXCHANGED,
+		temp = eapfast_phase2_gen_error_tlv(FAST_UNEXPECTED_TLVS_EXCHANGED,
 						 (ntohs(fasttlv->type) &
 						  MANDATORY_TLV));
 
@@ -1849,8 +1841,7 @@ void eapfast_phase2_process(eap_type_data * eapdata, uint8_t * indata,
 		return;
 	}
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
 		eap_type_common_fail(eapdata);
 		return;
 	}
@@ -1885,17 +1876,14 @@ void eapfast_phase2_process(eap_type_data * eapdata, uint8_t * indata,
 		debug_printf(DEBUG_AUTHTYPES, "(Offset %d) PAC id (%d) : ",
 			     consumed, (value16 & MANDATORY_TLV_MASK_OUT));
 		eapfast_phase2_PAC_id_to_str(DEBUG_AUTHTYPES,
-					     (value16 &
-					      MANDATORY_TLV_MASK_OUT));
+					     (value16 & MANDATORY_TLV_MASK_OUT));
 		debug_printf_nl(DEBUG_AUTHTYPES, "\n");
 
 		switch (value16 & MANDATORY_TLV_MASK_OUT) {
 		case FAST_RESULT_TLV:
 			result = eapfast_phase2_process_result_tlv(eapdata,
-								   &indata
-								   [consumed],
-								   (insize -
-								    consumed));
+								   &indata[consumed],
+								   (insize - consumed));
 
 			if ((phase2->provisioning == TRUE)
 			    && (phase2->anon_provisioning == FALSE)) {
@@ -1942,10 +1930,8 @@ void eapfast_phase2_process(eap_type_data * eapdata, uint8_t * indata,
 		case FAST_INTERMEDIATE_RESULT_TLV:
 			result =
 			    eapfast_phase2_intermediate_result_process(eapdata,
-								       &indata
-								       [consumed],
-								       (insize -
-									consumed));
+								       &indata[consumed],
+								       (insize - consumed));
 			break;
 
 		case FAST_PAC_TLV:
@@ -1957,10 +1943,8 @@ void eapfast_phase2_process(eap_type_data * eapdata, uint8_t * indata,
 
 		case FAST_CRYPTO_BINDING_TLV:
 			result = eapfast_phase2_check_crypto_binding(eapdata,
-								     &indata
-								     [consumed],
-								     (insize -
-								      consumed));
+								     &indata[consumed],
+								     (insize - consumed));
 
 			if (request_pac == TRUE) {
 				eapfast_phase2_create_PAC_request(eapdata);
@@ -1971,8 +1955,7 @@ void eapfast_phase2_process(eap_type_data * eapdata, uint8_t * indata,
 			debug_printf(DEBUG_NORMAL,
 				     "Got a 'Server trusted root' TLV, but "
 				     "this is not implemented, and should not happen!\n");
-			result =
-			    eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
+			result = eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
 						   0x00000000,
 						   FAST_SERVER_TRUSTED_ROOT_TLV);
 			break;
@@ -1981,8 +1964,7 @@ void eapfast_phase2_process(eap_type_data * eapdata, uint8_t * indata,
 			debug_printf(DEBUG_NORMAL,
 				     "The server sent us a request for "
 				     "action TLV.  But, we should NEVER get one!  NAKing!\n");
-			result =
-			    eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
+			result = eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
 						   0x00000000,
 						   FAST_REQUEST_ACTION_TLV);
 			break;
@@ -1991,16 +1973,14 @@ void eapfast_phase2_process(eap_type_data * eapdata, uint8_t * indata,
 			debug_printf(DEBUG_NORMAL,
 				     "Use of a PKCS#7 certificate is not "
 				     "currently supported!\n");
-			result =
-			    eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
+			result = eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
 						   0x00000000, FAST_PKCS7_TLV);
 			break;
 
 		default:
 			debug_printf(DEBUG_NORMAL, "Unknown TLV type %d.\n",
 				     ntohs(fastlv->type));
-			result =
-			    eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
+			result = eapfast_phase2_tlv_nak(eapdata, &indata[consumed],
 						   0x00000000,
 						   ntohs(fastlv->type));
 			break;

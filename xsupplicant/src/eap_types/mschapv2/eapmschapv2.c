@@ -44,7 +44,6 @@
 
 static uint8_t *peer_challenge = NULL;
 static uint8_t *authenticator_challenge = NULL;
-static uint8_t eap_fast_mode = 0;
 
 void eapmschapv2_p2_pwd_callback(void *ctxptr, struct eap_sm_vars *p2sm,
 				 uint8_t ** packet, uint16_t * pktsize)
@@ -186,8 +185,7 @@ void eapmschapv2_set_eap_fast_anon_mode(eap_type_data * eapdata, uint8_t enable)
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
 		return;
 
 	mscv2data = (struct mschapv2_vars *)eapdata->eap_data;
@@ -259,7 +257,7 @@ int eapmschapv2_init(eap_type_data * eapdata)
 	mscv2data = (struct mschapv2_vars *)eapdata->eap_data;
 
 	if ((peer_challenge != NULL) && (authenticator_challenge != NULL)) {
-		eap_fast_mode = TRUE;
+		mscv2data->eap_fast_mode = TRUE;
 		mscv2data->AuthenticatorChallenge = authenticator_challenge;
 		mscv2data->PeerChallenge = peer_challenge;
 	}
@@ -276,11 +274,9 @@ int eapmschapv2_init(eap_type_data * eapdata)
 		if (ctx->prof->temp_password != NULL) {
 			mscv2data->password = _strdup(ctx->prof->temp_password);
 		} else
-		    if ((TEST_FLAG
-			 (eapconf->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS))
+		    if ((TEST_FLAG(eapconf->flags, FLAGS_EAP_MSCHAPV2_USE_LOGON_CREDS))
 			&& (logon_creds_password_available() == TRUE)) {
-			mscv2data->password =
-			    _strdup(logon_creds_get_password());
+			mscv2data->password = _strdup(logon_creds_get_password());
 		} else if (eapconf->password != NULL) {
 			mscv2data->password = _strdup(eapconf->password);
 		} else {
@@ -363,9 +359,7 @@ void eapmschapv2_check(eap_type_data * eapdata)
 		return;
 	}
 
-	mv2 =
-	    (struct mschapv2_challenge *)&eapdata->
-	    eapReqData[sizeof(struct eap_header)];
+	mv2 = (struct mschapv2_challenge *)&eapdata->eapReqData[sizeof(struct eap_header)];
 
 	if ((mv2->OpCode < MS_CHAPV2_CHALLENGE)
 	    || (mv2->OpCode > MS_CHAPV2_FAILURE)) {
@@ -449,8 +443,7 @@ uint8_t eapmschapv2_challenge(eap_type_data * eapdata)
 			 "eapdata->eapReqData != NULL", FALSE))
 		return EAP_FAIL;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
 		return EAP_FAIL;
 
 	if (!xsup_assert((eapdata->eap_conf_data != NULL),
@@ -461,9 +454,7 @@ uint8_t eapmschapv2_challenge(eap_type_data * eapdata)
 
 	myvars = (struct mschapv2_vars *)eapdata->eap_data;
 
-	challenge =
-	    (struct mschapv2_challenge *)&eapdata->
-	    eapReqData[sizeof(struct eap_header)];
+	challenge = (struct mschapv2_challenge *)&eapdata->eapReqData[sizeof(struct eap_header)];
 
 	debug_printf(DEBUG_AUTHTYPES, "(EAP-MS-CHAPv2) ID : %02X\n",
 		     challenge->MS_CHAPv2_ID);
@@ -490,7 +481,7 @@ uint8_t eapmschapv2_challenge(eap_type_data * eapdata)
 		}
 	}
 
-	if (eap_fast_mode != TRUE) {
+	if (myvars->eap_fast_mode != TRUE) {
 		FREE(myvars->AuthenticatorChallenge);
 
 		myvars->AuthenticatorChallenge = (uint8_t *) Malloc(16);
@@ -511,7 +502,7 @@ uint8_t eapmschapv2_challenge(eap_type_data * eapdata)
 	debug_hex_printf(DEBUG_AUTHTYPES,
 			 (uint8_t *) myvars->AuthenticatorChallenge, 16);
 
-	if (eap_fast_mode != TRUE) {
+	if (myvars->eap_fast_mode != TRUE) {
 		FREE(myvars->PeerChallenge);
 
 		// Ignore the RADIUS host, we probably don't care.
@@ -1183,7 +1174,7 @@ uint8_t *eapmschapv2_challenge_resp(eap_type_data * eapdata)
 	response->MS_CHAPv2_ID = myvars->MS_CHAPv2_ID;
 	response->MS_Length = htons(54 + strlen(username));
 	response->Value_Size = 49;
-	if (eap_fast_mode == TRUE) {
+	if (myvars->eap_fast_mode == TRUE) {
 		memset((uint8_t *) & response->Peer_Challenge, 0x00, 16);
 	} else {
 		memcpy((uint8_t *) & response->Peer_Challenge,
