@@ -4,16 +4,32 @@
     <version>2.1.7</version>
     <installerFilename></installerFilename>
     <licenseFile>../../windows/installer/win-LICENSE</licenseFile>
+    <postInstallationActionList>
+        <addUnixService>
+            <description>XSupplicant</description>
+            <name>${product_shortname}</name>
+            <program>xsupplicant</program>
+        </addUnixService>
+    </postInstallationActionList>
+    <preUninstallationActionList>
+        <removeUnixService>
+            <name>${product_shortname}</name>
+        </removeUnixService>
+    </preUninstallationActionList>
     <a2555a>1</a2555a>
+    <allowComponentSelection>1</allowComponentSelection>
+    <compressionAlgorithm>lzma</compressionAlgorithm>
     <enableRollback>1</enableRollback>
     <enableTimestamp>1</enableTimestamp>
+    <requireInstallationByRootUser>1</requireInstallationByRootUser>
     <saveRelativePaths>1</saveRelativePaths>
+    <startMenuGroupName>${product_shortname}</startMenuGroupName>
     <vendor>OpenSEA</vendor>
     <componentList>
         <component>
-            <name>default</name>
-            <description>Default Component</description>
-            <canBeEdited>1</canBeEdited>
+            <name>xsupplicant</name>
+            <description>XSupplicant</description>
+            <canBeEdited>0</canBeEdited>
             <selected>1</selected>
             <show>1</show>
             <folderList>
@@ -47,6 +63,12 @@
                         <distributionFile>
                             <origin>../../../xsupplicant/src/xsupplicant</origin>
                         </distributionFile>
+                        <distributionDirectory>
+                            <origin>../../../xsupplicant-ui/Skins</origin>
+                        </distributionDirectory>
+                        <distributionFile>
+                            <origin>../../../xsupplicant-ui/build-debug/XSupplicantUI</origin>
+                        </distributionFile>
                     </distributionFileList>
                 </folder>
                 <folder>
@@ -61,6 +83,23 @@
                     <name>programfilesosx</name>
                     <platforms>osx</platforms>
                 </folder>
+                <folder>
+                    <description>Modules</description>
+                    <destination>${installdir}/Modules</destination>
+                    <name>modules</name>
+                    <platforms>linux</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/.libs/libbirddog.so</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/.libs/libbirddog.so.0</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/.libs/libbirddog.so.0.0.0</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
             </folderList>
             <startMenuShortcutList>
                 <startMenuShortcut>
@@ -73,6 +112,82 @@
                     <windowsPath>${installdir}/</windowsPath>
                 </startMenuShortcut>
             </startMenuShortcutList>
+        </component>
+        <component>
+            <name>softsim2g</name>
+            <description>SoftSIM2G</description>
+            <canBeEdited>1</canBeEdited>
+            <detailedDescription>A 2G software SIM emulator for EAP-SIM.</detailedDescription>
+            <selected>0</selected>
+            <show>1</show>
+            <folderList>
+                <folder>
+                    <description>Modules</description>
+                    <destination>${installdir}/Modules</destination>
+                    <name>Modules</name>
+                    <platforms>linux</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM2G/.libs/libsoftsim2g.so</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM2G/.libs/libsoftsim2g.so.0</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM2G/.libs/libsoftsim2g.so.0.0.0</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
+                <folder>
+                    <description>Docs</description>
+                    <destination>${installdir}/Docs</destination>
+                    <name>docs</name>
+                    <platforms>all</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant-ui/Doc/Using the 2G Soft SIM.pdf</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
+            </folderList>
+        </component>
+        <component>
+            <name>softsim3g</name>
+            <description>SoftSIM3G</description>
+            <canBeEdited>1</canBeEdited>
+            <detailedDescription>A 3G software SIM emulator for EAP-AKA.</detailedDescription>
+            <selected>0</selected>
+            <show>1</show>
+            <folderList>
+                <folder>
+                    <description>Modules</description>
+                    <destination>${installdir}/Modules</destination>
+                    <name>modules</name>
+                    <platforms>linux</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM3G/.libs/libsoftsim3g.so</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM3G/.libs/libsoftsim3g.so.0</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM3G/.libs/libsoftsim3g.so.0.0.0</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
+                <folder>
+                    <description>Docs</description>
+                    <destination>${installdir}/Docs</destination>
+                    <name>Docs</name>
+                    <platforms>all</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant-ui/Doc/Using the 3G Soft SIM.pdf</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
+            </folderList>
         </component>
     </componentList>
     <parameterList>
