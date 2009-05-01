@@ -474,7 +474,7 @@ int cardif_windows_wmi_post_insert_bind(wchar_t * name)
 			WideCharToMultiByte(CP_UTF8, 0, friendlyName, wcslen(friendlyName), fNameUTF8, (wcslen(friendlyName)*2), NULL, NULL);
 	}
 
-	if (interfaces_add(intname, intdesc, mac, is_wireless) != 0) {
+	if (interfaces_add(intname, intdesc, fNameUTF8, mac, is_wireless) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Unable to add interface '%s' to our live interfaces cache!\n",
 			     intdesc);

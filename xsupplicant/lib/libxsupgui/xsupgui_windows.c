@@ -306,8 +306,7 @@ long int xsupgui_windows_process(int *evttype)
 		return IPC_ERROR_RUNT_RESPONSE;
 	}
 
-	recvmsg =
-	    xmlReadMemory(&eventbuf[5], (eventbufressize - 5), "ipc_event.xml",
+	recvmsg = xmlReadMemory(&eventbuf[5], (eventbufressize - 5), "ipc_event.xml",
 			  NULL, 0);
 	if (recvmsg == NULL) {
 		retval = GetLastError();
