@@ -1,4 +1,4 @@
-SUBDIRS = lib src etc tools doc 
+SUBDIRS = lib src etc tools doc plugins
 
 all-docs:
 	cd doc && $(MAKE) $(AM_MAKEFLAGS) all-docs

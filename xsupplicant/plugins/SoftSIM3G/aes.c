@@ -21,20 +21,23 @@
  * See README and COPYING for more details.
  */
 
-//#include "includes.h"
-
-//#include "common.h"
 #define INTERNAL_AES
 #ifdef INTERNAL_AES
 
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef WIN32
 #include <stdintwin.h>
 
 #define u32 unsigned __int32
 #define u8 uint8_t
-//#include "crypto.h"
+#else
+#include <stdint.h>
+
+#define u32 uint32_t
+#define u8 uint8_t
+#endif
 
 /*
  * rijndael-alg-fst.c

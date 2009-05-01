@@ -9,11 +9,16 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#ifdef WIN32
 #include <windows.h>
 #include <stdio.h>
 #include <shlobj.h>
 
 #include <stdintwin.h>
+#else
+#include <stdio.h>
+#include <string.h>
+#endif
 
 #include "sim.h"
 
@@ -60,9 +65,10 @@ void process_hex(char *instr, int size, char *outstr)
 
 FILE *sim_open_config()
 {
+  char *path = NULL;
 #ifdef WIN32
 	TCHAR szMyPath[MAX_PATH];
-	char *path = NULL;
+
 
 	if (FAILED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szMyPath)))
 	  {
@@ -77,6 +83,9 @@ FILE *sim_open_config()
 
 	strcpy(path, szMyPath);
 	strcat(path, "\\2Gsim.txt");
+#else
+
+	path = _strdup("/etc/2Gsim.txt");
 #endif
 
 	return fopen(path, "r");

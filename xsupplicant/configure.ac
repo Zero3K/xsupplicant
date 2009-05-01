@@ -3,6 +3,7 @@ AC_PREREQ(2.59)
 AM_INIT_AUTOMAKE([dist-bzip2] [dist-zip] [foreign])
 AC_PROG_RANLIB
 AC_PROG_CC
+AC_PROG_LIBTOOL
 
 # Host environment specific tests
 AC_CANONICAL_HOST
@@ -445,5 +446,8 @@ AC_CONFIG_FILES([Makefile
 		tools/connect-tool/Makefile
 		lib/liblist/Makefile
 		lib/libsupdetect/Makefile
+		plugins/Makefile
+		plugins/SoftSIM2G/Makefile
+		plugins/SoftSIM3G/Makefile
 		])
 AC_OUTPUT

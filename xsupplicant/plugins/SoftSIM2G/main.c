@@ -29,7 +29,7 @@
 unsigned long reader_handle_value = 1;			// A global counter to deal with multiple simultanious attempts to use the virtual reader.
 
 // Supplicant entrypoint
-unsigned __int32 DLLMAGIC initialize()
+uint32_t DLLMAGIC initialize()
 {
 	printf("%s()\n", __FUNCTION__);
 	return PLUGIN_TYPE_SIM_INTERFACE;

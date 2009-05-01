@@ -285,7 +285,7 @@ int DLLMAGIC plugin_hook_trouble_ticket_dump_file(char *file)
 		return 0;
 }
 
-
+#ifdef WIN32
 BOOL WINAPI DllMain(
 					HANDLE hinstDLL, 
 					DWORD dwReason, 
@@ -294,6 +294,7 @@ BOOL WINAPI DllMain(
 {
 	return 1;
 }
+#endif
 
 void trim_buffer_to_size(unsigned long bufferSize) 
 {

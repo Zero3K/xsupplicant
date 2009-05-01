@@ -21,12 +21,15 @@
  * be AES (Rijndael).
  */
 
-//#include "includes.h"
 
-//#include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef WIN32
 #include <stdintwin.h>
+#else
+#include <stdint.h>
+#endif
 
 #define u8  uint8_t
 #include "milenage.h"

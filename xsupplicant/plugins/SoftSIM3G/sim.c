@@ -9,10 +9,14 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <windows.h>
 #include <stdio.h>
 
+#ifdef WIN32
+#include <windows.h>
 #include <stdintwin.h>
+#else
+#include <stdint.h>
+#endif
 
 #include "config_manager.h"
 #include "milenage.h"
