@@ -23,27 +23,27 @@ AC_ARG_WITH(old-iwlib,
     [use older 2-param IWLIB calls]),
   [AC_DEFINE(OLD_IWLIB)])
 
-AC_MSG_CHECKING([user defined path to libpcap])
-AC_ARG_WITH(libpcap,
-  AS_HELP_STRING([--with-libpcap],
-    [location of libpcap/winpcap root development tree]),
-  [LDFLAGS="$LDFLAGS -L${with_libpcap}/lib";CPPFLAGS="$CPPFLAGS -I${with_libpcap}/include"])
-AC_MSG_RESULT([$with_libpcap])
+#AC_MSG_CHECKING([user defined path to libpcap])
+#AC_ARG_WITH(libpcap,
+#  AS_HELP_STRING([--with-libpcap],
+#    [location of libpcap/winpcap root development tree]),
+#  [LDFLAGS="$LDFLAGS -L${with_libpcap}/lib";CPPFLAGS="$CPPFLAGS -I${with_libpcap}/include"])
+#AC_MSG_RESULT([$with_libpcap])
 
-AC_MSG_CHECKING([user defined path to libpcap libraries])
-AC_ARG_WITH(libpcap-libs,
-  AS_HELP_STRING([--with-libpcap-libs],
-      [location of libpcap libraries]),
-  [LDFLAGS="$LDFLAGS -L${with_libpcap_libs}"])
-AC_MSG_RESULT([$with_libpcap_libs])
-AC_SUBST(with_libpcap_libs)
+#AC_MSG_CHECKING([user defined path to libpcap libraries])
+#AC_ARG_WITH(libpcap-libs,
+#  AS_HELP_STRING([--with-libpcap-libs],
+#      [location of libpcap libraries]),
+#  [LDFLAGS="$LDFLAGS -L${with_libpcap_libs}"])
+#AC_MSG_RESULT([$with_libpcap_libs])
+#AC_SUBST(with_libpcap_libs)
 
-AC_MSG_CHECKING([user defined path to libpcap includes])
-AC_ARG_WITH(libpcap-includes,
-  AS_HELP_STRING([--with-libpcap-includes],
-    [location of libpcapc includes]),
-  [CPPFLAGS="$CPPFLAGS -I${with_libpcap_includes}"])
-AC_MSG_RESULT([$with_libpcap_includes])
+#AC_MSG_CHECKING([user defined path to libpcap includes])
+#AC_ARG_WITH(libpcap-includes,
+#  AS_HELP_STRING([--with-libpcap-includes],
+#    [location of libpcapc includes]),
+#  [CPPFLAGS="$CPPFLAGS -I${with_libpcap_includes}"])
+#AC_MSG_RESULT([$with_libpcap_includes])
 
 #
 # Got Openssl?
@@ -52,7 +52,7 @@ AC_MSG_CHECKING([user defined path to OpenSSL])
 AC_ARG_WITH(openssl,
   AS_HELP_STRING([--with-openssl],
     [location of openssl root tree]),
-  [LDFLAGS="$LDFLAGS -L${with_openssl}/lib";CPPFLAGS="$CPPFLAGS -I${with_openssl}/include"])
+  [LDFLAGS="$LDFLAGS -L${with_openssl}/lib -L${with_openssl}";CPPFLAGS="$CPPFLAGS -I${with_openssl}/include";MORELIBS="$MORELIBS -L${with_openssl}/lib -L${with_openssl}"])
 AC_MSG_RESULT([$with_openssl])
 
 AC_MSG_CHECKING([user defined path to OpenSSL libraries])
@@ -74,8 +74,38 @@ AC_MSG_CHECKING([user defined path to iwlib])
 AC_ARG_WITH(iwlib-path,
   AS_HELP_STRING([--with-iwlib-path],
     [location of the iwlib headers and libraries]),
-  [CPPFLAGS="$CPPFLAGS -I${with_iwlib_path}/include";MORELIBS="$MORELIBS -L${with_iwlib_path}/lib"])
+  [CPPFLAGS="$CPPFLAGS -I${with_iwlib_path} -I${with_iwlib_path}/include";MORELIBS="$MORELIBS -L${with_iwlib_path}/lib -L${with_iwlib_path}"])
 AC_MSG_RESULT([$with_iwlib_path])
+
+AC_MSG_CHECKING([user defined path to iwlib libraries])
+AC_ARG_WITH(iwlib-lib-path,
+  AS_HELP_STRING([--with-iwlib-lib-path],
+    [location of the iwlib library]),
+    [LDFLAGS="$LDFLAGS -L${with_iwlib_lib_path}"])
+AC_MSG_RESULT([$with_iwlib_lib_path])
+AC_SUBST(with_iwlib_lib_path)
+
+AC_MSG_CHECKING([user defined path to iwlib headers])
+AC_ARG_WITH(iwlib-headers,
+  AS_HELP_STRING([--with-iwlib-headers],
+    [location of the iwlib headers]),
+    [CPPFLAGS="$CPPFLAGS -I${with_iwlib_headers} -I${with_iwlib_headers}/include"])
+AC_MSG_RESULT([$with_iwlib_headers])
+AC_SUBST(with_iwlib_headers)
+
+AC_ARG_ENABLE(static-openssl,
+  AS_HELP_STRING([--enable-static-openssl],
+    [statically link openssl libraries]),
+  [AS_IF([test -n "$with_openssl_libs" && test -n "$with_openssl_headers"], 
+  	       [enable_static_openssl="yes" ], 
+  	       [AC_MSG_ERROR("You must use --with-openssl-libs and --with-openssl-headers to use static OpenSSL support.")])])
+
+AC_ARG_ENABLE(static-iwlib,
+  AS_HELP_STRING([--enable-static-iwlib],
+    [statically link Linux wireless libraries]),
+  [AS_IF([test -n "$with_iwlib_lib_path" && test -n "$with_iwlib_headers"],
+  	       [enable_static_iwlib="yes" ],
+	       [AC_MSG_ERROR("You must use --with-iwlib-lib-path and --with-iwlib-headers to use static Linux wireless library support.")])])
 
 AC_ARG_ENABLE(experimental,
   AS_HELP_STRING([--enable-experimental],
@@ -133,12 +163,6 @@ AC_ARG_ENABLE(generic-framer,
   [],
   [enable_generic_framer="no"])
 
-AC_ARG_ENABLE(static-openssl,
-  AS_HELP_STRING([--enable-static-openssl],
-    [enable static linking of OpenSSL]),
-  [],
-  [enable_static_openssl="no"])
-
 AC_ARG_ENABLE(panther-binary,
   AS_HELP_STRING([--enable-panther-binary],
     [build as Panther-compatible binary (Mac OS X Only)]),
@@ -152,10 +176,10 @@ AC_ARG_ENABLE(universal-binary,
   [enable_universal_binary="no"])
 
 AC_ARG_ENABLE(net80211,
-  AS_HELP_STRING([--disable-net80211],
+  AS_HELP_STRING([--enable-net80211],
     [build without the Linux Net 802.11 extensions]),
-  [disable_net80211="yes"],
-  [])
+  [disable_net80211="no"],
+  [disable_net80211="yes"])
 
 AC_ARG_ENABLE(moko-support,
   AS_HELP_STRING([--enable-moko-support],
@@ -215,11 +239,6 @@ AS_IF([test "$enable_aka_test" = yes], AC_DEFINE(RADIATOR_TEST), [])
 dnl enable parser debug?
 AS_IF([test "$enable_parser_debug" = yes], AC_DEFINE(PARSER_DEBUG), [])
 
-dnl check for static ossl
-AS_IF([test "$enable_static_ossl" = yes],
-  [LDFLAGS="-static $LDFLAGS" STATIC_OSSL="yes"],
-  [STATIC_OSSL="no"])
-
 AC_MSG_CHECKING([for libxml-2.0])
 if `pkg-config libxml-2.0 --exists`; then
      LIBS=`pkg-config libxml-2.0 --libs $LIBS`
@@ -255,8 +274,12 @@ AS_IF([test "$disable_net80211" != yes],
 dnl Below turns off Kerberos support in OpenSSL, to avoid compile errors.
 AC_DEFINE(OPENSSL_NO_KRB5)
 
-AC_CHECK_LIB(crypto, CRYPTO_new_ex_data, [], [AC_MSG_ERROR([library 'crypto' is required for Open1x])])
-AC_CHECK_LIB(ssl,    SSL_library_init, [], [AC_MSG_ERROR([library 'ssl' is required for Open1x])])
+AS_IF([test "$enable_static_openssl" != yes], [
+	    AC_CHECK_LIB(crypto, CRYPTO_new_ex_data, [MORELIBS="${MORELIBS} -lcrypto"], [AC_MSG_ERROR([library 'crypto' is required for Open1x])])
+	    AC_CHECK_LIB(ssl,    SSL_library_init, [MORELIBS="${MORELIBS} -lssl"], [AC_MSG_ERROR([library 'ssl' is required for Open1x])])], 
+[AS_IF([test -f "$with_openssl_libs/libssl.a"], [MORELIBS="${MORELIBS} ${with_openssl_libs}/libssl.a"], [AC_MSG_ERROR(libssl.a was not found in ${with_openssl_libs}!)])
+AS_IF([test -f "$with_openssl_libs/libcrypto.a"], [MORELIBS="${MORELIBS} ${with_openssl_libs}/libcrypto.a"], [AC_MSG_ERROR([libcrypto.a was not found in ${with_openssl_libs}!])])])
+
 AC_CHECK_HEADER(openssl/ssl.h, [], [AC_MSG_ERROR([header file <openssl/ssl.h> is required for Open1x])])
 AC_CHECK_HEADER(openssl/err.h, [], [AC_MSG_ERROR([header file <openssl/err.h> is required for Open1x])])
 
@@ -266,13 +289,21 @@ case "$host_os" in
       framer="linux"
       platform="linux"
       AC_DEFINE(LINUX)
-      MORELIBS="${MORELIBS} -liw"
 
-      AC_CHECK_HEADERS(sys/socket.h, [], [AC_MSG_ERROR([header file \
-        <sys/socket.h> is required for Xsupplicant.])],)
+      AC_CHECK_HEADER(sys/socket.h, [], [AC_MSG_ERROR([header file \
+        <sys/socket.h> is required for Xsupplicant.])])
 
-      AC_CHECK_HEADERS(iwlib.h, [],
-        [AC_MSG_ERROR([header file <iwlib.h> is required for Xsupplicant])],)
+      AS_IF([test "$enable_static_iwlib" != yes], 
+      		  [AC_CHECK_HEADER([iwlib.h], 
+		  	[MORELIBS="${MORELIBS} -liw"], [AC_MSG_ERROR([header file <iwlib.h> is required for XSupplicant.])])],
+		[AS_IF([test -f "$with_iwlib_lib_path/libiw.a"],
+		       [MORELIBS="${with_iwlib_lib_path}/libiw.a"],
+		       [AC_MSG_ERROR([libiw.a was not found in ${with_iwlib_lib_path}])])
+		 AS_IF([test -f "$with_iwlib_headers/iwlib.h"],
+		       [],
+		       [AC_MSG_ERROR([iwlib.h was not found in ${with_iwlib_headers}])])
+		 ])
+
    ;;
 
    *darwin*)

@@ -1,5 +1,6 @@
 #CORELIBS = @CORELIBS@
 #MORELIBS = @MORELIBS@ -L${top_srcdir}/lib/libxsupconfig -l xsupconfig
+LIBS = @MORELIBS@
 #MOREDEFS = @MOREDEFS@
 DEFS = @DEFS@ $(MOREDEFS)
 
