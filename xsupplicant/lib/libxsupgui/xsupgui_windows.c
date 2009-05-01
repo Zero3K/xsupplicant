@@ -386,11 +386,9 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 				retval = GetLastError();
 
 				if ((retval != 0) && (retval != 997)) {
-					xsup_gui_trace
-					    ("Couldn't read data!  Error : %d\n",
+					xsup_gui_trace("Couldn't read data!  Error : %d\n",
 					     retval);
-					xsup_gui_trace
-					    ("Pipe : %d   Event : %d   Size in : %d    Size out : %d\n",
+					xsup_gui_trace("Pipe : %d   Event : %d   Size in : %d    Size out : %d\n",
 					     eventpipe, eovr.hEvent, MAXBUF,
 					     resultsize);
 					free(resdata);
@@ -401,8 +399,7 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 
 		switch (WaitForSingleObject(eventhdl, 30000)) {
 		case WAIT_OBJECT_0:
-			if (GetOverlappedResult(pipehdl, &ovr, &size, FALSE) !=
-			    0) {
+			if (GetOverlappedResult(pipehdl, &ovr, &size, FALSE) != 0) {
 				ResetEvent(eventhdl);
 
 #ifdef TRACELOG
@@ -428,8 +425,7 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 						data = malloc(size);
 						if (data == NULL) {
 							free(resdata);
-							return
-							    IPC_ERROR_CANT_MALLOC_LOCAL;
+							return IPC_ERROR_CANT_MALLOC_LOCAL;
 						}
 
 						memset(data, 0x00, size);
@@ -445,12 +441,10 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 					return REQUEST_SUCCESS;
 				}
 
-				if ((resdata[0] & IPC_MSG_TOTAL_SIZE) ==
-				    IPC_MSG_TOTAL_SIZE) {
+				if ((resdata[0] & IPC_MSG_TOTAL_SIZE) == IPC_MSG_TOTAL_SIZE) {
 					// We need to allocate memory.
 					if (data != NULL) {
-						return
-						    IPC_ERROR_NOT_INITIALIZED;
+						return IPC_ERROR_NOT_INITIALIZED;
 					}
 
 					hdr = (ipc_header *) & resdata[0];
@@ -459,8 +453,7 @@ int xsupgui_windows_recv(unsigned char **result, int *resultsize)
 					data = malloc(value32);
 					if (data == NULL) {
 						free(resdata);
-						return
-						    IPC_ERROR_CANT_MALLOC_LOCAL;
+						return IPC_ERROR_CANT_MALLOC_LOCAL;
 					}
 					memset(data, 0x00, value32);
 				}
