@@ -298,7 +298,7 @@ case "$host_os" in
       		  [AC_CHECK_HEADER([iwlib.h], 
 		  	[MORELIBS="${MORELIBS} -liw"], [AC_MSG_ERROR([header file <iwlib.h> is required for XSupplicant.])])],
 		[AS_IF([test -f "$with_iwlib_lib_path/libiw.a"],
-		       [MORELIBS="${with_iwlib_lib_path}/libiw.a"],
+		       [MORELIBS="${MORELIBS} ${with_iwlib_lib_path}/libiw.a"],
 		       [AC_MSG_ERROR([libiw.a was not found in ${with_iwlib_lib_path}])])
 		 AS_IF([test -f "$with_iwlib_headers/iwlib.h"],
 		       [],
