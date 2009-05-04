@@ -27,7 +27,8 @@
 
 #include <string.h>
 
-#include "xsupconfig.h"
+#include "libxsupconfig/xsupconfig_structs.h"
+#include "libxsupconfig/xsupconfig.h"
 #include "../../eap_sm.h"
 #include "../../eap_types/eap_type_common.h"
 #include "eapfast_phase2.h"

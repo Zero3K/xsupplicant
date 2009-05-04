@@ -13,7 +13,7 @@ CLEANFILES= config_grammar.c config_lexicon.c config_grammar.h
 
 sbin_PROGRAMS = xsupplicant
 
-xsupplicant_CFLAGS = -I${top_srcdir}/src/platform -I${top_srcdir}/lib/libxsupconfig @DARWININCS@
+xsupplicant_CFLAGS = -I${top_srcdir}/src/platform @DARWININCS@
 
 xsupplicant_SOURCES = backend_sm.h config_ssid.h context.h eapol.h \
 			eapol_key_type1.h eapol_key_type254.h \

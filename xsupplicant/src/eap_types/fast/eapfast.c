@@ -24,7 +24,8 @@
 #include <Winsock2.h>
 #endif
 
-#include "xsupconfig.h"
+#include "libxsupconfig/xsupconfig_structs.h"
+#include "libxsupconfig/xsupconfig.h"
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
 #include "../../frame_structs.h"

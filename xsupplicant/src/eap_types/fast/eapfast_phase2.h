@@ -92,7 +92,7 @@ struct eapfast_pac_request_tlv {
 	uint16_t length;
 	uint16_t pac_type;
 	uint16_t pac_length;
-	uint8_t pac_inner_type;
+	uint16_t req_type;
 } __attribute__ ((__packed__));
 
 struct eapfast_crypto_binding_tlv {
