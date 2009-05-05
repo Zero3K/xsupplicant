@@ -1901,8 +1901,7 @@ int cardif_getframe(context * ctx)
 			// hidden, we should also move on. Otherwise, we should allow the scan to continue.
 			debug_printf(DEBUG_INT, "Known SSID : %s\n",
 				     wctx->cur_essid);
-			if ((config_ssid_ssid_known(wctx, wctx->cur_essid) ==
-			     TRUE)
+			if ((config_ssid_ssid_known(wctx, wctx->cur_essid) == TRUE)
 			    || (TEST_FLAG(ctx->flags, CONFIG_NET_IS_HIDDEN))) {
 				debug_printf(DEBUG_INT,
 					     "We know enough to authenticate.  Canceling scan.\n");
@@ -1927,8 +1926,7 @@ int cardif_getframe(context * ctx)
 	     (memcmp(&ctx->recvframe[6], &ctx->source_mac[0], 6) != 0))) {
 		// Since we now know this frame is for us, record the address it
 		// came from.
-		snmp_dot1xSuppLastEapolFrameSource((uint8_t *) & ctx->
-						   recvframe[6]);
+		snmp_dot1xSuppLastEapolFrameSource((uint8_t *) & ctx->recvframe[6]);
 
 		if (ctx->intType == ETH_802_3_INT) {
 			// Only allow the destination change on wired interfaces.  Wireless should always use the unicast address.
@@ -1936,16 +1934,13 @@ int cardif_getframe(context * ctx)
 			case DEST_AUTO:
 				// If it is a wired interface, only change the destination if
 				// the recieved frame destination isn't the multicast address.
-				if (memcmp
-				    (&ctx->recvframe[0], dot1x_default_dest,
-				     6) == 0) {
+				if (memcmp(&ctx->recvframe[0], dot1x_default_dest, 6) == 0) {
 					break;
 				}
 				// Otherwise, fall through.
 
 			case DEST_SOURCE:
-				if (memcmp(ctx->dest_mac, &ctx->recvframe[6], 6)
-				    != 0) {
+				if (memcmp(ctx->dest_mac, &ctx->recvframe[6], 6) != 0) {
 					debug_printf(DEBUG_INT,
 						     "Changing destination mac to source on '%s'.\n",
 						     ctx->desc);
