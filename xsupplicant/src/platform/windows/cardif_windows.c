@@ -1952,10 +1952,6 @@ int cardif_getframe(context * ctx)
 				memcpy(ctx->dest_mac, dot1x_default_dest, 6);
 				break;
 
-			case DEST_BSSID:
-				cardif_GetBSSID(ctx, ctx->dest_mac);
-				break;
-
 			default:
 				debug_printf(DEBUG_NORMAL,
 					     "Unknown destination mode on interface '%s'!\n",

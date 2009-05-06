@@ -85,8 +85,7 @@ int xsupconfwrite_globals_build_debug(xmlNodePtr parent, char write_all,
 
 	while (debug_choices_write[i].value != -1) {
 		if (dbglevel == DEBUG_ALL) {
-			if (xmlNewChild
-			    (parent, NULL, (xmlChar *) "Log_Level",
+			if (xmlNewChild(parent, NULL, (xmlChar *) "Log_Level",
 			     (xmlChar *) "ALL") == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Couldn't create loglevel node!\n");
@@ -100,13 +99,10 @@ int xsupconfwrite_globals_build_debug(xmlNodePtr parent, char write_all,
 		if (TEST_FLAG(dbglevel, debug_choices_write[i].value)) {
 			if ((write_all == TRUE)
 			    || (debug_choices_write[i].value != DEBUG_NORMAL)) {
-				if (xmlNewChild
-				    (parent, NULL, (xmlChar *) "Log_Level",
-				     (xmlChar *) debug_choices_write[i].text) ==
-				    NULL) {
+				if (xmlNewChild(parent, NULL, (xmlChar *) "Log_Level",
+				     (xmlChar *) debug_choices_write[i].text) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
-					printf
-					    ("Couldn't create loglevel node!\n");
+					printf("Couldn't create loglevel node!\n");
 #endif
 					return -1;
 				}
@@ -161,8 +157,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	//    default, we should create the node.
 
 	if ((write_all == TRUE) || (conf_globals->logpath != NULL)) {
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Log_Path",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Log_Path",
 		     (xmlChar *) conf_globals->logpath) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Logfile> node!\n");
@@ -173,8 +168,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	}
 
 	if ((write_all == TRUE) || (conf_globals->log_facility != NULL)) {
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Log_Facility",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Log_Facility",
 		     (xmlChar *) conf_globals->log_facility) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Log_Facility> node!\n");
@@ -185,8 +179,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	}
 
 	if ((write_all == TRUE) || (conf_globals->ipc_group_name != NULL)) {
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "IPC_Group",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "IPC_Group",
 		     (xmlChar *) conf_globals->ipc_group_name) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <IPC_Group> node!\n");
@@ -198,14 +191,11 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 
 	if ((write_all == TRUE)
 	    || (conf_globals->wiredMachineAuthConnection != NULL)) {
-		if (xmlNewChild
-		    (globalnode, NULL,
+		if (xmlNewChild(globalnode, NULL,
 		     (xmlChar *) "Wired_Machine_Authentication_Connection",
-		     (xmlChar *) conf_globals->wiredMachineAuthConnection) ==
-		    NULL) {
+		     (xmlChar *) conf_globals->wiredMachineAuthConnection) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
-			printf
-			    ("Failed to create <Wired_Machine_Authentication_Connection> node!\n");
+			printf("Failed to create <Wired_Machine_Authentication_Connection> node!\n");
 #endif
 			xmlFreeNode(globalnode);
 			return NULL;
@@ -229,15 +219,13 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Detect_on_startup",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_DETECT_ON_STARTUP),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP),
 					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_common_write_bool
-	    (globalnode, "Allow_Machine_Authentication_to_Remain",
+	if (xsupconfwrite_common_write_bool(globalnode, "Allow_Machine_Authentication_to_Remain",
 	     TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ALLOW_MA_REMAIN),
 	     FALSE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
@@ -245,16 +233,14 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Disconnect_at_Logoff",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF),
 					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Friendly_Warnings",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_FRIENDLY_WARNINGS),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS),
 					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
@@ -263,8 +249,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	if ((write_all == TRUE) || (conf_globals->logtype != LOGGING_FILE)) {
 		switch (conf_globals->logtype) {
 		case LOGGING_NONE:
-			if (xmlNewChild
-			    (globalnode, NULL, (xmlChar *) "Logging",
+			if (xmlNewChild(globalnode, NULL, (xmlChar *) "Logging",
 			     (xmlChar *) "NONE") == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Logging> node!\n");
@@ -275,8 +260,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 			break;
 
 		case LOGGING_FILE:
-			if (xmlNewChild
-			    (globalnode, NULL, (xmlChar *) "Logging",
+			if (xmlNewChild(globalnode, NULL, (xmlChar *) "Logging",
 			     (xmlChar *) "FILE") == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Logging> node!\n");
@@ -287,8 +271,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 			break;
 
 		case LOGGING_SYSLOG:
-			if (xmlNewChild
-			    (globalnode, NULL, (xmlChar *) "Logging",
+			if (xmlNewChild(globalnode, NULL, (xmlChar *) "Logging",
 			     (xmlChar *) "SYSLOG") == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Logging> node!\n");
@@ -301,22 +284,19 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Wireless_Only",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_WIRELESS_ONLY),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY),
 					    FALSE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
-	if (xsupconfwrite_globals_build_debug
-	    (globalnode, write_all, conf_globals->loglevel) != 0) {
+	if (xsupconfwrite_globals_build_debug(globalnode, write_all, conf_globals->loglevel) != 0) {
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Allmulti",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_ALLMULTI),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ALLMULTI),
 					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
@@ -325,19 +305,16 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	if ((write_all == TRUE)
 	    || (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ASSOC_AUTO))) {
 		if (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ASSOC_AUTO)) {
-			if (xmlNewChild
-			    (globalnode, NULL, (xmlChar *) "Association",
+			if (xmlNewChild(globalnode, NULL, (xmlChar *) "Association",
 			     (xmlChar *) "MANUAL") == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
-				printf
-				    ("Failed to create <Association> node!\n");
+				printf("Failed to create <Association> node!\n");
 #endif
 				xmlFreeNode(globalnode);
 				return NULL;
 			}
 		} else {
-			if (xmlNewChild
-			    (globalnode, NULL, (xmlChar *) "Association",
+			if (xmlNewChild(globalnode, NULL, (xmlChar *) "Association",
 			     (xmlChar *) "AUTO") == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 				printf
@@ -352,10 +329,8 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	if ((write_all == TRUE)
 	    || (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)))
 	{
-		if (!TEST_FLAG
-		    (conf_globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)) {
-			if (xmlNewChild
-			    (globalnode, NULL, (xmlChar *) "Roaming",
+		if (!TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_FIRMWARE_ROAM)) {
+			if (xmlNewChild(globalnode, NULL, (xmlChar *) "Roaming",
 			     (xmlChar *) "FIRMWARE") == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Roaming> node!\n");
@@ -364,8 +339,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 				return NULL;
 			}
 		} else {
-			if (xmlNewChild
-			    (globalnode, NULL, (xmlChar *) "Roaming",
+			if (xmlNewChild(globalnode, NULL, (xmlChar *) "Roaming",
 			     (xmlChar *) "XSUPPLICANT") == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 				printf("Failed to create <Roaming> node!\n");
@@ -377,32 +351,28 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Passive_Scanning",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_PASSIVE_SCAN),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN),
 					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Use_EAP_Hints",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_EAP_HINTS),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_EAP_HINTS),
 					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Roll_Logs",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_ROLL_LOGS),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_ROLL_LOGS),
 					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
 	}
 
 	if (xsupconfwrite_common_write_bool(globalnode, "Control_Interfaces",
-					    TEST_FLAG(conf_globals->flags,
-						      CONFIG_GLOBALS_INT_CTRL),
+					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_INT_CTRL),
 					    TRUE, write_all, FALSE) == NULL) {
 		xmlFreeNode(globalnode);
 		return NULL;
@@ -415,10 +385,6 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 			temp = _strdup("auto");
 			break;
 
-		case DEST_BSSID:
-			temp = _strdup("bssid");
-			break;
-
 		case DEST_MULTICAST:
 			temp = _strdup("multicast");
 			break;
@@ -428,8 +394,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 			break;
 		}
 
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Destination",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Destination",
 		     (xmlChar *) temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Destination> node!\n");
@@ -447,8 +412,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	    || ((conf_globals->auth_period != AUTHENTICATION_TIMEOUT)
 		&& (conf_globals->auth_period != 0))) {
 		sprintf((char *)&static_temp, "%d", conf_globals->auth_period);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Auth_Period",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Auth_Period",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Auth_Period> node!\n");
@@ -463,8 +427,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 		&& (conf_globals->pmksa_age_out != 0))) {
 		sprintf((char *)&static_temp, "%d",
 			conf_globals->pmksa_age_out);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "PMKSA_Age_Out_Time",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "PMKSA_Age_Out_Time",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <PMKSA_Age_Out_Time> node!\n");
@@ -479,8 +442,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 		&& (conf_globals->dead_connection_timeout != 0))) {
 		sprintf((char *)&static_temp, "%d",
 			conf_globals->dead_connection_timeout);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Dead_Connection_Timeout",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Dead_Connection_Timeout",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf
@@ -496,8 +458,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 		&& (conf_globals->pmksa_cache_check != 0))) {
 		sprintf((char *)&static_temp, "%d",
 			conf_globals->pmksa_cache_check);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "PMKSA_Refresh_Time",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "PMKSA_Refresh_Time",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <PMKSA_Refresh_Time> node!\n");
@@ -510,8 +471,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	if ((write_all == TRUE) || ((conf_globals->logs_to_keep != 3) &&
 				    (conf_globals->logs_to_keep != 0))) {
 		sprintf((char *)&static_temp, "%d", conf_globals->logs_to_keep);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Logs_To_Keep",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Logs_To_Keep",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Logs_To_Keep> node!\n");
@@ -524,8 +484,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	if ((write_all == TRUE) || ((conf_globals->size_to_roll != 3) &&
 				    (conf_globals->size_to_roll != 0))) {
 		sprintf((char *)&static_temp, "%d", conf_globals->size_to_roll);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Log_Size_To_Roll",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Log_Size_To_Roll",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Log_Size_To_Roll> node!\n");
@@ -538,8 +497,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	if ((write_all == TRUE) || ((conf_globals->held_period != 60) && (conf_globals->held_period != 0)))	// XXX held_period should be a #define!
 	{
 		sprintf((char *)&static_temp, "%d", conf_globals->held_period);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Held_Period",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Held_Period",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Held_Period> node!\n");
@@ -552,8 +510,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	if ((write_all == TRUE) || ((conf_globals->max_starts != 3) && (conf_globals->max_starts != 0)))	// XXX max_starts should be a #define!
 	{
 		sprintf((char *)&static_temp, "%d", conf_globals->max_starts);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Max_Starts",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Max_Starts",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Max_Starts> node!\n");
@@ -567,8 +524,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	    || (conf_globals->stale_key_timeout != STALE_KEY_WARN_TIMEOUT)) {
 		sprintf((char *)&static_temp, "%d",
 			conf_globals->stale_key_timeout);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Stale_Key_Timeout",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Stale_Key_Timeout",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Stale_Key_Timeout> node!\n");
@@ -582,12 +538,10 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	    || (conf_globals->assoc_timeout != ASSOCIATION_TIMEOUT)) {
 		sprintf((char *)&static_temp, "%d",
 			conf_globals->assoc_timeout);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Association_Timeout",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Association_Timeout",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
-			printf
-			    ("Failed to create <Association_Timeout> node!\n");
+			printf("Failed to create <Association_Timeout> node!\n");
 #endif
 			xmlFreeNode(globalnode);
 			return NULL;
@@ -598,8 +552,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	    || (conf_globals->passive_timeout != PASSIVE_TIMEOUT)) {
 		sprintf((char *)&static_temp, "%d",
 			conf_globals->passive_timeout);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Passive_Timer",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Passive_Timer",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Passive_Timer> node!\n");
@@ -613,8 +566,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	    || (conf_globals->active_timeout != RESCAN_TIMEOUT)) {
 		sprintf((char *)&static_temp, "%d",
 			conf_globals->active_timeout);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Scan_Timeout",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Scan_Timeout",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Scan_Timeout> node!\n");
@@ -628,8 +580,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 	    || (conf_globals->idleWhile_timeout != IDLE_WHILE_TIMER)) {
 		sprintf((char *)&static_temp, "%d",
 			conf_globals->idleWhile_timeout);
-		if (xmlNewChild
-		    (globalnode, NULL, (xmlChar *) "Idle_While",
+		if (xmlNewChild(globalnode, NULL, (xmlChar *) "Idle_While",
 		     (xmlChar *) static_temp) == NULL) {
 #ifdef WRITE_GLOBALS_CONFIG
 			printf("Failed to create <Idle_While> node!\n");

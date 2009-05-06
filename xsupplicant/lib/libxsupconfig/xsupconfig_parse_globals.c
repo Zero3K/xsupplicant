@@ -47,10 +47,6 @@ multichoice destination_choices[] = {
 	,
 	{DEST_AUTO, "auto"}
 	,
-	{DEST_BSSID, "BSSID"}
-	,
-	{DEST_BSSID, "bssid"}
-	,
 	{DEST_MULTICAST, "MULTICAST"}
 	,
 	{DEST_MULTICAST, "multicast"}
