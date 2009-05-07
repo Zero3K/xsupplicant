@@ -528,6 +528,7 @@ Section "3G Soft SIM" SoftSIM
      SetOutPath $INSTDIR\Docs
 
      File "${SRCDIR}\xsupplicant-ui\Doc\Using the 3G Soft SIM.pdf"
+     CreateDirectory "$SMPROGRAMS\${TARGET\Docs"
      CreateShortCut "$SMPROGRAMS\${TARGET}\Docs\Using the 3G Soft SIM.lnk" "$INSTDIR\Docs\Using the 3G Soft SIM.pdf"
 
      DetailPrint "Adding 3G Soft SIM to the configuration file..."
@@ -548,6 +549,7 @@ Section "2G Soft SIM" SoftSIM2
      SetOutPath $INSTDIR\Docs
 
      File "${SRCDIR}\xsupplicant-ui\Doc\Using the 2G Soft SIM.pdf"
+     CreateDirectory "$SMPROGRAMS\${TARGET\Docs"
      CreateShortCut "$SMPROGRAMS\${TARGET}\Docs\Using the 2G Soft SIM.lnk" "$INSTDIR\Docs\Using the 2G Soft SIM.pdf"
 
      DetailPrint "Adding 2G Soft SIM to the configuration file..."

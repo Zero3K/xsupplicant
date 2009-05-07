@@ -265,8 +265,7 @@ int xsupconfwrite_write_config(char *destfile)
 	}
 
 	if (conf_connections != NULL) {
-		connections =
-		    xsupconfwrite_create_connections(conf_connections,
+		connections = xsupconfwrite_create_connections(conf_connections,
 						     CONFIG_LOAD_GLOBAL, TRUE);
 		if (connections == NULL) {
 #ifdef DEBUG
@@ -279,8 +278,7 @@ int xsupconfwrite_write_config(char *destfile)
 	}
 
 	if (conf_profiles != NULL) {
-		profiles =
-		    xsupconfwrite_create_profiles(conf_profiles,
+		profiles = xsupconfwrite_create_profiles(conf_profiles,
 						  CONFIG_LOAD_GLOBAL, TRUE);
 		if (profiles == NULL) {
 #ifdef DEBUG
@@ -293,8 +291,7 @@ int xsupconfwrite_write_config(char *destfile)
 	}
 
 	if (conf_trusted_servers != NULL) {
-		trusted_servers =
-		    xsupconfwrite_create_trusted_servers(conf_trusted_servers,
+		trusted_servers = xsupconfwrite_create_trusted_servers(conf_trusted_servers,
 							 TRUE);
 		if (trusted_servers == NULL) {
 #ifdef DEBUG
