@@ -4161,7 +4161,7 @@ int ipc_callout_get_connection(xmlNodePtr innode, xmlNodePtr * outnode)
 
 	conns = config_get_connections(config_type);
 
-	while ((conns != NULL) && (strcmp(conns->name, connname) != 0)) {
+	while ((conns != NULL) && (conns->name != NULL) && (strcmp(conns->name, connname) != 0)) {
 		conns = conns->next;
 	}
 

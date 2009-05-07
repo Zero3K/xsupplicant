@@ -9,6 +9,7 @@
     
 #include "getopts.h"
 #include "libxsupconfig/xsupconfig.h"
+#include "libxsupconfig/xsupconfig_vars.h"
 #include "libxsupconfwrite/xsupconfwrite.h"
     
 #define NO_MEMORY_AVAIL   1
@@ -129,7 +130,7 @@ int install_plugin(char *name, char *path, char *description, int disabled)
 	 {
 	    // No config exists, set up a default one.
 	    printf("New config.\n");
-		config_create_new_config();
+		initialize_config_globals(&conf_globals);
 	}
 	
 	my_conf_plugins = config_get_plugins();

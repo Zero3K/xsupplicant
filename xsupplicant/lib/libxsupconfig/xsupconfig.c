@@ -192,8 +192,7 @@ struct config_profiles *config_get_profiles(uint8_t config_type)
 uint8_t config_get_friendly_warnings()
 {
 	TRACE
-	    if (TEST_FLAG
-		(conf_globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS)) {
+    if (TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_FRIENDLY_WARNINGS)) {
 		return TRUE;
 	}
 
@@ -211,7 +210,7 @@ uint8_t config_get_friendly_warnings()
  **/
 uint8_t config_get_idleWhile()
 {
-	TRACE if (conf_globals->idleWhile_timeout == 0) {
+	if (conf_globals->idleWhile_timeout == 0) {
 		return IDLE_WHILE_TIMER;
 	}
 
@@ -1027,7 +1026,7 @@ int config_delete_trusted_server(uint8_t config_type, char *svrname)
  **/
 struct config_globals *config_get_globals()
 {
-	TRACE return conf_globals;
+	return conf_globals;
 }
 
 /**
@@ -2190,9 +2189,7 @@ void initialize_config_connections(struct config_connection **tmp_conn)
 	if (*tmp_conn != NULL) {
 		delete_config_connections(tmp_conn);
 	}
-	*tmp_conn =
-	    (struct config_connection *)
-	    malloc(sizeof(struct config_connection));
+	*tmp_conn = (struct config_connection *) malloc(sizeof(struct config_connection));
 	if (*tmp_conn) {
 		memset(*tmp_conn, 0, sizeof(struct config_connection));
 		(*tmp_conn)->priority = DEFAULT_PRIORITY;
@@ -2502,8 +2499,7 @@ void initialize_config_globals(struct config_globals **tmp_globals)
 	if (*tmp_globals != NULL) {
 		delete_config_globals(tmp_globals);
 	}
-	*tmp_globals =
-	    (struct config_globals *)malloc(sizeof(struct config_globals));
+	*tmp_globals = (struct config_globals *)malloc(sizeof(struct config_globals));
 	if (*tmp_globals) {
 		memset(*tmp_globals, 0, sizeof(struct config_globals));
 
