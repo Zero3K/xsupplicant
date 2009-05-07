@@ -344,6 +344,12 @@ int sm_handler_init_ctx(SCARDCONTEXT * card_ctx)
 
 	ret = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, card_ctx);
 	if (ret != SCARD_S_SUCCESS) {
+		if (sim_reader_plugin_hook_available() != FALSE)
+		{
+			debug_printf(DEBUG_NORMAL, "Unable to initialize any hardware smartcard readers.  But at least one software reader is available.\n");
+			return 0;
+		}
+
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't establish Smart Card context!  "
 			     "(Is pcscd loaded?)\n");
