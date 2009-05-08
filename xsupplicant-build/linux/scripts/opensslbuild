@@ -1,0 +1,1 @@
+./config no-shared no-krb5 enable-tlsext

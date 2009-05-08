@@ -1,0 +1,2 @@
+The files in this directory are used as a guideline for building libraries and the supplicant in the same fashion as the nightly/release build system.  The supplicant can also be built with the default development libraries that ship with most Linux systems.
+
