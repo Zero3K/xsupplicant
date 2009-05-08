@@ -1,0 +1,1 @@
+./configure --enable-static=yes --enable-shared=no --with-ftp=no --with-html=no --with-http=no --enable-ipv6=no 
