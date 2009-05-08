@@ -96,4 +96,4 @@ xsupplicant_SOURCES = backend_sm.h config_ssid.h context.h eapol.h \
 			eap_types/tnc/tnc_compliance_funcs.c \
 			eap_types/tnc/tnc_compliance_callbacks.c
 			
-xsupplicant_LDADD = $(CORELIBS) $(MORELIBS) platform/libplatform.a
+xsupplicant_LDADD = platform/libplatform.a $(CORELIBS) $(MORELIBS)

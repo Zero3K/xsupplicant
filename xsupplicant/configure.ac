@@ -17,7 +17,6 @@ fi
 GGDBFLAGS=""
 
 ########### CONFIGURE OPTIONS #############
-dnl Does this belong elsewhere?
 
 AC_ARG_WITH(old-iwlib,
   AS_HELP_STRING([--with-old-iwlib],
@@ -94,6 +93,20 @@ AC_ARG_WITH(iwlib-headers,
 AC_MSG_RESULT([$with_iwlib_headers])
 AC_SUBST(with_iwlib_headers)
 
+AC_MSG_CHECKING([user defined path to libxml2 libraries])
+AC_ARG_WITH(libxml-libs,
+  AS_HELP_STRING([--with-libxml-libs],
+    [location of the libxml2 libraries]),
+    [LDFLAGS="$LDFLAGS -L${with_libxml_libs}"])
+AC_MSG_RESULT([$with_libxml_libs])
+AC_SUBST(with_libxml_libs)
+
+AC_MSG_CHECKING([user defined path to libxml2 headers])
+AC_ARG_WITH(libxml-headers,
+  AS_HELP_STRING([--with-libxml-headers],
+    [location of the libxml2 headers]),
+    [CPPFLAGS="$CPPFLAGS -I${with_libxml_headers} -I${with_libxml_headers}/include"])
+
 AC_ARG_ENABLE(static-openssl,
   AS_HELP_STRING([--enable-static-openssl],
     [statically link openssl libraries]),
@@ -107,6 +120,13 @@ AC_ARG_ENABLE(static-iwlib,
   [AS_IF([test -n "$with_iwlib_lib_path" && test -n "$with_iwlib_headers"],
   	       [enable_static_iwlib="yes" ],
 	       [AC_MSG_ERROR("You must use --with-iwlib-lib-path and --with-iwlib-headers to use static Linux wireless library support.")])])
+
+AC_ARG_ENABLE(static-libxml,
+  AS_HELP_STRING([--enable-static-libxml],
+    [statically link libxml2 libraries]),
+  [AS_IF([test -n "$with_libxml_libs" && test -n "$with_libxml_headers"],
+  	       [enable_static_libxml="yes" ],
+	       [AC_MSG_ERROR("You must use --with-libxml-libs and --with-libxml-headers to use static libxml2 libraries.")])])
 
 AC_ARG_ENABLE(experimental,
   AS_HELP_STRING([--enable-experimental],
@@ -241,6 +261,7 @@ dnl enable parser debug?
 AS_IF([test "$enable_parser_debug" = yes], AC_DEFINE(PARSER_DEBUG), [])
 
 AC_MSG_CHECKING([for libxml-2.0])
+AS_IF([test "$enable_static_libxml" != yes], [
 if `pkg-config libxml-2.0 --exists`; then
      LIBS=`pkg-config libxml-2.0 --libs $LIBS`
      AM_CPPFLAGS=`pkg-config libxml-2.0 --cflags $AM_CPPFLAGS`
@@ -254,6 +275,9 @@ else
      AC_MSG_ERROR([Xsupplicant requires libxml.  You need to either install libxml\
 , or set PKG_CONFIG_PATH to point to the location of the libxml-2.0.pc file.])
 fi
+], [AS_IF([test -f "${with_libxml_libs}/libxml2.a"], 
+   [MORELIBS="$MORELIBS ${with_libxml_libs}/libxml2.a";AS_IF([test "$enable_static_libz"], [], [MORELIBS="$MORELIBS -lz"])],
+   [AC_MSG_ERROR([libxml2.a was not found at the path specified!])])])
 
 AS_IF([test "$disable_net80211" != yes],
 	    [AC_MSG_CHECKING([for libnl-1])
@@ -279,7 +303,7 @@ AS_IF([test "$enable_static_openssl" != yes], [
 	    AC_CHECK_LIB(crypto, CRYPTO_new_ex_data, [MORELIBS="${MORELIBS} -lcrypto"], [AC_MSG_ERROR([library 'crypto' is required for Open1x])])
 	    AC_CHECK_LIB(ssl,    SSL_library_init, [MORELIBS="${MORELIBS} -lssl"], [AC_MSG_ERROR([library 'ssl' is required for Open1x])])], 
 [AS_IF([test -f "$with_openssl_libs/libssl.a"], [MORELIBS="${MORELIBS} ${with_openssl_libs}/libssl.a"], [AC_MSG_ERROR(libssl.a was not found in ${with_openssl_libs}!)])
-AS_IF([test -f "$with_openssl_libs/libcrypto.a"], [MORELIBS="${MORELIBS} ${with_openssl_libs}/libcrypto.a"], [AC_MSG_ERROR([libcrypto.a was not found in ${with_openssl_libs}!])])])
+AS_IF([test -f "$with_openssl_libs/libcrypto.a"], [MORELIBS="${MORELIBS} ${with_openssl_libs}/libcrypto.a -ldl"], [AC_MSG_ERROR([libcrypto.a was not found in ${with_openssl_libs}!])])])
 
 AC_CHECK_HEADER(openssl/ssl.h, [], [AC_MSG_ERROR([header file <openssl/ssl.h> is required for Open1x])])
 AC_CHECK_HEADER(openssl/err.h, [], [AC_MSG_ERROR([header file <openssl/err.h> is required for Open1x])])

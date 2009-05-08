@@ -12,8 +12,7 @@ config_parser_SOURCES = config-parser.c ${top_srcdir}/src/xsup_debug.c \
 
 config_parser_CFLAGS  = -I${top_srcdir}/src/ -I${top_srcdir}/src/cardif
 
-config_parser_LDADD   = $(MORELIBS) \
-			-L${top_builddir}/lib/libxsupconfig -lxsupconfig \
+config_parser_LDADD   =	-L${top_builddir}/lib/libxsupconfig -lxsupconfig \
 			-L${top_builddir}/lib/libxsupconfwrite \
 			-lxsupconfwrite -L${top_builddir}/lib/libxsupgui \
-			-lxsupgui -L${top_srcdir}/lib/liblist -llist
+			-lxsupgui -L${top_srcdir}/lib/liblist -llist ${MORELIBS}
