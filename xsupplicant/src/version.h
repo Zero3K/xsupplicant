@@ -1,1 +1,1 @@
-#define VERSION "@VERSION@"
+#define VERSION "2.1.nightly"
