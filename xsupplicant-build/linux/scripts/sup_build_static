@@ -1,3 +1,4 @@
+#!/bin/sh
 ./autoregen.sh
 
 ./configure --enable-static-openssl --with-openssl-libs=/home/build/OpenSEA/libraries/openssl-0.9.8i --with-openssl-headers=/home/build/OpenSEA/libraries/openssl-0.9.8i/include --enable-static-iwlib --with-iwlib-lib-path=/home/build/OpenSEA/libraries/wireless_tools.29 --with-iwlib-headers=/home/build/OpenSEA/libraries/wireless_tools.29 --enable-static-libxml --with-libxml-libs=/home/build/OpenSEA/libraries/libxml2-2.7.3/.libs --with-libxml-headers=/home/build/OpenSEA/libraries/libxml2-2.7.3
