@@ -8,5 +8,5 @@ cd /home/build/OpenSEA/SeaAnt-nightly/xsupplicant
 make
 
 cd ../xsupplicant-ui/xsupptray
-qmake XSupplicantUI-unix.pro
+qmake XSupplicantUI-buildsys.pro
 make
