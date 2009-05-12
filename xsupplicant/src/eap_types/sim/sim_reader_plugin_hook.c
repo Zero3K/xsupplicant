@@ -13,6 +13,7 @@
 #include <windows.h>
 #endif	
 
+#include <stdio.h>
 #include <winscard.h>
 
 #include "../../lib/libxsupconfig/xsupconfig.h"

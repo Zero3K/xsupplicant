@@ -70,6 +70,21 @@ AC_ARG_WITH(openssl-headers,
   [CPPFLAGS="$CPPFLAGS -I${with_openssl_headers}"])
 AC_MSG_RESULT([$with_openssl_headers])
 
+AC_MSG_CHECKING([user defined path to pcsclite libraries])
+AC_ARG_WITH(pcsclite-libs,
+  AS_HELP_STRING([--with-pcsclite-libs],
+    [location of pcsclite libraries]),
+  [LDFLAGS="$LDFLAGS -L${with_pcsclite_libs}"])
+AC_MSG_RESULT([$with_pcsclite_libs])
+AC_SUBST(with_pcsclite_libs)
+
+AC_MSG_CHECKING([user defined path to pcsclite headers])
+AC_ARG_WITH(pcsclite-headers,
+  AS_HELP_STRING([--with-pcsclite-headers],
+    [location of the pcsclite headers]),
+  [CPPFLAGS="$CPPFLAGS -I${with_pcsclite_headers}"])
+AC_MSG_RESULT([$with_openssl_headers])
+
 AC_MSG_CHECKING([user defined path to iwlib])
 AC_ARG_WITH(iwlib-path,
   AS_HELP_STRING([--with-iwlib-path],
@@ -127,6 +142,13 @@ AC_ARG_ENABLE(static-libxml,
   [AS_IF([test -n "$with_libxml_libs" && test -n "$with_libxml_headers"],
   	       [enable_static_libxml="yes" ],
 	       [AC_MSG_ERROR("You must use --with-libxml-libs and --with-libxml-headers to use static libxml2 libraries.")])])
+
+AC_ARG_ENABLE(static-pcsclite,
+  AS_HELP_STRING([--enable-static-pcsclite],
+    [statically link libpcsclite libraries]),
+  [AS_IF([test -n "$with_pcsclite_libs" && test -n "$with_pcsclite_headers"],
+  	       [enable_static_pcsclite="yes" ],
+	       [AC_MSG_ERROR("You must user --with-pcsclite-libs and --with-pcsclite-headers to use static pcsc lite libraries.")])])
 
 AC_ARG_ENABLE(experimental,
   AS_HELP_STRING([--enable-experimental],
@@ -245,6 +267,14 @@ AS_IF([test "$enable_eap_fast" = yes], AC_DEFINE(EAP_FAST), [])
 dnl check for eap-sim
 AS_IF([test "$enable_eap_sim" = yes],
   [ AC_DEFINE(EAP_SIM_ENABLE)
+  AS_IF([test "$enable_static_pcsclite" = yes],
+  [AS_IF([test -f "${with_pcsclite_libs}/libpcsclite.a"], 
+   [MORELIBS="$MORELIBS ${with_pcsclite_libs}/libpcsclite.a -lpthread"],
+   [AC_ERROR(["Unable to locate libpcsclite.a in the directory provided!"])])
+   AS_IF([test -f "${with_pcsclite_headers}/winscard.h"],
+   [AM_CPPFLAGS="-I${with_pcsclite_headers} $AM_CPPFLAGS"],
+   [AC_ERROR(["Unable to locate winscard.h in the header directory provided!"])])],
+  [
     AC_MSG_CHECKING([for libpcsclite])
     if `pkg-config libpcsclite --exists`; then
       LIBS=`pkg-config libpcsclite --libs $LIBS`
@@ -253,6 +283,7 @@ AS_IF([test "$enable_eap_sim" = yes],
       AC_MSG_ERROR([libpcsclite is required to use EAP-SIM/AKA support. If you believe that you have it, but it isn't being located, you may want to set the PKG_CONFIG_PATH to point to the location of libpcsclite.pc.])
     fi],
   [])
+  ])
 
 dnl enable aka test?
 AS_IF([test "$enable_aka_test" = yes], AC_DEFINE(RADIATOR_TEST), [])

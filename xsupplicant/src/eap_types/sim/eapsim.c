@@ -57,6 +57,10 @@
 #include <efence.h>
 #endif
 
+#ifndef WINDOWS
+#define _snprintf snprintf
+#endif
+
 // On Windows, do_sha1() is also defined in win_cert_handler.c.  Since win_cert_handler.c is
 // always included in the Windows builds, and EAP-SIM may not be, we don't build this version
 // on Windows.

@@ -1,0 +1,1 @@
+ ./configure --enable-static --disable-libhal

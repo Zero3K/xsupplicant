@@ -50,6 +50,7 @@ xsupplicant_SOURCES = backend_sm.h config_ssid.h context.h eapol.h \
 			eap_types/sim/sha1.h eap_types/sim/sim.h \
 			eap_types/sim/simd11.h eap_types/sim/simd5.h \
 			eap_types/sim/sm_handler.h \
+			eap_types/sim/sim_reader_plugin_hook.h \
 			eap_types/aka/eapaka.h eap_types/aka/aka.h \
 			eap_types/eap_type_common.h \
 			eap_types/fast/eapfast.h eap_types/fast/eapfast_xml.h \
@@ -89,6 +90,7 @@ xsupplicant_SOURCES = backend_sm.h config_ssid.h context.h eapol.h \
 			eap_types/sim/sha1.c eap_types/sim/sim.c \
 			eap_types/sim/simd11.c eap_types/sim/simd5.c \
 			eap_types/sim/sm_handler.c \
+			eap_types/sim/sim_reader_plugin_hook.c \
 			eap_types/aka/eapaka.c eap_types/aka/aka.c \
 			eap_types/eap_type_common.c \
 			eap_types/fast/eapfast.c eap_types/fast/eapfast_xml.c \

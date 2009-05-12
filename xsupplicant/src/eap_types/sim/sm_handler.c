@@ -81,6 +81,7 @@
 
 #include <stdlib.h>
 
+#include "../../xsup_common.h"
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
 #include "sm_handler.h"
@@ -88,6 +89,10 @@
 
 #ifdef USE_EFENCE
 #include <efence.h>
+#endif
+
+#ifndef WINDOWS
+#define _snprintf snprintf
 #endif
 
 // 2G bytecodes

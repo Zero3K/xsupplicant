@@ -32,7 +32,7 @@
 #include <stdlib.h>
 
 #include "winscard.h"
-#include "xsupconfig.h"
+#include "libxsupconfig/xsupconfig.h"
 #include "../../context.h"
 #include "../../xsup_common.h"
 #include "../../eap_sm.h"
@@ -51,6 +51,10 @@
 
 #ifdef USE_EFENCE
 #include <efence.h>
+#endif
+
+#ifndef WINDOWS
+#define _snprintf snprintf
 #endif
 
 /**

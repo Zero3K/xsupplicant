@@ -29,12 +29,13 @@
 #include <openssl/hmac.h>
 
 #include "winscard.h"
-#include "xsupconfig.h"
+#include "libxsupconfig/xsupconfig.h"
 #include "../../context.h"
 #include "../../eap_sm.h"
 #include "eapsim.h"
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
+#include "../../xsup_common.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
