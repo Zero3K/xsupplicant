@@ -1,6 +1,6 @@
 <project>
     <shortName>xsupplicant</shortName>
-    <fullName>XSupplicant</fullName>
+    <fullName>Open1x XSupplicant</fullName>
     <version>${env(SUP_VER)}</version>
     <installerFilename></installerFilename>
     <licenseFile>../../windows/installer/win-LICENSE</licenseFile>
