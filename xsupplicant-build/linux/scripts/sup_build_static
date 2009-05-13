@@ -7,6 +7,10 @@ cd /home/build/OpenSEA/SeaAnt-nightly/xsupplicant
 
 make
 
+/usr/bin/strip src/xsupplicant
+
 cd ../xsupplicant-ui/xsupptray
 qmake XSupplicantUI-buildsys.pro
 make
+
+/usr/bin/strip ../build-debug/XSupplicantUI
