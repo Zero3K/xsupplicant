@@ -49,7 +49,8 @@ int do_v1_at_mac(eap_type_data * thisint, char *K_int, char *indata,
 		 int vlistlen, uint16_t selver, char *resultmac)
 {
 	char *framecpy, *mac_calc;
-	int saved_offset, i;
+	int saved_offset;
+	unsigned int i;
 	uint16_t value16;
 
 	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
@@ -115,7 +116,7 @@ int do_v1_at_mac(eap_type_data * thisint, char *K_int, char *indata,
 	// ourselves.
 
 	debug_printf(DEBUG_AUTHTYPES, "Hashing this frame to get AT_MAC: \n");
-	debug_hex_dump(DEBUG_AUTHTYPES, framecpy, (in_size + 5 + 16));
+	debug_hex_dump(DEBUG_AUTHTYPES, (unsigned char *)framecpy, (in_size + 5 + 16));
 
 	mac_calc = (char *)Malloc(100);
 	if (mac_calc == NULL) {
@@ -131,7 +132,7 @@ int do_v1_at_mac(eap_type_data * thisint, char *K_int, char *indata,
 	memcpy(resultmac, mac_calc, 16);	// We get 20 back, but we only want 16.
 
 	debug_printf(DEBUG_AUTHTYPES, "Result MAC = ");
-	debug_hex_printf(DEBUG_AUTHTYPES, resultmac, 16);
+	debug_hex_printf(DEBUG_AUTHTYPES, (unsigned char *)resultmac, 16);
 
 	FREE(framecpy);
 	FREE(mac_calc);

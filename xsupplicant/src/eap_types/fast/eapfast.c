@@ -36,9 +36,12 @@
 #include "eapfast_xml.h"
 #include "../tls/eaptls.h"
 #include "../tls/tls_funcs.h"
+#include "../tls/certificates.h"
 #include "../eap_type_common.h"
 #include "../../context.h"
 #include "../../logon_creds.h"
+#include "../../statemachine.h"
+#include "../mschapv2/eapmschapv2.h"
 
 #ifdef WINDOWS
 #include "../../event_core_win.h"
@@ -230,8 +233,6 @@ void eapfast_set_ver(eap_type_data * eapdata, uint8_t ver)
  ****************************************************************/
 void eapfast_check(eap_type_data * eapdata)
 {
-	struct eapfast_phase2 *fastphase2 = NULL;
-
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return;
 
@@ -566,16 +567,11 @@ void eapfast_parse_tls(struct tls_vars *mytls_vars, uint8_t * packet)
 
 void eapfast_process_phase2(eap_type_data * eapdata, int buffer)
 {
-	uint8_t *tls_type = NULL, *resbuf = NULL;
-	uint8_t fast_version = 0;
+	uint8_t *resbuf = NULL;
 	struct tls_vars *mytls_vars = NULL;
-	struct eapfast_phase2 *phase2 = NULL;
-	uint8_t *aid = NULL;
-	uint16_t aid_len = 0, resout = 0;
+	uint16_t resout = 0;
 	int bufsiz = 0;
 	struct config_eap_fast *fastconf = NULL;
-	context *ctx = NULL;
-	uint8_t *temp = NULL;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return;
@@ -883,7 +879,9 @@ void eapfast_process(eap_type_data * eapdata)
 				     phase2->aid);
 			eapdata->methodState = MAY_CONT;
 
-			if (eapfast_delete_pac(eapdata, phase2->aid, phase2->aid_len) == FALSE) {
+			if (eapfast_delete_pac(eapdata, 
+					       (unsigned char *)phase2->aid, 
+					       phase2->aid_len) == FALSE) {
 				debug_printf(DEBUG_NORMAL,
 					     "Unable to delete PAC!\n");
 				eapdata->methodState = DONE;

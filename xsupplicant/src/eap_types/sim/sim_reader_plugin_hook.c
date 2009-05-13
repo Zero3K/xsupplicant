@@ -9,6 +9,8 @@
 *
 **/  
 
+#ifdef EAP_SIM_ENABLE
+
 #ifdef WINDOWS
 #include <windows.h>
 #endif	
@@ -20,7 +22,7 @@
 #include "../../lib/libxsupconfig/xsupconfig_structs.h"
 #include "libxsupplugins/xsupplugin_types.h"
 #include "../../xsup_debug.h"
-
+#include "../../platform/platform.h"
 #include "sim_reader_plugin_hook.h"
 
 /**
@@ -530,3 +532,4 @@ int sim_reader_plugin_hook_wait_card_ready(SCARDHANDLE * card_hdl,
 }
 
 
+#endif // EAP_SIM_ENABLE

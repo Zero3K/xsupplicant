@@ -86,10 +86,11 @@ int sim_build_start(struct eaptypedata *eapdata, uint8_t * out, int *outptr)
 		return XEMALLOC;
 	}
 
-	RAND_bytes(eapdata->nonce_mt, 16);
+	RAND_bytes((unsigned char *)eapdata->nonce_mt, 16);
 
 	debug_printf(DEBUG_AUTHTYPES, "NONCE MT = ");
-	debug_hex_printf(DEBUG_AUTHTYPES, eapdata->nonce_mt, 16);
+	debug_hex_printf(DEBUG_AUTHTYPES, 
+			 (unsigned char *)eapdata->nonce_mt, 16);
 
 	*outptr = 7;
 	memcpy(&out[*outptr], eapdata->nonce_mt, 16);
@@ -283,7 +284,7 @@ int sim_do_at_mac(eap_type_data * eapdata, struct eaptypedata *mydata,
 	*packet_offset += 20;
 
 	if (mydata->workingversion == 0) {
-		if (do_v0_at_mac(eapdata, K_int, dataoffs, insize,
+	  if (do_v0_at_mac(eapdata, K_int, (char *)dataoffs, insize,
 				 saved_offset, &mac_calc[0]) == -1) {
 			debug_printf(DEBUG_NORMAL,
 				     "Error calculating AT_MAC for Version 0!\n");
@@ -291,8 +292,8 @@ int sim_do_at_mac(eap_type_data * eapdata, struct eaptypedata *mydata,
 		}
 	} else {
 		debug_printf(DEBUG_AUTHTYPES, "K_int = ");
-		debug_hex_printf(DEBUG_AUTHTYPES, K_int, 16);
-		if (do_v1_at_mac(eapdata, K_int, dataoffs, insize,
+		debug_hex_printf(DEBUG_AUTHTYPES, (unsigned char *)K_int, 16);
+		if (do_v1_at_mac(eapdata, K_int, (char *)dataoffs, insize,
 				 saved_offset, mydata->nonce_mt,
 				 mydata->verlist, mydata->verlistlen,
 				 mydata->workingversion, &mac_calc[0]) == -1) {
@@ -306,9 +307,11 @@ int sim_do_at_mac(eap_type_data * eapdata, struct eaptypedata *mydata,
 		debug_printf(DEBUG_NORMAL,
 			     "ERROR : AT_MAC failed MAC check!\n");
 		debug_printf(DEBUG_AUTHTYPES, "mac_calc = ");
-		debug_hex_printf(DEBUG_AUTHTYPES, &mac_calc[0], 16);
+		debug_hex_printf(DEBUG_AUTHTYPES, 
+				 (unsigned char *)&mac_calc[0], 16);
 		debug_printf(DEBUG_AUTHTYPES, "mac_val  = ");
-		debug_hex_printf(DEBUG_AUTHTYPES, &mac_val[0], 16);
+		debug_hex_printf(DEBUG_AUTHTYPES, 
+				 (unsigned char *)&mac_val[0], 16);
 		return XESIMBADMAC;
 	}
 
@@ -318,7 +321,8 @@ int sim_do_at_mac(eap_type_data * eapdata, struct eaptypedata *mydata,
 int sim_do_v1_response(eap_type_data * eapdata, char *out,
 		       uint16_t * outptr, char *nsres, char *K_int)
 {
-	int i = 0, value16 = 0;
+	int value16 = 0;
+	unsigned int i = 0;
 	char *framecpy = NULL, mac_calc[20];
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -337,7 +341,7 @@ int sim_do_v1_response(eap_type_data * eapdata, char *out,
 		return XEMALLOC;
 
 	debug_printf(DEBUG_NORMAL, "nsres = ");
-	debug_hex_printf(DEBUG_NORMAL, nsres, 12);
+	debug_hex_printf(DEBUG_NORMAL, (unsigned char *)nsres, 12);
 
 	framecpy = (char *)Malloc((*outptr) + 8 + 20 + (8 * 3));
 	if (framecpy == NULL) {
@@ -359,10 +363,11 @@ int sim_do_v1_response(eap_type_data * eapdata, char *out,
 	memcpy(&framecpy[5 + (*outptr) + 20], nsres, (4 * 3));
 
 	debug_printf(DEBUG_AUTHTYPES, "Hashing against :\n");
-	debug_hex_dump(DEBUG_AUTHTYPES, &framecpy[0], (*outptr) + 25 + 12);
+	debug_hex_dump(DEBUG_AUTHTYPES, (unsigned char *)&framecpy[0], 
+		       (*outptr) + 25 + 12);
 
-	HMAC(EVP_sha1(), K_int, 16, framecpy, ((*outptr) + 5 + 20 + 12),
-	     &mac_calc[0], &i);
+	HMAC(EVP_sha1(), K_int, 16, (unsigned char *)framecpy, 
+	     ((*outptr) + 5 + 20 + 12), (unsigned char *)&mac_calc[0], &i);
 	memcpy(&out[(*outptr)], &framecpy[5 + (*outptr)], 20);
 	memcpy(&out[(*outptr) + 4], &mac_calc[0], 16);
 	*outptr += 20;
@@ -377,7 +382,7 @@ int sim_v0_final_hash(struct eaptypedata *eapdata, char *sha1resp,
 {
 	struct typelengthres *typelenres = NULL;
 	char *hash = NULL;
-	int i = 0;
+	unsigned int i = 0;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return XEMALLOC;
@@ -407,9 +412,10 @@ int sim_v0_final_hash(struct eaptypedata *eapdata, char *sha1resp,
 	memcpy(&hash[8], eapdata->triplet[2].response, 4);
 	hash[12] = 11;
 
-	HMAC(EVP_sha1(), K_sres, 16, &hash[0], 13, sha1resp, &i);
+	HMAC(EVP_sha1(), K_sres, 16, (unsigned char *)&hash[0], 13, 
+	     (unsigned char *)sha1resp, &i);
 	debug_printf(DEBUG_AUTHTYPES, "Final return value : ");
-	debug_hex_printf(DEBUG_AUTHTYPES, sha1resp, i);
+	debug_hex_printf(DEBUG_AUTHTYPES, (unsigned char *)sha1resp, i);
 
 	typelenres = (struct typelengthres *)&out[*outptr];
 	typelenres->type = AT_MAC_SRES;
@@ -429,8 +435,8 @@ int sim_do_at_rand(struct eaptypedata *eapdata, char *username,
 {
 	struct typelengthres *typelenres = NULL;
 	int value16 = 0, tlen = 0, retval = 0;
-	char *hash = NULL, sha1resp[20], *at_mac_sres =
-	    NULL, K_sres[16], K_encr[16], K_recv[32];
+	char *hash = NULL, sha1resp[20], *at_mac_sres = NULL, 
+	  K_sres[16], K_encr[16], K_recv[32];
 	char K_send[32];
 	char *tusername = NULL;
 
@@ -446,8 +452,7 @@ int sim_do_at_rand(struct eaptypedata *eapdata, char *username,
 	if (!xsup_assert((dataoffs != NULL), "dataoffs != NULL", FALSE))
 		return XEMALLOC;
 
-	if (!xsup_assert
-	    ((packet_offset != NULL), "packet_offset != NULL", FALSE))
+	if (!xsup_assert((packet_offset != NULL), "packet_offset != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((out != NULL), "out != NULL", FALSE))
@@ -507,7 +512,7 @@ int sim_do_at_rand(struct eaptypedata *eapdata, char *username,
 		memcpy(&hash[16], eapdata->triplet[2].ckey, 8);
 		memcpy(&hash[24], eapdata->nonce_mt, 16);
 
-		SHA1(hash, 40, &sha1resp[0]);
+		SHA1((unsigned char *)hash, 40, (unsigned char *)&sha1resp[0]);
 	} else {
 		tlen =
 		    strlen(username) + (8 * 3) + 16 + eapdata->verlistlen + 2;
@@ -555,20 +560,19 @@ int sim_do_at_rand(struct eaptypedata *eapdata, char *username,
 		       &value16, 2);
 
 		debug_printf(DEBUG_AUTHTYPES, "Building K_aut from :\n");
-		debug_hex_dump(DEBUG_AUTHTYPES, hash,
-			       (strlen(tusername) + 24 + 16 +
-				eapdata->verlistlen + 2));
+		debug_hex_dump(DEBUG_AUTHTYPES, (unsigned char *)hash,
+			       (strlen(tusername) + 24 + 16 + eapdata->verlistlen + 2));
 
-		SHA1(hash,
+		SHA1((unsigned char *)hash,
 		     (strlen(tusername) + 24 + 16 + eapdata->verlistlen + 2),
-		     sha1resp);
+		     (unsigned char *)sha1resp);
 
 		FREE(tusername);
 		FREE(hash);
 	}
 
 	debug_printf(DEBUG_AUTHTYPES, "MK = ");
-	debug_hex_printf(DEBUG_AUTHTYPES, &sha1resp[0], 20);
+	debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *)&sha1resp[0], 20);
 
 	at_mac_sres = (char *)Malloc(120);
 	if (at_mac_sres == NULL) {
@@ -576,7 +580,8 @@ int sim_do_at_rand(struct eaptypedata *eapdata, char *username,
 		return XEMALLOC;
 	}
 
-	fips186_2_prng(sha1resp, 20, NULL, 0, at_mac_sres, 120);
+	fips186_2_prng((unsigned char *)sha1resp, 20, NULL, 0, 
+		       (unsigned char *)at_mac_sres, 120);
 
 	if (eapdata->workingversion == 0) {
 		memcpy(&K_sres[0], &at_mac_sres[0], 16);
@@ -596,7 +601,7 @@ int sim_do_at_rand(struct eaptypedata *eapdata, char *username,
 	}
 
 	debug_printf(DEBUG_AUTHTYPES, "K_aut = ");
-	debug_hex_printf(DEBUG_AUTHTYPES, K_int, 16);
+	debug_hex_printf(DEBUG_AUTHTYPES, (uint8_t *)&K_int, 16);
 
 	// We should be done with at_mac_sres, so free it.
 	FREE(at_mac_sres);
@@ -614,8 +619,7 @@ int sim_do_at_rand(struct eaptypedata *eapdata, char *username,
 	memcpy(&eapdata->keyingMaterial[32], &K_send[0], 32);
 
 	if (eapdata->workingversion == 0) {
-		retval =
-		    sim_v0_final_hash(eapdata, sha1resp, out, outptr,
+		retval = sim_v0_final_hash(eapdata, sha1resp, out, outptr,
 				      &K_sres[0]);
 		if (retval != XENONE)
 			return retval;

@@ -19,6 +19,7 @@
 
 #ifndef WINDOWS
 #include <stdint.h>
+#include "../../platform/platform.h"
 #else
 #include <windows.h>
 #include "../../platform/platform.h"
@@ -50,12 +51,12 @@ xmlDocPtr eapfast_xml_create_pac_struct()
 	xmlDocPtr doc;
 	xmlNodePtr root_node;
 
-	doc = xmlNewDoc("1.0");
+	doc = xmlNewDoc((xmlChar *)"1.0");
 
 	if (doc == NULL)
 		return NULL;
 
-	root_node = xmlNewNode(NULL, XSUP_PAC_ROOT_ELEMENT);
+	root_node = xmlNewNode(NULL, (xmlChar *)XSUP_PAC_ROOT_ELEMENT);
 
 	xmlDocSetRootElement(doc, root_node);
 
@@ -71,8 +72,8 @@ void eapfast_xml_add_content(xmlNodePtr node, char *name, char *content)
 {
 	xmlNodePtr cur_node;
 
-	cur_node = xmlNewChild(node, NULL, name, NULL);
-	xmlNodeAddContent(cur_node, content);
+	cur_node = xmlNewChild(node, NULL, (xmlChar *)name, NULL);
+	xmlNodeAddContent(cur_node, (xmlChar *)content);
 }
 
 /****************************************************************
@@ -103,11 +104,11 @@ xmlNodePtr eapfast_xml_find_pac(xmlDocPtr doc, char *aid)
 	cur_node = root_node->children;
 
 	while ((cur_node) && (done == 0)) {
-		prop = xmlGetProp(cur_node, "AID");
+	  prop = xmlGetProp(cur_node, (xmlChar *)"AID");
 
 		if (prop != NULL) {
 			// See if this is what we are looking for.
-			if (strcmp(prop, aid) == 0) {
+		  if (strcmp((char *)prop, aid) == 0) {
 				done = TRUE;
 				xmlFree(prop);
 			} else {
@@ -163,7 +164,7 @@ int eapfast_xml_add_pac(xmlDocPtr doc, struct pac_values *pacs)
 		return -1;
 	}
 
-	if (strcmp(root_node->name, XSUP_PAC_ROOT_ELEMENT) != 0) {
+	if (strcmp((char *)root_node->name, XSUP_PAC_ROOT_ELEMENT) != 0) {
 		debug_printf(DEBUG_NORMAL, "Invalid root element!\n");
 		return -1;
 	}
@@ -179,12 +180,12 @@ int eapfast_xml_add_pac(xmlDocPtr doc, struct pac_values *pacs)
 					pacs->pacinfo.aid_len);
 	eapfast_xml_check_clear_node(doc, temp);
 
-	cur_node = xmlNewChild(root_node, NULL, "PAC", NULL);
+	cur_node = xmlNewChild(root_node, NULL, (xmlChar *)"PAC", NULL);
 
 	if (cur_node == NULL)
 		return -1;
 
-	xmlNewProp(cur_node, "AID", temp);
+	xmlNewProp(cur_node, (xmlChar *)"AID", (xmlChar *)temp);
 	FREE(temp);
 
 	temp = eap_type_common_convert_hex(pacs->pac_key, 32);
@@ -350,7 +351,7 @@ xmlDocPtr eapfast_xml_open_pac(char *filename)
 		return NULL;
 	}
 
-	if (strcmp(XSUP_PAC_ROOT_ELEMENT, node->name) != 0) {
+	if (strcmp(XSUP_PAC_ROOT_ELEMENT, (char *)node->name) != 0) {
 		debug_printf(DEBUG_NORMAL, "Invalid PAC file!\n");
 		xmlFreeDoc(doc);
 		return NULL;
@@ -365,8 +366,6 @@ xmlDocPtr eapfast_xml_open_pac(char *filename)
 int eapfast_xml_delete_pac(xmlDocPtr doc, char *aid)
 {
 	xmlNodePtr cur_node = NULL;
-	int done = 0;
-	xmlChar *prop = NULL;
 
 	// Check values passed in
 
@@ -405,72 +404,70 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid, struct pac_values *pacs)
 		cur_node = cur_node->children;
 
 		while (cur_node) {
-			if (strcmp(cur_node->name, "PAC_key") == 0) {
+		  if (strcmp((char *)cur_node->name, "PAC_key") == 0) {
 				prop = xmlNodeGetContent(cur_node);
-				if (((strlen(prop) % 2) != 0)
-				    || (strlen(prop) != 64)) {
+				if (((strlen((char *)prop) % 2) != 0)
+				    || (strlen((char *)prop) != 64)) {
 					// We didn't get a valid string.
 					debug_printf(DEBUG_NORMAL,
 						     "Value stored in PAC_key is "
 						     "invalid!\n");
 					return -1;
 				}
-				process_hex(prop, strlen(prop), pacs->pac_key);
+				process_hex((char *)prop, strlen((char *)prop), 
+					    (char *)pacs->pac_key);
 				// No need to save the length here.  It should ALWAYS be 32!
 
 				xmlFree(prop);
 			}
 
-			if (strcmp(cur_node->name, "Cred_Lifetime") == 0) {
+			if (strcmp((char *)cur_node->name, "Cred_Lifetime") == 0) {
 				prop = xmlNodeGetContent(cur_node);
-				if (strlen(prop) != 0) {
-					if (((strlen(prop) % 2) != 0)
-					    || (strlen(prop) != 8)) {
+				if (strlen((char *)prop) != 0) {
+				  if (((strlen((char *)prop) % 2) != 0)
+					    || (strlen((char *)prop) != 8)) {
 						debug_printf(DEBUG_NORMAL,
 							     "Invalid setting stored for "
 							     "credential lifetime!\n");
 						return -1;
 					}
-					process_hex(prop, strlen(prop),
-						    pacs->pacinfo.
-						    cred_lifetime);
+					process_hex((char *)prop, strlen((char *)prop),
+						    (char *)pacs->pacinfo.cred_lifetime);
 				}
 				xmlFree(prop);
 			}
 
-			if (strcmp(cur_node->name, "IID") == 0) {
+			if (strcmp((char *)cur_node->name, "IID") == 0) {
 				prop = xmlNodeGetContent(cur_node);
-				if ((strlen(prop) % 2) != 0) {
+				if ((strlen((char *)prop) % 2) != 0) {
 					debug_printf(DEBUG_NORMAL,
 						     "Invalid settings stored for "
 						     "Identity Identifier.\n");
 					return -1;
 				}
-				pacs->pacinfo.iid =
-				    Malloc((strlen(prop) / 2) + 1);
+				pacs->pacinfo.iid = Malloc((strlen((char *)prop) / 2) + 1);
 				if (pacs->pacinfo.iid == NULL) {
 					debug_printf(DEBUG_NORMAL,
 						     "Couldn't allocate memory to "
 						     "store IID data.\n");
 					return -1;
 				}
-				process_hex(prop, strlen(prop),
-					    pacs->pacinfo.iid);
-				pacs->pacinfo.iid_len = (strlen(prop) / 2);
+				process_hex((char *)prop, strlen((char *)prop),
+					    (char *)pacs->pacinfo.iid);
+				pacs->pacinfo.iid_len = (strlen((char *)prop) / 2);
 
 				xmlFree(prop);
 			}
 
-			if (strcmp(cur_node->name, "AID_Info") == 0) {
+			if (strcmp((char *)cur_node->name, "AID_Info") == 0) {
 				prop = xmlNodeGetContent(cur_node);
-				if ((strlen(prop) % 2) != 0) {
+				if ((strlen((char *)prop) % 2) != 0) {
 					debug_printf(DEBUG_NORMAL,
 						     "Invalid information stored for "
 						     "AID Information setting!\n");
 					return -1;
 				}
-				pacs->pacinfo.aid_info =
-				    Malloc((strlen(prop) / 2) + 1);
+				pacs->pacinfo.aid_info = Malloc((strlen((char *)prop) / 2) + 1);
 				if (pacs->pacinfo.aid_info == NULL) {
 					debug_printf(DEBUG_NORMAL,
 						     "Invalid value stored for "
@@ -478,22 +475,22 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid, struct pac_values *pacs)
 					return -1;
 				}
 
-				process_hex(prop, strlen(prop),
-					    pacs->pacinfo.aid_info);
-				pacs->pacinfo.aid_info_len = (strlen(prop) / 2);
+				process_hex((char *)prop, strlen((char *)prop),
+					    (char *)pacs->pacinfo.aid_info);
+				pacs->pacinfo.aid_info_len = (strlen((char *)prop) / 2);
 
 				xmlFree(prop);
 			}
 
-			if (strcmp(cur_node->name, "PAC_Type") == 0) {
+			if (strcmp((char *)cur_node->name, "PAC_Type") == 0) {
 				prop = xmlNodeGetContent(cur_node);
-				pacs->pacinfo.pac_type = atoi(prop);
+				pacs->pacinfo.pac_type = atoi((char *)prop);
 				xmlFree(prop);
 			}
 
-			if (strcmp(cur_node->name, "PAC_opaque") == 0) {
+			if (strcmp((char *)cur_node->name, "PAC_opaque") == 0) {
 				prop = xmlNodeGetContent(cur_node);
-				if ((strlen(prop) % 2) != 0) {
+				if ((strlen((char *)prop) % 2) != 0) {
 					// We didn't get a valid string.
 					debug_printf(DEBUG_NORMAL,
 						     "Invalid string stored for "
@@ -501,8 +498,7 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid, struct pac_values *pacs)
 					return -1;
 				}
 
-				pacs->pac_opaque =
-				    Malloc((strlen(prop) / 2) + 1);
+				pacs->pac_opaque = Malloc((strlen((char *)prop) / 2) + 1);
 				if (pacs->pac_opaque == NULL) {
 					debug_printf(DEBUG_NORMAL,
 						     "Couldn't allocate memory to "
@@ -510,9 +506,9 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid, struct pac_values *pacs)
 					return -1;
 				}
 
-				process_hex(prop, strlen(prop),
-					    pacs->pac_opaque);
-				pacs->pac_opaque_len = (strlen(prop) / 2);
+				process_hex((char *)prop, strlen((char *)prop),
+					    (char *)pacs->pac_opaque);
+				pacs->pac_opaque_len = (strlen((char *)prop) / 2);
 
 				xmlFree(prop);
 			}
@@ -530,7 +526,7 @@ int eapfast_xml_find_pac_data(xmlDocPtr doc, char *aid, struct pac_values *pacs)
 		return -1;
 	}
 
-	process_hex(aid, strlen(aid), pacs->pacinfo.aid);
+	process_hex(aid, strlen(aid), (char *)pacs->pacinfo.aid);
 	pacs->pacinfo.aid_len = (strlen(aid) / 2);
 
 	return 0;
@@ -564,13 +560,6 @@ int main()
 		printf("PAC_key = %s\n", packey);
 		printf("PAC_opaque = %s\n", pacopaque);
 	}
-
-	/*
-	   eapfast_xml_add_pac(doc, "aid3", "packey3", "pacopaque3");
-	   eapfast_xml_add_pac(doc, "aid5", "packey5", "pacopaque5");
-
-	   eapfast_xml_save("testfile2.xml", doc);
-	 */
 
 	eapfast_xml_deinit(doc);
 

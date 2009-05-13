@@ -48,6 +48,8 @@
 #include "../../frame_structs.h"
 #include "../../ipc_events_index.h"
 #include "../../event_core.h"
+#include "../eap_type_common.h"
+#include "../../ipc_events.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -215,7 +217,6 @@ int eapaka_get_imsi(context * ctx)
  **/
 int eapaka_is_pin_needed(context * ctx, struct config_eap_aka *userdata)
 {
-	char card_mode = 0;
 	char *readers = NULL;
 	SCARDCONTEXT sctx;
 	SCARDHANDLE hdl;
@@ -276,8 +277,6 @@ int eapaka_setup(eap_type_data * eapdata)
 	context *ctx = NULL;
 	int retval = 0;
 	char *password = NULL;
-	char *username = NULL;
-	char realm[25];
 
 	debug_printf(DEBUG_AUTHTYPES, "(EAP-AKA) Initalized\n");
 
@@ -317,8 +316,8 @@ int eapaka_setup(eap_type_data * eapdata)
 		return XESIMGENERR;
 	}
 	// Connect to the smart card.
-	if (sm_handler_card_connect
-	    (&mydata->scntx, &mydata->shdl, userdata->reader) != 0) {
+	if (sm_handler_card_connect(&mydata->scntx, &mydata->shdl, 
+				    userdata->reader) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error connecting to smart card reader!\n");
 		ipc_events_error(ctx, IPC_EVENT_ERROR_SIM_CARD_NOT_READY, NULL);
@@ -337,8 +336,7 @@ int eapaka_setup(eap_type_data * eapdata)
 		password = userdata->password;
 	}
 
-	retval =
-	    sm_handler_3g_imsi(&mydata->shdl, mydata->card_mode, password,
+	retval = sm_handler_3g_imsi(&mydata->shdl, mydata->card_mode, password,
 			       &imsi);
 	switch (retval) {
 	case SM_HANDLER_ERROR_BAD_PIN_MORE_ATTEMPTS:
@@ -499,7 +497,6 @@ void eapaka_do_notification(eap_type_data * eapdata, uint8_t * eappayload,
 			    uint16_t size)
 {
 	uint16_t packet_offset = 0;
-	int retval = XENONE;
 	struct aka_eaptypedata *aka = NULL;
 	struct config_eap_aka *akaconf = NULL;
 	struct typelengthres *tlr = NULL;
@@ -798,7 +795,6 @@ uint8_t *eapaka_buildResp(eap_type_data * eapdata)
 	uint16_t reslen = 0, reallen = 0;
 	struct config_eap_aka *akaconf = NULL;
 	struct aka_eaptypedata *akadata = NULL;
-	struct typelength *typelen = NULL;
 	struct typelengthres *typelenres = NULL;
 	uint8_t reqId = 0, mac_calc[20];
 	struct eap_header *eaphdr = NULL;
@@ -809,8 +805,8 @@ uint8_t *eapaka_buildResp(eap_type_data * eapdata)
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return NULL;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	if (!xsup_assert((eapdata->eap_data != NULL), 
+			 "eapdata->eap_data != NULL", FALSE))
 		return NULL;
 
 	if (!xsup_assert((eapdata->eap_conf_data != NULL),
@@ -920,7 +916,7 @@ uint8_t *eapaka_buildResp(eap_type_data * eapdata)
 		debug_hex_dump(DEBUG_AUTHTYPES, framecpy, retsize);
 
 		HMAC(EVP_sha1(), akadata->K_aut, 16, framecpy, retsize,
-		     mac_calc, &t);
+		     mac_calc, (unsigned int *)&t);
 
 		FREE(framecpy);
 

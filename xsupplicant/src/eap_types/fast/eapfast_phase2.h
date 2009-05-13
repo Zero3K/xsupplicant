@@ -153,6 +153,7 @@ uint8_t *eapfast_phase2_get_simckj(eap_type_data * eapdata);
 void eapfast_phase2_init(eap_type_data *);
 void eapfast_phase2_check(eap_type_data *);
 void eapfast_phase2_process(eap_type_data *, uint8_t *, uint16_t);
+uint16_t eapfast_phase2_eap_process(eap_type_data *, uint8_t *, uint16_t);
 void eapfast_phase2_buildResp(eap_type_data *, uint8_t *, uint16_t *);
 void eapfast_phase2_deinit(eap_type_data *);
 

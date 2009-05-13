@@ -527,10 +527,8 @@ uint8_t eappeap_isKeyAvailable(eap_type_data * eapdata)
 
 	mytls_vars->keyblock = tls_funcs_gen_keyblock(mytls_vars,
 						      TLS_FUNCS_CLIENT_FIRST,
-						      mytls_vars->
-						      sessionkeyconst,
-						      mytls_vars->
-						      sessionkeylen);
+						      mytls_vars->sessionkeyconst,
+						      mytls_vars->sessionkeylen);
 
 	if (mytls_vars->keyblock == NULL)
 		return FALSE;

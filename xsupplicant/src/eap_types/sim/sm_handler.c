@@ -65,10 +65,6 @@
 
 #ifdef EAP_SIM_ENABLE
 
-#ifndef MAX_ATR_SIZE
-#define MAX_ATR_SIZE    32	// This isn't defined on Windows for some reason.
-#endif
-
 #include <stdio.h>
 #include <winscard.h>
 #include <string.h>
@@ -81,14 +77,18 @@
 
 #include <stdlib.h>
 
-#include "../../xsup_common.h"
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
 #include "sm_handler.h"
 #include "sim_reader_plugin_hook.h"
+#include "../../xsup_common.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
+#endif
+
+#ifndef MAX_ATR_SIZE
+#define MAX_ATR_SIZE    32	// This isn't defined on Windows for some reason.
 #endif
 
 #ifndef WINDOWS
@@ -144,7 +144,8 @@ typedef struct t_efdir {
 } t_efdir;
 
 typedef struct {
-	u8 msk[2], rsp[2], *text;
+  u8 msk[2], rsp[2];
+  char *text;
 } t_response;
 
 const t_response response[] = {
@@ -367,7 +368,7 @@ int sm_handler_init_ctx(SCARDCONTEXT * card_ctx)
 
 char *sm_handler_get_readers(SCARDCONTEXT * card_ctx)
 {
-	long readerstrlen = 0;
+	unsigned long readerstrlen = 0;
 	char *readername = NULL;
 	int ret = 0;
 
@@ -391,8 +392,7 @@ char *sm_handler_get_readers(SCARDCONTEXT * card_ctx)
 			return NULL;
 		}
 
-		ret =
-		    SCardListReaders(*card_ctx, NULL, readername,
+		ret = SCardListReaders(*card_ctx, NULL, readername,
 				     &readerstrlen);
 		if (ret != SCARD_S_SUCCESS) {
 			debug_printf(DEBUG_NORMAL,
@@ -414,7 +414,8 @@ char *sm_handler_get_readers(SCARDCONTEXT * card_ctx)
 long sm_handler_card_connect(SCARDCONTEXT * card_ctx, SCARDHANDLE * card_hdl,
 			     char *cardreader)
 {
-	long ret, activeprotocol;
+        long ret;
+        unsigned long activeprotocol;
 	int result;
 
 	debug_printf(DEBUG_AUTHTYPES, "Using reader : %s\n", cardreader);
@@ -563,8 +564,8 @@ int hextoint(u8 x)
 int strtohex(u8 * src, u8 * dest, int *blen)
 {
 	int i, len;
-	char *p, *q;
-	char buf[512];
+	unsigned char *p, *q;
+	unsigned char buf[512];
 
 	p = src;
 	q = buf;
@@ -576,7 +577,7 @@ int strtohex(u8 * src, u8 * dest, int *blen)
 	}
 	*q = '\0';
 	src = buf;
-	if ((len = strlen(src)) & 0x01) {	/* oops, odd number of nibbles */
+	if ((len = strlen((char *)src)) & 0x01) {	/* oops, odd number of nibbles */
 		debug_printf(DEBUG_NORMAL,
 			     "strtohex: odd number of nibbles!\n");
 		return -1;
@@ -774,11 +775,11 @@ cardio(SCARDHANDLE * card_hdl, char *cmd, long reader_protocol, char mode2g,
        LPBYTE outbuff, LPDWORD olen, char debug)
 {
 	static char getresponse[5] = { 0xa0, 0xc0, 0x00, 0x00, 0x00 };
-	int cmdlen, ret, p, i;
+	int cmdlen, ret, p;
 	u8 bcmd[MAXBUFF];
 	SCARD_IO_REQUEST scir;
 
-	strtohex(cmd, bcmd, &cmdlen);
+	strtohex((unsigned char *)cmd, bcmd, &cmdlen);
 	*olen = MAXBUFF;	/* hm... */
 
 	scir.dwProtocol = reader_protocol;
@@ -786,8 +787,7 @@ cardio(SCARDHANDLE * card_hdl, char *cmd, long reader_protocol, char mode2g,
 
 	memset(outbuff, 0, MAXBUFF);
 
-	if ((ret =
-	     SCardTransmit(*card_hdl,
+	if ((ret = SCardTransmit(*card_hdl,
 			   reader_protocol ==
 			   SCARD_PROTOCOL_T1 ? SCARD_PCI_T1 : SCARD_PCI_T0,
 			   bcmd, cmdlen, &scir, (BYTE *) outbuff,
@@ -817,10 +817,8 @@ cardio(SCARDHANDLE * card_hdl, char *cmd, long reader_protocol, char mode2g,
 
 			*olen = MAXBUFF;
 			if ((ret = SCardTransmit(*card_hdl,
-						 reader_protocol ==
-						 SCARD_PROTOCOL_T1 ?
-						 SCARD_PCI_T1 : SCARD_PCI_T0,
-						 getresponse,
+						 reader_protocol == SCARD_PROTOCOL_T1 ? SCARD_PCI_T1 : SCARD_PCI_T0,
+						 (unsigned char *)getresponse,
 						 sizeof(getresponse), &scir,
 						 (BYTE *) outbuff,
 						 olen)) != SCARD_S_SUCCESS) {
@@ -845,9 +843,8 @@ cardio(SCARDHANDLE * card_hdl, char *cmd, long reader_protocol, char mode2g,
 				    (t->rsp[1] ==
 				     (t->msk[1] & outbuff[p + 1]))) {
 
-					debug_printf(DEBUG_NORMAL, t->text,
-						     outbuff[p +
-							     1] & ~t->msk[1]);
+				  debug_printf(DEBUG_NORMAL, (char *)t->text,
+						     outbuff[p + 1] & ~t->msk[1]);
 					found++;
 				}
 				break;
@@ -919,22 +916,20 @@ char *decode_imsi(unsigned char *imsibytes)
 	}
 	*s = '\0';
 
-	return imsi;
+	return (char *)imsi;
 }
 
 int sm_handler_2g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode)
 {
-	long len;
-	unsigned char buf[512], buf2[512], buf3[8];
-	int i;
+	unsigned long len;
+	unsigned char buf[512];
 	int result;
 
 	if ((sim_reader_plugin_hook_available() == TRUE) &&
 	    ((sim_reader_plugin_gs_supported(card_hdl) & SUPPORT_2G_SIM) ==
 	     SUPPORT_2G_SIM)) {
 		// Process it through our plugin.
-		result =
-		    sim_reader_plugin_hook_2g_pin_needed(card_hdl, reader_mode);
+		result = sim_reader_plugin_hook_2g_pin_needed(card_hdl, reader_mode);
 		if (result >= -1)
 			return result;
 	}
@@ -946,18 +941,16 @@ int sm_handler_2g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode)
 	}
 	// Select the card master file in 2g mode.
 	len = MAXBUFF;
-	if (cardio
-	    (card_hdl, SELECT_MF, reader_mode, MODE2G, (LPBYTE) & buf, &len,
-	     DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)SELECT_MF, reader_mode, 
+		   MODE2G, (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error trying to select the master file! "
 			     "(%s:%d)\n", __FUNCTION__, __LINE__);
 		return SM_HANDLER_ERROR_GETTING_MF;
 	}
 
-	if (cardio
-	    (card_hdl, SELECT_DF_GSM, reader_mode, MODE2G, (LPBYTE) & buf, &len,
-	     DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)SELECT_DF_GSM, reader_mode, 
+		   MODE2G, (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error selecting GSM authentication! " "(%s:%d)\n",
 			     __FUNCTION__, __LINE__);
@@ -973,7 +966,7 @@ int sm_handler_2g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode)
 int sm_handler_2g_imsi(SCARDHANDLE * card_hdl, char reader_mode, char *pin,
 		       char **imsi)
 {
-	long len;
+	unsigned long len;
 	unsigned char buf[512], buf2[512], buf3[8];
 	int i;
 	int result;
@@ -1001,18 +994,16 @@ int sm_handler_2g_imsi(SCARDHANDLE * card_hdl, char reader_mode, char *pin,
 	}
 	// Select the card master file in 2g mode.
 	len = MAXBUFF;
-	if (cardio
-	    (card_hdl, SELECT_MF, reader_mode, MODE2G, (LPBYTE) & buf, &len,
-	     DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)SELECT_MF, reader_mode, 
+		   MODE2G, (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error trying to select the master file! "
 			     "(%s:%d)\n", __FUNCTION__, __LINE__);
 		return SM_HANDLER_ERROR_GETTING_MF;
 	}
 
-	if (cardio
-	    (card_hdl, SELECT_DF_GSM, reader_mode, MODE2G, (LPBYTE) & buf, &len,
-	     DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)SELECT_DF_GSM, reader_mode, 
+		   MODE2G, (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error selecting GSM authentication! " "(%s:%d)\n",
 			     __FUNCTION__, __LINE__);
@@ -1026,15 +1017,15 @@ int sm_handler_2g_imsi(SCARDHANDLE * card_hdl, char reader_mode, char *pin,
 		xsup_common_strcpy((char *)&buf2, 512, "A020000108");
 		for (i = 0; i < strlen(pin); i++) {
 			memset((char *)&buf3, 0x00, 8);
-			_snprintf(buf3, 8, "%02X", pin[i]);
-			if (Strcat(buf2, sizeof(buf2), buf3) != 0) {
+			_snprintf((char *)buf3, 8, "%02X", pin[i]);
+			if (Strcat((char *)buf2, sizeof(buf2), (char *)buf3) != 0) {
 				fprintf(stderr,
 					"Refusing to overflow string!\n");
 				return SM_HANDLER_ERROR_GENERAL;
 			}
 		}
 		for (i = strlen(pin); i < 8; i++) {
-			if (Strcat(buf2, sizeof(buf2), "FF") != 0) {
+		  if (Strcat((char *)buf2, sizeof(buf2), "FF") != 0) {
 				fprintf(stderr,
 					"Refusing to overflow string!\n");
 				return SM_HANDLER_ERROR_GENERAL;
@@ -1042,9 +1033,8 @@ int sm_handler_2g_imsi(SCARDHANDLE * card_hdl, char reader_mode, char *pin,
 		}
 
 		len = MAXBUFF;
-		if (cardio
-		    (card_hdl, buf2, reader_mode, MODE2G, (LPBYTE) & buf, &len,
-		     DO_DEBUG) != 0) {
+		if (cardio(card_hdl, (char *)buf2, reader_mode, 
+			   MODE2G, (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 			debug_printf(DEBUG_NORMAL,
 				     "Error sending PIN to smart card! "
 				     "(%s:%d)\n", __FUNCTION__, __LINE__);
@@ -1069,9 +1059,8 @@ int sm_handler_2g_imsi(SCARDHANDLE * card_hdl, char reader_mode, char *pin,
 	}
 
 	len = MAXBUFF;
-	if (cardio
-	    (card_hdl, SELECT_EF_IMSI, reader_mode, MODE2G, (LPBYTE) & buf,
-	     &len, DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)SELECT_EF_IMSI, reader_mode, 
+		   MODE2G, (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error attempting to select the IMSI on the"
 			     " smart card!  (%s:%d)\n", __FUNCTION__, __LINE__);
@@ -1080,9 +1069,8 @@ int sm_handler_2g_imsi(SCARDHANDLE * card_hdl, char reader_mode, char *pin,
 
 	len = MAXBUFF;
 	memset((char *)&buf, 0x00, 512);
-	if (cardio
-	    (card_hdl, GET_IMSI, reader_mode, MODE2G, (LPBYTE) & buf, &len,
-	     DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)GET_IMSI, reader_mode, MODE2G, 
+		   (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error attempting to get the IMSI from the "
 			     "smart card! (%s:%d)\n", __FUNCTION__, __LINE__);
@@ -1121,21 +1109,20 @@ int sm_handler_do_2g_auth(SCARDHANDLE * card_hdl, char reader_mode,
 			return result;
 	}
 
-	xsup_common_strcpy(buff2, MAXBUFF, RUN_GSM);
+	xsup_common_strcpy((char *)buff2, MAXBUFF, RUN_GSM);
 	memset(&buff3, 0x00, MAXBUFF);
 
 	for (i = 0; i < 16; i++) {
-		_snprintf(buff3, 8, "%02X", challenge[i]);
-		if (Strcat(buff2, sizeof(buff2), buff3) != 0) {
+	  _snprintf((char *)buff3, 8, "%02X", challenge[i]);
+		if (Strcat((char *)buff2, sizeof(buff2), (char *)buff3) != 0) {
 			fprintf(stderr, "Refusing to overflow string!\n");
 			return -1;
 		}
 	}
 
 	len = MAXBUFF;
-	if (cardio
-	    (card_hdl, buff2, reader_mode, MODE2G, (LPBYTE) & buf, &len,
-	     DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)buff2, reader_mode, 
+		   MODE2G, (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error attempting to run the GSM algorithm!\n");
 		return -1;
@@ -1223,7 +1210,7 @@ int sm_handler_3g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode)
 	DWORD len;
 	unsigned char buf[MAXBUFF], buf2[MAXBUFF], aid[MAXBUFF], temp[MAXBUFF],
 	    *p = NULL;
-	unsigned char cmd[MAXBUFF], buf3[MAXBUFF];
+	unsigned char cmd[MAXBUFF];
 	int i, l, q, foundaid = 0, pinretries = 0;
 	unsigned char threeG[2] = { 0x10, 0x02 };
 	struct t_efdir *t = NULL;
@@ -1305,10 +1292,9 @@ int sm_handler_3g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode)
 	// Loop over EFdir
 	do {
 
-		_snprintf(buf, MAXBUFF, "00B2%2.2X04%2.2X", i, l);
-		if (cardio
-		    (card_hdl, buf, reader_mode, MODE3G, (LPBYTE) & buf2, &len,
-		     DO_DEBUG) != 0) {
+	  _snprintf((char *)buf, MAXBUFF, "00B2%2.2X04%2.2X", i, l);
+		if (cardio(card_hdl, (char *)buf, reader_mode, 
+			   MODE3G, (LPBYTE) & buf2, &len, DO_DEBUG) != 0) {
 			debug_printf(DEBUG_NORMAL,
 				     "Error attempting to read a record from "
 				     "this SIM card! (%s:%d)\n", __FUNCTION__,
@@ -1323,8 +1309,9 @@ int sm_handler_3g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode)
 
 			p = (unsigned char *)&t->rid;
 			for (q = 0; q < 12; q++) {
-				_snprintf(temp, MAXBUFF, "%02X", *p++);
-				if (Strcat(aid, sizeof(aid), temp) != 0) {
+			  _snprintf((char *)temp, MAXBUFF, "%02X", *p++);
+				if (Strcat((char *)aid, sizeof(aid), 
+					   (char *)temp) != 0) {
 					fprintf(stderr,
 						"Refusing to overflow string!\n");
 					return SM_HANDLER_ERROR_GENERAL;
@@ -1337,15 +1324,14 @@ int sm_handler_3g_pin_needed(SCARDHANDLE * card_hdl, char reader_mode)
 		 && (foundaid != 1));
 
 	// Select the USIM aid.
-	xsup_common_strcpy(cmd, MAXBUFF, "00A404040C");
-	if (Strcat(cmd, sizeof(cmd), aid) != 0) {
+	xsup_common_strcpy((char *)cmd, MAXBUFF, "00A404040C");
+	if (Strcat((char *)cmd, sizeof(cmd), (char *)aid) != 0) {
 		fprintf(stderr, "Refusing to overflow string!\n");
 		return SM_HANDLER_ERROR_GENERAL;
 	}
 
-	if (cardio
-	    (card_hdl, cmd, reader_mode, MODE3G, (LPBYTE) & buf2, &len,
-	     DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)cmd, reader_mode, MODE3G, 
+		   (LPBYTE) & buf2, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't select the USIM application ID! "
 			     "(%s:%d)\n", __FUNCTION__, __LINE__);
@@ -1388,12 +1374,8 @@ int sm_handler_3g_imsi(SCARDHANDLE * card_hdl, char reader_mode, char *pin,
 		       char **imsi)
 {
 	DWORD len;
-	unsigned char buf[MAXBUFF], buf2[MAXBUFF], aid[MAXBUFF], temp[MAXBUFF],
-	    *p = NULL;
-	unsigned char cmd[MAXBUFF], buf3[MAXBUFF];
-	int i, l, q, foundaid = 0, pinretries = 0;
-	unsigned char threeG[2] = { 0x10, 0x02 };
-	struct t_efdir *t = NULL;
+	unsigned char buf[MAXBUFF], buf2[MAXBUFF], buf3[MAXBUFF];
+	int i, pinretries = 0;
 	int retval = 0;
 
 	if ((sim_reader_plugin_hook_available() == TRUE) &&
@@ -1428,27 +1410,27 @@ int sm_handler_3g_imsi(SCARDHANDLE * card_hdl, char reader_mode, char *pin,
 			return SM_HANDLER_ERROR_BAD_PIN_CARD_BLOCKED;
 		}
 		// Otherwise, enter the PIN.
-		xsup_common_strcpy(buf2, MAXBUFF, CHV_ATTEMPT);
+		xsup_common_strcpy((char *)buf2, MAXBUFF, CHV_ATTEMPT);
 		for (i = 0; i < strlen(pin); i++) {
 			memset((char *)&buf3, 0x00, 8);
-			_snprintf(buf3, MAXBUFF, "%02X", pin[i]);
-			if (Strcat(buf2, sizeof(buf2), buf3) != 0) {
+			_snprintf((char *)buf3, MAXBUFF, "%02X", pin[i]);
+			if (Strcat((char *)buf2, sizeof(buf2), 
+				   (char *)buf3) != 0) {
 				fprintf(stderr,
 					"Refusing to overflow string!\n");
 				return SM_HANDLER_ERROR_GENERAL;
 			}
 		}
 		for (i = strlen(pin); i < 8; i++) {
-			if (Strcat(buf2, sizeof(buf2), "FF") != 0) {
+		  if (Strcat((char *)buf2, sizeof(buf2), "FF") != 0) {
 				fprintf(stderr,
 					"Refusing to overflow string!\n");
 				return SM_HANDLER_ERROR_GENERAL;
 			}
 		}
 
-		if (cardio
-		    (card_hdl, buf2, reader_mode, MODE3G, (LPBYTE) & buf, &len,
-		     DO_DEBUG) != 0) {
+		if (cardio(card_hdl, (char *)buf2, reader_mode, MODE3G, 
+			   (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 			debug_printf(DEBUG_NORMAL,
 				     "Invalid PIN! (%d tries remain.)\n",
 				     pinretries - 1);
@@ -1491,8 +1473,8 @@ int addhex(u8 * buffer, unsigned int buflen, const u8 * bytes, int len)
 	int i = 0;
 
 	for (i = 0; i < len; i++) {
-		_snprintf(temp, 5, "%02X", *bytes++);
-		if (Strcat(buffer, buflen, temp) != 0) {
+	  _snprintf((char *)temp, 5, "%02X", *bytes++);
+	  if (Strcat((char *)buffer, buflen, (char *)temp) != 0) {
 			fprintf(stderr, "Refusing to overflow string!\n");
 			return -1;
 		}
@@ -1525,7 +1507,7 @@ int sm_handler_do_3g_auth(SCARDHANDLE * card_hdl, char reader_mode,
 			return result;
 	}
 
-	if (Strncpy(cmd, sizeof(cmd), "008800812210", 13) != 0) {
+	if (Strncpy((char *)cmd, sizeof(cmd), "008800812210", 13) != 0) {
 		fprintf(stderr, "Refusing to overflow string!\n");
 		return -1;
 	}
@@ -1535,7 +1517,7 @@ int sm_handler_do_3g_auth(SCARDHANDLE * card_hdl, char reader_mode,
 		return -1;
 	}
 
-	if (Strcat(cmd, sizeof(cmd), "10") != 0) {
+	if (Strcat((char *)cmd, sizeof(cmd), "10") != 0) {
 		fprintf(stderr, "Refusing to overflow string!\n");
 		return -1;
 	}
@@ -1549,9 +1531,8 @@ int sm_handler_do_3g_auth(SCARDHANDLE * card_hdl, char reader_mode,
 
 	len = MAXBUFF;
 
-	if (cardio
-	    (card_hdl, cmd, reader_mode, MODE3G, (LPBYTE) & buf, &len,
-	     DO_DEBUG) != 0) {
+	if (cardio(card_hdl, (char *)cmd, reader_mode, MODE3G, 
+		   (LPBYTE) & buf, &len, DO_DEBUG) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Error attempting to execute 3G "
 			     "authentication! (%s:%d)\n", __FUNCTION__,

@@ -51,6 +51,8 @@
 
 #ifdef WINDOWS
 #include "../../event_core_win.h"
+#else
+#include "../../event_core.h"
 #endif
 
 #ifdef USE_EFENCE
@@ -69,7 +71,7 @@ char *do_sha1(char *tohash, int size)
 {
 	EVP_MD_CTX ctx;
 	char *hash_ret;
-	int evp_ret_len;
+	unsigned int evp_ret_len;
 
 	if (!xsup_assert((tohash != NULL), "tohash != NULL", FALSE))
 		return NULL;
@@ -87,7 +89,7 @@ char *do_sha1(char *tohash, int size)
 
 	EVP_DigestInit(&ctx, EVP_sha1());
 	EVP_DigestUpdate(&ctx, tohash, size);
-	EVP_DigestFinal(&ctx, hash_ret, (int *)&evp_ret_len);
+	EVP_DigestFinal(&ctx, (unsigned char *)hash_ret, &evp_ret_len);
 
 	if (evp_ret_len != 20) {
 		debug_printf(DEBUG_NORMAL,
@@ -522,7 +524,7 @@ void eapsim_do_challenge(eap_type_data * eapdata)
 	struct eap_header *eaphdr = NULL;
 	struct config_eap_sim *simconf = NULL;
 	char *username = NULL;
-	uint8_t nsres[16], mac_calc[16], K_int[16];
+	uint8_t nsres[16], K_int[16];
 	struct typelength *typelen = NULL;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
@@ -576,13 +578,12 @@ void eapsim_do_challenge(eap_type_data * eapdata)
 	while (offset < size) {
 		switch (eapdata->eapReqData[offset]) {
 		case AT_RAND:
-			retval =
-			    sim_do_at_rand(simdata, username,
-					   (uint8_t *) & nsres,
+			retval = sim_do_at_rand(simdata, username,
+					   (char *) & nsres,
 					   eapdata->eapReqData, &offset,
 					   simdata->response_data,
 					   &simdata->response_size,
-					   (uint8_t *) & K_int);
+					   (char *) & K_int);
 			if (retval != XENONE) {
 				eap_type_common_fail(eapdata);
 				FREE(simdata->response_data);
@@ -604,13 +605,11 @@ void eapsim_do_challenge(eap_type_data * eapdata)
 
 		case AT_MAC:
 			retval = sim_do_at_mac(eapdata, simdata,
-					       &eapdata->
-					       eapReqData[sizeof
-							  (struct eap_header)],
+					       &eapdata->eapReqData[sizeof(struct eap_header)],
 					       size, &offset,
 					       simdata->response_data,
 					       &simdata->response_size,
-					       (uint8_t *) & K_int);
+					       (char *) & K_int);
 			if (retval != XENONE) {
 				eap_type_common_fail(eapdata);
 				FREE(simdata->response_data);
@@ -625,10 +624,10 @@ void eapsim_do_challenge(eap_type_data * eapdata)
 		debug_hex_printf(DEBUG_AUTHTYPES, nsres, 12);
 
 		memset(&simdata->response_data[1], 0x00, 2);
-		retval = sim_do_v1_response(eapdata, simdata->response_data,
+		retval = sim_do_v1_response(eapdata, (char *)simdata->response_data,
 					    &simdata->response_size,
-					    (uint8_t *) & nsres,
-					    (uint8_t *) & K_int);
+					    (char *) & nsres,
+					    (char *) & K_int);
 		if (retval != XENONE) {
 			eap_type_common_fail(eapdata);
 			FREE(simdata->response_data);
@@ -801,7 +800,7 @@ uint8_t *eapsim_getKey(eap_type_data * eapdata)
 
 	memcpy(keydata, simdata->keyingMaterial, 64);
 
-	return simdata->keyingMaterial;
+	return (uint8_t *)simdata->keyingMaterial;
 }
 
 /***********************************************************************
@@ -865,7 +864,6 @@ char *eapsim_get_username(void *config)
  **/
 int eapsim_is_pin_needed(context * ctx, struct config_eap_sim *userdata)
 {
-	char card_mode = 0;
 	char *readers = NULL;
 	SCARDCONTEXT sctx;
 	SCARDHANDLE hdl;

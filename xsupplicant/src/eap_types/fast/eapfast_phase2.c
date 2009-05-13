@@ -868,7 +868,7 @@ void eapfast_phase2_provision_gen_crypt(eap_type_data * eapdata)
 	offset_to_prov_keys = tls_funcs_get_keyblock_len(mytls_vars);
 
 	keyblock = tls_funcs_gen_keyblock(mytls_vars, TLS_FUNCS_SERVER_FIRST,
-					  FAST_PROVISIONING_SESSION_KEY,
+					  (uint8_t *)FAST_PROVISIONING_SESSION_KEY,
 					  FAST_PROVISIONING_SESSION_KEY_LEN);
 
 	if (keyblock == NULL) {
@@ -1375,7 +1375,7 @@ uint8_t *eapfast_phase2_t_prf(uint8_t * key, uint16_t keylen, char *label,
 		return NULL;
 	}
 	// Create the "S".
-	strcpy(s, label);
+	strcpy((char *)s, label);
 	s[strlen(label)] = 0x00;
 
 	if (seed != NULL) {
@@ -1557,7 +1557,7 @@ int eapfast_phase2_check_crypto_binding(eap_type_data * eapdata,
 	struct eapfast_phase2 *phase2 = NULL;
 	uint8_t *temp = NULL;
 	uint8_t mac[20], nonce[32];
-	int len = 0;
+	unsigned int len = 0;
 	uint8_t *cmkj = NULL;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))

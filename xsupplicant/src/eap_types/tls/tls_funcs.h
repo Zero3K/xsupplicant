@@ -88,7 +88,7 @@ int tls_funcs_set_master_secret(struct tls_vars *, uint8_t *, uint16_t);
 int tls_funcs_build_new_session(struct tls_vars *);
 uint32_t tls_funcs_data_pending(struct tls_vars *);
 void tls_funcs_set_cipher_list(struct tls_vars *, char *cipherlist);
-
+int tls_funcs_get_embedded_appdata(struct tls_vars *, uint8_t **, uint16_t *);
 int tls_funcs_load_engine(struct tls_vars *, struct smartcard *);
 
 #endif

@@ -36,6 +36,7 @@
 #include "../../xsup_debug.h"
 #include "../../xsup_err.h"
 #include "../../xsup_common.h"
+#include "../eap_type_common.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
@@ -47,7 +48,8 @@ int do_v0_at_mac(eap_type_data * thisint, char *K_int, char *indata,
 		 int in_size, int inoffset, char *resultmac)
 {
 	char *framecpy, *mac_calc;
-	int saved_offset, i;
+	int saved_offset;
+	unsigned int i;
 	uint16_t value16;
 
 	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
@@ -101,7 +103,8 @@ int do_v0_at_mac(eap_type_data * thisint, char *K_int, char *indata,
 	}
 
 	debug_printf(DEBUG_AUTHTYPES, "Calculating MAC on : \n");
-	debug_hex_dump(DEBUG_AUTHTYPES, framecpy, (in_size + 5));
+	debug_hex_dump(DEBUG_AUTHTYPES, (unsigned char *)framecpy, 
+		       (in_size + 5));
 
 	// We should now be ready to calculate the AT_MAC for 
 	// ourselves.
@@ -113,7 +116,8 @@ int do_v0_at_mac(eap_type_data * thisint, char *K_int, char *indata,
 		return XEMALLOC;
 	}
 
-	HMAC(EVP_sha1(), &K_int[0], 16, framecpy, (in_size + 5), mac_calc, &i);
+	HMAC(EVP_sha1(), (unsigned char *)&K_int[0], 16, 
+	     (unsigned char *)framecpy, (in_size + 5), mac_calc, &i);
 
 	memcpy(resultmac, mac_calc, 16);	// We get 20 back, but we only want 16.
 

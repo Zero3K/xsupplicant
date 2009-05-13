@@ -1,4 +1,8 @@
-AC_INIT([XSupplicant],[2.1.7.090508],[],[xsupplicant])
+### We now run ./gen_version.sh to get our version number so that we can 
+# control that variable from the build system.
+AC_INIT([XSupplicant],m4_esyscmd(./gen_version.sh), [], [xsupplicant])
+
+
 AC_PREREQ(2.59)
 AM_INIT_AUTOMAKE([dist-bzip2] [dist-zip] [foreign])
 LT_INIT

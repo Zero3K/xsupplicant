@@ -204,12 +204,13 @@ int aka_do_at_mac(eap_type_data * eapdata,
 		  struct aka_eaptypedata *mydata, uint8_t * dataoffs,
 		  int insize, uint16_t * packet_offset, char *username)
 {
-	int saved_offset, i, value16, x;
+	int saved_offset, value16;
+	unsigned int i;
 	unsigned char reslen = 0;
 	unsigned char auts[16], sres[16], ck[16], mac_val[16];
 	unsigned char mac_calc[20], ik[16], kc[16];
-	unsigned char *mk = NULL, *keydata = NULL, *tohash = NULL, *framecpy =
-	    NULL;
+	unsigned char *mk = NULL, *keydata = NULL, *tohash = NULL;
+	unsigned char *framecpy = NULL;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return XEMALLOC;
@@ -235,7 +236,7 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	if (sm_handler_do_3g_auth(&mydata->shdl, mydata->card_mode,
 				  mydata->random_num, mydata->autn,
 				  (unsigned char *)&auts,
-				  (unsigned char *)&reslen,
+				  (char *)&reslen,
 				  (unsigned char *)&sres,
 				  (unsigned char *)&ck, (unsigned char *)&ik,
 				  (unsigned char *)&kc) == -2) {
@@ -261,14 +262,14 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	debug_printf(DEBUG_AUTHTYPES, "IK = ");
 	debug_hex_printf(DEBUG_AUTHTYPES, ik, 16);
 
-	tohash = (char *)Malloc(strlen(username) + 33);	// IK & CK are 16 bytes.
+	tohash = (unsigned char *)Malloc(strlen(username) + 33);	// IK & CK are 16 bytes.
 	if (!tohash) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't allocate memory for hash string!\n");
 		return XEMALLOC;
 	}
 
-	if (Strncpy(tohash, (strlen(username) + 33), username,
+	if (Strncpy((char *)tohash, (strlen(username) + 33), username,
 	     strlen(username) + 1) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Attempt to overflow buffer in %s() at %d!\n",
@@ -279,7 +280,8 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	memcpy((char *)&tohash[strlen(username)], (char *)&ik[0], 16);
 	memcpy((char *)&tohash[strlen(username) + 16], (char *)&ck[0], 16);
 
-	mk = do_sha1((char *)&tohash[0], (strlen(username) + 32));
+	mk = (unsigned char *)do_sha1((char *)&tohash[0], 
+				      (strlen(username) + 32));
 
 	if (mk == NULL) {
 		debug_printf(DEBUG_NORMAL,
@@ -293,7 +295,7 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	debug_printf(DEBUG_AUTHTYPES, "MK = ");
 	debug_hex_printf(DEBUG_AUTHTYPES, mk, 20);
 
-	keydata = (char *)Malloc(160);
+	keydata = (unsigned char *)Malloc(160);
 	if (keydata == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't allocate memory for keydata! (%s:%d)\n",
@@ -325,7 +327,7 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	memcpy(&mac_val[0], &dataoffs[(*packet_offset) + 4], 16);
 
 	debug_printf(DEBUG_AUTHTYPES, "MAC = ");
-	debug_hex_printf(DEBUG_AUTHTYPES, (char *)&mac_val[0], 16);
+	debug_hex_printf(DEBUG_AUTHTYPES, &mac_val[0], 16);
 
 	debug_printf(DEBUG_AUTHTYPES, "Packet : \n");
 	debug_hex_dump(DEBUG_AUTHTYPES, dataoffs, insize);
@@ -333,7 +335,7 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	FREE(keydata);
 
 	// Now, we need a copy of the frame to work against.
-	framecpy = (char *)Malloc(insize + 5);
+	framecpy = (unsigned char *)Malloc(insize + 5);
 	if (framecpy == NULL)
 		return XEMALLOC;
 
@@ -353,7 +355,7 @@ int aka_do_at_mac(eap_type_data * eapdata,
 	debug_hex_dump(DEBUG_AUTHTYPES, framecpy, insize + 5);
 
 	HMAC(EVP_sha1(), mydata->K_aut, 16, framecpy,
-	     (insize + 5), (char *)&mac_calc[0], &i);
+	     (insize + 5), &mac_calc[0], &i);
 
 	debug_printf(DEBUG_AUTHTYPES, "mac_calc = ");
 	debug_hex_printf(DEBUG_AUTHTYPES, &mac_calc[0], 16);
@@ -497,7 +499,7 @@ uint8_t *aka_resp_identity(struct aka_eaptypedata * mydata, uint8_t reqId,
 	typelenres->reserved =
 	    htons(strlen(imsi) + sizeof(struct typelengthres));
 
-	strcpy(&eapres[outptr], imsi);
+	strcpy((char *)&eapres[outptr], imsi);
 
 	outptr += strlen(imsi) - 1;
 

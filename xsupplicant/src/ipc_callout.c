@@ -59,6 +59,8 @@
 #ifdef EAP_SIM_ENABLE
 #include <winscard.h>
 #include "eap_types/sim/sm_handler.h"
+#include "eap_types/sim/eapsim.h"
+#include "eap_types/aka/eapaka.h"
 #endif
 
 #ifdef WINDOWS
@@ -8468,8 +8470,7 @@ int ipc_callout_enum_smartcard_readers(xmlNodePtr innode, xmlNodePtr * outnode)
 	char *readers = NULL;
 	char *pReader = NULL;
 	SCARDCONTEXT sctx;
-	xmlNodePtr n = NULL, t = NULL;
-	char temp[256];
+	xmlNodePtr n = NULL;
 
 	if (sm_handler_init_ctx(&sctx) != 0) {
 		return ipc_callout_create_error(NULL, "Enum_Smartcard_Readers",
@@ -8480,7 +8481,7 @@ int ipc_callout_enum_smartcard_readers(xmlNodePtr innode, xmlNodePtr * outnode)
 	readers = sm_handler_get_readers(&sctx);
 	pReader = readers;
 
-	n = xmlNewNode(NULL, "Smartcard_Readers");
+	n = xmlNewNode(NULL, (xmlChar *)"Smartcard_Readers");
 	if (n == NULL) {
 		free(readers);
 		SCardReleaseContext(sctx);
@@ -8493,7 +8494,7 @@ int ipc_callout_enum_smartcard_readers(xmlNodePtr innode, xmlNodePtr * outnode)
 		while ('\0' != (*pReader)) {
 			debug_printf(DEBUG_IPC, "Found SC reader : %s\n",
 				     pReader);
-			if (xmlNewChild(n, NULL, "Reader", pReader) == NULL) {
+			if (xmlNewChild(n, NULL, (xmlChar *)"Reader", (xmlChar *)pReader) == NULL) {
 				free(readers);
 				SCardReleaseContext(sctx);
 				return ipc_callout_create_error(NULL,
