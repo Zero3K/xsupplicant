@@ -1,9 +1,15 @@
 <project>
     <shortName>xsupplicant</shortName>
     <fullName>XSupplicant</fullName>
-    <version>2.1.7</version>
+    <version>${env(SUP_VER)}</version>
     <installerFilename></installerFilename>
     <licenseFile>../../windows/installer/win-LICENSE</licenseFile>
+    <postBuildActionList>
+        <copyFile>
+            <destination>${env(INST_PATH)}</destination>
+            <origin>/home/build/installbuilder/output/xsupplicant-${env(SUP_VER)}-linux-installer.bin</origin>
+        </copyFile>
+    </postBuildActionList>
     <postInstallationActionList>
         <addUnixService>
             <description>XSupplicant</description>
