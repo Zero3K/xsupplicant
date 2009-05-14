@@ -1,0 +1,1 @@
+./configure -release -static -fast -no-qt3support -qt-zlib -qt-gif -qt-libtiff -qt-libpng -qt-libmng -qt-libjpeg -no-openssl -no-nis -no-cups -no-opengl -no-glib
