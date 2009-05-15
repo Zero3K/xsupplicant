@@ -2,9 +2,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
     
 #ifdef WINDOWS
 #include <shlobj.h>
+#else
+#define _strdup strdup
 #endif	
     
 #include "getopts.h"
@@ -64,7 +67,21 @@ char *platform_get_machine_data_store_path()
 	return path;
 }
 
+#else
+
+char *platform_get_machine_data_store_path() 
+{
+  return strdup("/etc");   // May need to change in the future.
+}
+
 #endif	
+
+#ifndef WINDOWS
+void debug_printf(uint32_t level, char *fmt, ...)
+{
+  // Stub, do nothing.
+}
+#endif
 
 int need_install_plugin(struct config_plugins *plugs, char *name) 
 {
@@ -84,7 +101,6 @@ int need_install_plugin(struct config_plugins *plugs, char *name)
 int add_plugin(struct config_plugins *plugs, char *name, char *path,
 		 char *description, int disabled) 
 {		
-	struct config_plugins *cur = NULL;
 	struct config_plugins *newplug = NULL;
 	
 	newplug = malloc(sizeof(struct config_plugins));
@@ -123,7 +139,12 @@ int install_plugin(char *name, char *path, char *description, int disabled)
 		return BAD_CONFIG_PATH;
 	
 	strcpy(path_to_config, temp);
+#ifdef WINDOWS
 	strcat(path_to_config, "\\xsupplicant.conf");
+#else
+	strcat(path_to_config, "/xsupplicant.conf");
+#endif
+
 	free(temp);
 	
 	if (config_system_setup(path_to_config) != 0)

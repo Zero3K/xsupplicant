@@ -9,6 +9,16 @@ make
 
 /usr/bin/strip src/xsupplicant
 
+cd ../xsupplicant_plugin_installer
+
+./autoregen.sh
+
+./configure --enable-static-libxml --with-libxml-libs=/home/build/OpenSEA/libraries/libxml2-2.7.3/.libs --with-libxml-headers=/home/build/OpenSEA/libraries/libxml2-2.7.3
+
+make
+
+/usr/bin/strip xsupplicant_plugin_installer
+
 cd ../xsupplicant-ui/xsupptray
 /usr/local/Trolltech/Qt/bin/qmake XSupplicantUI-buildsys.pro
 make

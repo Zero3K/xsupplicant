@@ -33,11 +33,11 @@ To build from a different branch use -Dopen1x.svn.branch="path" (i.e. trunk or b
 
 <target name="init">
 
-    <condition property="open1x.platform" value="linux.IA32">
+    <condition property="open1x.platform" value="linux">
 	<os family="unix"/>
     </condition>
 
-    <condition property="open1x.platform" value="windows.IA32">
+    <condition property="open1x.platform" value="windows">
         <os family="windows"/>
     </condition>
 
@@ -60,7 +60,15 @@ To build from a different branch use -Dopen1x.svn.branch="path" (i.e. trunk or b
 
     <property file="${open1x.property.file}" prefix="open1x."/>
 
-    <record name="${basedir}\${open1x.build.name}.txt" action="start" loglevel="verbose"/>
+    <if>
+      <equals arg1="${open1x.platform}" arg2="windows"/>
+      <then>
+	<record name="${basedir}\${open1x.build.name}.txt" action="start" loglevel="verbose"/>
+      </then>
+      <else>
+	<record name="${basedir}/${open1x.build.name}.txt" action="start" loglevel="verbose"/>
+      </else>
+    </if>
 
     <!-- 
 	Set the patch to "nightly" or "private"
@@ -158,14 +166,20 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
     
     <!-- Now we can determine the installer filename -->    
     <if>
-      <equals arg1="${open1x.platform}" arg2="windows.IA32"/>
+      <equals arg1="${open1x.platform}" arg2="windows"/>
       <then>
 	<property name="open1x.installer.file" value="${open1x.installer.prefix}${open1x.version}.${revision.max}.${open1x.installer.postfix}"/>
       </then>
       <elseif>
-	<equals arg1="${open1x.platform}" arg2="linux.IA32"/>
+	<equals arg1="${open1x.platform}" arg2="linux"/>
 	<then>
 	  <property name="open1x.installer.file" value="${open1x.installer.prefix}${open1x.version}.${revision.max}-linux-installer.${open1x.installer.postfix}"/>
+	</then>
+      </elseif>
+      <elseif>
+	<equals arg1="${open1x.platform}" arg2="linux_x64"/>
+	<then>
+	  <property name="open1x.installer.file" value="${open1x.installer.prefix}${open1x.version}.${revision.max}-linux-x64-installer.${open1x.installer.postfix}"/>
 	</then>
       </elseif>
       <else>
@@ -256,12 +270,25 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
 	<arg value="${open1x.installer.path}\xsupinstall.nsi"/>
       </exec>
  
-    <exec executable="/home/build/installbuilder-6.0.3/bin/builder" osfamily="unix">
+    <exec executable="/home/build/installbuilder/bin/builder" osfamily="unix">
       <env key="SUP_VER" value="${open1x.version}.${revision.max}"/>
       <env key="INST_PATH" value="${open1x.installer.path}"/>
       <arg value="build"/>
       <arg value="${open1x.installer.path}/xsupplicant.xml"/>
     </exec>
+
+    <if>
+      <equals arg1="${open1x.platform}" arg2="linux"/>
+      <then>
+	<move file="/home/build/installbuilder/output/${open1x.installer.file}" toFile="${open1x.installer.path}/${open1x.installer.file}"/>
+      </then>
+      <elseif>
+	<equals arg1="${open1x.platform}" arg2="linux_x64"/>
+	<then>
+	  <move file="/home/build/installbuilder/output/${open1x.installer.file}" toFile="${open1x.installer.path}/${open1x.installer.file}"/>
+	</then>
+      </elseif>
+    </if>
 
     <checksum file="${open1x.installer.path}\${open1x.installer.file}" todir="${open1x.installer.path}" algorithm="SHA" forceOverwrite="yes" fileext=".asc"/>
     
@@ -273,7 +300,7 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
 
     <!-- Copy the xsupplicant_service.exe file to Z: so the test machine can pick it up -->
     <if>
-      <equals arg1="${open1x.platform}" arg2="windows.IA32"/>
+      <equals arg1="${open1x.platform}" arg2="windows"/>
 	<then>
 	  <copy file="${open1x.build.path}\xsupplicant\vs2005\build-release\XSupplicant_service.exe" todir="Z:" overwrite="yes"/>
 	</then>
@@ -326,10 +353,10 @@ Be smarter about whether the buildnum.h and version.h files are up to date or no
 XSupplicant (${open1x.build.type}) build version ${open1x.version.major}.${open1x.version.minor}.${open1x.version.patch} revision ${revision.max} was successfully built.
 
 Installer: 
-http://www.open1x.org/build/${open1x.build.type}/${open1x.installer.file}
+http://www.open1x.org/build/${open1x.build.type}/${open1x.platform}/${open1x.installer.file}
 
 SHA1 Hash: 
-http://www.open1x.org/build/${open1x.build.type}/${open1x.installer.file}.asc
+http://www.open1x.org/build/${open1x.build.type}/${open1x.platform}/${open1x.installer.file}.asc
       </message>
     
     </mail>
