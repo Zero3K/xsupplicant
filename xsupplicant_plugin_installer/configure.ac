@@ -58,8 +58,12 @@ else
 , or set PKG_CONFIG_PATH to point to the location of the libxml-2.0.pc file.])
 fi
 ], [AS_IF([test -f "${with_libxml_libs}/libxml2.a"], 
-   [MORELIBS="$MORELIBS ${with_libxml_libs}/libxml2.a";AS_IF([test "$enable_static_libz"], [], [MORELIBS="$MORELIBS -lz"])],
+   [MORELIBS="$MORELIBS ${with_libxml_libs}/libxml2.a -lm";AS_IF([test "$enable_static_libz"], [], [MORELIBS="$MORELIBS -lz"])],
    [AC_MSG_ERROR([libxml2.a was not found at the path specified!])])])
+
+AC_SUBST(LDFLAGS)
+AC_SUBST(AM_CPPFLAGS)
+AC_SUBST(MORELIBS)
 
 AC_CONFIG_FILES([Makefile
 		src/Makefile
