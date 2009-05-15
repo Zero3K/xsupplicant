@@ -10,7 +10,7 @@ make
 /usr/bin/strip src/xsupplicant
 
 cd ../xsupplicant-ui/xsupptray
-qmake XSupplicantUI-buildsys.pro
+/usr/local/Trolltech/Qt/bin/qmake XSupplicantUI-buildsys.pro
 make
 
 /usr/bin/strip ../build-debug/XSupplicantUI
