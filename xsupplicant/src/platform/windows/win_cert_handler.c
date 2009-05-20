@@ -15,9 +15,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#ifdef WINDOWS
 #include "../../stdintwin.h"
-#endif
+#include "win_impersonate.h"
 
 #include "../../xsup_err.h"
 #include "libxsupconfig/xsupconfig.h"
@@ -67,8 +66,7 @@ int cert_handler_init()
 int cert_handler_user_init()
 {
 	debug_printf(DEBUG_CERTS, "Starting User Certificate Services...\n");
-	hCertUserStore =
-	    CertOpenStore(CERT_STORE_PROV_SYSTEM,
+	hCertUserStore = CertOpenStore(CERT_STORE_PROV_SYSTEM,
 			  X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
 			  (HCRYPTPROV_LEGACY) NULL,
 			  CERT_SYSTEM_STORE_CURRENT_USER, L"MY");
@@ -250,8 +248,7 @@ PCCERT_CONTEXT win_cert_handler_get_from_user_store(char *storetype,
 
 	cert_handler_user_init();
 
-	pCertContext =
-	    CertFindCertificateInStore(hCertUserStore,
+	pCertContext = CertFindCertificateInStore(hCertUserStore,
 				       X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
 				       0, CERT_FIND_HASH, &toFindData, NULL);
 	FREE(hashData);		// Clean up the memory no matter what.
@@ -1125,18 +1122,25 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 		return 0;
 	}
 
+	if (win_impersonate_desktop_user() != IMPERSONATE_NO_ERROR)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to impersonate the desktop user.  Cryptographic signing will fail.\n");
+		return 0;
+	}
+
 	if (!CryptCreateHash(mytls_vars->hcProv, CALG_SSL3_SHAMD5, 0, 0, &hash)) {
 		debug_printf(DEBUG_NORMAL,
 			     "CryptCreateHash() failed! (Error %d)\n",
 			     GetLastError());
+		win_impersonate_back_to_self();
 		return 0;
 	}
 
 	len = sizeof(hash_size);
-	if (!CryptGetHashParam
-	    (hash, HP_HASHSIZE, (BYTE *) & hash_size, &len, 0)) {
+	if (!CryptGetHashParam(hash, HP_HASHSIZE, (BYTE *) & hash_size, &len, 0)) {
 		debug_printf(DEBUG_NORMAL, "CryptGetHashParam() failed!\n");
 		CryptDestroyHash(hash);
+		win_impersonate_back_to_self();
 		return 0;
 	}
 
@@ -1144,12 +1148,14 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT,
 		       RSA_R_INVALID_MESSAGE_LENGTH);
 		CryptDestroyHash(hash);
+		win_impersonate_back_to_self();
 		return 0;
 	}
 
 	if (!CryptSetHashParam(hash, HP_HASHVAL, (BYTE *) from, 0)) {
 		debug_printf(DEBUG_NORMAL, "CryptSetHashParam() failed!\n");
 		CryptDestroyHash(hash);
+		win_impersonate_back_to_self();
 		return 0;
 	}
 
@@ -1158,6 +1164,7 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 	if (buf == NULL) {
 		RSAerr(RSA_F_RSA_EAY_PRIVATE_ENCRYPT, ERR_R_MALLOC_FAILURE);
 		CryptDestroyHash(hash);
+		win_impersonate_back_to_self();
 		return 0;
 	}
 
@@ -1165,6 +1172,7 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 		debug_printf(DEBUG_NORMAL, "CryptSignHash() failed!\n");
 		CryptDestroyHash(hash);
 		FREE(buf);
+		win_impersonate_back_to_self();
 		return 0;
 	}
 
@@ -1173,6 +1181,8 @@ static int rsa_priv_enc(int flen, const unsigned char *from, unsigned char *to,
 	FREE(buf);
 
 	CryptDestroyHash(hash);
+	win_impersonate_back_to_self();
+
 	return len;
 }
 
@@ -1220,9 +1230,8 @@ int win_cert_handler_load_user_cert(struct tls_vars *mytls_vars,
 	ERR_clear_error();
 
 	// Then, load the private key.
-	if (CryptAcquireCertificatePrivateKey
-	    (mycert, CRYPT_ACQUIRE_COMPARE_KEY_FLAG, NULL, &mytls_vars->hcProv,
-	     &mytls_vars->pdwKeyspec, &mytls_vars->pfCallerFreeProv) == FALSE) {
+	if (CryptAcquireCertificatePrivateKey(mycert, CRYPT_ACQUIRE_COMPARE_KEY_FLAG, NULL, 
+		&mytls_vars->hcProv, &mytls_vars->pdwKeyspec, &mytls_vars->pfCallerFreeProv) == FALSE) {
 		debug_printf(DEBUG_NORMAL,
 			     "Unable to load the user private key data!\n");
 		X509_free(wincert);

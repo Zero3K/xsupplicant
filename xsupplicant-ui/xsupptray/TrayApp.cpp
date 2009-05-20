@@ -239,9 +239,7 @@ void TrayApp::checkOtherSupplicants()
 	    (NULL, wsupcheckapp, NULL, NULL, false, 0, NULL, NULL, &sInfo,
 	     &pi) == false) {
 		QMessageBox::critical(this, tr("Other Supplicant Detection"),
-				      tr
-				      ("Failed to start the 'other supplicant detection' engine.  Error : %1").
-				      arg(GetLastError()));
+				      tr("Failed to start the 'other supplicant detection' engine.  Error : %1").arg(GetLastError()));
 	} else {
 		// Close the file handles that were created, since we don't intend to do anything
 		// with them.
@@ -1942,14 +1940,9 @@ void TrayApp::connectToNetwork(const QString & networkName,
 
 				if (retVal != REQUEST_SUCCESS
 				    || adapterName == NULL) {
-					QString message =
-					    tr
-					    ("An error occurred while connecting to the network '%1'.  (Error : %2)").
-					    arg(networkName).arg(retVal);
+					QString message = tr("An error occurred while connecting to the network '%1'.  (Error : %2)").arg(networkName).arg(retVal);
 					QMessageBox::critical(NULL,
-							      tr
-							      ("Error Connecting to Network"),
-							      message);
+							      tr("Error Connecting to Network"), message);
 				}
 
 				if (adapterName != NULL)
@@ -2200,15 +2193,9 @@ void TrayApp::connectToNetwork(const QString & networkName,
 
 						if (retVal != REQUEST_SUCCESS
 						    || adapterName == NULL) {
-							QString message =
-							    tr
-							    ("An error occurred while connecting to the network '%1'.  (Error : %2)").
-							    arg(networkName).
-							    arg(retVal);
-							QMessageBox::
-							    critical(this,
-								     tr
-								     ("Error Connecting to Network"),
+							QString message = tr("An error occurred while connecting to the network '%1'.  (Error : %2)").arg(networkName).arg(retVal);
+							QMessageBox::critical(this,
+								     tr("Error Connecting to Network"),
 								     message);
 						}
 						xsupgui_request_free_str
@@ -2254,13 +2241,8 @@ void TrayApp::finishConnectionWizard(bool success, const QString & connName,
 							   data());
 			if (retVal != REQUEST_SUCCESS)
 				QMessageBox::critical(this,
-						      tr
-						      ("Error Connecting to Network"),
-						      tr
-						      ("An error occurred while connecting to the wireless network '%1'. (Error : %2)").
-						      arg(QString
-							  (pConfig->ssid)).
-						      arg(retVal));
+						      tr("Error Connecting to Network"),
+						      tr("An error occurred while connecting to the wireless network '%1'. (Error : %2)").arg(QString(pConfig->ssid)).arg(retVal));
 		}
 	}
 	this->cleanupConnectionWizard();

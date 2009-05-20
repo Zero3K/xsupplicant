@@ -17,6 +17,7 @@
 
 #include "../../stdintwin.h"
 #include "../../platform/windows/win_cert_handler.h"
+#include "../../platform/windows/win_impersonate.h"
 #endif
 
 #include <openssl/ssl.h>
@@ -395,6 +396,7 @@ int certificates_windows_load_user_cert(struct tls_vars *mytls_vars,
 					char *location)
 {
 	PCCERT_CONTEXT mycert = NULL;
+	int retval = 0;
 
 	if (mytls_vars == NULL) {
 		debug_printf(DEBUG_NORMAL,
@@ -409,10 +411,17 @@ int certificates_windows_load_user_cert(struct tls_vars *mytls_vars,
 		return -1;
 	}
 
+	if (win_impersonate_desktop_user() != IMPERSONATE_NO_ERROR)
+	{
+		debug_printf(DEBUG_NORMAL, "Unable to impersonate desktop user.  Cannot load user certificate.\n");
+		return -1;
+	}
+
 	mycert = win_cert_handler_get_from_user_store("WINDOWS", location);
 	if (mycert == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't locate the certificate!\n");
+		win_impersonate_back_to_self();
 		return -1;
 	} else {
 		debug_printf(DEBUG_AUTHTYPES,
@@ -420,7 +429,11 @@ int certificates_windows_load_user_cert(struct tls_vars *mytls_vars,
 			     location);
 	}
 
-	return win_cert_handler_load_user_cert(mytls_vars, mycert);
+	retval = win_cert_handler_load_user_cert(mytls_vars, mycert);
+
+	win_impersonate_back_to_self();
+
+	return retval;
 }
 
 #endif

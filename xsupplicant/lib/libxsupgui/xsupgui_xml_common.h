@@ -5,6 +5,7 @@
  * Either license may be used.  The respective licenses are found below.
  *
  * Copyright (C) 2002 Bryan D. Payne & Nick L. Petroni Jr.
+ * Copyright (C) 2003-2009 The Open1X Group
  * All Rights Reserved
  *
  * --- GPL Version 2 License ---

@@ -469,6 +469,7 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 	char *value = NULL;
 	int code = 0;
 	int retval = 0;
+	char errorString[256];
 
 	if (errnum == NULL)
 		return -1;
@@ -877,8 +878,15 @@ int xsupgui_events_get_error(int *errnum, char **errstr)
 					   value);
 		break;
 
+	case IPC_EVENT_ERROR_TLS_HANDSHAKE_FAILED:
+		xsupgui_events_build_error(errstr,
+					   IPC_EVENT_ERROR_TLS_HANDSHAKE_FAILED_STR,
+					   value);
+		break;
+
 	default:
-		xsupgui_events_build_error(errstr, "Unknown error event!",
+		sprintf((char *)&errorString, "Unknown error event!  (%d)", code);
+		xsupgui_events_build_error(errstr, errorString,
 					   NULL);
 		break;
 	}

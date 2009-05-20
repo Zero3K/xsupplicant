@@ -1826,8 +1826,7 @@ bool XSupCalls::setConnection(QString & deviceName, QString & connectionName)
 {
 	bool bValue = false;
 
-	int retval =
-	    xsupgui_request_set_connection(deviceName.toAscii().data(),
+	int retval = xsupgui_request_set_connection(deviceName.toAscii().data(),
 					   connectionName.toAscii().data());
 	if (retval == REQUEST_SUCCESS) {
 		bValue = true;
@@ -1836,10 +1835,7 @@ bool XSupCalls::setConnection(QString & deviceName, QString & connectionName)
 			getAndDisplayErrors();
 		} else {
 			QMessageBox::critical(NULL, tr("Set connection info"),
-					      tr
-					      ("An error occurred while setting the connection information for connection '%1' and device '%2'.  (Error : %3)\n")
-					      .arg(connectionName).
-					      arg(deviceName).arg(retval));
+					      tr("An error occurred while setting the connection information for connection '%1' and device '%2'.  (Error : %3)\n").arg(connectionName).arg(deviceName).arg(retval));
 		}
 	}
 	return bValue;
@@ -1860,22 +1856,18 @@ void XSupCalls::getAndDisplayErrors()
 		if (msgs && msgs[0].errmsgs) {
 			// If we have at least one message, display it here
 			while (msgs[i].errmsgs != NULL) {
-				errors +=
-				    QString("- %1\n").arg(msgs[i].errmsgs);
+				errors += QString("- %1\n").arg(msgs[i].errmsgs);
 				i++;
 			}
 
 			// This box needs to be modeless - I have to create my own dialog box to go modeless
 			QMessageBox::critical(NULL,
 					      tr("XSupplicant Error Summary"),
-					      tr
-					      ("The following errors were returned from XSupplicant while starting up or attempting to connect.\n%1")
-					      .arg(errors));
+					      tr("The following errors were returned from XSupplicant while starting up or attempting to connect.\n%1").arg(errors));
 		}
 	} else {
 		QMessageBox::critical(NULL, tr("Get Error Message error"),
-				      tr
-				      ("An error occurred while checking for errors from the XSupplicant."));
+				      tr("An error occurred while checking for errors from the XSupplicant."));
 	}
 
 	xsupgui_request_free_error_msgs(&msgs);
