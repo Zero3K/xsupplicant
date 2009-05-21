@@ -12,6 +12,11 @@
 #ifndef __XSUPGUI_EVENTS_H__
 #define __XSUPGUI_EVENTS_H__
 
+#include <sys/types.h>
+#ifndef uint32_t
+typedef __uint32_t uint32_t;
+#endif
+
 #include <libxml/parser.h>
 
 #define XSUPGUI_EVENTS_LOG_LEVEL_NORMAL                    1

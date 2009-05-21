@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include <libtnc.h>
+#include <libtnctncs.h>
 #include <tncifimc.h>
 
 #ifdef WINDOWS
@@ -534,6 +535,12 @@ XSUP_OUI_API TNC_UInt32 TNC_28383_TNCC_Set_UI_Connect_Callback(void *callback)
 			     "An IMC attempted to set a NULL callback function in %s!\n",
 			     __FUNCTION__);
 	return event_core_register_ui_connect_callback(callback);
+}
+
+// Called by TNCS when a finished batch is ready to send
+TNC_UInt32 TNC_TNCS_SendBatch(libtnc_tncs_connection* conn, const char* messageBuffer, size_t messageLength)
+{
+	return libtnc_tncc_ReceiveBatch(conn, messageBuffer, messageLength);
 }
 
 #endif				//HAVE_TNC

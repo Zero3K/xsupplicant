@@ -242,7 +242,7 @@ AS_IF([test "$enable_experimental" = yes], AC_DEFINE(EXPERIMENTAL), [])
 dnl check for tnc
 AS_IF([test "$enable_tnc" = yes],
   [ AC_CHECK_HEADER(libtnc.h,
-      [ MORELIBS="$MORELIBS -ltnc" ],
+      [ TNCLIB="-ltnc" ],
       AC_MSG_ERROR([The TNC library is required to use TNC support!]))
     AC_DEFINE(HAVE_TNC)],
   [])
@@ -281,8 +281,10 @@ AS_IF([test "$enable_eap_sim" = yes],
   [
     AC_MSG_CHECKING([for libpcsclite])
     if `pkg-config libpcsclite --exists`; then
-      LIBS=`pkg-config libpcsclite --libs $LIBS`
-      AM_CPPFLAGS=`pkg-config libpcsclite --cflags $AM_CPPFLAGS`
+      PCSCLIBS=`pkg-config libpcsclite --libs`
+      LIBS="$PCSCLIBS $LIBS"
+      PCSCFLAGS=`pkg-config libpcsclite --cflags`
+      AM_CPPFLAGS="$PCSCFLAGS $AM_CPPFLAGS"
     else
       AC_MSG_ERROR([libpcsclite is required to use EAP-SIM/AKA support. If you believe that you have it, but it isn't being located, you may want to set the PKG_CONFIG_PATH to point to the location of libpcsclite.pc.])
     fi],
@@ -298,8 +300,10 @@ AS_IF([test "$enable_parser_debug" = yes], AC_DEFINE(PARSER_DEBUG), [])
 AC_MSG_CHECKING([for libxml-2.0])
 AS_IF([test "$enable_static_libxml" != yes], [
 if `pkg-config libxml-2.0 --exists`; then
-     LIBS=`pkg-config libxml-2.0 --libs $LIBS`
-     AM_CPPFLAGS=`pkg-config libxml-2.0 --cflags $AM_CPPFLAGS`
+     XML2LIBS=`pkg-config libxml-2.0 --libs`
+     LIBS="$XML2LIBS $LIBS"
+     XML2FLAGS=`pkg-config libxml-2.0 --cflags`
+     AM_CPPFLAGS="$XML2FLAGS $AM_CPPFLAGS"
      AC_MSG_RESULT([found with pkg-config])
 elif test -e /usr/lib/libxml2.dylib; then
      dnl Mac OS X doesn't have pkg-config.  So check in the defaut location.
@@ -475,11 +479,12 @@ AM_CONDITIONAL([DARWIN],  [test "$platform" = darwin])
 AM_CONDITIONAL([WINDOWS], [test "$platform" = windows])
 
 CFLAGS="$GGDBFLAGS $CFLAGS"
-AM_CPPFLAGS="$AM_CPPFLAGS "'-I${top_srcdir} -I${top_srcdir}/lib -I${top_srcdir}/src'
+AM_CPPFLAGS="$AM_CPPFLAGS "'-I${top_srcdir} -I${top_srcdir}/lib -I${top_srcdir}/../lib -I${top_srcdir}/src -I${top_srcdir}/../src'
 
 AC_SUBST(MORELIBS)
 AC_SUBST(DARWINLIBS)
 AC_SUBST(CORELIBS)
+AC_SUBST(TNCLIB)
 AC_SUBST(MOREDEFS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(AM_CPPFLAGS)
