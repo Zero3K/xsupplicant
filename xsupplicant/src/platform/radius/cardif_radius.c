@@ -4,64 +4,9 @@
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * File: cardif_radius.c
+ * \file cardif_radius.c
  *
- * Authors: Chris.Hessing@utah.edu
- *
- * $Id: cardif_radius.c,v 1.1 2008/01/30 20:46:43 galimorerpg Exp $
- * $Date: 2008/01/30 20:46:43 $
- * $Log: cardif_radius.c,v $
- * Revision 1.1  2008/01/30 20:46:43  galimorerpg
- * Moved cardif->platform
- *
- * Revision 1.3  2007/10/23 06:16:11  galimorerpg
- * Added Renato's host_os_cleanup.patch with a few slight tweaks to make it behave properly on Mac OS X.
- *
- * Revision 1.2  2007/09/24 02:12:26  galimorerpg
- * The previous commit didn't take fully.
- *
- * Hopefully this one will.
- *
- * Note: Don't check out head with -r HEAD... it will break things unhappily. ;)
- *
- * Revision 1.1.2.14  2006/12/29 19:28:17  chessing
- * Changes to bring Mac/Linux versions in sync with Windows work.
- *
- * Revision 1.1.2.13  2006/11/15 23:28:33  chessing
- * Fixed a couple of things needed to start working on a build for Windows.
- *
- * Revision 1.1.2.12  2006/11/10 23:31:35  chessing
- * Replaced all malloc()+memset() with Malloc().
- *
- * Revision 1.1.2.11  2006/09/17 20:30:15  chessing
- * Fixes for TNC.
- *
- * Revision 1.1.2.10  2006/08/30 03:55:47  chessing
- * More work on EAP-FAST.  We can now almost complete an authentication.  Need to add the ability to provision PACs.
- *
- * Revision 1.1.2.9  2006/08/24 00:56:52  chessing
- * Added OpenSSL patch to handle TLS extensions needed by EAP-FAST.  Additional work on EAP-FAST.
- *
- * Revision 1.1.2.8  2006/08/20 18:11:06  chessing
- * Cleaned up some more #warnings from the code.
- *
- * Revision 1.1.2.7  2006/08/20 04:42:24  chessing
- * Can build under OS-X now.  Need to add wireless support.
- *
- * Revision 1.1.2.6  2006/08/17 00:36:43  chessing
- * Started to stub in EAP-FAST.  This code will not compile.
- *
- * Revision 1.1.2.5  2006/08/05 17:18:52  chessing
- * Cleaned up some warnings that are produced by GCC 4.
- *
- * Revision 1.1.2.4  2006/08/04 02:40:59  chessing
- * Fixes and updates from the plane, and work at hot stage.  EAP-TNC seems to be REALLY close to working correctly.
- *
- * Revision 1.1.2.3  2006/07/31 19:58:37  chessing
- * A few fixes for various bugs.  Started to add LEAP support back in.
- *
- * Revision 1.1.2.2  2006/07/23 21:47:04  chessing
- * Added some headers to the direct radius code, and created a README file that contains information about what it is, and how to use it.
+ * \author chris@open1x.org
  *
  *******************************************************************/
 

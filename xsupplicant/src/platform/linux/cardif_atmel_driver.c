@@ -3,81 +3,9 @@
  *
  * Licensed under the GPLv2 as stated in the copyright notice below.
  *
- * File: cardif_atmel_driver.c
+ * \file cardif_atmel_driver.c
  *
- * Authors: Chris.Hessing@utah.edu
- *
- * $Id: cardif_atmel_driver.c,v 1.2 2008/01/30 22:07:46 galimorerpg Exp $
- * $Date: 2008/01/30 22:07:46 $
- * $Log: cardif_atmel_driver.c,v $
- * Revision 1.2  2008/01/30 22:07:46  galimorerpg
- * Platform patch cleanups for Linux.
- *
- * Revision 1.1  2008/01/30 20:46:41  galimorerpg
- * Moved cardif->platform
- *
- * Revision 1.30  2008/01/24 07:35:32  galimorerpg
- * Applied Renato Caldas' Linux wireless patch.
- * Modified configure.ac to default to the newer IWLIB calls temporarily.
- * Temporarily disabled log rolling in Linux due to some issues getting struct stat64 figured out with Ubuntu.
- *
- * Revision 1.29  2007/10/23 06:16:09  galimorerpg
- * Added Renato's host_os_cleanup.patch with a few slight tweaks to make it behave properly on Mac OS X.
- *
- * Revision 1.28  2006/10/08 03:42:53  chessing
- * Last batch of changes before 1.2.8.
- *
- * Revision 1.27  2006/08/28 15:59:31  chessing
- * Fixed a few things.
- *
- * Revision 1.26  2006/08/25 23:37:18  chessing
- * Numerous patches that have come in over the last month or two.
- *
- * Revision 1.25  2006/06/23 00:45:19  chessing
- * Completed basic implementation of operstate support.  Probably need to consider extending it to be used to populate the up/down state of the interface in the statemachine.
- *
- * Revision 1.24  2006/06/20 18:17:18  chessing
- * Fix some endianness problems with WPA and WPA2 IE parsing.
- *
- * Revision 1.23  2006/05/26 22:04:58  chessing
- * Fixed some memory access errors, and cleaned up some wext stuff that was causing issues with the madwifi driver in wext mode.
- *
- * Revision 1.22  2006/05/14 22:09:28  chessing
- * A few small changes in the Xsupplicant code.  Beginning of a configuration/monitor program can be found in gui_tools. (Very simple for now, with several known bugs, but no showstopper bugs know.)
- *
- * Revision 1.21  2006/05/13 03:53:03  chessing
- * A couple of forgotten things from the last big patch.
- *
- * Revision 1.20  2006/04/25 01:17:43  chessing
- * LOTS of code cleanups, new error checking/debugging code added, and other misc. fixes/changes.
- *
- * Revision 1.19  2006/02/23 22:26:53  chessing
- * Fix for bug id #1415020.  'Building Xsupplicant 1.2.3 Fails on FC4'.
- *
- * Revision 1.18  2006/01/19 05:37:04  chessing
- * WPA2 is working correctly.  Added the ability to query the card to gather encryption/authentication capabilities.  1.2.3 is now ready to go.
- *
- * Revision 1.17  2005/12/24 02:39:48  chessing
- * Fixes to autoconf script to correctly identify the number of arguments that iw_extract_event_stream() takes, along with checking iwlib.h compiles correctly.
- *
- * Revision 1.16  2005/12/03 22:18:50  chessing
- * Added an include to fix some problems when compiling with WE19.
- *
- * Revision 1.15  2005/11/10 04:56:54  chessing
- * Added patch from Ben Gardner to add support for setting a specific WEP key prior to attempting to associte.  (With a few slight modifications by me to make it fit in the current CVS code, and get it supported in config-parse.)  Added patch from Pekka Savola to fix some header ordering issues, and a potential buffer overflow.
- *
- * Revision 1.14  2005/10/17 03:56:54  chessing
- * Updates to the libxsupconfig library.  It no longer relies on other source from the main tree, so it can be used safely in other code with problems.
- *
- * Revision 1.13  2005/09/05 01:00:36  chessing
- * Major overhaul to most of the state machines in Xsupplicant.  Also added additional error messages to the TLS functions to try to debug the one of the problems reported on the list.  Basic testing shows this new code to be more stable than previous code, but it needs more testing.
- *
- * Revision 1.12  2005/08/20 19:06:54  chessing
- * Patch from Carsten Grohmann to fix a few things in xsup_get_state.c.  Also added the ability to define an empty network clause, that will set the card in to encryption disabled mode.  From there, anything short of changing the SSID will be ignored by Xsupplicant.
- *
- * Revision 1.11  2005/08/09 01:39:15  chessing
- * Cleaned out old commit notes from the released version.  Added a few small features including the ability to disable the friendly warnings that are spit out.  (Such as the warning that is displayed when keys aren't rotated after 10 minutes.)  We should also be able to start when the interface is down.  Last, but not least, we can handle empty network configs.  (This may be useful for situations where there isn't a good reason to have a default network defined.)
- *
+ * \authors chris@open1x.org
  *
  ********************************************************************/
 

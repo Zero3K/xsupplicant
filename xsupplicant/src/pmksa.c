@@ -879,7 +879,7 @@ pmksa_apply_cache (context * ctx)
   
 #ifdef WINDOWS
 	cardif_apply_pmkid_data(ctx, apply_list);   
-#else 
+#elsif !defined(__APPLE__)
 	if ( wctx->pmksa_add_ioctl_supported == TRUE )
         {
                 retval = cardif_apply_pmkid_data(ctx, apply_list);
@@ -888,6 +888,8 @@ pmksa_apply_cache (context * ctx)
                 else if ( retval == SIOCSIWPMKSA_NOT_SUPPORTED)
                         wctx->pmksa_add_ioctl_supported = FALSE;
         }
+#else
+	#warning Need to implement PMK on Mac OS X
 #endif
 //      pmksa_dump_cache(ctx);
     

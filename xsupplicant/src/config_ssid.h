@@ -62,5 +62,7 @@ void config_ssid_add_ssid_name(wireless_ctx *, char *);
 void config_ssid_update_abilities(wireless_ctx *, uint16_t);
 void config_ssid_add_qual(wireless_ctx *, unsigned char, char, char, uint8_t);
 void config_ssid_add_wme_ie(wireless_ctx *, uint8_t *, uint8_t);
+uint8_t *config_ssid_get_mac_with_curssid_next_best_freq(wireless_ctx*, double);
+double config_ssid_get_next_best_freq_with_curssid(wireless_ctx*);
 
 #endif

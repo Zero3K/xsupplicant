@@ -18,7 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "libxsupconfig/xsupconfig_structs.h"
+#include <libxsupconfig/xsupconfig_structs.h>
 #include "xsup_common.h"
 #include "libxsupconfig/xsupconfig.h"
 #include "context.h"

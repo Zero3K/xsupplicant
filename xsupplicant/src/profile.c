@@ -5,7 +5,7 @@
  *
  * \file profile.c
  *
- * \author Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
  **/
 
@@ -14,7 +14,6 @@
 #include <string.h>
 
 #include "snmp.h"
-#include "profile.h"
 #include "xsup_common.h"
 #include "xsup_err.h"
 #include "platform/cardif.h"

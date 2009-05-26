@@ -331,8 +331,7 @@ AS_IF([test "$disable_net80211" != yes],
 		 AC_MSG_ERROR([Xsupplicant requires libnl version >=1.0-pre8.])
 	    fi
 	   else
-                AC_MSG_ERROR([Xsupplicant requires libnl.  You need to either install libnl\
-, or set PKG_CONFIG_PATH to point to the location of the libnl-1.0.pc file.])
+                AC_MSG_ERROR([Xsupplicant requires libnl.  You need to either install libnl, or set PKG_CONFIG_PATH to point to the location of the libnl-1.0.pc file.])
      	 fi], [AC_DEFINE(DISABLE_LIBNL)])
 
 dnl Below turns off Kerberos support in OpenSSL, to avoid compile errors.

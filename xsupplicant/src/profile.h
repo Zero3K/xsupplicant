@@ -5,7 +5,7 @@
  *
  * \file profile.h
  *
- * \author Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
  */
 

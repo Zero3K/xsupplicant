@@ -3,11 +3,11 @@
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * File: cardif_freebsd.c
+ * \file cardif_freebsd.c
  *
- * Authors: Fernando Schapachnik <fernando@mecon.gov.ar>, based
+ * \author Fernando Schapachnik <fernando@mecon.gov.ar>, based
  * on the work of Ivan Voras <ivoras@fer.hr> and the Linux version by
- * Chris.Hessing@utah.edu.
+ * chris@open1x.org.
  *
  *******************************************************************/
 

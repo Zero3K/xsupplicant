@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "plugins.h"
 #include "xsup_debug.h"
 #include "xsup_common.h"

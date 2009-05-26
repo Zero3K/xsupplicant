@@ -3,7 +3,7 @@
  *
  * \file xsupgui.c
  *
- * \author chris@open1x.org, Terry.Simons@utah.edu
+ * \author chris@open1x.org, terry.simons@open1x.org
  *
  **/
 #include <fcntl.h>

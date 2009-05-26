@@ -5,12 +5,9 @@
  *
  * \file cardif_macosx.c
  *
- * \author Chris.Hessing@utah.edu with some code from the BSD implementation
+ * \author chris@open1x.org with some code from the BSD implementation
  *    that was done by Fednando Schapachnik <fernando@mecon.gov.ar> and
  *    Ivan Voras <ivoras@fer.hr>.
- *
- * $Id: cardif_macosx.c,v 1.1 2008/01/30 20:46:41 galimorerpg Exp $
- * $Date: 2008/01/30 20:46:41 $
  *
  **/
 
@@ -35,6 +32,7 @@
 #include <arpa/nameser.h>
 #include <resolv.h>
 #include <netdb.h>
+#include <utmpx.h>
 
 #include "libxsupconfig/xsupconfig_structs.h"
 #include "libxsupconfig/xsupconfig.h"
@@ -908,7 +906,7 @@ int cardif_int_is_wireless(context * ctx)
 	return FALSE;
 }
 
-int cardif_get_wpa_ie(context * intdata, char *iedata, int *ielen)
+int cardif_get_wpa_ie(context * intdata, uint8_t *iedata, uint8_t *ielen)
 {
 	if (intdata == NULL) {
 		debug_printf(DEBUG_NORMAL,
@@ -932,7 +930,7 @@ int cardif_get_wpa_ie(context * intdata, char *iedata, int *ielen)
 	return wireless->get_wpa_ie(intdata, iedata, ielen);
 }
 
-int cardif_get_wpa2_ie(context * intdata, char *iedata, int *ielen)
+int cardif_get_wpa2_ie(context * intdata, uint8_t *iedata, uint8_t *ielen)
 {
 	if (intdata == NULL) {
 		debug_printf(DEBUG_NORMAL,
@@ -1178,9 +1176,10 @@ int is_wireless(char *intname)
  **/
 void cardif_enum_ints()
 {
-	struct if_nameindex *ifnames;
+	struct if_nameindex *ifnames = NULL;
 	int i = 0;
-	char mac[6];
+        char nomac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        char mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 	ifnames = if_nameindex();
 	if (ifnames == NULL) {
@@ -1192,21 +1191,35 @@ void cardif_enum_ints()
 	}
 
 	while ((ifnames[i].if_index != 0) && (ifnames[i].if_name != NULL)) {
-		debug_printf(DEBUG_INT, "Interface %d named %s.\n",
-			     ifnames[i].if_index, ifnames[i].if_name);
+	  debug_printf(DEBUG_INT, "Interface %d named %s.\n",
+		       ifnames[i].if_index, ifnames[i].if_name);
 
-		// Make sure we aren't looking at any loopback interfaces.
-		if (strcasestr(ifnames[i].if_name, "lo") == NULL) {
-			if (_getmac((char *)&mac, ifnames[i].if_name) == TRUE) {
-				// Add it to our interface cache!
-				interfaces_add(ifnames[i].if_name,
-					       ifnames[i].if_name, mac,
-					       is_wireless(ifnames[i].if_name));
-			}
-		}
-
-		i++;
+	  i++;
 	}
+
+	// Make sure we aren't looking at any loopback interfaces.
+	/*
+	if ((strcasestr(ifnames[i].if_name, "lo") == NULL) &&
+	    (strcasestr(ifnames[i].if_name, "vmnet") == NULL))
+	  {
+	    if (_getmac((char *)&mac, ifnames[i].if_name) == TRUE)
+	      {
+		// Make sure the interface isn't an all-zeros MAC
+		if(memcmp(mac, nomac, 6) != 0) 
+		  {
+		    // Add it to our interface cache!
+		    interfaces_add(ifnames[i].if_name, ifnames[i].if_name, mac, 
+				   is_wireless(ifnames[i].if_name));
+		  }
+		else
+		  {
+		    debug_printf(DEBUG_INT, "Skipping interface %s with MAC of 00:00:00:00:00:00.\n", ifnames[i].if_name);
+		  }
+	      }
+	    
+	    
+	  }
+	*/
 
 	if_freenameindex(ifnames);
 }
@@ -1561,6 +1574,57 @@ int cardif_is_wireless_by_name(char *intname)
 }
 
 /**
+ * \brief Determine the system uptime in seconds.
+ *
+ * @param[out] uptime   A 64 bit number that indicates the uptime of the system in seconds.
+ *
+ * \retval 0 on success
+ * \retval -1 on failure
+ **/
+int cardif_get_uptime(uint64_t * uptime)
+{
+	struct utmpx intEnt;
+	struct timeval curTime;
+	struct utmpx *bTimePtr;
+
+	bTimePtr = NULL;
+	setutxent();
+	intEnt.ut_type = BOOT_TIME;
+	bTimePtr = getutxid(&intEnt);
+
+	if (bTimePtr == NULL) {
+		return -1;
+	}
+
+	if (gettimeofday(&curTime, NULL) != 0) {
+		return -1;
+	}
+
+	*uptime = (curTime.tv_sec) - (bTimePtr->ut_tv.tv_sec);
+	return 0;
+}
+
+int cardif_get_freq(context * ctx, uint32_t * freq)
+{
+	return 0;
+}
+
+int cardif_apply_pmkid_data(context * ctx, pmksa_list * list)
+{
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return FALSE;
+
+	if (wireless == NULL)
+		return XEMALLOC;
+
+	if (wireless->apply_pmkid_data == NULL)
+		return XEMALLOC;
+
+	return wireless->apply_pmkid_data(ctx, list);
+
+}
+
+/**
  * \brief Determine the device description based on the OS specific interface
  *        name.  For Darwin, the OS specific interface name, and the
  *        device description will be the same.
@@ -1602,4 +1666,10 @@ char *cardif_get_mac_str(char *intname)
 		, mac[3], mac[4], mac[5]);
 
 	return resmac;
+}
+
+int cardif_validate_connection(context * intdata) 
+{
+  #warning Need to implement on Mac OS X.
+  return -1;
 }

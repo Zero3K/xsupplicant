@@ -751,6 +751,8 @@ void cardif_linux_rtnetlink_process_IWEVCUSTOM(context * ctx,
 					       ((iwe->u.data.length - 7) / 2));
 		}
 
+		
+
 		if (strncmp("rsn_ie=", custom, 7) == 0) {
 			config_ssid_update_abilities(wctx, ABIL_RSN_IE);
 			debug_printf(DEBUG_INT,
@@ -1435,7 +1437,7 @@ void cardif_linux_rtnetlink_new_ifla_ifname(int ifindex, char *data, int len)
 
 	if (if_indextoname(ifindex, intname) == NULL) {
 		debug_printf(DEBUG_NORMAL,
-			     "Unable to get interface name for %d ifindex\n",
+			     "Unable to get interface name for %d ifindex, ignoring NEWLINK\n",
 			     ifindex);
 		return;
 	}
@@ -1464,6 +1466,8 @@ void cardif_linux_rtnetlink_new_ifla_ifname(int ifindex, char *data, int len)
 
 	confints = config_get_config_ints();
 	while ((confints != NULL) && (memcmp(mac, confints->mac, 6) != 0)) {
+	  debug_printf(DEBUG_INT, "MACs in cmp ");
+	  debug_hex_printf(DEBUG_INT, (uint8_t *)confints->mac, 6); debug_printf(DEBUG_INT, "\n");
 		confints = confints->next;
 	}
 
@@ -1615,6 +1619,7 @@ void cardif_linux_rtnetlink_do_link(struct nlmsghdr *msg, int len, int type)
 		case IFLA_IFNAME:
 			// This is a non-wireless event. (Ignore it.)
 			debug_printf(DEBUG_INT, "IFLA_IFNAME event.\n");
+			debug_printf (DEBUG_INT, "ifi_index %d, ifi_flags %u, ifi_change %u \n", ifinfo->ifi_index, ifinfo->ifi_flags, ifinfo->ifi_change);
 			if ((type == INT_NEW) && (ifinfo->ifi_change != 0xFFFFFFFF)) {
 				cardif_linux_rtnetlink_new_ifla_ifname
 				    (ifinfo->ifi_index, ((char *)
@@ -1840,9 +1845,26 @@ void cardif_linux_rtnetlink_ifla_operstate(int ifindex, char *data, int len)
 					UNSET_FLAG(wctx->flags,
 						   WIRELESS_SM_DOING_PSK);
 				}
-
-				wireless_sm_change_state(UNASSOCIATED, ctx);
+				if(TEST_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ))
+				  wireless_sm_change_state(UNASSOCIATED, ctx);
 			}
+		}
+		
+		if((ctx != NULL) && (wctx != NULL)) {
+		  if(!TEST_FLAG(wctx->flags, WIRELESS_SM_DISCONNECT_REQ) && 
+		     (cardif_get_if_state(ctx) == TRUE)) {
+		    wctx->assoc_type = ASSOC_TYPE_UNKNOWN;
+		    wireless_sm_disp_state_change(DEBUG_PHYSICAL_STATE, ctx, UNASSOCIATED);
+		    #if WIRELESS_SM_EVENTS == 1
+		    if(ipc_events_statemachine_transition(ctx, IPC_STATEMACHINE_PHYSICAL, wctx->state, UNASSOCIATED) != IPC_SUCCESS) {
+		      debug_printf(DEBUG_NORMAL, "Unable to send IPC physical state change message!\n");
+		    }							  
+                    #endif //WIRELESS_SM_EVENTS
+		    wctx->assoc_type = ASSOC_TYPE_UNKNOWN;
+		    statemachine_change_state(ctx, DISCONNECTED);
+		    wctx->state = UNASSOCIATED;
+		    wctx->flags |= WIRELESS_AP_DROPSOUT_CONNECT_TO_SAME_ESSID;
+		  }
 		}
 
 		break;

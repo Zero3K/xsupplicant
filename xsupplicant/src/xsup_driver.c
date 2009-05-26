@@ -71,6 +71,7 @@
 #include "platform/cert_handler.h"
 
 #include "buildnum.h"
+#include "version.h"
 
 #ifndef BUILDNUM
 #define BUILDNUM "BROKEN-FIXME"

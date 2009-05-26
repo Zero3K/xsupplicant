@@ -11,8 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// utmp is deprecated and isn't 64-bit safe.
+// use utmpx.h instead...
 #ifndef WINDOWS
-#include <utmp.h>
+#include <utmpx.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <strings.h>
@@ -620,9 +622,13 @@ void statemachine_do_held(context * ctx)
  **/
 int statemachine_change_to_connecting(context * ctx)
 {
+  wireless_ctx *wctx = NULL;
+
 	xsup_assert((ctx != NULL), "ctx != NULL", TRUE);
 	xsup_assert((ctx->statemachine != NULL), "ctx->statemachine != NULL",
 		    TRUE);
+
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	// We should only transition to this state from CONNECTING, HELD, 
 	// DISCONNECTED, or AUTHENTICATING.
@@ -672,6 +678,7 @@ int statemachine_change_to_connecting(context * ctx)
 					if (((wireless_ctx *)
 					     ctx->intTypeData)->rsn_ie ==
 					    NULL) {
+					  if((wctx->ielen < WPA2_IE_LENGTH_WITH_PMKID) && (wctx->okc == 0))
 						txStart(ctx);
 					}
 				} else {
@@ -1111,6 +1118,8 @@ int statemachine_change_state(context * ctx, int newstate)
 	fromstate = statemachine_disp_state(ctx->statemachine->curState);
 	tostate = statemachine_disp_state(newstate);
 
+	event_core_set_active_ctx(ctx);
+
 	debug_printf((DEBUG_DOT1X_STATE | DEBUG_VERBOSE),
 		     "%s - Changing from %s to %s.\n", ctx->desc, fromstate,
 		     tostate);
@@ -1484,16 +1493,16 @@ int txStart(context * ctx)
 
 int sysUpTime(struct timeval *outTime)
 {
-	struct utmp intEnt;
+	struct utmpx intEnt;
+	struct utmpx *bTimePtr = NULL;
 	struct timeval curTime;
-	struct utmp *bTimePtr;
 
 	bTimePtr = NULL;
 
-	setutent();
+	setutxent();
 
 	intEnt.ut_type = BOOT_TIME;
-	bTimePtr = getutid(&intEnt);
+	bTimePtr = getutxid(&intEnt);
 
 	if (bTimePtr == NULL) {
 		return FALSE;

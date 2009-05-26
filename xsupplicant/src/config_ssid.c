@@ -33,6 +33,7 @@
 #include <efence.h>
 #endif
 
+#define MACADDR(x)  x[0],x[1],x[2],x[3],x[4],x[5]
 /**
  * \brief Search through our list of known SSIDs, and see if we know the one
  *        specified in the wireless context.
@@ -101,7 +102,12 @@ struct found_ssids *config_ssid_find_by_wctx(wireless_ctx * wctx)
 struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
 					    struct found_ssids *two)
 {
-	uint8_t one_lb = 0, two_lb = 0;
+  //uint8_t one_lb = 0, two_lb = 0;
+  int one_snr = 0, two_snr = 0;
+  int one_signal_dblevel = 0;
+  int one_noise_dblevel = 0;
+  int two_signal_dblevel = 0;
+  int two_noise_dblevel = 0;
 
 	if (!xsup_assert((one != NULL), "one != NULL", FALSE))
 		return NULL;
@@ -109,21 +115,58 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
 	if (!xsup_assert((two != NULL), "two != NULL", FALSE))
 		return NULL;
 
-	if ((one->noise != 0) && (two->noise != 0)) {
-		one_lb = one->noise - one->signal;
-		two_lb = two->noise - two->signal;
-	} else if ((one->noise == 0) && (two->noise != 0)) {
-		return two;
-	} else if ((one->noise == 0) && (two->noise == 0)) {
-		// We will have to rely on the quality value.
-		if ((one->quality != 0) && (two->quality != 0)) {
-			if (one->quality > two->quality) {
-				return one;
-			} else {
-				return two;
-			}
-		}
-	}
+	
+   printf("FIND BEST SIGNAL\n"); 
+   if (( one->signal != 0 ) && ( two->signal != 0 ))
+   {
+   	if ((one->noise != 0) && (two->noise != 0))
+     {
+     	one_signal_dblevel = ((int)((uint8_t)(one->signal)))-0x100;
+ 		one_noise_dblevel  = ((int)((uint8_t)(one->noise)))-0x100;
+  
+     	two_signal_dblevel = ((int)((uint8_t)(two->signal)))-0x100;
+ 		two_noise_dblevel  = ((int)((uint8_t)(two->noise)))-0x100;
+         
+ 		one_snr = one_signal_dblevel - one_noise_dblevel;
+ 		two_snr = two_signal_dblevel - two_noise_dblevel;
+ 		/*
+ 		printf(" AP one, ssid = %s,MAC = %02x:%02x:%02x:%02x:%02x:%02x,signal = %d,noise = %d,snr = %d \n",one->ssid_name,MACADDR(one->mac),one_signal_dblevel,one_noise_dblevel,one_snr);
+ 		printf(" AP two, ssid = %s,MAC = %02x:%02x:%02x:%02x:%02x:%02x,signal = %d,noise = %d,snr = %d \n\n",two->ssid_name,MACADDR(two->mac),two_signal_dblevel,two_noise_dblevel,two_snr);
+ 		*/
+       	if ( one_snr > two_snr )
+ 			return one;
+       	else
+ 			return two;
+     }
+   	else if ((one->noise == 0) && (two->noise != 0))
+     {
+       		return one;
+     }
+   	else if ((one->noise != 0) && (two->noise == 0))
+     {
+       		return two;
+      }
+   	else if ((one->noise == 0) && (two->noise == 0))
+      {
+       		// We will have to rely on the quality value.
+       	if ((one->quality != 0) && (two->quality != 0))
+ 		{
+ 	  		if (one->quality > two->quality)
+ 	    	{
+ 	      		return one;
+ 	    	}
+ 	  		else
+ 	    	{
+ 	      		return two;
+ 	    	}
+ 		}
+      }
+   }
+   else if ( one->signal )
+ 	return one;
+   else if (two->signal)
+ 	return two;
+ 
 	// If we get here, then we aren't sure which one is better.  So, return
 	// nothing.
 	return NULL;
@@ -140,14 +183,19 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
  **/
 struct found_ssids *config_ssid_init_new_node(wireless_ctx * wctx)
 {
-	struct found_ssids *working = NULL;
+  struct found_ssids *ssids = NULL, *working = NULL;
+  char invalid_bssid[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
+#warning Quite a bit different than Mindtree 2.0.4 release... is this new or old code?
 	working = (struct found_ssids *)Malloc(sizeof(struct found_ssids));
 	if (working == NULL)
 		return NULL;
 
 	liblist_add_to_tail((genlist **) & wctx->ssid_cache,
 			    (genlist *) working);
+
+
+	memcpy(working->mac, invalid_bssid, 6);
 
 	return working;
 }
@@ -292,7 +340,7 @@ void config_ssid_add_wme_ie(wireless_ctx *wctx, uint8_t *wme_ie, uint8_t len)
  **/
 void config_ssid_add_bssid(wireless_ctx * wctx, char *newmac)
 {
-	char empty_mac[6] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
+  char invalid_bssid[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 	struct found_ssids *working = NULL;
 
 	if (!xsup_assert((newmac != NULL), "newmac != NULL", FALSE))
@@ -307,7 +355,7 @@ void config_ssid_add_bssid(wireless_ctx * wctx, char *newmac)
 		wctx->temp_ssid = config_ssid_init_new_node(wctx);
 		working = wctx->temp_ssid;
 	} else {
-		if (memcmp(working->mac, empty_mac, 6) != 0) {
+		if (memcmp(working->mac, invalid_bssid, 6) != 0) {
 			debug_printf(DEBUG_PHYSICAL_STATE,
 				     "Found new ESSID block, adding...\n");
 			wctx->temp_ssid = config_ssid_init_new_node(wctx);
@@ -930,7 +978,7 @@ void config_ssid_get_wpa_ie(wireless_ctx * wctx, uint8_t ** wpa_ie,
 	(*wpa_ie_len) = ssid->wpa_ie_len;
 }
 
-#define MACADDR(x)  x[0],x[1],x[2],x[3],x[4],x[5]
+
 /**
  * \brief Return the rsn_ie and the rsn_ie_len for the selected SSID.
  *
@@ -1050,11 +1098,11 @@ uint8_t *config_ssid_get_mac_with_freq(wireless_ctx * wctx, double freq)
 				     "Found hidden SSID\n");
 		}
 		if ((cur->ssid_name == NULL)
-		    || (strcmp(wctx->cur_essid, cur->ssid_name) != 0)
+		    || (strcmp(wctx->cur_essid, cur->ssid_name == 0) && (freq == cur->freq))
 		    || (freq != cur->freq)) {
-			cur = cur->next;
+		  break;
 		} else {
-			break;
+			cur = cur->next;
 		}
 	}
 
@@ -1082,6 +1130,7 @@ double config_ssid_get_best_freq(wireless_ctx * wctx)
 {
 	struct found_ssids *cur = NULL;
 	struct found_ssids *best = NULL;
+	struct found_ssids *temp = NULL;
 	int first = 1;
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
@@ -1104,13 +1153,15 @@ double config_ssid_get_best_freq(wireless_ctx * wctx)
 				best = cur;
 				first = 0;
 			} else {
-				if ((cur->freq) < (best->freq)) {
-					best = cur;
-				}
+			  if (temp = config_ssid_best_signal(best, cur)) {
+			    best = temp;
+			  }
 			}
+			
+			cur = cur->next;
+		} else {		
+		  cur = cur->next;
 		}
-		
-		cur = cur->next;
 	}
 
 	if (best == NULL) {
@@ -1125,3 +1176,115 @@ double config_ssid_get_best_freq(wireless_ctx * wctx)
 		     wctx->cur_essid, best->freq);
 	return best->freq;
 }
+
+/**
+ * \brief Return the MAC address of the AP with SSID and given Freq and currrnet BSSID, used while roaming
+ *
+ * @param[in] wctx   The wireless context that contains the MAC address for the
+ *                   active SSID.
+ *
+ * \retval NULL on error
+ * \retval ptr to the MAC address of the AP.
+ **/
+uint8_t *config_ssid_get_mac_with_curssid_next_best_freq(wireless_ctx *wctx, double freq)
+{
+  struct found_ssids *cur = NULL;
+  
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return NULL;
+  
+  if (!xsup_assert((wctx->cur_essid != NULL), "ssid_name != NULL", FALSE))
+    return NULL;
+  
+  // Start at the top of the list.
+  cur = wctx->ssid_cache;
+  
+  while (cur != NULL) {
+      if ((cur->ssid_name != NULL) && (cur->ssid_name[0] == '\0')) {
+	debug_printf(DEBUG_PHYSICAL_STATE, "Found hidden SSID\n");
+      }
+      if ((cur->ssid_name != NULL) && (strcmp(wctx->cur_essid, cur->ssid_name) == 0) &&
+	  (freq == cur->freq) && (memcmp(wctx->cur_bssid, cur->mac,6) != 0))
+	{
+	  break;
+	}
+      else
+	{
+	  cur = cur->next;
+	}
+  }
+  
+  if (cur == NULL)
+    {
+      debug_printf(DEBUG_PHYSICAL_STATE, "Unable to find the BSSID with SSID %s and Freq %lf!\n", wctx->cur_essid, freq);
+      return NULL;
+    }
+  
+  return (uint8_t *)&cur->mac;
+}
+
+/*
+ * \brief Return the best frequency we can associate with AP, checks if there are muiltiple 
+ *  radios scanned for a given SSID and returns the best one considering the current BSSID, 
+ *  used while roaming
+ *
+ * @param[in] wctx   The wireless context that contains the MAC address for the
+ *                   active SSID.
+ *
+ * \retval 0 on error
+ * \retval frequency
+ **/
+double config_ssid_get_next_best_freq_with_curssid(wireless_ctx *wctx)
+{
+  struct found_ssids *cur = NULL;
+  struct found_ssids *best = NULL;
+  struct found_ssids *temp = NULL;
+  int first = 1;
+
+  if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE)) return 0;
+
+  if (!xsup_assert((wctx->cur_essid != NULL), "ssid_name != NULL", FALSE))
+    return 0;
+
+  // Start at the top of the list.
+  cur = wctx->ssid_cache;
+
+  while (cur != NULL) 
+  {
+    if ((cur->ssid_name != NULL) && (cur->ssid_name[0] == '\0')) 
+    {
+      debug_printf(DEBUG_PHYSICAL_STATE, "Found hidden SSID\n");
+    }
+                                        
+    if ((cur->ssid_name != NULL) && (strcmp(wctx->cur_essid, cur->ssid_name) == 0) &&  
+        (memcmp(wctx->cur_bssid, cur->mac,6) != 0))
+    {
+      if (first)
+      {
+        best = cur;
+        first = 0;
+      }
+      else
+      {
+	      if ( (temp = config_ssid_best_signal(best,cur)) != NULL)
+		{
+			best = temp;
+		}
+      }
+      cur = cur->next;
+    }
+    else
+    {
+      cur = cur->next;
+    }
+  }
+
+  if (best == NULL)
+  {
+    debug_printf(DEBUG_PHYSICAL_STATE, "Unable to find the best frequency with SSID %s!\n", wctx->cur_essid);
+    return 0;
+  }
+
+  debug_printf(DEBUG_PHYSICAL_STATE, "Found best frequency with SSID %s as %lf!\n", wctx->cur_essid, best->freq);
+  return best->freq;
+}
+ 

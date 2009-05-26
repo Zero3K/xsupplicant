@@ -395,8 +395,12 @@ static int rotate_log_files()
 			}
 		}
 #else
-		sprintf(full_filename, "%s/%s.%s", globals->logpath,
-			DEFAULT_LOG_NAME, temp);
+		if(atoi(temp) == 0) 
+		  sprintf(full_filename, "%s/%s", globals->logpath, 
+			  DEFAULT_LOG_NAME);
+		else
+		  sprintf(full_filename, "%s/%s.%s", globals->logpath,
+			  DEFAULT_LOG_NAME, temp);
 #endif
 
 		if (file_exists(full_filename) == TRUE) {

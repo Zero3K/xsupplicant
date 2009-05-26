@@ -4,7 +4,7 @@
  *
  * \file xsupgui_ud.c
  *
- * \author chris@open1x.org, Terry.Simons@utah.edu
+ * \author chris@open1x.org, terry.simons@open1x.org
  *
  **/
 #include <fcntl.h>
@@ -35,6 +35,8 @@
 #endif
 
 #define XSUP_SOCKET "/tmp/xsupplicant.sock"
+#define XSUP_CTRL_SOCK "/tmp/xsupplicant_control.sock"
+
 #define DEBUG  0
 
 #define MAXBUF  4096
@@ -63,12 +65,12 @@ int xsupgui_ud_connect()
 		return -1;
 	}
 
-	Strncpy(sa.sun_path, sizeof(sa.sun_path), XSUP_SOCKET,
+	Strncpy(sa.sun_path, sizeof(sa.sun_path), XSUP_CTRL_SOCK,
 		sizeof(sa.sun_path));
 
 	sa.sun_family = AF_LOCAL;
 
-	sockErr = connect(ipc_sock, (struct sockaddr *)&sa, sizeof(sa));
+	sockErr = connect(ipc_event_sock, (struct sockaddr *)&sa, sizeof(sa));
 	if (sockErr < 0) {
 #if DEBUG
 		printf("Socket Error : %d -- %s  (%s:%d)\n", errno,
@@ -119,9 +121,11 @@ int xsupgui_ud_connect_event_listener()
 		return errno;
 	}
 
+
+#if 0	
 	if (xsupgui_request_set_as_event(&result, &ressize) == REQUEST_FAILURE)
 		return -1;
-
+	
 	if (xsupgui_ud_send_to_event((unsigned char *)result, ressize) ==
 	    REQUEST_FAILURE) {
 		free(result);
@@ -130,6 +134,7 @@ int xsupgui_ud_connect_event_listener()
 	}
 
 	free(result);
+#endif
 	return 0;
 }
 
@@ -373,13 +378,21 @@ long int xsupgui_ud_process(int *evttype)
 	unsigned char *eventbuf = NULL;
 	int eventbufressize = 0;
 
+	if (evttype == NULL)
+		return IPC_ERROR_INVALID_PARAMETERS;
+
 	// If eventbuf points to something, we have a problem.
 	if (xmlrecvmsg != NULL)
-		return 0;
+		return IPC_ERROR_STALE_BUFFER_DATA;
 
 	retval = xsupgui_ud_recv_event(&eventbuf, &eventbufressize);
 
 	if (retval != REQUEST_SUCCESS) {
+		if (retval == IPC_EVENT_COM_BROKEN) {
+			(*evttype) = IPC_EVENT_COM_BROKEN;
+			return REQUEST_SUCCESS;
+		}
+
 		return retval;
 	}
 
@@ -387,15 +400,14 @@ long int xsupgui_ud_process(int *evttype)
 		xmlrecvmsg = NULL;
 		if (eventbuf != NULL)
 			free(eventbuf);
-		return IPC_ERROR_BAD_RESPONSE_DATA;
+		return IPC_ERROR_RUNT_RESPONSE;
 	}
 
-	xmlrecvmsg =
-	    xmlReadMemory((char *)&eventbuf[5], (eventbufressize - 5),
+	xmlrecvmsg = xmlReadMemory((char *)&eventbuf[5], (eventbufressize - 5),
 			  "ipc.xml", NULL, 0);
 	if (xmlrecvmsg == NULL) {
-		free(eventbuf);
-		return IPC_ERROR_BAD_RESPONSE_DATA;
+	  free(eventbuf);
+	  return IPC_ERROR_BAD_RESPONSE;
 	}
 
 	if (eventbuf != NULL)

@@ -9,6 +9,8 @@
 #ifndef _EVENT_CORE_H_
 #define _EVENT_CORE_H_
 
+#include "context.h"
+
 // Priority values for event_core_register();
 #define HIGH_PRIORITY    0
 #define ANY_PRIORITY     1

@@ -181,7 +181,7 @@ If something goes wrong, there are a few things to check.
 3.  If other weird stuff happens.  Make sure you are running as root.
 
 4.  If all else fails.  Run Xsupplicant in full debug mode (add "-d A" to the
-   command line), and e-mail all of the results to Chris.Hessing@utah.edu.
+   command line), and e-mail all of the results to chris@open1x.org.
    (NOTE : Passwords may be shown in clear text!!!  You may want to search the
    output for your password, and block it out!  Passwords may also be displayed
    as their hex values.  If you remove the hex, please replace it with 00s

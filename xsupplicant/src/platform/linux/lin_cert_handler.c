@@ -113,7 +113,7 @@ int cert_handler_user_init()
 	} else
 		return XEGENERROR;
 
-	strcpy(gStoreUserPath, "/root/xsupplicant/user_certs");
+	strcpy(gUserStorePath, "/root/xsupplicant/user_certs");
 
 	return XENONE;
 }

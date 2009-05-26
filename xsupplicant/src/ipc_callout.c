@@ -49,6 +49,7 @@
 #include "platform/platform.h"
 #include "error_prequeue.h"
 #include "timer.h"
+#include "version.h"
 #include "wpa_common.h"
 #include "ipc_events_index.h"
 #include "logon_creds.h"
@@ -635,7 +636,12 @@ uint8_t ipc_callout_process(uint8_t * buffer, int size, uint8_t ** retbuf,
 			default:
 				debug_printf(DEBUG_NORMAL,
 					     "Unknown return value from ipc_callout_request()!\n");
-				xmlFreeNode(newChild);
+				
+				if(newChild != NULL)
+				{
+					xmlFreeNode(newChild);
+				}
+				
 				break;
 			}
 		}

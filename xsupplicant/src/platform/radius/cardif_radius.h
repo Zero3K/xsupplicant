@@ -4,9 +4,9 @@
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * File: cardif_radius.h
+ * \file cardif_radius.h
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
  *******************************************************************/
 #ifndef __CARDIF_RADIUS_H__

@@ -14,6 +14,7 @@
 #define OPENSSL_NO_ENGINE
 
 #include <windows.h>
+#include "event_core_win.h"
 #endif
 
 #include <stdio.h>
@@ -38,6 +39,8 @@
 #include <netinet/in.h>
 #include <inttypes.h>
 #include <unistd.h>
+
+#include "event_core.h"
 #endif
 
 #include <string.h>

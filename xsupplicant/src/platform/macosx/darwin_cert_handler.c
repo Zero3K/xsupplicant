@@ -218,3 +218,21 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 {
 	return 0;
 }
+
+/**
+ * \brief Return the number of user certificates in our store.
+ *
+ * \retval -1 on error
+ * \retval >=0 is the number of certificates that will be in the list.
+ **/
+int cert_handler_num_user_certs()
+{
+#warning Implement!
+	return 0;
+}
+
+int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
+{
+#warning Implement!
+	return -1;
+}

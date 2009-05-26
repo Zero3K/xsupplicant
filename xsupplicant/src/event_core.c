@@ -64,7 +64,7 @@ typedef struct eventhandler_struct {
 
 eventhandler events[MAX_EVENTS];
 
-int locate;
+int locate = 0;
 int terminate = 0;
 int num_event_slots = MAX_EVENTS;
 
@@ -448,7 +448,7 @@ void event_core()
  **/
 context *event_core_locate(char *matchstr)
 {
-	int i;
+	int i = 0;
 
 	if (!xsup_assert((matchstr != NULL), "matchstr != NULL", FALSE))
 		return NULL;
@@ -498,7 +498,7 @@ context *event_core_get_next_context()
 	while ((desired_ctx < MAX_EVENTS) && (events[desired_ctx].ctx == NULL)) {
 		desired_ctx++;
 	}
-
+  
 	locate = desired_ctx;
 
 	if (desired_ctx >= MAX_EVENTS)

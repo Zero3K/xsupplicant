@@ -21,7 +21,7 @@
 #include <iwlib.h>
 #include <linux/if_packet.h>
 #include <stdio.h>
-#include <utmp.h>
+#include <utmpx.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -439,6 +439,7 @@ int cardif_init(context * ctx, char driver)
 		wctx = (wireless_ctx *) ctx->intTypeData;
 		if (wctx != NULL) {
 			wctx->pmkids_supported = 1;
+			wctx->pmksa_add_ioctl_supported = 1;
 			pmksa_cache_init(ctx);
 		}
 
@@ -736,7 +737,7 @@ int cardif_set_freq(context * ctx)
 	if (wireless->set_freq == NULL)
 		return XEMALLOC;
 
-	return wireless->set_freq(ctx);
+	return wireless->set_freq(ctx, 1);
 }
 
 /**
@@ -837,7 +838,7 @@ int cardif_delete_key(context * ctx, int key_idx, int set_tx)
  * @param[in] ctx   The context that contains the interface that we want to
  *                  attempt an association on.
  **/
-void cardif_associate(context * ctx)
+void cardif_associate(context * ctx, uint8_t reason)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
@@ -857,7 +858,7 @@ void cardif_associate(context * ctx)
 		return;
 	}
 
-	wireless->associate(ctx);
+	wireless->associate(ctx, reason);
 }
 
 /**
@@ -1626,7 +1627,6 @@ static int _getmac(char *dest, char *ifname)
 	// Tell the ifreq struct which interface we want to use.
 	Strncpy((char *)&ifr.ifr_name, sizeof(ifr.ifr_name), ifname,
 		strlen(ifname) + 1);
-	printf("Interface : %s\n", ifr.ifr_name);
 
 	// Get our MAC address.  (Needed for sending frames out correctly.)
 	retval = ioctl(sock, SIOCGIFHWADDR, &ifr);
@@ -1780,7 +1780,7 @@ void cardif_reassociate(context * ctx, uint8_t reason)
 		cardif_clear_keys(ctx);
 	}
 
-	cardif_associate(ctx);
+	cardif_associate(ctx, reason);
 }
 
 /**
@@ -1903,6 +1903,123 @@ void cardif_wait_for_int(char *intname)
 }
 
 /**
+ * \brief Called when the passive scan timer times out to check the
+ * frequency of the alternative SSID
+ * The passive scan timer expried.  So, we need to issue a scan request,
+ * and reset our timer to recheck the scan results periodically.
+ *
+ * @param[in] ctx   A pointer to the context that contains the interface
+ *                  that the passive scan timer timed out on.
+ *            freq  Freq of the alternative AP
+ **/
+int check_freq_to_switch_ap(context *ctx, double freq)
+{
+  wireless_ctx *wctx;
+
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+    return;
+
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
+		   FALSE))
+    return;
+
+  wctx = (wireless_ctx *)ctx->intTypeData;
+
+  if (freq == 0)
+  {
+	debug_printf(DEBUG_NORMAL, "Couldn't determine the best Frequency for the desired SSID "
+                  "found in a passive scan. %s ", wctx->cur_essid);
+     return 0;
+  }
+
+  if (freq > 5.0)
+  {
+    debug_printf(DEBUG_NORMAL, "Desired SSID found in passive scan is not best for "
+                    "connection. If not connected try rescan and connect...\n");
+    return 0;
+  }
+
+  if ((wctx->state == ASSOCIATED) &&
+       (((freq > 2.0) && (freq < 3.0)) && ((wctx->freq > 2.0) && (wctx->freq < 3.0))))
+  {
+    debug_printf(DEBUG_NORMAL, "We are already connected to best BSSID with Frequency %lf " 
+                    "for desired SSID %s found in a passive scan.\n", wctx->freq, wctx->cur_essid);
+    return 0;
+  }
+  return 1;
+}
+int connect_to_next_best(context *ctx)
+{
+  	uint8_t *mac = NULL;
+  	char *ssid = NULL;
+  	double freq=0;
+  	wireless_ctx *wctx = NULL;
+  	struct config_globals *globals = NULL;
+
+  	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))  return FALSE;
+
+  	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
+                   FALSE))
+    return FALSE;
+
+ 	wctx = (wireless_ctx *)ctx->intTypeData;
+    freq = config_ssid_get_next_best_freq_with_curssid(wctx);
+    if(!check_freq_to_switch_ap(ctx, freq))
+    {
+        return FALSE;
+    }
+
+	mac = config_ssid_get_mac_with_curssid_next_best_freq(wctx, freq);
+	if (mac == NULL)
+	{
+        debug_printf(DEBUG_NORMAL, "Couldn't determine the MAC address for the desired SSID "
+                    "found in a passive scan.  You may not be associated to the best AP %s %lf, "
+                    "but your network should continue to work.\n", wctx->cur_essid, freq);
+        return FALSE;
+	}
+
+	if (memcmp(wctx->cur_bssid, mac, 6) != 0)
+    {
+		debug_printf(DEBUG_INT, "Jumpping from BSSID ");
+		debug_hex_printf(DEBUG_INT, wctx->cur_bssid, 6);
+		debug_printf(DEBUG_INT, " to BSSID ");
+		debug_hex_printf(DEBUG_INT, mac, 6);
+		debug_printf_nl(DEBUG_INT, ")\n");
+		memcpy(wctx->cur_bssid, mac, 6);
+		wctx->freq = freq;
+		wctx->state = ASSOCIATING;
+		globals = config_get_globals();
+		if (globals)
+		{
+			if (timer_check_existing(ctx, ASSOCIATION_TIMER))
+			{
+				timer_reset_timer_count(ctx, ASSOCIATION_TIMER, globals->assoc_timeout);
+			}
+			else
+            {
+				timer_add_timer(ctx, ASSOCIATION_TIMER, globals->assoc_timeout, NULL,
+								&wireless_sm_association_timeout);
+			}
+		}
+		else
+		{
+			debug_printf(DEBUG_NORMAL, "Couldn't read global variable information!"
+                                        " Association timer will not function correctly!\n");
+		}
+		if (!config_ssid_using_wep(wctx))
+		{
+			cardif_reassociate(ctx, 0);
+		}
+		return TRUE;
+	}
+	else
+    {
+		return FALSE;
+	}
+}
+
+
+/**
  * \brief Called when the passive scan timer times out.
  *
  * The passive scan timer expried.  So, we need to issue a scan request,
@@ -1913,10 +2030,11 @@ void cardif_wait_for_int(char *intname)
  **/
 void cardif_passive_scan_timeout(context * ctx)
 {
-	struct config_globals *globals;
-	uint8_t *mac;
-	char *ssid;
-	wireless_ctx *wctx;
+	struct config_globals *globals = NULL;
+	uint8_t *mac = NULL;
+	char *ssid = NULL;
+	double freq=0;
+	wireless_ctx *wctx = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
@@ -1927,10 +2045,12 @@ void cardif_passive_scan_timeout(context * ctx)
 
 	wctx = (wireless_ctx *) ctx->intTypeData;
 
+#warning FINISH! We get scan data results, but we still need to do something with them.
 	if (!TEST_FLAG(wctx->flags, WIRELESS_PASV_SCANNING)) {
+
 		if (!TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {
 			timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, 5);
-			cardif_do_wireless_scan(ctx, 1);
+			//cardif_do_wireless_scan(ctx, 1);
 			SET_FLAG(wctx->flags, WIRELESS_PASV_SCANNING);
 		} else {
 			debug_printf(DEBUG_NORMAL,
@@ -1943,7 +2063,7 @@ void cardif_passive_scan_timeout(context * ctx)
 		debug_printf(DEBUG_NORMAL,
 			     "Looking for the best network to connect to.\n");
 		// Clear the passive scanning flag.
-		UNSET_FLAG(ctx->flags, WIRELESS_PASV_SCANNING);
+		UNSET_FLAG(wctx->flags, WIRELESS_PASV_SCANNING);
 
 		// Reset the timer so that we scan again.
 
@@ -1962,6 +2082,7 @@ void cardif_passive_scan_timeout(context * ctx)
 
 		}
 
+		/*
 		ssid = config_ssid_get_desired_ssid(ctx);
 
 		if (ssid == NULL) {
@@ -1981,34 +2102,52 @@ void cardif_passive_scan_timeout(context * ctx)
 				     "\n");
 			// Don't do anything with the result.
 		} else {
-			// We got a valid result.  So, see if it is a different AP.  If it
-			// is, then jump to it.
-			mac = config_ssid_get_mac(wctx);
+		  if((wctx->state == UNASSOCIATED) || ((wctx->state == ACTIVE_SCAN))) {
+		    // We got a valid result.  So, see if it is a different AP.  If it
+		    // is, then jump to it.
+		    //mac = config_ssid_get_mac(wctx);
+		    freq = config_ssid_get_next_best_freq_with_curssid(wctx);
 
-			if (mac == NULL) {
-				debug_printf(DEBUG_NORMAL,
-					     "Couldn't determine the MAC "
-					     "address for the desired SSID found in a passive "
-					     "scan.  You may not be associated to the best AP, "
-					     "but your network should continue to work.\n");
-				return;
-			}
+		    // Check whether we can attempt to connect using the frequency
+		    if(!check_freq_to_switch_ap(ctx, freq)) {
+		      return;
+		    }
 
-			if (memcmp(ctx->dest_mac, mac, 6) != 0) {
-				debug_printf(DEBUG_INT,
-					     "Jumpping to a BSSID with a better "
-					     "signal.  (BSSID : ");
-				debug_hex_printf(DEBUG_INT, mac, 6);
-				debug_printf_nl(DEBUG_INT, ")\n");
+		    mac = config_ssid_get_mac_with_curssid_next_best_freq(wctx, freq);
 
-				// Then change our BSSIDs.
-				cardif_setBSSID(ctx, mac);
-			} else {
-				debug_printf(DEBUG_INT,
-					     "We are connected to the best "
-					     "BSSID already.\n");
-			}
+		    if (mac == NULL) {
+		      debug_printf(DEBUG_NORMAL,
+				   "Couldn't determine the MAC "
+				   "address for the desired SSID found in a passive "
+				   "scan.  You may not be associated to the best AP, "
+				   "but your network should continue to work.\n");
+		      return;
+		    }
+
+		    if (memcmp(wctx->cur_bssid, mac, 6) != 0)
+		      {
+			debug_printf(DEBUG_INT, "Jumpping from BSSID ");
+			debug_hex_printf(DEBUG_INT, wctx->cur_bssid, 6);
+			debug_printf(DEBUG_INT, " to BSSID ");
+			debug_hex_printf(DEBUG_INT, mac, 6);
+			debug_printf_nl(DEBUG_INT, ")\n");
+			memcpy(wctx->cur_bssid, mac, 6);
+			wctx->freq = freq;
+			if (!config_ssid_using_wep(wctx))
+			  {
+			    cardif_reassociate(ctx, 0);
+			  }
+		      }
+		    else
+		      {
+			debug_printf(DEBUG_NORMAL, "Couldn't determine the best desired SSID in place of %s "
+				     "during passive scan.\n", ssid);
+			debug_printf(DEBUG_INT, "We might be connected to the best BSSID already.\n");
+		      }
+		    
+		  }
 		}
+		*/
 	}
 }
 
@@ -2113,7 +2252,7 @@ char *cardif_get_dns3(context * ctx)
 int cardif_linux_add_interface(char *ifname, int ifindex)
 {
 	char mac[6];
-	int ret = FALSE;
+	int ret = FALSE;	
 
 	// Make sure we aren't looking at any loopback interfaces.
 	if (is_wireless(ifname) == TRUE) {
@@ -2145,8 +2284,10 @@ int cardif_linux_add_interface(char *ifname, int ifindex)
  **/
 void cardif_enum_ints()
 {
-	struct if_nameindex *ifnames;
+	struct if_nameindex *ifnames = NULL;
 	int i = 0;
+        char nomac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        char mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 	ifnames = if_nameindex();
 	if (ifnames == NULL) {
@@ -2162,6 +2303,28 @@ void cardif_enum_ints()
 					   ifnames[i].if_index);
 		i++;
 	}
+
+	// Make sure we aren't looking at any loopback interfaces.
+	/*
+	if ((strcasestr(ifnames[i].if_name, "lo") == NULL) &&
+	    (strcasestr(ifnames[i].if_name, "vmnet") == NULL))
+	  {
+	    if (_getmac((char *)&mac, ifnames[i].if_name) == TRUE)
+	      {
+		// Make sure the interface isn't an all-zeros MAC
+		if(memcmp(mac, nomac, 6) != 0) 
+		  {
+		    // Add it to our interface cache!
+		    interfaces_add(ifnames[i].if_name, ifnames[i].if_name, mac,
+				   is_wireless(ifnames[i].if_name));
+		  }
+		else
+		  {
+		    debug_printf(DEBUG_INT, "Skipping interface %s with MAC of 00:00:00:00:00:00.\n", ifnames[i].if_name);
+		  }
+	      }
+	  }
+	*/	
 
 	if_freenameindex(ifnames);
 }
@@ -2234,14 +2397,14 @@ int cardif_is_wireless_by_name(char *intname)
  **/
 int cardif_get_uptime(uint64_t * uptime)
 {
-	struct utmp intEnt;
+	struct utmpx intEnt;
 	struct timeval curTime;
-	struct utmp *bTimePtr;
+	struct utmpx *bTimePtr;
 
 	bTimePtr = NULL;
-	setutent();
+	setutxent();
 	intEnt.ut_type = BOOT_TIME;
-	bTimePtr = getutid(&intEnt);
+	bTimePtr = getutxid(&intEnt);
 
 	if (bTimePtr == NULL) {
 		return -1;
@@ -2253,6 +2416,10 @@ int cardif_get_uptime(uint64_t * uptime)
 
 	*uptime = (curTime.tv_sec) - (bTimePtr->ut_tv.tv_sec);
 	return 0;
+}
+
+void cardif_cancel_io(context *ctx) {
+  /* TO BE DONE */
 }
 
 int cardif_get_freq(context * ctx, uint32_t * freq)
@@ -2278,6 +2445,7 @@ int cardif_apply_pmkid_data(context * ctx, pmksa_list * list)
 int cardif_validate_connection(context * intdata)
 {
 	wireless_ctx *wctx = NULL;
+	struct found_ssids *working = NULL;
 	uint16_t abilities = 0;
 	int retVal = FALSE;
 
@@ -2289,20 +2457,29 @@ int cardif_validate_connection(context * intdata)
 	if (!xsup_assert((wctx != NULL), "wctx != NULL ", FALSE))
 		return FALSE;
 
+	working = wctx->temp_ssid;
+
+	if(!xsup_assert((working != NULL), "working != NULL ", FALSE )) return FALSE;
+
 	abilities = config_ssid_get_ssid_abilities(wctx);
+
+	if(intdata->conn == NULL) {
+	  debug_printf(DEBUG_NORMAL, "Connection data is null in %s:%d.\n", __FUNCTION__, __LINE__);
+	  return retVal;
+	}
 
 	switch (intdata->conn->association.auth_type) {
 	case AUTH_NONE:
 		debug_printf(DEBUG_NORMAL, "Checking AUTH_NONE.\n");
-		if ((abilities & ABIL_ENC) && (intdata->conn != NULL)) {
+		if ((abilities & ABIL_ENC) && (intdata->conn->association.association_type == ASSOC_OPEN)) {
 			if (intdata->conn->association.txkey != 0) {
 				debug_printf(DEBUG_NORMAL,
 					     "WEP  Connection \n");
 				retVal = TRUE;
 			}
 
-		} else if ((config_ssid_get_ssid_abilities(wctx) == 0)
-			   && (intdata->conn != NULL)) {
+		} else if ((abilities == 0)
+			   && (intdata->conn->association.txkey == 0)) {
 			if (intdata->conn->association.txkey == 0) {
 				debug_printf(DEBUG_NORMAL,
 					     "OPEN  Connection \n");
@@ -2341,12 +2518,13 @@ int cardif_validate_connection(context * intdata)
 			debug_printf(DEBUG_NORMAL,
 				     " WPA_DOT1X connection with WPA2\n");
 			retVal = TRUE;
-		} else if ((abilities & ABIL_ENC) && (intdata->prof != NULL)) {
-			if (intdata->prof->name != NULL) {
+		} else if ((abilities & ABIL_ENC) && (intdata->prof != NULL) && (intdata->conn->association.association_type == ASSOC_OPEN) &&
+			   !(abilities & ABIL_RSN_DOT1X ) && !(abilities & ABIL_WPA_DOT1X)) {
+		  //if (intdata->prof->name != NULL) {
 				debug_printf(DEBUG_NORMAL,
 					     "DYNAMIC WEP Connection \n");
 				retVal = TRUE;
-			}
+				//}
 
 		}
 		break;
@@ -2354,4 +2532,5 @@ int cardif_validate_connection(context * intdata)
 
 	return retVal;
 }
+
 

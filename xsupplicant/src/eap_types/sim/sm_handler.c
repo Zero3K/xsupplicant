@@ -7,7 +7,7 @@
  * Michael Haberler mah@eunet.at 
  * based on original work by marek@bmlv.gv.at 2000
  * make it work with pcsclite-1.0.1: Vincent Guyot <vguyot@inf.enst.fr>  2002-07-12
- * some parts Chris Hessing chris.hessing@utah.edu
+ * some parts Chris Hessing chris@open1x.org
  *
  *
  * This code is released under dual BSD/GPL license.

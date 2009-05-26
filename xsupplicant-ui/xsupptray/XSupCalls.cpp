@@ -2162,6 +2162,7 @@ bool XSupCalls::disconnectEventListener()
 	return true;
 }
 
+
 //! waitForEvents
 /*!
   \brief Blocks until an event fires Connects the pipe to listen for events from the XSupplicant

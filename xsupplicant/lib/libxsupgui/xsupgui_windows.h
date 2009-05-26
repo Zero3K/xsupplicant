@@ -55,9 +55,9 @@
 
 /*******************************************************************
  *
- * File: xsupgui_windows.h
+ * \file xsupgui_windows.h
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
  *******************************************************************/
 

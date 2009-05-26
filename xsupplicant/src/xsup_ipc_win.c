@@ -4,7 +4,7 @@
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * \author chris@open1x.org, Terry.Simons@utah.edu
+ * \author chris@open1x.org, Terry.Simons@open1x.org
  **/
 
 #include <errno.h>

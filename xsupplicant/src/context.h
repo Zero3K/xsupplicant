@@ -21,6 +21,8 @@
 #include "xsup_common.h"
 #endif
 
+#include "libxsupconfig/xsupconfig_structs.h"
+
 #ifdef HAVE_TNC
 #include "libtnctncc.h"
 #endif
@@ -173,6 +175,7 @@ typedef struct dot1x_state {
 												//    don't return a reason code in a disassociate event.
 #define WIRELESS_SM_DISCONNECT_REQ     BIT(13)	// We set this when the user has requested a disconnect.  (So that we don't start the timer to prompt them to connect.)
 #define WIRELESS_SM_ASSOCIATED         BIT(14)
+#define WIRELESS_AP_DROPSOUT_CONNECT_TO_SAME_ESSID BIT(15) // this flag is set when ap drops the connection and trying to connect to same essid
 
 /**
  * Different values for the type of association that was used to connect to a 
@@ -184,6 +187,13 @@ typedef struct dot1x_state {
 #define ASSOC_TYPE_LEAP         3
 #define ASSOC_TYPE_WPA1         4
 #define ASSOC_TYPE_WPA2         5
+
+/**
+ * Linux specific WPA defines
+ **/
+#define WPA2_IE_LENGTH_WITH_PMKID 40
+#define ASSOCREQIE_LENGTH_WITH_PMKID 54
+#define SIOCSIWPMKSA_NOT_SUPPORTED 95
 
 /**
  * Information needed if this interface is wireless.
@@ -198,7 +208,7 @@ typedef struct {
 	uint8_t *rsn_ie;
 	uint8_t strength;	// 0 - 100% used to avoid sending signal strength events that aren't needed.
 	char *cur_essid;
-    double freq;
+        double freq;
 	uint8_t cur_bssid[6];
 	struct found_ssids *ssid_cache;	// All SSIDs found on this interface.
 
@@ -228,7 +238,7 @@ typedef struct {
 	uint8_t pmkids_supported;	///< The number of PMKIDs support in the association frames of this interface.  (Should be 0 if PMK caching isn't allowed.)
 	pmksa_cache_element *pmksa_cache;
 	uint8_t *pmkid_used;
-#ifdef LINUX
+#if defined(LINUX) || defined(__APPLE__)
 	int okc;
     int ielen;
     uint8_t *pmkid_ptr;

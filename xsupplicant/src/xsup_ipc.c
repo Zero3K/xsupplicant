@@ -4,7 +4,7 @@
  *
  * Licensed under a dual GPL/BSD license.  (See LICENSE file for more info.)
  *
- * \author chris@open1x.org, Terry.Simons@utah.edu
+ * \author chris@open1x.org, terry.simons@open1x.org
  *
  **/
 
@@ -40,12 +40,14 @@
 #include "ipc_callout.h"
 #include "event_core.h"
 #include "xsup_ipc.h"
+#include "version.h"
 
 #ifdef USE_EFENCE
 #include <efence.h>
 #endif
 
 #define XSUP_SOCKET "/tmp/xsupplicant.sock"
+#define XSUP_CTRL_SOCK "/tmp/xsupplicant_control.sock"
 
 #define INSTANCES  5		///< Maximum # of IPC sockets we will allow connected.
 #define BUFSIZE 4096
@@ -58,11 +60,13 @@ typedef struct {
 ipcstruct ipcs[INSTANCES];
 
 static int ipc_sock = -1;
+static int ipc_ctrl_sock = -1;
 
 #define IPC_CONNECTED    BIT(0)
 #define IPC_EVENTS_ONLY  BIT(1)
 
 char socknamestr[256];
+char ctrlsocknamestr[256];
 
 /**
  * \brief Determine the GID for a group name.  Used to determine what file 
@@ -135,10 +139,10 @@ int xsup_ipc_get_group_num(char *grp_name)
  **/
 int xsup_ipc_init(uint8_t clear)
 {
-	int sockErr = 0, ipc_gid = 0;
+        int sockErr = 0, ctrlSockErr = 0, ipc_gid = 0;
 	char *error = NULL;
-	struct sockaddr_un sa;
-	struct config_globals *globals;
+	struct sockaddr_un sa, sb;
+	struct config_globals *globals = NULL;
 	int i;
 
 	globals = config_get_globals();
@@ -146,61 +150,97 @@ int xsup_ipc_init(uint8_t clear)
 	if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
 		return XEGENERROR;
 
+	memset(&sa, 0x0, sizeof(struct sockaddr_un));
 	sa.sun_family = AF_LOCAL;
 	memset(socknamestr, 0x00, 256);
 	Strncpy(socknamestr, sizeof(socknamestr), XSUP_SOCKET, 256);
 	Strncpy(sa.sun_path, sizeof(socknamestr), socknamestr,
 		sizeof(sa.sun_path));
 
+	memset(&sb, 0x0, sizeof(struct sockaddr_un));
+	sb.sun_family = AF_LOCAL;
+	memset(ctrlsocknamestr, 0x00, 256);
+	Strncpy(ctrlsocknamestr, sizeof(ctrlsocknamestr), XSUP_CTRL_SOCK, 256);
+	Strncpy(sb.sun_path, sizeof(ctrlsocknamestr), ctrlsocknamestr,
+		sizeof(sb.sun_path));
+
 	if (clear == TRUE) {
 		// We need to clear the socket file if it exists.
 
-		debug_printf(DEBUG_INT, "Clearing control socket %s.\n",
-			     socknamestr);
+		debug_printf(DEBUG_INT, "Clearing control socket %s \t ctrlsocknamestr.\n",
+			     socknamestr, ctrlsocknamestr);
 		remove(socknamestr);
+		remove(ctrlsocknamestr);
 	}
 	// Socket we will be using to communicate.
 	ipc_sock = socket(PF_UNIX, SOCK_STREAM, 0);
+	ipc_ctrl_sock = socket(PF_UNIX, SOCK_STREAM, 0);
 
-	if (ipc_sock == -1) {
+	if ((ipc_sock == -1) || (ipc_ctrl_sock == -1)) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't establish handler to daemon "
 			     "socket!\n");
+
+		// If either one of the sockets was bad, but the other
+		// was opened, we need to close it.
+		if(ipc_sock != -1) {
+		  close(ipc_sock);
+		}
+
+		if(ipc_ctrl_sock != -1) {
+		  close(ipc_ctrl_sock);
+		}
+
 		return XENOSOCK;
 	}
 
 	debug_printf(DEBUG_INT,
-		     "Opened socket descriptor #%d for IPC listener.\n",
-		     ipc_sock);
+		     "Opened socket descriptor #%d for IPC listener and control socket #%d.\n",
+		     ipc_sock, ipc_ctrl_sock);
 
 	sockErr = bind(ipc_sock, (struct sockaddr *)&sa, sizeof(sa));
-	if (sockErr == -1) {
+	ctrlSockErr = bind(ipc_ctrl_sock, (struct sockaddr *)&sb, (sizeof(sb)));
+
+	if ((sockErr == -1) || (ctrlSockErr == -1)) {
 		error = strerror(errno);
+
 		debug_printf(DEBUG_NORMAL,
-			     "An error occured binding to socket.  "
-			     "(Error : %s)\n", error);
+			     "An error occured binding to socket.  sockErr: %d, ctrlSockErr: %d"
+			     "(Error : %s)\n", sockErr, ctrlSockErr, error);
+		close(ipc_ctrl_sock);
 		close(ipc_sock);
 		return XENOSOCK;
 	}
 
 	sockErr = listen(ipc_sock, 10);
-	if (sockErr < 0) {
+	ctrlSockErr = listen(ipc_ctrl_sock, 10);
+
+	if ((sockErr < 0) || (ctrlSockErr < 0)) {
 		error = strerror(errno);
 		debug_printf(DEBUG_NORMAL,
 			     "An error occured listening on the socket! "
 			     "(Error : %s)\n", error);
 		close(ipc_sock);
+		close(ipc_ctrl_sock);
 		return XENOSOCK;
 	}
-	// Set the rights on the file.
-	if (chmod
-	    (socknamestr,
+	// Set the rights on the sockets.
+	if (chmod(socknamestr,
 	     S_IREAD | S_IWRITE | S_IEXEC | S_IRGRP | S_IWGRP | S_IXGRP |
 	     S_IROTH | S_IXOTH) != 0) {
 		debug_printf(DEBUG_NORMAL,
-			     "Can't set rights on socket file %s! (Error"
+			     "Can't set rights on event socket file %s! (Error"
 			     " : %s)\n", socknamestr, strerror(errno));
 	}
+
+	if (chmod(ctrlsocknamestr,
+	     S_IREAD | S_IWRITE | S_IEXEC | S_IRGRP | S_IWGRP | S_IXGRP |
+	     S_IROTH | S_IXOTH) != 0) {
+		debug_printf(DEBUG_NORMAL,
+			     "Can't set rights on control socket file %s! (Error"
+			     " : %s)\n", ctrlsocknamestr, strerror(errno));
+	}
+
 	// Set the correct group ownership. 
 	if (globals->ipc_group_name != NULL) {
 		ipc_gid = xsup_ipc_get_group_num(globals->ipc_group_name);
@@ -210,7 +250,13 @@ int xsup_ipc_init(uint8_t clear)
 			ipc_gid = 0;
 		}
 	} else {
+#ifdef __APPLE__
+		// Possibly not the most reliable choice.
+		// What about non-admin users?
+		ipc_gid = xsup_ipc_get_group_num("staff");
+#else
 		ipc_gid = xsup_ipc_get_group_num("users");
+#endif // __APPLE__
 		if (ipc_gid < 0)
 			ipc_gid = 0;	// If it isn't found, use root.
 	}
@@ -218,14 +264,25 @@ int xsup_ipc_init(uint8_t clear)
 	if (ipc_gid >= 0) {
 		if (chown(socknamestr, -1, ipc_gid) != 0) {
 			debug_printf(DEBUG_NORMAL,
-				     "Can't set group ownership on socket "
+				     "Can't set group ownership on event socket "
 				     "file %s! (Error : %s)\n", socknamestr,
 				     strerror(errno));
 		}
+
+		if (chown(ctrlsocknamestr, -1, ipc_gid) != 0) {
+			debug_printf(DEBUG_NORMAL,
+				     "Can't set group ownership on control socket "
+				     "file %s! (Error : %s)\n", ctrlsocknamestr,
+				     strerror(errno));
+		}
 	}
+
 	// And register our connection handler.
 	event_core_register(ipc_sock, NULL, xsup_ipc_new_socket, LOW_PRIORITY,
-			    "IPC master socket");
+			    "IPC Event Socket");
+
+	event_core_register(ipc_ctrl_sock, NULL, xsup_ipc_new_socket, LOW_PRIORITY,
+			    "IPC Control Socket");
 
 	for (i = 0; i < INSTANCES; i++) {
 		ipcs[i].sock = 0;
@@ -335,8 +392,7 @@ void xsup_ipc_send_message(int skfd, char *tosend, int tolen)
 			if (offset == 0)	// This is the first packet in a fragment chain.
 			{
 				// This is our first fragment, so include the length.
-				hdr->flag_byte =
-				    (IPC_MSG_TOTAL_SIZE | IPC_MSG_MORE_FRAGS);
+				hdr->flag_byte = (IPC_MSG_TOTAL_SIZE | IPC_MSG_MORE_FRAGS);
 				frag_size = (BUFSIZE - sizeof(ipc_header));
 				hdr->length = htonl(tolen);
 			} else if ((tolen - offset) >
@@ -532,8 +588,7 @@ int xsup_ipc_new_socket(context * ctx, int sock)
 
 	memset(&sa, 0x00, sizeof(sa));
 	len = sizeof(sa);
-	newsock =
-	    accept(ipc_sock, (struct sockaddr *)&sa, (unsigned int *)&len);
+	newsock = accept(sock, (struct sockaddr *)&sa, (unsigned int *)&len);
 	if (newsock <= 0) {
 		debug_printf(DEBUG_NORMAL, "Got a request for a new IPC "
 			     "client connection.  But, accept() returned"
@@ -546,6 +601,9 @@ int xsup_ipc_new_socket(context * ctx, int sock)
 		// Record the socket number we want to listen to.
 		ipcs[i].sock = newsock;
 		ipcs[i].flags = IPC_CONNECTED;
+
+		if (sock == ipc_sock)
+		  SET_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY);
 
 		if (event_core_register(newsock, NULL, xsup_ipc_event,
 					LOW_PRIORITY, "client msg socket") < 0)
@@ -569,19 +627,23 @@ int xsup_ipc_new_socket(context * ctx, int sock)
  **/
 void xsup_ipc_cleanup()
 {
-	char *error;
-
 	debug_printf(DEBUG_DEINIT | DEBUG_IPC, "Shutting down IPC socket!\n");
-	debug_printf(DEBUG_INT, "Closing socket descriptor #%d\n", ipc_sock);
+	debug_printf(DEBUG_INT, "Closing socket descriptors: event: #%d, control: #%d\n", ipc_sock, ipc_ctrl_sock);
 
-	if (ipc_sock < 0)
-		return;		// Nothing to do.
+	if(ipc_sock >= 0) {
+	  if(close(ipc_sock) < 0) {
+	    debug_printf(DEBUG_NORMAL,
+			 "Error closing event socket!  (Error : %s)\n", strerror(errno));	    
+	  }
+	}
 
-	if (close(ipc_sock) < 0) {
-		error = strerror(errno);
-		debug_printf(DEBUG_NORMAL,
-			     "Error closing socket!  (Error : %s)\n", error);
+	if(ipc_ctrl_sock >= 0) {
+	  if(close(ipc_ctrl_sock) < 0) {
+	    debug_printf(DEBUG_NORMAL,
+			 "Error closing control socket!  (Error : %s)\n", strerror(errno));	    
+	  }
 	}
 
 	unlink(socknamestr);
+	unlink(ctrlsocknamestr);
 }

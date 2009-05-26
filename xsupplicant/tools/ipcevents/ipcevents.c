@@ -242,7 +242,8 @@ int main()
 	int sm = 0, oldstate = 0, newstate = 0, evttype = 0;
 	uint32_t value321, value322, value323, value324, tncconnectionid;
 	int uievt;
-	int count = 0;
+	int count = 0, eventbufressize = 0;
+	unsigned char * eventbuf = NULL;
 
 	printf("Attempting to connect to the supplicant event listener.\n");
 

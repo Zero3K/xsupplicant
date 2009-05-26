@@ -55,9 +55,9 @@
 
 /*******************************************************************
  *
- * File: xsupgui_xml_common.h
+ * \file xsupgui_xml_common.h
  *
- * Authors: Chris.Hessing@utah.edu
+ * \author chris@open1x.org
  *
  *******************************************************************/
 

@@ -35,5 +35,5 @@ void wireless_sm_change_state(int, context *);
 void wireless_sm_dump_state();
 uint8_t wireless_sm_get_state(context *);
 void wireless_sm_do_state(context *);
-
+void wireless_sm_association_timeout(context *ctx);
 #endif

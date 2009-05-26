@@ -30,7 +30,7 @@
 /* 
  * Modification History
  *
- * Sept. 1, 2006        Chris Hessing  (chris.hessing@utah.edu)
+ * Sept. 1, 2006        Chris Hessing  (chris@open1x.org)
  * - modified test code to verify that it will work properly with select()
  *   call.  And added #ifdef to make it only compile when using Darwin/OS X.
  *

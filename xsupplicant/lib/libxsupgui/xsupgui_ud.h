@@ -6,8 +6,6 @@
  *
  * \author chris@open1x.org
  *
- * $Id: xsupgui_ud.h,v 1.4 2007/10/16 08:27:49 galimorerpg Exp $
- * $Date: 2007/10/16 08:27:49 $
  **/
 #ifndef __XSUPGUI_UD_H__
 #define __XSUPGUI_UD_H__

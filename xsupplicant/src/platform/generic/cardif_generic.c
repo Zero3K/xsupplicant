@@ -4,7 +4,7 @@
  *
  * File: cardif_generic.c
  *
- * Authors: Chris.Hessing@utah.edu
+ * Authors: chris@open1x.org
  *
  *******************************************************************/
 

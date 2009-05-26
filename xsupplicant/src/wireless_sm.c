@@ -609,6 +609,7 @@ void wireless_sm_change_to_int_held(context * ctx)
  **/
 void wireless_sm_change_to_associated(context * ctx)
 {
+	struct config_globals *globals = NULL;
 	wireless_ctx *wctx = NULL;
 
 	TRACE xsup_assert((ctx != NULL), "ctx != NULL", TRUE);
@@ -680,9 +681,35 @@ void wireless_sm_change_to_associated(context * ctx)
 	wctx->state = ASSOCIATED;
 
 	if (ctx->prof == NULL) {
-		// Tell the kernel to move the interface from dormant to "up" state.
-		statemachine_change_state(ctx, S_FORCE_AUTH);
-		//cardif_operstate(ctx, XIF_OPER_UP);
+	  globals = config_get_globals();
+	  if ((ctx->conn != NULL) && (ctx->conn->association.auth_type == AUTH_PSK))
+	    {
+	      if ((!globals) || (TEST_FLAG(globals->flags, CONFIG_GLOBALS_PASSIVE_SCAN)))
+		{
+		  if (ctx->intType == ETH_802_11_INT)
+		    {
+		      // Start scan timer.
+		      if (timer_check_existing(ctx, PASSIVE_SCAN_TIMER) == FALSE)
+ 			{
+			  // Set up a new timer, since this is the first time we have set a timer.
+			  debug_printf((DEBUG_DOT1X_STATE | DEBUG_VERBOSE), "Starting new passive scan timer.\n");
+			  timer_add_timer(ctx, PASSIVE_SCAN_TIMER, globals->passive_timeout, NULL,
+					  cardif_passive_scan_timeout);
+ 			} 
+		      else
+ 			{
+			  // Reset the timer so we don't scan sooner than needed.
+			  debug_printf((DEBUG_DOT1X_STATE | DEBUG_VERBOSE), "Resetting passive scan timer.\n");
+			  timer_reset_timer_count(ctx, PASSIVE_SCAN_TIMER, 
+						  globals->passive_timeout);
+ 			}
+		    }
+		}
+	    }
+	  
+	  // Tell the kernel to move the interface from dormant to "up" state.
+	  statemachine_change_state(ctx, S_FORCE_AUTH);
+	  //cardif_operstate(ctx, XIF_OPER_UP);
 	}
 	// If everything went well, make sure we lock to this connection.
 	SET_FLAG(ctx->flags, FORCED_CONN);
@@ -1341,18 +1368,26 @@ void wireless_sm_do_unassociated(context * ctx)
 
 	xsup_assert((globals != NULL), "globals != NULL", TRUE);
 
-	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ASSOC_AUTO)) {
-		// We are set to auto associate.  So, switch to active scan mode.
-		wireless_sm_change_state(ACTIVE_SCAN, ctx);
+	if(TEST_FLAG(wctx->flags, WIRELESS_AP_DROPSOUT_CONNECT_TO_SAME_ESSID)) {
+	  if(connect_to_next_best(ctx) == FALSE) {
+	    debug_printf(DEBUG_NORMAL, "Connecting to next best ESSID failed!\n");
+	  }
+	  UNSET_FLAG(wctx->flags, WIRELESS_AP_DROPSOUT_CONNECT_TO_SAME_ESSID);
 	} else {
-		// Otherwise, we have nothing to do, so take a short nap.  (To avoid
-		// hammering the processor.
-/*
-      if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED))
-	  {
-		wireless_sm_change_state(ASSOCIATED, ctx);
-	  } 
-	  */
+
+	  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ASSOC_AUTO)) {
+	    // We are set to auto associate.  So, switch to active scan mode.
+	    wireless_sm_change_state(ACTIVE_SCAN, ctx);
+	  } else {
+	    // Otherwise, we have nothing to do, so take a short nap.  (To avoid
+	    // hammering the processor.
+	    /*
+	      if (TEST_FLAG(wctx->flags, WIRELESS_SM_ASSOCIATED))
+	      {
+	      wireless_sm_change_state(ASSOCIATED, ctx);
+	      } 
+	    */
+	  }
 	}
 }
 
