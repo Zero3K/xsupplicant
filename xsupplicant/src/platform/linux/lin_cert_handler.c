@@ -55,6 +55,7 @@
 #define ERROR_X509_READ (-1)
 #define ERROR_X509_WRITE (-1)
 #define ERROR_FILE_OPEN (-1)
+
 //////////////// Data Structures /////////////////////
 typedef struct _pemfl_list {
 	int fl_index;
@@ -63,11 +64,14 @@ typedef struct _pemfl_list {
 
 } PEMFL_LIST;
 ///////////////////////////////////////////////////////
+
 /////////////////////// GLOBALS ///////////////////////
 char gStorePath[300];
+char gUserStorePath[300];
 PEMFL_LIST *pl_ca_list;
 X509 *cur_X509_Obj = NULL;
 ///////////////////////////////////////////////////////
+
 /////////////// Utils /////////////////////////////////
 char *X509_NAME_to_str(X509_NAME * name, int fmt);
 char *getToken(char *s_str, char *lbuff);
@@ -85,7 +89,42 @@ int get_pemfl_count_and_build_list(const char *pathname);
  * \retval XENONE on success
  * \retval XEGENERROR on failure
  **/
+int cert_handler_user_init()
+{
+	DIR *dirp = NULL;
 
+	dirp = opendir("/root/xsupplicant");
+
+	if (dirp) {
+		closedir(dirp);
+		dirp = NULL;
+		dirp = opendir("/root/xsupplicant/user_certs");
+		if (dirp) {
+			closedir(dirp);
+			dirp = NULL;
+		} else {
+			if (mkdir("/root/xsupplicant/user_certs", MODE_WR_UNMASKED))
+				return XEGENERROR;
+		}
+
+	} else if (!mkdir("/root/xsupplicant", MODE_WR_UNMASKED)) {
+		if (mkdir("/root/xsupplicant/user_certs", MODE_WR_UNMASKED))
+			return XEGENERROR;
+	} else
+		return XEGENERROR;
+
+	strcpy(gStoreUserPath, "/root/xsupplicant/user_certs");
+
+	return XENONE;
+}
+
+/**
+ * \brief Initialize the Linux certificate store.
+ * /root/xsupplicant/certs is the default store path.
+ * If it doesnot exist, create it.
+ * \retval XENONE on success
+ * \retval XEGENERROR on failure
+ **/
 int cert_handler_init()
 {
 	DIR *dirp = NULL;
@@ -111,10 +150,12 @@ int cert_handler_init()
 		return XEGENERROR;
 
 	strcpy(gStorePath, "/root/xsupplicant/certs");
+
+	// XXX Does this really make sense?  This should have already been inited. (ch)
 	SSL_library_init();
 	SSL_load_error_strings();
 
-	return XENONE;
+	return cert_handler_user_init();
 }
 
 /**
@@ -149,6 +190,7 @@ void cert_handler_deinit()
  * \retval 0 on success
  * \retval -1 on failure
  **/
+// XXX Not needed? (ch)
 #if 0
 int cert_handler_get_info(PCCERT_CONTEXT pCertContext, cert_info * certinfo)
 {
@@ -169,6 +211,7 @@ int cert_handler_get_info(PCCERT_CONTEXT pCertContext, cert_info * certinfo)
 /////////////////////////////////////////////////////////////////////////
 //      THIS FUNCTION IS NOT USED
 /////////////////////////////////////////////////////////////////////////
+// XXX Clean out? (ch)
 int cert_handler_get_info_from_name(char *certname, cert_info * certinfo)
 {
 	return -1;
@@ -208,9 +251,11 @@ void cert_handler_free_cert_info(cert_info * cinfo)
 int cert_handler_num_root_ca_certs()
 {
 	int cnt = 0;
+
 	debug_printf(DEBUG_INT, "NUM_ROOT_CA_CERTS:cnt[%s]\n", gStorePath);
 	cnt = get_pemfl_count(gStorePath);
 	debug_printf(DEBUG_INT, "NUM_ROOT_CA_CERTS:cnt[%d]\n", cnt);
+
 	return cnt;
 }
 
@@ -502,6 +547,7 @@ char *X509_NAME_to_str(X509_NAME * name, int fmt)
 	BIO_write(membuf, &i, 1);
 	size = BIO_get_mem_data(membuf, &sp);
 
+	// XXX Memory leak?
 	//BIO_free(membuf);
 
 	return sp;
@@ -597,21 +643,16 @@ int get_pemfl_count(const char *pathname)
 								     abs_flpath);
 							bio_cert = NULL;
 							cert = NULL;
-							bio_cert =
-							    BIO_new_file
-							    (abs_flpath, "rb");
+							bio_cert = BIO_new_file(abs_flpath, "rb");
 							if (bio_cert) {
-								debug_printf
-								    (DEBUG_INT,
+								debug_printf(DEBUG_INT,
 								     "TRACE-7:Valid PEM cert\n");
-								PEM_read_bio_X509
-								    (bio_cert,
+								PEM_read_bio_X509(bio_cert,
 								     &cert,
 								     NULL,
 								     NULL);
 								if (cert) {
-									debug_printf
-									    (DEBUG_INT,
+									debug_printf(DEBUG_INT,
 									     "TRACE-8:Valid PEM cert\n");
 									pemcnt++;
 								}
@@ -637,11 +678,11 @@ int get_pemfl_count(const char *pathname)
 int get_pemfl_count_and_build_list(const char *pathname)
 {
 
-	struct dirent *d;
+	struct dirent *d = NULL;
 	struct stat f_info;
 	char abs_flpath[100];
 	DIR *dirp = opendir(pathname);
-	char *tmp_str;
+	char *tmp_str = NULL;
 	int pemcnt = 0;
 	PEMFL_LIST *new_pemfl = NULL, *tmp_pl = NULL;
 	X509 *cert = NULL;
@@ -671,67 +712,31 @@ int get_pemfl_count_and_build_list(const char *pathname)
 						if (!strcmp(tmp_str, ".pem")) {
 							bio_cert = NULL;
 							cert = NULL;
-							bio_cert =
-							    BIO_new_file
-							    (abs_flpath, "rb");
+							bio_cert = BIO_new_file(abs_flpath, "rb");
 							if (bio_cert) {
-								PEM_read_bio_X509
-								    (bio_cert,
+								PEM_read_bio_X509(bio_cert,
 								     &cert,
 								     NULL,
 								     NULL);
 								if (cert) {
 									pemcnt++;
-									tmp_pl =
-									    pl_ca_list;
+									tmp_pl = pl_ca_list;
 									if (!tmp_pl) {
-										pl_ca_list
-										    =
-										    (PEMFL_LIST
-										     *)
-										    malloc
-										    (sizeof
-										     (PEMFL_LIST));
-										pl_ca_list->filename
-										    =
-										    strdup
-										    (abs_flpath);
-										pl_ca_list->fl_index
-										    =
-										    pemcnt;
-										pl_ca_list->next
-										    =
-										    NULL;
+										pl_ca_list = (PEMFL_LIST *) malloc(sizeof(PEMFL_LIST));
+										pl_ca_list->filename = strdup(abs_flpath);
+										pl_ca_list->fl_index = pemcnt;
+										pl_ca_list->next = NULL;
 									} else {
-										while
-										    (tmp_pl->next)
-											tmp_pl
-											    =
-											    tmp_pl->next;
-										new_pemfl
-										    =
-										    (PEMFL_LIST
-										     *)
-										    malloc
-										    (sizeof
-										     (PEMFL_LIST));
-										new_pemfl->filename
-										    =
-										    strdup
-										    (abs_flpath);
-										new_pemfl->fl_index
-										    =
-										    pemcnt;
-										new_pemfl->next
-										    =
-										    NULL;
-										tmp_pl->next
-										    =
-										    new_pemfl;
+										while (tmp_pl->next)
+											tmp_pl = tmp_pl->next;
+										new_pemfl = (PEMFL_LIST *) malloc(sizeof(PEMFL_LIST));
+										new_pemfl->filename = strdup(abs_flpath);
+										new_pemfl->fl_index = pemcnt;
+										new_pemfl->next = NULL;
+										tmp_pl->next = new_pemfl;
 									}
 								} else
-									cert =
-									    NULL;
+									cert = NULL;
 							} else
 								bio_cert = NULL;
 						}
