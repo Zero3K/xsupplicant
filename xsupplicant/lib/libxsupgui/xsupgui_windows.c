@@ -229,8 +229,7 @@ void xsupgui_windows_flush_ctrl_pipe()
 		ovr.hEvent = hevent;
 
 		// There is some data in the buffer.  Read it out and throw it away.
-		if (ReadFile
-		    (pipehdl, (LPVOID) & buffer, 4096, &bread,
+		if (ReadFile(pipehdl, (LPVOID) & buffer, 4096, &bread,
 		     (LPOVERLAPPED) & ovr) == FALSE) {
 			// It may be an overlapped read (which would be weird, but possible).
 			if (GetLastError() != ERROR_IO_PENDING) {
@@ -238,8 +237,7 @@ void xsupgui_windows_flush_ctrl_pipe()
 				return;
 			}
 
-			if (WaitForSingleObject(ovr.hEvent, INFINITE) !=
-			    WAIT_OBJECT_0) {
+			if (WaitForSingleObject(ovr.hEvent, INFINITE) != WAIT_OBJECT_0) {
 				// ACK!  This shouldn't happen!
 				return;
 			}

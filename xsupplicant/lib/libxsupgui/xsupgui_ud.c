@@ -128,8 +128,7 @@ int xsupgui_ud_connect_event_listener()
 	if (xsupgui_request_set_as_event(&result, &ressize) == REQUEST_FAILURE)
 		return -1;
 	
-	if (xsupgui_ud_send_to_event((unsigned char *)result, ressize) ==
-	    REQUEST_FAILURE) {
+	if (xsupgui_ud_send_to_event((unsigned char *)result, ressize) == REQUEST_FAILURE) {
 		free(result);
 		result = NULL;
 		return -1;
@@ -218,10 +217,24 @@ int xsupgui_ud_recv_event(unsigned char **result, int *resultsize)
 	cread = recv(ipc_event_sock, resdata, MAXBUF, 0);
 
 	if (cread < 0)
+	  {
+	    printf("errno = %d (%s)\n", errno, strerror(errno));
 		return IPC_ERROR_UNABLE_TO_READ;	// Got an error.
+	  }
 
 	if (cread == 0) 
+	  {
+	    // If we didn't read anything, and we have no error then the socket
+	    // has been disconnected.
+	     if (errno == 0)
+	       {
+		 return IPC_EVENT_COM_BROKEN;
+	       }
+	     else
+	       {
 		return REQUEST_TIMEOUT;
+	       }
+	  }
 
 	(*resultsize) = cread;
 	(*result) = resdata;
