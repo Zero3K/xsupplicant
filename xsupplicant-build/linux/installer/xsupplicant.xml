@@ -2,7 +2,6 @@
     <shortName>xsupplicant</shortName>
     <fullName>Open1x XSupplicant</fullName>
     <version>${env(SUP_VER)}</version>
-    <installerFilename></installerFilename>
     <licenseFile>../../windows/installer/win-LICENSE</licenseFile>
     <postInstallationActionList>
         <addUnixService>
@@ -10,11 +9,30 @@
             <name>${product_shortname}</name>
             <program>xsupplicant</program>
         </addUnixService>
+        <runProgram>
+            <program>${installdir}/xsupplicant_plugin_installer</program>
+            <programArguments>-n "BirdDog" -p "libbirddog.so.0.0.0" -d "BirdDog monitors all log data and writes it to a log file when a trouble ticket is created."</programArguments>
+        </runProgram>
+        <runProgram>
+            <program>${installdir}/xsupplicant</program>
+            <programArguments></programArguments>
+            <workingDirectory>${installdir}</workingDirectory>
+        </runProgram>
+        <runProgram>
+            <program>${installdir}/XSupplicantUI </program>
+            <programArguments>&amp;</programArguments>
+            <workingDirectory>${installdir}</workingDirectory>
+        </runProgram>
     </postInstallationActionList>
     <preUninstallationActionList>
         <removeUnixService>
             <name>${product_shortname}</name>
         </removeUnixService>
+        <runProgram>
+            <program>killall</program>
+            <programArguments>XSupplicantUI xsupplicant</programArguments>
+            <runAs>root</runAs>
+        </runProgram>
     </preUninstallationActionList>
     <a2555a>1</a2555a>
     <allowComponentSelection>1</allowComponentSelection>
@@ -153,6 +171,12 @@
                     </distributionFileList>
                 </folder>
             </folderList>
+            <postInstallationActionList>
+                <runProgram>
+                    <program>${installdir}/xsupplicant_plugin_installer</program>
+                    <programArguments>-n "2G Soft SIM" -p "libsoftsim2g.so.0.0.0" -d "Provides a software emulated 2G SIM card for use in testing EAP-SIM."</programArguments>
+                </runProgram>
+            </postInstallationActionList>
         </component>
         <component>
             <name>softsim3g</name>
@@ -191,6 +215,12 @@
                     </distributionFileList>
                 </folder>
             </folderList>
+            <postInstallationActionList>
+                <runProgram>
+                    <program>${installdir}/xsupplicant_plugin_installer</program>
+                    <programArguments>-n "3G Soft SIM" -p "libsoftsim3g.so.0.0.0" -d "Provides a software emulated 3G USIM card for use in testing EAP-AKA."</programArguments>
+                </runProgram>
+            </postInstallationActionList>
         </component>
     </componentList>
     <parameterList>
