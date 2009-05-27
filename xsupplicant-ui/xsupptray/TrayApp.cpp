@@ -328,13 +328,10 @@ void TrayApp::slotConnectToSupplicant()
 	UIPlugins *plugin = m_pPlugins;
 	char verResult = 0;
 
-	printf("%s\n", __FUNCTION__);
 	m_timer.stop();
 	if (!m_bSupplicantConnected) {
-	  printf("Supplicant isn't connected, trying to connect.\n");
 		bcode = m_supplicant.connectToSupplicant();
 		if (!bcode) {
-		  printf("Couldn't connect!?\n");
 			if (m_pEmitter != NULL) {
 				disconnect(m_pEmitter,
 					   SIGNAL(signalTNCReply(uint32_t, uint32_t, uint32_t,

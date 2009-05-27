@@ -2045,7 +2045,6 @@ void cardif_passive_scan_timeout(context * ctx)
 
 	wctx = (wireless_ctx *) ctx->intTypeData;
 
-#warning FINISH! We get scan data results, but we still need to do something with them.
 	if (!TEST_FLAG(wctx->flags, WIRELESS_PASV_SCANNING)) {
 
 		if (!TEST_FLAG(wctx->flags, WIRELESS_SCANNING)) {

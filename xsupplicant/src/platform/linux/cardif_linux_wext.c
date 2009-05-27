@@ -122,9 +122,7 @@ int cardif_linux_wext_scan(context * thisint, char passive)
 	memset(&iwsr, 0x00, sizeof(iwsr));
 
 	if (passive) {
-	  #warning One of these is wrong... but which?
-	        //iwsr.scan_type = IW_SCAN_TYPE_PASSIVE;
-	        iwsr.scan_type = IW_SCAN_TYPE_ACTIVE;
+	        iwsr.scan_type = IW_SCAN_TYPE_PASSIVE;
 
 		// If we are doing a passive scan, then we only care about other APs
 		// that are on this SSID.  Otherwise, we might end up picking an SSID
@@ -1125,8 +1123,6 @@ int cardif_linux_wext_disassociate(context * intdata, int reason)
 	}
 	randomssid[30] = 0x00;
 
-#warning: Mindtree patches disagree here, which do we take?
-	// cardif_linux_wext_set_ssid(intdata, "");
 	cardif_linux_wext_set_ssid(intdata, randomssid);
 	cardif_linux_clear_keys(intdata);
 	wctx = (wireless_ctx *) intdata->intTypeData;
