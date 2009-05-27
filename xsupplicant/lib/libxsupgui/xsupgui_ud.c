@@ -65,12 +65,13 @@ int xsupgui_ud_connect()
 		return -1;
 	}
 
+	memset(&sa, 0x00, sizeof(sa));
 	Strncpy(sa.sun_path, sizeof(sa.sun_path), XSUP_CTRL_SOCK,
 		sizeof(sa.sun_path));
 
 	sa.sun_family = AF_LOCAL;
 
-	sockErr = connect(ipc_event_sock, (struct sockaddr *)&sa, sizeof(sa));
+	sockErr = connect(ipc_sock, (struct sockaddr *)&sa, sizeof(sa));
 	if (sockErr < 0) {
 #if DEBUG
 		printf("Socket Error : %d -- %s  (%s:%d)\n", errno,
@@ -107,6 +108,7 @@ int xsupgui_ud_connect_event_listener()
 		return -1;
 	}
 
+	memset(&sa, 0x00, sizeof(sa));
 	Strncpy(sa.sun_path, sizeof(sa.sun_path), XSUP_SOCKET,
 		sizeof(sa.sun_path));
 

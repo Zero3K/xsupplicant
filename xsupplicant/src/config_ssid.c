@@ -1098,7 +1098,7 @@ uint8_t *config_ssid_get_mac_with_freq(wireless_ctx * wctx, double freq)
 				     "Found hidden SSID\n");
 		}
 		if ((cur->ssid_name == NULL)
-		    || (strcmp(wctx->cur_essid, cur->ssid_name == 0) && (freq == cur->freq))
+		    || ((strcmp(wctx->cur_essid, cur->ssid_name) == 0) && (freq == cur->freq))
 		    || (freq != cur->freq)) {
 		  break;
 		} else {

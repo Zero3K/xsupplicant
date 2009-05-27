@@ -278,8 +278,7 @@ int main()
 			switch (evttype) {
 			case IPC_EVENT_LOG:
 				// Process a log message.
-				result =
-				    xsupgui_events_generate_log_string(&ints,
+				result = xsupgui_events_generate_log_string(&ints,
 								       &logline);
 				if ((result <= cur_debug_level)
 				    && (result == REQUEST_SUCCESS)) {
@@ -296,8 +295,7 @@ int main()
 
 			case IPC_EVENT_ERROR:
 				// Process an error message.
-				result =
-				    xsupgui_events_get_error(&uievt, &logline);
+				result = xsupgui_events_get_error(&uievt, &logline);
 				if (result == 0) {
 					printf("Error (%d) : %s\n", uievt,
 					       logline);
@@ -307,20 +305,16 @@ int main()
 
 			case IPC_EVENT_UI:
 				// Process a UI event.
-				result =
-				    xsupgui_events_get_ui_event(&uievt, &ints,
+				result = xsupgui_events_get_ui_event(&uievt, &ints,
 								&arg);
 				if (result == 0) {
-					result =
-					    ipcevents_get_ui_string(uievt,
+					result = ipcevents_get_ui_string(uievt,
 								    &logline);
 					if (result == 0) {
 						printf("Got UI Event : %s\n",
 						       logline);
-						if (uievt ==
-						    IPC_EVENT_SIGNAL_STRENGTH) {
-							printf
-							    ("\tSignal Strength : %s%%\n",
+						if (uievt == IPC_EVENT_SIGNAL_STRENGTH) {
+							printf("\tSignal Strength : %s%%\n",
 							     arg);
 						}
 
@@ -341,8 +335,7 @@ int main()
 
 			case IPC_EVENT_STATEMACHINE:
 				// Process a state machine message.
-				result =
-				    xsupgui_events_get_state_change(&ints, &sm,
+				result = xsupgui_events_get_state_change(&ints, &sm,
 								    &oldstate,
 								    &newstate,
 								    &tncconnectionid);
@@ -353,9 +346,7 @@ int main()
 
 			case IPC_EVENT_SCAN_COMPLETE:
 				// Process a scan complete event.
-				result =
-				    xsupgui_events_get_scan_complete_interface
-				    (&ints);
+				result = xsupgui_events_get_scan_complete_interface(&ints);
 				printf("Scan complete on interface %s.\n",
 				       ints);
 				free(ints);
@@ -364,11 +355,8 @@ int main()
 
 			case IPC_EVENT_REQUEST_PWD:
 				// Process a password request event.
-				result =
-				    xsupgui_events_get_passwd_challenge
-				    (&connname, &intname, &eapmethod, &chalstr);
-				printf
-				    ("Password requested for connection '%s'!\n",
+				result = xsupgui_events_get_passwd_challenge(&connname, &intname, &eapmethod, &chalstr);
+				printf("Password requested for connection '%s'!\n",
 				     connname);
 				printf("\tEAP method       : %s\n", eapmethod);
 				printf("\tChallenge String : %s\n", chalstr);
@@ -380,8 +368,7 @@ int main()
 			case IPC_EVENT_TNC_UI:
 				// Process a TNC UI event.  (This event is basically a TNC IMC
 				// sending some sort of status of notification to a UI component.)
-				if (xsupgui_events_get_tnc_ui_event
-				    (&value321, &value322) == 0) {
+				if (xsupgui_events_get_tnc_ui_event(&value321, &value322) == 0) {
 					printf("Got a TNC UI event.\n");
 					printf("\tOUI          : %d\n",
 					       value321);
@@ -394,8 +381,7 @@ int main()
 				// Process a TNC UI request.  This is triggered when an IMC asks
 				// the UI to do something.  In general, the UI should respond, but
 				// since this program isn't interactive, we can't. ;)
-				if (xsupgui_events_get_tnc_ui_request_event
-				    (&value321, &value322, &value323,
+				if (xsupgui_events_get_tnc_ui_request_event(&value321, &value322, &value323,
 				     &value324) == 0) {
 					printf
 					    ("Got a TNC UI request response event.\n");
@@ -422,14 +408,12 @@ int main()
 				// has been broken.  This is the right way to determine when the
 				// supplicant isn't going to send us more data, since it isn't
 				// platform specific.
-				printf
-				    ("Communication with the supplicant has been broken.\n");
+				printf("Communication with the supplicant has been broken.\n");
 				result = -2;	// To break out of the loop.
 				break;
 
 			default:
-				printf
-				    ("Unknown event received!  (Event : %ld)\n",
+				printf("Unknown event received!  (Event : %ld)\n",
 				     result);
 				break;
 			}

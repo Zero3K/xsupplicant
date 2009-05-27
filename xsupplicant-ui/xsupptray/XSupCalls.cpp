@@ -88,6 +88,7 @@ bool XSupCalls::connectXSupplicant()
 {
 	int retcode = xsupgui_connect();
 	if (retcode != 0) {
+	  printf("Connection return code is %d (%s)\n", retcode, strerror(retcode));
 		return false;
 	}
 	// Now check for errors from the supplicant

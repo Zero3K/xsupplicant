@@ -328,18 +328,19 @@ void TrayApp::slotConnectToSupplicant()
 	UIPlugins *plugin = m_pPlugins;
 	char verResult = 0;
 
+	printf("%s\n", __FUNCTION__);
 	m_timer.stop();
 	if (!m_bSupplicantConnected) {
+	  printf("Supplicant isn't connected, trying to connect.\n");
 		bcode = m_supplicant.connectToSupplicant();
 		if (!bcode) {
+		  printf("Couldn't connect!?\n");
 			if (m_pEmitter != NULL) {
 				disconnect(m_pEmitter,
-					   SIGNAL(signalTNCReply
-						  (uint32_t, uint32_t, uint32_t,
+					   SIGNAL(signalTNCReply(uint32_t, uint32_t, uint32_t,
 						   uint32_t, bool, int)),
 					   &m_supplicant,
-					   SLOT(TNCReply
-						(uint32_t, uint32_t, uint32_t,
+					   SLOT(TNCReply(uint32_t, uint32_t, uint32_t,
 						 uint32_t, bool, int)));
 			}
 			// Initialize and setup all the plugins...
@@ -354,16 +355,13 @@ void TrayApp::slotConnectToSupplicant()
 
 			m_bConnectFailed = true;
 
-			m_pTrayIcon->
-			    setToolTip(tr
-				       ("The XSupplicant service isn't running.  Please restart it."));
+			m_pTrayIcon->setToolTip(tr("The XSupplicant service isn't running.  Please restart it."));
 			setTrayIconState(ENGINE_DISCONNECTED);
 			// disable the menu options
 			setEnabledMenuItems(false);
 
 			m_timer.start(1000);	// wait one second and try again
-		} else if (m_supplicant.
-			   getAndCheckSupplicantVersion(full,
+		} else if (m_supplicant.getAndCheckSupplicantVersion(full,
 							number) == false) {
 			// Disconnect any live connections to the engine so we don't plug up the works.
 			m_supplicant.disconnectEventListener();
@@ -372,13 +370,10 @@ void TrayApp::slotConnectToSupplicant()
 			if (verResult == VERSION_CHECK_TIMEOUT) {
 				// Something is going on that has caused the engine to block.  (Usually some posture behvaior.)
 				// Take a nap and try again later up to RECONNECT_MAX_ATTEMPTS time(s).
-				if (m_cConnectFailures >=
-				    RECONNECT_MAX_ATTEMPTS) {
+				if (m_cConnectFailures >= RECONNECT_MAX_ATTEMPTS) {
 					QMessageBox::critical(this,
-							      tr
-							      ("Startup Failed"),
-							      tr
-							      ("Unable to establish a stable connection to the supplicant engine.  This UI will now terminate."));
+							      tr("Startup Failed"),
+							      tr("Unable to establish a stable connection to the supplicant engine.  This UI will now terminate."));
 					slotExit();
 					return;
 				}
@@ -386,9 +381,7 @@ void TrayApp::slotConnectToSupplicant()
 				m_cConnectFailures++;
 				m_bConnectFailed = true;
 
-				m_pTrayIcon->
-				    setToolTip(tr
-					       ("The XSupplicant service is responding slowly.  Please wait."));
+				m_pTrayIcon->setToolTip(tr("The XSupplicant service is responding slowly.  Please wait."));
 				setTrayIconState(ENGINE_DISCONNECTED);
 				// disable the menu options
 				setEnabledMenuItems(false);
@@ -397,8 +390,7 @@ void TrayApp::slotConnectToSupplicant()
 			} else {
 				QMessageBox::critical(this,
 						      tr("Startup Failed"),
-						      tr
-						      ("This version of the UI is not compatible with the supplicant engine version in use."));
+						      tr("This version of the UI is not compatible with the supplicant engine version in use."));
 				slotExit();
 			}
 		} else {
@@ -991,32 +983,29 @@ void TrayApp::start()
 		break;
 	case START_LOG:
 		// display the log window - needs to be queued up - don't call immediately
-		bValue =
-		    QMetaObject::invokeMethod(this, "slotViewLog",
+		bValue = QMetaObject::invokeMethod(this, "slotViewLog",
 					      Qt::QueuedConnection);
 		break;
 
 	case START_LOGIN:
-		bValue =
-		    QMetaObject::invokeMethod(this, "showConnectDlg",
+		bValue = QMetaObject::invokeMethod(this, "showConnectDlg",
 					      Qt::QueuedConnection);
 		break;
 
 	case START_CONFIG:
-		bValue =
-		    QMetaObject::invokeMethod(this, "slotLaunchConfig",
+		bValue = QMetaObject::invokeMethod(this, "slotLaunchConfig",
 					      Qt::QueuedConnection);
 		break;
 
 	case START_ABOUT:
-		bValue =
-		    QMetaObject::invokeMethod(this, "slotAbout",
+		bValue = QMetaObject::invokeMethod(this, "slotAbout",
 					      Qt::QueuedConnection);
 		break;
 
 	default:
 		break;
 	}
+
 	if (!bValue) {
 		// what to do if this ever happens? Right now, nothing - just display a debug message
 		Q_ASSERT_X(false, "TrayApp", "Couldn't invoke method");
@@ -1161,8 +1150,7 @@ void TrayApp::buildPopupMenu(void)
 			std::sort(wirelessIntList.begin(),
 				  wirelessIntList.end());
 			if (wirelessIntList.size() > 1) {
-				QMenu *quickConnectMenu =
-				    new QMenu(tr("Quick Connect"));
+				QMenu *quickConnectMenu = new QMenu(tr("Quick Connect"));
 				m_pTrayIconMenu->addMenu(quickConnectMenu);
 				m_pQuickConnectMenu = quickConnectMenu;
 				m_pTrayIconMenu->addSeparator();
@@ -1170,49 +1158,30 @@ void TrayApp::buildPopupMenu(void)
 				for (int i = 0; i < wirelessIntList.size(); i++) {
 					// remove extra cruft from adapter name
 					QString intName;
-					intName =
-					    Util::
-					    removePacketSchedulerFromName
-					    (wirelessIntList.at(i));
+					intName = Util::removePacketSchedulerFromName(wirelessIntList.at(i));
 
-					WirelessNetworkMenu *pWirelessMenu =
-					    new
-					    WirelessNetworkMenu(wirelessIntList.
-								at(i), intName,
+					WirelessNetworkMenu *pWirelessMenu = new WirelessNetworkMenu(wirelessIntList.at(i), intName,
 								this);
 					if (pWirelessMenu != NULL) {
-						if (pWirelessMenu->menu() !=
-						    NULL) {
-							pWirelessMenu->
-							    populate();
-							quickConnectMenu->
-							    addMenu
-							    (pWirelessMenu->
-							     menu());
-							m_networkMenuVec.
-							    push_back
-							    (pWirelessMenu);
+						if (pWirelessMenu->menu() != NULL) {
+							pWirelessMenu->populate();
+							quickConnectMenu->addMenu(pWirelessMenu->menu());
+							m_networkMenuVec.push_back(pWirelessMenu);
 						}
 					}
 				}
 			} else {
-				WirelessNetworkMenu *pWirelessMenu =
-				    new WirelessNetworkMenu(wirelessIntList.
-							    at(0),
+				WirelessNetworkMenu *pWirelessMenu = new WirelessNetworkMenu(wirelessIntList.at(0),
 							    tr("Quick Connect"),
 							    this);
 				if (pWirelessMenu != NULL) {
 					if (pWirelessMenu->menu() != NULL) {
 						pWirelessMenu->populate();
-						m_pTrayIconMenu->
-						    addMenu(pWirelessMenu->
-							    menu());
+						m_pTrayIconMenu->addMenu(pWirelessMenu->menu());
 						m_pTrayIconMenu->addSeparator();
-						m_networkMenuVec.
-						    push_back(pWirelessMenu);
+						m_networkMenuVec.push_back(pWirelessMenu);
 					}
-					m_pQuickConnectMenu =
-					    pWirelessMenu->menu();
+					m_pQuickConnectMenu = pWirelessMenu->menu();
 				}
 			}
 		}
@@ -1243,12 +1212,9 @@ void TrayApp::createTrayIcon()
 	Util::myConnect(m_pTrayIcon,
 			SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
 			this,
-			SLOT(slotIconActivated
-			     (QSystemTrayIcon::ActivationReason)));
+			SLOT(slotIconActivated(QSystemTrayIcon::ActivationReason)));
 
-	m_pTrayIcon->
-	    setToolTip(tr
-		       ("The XSupplicant service isn't running.  Please restart it."));
+	m_pTrayIcon->setToolTip(tr("The XSupplicant service isn't running.  Please restart it."));
 	setTrayIconState(ENGINE_DISCONNECTED);
 
 	m_pTrayIcon->show();	// Even if the icon couldn't be loaded, we will at least get a blank spot on the tray.
@@ -1324,10 +1290,8 @@ void TrayApp::slotIconActivated(QSystemTrayIcon::ActivationReason reason)
 
 			else
 				QMessageBox::information(this,
-							 tr
-							 ("Interface Management"),
-							 tr
-							 ("XSupplicant is not currently managing your interfaces.  If you wish to have XSupplicant manage your interfaces, please right-click the icon, and select \"Manage Interfaces with XSupplicant\"."));
+							 tr("Interface Management"),
+							 tr("XSupplicant is not currently managing your interfaces.  If you wish to have XSupplicant manage your interfaces, please right-click the icon, and select \"Manage Interfaces with XSupplicant\"."));
 #else
 			this->showConnectDlg();
 #endif				// WINDOWS
@@ -1374,8 +1338,7 @@ void TrayApp::slotViewLog()
 {
 	if (!m_bSupplicantConnected) {
 		QMessageBox::warning(this, tr("XSupplicant not connected"),
-				     tr
-				     ("You can't view the log file until the XSupplicant is connected"));
+				     tr("You can't view the log file until the XSupplicant is connected"));
 	} else {
 		// This one is a little more work - I need to get the message going in a separate thread
 		m_pLoggingCon->showLog();
@@ -1392,8 +1355,7 @@ void TrayApp::slotAbout()
 		m_pAboutWindow = new AboutWindow(this);
 		if (m_pAboutWindow->create() == false) {
 			QMessageBox::critical(this, tr("Form Creation Error"),
-					      tr
-					      ("The About Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
+					      tr("The About Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
 			delete m_pAboutWindow;
 			m_pAboutWindow = NULL;
 		} else {
@@ -1455,10 +1417,8 @@ void TrayApp::slotExit()
 	// then exit
 
 	if (m_bSupplicantConnected) {
-		if (QMessageBox::
-		    question(this, tr("Drop Connections"),
-			     tr
-			     ("Would you like to terminate any active authenticated sessions?  This will terminate any active network connections you may have!"),
+		if (QMessageBox::question(this, tr("Drop Connections"),
+			     tr("Would you like to terminate any active authenticated sessions?  This will terminate any active network connections you may have!"),
 			     (QMessageBox::Yes | QMessageBox::No),
 			     QMessageBox::No) == QMessageBox::Yes) {
 			dropAllConnections();
@@ -1510,26 +1470,21 @@ void TrayApp::slotConnectionTimeout(const QString & devName)
 	char *conname = NULL;
 	QString temp;
 
-	if (xsupgui_request_get_conn_name_from_int
-	    (devName.toAscii().data(), &conname) == REQUEST_SUCCESS) {
+	if (xsupgui_request_get_conn_name_from_int(devName.toAscii().data(), &conname) == REQUEST_SUCCESS) {
 		temp = conname;
 		if (QMessageBox::
 		    information(this, tr("Connection Lost"),
-				tr
-				("The connection '%1' has been lost.  Would you like the supplicant to attempt to connect to other priority networks?").
+				tr("The connection '%1' has been lost.  Would you like the supplicant to attempt to connect to other priority networks?").
 				arg(temp), QMessageBox::Yes | QMessageBox::No,
 				QMessageBox::Yes) == QMessageBox::Yes) {
-			if (xsupgui_request_set_connection_lock
-			    (devName.toAscii().data(),
+			if (xsupgui_request_set_connection_lock(devName.toAscii().data(),
 			     FALSE) != REQUEST_SUCCESS) {
 				QMessageBox::critical(this, tr("Error"),
-						      tr
-						      ("Unable to configure the interface to automatically select a new connection.  You will have to connect manually."));
+						      tr("Unable to configure the interface to automatically select a new connection.  You will have to connect manually."));
 			} else {
 				QMessageBox::information(this,
 							 tr("Information"),
-							 tr
-							 ("The supplicant will now look for other priority networks to connect to.  This may take several seconds."));
+							 tr("The supplicant will now look for other priority networks to connect to.  This may take several seconds."));
 			}
 		}
 
@@ -1540,15 +1495,10 @@ void TrayApp::slotConnectionTimeout(const QString & devName)
 void TrayApp::slotCreateTroubleticket()
 {
 	int err = 0;
-	QString filePath =
-	    QDir::
-	    toNativeSeparators((QDir::homePath().
-				append(tr
-				       ("/Desktop/XSupplicant Trouble Ticket.zip"))));
+	QString filePath = QDir::toNativeSeparators((QDir::homePath().append(tr("/Desktop/XSupplicant Trouble Ticket.zip"))));
 
 	// pass in active window as parent so file dialog is centered on window used to trigger this
-	QString fileName =
-	    QFileDialog::getSaveFileName(m_app.activeWindow(),
+	QString fileName = QFileDialog::getSaveFileName(m_app.activeWindow(),
 					 tr("Save Trouble ticket"), filePath,
 					 tr("Archives (*.zip)"));
 
@@ -1563,10 +1513,8 @@ void TrayApp::slotCreateTroubleticket()
 
 	if (m_pCreateTT != NULL) {
 		QMessageBox::information(this,
-					 tr
-					 ("Trouble Ticket Creation In Progress"),
-					 tr
-					 ("There is already a trouble ticket being created.  Please wait until it is complete before attempting to create another one."));
+					 tr("Trouble Ticket Creation In Progress"),
+					 tr("There is already a trouble ticket being created.  Please wait until it is complete before attempting to create another one."));
 		return;
 	}
 
@@ -1589,21 +1537,17 @@ void TrayApp::slotCreateTroubleticket()
 
 	case REQUEST_TIMEOUT:
 		QMessageBox::information(this, tr("Trouble ticket"),
-					 tr
-					 ("XSupplicant experienced a timeout attempting to create the Trouble ticket!\n"));
+					 tr("XSupplicant experienced a timeout attempting to create the Trouble ticket!\n"));
 		break;
 
 	case REQUEST_FAILURE:
 		QMessageBox::information(this, tr("Trouble ticket"),
-					 tr
-					 ("XSupplicant failed while attempting to create the Trouble ticket!\n"));
+					 tr("XSupplicant failed while attempting to create the Trouble ticket!\n"));
 		break;
 
 	default:
 		QMessageBox::information(this, tr("Trouble ticket"),
-					 tr
-					 ("XSupplicant got an unexpected error (%1) when attempting to create the Trouble ticket!\n").
-					 arg(err));
+					 tr("XSupplicant got an unexpected error (%1) when attempting to create the Trouble ticket!\n").arg(err));
 		break;
 	}
 
@@ -1616,8 +1560,7 @@ void TrayApp::slotCreateTroubleticketDone()
 	disconnectTTSignals();
 
 	QMessageBox::information(this, tr("Troubleticket Created"),
-				 tr
-				 ("Your trouble ticket was created successfully."));
+				 tr("Your trouble ticket was created successfully."));
 }
 
 void TrayApp::disconnectTTSignals()
@@ -1638,8 +1581,7 @@ void TrayApp::slotCreateTroubleticketError()
 	disconnectTTSignals();
 
 	QMessageBox::critical(this, tr("Troubleticket Error"),
-			      tr
-			      ("There was an error creating your troubleticket.  The troubleticket file may not exist, or may be incomplete."));
+			      tr("There was an error creating your troubleticket.  The troubleticket file may not exist, or may be incomplete."));
 }
 
 //! 
@@ -1667,22 +1609,19 @@ bool TrayApp::startEventListenerThread()
 		   "Logging Console must be initialized first");
 
 	// Create new thread
-	m_pEventListenerThread =
-	    new EventListenerThread(&m_supplicant, m_pEmitter, this);
+	m_pEventListenerThread = new EventListenerThread(&m_supplicant, m_pEmitter, this);
 
 	if (m_pEventListenerThread == NULL) {
 		QMessageBox::critical(this,
 				      tr("XSupplicant Event Listener Error"),
-				      tr
-				      ("Can't create the EventListenerThread object.  You must shut down the XSupplicant UI and restart."));
+				      tr("Can't create the EventListenerThread object.  You must shut down the XSupplicant UI and restart."));
 		return false;
 	}
 
 	if (!m_pEventListenerThread->connectXSupEventListener(true)) {
 		QMessageBox::critical(this,
 				      tr("XSupplicant Event Message Error"),
-				      tr
-				      ("Unable to connect to the service's event channel."
+				      tr("Unable to connect to the service's event channel."
 				       "You must shut down the XSupplicant UI and restart."));
 
 		delete m_pEventListenerThread;
@@ -1751,10 +1690,7 @@ void TrayApp::loadPlugins()
 			    m_pPlugins->getPluginVersionString();
 
 			if (m_pEmitter != NULL) {
-				m_pEmitter->
-				    sendUIMessage(tr
-						  ("Plugin load succeeded for %1.\n").
-						  arg(plugin_path));
+				m_pEmitter->sendUIMessage(tr("Plugin load succeeded for %1.\n").arg(plugin_path));
 			}
 		} else {
 			if (m_pEmitter != NULL) {
@@ -1769,8 +1705,7 @@ void TrayApp::loadPlugins()
 
 		// Try to load the update plugin.
 		if (m_pPlugins != NULL) {
-			m_pPlugins->next =
-			    new UIPlugins(m_pEmitter, &m_supplicant);
+			m_pPlugins->next = new UIPlugins(m_pEmitter, &m_supplicant);
 			nextPlugin = m_pPlugins->next;
 		} else {
 			m_pPlugins = new UIPlugins(m_pEmitter, &m_supplicant);
@@ -1794,10 +1729,7 @@ void TrayApp::loadPlugins()
 				nextPlugin->updateEngineVersionString(version);
 
 				if (m_pEmitter != NULL) {
-					m_pEmitter->
-					    sendUIMessage(tr
-							  ("Plugin load succeeded for %1.\n").
-							  arg(plugin_path));
+					m_pEmitter->sendUIMessage(tr("Plugin load succeeded for %1.\n").arg(plugin_path));
 				}
 			} else {
 				if (m_pEmitter != NULL) {
@@ -1842,18 +1774,15 @@ void TrayApp::showBasicConfig(void)
 {
 	if (!m_bSupplicantConnected) {
 		QMessageBox::warning(this, tr("Service not connected yet."),
-				     tr
-				     ("You can't run the Configuration module until the service is connected"));
+				     tr("You can't run the Configuration module until the service is connected"));
 	} else {
 		if (m_pConnMgr == NULL) {
-			m_pConnMgr =
-			    new ConnectMgrDlg(this, NULL, m_pEmitter, this,
+			m_pConnMgr = new ConnectMgrDlg(this, NULL, m_pEmitter, this,
 					      &m_supplicant);
 			if (m_pConnMgr == NULL || m_pConnMgr->create() == false) {
 				QMessageBox::critical(this,
 						      tr("Form Creation Error"),
-						      tr
-						      ("The Connection Manager Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
+						      tr("The Connection Manager Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
 				if (m_pConnMgr != NULL) {
 					delete m_pConnMgr;
 					m_pConnMgr = NULL;
@@ -1871,18 +1800,15 @@ void TrayApp::showConnectDlg(void)
 {
 	if (!m_bSupplicantConnected) {
 		QMessageBox::warning(this, tr("Service not connected yet."),
-				     tr
-				     ("You can't run the Configuration module until the service is connected"));
+				     tr("You can't run the Configuration module until the service is connected"));
 	} else {
 		if (m_pConnectDlg == NULL) {
-			m_pConnectDlg =
-			    new ConnectDlg(this, NULL, m_pEmitter, this);
+			m_pConnectDlg = new ConnectDlg(this, NULL, m_pEmitter, this);
 			if (m_pConnectDlg == NULL
 			    || m_pConnectDlg->create() == false) {
 				QMessageBox::critical(this,
 						      tr("Form Creation Error"),
-						      tr
-						      ("The Connect Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
+						      tr("The Connect Dialog form was unable to be created.  It is likely that the UI design file was not available.  Please correct this and try again."));
 				if (m_pConnectDlg != NULL) {
 					delete m_pConnectDlg;
 					m_pConnectDlg = NULL;
@@ -1905,8 +1831,7 @@ void TrayApp::connectToNetwork(const QString & networkName,
 	conn_enum *pConn = NULL;
 
 	// first, look for existing connection profile
-	retVal =
-	    xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL |
+	retVal = xsupgui_request_enum_connections((CONFIG_LOAD_GLOBAL |
 					      CONFIG_LOAD_USER), &pConn);
 	if (retVal == REQUEST_SUCCESS && pConn != NULL) {
 		int i = 0;
@@ -1926,17 +1851,12 @@ void TrayApp::connectToNetwork(const QString & networkName,
 				// if only one connection for this network and adapter, connect to it
 				char *adapterName = NULL;
 
-				retVal =
-				    xsupgui_request_get_devname(adapterDesc.
-								toAscii().
-								data(),
+				retVal = xsupgui_request_get_devname(adapterDesc.
+								toAscii().data(),
 								&adapterName);
 
-				if (retVal == REQUEST_SUCCESS
-				    && adapterName != NULL)
-					retVal =
-					    xsupgui_request_set_connection
-					    (adapterName, pConn[idx].name);
+				if (retVal == REQUEST_SUCCESS && adapterName != NULL)
+					retVal = xsupgui_request_set_connection(adapterName, pConn[idx].name);
 
 				if (retVal != REQUEST_SUCCESS
 				    || adapterName == NULL) {
@@ -1968,23 +1888,15 @@ void TrayApp::connectToNetwork(const QString & networkName,
 			int i = 0;
 			while (pInterfaceList[i].desc != NULL) {
 				if (adapterDesc == pInterfaceList[i].desc) {
-					retVal =
-					    xsupgui_request_enum_ssids
-					    (pInterfaceList[i].name,
+					retVal = xsupgui_request_enum_ssids(pInterfaceList[i].name,
 					     &pSSIDList);
 					if (retVal == REQUEST_SUCCESS
 					    && pSSIDList != NULL) {
 						int j = 0;
 						while (pSSIDList[j].ssidname !=
 						       NULL) {
-							if (QString
-							    (pSSIDList[j].
-							     ssidname) ==
-							    networkName) {
-								selectedNetwork
-								    =
-								    &(pSSIDList
-								      [j]);
+							if (QString(pSSIDList[j].ssidname) == networkName) {
+								selectedNetwork = &(pSSIDList[j]);
 								break;
 							}
 							++j;
@@ -1999,61 +1911,43 @@ void TrayApp::connectToNetwork(const QString & networkName,
 		if (selectedNetwork != NULL) {
 			QString connName = networkName;
 			connName.append(tr("_Connection"));
-			config_connection *pNewConn;
+			config_connection *pNewConn = NULL;
 			if (XSupWrapper::createNewConnection(connName, &pNewConn)
 			    && pNewConn != NULL) {
 				bool runWizard = false;
 
 				pNewConn->priority = DEFAULT_PRIORITY;
-				pNewConn->ssid =
-				    _strdup(networkName.toAscii().data());
+				pNewConn->ssid = _strdup(networkName.toAscii().data());
 
 				// try to use the "best" security available
 				unsigned int abilities = selectedNetwork->abil;
 				if ((abilities & ABILITY_ENC) != 0) {
-					if ((abilities &
-					     (ABILITY_WPA_IE | ABILITY_RSN_IE))
-					    == 0) {
-						pNewConn->association.
-						    association_type =
-						    ASSOC_OPEN;
-						pNewConn->association.
-						    auth_type = AUTH_NONE;
+					if ((abilities & (ABILITY_WPA_IE | ABILITY_RSN_IE)) == 0) {
+						pNewConn->association.association_type = ASSOC_OPEN;
+						pNewConn->association.auth_type = AUTH_NONE;
 						pNewConn->association.txkey = 1;
 					}
 					if ((abilities & ABILITY_RSN_DOT1X) !=
 					    0) {
-						pNewConn->association.
-						    association_type =
-						    ASSOC_WPA2;
+						pNewConn->association.association_type = ASSOC_WPA2;
 						runWizard = true;
 					}
 					if ((abilities & ABILITY_WPA_DOT1X) !=
 					    0) {
-						pNewConn->association.
-						    association_type =
-						    ASSOC_WPA;
+						pNewConn->association.association_type = ASSOC_WPA;
 						runWizard = true;
 					}
 					if ((abilities & ABILITY_RSN_PSK) != 0) {
-						pNewConn->association.
-						    association_type =
-						    ASSOC_WPA2;
-						pNewConn->association.
-						    auth_type = AUTH_PSK;
+						pNewConn->association.association_type = ASSOC_WPA2;
+						pNewConn->association.auth_type = AUTH_PSK;
 					}
 					if ((abilities & ABILITY_WPA_PSK) != 0) {
-						pNewConn->association.
-						    association_type =
-						    ASSOC_WPA;
-						pNewConn->association.
-						    auth_type = AUTH_PSK;
+						pNewConn->association.association_type = ASSOC_WPA;
+						pNewConn->association.auth_type = AUTH_PSK;
 					}
 				} else {
-					pNewConn->association.association_type =
-					    ASSOC_OPEN;
-					pNewConn->association.auth_type =
-					    AUTH_NONE;
+					pNewConn->association.association_type = ASSOC_OPEN;
+					pNewConn->association.auth_type = AUTH_NONE;
 				}
 
 				pNewConn->ip.type = CONFIG_IP_USE_DHCP;
@@ -2062,95 +1956,47 @@ void TrayApp::connectToNetwork(const QString & networkName,
 				// Dot 1X network.  Need to run wizard to prompt user for more info
 				if (runWizard == true) {
 					// alert user we are launching the wizard
-					QString msg =
-					    tr
-					    ("The network '%1' requires some additional information to connect.  The XSupplicant will now launch the Connection Wizard to collect this information. Continue?").
-					    arg(networkName);
-					if (QMessageBox::
-					    information(this,
-							tr
-							("Information Needed"),
+					QString msg = tr("The network '%1' requires some additional information to connect.  The XSupplicant will now launch the Connection Wizard to collect this information. Continue?").arg(networkName);
+					if (QMessageBox::information(this,
+								     tr("Information Needed"),
 							msg,
 							QMessageBox::
 							Ok | QMessageBox::
-							Cancel) ==
-					    QMessageBox::Ok) {
+							Cancel) == QMessageBox::Ok) {
 						if (m_pConnWizard == NULL) {
-							m_pConnWizard =
-							    new
-							    ConnectionWizard
-							    (adapterDesc, this,
+							m_pConnWizard = new ConnectionWizard(adapterDesc, this,
 							     this, m_pEmitter);
-							if (m_pConnWizard !=
-							    NULL
-							    && m_pConnWizard->
-							    create() != false) {
+							if (m_pConnWizard != NULL
+							    && m_pConnWizard->create() != false) {
 								// register for cancelled and finished events
-								Util::
-								    myConnect
-								    (m_pConnWizard,
-								     SIGNAL
-								     (cancelled
-								      ()), this,
-								     SLOT
-								     (cancelConnectionWizard
-								      ()));
-								Util::
-								    myConnect
-								    (m_pConnWizard,
-								     SIGNAL
-								     (finished
-								      (bool,
-								       const
-								       QString
-								       &,
-								       const
-								       QString
-								       &)),
+								Util::myConnect(m_pConnWizard,
+								     SIGNAL(cancelled()), this,
+								     SLOT(cancelConnectionWizard()));
+								Util::myConnect(m_pConnWizard,
+								     SIGNAL(finished(bool,
+								       const QString &,
+								       const QString &)),
 								     this,
-								     SLOT
-								     (finishConnectionWizard
-								      (bool,
-								       const
-								       QString
-								       &,
-								       const
-								       QString
-								       &)));
+								     SLOT(finishConnectionWizard(bool,
+								       const QString &,
+								       const QString &)));
 
-								ConnectionWizardData
-								    wizData;
-								bool success =
-								    wizData.
-								    initFromSupplicantProfiles
-								    (CONFIG_LOAD_USER,
+								ConnectionWizardData wizData;
+								bool success = wizData.initFromSupplicantProfiles(CONFIG_LOAD_USER,
 								     pNewConn,
 								     NULL,
 								     NULL);
-								if (success ==
-								    true) {
-									m_pConnWizard->
-									    editDot1XInfo
-									    (wizData);
-									m_pConnWizard->
-									    show
-									    ();
-									enableMenu
-									    =
-									    false;
+								if (success == true) {
+									m_pConnWizard->editDot1XInfo(wizData);
+									m_pConnWizard->show();
+									enableMenu = false;
 								} else
-									cleanupConnectionWizard
-									    ();
+									cleanupConnectionWizard();
 							} else {
-								QMessageBox::
-								    critical
-								    (this,
-								     tr
-								     ("Error Launching Connection Wizard"),
-								     tr
-								     ("A failure occurred when attempting to launch the Connection Wizard"));
-								cleanupConnectionWizard
-								    ();
+								QMessageBox::critical(this,
+								     tr("Error Launching Connection Wizard"),
+								     tr("A failure occurred when attempting to launch the Connection Wizard"));
+								cleanupConnectionWizard();
 							}
 						} else {
 							// already exists.  What to do?
@@ -2160,35 +2006,22 @@ void TrayApp::connectToNetwork(const QString & networkName,
 					// set this connection as volatile
 					pNewConn->flags |= CONFIG_VOLATILE_CONN;
 
-					retVal =
-					    xsupgui_request_set_connection_config
-					    (CONFIG_LOAD_USER, pNewConn);
+					retVal = xsupgui_request_set_connection_config(CONFIG_LOAD_USER, pNewConn);
 
 					if (retVal == REQUEST_SUCCESS) {
 						// save off the config since it changed
-						if ((XSupWrapper::
-						     writeConfig
-						     (CONFIG_LOAD_GLOBAL) ==
-						     false)
-						    || (XSupWrapper::
-							writeConfig
-							(CONFIG_LOAD_USER) ==
-							false)) {
+						if ((XSupWrapper::writeConfig(CONFIG_LOAD_GLOBAL) == false)
+						    || (XSupWrapper::writeConfig(CONFIG_LOAD_USER) == false)) {
 							// error. what to do here?  For now, fail silently as it's non-fatal
 							// perhaps write to log?
 						}
 
 						char *adapterName = NULL;
 
-						retVal =
-						    xsupgui_request_get_devname
-						    (adapterDesc.toAscii().
-						     data(), &adapterName);
+						retVal = xsupgui_request_get_devname(adapterDesc.toAscii().data(), &adapterName);
 						if (retVal == REQUEST_SUCCESS
 						    && adapterName != NULL)
-							retVal =
-							    xsupgui_request_set_connection
-							    (adapterName,
+							retVal = xsupgui_request_set_connection(adapterName,
 							     pNewConn->name);
 
 						if (retVal != REQUEST_SUCCESS
@@ -2198,8 +2031,7 @@ void TrayApp::connectToNetwork(const QString & networkName,
 								     tr("Error Connecting to Network"),
 								     message);
 						}
-						xsupgui_request_free_str
-						    (&adapterName);
+						xsupgui_request_free_str(&adapterName);
 					} else {
 						// !!! jking - error, what to do here?
 					}
@@ -2224,19 +2056,15 @@ void TrayApp::finishConnectionWizard(bool success, const QString & connName,
 		int retVal = 0;
 		config_connection *pConfig = NULL;
 
-		success =
-		    XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, connName,
+		success = XSupWrapper::getConfigConnection(CONFIG_LOAD_USER, connName,
 						     &pConfig);
 		if (success == false)
-			success =
-			    XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL,
+			success = XSupWrapper::getConfigConnection(CONFIG_LOAD_GLOBAL,
 							     connName,
 							     &pConfig);
 
 		if (success == true && pConfig != NULL) {
-			retVal =
-			    xsupgui_request_set_connection(adaptName.toAscii().
-							   data(),
+			retVal = xsupgui_request_set_connection(adaptName.toAscii().data(),
 							   connName.toAscii().
 							   data());
 			if (retVal != REQUEST_SUCCESS)
@@ -2267,11 +2095,9 @@ void TrayApp::cleanupConnectionWizard(void)
 		Util::myDisconnect(m_pConnWizard, SIGNAL(cancelled()), this,
 				   SLOT(cancelConnectionWizard()));
 		Util::myDisconnect(m_pConnWizard,
-				   SIGNAL(finished
-					  (bool, const QString &,
+				   SIGNAL(finished(bool, const QString &,
 					   const QString &)), this,
-				   SLOT(finishConnectionWizard
-					(bool, const QString &,
+				   SLOT(finishConnectionWizard(bool, const QString &,
 					 const QString &)));
 
 		delete m_pConnWizard;
@@ -2294,22 +2120,16 @@ void TrayApp::handleBadPSK(const QString & intName)
 
 	retval = xsupgui_request_get_ssid(intName.toAscii().data(), &pSSID);
 	if (retval == REQUEST_SUCCESS && pSSID != NULL)
-		errMsg =
-		    tr
-		    ("The password you entered for the PSK network '%1' is invalid.  Please correct this and try again.").
-		    arg(pSSID);
+		errMsg = tr("The password you entered for the PSK network '%1' is invalid.  Please correct this and try again.").arg(pSSID);
 	else
-		errMsg =
-		    tr
-		    ("The password you entered for the PSK network is invalid.  Please correct this and try again.");
+		errMsg = tr("The password you entered for the PSK network is invalid.  Please correct this and try again.");
 
 	if (pSSID != NULL)
 		free(pSSID);
 
 	// get connection name before disconnecting
 	char *pConnName;
-	retval =
-	    xsupgui_request_get_conn_name_from_int(intName.toAscii().data(),
+	retval = xsupgui_request_get_conn_name_from_int(intName.toAscii().data(),
 						   &pConnName);
 
 	// disconnect so we don't repeatedly try to connect
@@ -2340,8 +2160,7 @@ void TrayApp::promptConnectionSelection(const QStringList & connList,
 	if (m_pConnSelDlg != NULL)
 		delete m_pConnSelDlg;
 
-	m_pConnSelDlg =
-	    new ConnectionSelectDlg(this, NULL, connList, adapterDesc);
+	m_pConnSelDlg = new ConnectionSelectDlg(this, NULL, connList, adapterDesc);
 	if (m_pConnSelDlg != NULL) {
 		if (m_pConnSelDlg->create() == true) {
 			m_pConnSelDlg->show();
@@ -2368,12 +2187,10 @@ void TrayApp::slotOtherSupplicant(const QString & intDesc)
 {
 	if (!m_OtherSupsDescs.contains(intDesc)) {
 		QMessageBox::warning(this, tr("Other Wireless Manager"),
-				     tr
-				     ("The state of the wireless interface changed unexpectedly.  This "
+				     tr("The state of the wireless interface changed unexpectedly.  This "
 				      "often indicates another supplicant or wireless manager is running.  Please shut down any other supplicants or wireless "
 				      "managers that may be running on interface '%1'.\n\n"
-				      "Any active connection attempts by XSupplicant on this interface have been terminated.").
-				     arg(intDesc));
+				      "Any active connection attempts by XSupplicant on this interface have been terminated.").arg(intDesc));
 
 		// Stuff the description in our string list so that we don't keep screaming.
 		m_OtherSupsDescs << intDesc;

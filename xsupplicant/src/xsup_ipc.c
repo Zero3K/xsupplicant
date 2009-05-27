@@ -395,11 +395,9 @@ void xsup_ipc_send_message(int skfd, char *tosend, int tolen)
 				hdr->flag_byte = (IPC_MSG_TOTAL_SIZE | IPC_MSG_MORE_FRAGS);
 				frag_size = (BUFSIZE - sizeof(ipc_header));
 				hdr->length = htonl(tolen);
-			} else if ((tolen - offset) >
-				   (BUFSIZE - sizeof(ipc_header))) {
+			} else if ((tolen - offset) > (BUFSIZE - sizeof(ipc_header))) {
 				// We have more fragments.
-				hdr->flag_byte =
-				    (IPC_MSG_MORE_FRAGS | IPC_MSG_FRAG_SIZE);
+				hdr->flag_byte = (IPC_MSG_MORE_FRAGS | IPC_MSG_FRAG_SIZE);
 				frag_size = (BUFSIZE - sizeof(ipc_header));
 				hdr->length = htonl(frag_size);
 			} else {
@@ -419,8 +417,7 @@ void xsup_ipc_send_message(int skfd, char *tosend, int tolen)
 			debug_hex_dump(DEBUG_IPC, frag,
 				       (frag_size + sizeof(ipc_header)));
 
-			if (send
-			    (skfd, frag, (frag_size + sizeof(ipc_header)),
+			if (send(skfd, frag, (frag_size + sizeof(ipc_header)),
 			     0) <= 0) {
 				debug_printf(DEBUG_NORMAL,
 					     "Couldn't send response document "
@@ -603,7 +600,7 @@ int xsup_ipc_new_socket(context * ctx, int sock)
 		ipcs[i].flags = IPC_CONNECTED;
 
 		if (sock == ipc_sock)
-		  SET_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY);
+		    SET_FLAG(ipcs[i].flags, IPC_EVENTS_ONLY);
 
 		if (event_core_register(newsock, NULL, xsup_ipc_event,
 					LOW_PRIORITY, "client msg socket") < 0)
