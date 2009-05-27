@@ -108,12 +108,8 @@ struct cardif_funcs {
 	// Delete a key.
 	int (*delete_key) (context *, int, int);
 
-#if !defined(WINDOWS) && !defined(__APPLE__)
-        void (*associate)(context *, uint8_t);
-  #else
 	// Tell the card to associate to a specific SSID.
 	void (*associate) (context *);
-  #endif // LINUX      
 
 	// Request the SSID for this card.
 	int (*get_ssid) (context *, char *, unsigned int);
@@ -167,12 +163,8 @@ struct cardif_funcs {
 	// Get the frequency of the current connection
 	int (*get_freq) (context *, uint32_t *);
 
-  #ifndef WINDOWS
-        double (*set_freq)(context *, uint8_t);
-  #else
 	// Set the frequency of the current connection
 	double (*set_freq) (context *);
-  #endif // WINDOWS
 };
 
 // Stuff needed by both wired, and wireless interfaces.
@@ -216,11 +208,7 @@ int cardif_set_wep_key(context *, uint8_t *, int, int);
 int cardif_set_tkip_key(context *, char *, int, int, char *, int);
 int cardif_set_ccmp_key(context *, char *, int, int, char *, int);
 int cardif_delete_key(context *, int, int);
-#if !defined(WINDOWS) && !defined(__APPLE__)
-void cardif_associate(context *, uint8_t);
-#else
 void cardif_associate(context *);
-#endif
 int cardif_disassociate(context *, int);
 int cardif_GetSSID(context *, char *, unsigned int);
 int cardif_check_ssid(context *);

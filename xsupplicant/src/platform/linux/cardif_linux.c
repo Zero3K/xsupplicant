@@ -737,7 +737,7 @@ int cardif_set_freq(context * ctx)
 	if (wireless->set_freq == NULL)
 		return XEMALLOC;
 
-	return wireless->set_freq(ctx, 1);
+	return wireless->set_freq(ctx);
 }
 
 /**
@@ -838,7 +838,7 @@ int cardif_delete_key(context * ctx, int key_idx, int set_tx)
  * @param[in] ctx   The context that contains the interface that we want to
  *                  attempt an association on.
  **/
-void cardif_associate(context * ctx, uint8_t reason)
+void cardif_associate(context * ctx)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
@@ -858,7 +858,7 @@ void cardif_associate(context * ctx, uint8_t reason)
 		return;
 	}
 
-	wireless->associate(ctx, reason);
+	wireless->associate(ctx);
 }
 
 /**
@@ -1780,7 +1780,7 @@ void cardif_reassociate(context * ctx, uint8_t reason)
 		cardif_clear_keys(ctx);
 	}
 
-	cardif_associate(ctx, reason);
+	cardif_associate(ctx);
 }
 
 /**
@@ -1917,11 +1917,11 @@ int check_freq_to_switch_ap(context *ctx, double freq)
   wireless_ctx *wctx;
 
   if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
-    return;
+    return -1;
 
   if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
 		   FALSE))
-    return;
+    return -1;
 
   wctx = (wireless_ctx *)ctx->intTypeData;
 

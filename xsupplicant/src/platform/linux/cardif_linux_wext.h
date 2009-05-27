@@ -23,7 +23,7 @@ int cardif_linux_wext_set_ssid(context *, char *);
 int cardif_linux_wext_wep_associate(context *, int);
 int cardif_linux_wext_get_ssid(context *, char *, unsigned int);
 int cardif_linux_wext_scan(context *, char);
-void cardif_linux_wext_associate(context *, uint8_t);
+void cardif_linux_wext_associate(context *);
 void cardif_linux_wext_use_temp_keys(char);
 int cardif_linux_wext_enc_open(context *);
 int cardif_linux_wext_enc_disable(context * thisint);
@@ -35,7 +35,7 @@ int cardif_linux_wext_set_iwauth(context *, int, uint32_t, char *);
 int cardif_linux_wext_set_key_ext(context *, int,
 				  unsigned char *, int, int, char *, int,
 				  char *, int);
-double cardif_linux_wext_set_freq(context *, uint8_t);
+double cardif_linux_wext_set_freq(context *);
 void cardif_linux_wext_enc_capabilities(context *);
 
 int cardif_linux_wext_set_tkip_key(context *, unsigned char *, int, int, char *,

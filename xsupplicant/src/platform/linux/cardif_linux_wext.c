@@ -740,7 +740,7 @@ int cardif_linux_wext_set_bssid(context * intdata, uint8_t * bssid)
 /**
  * Set the Frequency of the AP we are connecting to.
  **/
-double cardif_linux_wext_set_freq(context * ctx, uint8_t reason)
+double cardif_linux_wext_set_freq(context * ctx)
 {
 	struct iwreq wrq;
 	struct lin_sock_data *sockData = NULL;
@@ -764,13 +764,14 @@ double cardif_linux_wext_set_freq(context * ctx, uint8_t reason)
 
 	strncpy(wrq.ifr_name, ctx->intName, strlen(ctx->intName) + 1);
 
-	if (reason) {
-	  debug_printf(DEBUG_NORMAL, "Getting freq from SSID cache for %s\n", wctx->cur_essid);
+#warning Test and clean up.
+	/*	if (reason) {
+		debug_printf(DEBUG_NORMAL, "Getting freq from SSID cache for %s\n", wctx->cur_essid); */
 	  freq = config_ssid_get_best_freq(wctx);
-	} else {
+	  /*	} else {
 	  debug_printf(DEBUG_NORMAL, "Using frequency from %lf context\n", wctx->freq);
 	  freq = wctx->freq;
-	}
+	  }*/
 
 	debug_printf(DEBUG_INT, "Frequency :: %lf intName :: %s \n", freq,
 		     wrq.ifr_name);
@@ -911,8 +912,8 @@ int cardif_linux_wext_get_ssid(context * thisint, char *ssid_name,
  **/
 int cardif_linux_wext_wep_associate(context * intdata, int zero_keys)
 {
-	uint8_t *bssid;
-	struct config_globals *globals;
+	uint8_t *bssid = NULL;
+	struct config_globals *globals = NULL;
 	wireless_ctx *wctx = NULL;
 	uint32_t alg;
 	double freq = 0;
@@ -923,8 +924,7 @@ int cardif_linux_wext_wep_associate(context * intdata, int zero_keys)
 	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
 		return XEMALLOC;
 
-	if (!xsup_assert
-	    ((intdata->intTypeData != NULL), "intdata->intTypeData != NULL",
+	if (!xsup_assert((intdata->intTypeData != NULL), "intdata->intTypeData != NULL",
 	     FALSE))
 		return XEMALLOC;
 
@@ -985,23 +985,15 @@ int cardif_linux_wext_wep_associate(context * intdata, int zero_keys)
 	while (if_indextoname(index, ifname)) {
 		if (strncmp(ifname, "wifi", 4) == 0) {
 			if ((intdata->conn != NULL) && (intdata->prof != NULL)) {
-				if ((intdata->conn->
-				     association.association_type ==
-				     ASSOC_TYPE_OPEN)
-				    && (intdata->conn->association.auth_type !=
-					AUTH_NONE)
+				if ((intdata->conn->association.association_type == ASSOC_TYPE_OPEN)
+				    && (intdata->conn->association.auth_type !=	AUTH_NONE)
 				    && (intdata->prof->name != NULL)
-				    && (config_ssid_get_ssid_abilities(wctx) &
-					ABIL_ENC)) {
+				    && (config_ssid_get_ssid_abilities(wctx) & ABIL_ENC)) {
 					memset(akey, 0, 24);
 					strcpy(akey, "0123456789");
 					cardif_linux_wext_set_WEP_key(intdata,
-								      (unsigned
-								       char *)
-								      akey,
-								      strlen
-								      (akey) /
-								      2, 3);
+								      (unsigned char *)akey,
+								      strlen(akey) / 2, 3);
 				}
 			}
 			break;
@@ -1009,7 +1001,7 @@ int cardif_linux_wext_wep_associate(context * intdata, int zero_keys)
 		index++;
 	}
 
-	freq = cardif_linux_wext_set_freq(intdata, 1);
+	freq = cardif_linux_wext_set_freq(intdata);
 	cardif_linux_wext_set_ssid(intdata, wctx->cur_essid);
 
 	if (zero_keys == 0) {
@@ -1515,7 +1507,7 @@ int cardif_linux_wext_iw_cipher(int cipher)
  * Set all of the card settings that are needed in order to complete an
  * association, so that we can begin the authentication.
  **/
-void cardif_linux_wext_associate(context * ctx, uint8_t reason)
+void cardif_linux_wext_associate(context * ctx)
 {
 	uint8_t *bssid = NULL;
 #if WIRELESS_EXT > 17
@@ -1670,17 +1662,18 @@ void cardif_linux_wext_associate(context * ctx, uint8_t reason)
 	}
 #endif
 
-	freq = cardif_linux_wext_set_freq(ctx, reason);
+	freq = cardif_linux_wext_set_freq(ctx);
 	cardif_linux_wext_set_ssid(ctx, wctx->cur_essid);
 
 	//Patch for associating with best Frequency radio if there are multiple radios on one AP
 	//If we are able to set the frequency then search for the BSSID of that particular radio
 	if (freq) {
-	  if(reason) {
+#warning Test and clean up!
+	  //	  if(reason) {
 	      bssid = config_ssid_get_mac_with_freq(wctx, freq);
-	  } else {
-	    bssid = wctx->cur_bssid;
-	  }
+	      /*	  } else {
+			  bssid = wctx->cur_bssid; 
+	  }*/
 
 	  wctx->freq = freq;
 	} 
@@ -1845,7 +1838,6 @@ int cardif_linux_wext_delete_key(context * intdata, int key_idx, int set_tx)
 int xsupplicant_driver_pmksa(context * ctx, uint8_t * bssid, uint8_t * pmkid,
 			     unsigned int cmd)
 {
-	struct iwreq iwr;
 	struct iwreq wrq;
 	struct iw_pmksa pmksa;
 	struct lin_sock_data *sockData = NULL;
@@ -1860,8 +1852,7 @@ int xsupplicant_driver_pmksa(context * ctx, uint8_t * bssid, uint8_t * pmkid,
 	if (!xsup_assert((pmkid != NULL), "pmkid != NULL", FALSE))
 		return -1;
 
-	if (!xsup_assert
-	    ((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE))
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE))
 		return -1;
 
 	sockData = (struct lin_sock_data *)ctx->sockData;
@@ -1872,20 +1863,19 @@ int xsupplicant_driver_pmksa(context * ctx, uint8_t * bssid, uint8_t * pmkid,
 		return -1;
 	}
 
-	if (!xsup_assert
-	    ((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
 		return -1;
 
 	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	memset(&wrq, 0x00, sizeof(wrq));
-	#warning Should this be wrq?
-	strncpy(iwr.ifr_name, ctx->intName, IFNAMSIZ);
+
+	strncpy(wrq.ifr_name, ctx->intName, IFNAMSIZ);
 	wrq.u.param.flags = IW_AUTH_WPA_VERSION;
-	if (iw_get_ext(sockData, ctx->intName, SIOCGIWAUTH, &wrq) >= 0)  {
+	if (iw_get_ext(sockData->sockInt, ctx->intName, SIOCGIWAUTH, &wrq) >= 0)  {
 	  if (wrq.u.param.value != IW_AUTH_WPA_VERSION_WPA2) {
 	    wrq.u.param.flags = IW_AUTH_KEY_MGMT;
-	    if (iw_get_ext(sockData,ctx->intName, SIOCGIWAUTH, &wrq) >= 0)  {
+	    if (iw_get_ext(sockData->sockInt, ctx->intName, SIOCGIWAUTH, &wrq) >= 0)  {
 	      if (wrq.u.param.value != IW_AUTH_KEY_MGMT_802_1X) {
 		if (config_ssid_get_ssid_abilities(wctx) & ABIL_RSN_IE) {
 		  cardif_linux_wext_set_iwauth(ctx, IW_AUTH_WPA_VERSION, 
@@ -1913,17 +1903,16 @@ int xsupplicant_driver_pmksa(context * ctx, uint8_t * bssid, uint8_t * pmkid,
 	if (pmkid)
 		memcpy(pmksa.pmkid, pmkid, IW_PMKID_LEN);
 
-	iwr.u.data.pointer = (caddr_t) & pmksa;
+	wrq.u.data.pointer = (caddr_t) & pmksa;
 
-	iwr.u.data.length = sizeof(pmksa);
-	if (ioctl(sockData->sockInt, SIOCSIWPMKSA, &iwr) < 0) {
-		debug_printf(DEBUG_INT, "ioctl [SIOCSIWPMKSA] not supported\n");
-		close(sockData);
+	wrq.u.data.length = sizeof(pmksa);
+	if (ioctl(sockData->sockInt, SIOCSIWPMKSA, &wrq) < 0) {
+		debug_printf(DEBUG_INT, "ioctl SIOCSIWPMKSA not supported\n");
 		return errno;
 	}
 
 	debug_printf(DEBUG_NORMAL, "PMKIDs set for %s\n", ctx->intName);
-	close(sockData);
+
 	return 0;
 }
 
