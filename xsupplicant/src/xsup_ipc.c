@@ -144,6 +144,7 @@ int xsup_ipc_init(uint8_t clear)
 	struct sockaddr_un sa, sb;
 	struct config_globals *globals = NULL;
 	int i;
+	mode_t chmod_settings = 0;
 
 	globals = config_get_globals();
 
@@ -224,18 +225,22 @@ int xsup_ipc_init(uint8_t clear)
 		close(ipc_ctrl_sock);
 		return XENOSOCK;
 	}
+
+	chmod_settings = (S_IREAD | S_IWRITE | S_IEXEC | S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IXOTH);
+
+	// If the user hasn't defined a specific group to lock things down to
+	// allow anyone to control the supplicant.
+	if (globals->ipc_group_name == NULL)
+	  chmod_settings |= S_IWOTH;
+
 	// Set the rights on the sockets.
-	if (chmod(socknamestr,
-	     S_IREAD | S_IWRITE | S_IEXEC | S_IRGRP | S_IWGRP | S_IXGRP |
-	     S_IROTH | S_IXOTH) != 0) {
+	if (chmod(socknamestr, chmod_settings) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Can't set rights on event socket file %s! (Error"
 			     " : %s)\n", socknamestr, strerror(errno));
 	}
 
-	if (chmod(ctrlsocknamestr,
-	     S_IREAD | S_IWRITE | S_IEXEC | S_IRGRP | S_IWGRP | S_IXGRP |
-	     S_IROTH | S_IXOTH) != 0) {
+	if (chmod(ctrlsocknamestr, chmod_settings) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Can't set rights on control socket file %s! (Error"
 			     " : %s)\n", ctrlsocknamestr, strerror(errno));

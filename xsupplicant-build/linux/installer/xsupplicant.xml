@@ -2,25 +2,36 @@
     <shortName>xsupplicant</shortName>
     <fullName>Open1x XSupplicant</fullName>
     <version>${env(SUP_VER)}</version>
+    <installerFilename></installerFilename>
     <licenseFile>../../windows/installer/win-LICENSE</licenseFile>
     <postInstallationActionList>
-        <addUnixService>
-            <description>XSupplicant</description>
-            <name>${product_shortname}</name>
-            <program>xsupplicant</program>
-        </addUnixService>
         <runProgram>
             <program>${installdir}/xsupplicant_plugin_installer</program>
             <programArguments>-n "BirdDog" -p "libbirddog.so.0.0.0" -d "BirdDog monitors all log data and writes it to a log file when a trouble ticket is created."</programArguments>
         </runProgram>
         <runProgram>
-            <program>${installdir}/xsupplicant</program>
-            <programArguments></programArguments>
+            <program>"${installdir}/XSupplicantUI"</program>
+            <programArguments>&amp;</programArguments>
             <workingDirectory>${installdir}</workingDirectory>
         </runProgram>
+        <addUnixService>
+            <description>XSupplicant Engine</description>
+            <explanation>Installs the XSupplicant daemon.</explanation>
+            <name>${product_shortname}</name>
+            <program>${installdir}/open1x.org.xsupplicant</program>
+        </addUnixService>
+        <writeFile>
+            <encoding>ascii</encoding>
+            <path>/etc/X11/Xsession.d/99start-xsupgui</path>
+            <text>exec ${installdir}/XSupplicantUI &amp;</text>
+        </writeFile>
+        <createSymLink>
+            <linkName>/opt/xsupplicant</linkName>
+            <target>${installdir}</target>
+        </createSymLink>
         <runProgram>
-            <program>${installdir}/XSupplicantUI </program>
-            <programArguments>&amp;</programArguments>
+            <program>/etc/init.d/xsupplicant</program>
+            <programArguments>start</programArguments>
             <workingDirectory>${installdir}</workingDirectory>
         </runProgram>
     </postInstallationActionList>
@@ -34,6 +45,14 @@
             <runAs>root</runAs>
         </runProgram>
     </preUninstallationActionList>
+    <postUninstallationActionList>
+        <deleteFile>
+            <path>/etc/X11/Xsession.d/99x11-start-xsupgui</path>
+        </deleteFile>
+        <deleteFile>
+            <path>/opt/xsupplicant</path>
+        </deleteFile>
+    </postUninstallationActionList>
     <a2555a>1</a2555a>
     <allowComponentSelection>1</allowComponentSelection>
     <compressionAlgorithm>lzma</compressionAlgorithm>
@@ -41,6 +60,7 @@
     <enableTimestamp>1</enableTimestamp>
     <requireInstallationByRootUser>1</requireInstallationByRootUser>
     <saveRelativePaths>1</saveRelativePaths>
+    <singleInstanceCheck>1</singleInstanceCheck>
     <startMenuGroupName>${product_shortname}</startMenuGroupName>
     <vendor>OpenSEA</vendor>
     <componentList>
@@ -89,6 +109,9 @@
                         </distributionFile>
                         <distributionFile>
                             <origin>../../../xsupplicant_plugin_installer/src/xsupplicant_plugin_installer</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../scripts/open1x.org.xsupplicant</origin>
                         </distributionFile>
                     </distributionFileList>
                 </folder>

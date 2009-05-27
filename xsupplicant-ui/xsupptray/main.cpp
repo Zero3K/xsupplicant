@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
 
 	QPixmap *p;
 	QFont f;
+	unsigned char timeout = 0;
 
 #ifdef WINDOWS
 	crashdump_init("\\xsupuicrashdmp-" BUILDNUM ".zip");
@@ -80,6 +81,19 @@ int main(int argc, char *argv[])
 
 	f.setPointSize(10);
 	app.setFont(f);
+
+	// Wait up to 60 seconds for the system tray to become available after
+	// the UI has been started.
+	while ((!QSystemTrayIcon::isSystemTrayAvailable()) && (timeout < 60))
+	  {
+	    timeout++;
+#ifdef WINDOWS
+	    Sleep(1000);
+#else
+	    sleep(1);
+#endif
+	  }
+
 	if (!QSystemTrayIcon::isSystemTrayAvailable()) {
 		QMessageBox::critical(0, QObject::tr("System Tray"),
 				      QObject::
