@@ -857,29 +857,27 @@ pmksa_apply_cache (context * ctx)
     }
   
   while (ssids != NULL)
-    {
-	// If the SSID matches our current list.
-	if ((ssids->ssid_name != NULL) 
-	    &&(strcmp (wctx->cur_essid, ssids->ssid_name) == 0))
-	{
-	    // We only care about SSIDs we have a PMKID for. Ignore the rest.
-	    if (pmksa_sa_exists (ctx, ssids->mac) != NULL)
-	    {
-	      if ((lowest == NULL) 
-		    ||(config_ssid_best_signal (ssids, lowest) == ssids))
-		{
-		  lowest =
-		    pmksa_add_to_int_cache_list (ctx, ssids, apply_list,
-						  wctx->pmkids_supported);
-		}
-	    }
-	}
-      ssids = ssids->next;
-    }
+  {
+	  // If the SSID matches our current list.
+	  if ((ssids->ssid_name != NULL) 
+		  &&(strcmp (wctx->cur_essid, ssids->ssid_name) == 0))
+	  {
+		  // We only care about SSIDs we have a PMKID for. Ignore the rest.
+		  if (pmksa_sa_exists (ctx, ssids->mac) != NULL)
+		  {
+			  if ((lowest == NULL) ||(config_ssid_best_signal (ssids, lowest) == ssids))
+			  {
+				  lowest = pmksa_add_to_int_cache_list (ctx, ssids, apply_list,
+					  wctx->pmkids_supported);
+			  }
+		  }
+	  }
+	  ssids = ssids->next;
+  }
   
 #ifdef WINDOWS
 	cardif_apply_pmkid_data(ctx, apply_list);   
-#elsif !defined(__APPLE__)
+#elif !defined(__APPLE__)
 	if ( wctx->pmksa_add_ioctl_supported == TRUE )
         {
                 retval = cardif_apply_pmkid_data(ctx, apply_list);

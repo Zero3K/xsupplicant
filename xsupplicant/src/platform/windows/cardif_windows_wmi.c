@@ -38,6 +38,7 @@
 #include "../../eap_sm.h"
 #include "../../error_prequeue.h"
 #include "../../timer.h"
+#include "cardif_windows.h"
 #include "cardif_windows_wmi_async.h"
 #include "cardif_windows_wmi.h"
 #include "../../wireless_sm.h"

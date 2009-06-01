@@ -1368,13 +1368,14 @@ void wireless_sm_do_unassociated(context * ctx)
 
 	xsup_assert((globals != NULL), "globals != NULL", TRUE);
 
+#ifndef WINDOWS
 	if(TEST_FLAG(wctx->flags, WIRELESS_AP_DROPSOUT_CONNECT_TO_SAME_ESSID)) {
 	  if(connect_to_next_best(ctx) == FALSE) {
 	    debug_printf(DEBUG_NORMAL, "Connecting to next best ESSID failed!\n");
 	  }
 	  UNSET_FLAG(wctx->flags, WIRELESS_AP_DROPSOUT_CONNECT_TO_SAME_ESSID);
 	} else {
-
+#endif
 	  if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_ASSOC_AUTO)) {
 	    // We are set to auto associate.  So, switch to active scan mode.
 	    wireless_sm_change_state(ACTIVE_SCAN, ctx);
@@ -1388,7 +1389,9 @@ void wireless_sm_do_unassociated(context * ctx)
 	      } 
 	    */
 	  }
+#ifndef WINDOWS
 	}
+#endif
 }
 
 /*********************************************************************

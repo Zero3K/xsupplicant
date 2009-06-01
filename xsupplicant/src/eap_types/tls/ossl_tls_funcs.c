@@ -14,7 +14,7 @@
 #define OPENSSL_NO_ENGINE
 
 #include <windows.h>
-#include "event_core_win.h"
+#include "../../event_core_win.h"
 #endif
 
 #include <stdio.h>

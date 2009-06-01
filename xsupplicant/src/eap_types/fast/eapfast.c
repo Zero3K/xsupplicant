@@ -323,8 +323,7 @@ uint8_t eapfast_check_pac(eap_type_data * eapdata, uint8_t * aid,
 		return FALSE;
 	}
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE)) {
 		eap_type_common_fail(eapdata);
 		return FALSE;
 	}

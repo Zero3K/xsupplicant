@@ -42,5 +42,6 @@ DWORD devioctl(HANDLE hDevice, DWORD dwIoCtl, LPVOID lpInBuf, DWORD nInBufSiz,
 
 char *cardif_windows_find_os_name_from_desc(wchar_t * devdesc);
 void cardif_windows_is_dhcp_enabled(context * ctx, int *enabled);
+wchar_t *cardif_windows_get_friendly_name(uint8_t *mac);
 
 #endif

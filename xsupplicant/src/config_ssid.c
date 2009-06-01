@@ -186,7 +186,6 @@ struct found_ssids *config_ssid_init_new_node(wireless_ctx * wctx)
   struct found_ssids *ssids = NULL, *working = NULL;
   char invalid_bssid[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-#warning Quite a bit different than Mindtree 2.0.4 release... is this new or old code?
 	working = (struct found_ssids *)Malloc(sizeof(struct found_ssids));
 	if (working == NULL)
 		return NULL;

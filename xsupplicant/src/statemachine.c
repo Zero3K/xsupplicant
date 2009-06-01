@@ -675,10 +675,10 @@ int statemachine_change_to_connecting(context * ctx)
 			// So, check for that case, and decide if we want to send it or not.
 			if (ctx->intType == ETH_802_11_INT) {
 				if (ctx->intTypeData != NULL) {
-					if (((wireless_ctx *)
-					     ctx->intTypeData)->rsn_ie ==
-					    NULL) {
+					if (((wireless_ctx *)ctx->intTypeData)->rsn_ie == NULL) {
+#if defined(LINUX) || defined(__APPLE__)
 					  if((wctx->ielen < WPA2_IE_LENGTH_WITH_PMKID) && (wctx->okc == 0))
+#endif
 						txStart(ctx);
 					}
 				} else {

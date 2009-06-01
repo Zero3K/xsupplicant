@@ -91,12 +91,10 @@ int pwcrypt_encrypt(uint8_t config_type, uint8_t * toencdata, uint16_t toenclen,
 	DataIn.pbData = toencdata;
 
 	if (config_type == CONFIG_LOAD_GLOBAL) {
-		if (CryptProtectData
-		    (&DataIn, L"Password String", NULL, NULL, NULL,
+		if (CryptProtectData(&DataIn, L"Password String", NULL, NULL, NULL,
 		     (CRYPTPROTECT_UI_FORBIDDEN | CRYPTPROTECT_LOCAL_MACHINE),
 		     &DataOut)) {
-			(*encdata) =
-			    convert_hex_to_str(DataOut.pbData, DataOut.cbData);
+			(*encdata) = convert_hex_to_str(DataOut.pbData, DataOut.cbData);
 			(*enclen) = DataOut.cbData;
 
 			LocalFree(DataOut.pbData);
@@ -108,11 +106,9 @@ int pwcrypt_encrypt(uint8_t config_type, uint8_t * toencdata, uint16_t toenclen,
 	} else {
 		win_impersonate_desktop_user();
 
-		if (CryptProtectData
-		    (&DataIn, L"Password String", NULL, NULL, NULL,
+		if (CryptProtectData(&DataIn, L"Password String", NULL, NULL, NULL,
 		     CRYPTPROTECT_UI_FORBIDDEN, &DataOut)) {
-			(*encdata) =
-			    convert_hex_to_str(DataOut.pbData, DataOut.cbData);
+			(*encdata) = convert_hex_to_str(DataOut.pbData, DataOut.cbData);
 			(*enclen) = DataOut.cbData;
 
 			LocalFree(DataOut.pbData);
