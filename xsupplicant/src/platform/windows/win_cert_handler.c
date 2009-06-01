@@ -174,26 +174,19 @@ int cert_handler_get_info(PCCERT_CONTEXT pCertContext, cert_info * certinfo)
 	char pszSubjectString[1024];
 	char *temp;
 
-	if (CertNameToStr
-	    (X509_ASN_ENCODING, &pCertContext->pCertInfo->Subject,
+	if (CertNameToStr(X509_ASN_ENCODING, &pCertContext->pCertInfo->Subject,
 	     CERT_X500_NAME_STR, pszSubjectString, 1024) > 0) {
-		certinfo->C =
-		    cert_handler_get_container_value(pszSubjectString, "C=");
+		certinfo->C = cert_handler_get_container_value(pszSubjectString, "C=");
 
-		certinfo->S =
-		    cert_handler_get_container_value(pszSubjectString, "S=");
+		certinfo->S = cert_handler_get_container_value(pszSubjectString, "S=");
 
-		certinfo->L =
-		    cert_handler_get_container_value(pszSubjectString, "L=");
+		certinfo->L = cert_handler_get_container_value(pszSubjectString, "L=");
 
-		certinfo->O =
-		    cert_handler_get_container_value(pszSubjectString, "O=");
+		certinfo->O = cert_handler_get_container_value(pszSubjectString, "O=");
 
-		certinfo->OU =
-		    cert_handler_get_container_value(pszSubjectString, "OU=");
+		certinfo->OU = cert_handler_get_container_value(pszSubjectString, "OU=");
 
-		certinfo->CN =
-		    cert_handler_get_container_value(pszSubjectString, "CN=");
+		certinfo->CN = cert_handler_get_container_value(pszSubjectString, "CN=");
 
 		return 0;
 	}
@@ -216,8 +209,7 @@ PCCERT_CONTEXT win_cert_handler_get_from_win_store(char *storetype,
 	str2hex(location, &hashData, &toFindData.cbData);
 	toFindData.pbData = hashData;
 
-	pCertContext =
-	    CertFindCertificateInStore(hCertStore,
+	pCertContext = CertFindCertificateInStore(hCertStore,
 				       X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
 				       0, CERT_FIND_HASH, &toFindData, NULL);
 	FREE(hashData);		// Clean up the memory no matter what.
@@ -240,6 +232,7 @@ PCCERT_CONTEXT win_cert_handler_get_from_user_store(char *storetype,
 
 	if (storetype == NULL)
 		return NULL;
+
 	if (location == NULL)
 		return NULL;
 
@@ -560,12 +553,10 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 	// Enumerate all of the certificates, and count only the ones that have the
 	// server authentication EKU set.
 	while ((hCertStore != NULL)
-	       && (pCertContext =
-		   CertEnumCertificatesInStore(hCertStore, pCertContext))
+	       && (pCertContext = CertEnumCertificatesInStore(hCertStore, pCertContext))
 	       && (pCertContext != NULL)) {
 		// We only check this certificate if we can get it's name.  If not, it is ignored.
-		if (!CertGetNameStringW
-		    (pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL,
+		if (!CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL,
 		     pszNameString, sizeof(pszNameString))) {
 			debug_printf(DEBUG_NORMAL,
 				     "Unable to determine certificate name.\n");
@@ -573,16 +564,14 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 			// Everything in this enum is out of the windows cert store.
 			casa[certidx].storetype = _strdup("WINDOWS");
 
-			sha1hash =
-			    do_sha1(pCertContext->pbCertEncoded,
+			sha1hash = do_sha1(pCertContext->pbCertEncoded,
 				    pCertContext->cbCertEncoded);
 			temp = convert_hex_to_str(sha1hash, 20);
 			casa[certidx].location = temp;
 			FREE(sha1hash);
 
 #ifdef CHECK_EKU
-			if (CertGetEnhancedKeyUsage
-			    (pCertContext, 0, NULL, &size)) {
+			if (CertGetEnhancedKeyUsage(pCertContext, 0, NULL, &size)) {
 				enhkey = malloc(size);
 				if (enhkey == NULL) {
 					debug_printf(DEBUG_NORMAL,
@@ -590,135 +579,86 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 					return -1;
 				}
 
-				if (CertGetEnhancedKeyUsage
-				    (pCertContext, 0, enhkey, &size)) {
-					for (i = 0;
-					     i < enhkey->cUsageIdentifier;
-					     i++) {
-						if (strcmp
-						    (enhkey->
-						     rgpszUsageIdentifier[i],
-						     szOID_PKIX_KP_SERVER_AUTH)
-						    == 0) {
+				if (CertGetEnhancedKeyUsage(pCertContext, 0, enhkey, &size)) {
+					for (i = 0; i < enhkey->cUsageIdentifier; i++) {
+						if (strcmp(enhkey->rgpszUsageIdentifier[i],szOID_PKIX_KP_SERVER_AUTH) == 0) {
 #endif
-							if (WideCharToMultiByte
-							    (CP_UTF8, 0,
+							if (WideCharToMultiByte(CP_UTF8, 0,
 							     pszNameString,
-							     wcslen
-							     (pszNameString) +
-							     1, utf8_buffer,
-							     sizeof
-							     (utf8_buffer),
-							     NULL, NULL) == 0) {
-								debug_printf
-								    (DEBUG_NORMAL,
+							     wcslen(pszNameString) + 1, utf8_buffer,
+							     sizeof(utf8_buffer), NULL, NULL) == 0) {
+								debug_printf(DEBUG_NORMAL,
 								     "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n",
 								     __FUNCTION__,
 								     __LINE__);
 								continue;
 							}
-							casa[certidx].certname =
-							    _strdup
-							    (utf8_buffer);
+							casa[certidx].certname = _strdup(utf8_buffer);
 
 							// Get the subject name for this certificate.
 
-							if (CertGetNameStringW
-							    (pCertContext,
+							if (CertGetNameStringW(pCertContext,
 							     CERT_NAME_FRIENDLY_DISPLAY_TYPE,
 							     0, NULL,
 							     pszSubjectString,
-							     sizeof
-							     (pszSubjectString))
-							    > 0) {
+							     sizeof(pszSubjectString)) > 0) {
 								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
-									debug_printf
-									    (DEBUG_NORMAL,
+									debug_printf(DEBUG_NORMAL,
 									     "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n",
 									     __FUNCTION__,
 									     __LINE__);
 									continue;
 								}
-								casa[certidx].
-								    friendlyname
-								    =
-								    _strdup
-								    (utf8_buffer);
+								casa[certidx].friendlyname = _strdup(utf8_buffer);
 							}
 
-							memset
-							    (&pszSubjectString,
+							memset(&pszSubjectString,
 							     0x00,
-							     sizeof
-							     (pszSubjectString));
+							     sizeof(pszSubjectString));
 
-							if (CertGetNameStringW
-							    (pCertContext,
+							if (CertGetNameStringW(pCertContext,
 							     CERT_NAME_DNS_TYPE,
 							     0, NULL,
 							     pszSubjectString,
-							     sizeof
-							     (pszSubjectString))
+							     sizeof(pszSubjectString))
 							    > 0) {
 								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
-									debug_printf
-									    (DEBUG_NORMAL,
+									debug_printf(DEBUG_NORMAL,
 									     "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n",
 									     __FUNCTION__,
 									     __LINE__);
 									continue;
 								}
 
-								casa[certidx].
-								    commonname =
-								    _strdup
-								    (utf8_buffer);
+								casa[certidx].commonname = _strdup(utf8_buffer);
 							}
 							// Get the issuer name for this certificate.
-							if (CertGetNameStringW
-							    (pCertContext,
+							if (CertGetNameStringW(pCertContext,
 							     CERT_NAME_SIMPLE_DISPLAY_TYPE,
 							     CERT_NAME_ISSUER_FLAG,
 							     NULL,
 							     pszSubjectString,
-							     sizeof
-							     (pszSubjectString))
+							     sizeof(pszSubjectString))
 							    > 0) {
 								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
-									debug_printf
-									    (DEBUG_NORMAL,
+									debug_printf(DEBUG_NORMAL,
 									     "Unable to convert unicode string to UTF-8 in %s at %d.  Skipping.\n",
 									     __FUNCTION__,
 									     __LINE__);
 									continue;
 								}
 
-								casa[certidx].
-								    issuer =
-								    _strdup
-								    (utf8_buffer);
+								casa[certidx].issuer = _strdup(utf8_buffer);
 							}
 
 							memset(&systime, 0x00,
 							       sizeof(systime));
 
-							if (FileTimeToSystemTime
-							    (&pCertContext->
-							     pCertInfo->
-							     NotAfter,
+							if (FileTimeToSystemTime(&pCertContext->pCertInfo->NotAfter,
 							     &systime) != 0) {
-								casa[certidx].
-								    day =
-								    systime.
-								    wDay;
-								casa[certidx].
-								    month =
-								    systime.
-								    wMonth;
-								casa[certidx].
-								    year =
-								    systime.
-								    wYear;
+								casa[certidx].day = systime.wDay;
+								casa[certidx].month = systime.wMonth;
+								casa[certidx].year = systime.wYear;
 							}
 
 							certidx++;
@@ -776,14 +716,11 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 		if (ReadFile(hFile,
 			     pbBuffer, sizeof(pbBuffer), &cbBuffer, NULL)) {
 
-			if ((pCertContext =
-			     CertCreateCertificateContext(X509_ASN_ENCODING |
-							  PKCS_7_ASN_ENCODING,
+			if ((pCertContext = CertCreateCertificateContext(X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
 							  pbBuffer,
 							  cbBuffer))) {
 				if (hCertStore) {
-					if (!CertAddCertificateContextToStore
-					    (hCertStore, pCertContext,
+					if (!CertAddCertificateContextToStore(hCertStore, pCertContext,
 					     CERT_STORE_ADD_NEW, NULL)) {
 						dwErr = GetLastError();
 
@@ -792,23 +729,18 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 							// Certificate already exists
 							//
 						} else {
-							lastErrStr =
-							    GetLastErrorStr
-							    (dwErr);
-							debug_printf
-							    (DEBUG_NORMAL,
+							lastErrStr = GetLastErrorStr(dwErr);
+							debug_printf(DEBUG_NORMAL,
 							     "Unable to add certificate to store.  Windows error was '%d'.\n",
 							     lastErrStr);
 							LocalFree(lastErrStr);
-							retval =
-							    IPC_EVENT_ERROR_CANT_ADD_CERT_TO_STORE;
+							retval = IPC_EVENT_ERROR_CANT_ADD_CERT_TO_STORE;
 						}
 					}
 				} else {
 					debug_printf(DEBUG_NORMAL,
 						     "Certificate store isn't open!\n");
-					retval =
-					    IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD;
+					retval = IPC_EVENT_ERROR_FAILED_ROOT_CA_LOAD;
 				}
 
 				CertFreeCertificateContext(pCertContext);
@@ -879,12 +811,10 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 	// Enumerate all of the certificates, and count only the ones that have the
 	// server authentication EKU set.
 	while ((hCertUserStore != NULL)
-	       && (pCertContext =
-		   CertEnumCertificatesInStore(hCertUserStore, pCertContext))
+	       && (pCertContext = CertEnumCertificatesInStore(hCertUserStore, pCertContext))
 	       && (pCertContext != NULL)) {
 		// We only check this certificate if we can get it's name.  If not, it is ignored.
-		if (!CertGetNameStringW
-		    (pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL,
+		if (!CertGetNameStringW(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL,
 		     pszNameString, sizeof(pszNameString))) {
 			debug_printf(DEBUG_NORMAL,
 				     "Unable to determine certificate name.\n");
@@ -892,16 +822,14 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 			// Everything in this enum is out of the windows cert store.
 			certs[certidx].storetype = _strdup("WINDOWS");
 
-			sha1hash =
-			    do_sha1(pCertContext->pbCertEncoded,
+			sha1hash = do_sha1(pCertContext->pbCertEncoded,
 				    pCertContext->cbCertEncoded);
 			temp = convert_hex_to_str(sha1hash, 20);
 			certs[certidx].location = temp;
 			FREE(sha1hash);
 
 #ifdef CHECK_EKU
-			if (CertGetEnhancedKeyUsage
-			    (pCertContext, 0, NULL, &size)) {
+			if (CertGetEnhancedKeyUsage(pCertContext, 0, NULL, &size)) {
 				enhkey = malloc(size);
 				if (enhkey == NULL) {
 					debug_printf(DEBUG_NORMAL,
@@ -909,138 +837,88 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 					return -1;
 				}
 
-				if (CertGetEnhancedKeyUsage
-				    (pCertContext, 0, enhkey, &size)) {
-					for (i = 0;
-					     i < enhkey->cUsageIdentifier;
-					     i++) {
-						if (strcmp
-						    (enhkey->
-						     rgpszUsageIdentifier[i],
-						     szOID_PKIX_KP_CLIENT_AUTH)
-						    == 0) {
+				if (CertGetEnhancedKeyUsage(pCertContext, 0, enhkey, &size)) {
+					for (i = 0; i < enhkey->cUsageIdentifier; i++) {
+						if (strcmp(enhkey->rgpszUsageIdentifier[i],
+						     szOID_PKIX_KP_CLIENT_AUTH) == 0) {
 #endif
-							if (WideCharToMultiByte
-							    (CP_UTF8, 0,
+							if (WideCharToMultiByte(CP_UTF8, 0,
 							     pszNameString,
-							     wcslen
-							     (pszNameString) +
-							     1, utf8_buffer,
-							     sizeof
-							     (utf8_buffer),
+							     wcslen(pszNameString) + 1, utf8_buffer,
+							     sizeof(utf8_buffer),
 							     NULL, NULL) == 0) {
-								debug_printf
-								    (DEBUG_NORMAL,
+								debug_printf(DEBUG_NORMAL,
 								     "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n",
 								     __FUNCTION__,
 								     __LINE__);
 								continue;
 							}
 
-							certs[certidx].
-							    certname =
-							    _strdup
-							    (utf8_buffer);
+							certs[certidx].certname = _strdup(utf8_buffer);
 
 							// Get the subject name for this certificate.
 
-							if (CertGetNameStringW
-							    (pCertContext,
+							if (CertGetNameStringW(pCertContext,
 							     CERT_NAME_FRIENDLY_DISPLAY_TYPE,
 							     0, NULL,
 							     pszSubjectString,
-							     sizeof
-							     (pszSubjectString))
-							    > 0) {
+							     sizeof(pszSubjectString)) > 0) {
 								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
-									debug_printf
-									    (DEBUG_NORMAL,
+									debug_printf(DEBUG_NORMAL,
 									     "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n",
 									     __FUNCTION__,
 									     __LINE__);
 									continue;
 								}
 
-								certs[certidx].
-								    friendlyname
-								    =
-								    _strdup
-								    (utf8_buffer);
+								certs[certidx].friendlyname = _strdup(utf8_buffer);
 							}
 
-							memset
-							    (&pszSubjectString,
+							memset(&pszSubjectString,
 							     0x00,
-							     sizeof
-							     (pszSubjectString));
+							     sizeof(pszSubjectString));
 
-							if (CertGetNameStringW
-							    (pCertContext,
+							if (CertGetNameStringW(pCertContext,
 							     CERT_NAME_DNS_TYPE,
 							     0, NULL,
 							     pszSubjectString,
-							     sizeof
-							     (pszSubjectString))
-							    > 0) {
+							     sizeof(pszSubjectString)) > 0) {
 								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
-									debug_printf
-									    (DEBUG_NORMAL,
+									debug_printf(DEBUG_NORMAL,
 									     "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n",
 									     __FUNCTION__,
 									     __LINE__);
 									continue;
 								}
 
-								certs[certidx].
-								    commonname =
-								    _strdup
-								    (utf8_buffer);
+								certs[certidx].commonname = _strdup(utf8_buffer);
 							}
 							// Get the issuer name for this certificate.
-							if (CertGetNameStringW
-							    (pCertContext,
+							if (CertGetNameStringW(pCertContext,
 							     CERT_NAME_SIMPLE_DISPLAY_TYPE,
 							     CERT_NAME_ISSUER_FLAG,
 							     NULL,
 							     pszSubjectString,
-							     sizeof
-							     (pszSubjectString))
-							    > 0) {
+							     sizeof(pszSubjectString)) > 0) {
 								if (WideCharToMultiByte(CP_UTF8, 0, pszSubjectString, wcslen(pszSubjectString) + 1, utf8_buffer, sizeof(utf8_buffer), NULL, NULL) == 0) {
-									debug_printf
-									    (DEBUG_NORMAL,
+								  debug_printf(DEBUG_NORMAL,
 									     "Unable to convert string to UTF-8 in %s at %d.  Skipping.\n",
 									     __FUNCTION__,
 									     __LINE__);
 									continue;
 								}
 
-								certs[certidx].
-								    issuer =
-								    _strdup
-								    (utf8_buffer);
+								certs[certidx].issuer = _strdup(utf8_buffer);
 							}
 
 							memset(&systime, 0x00,
 							       sizeof(systime));
 
-							if (FileTimeToSystemTime
-							    (&pCertContext->
-							     pCertInfo->
-							     NotAfter,
+							if (FileTimeToSystemTime(&pCertContext->pCertInfo->NotAfter,
 							     &systime) != 0) {
-								certs[certidx].
-								    day =
-								    systime.
-								    wDay;
-								certs[certidx].
-								    month =
-								    systime.
-								    wMonth;
-								certs[certidx].
-								    year =
-								    systime.
-								    wYear;
+								certs[certidx].day = systime.wDay;
+								certs[certidx].month = systime.wMonth;
+								certs[certidx].year = systime.wYear;
 							}
 
 							certidx++;

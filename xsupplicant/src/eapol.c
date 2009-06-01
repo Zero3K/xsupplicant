@@ -35,27 +35,34 @@
 #include <efence.h>
 #endif
 
-/********************************************
+/**
+ * \brief Set up anything that we will need for EAPoL.  This includes setting 
+ * the default values for the state machine.
  *
- * Set up anything that we will need for EAPoL.  This includes setting the
- * default values for the state machine.
+ * @param[in] ctx   The context for the interface we want to set EAPoL up 
+ *                  with.
  *
- ********************************************/
-int eapol_init(context * newint)
+ * \retval XENONE on success
+ * \retval XEMALLOC if the context is invalid.
+ **/
+int eapol_init(context * ctx)
 {
-	if (!xsup_assert((newint != NULL), "newint != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
-	statemachine_init(newint);
+	statemachine_init(ctx);
 
 	return XENONE;
 }
 
-/*****************************************
+/**
+ * \brief Do anything that is needed to clean up, and exit cleanly.
  *
- * Do anything that is needed to clean up, and exit cleanly.
+ * @param[in] ctx   The context the we want to destroy the EAPoL session on.
  *
- *****************************************/
+ * \retval XENONE on success
+ * \retval XEMALLOC if the context is invalid.
+ **/
 int eapol_cleanup(context * ctx)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
@@ -66,11 +73,14 @@ int eapol_cleanup(context * ctx)
 	return XENONE;
 }
 
-/*****************************************
+/**
+ * \brief Get the EAPOL version that we should be using.
  *
- * Get the EAPOL version that we should be using.
+ * @param[in] ctx   The context that we want to get the EAPoL version from.
  *
- *****************************************/
+ * \retval uint8_t the version we want to use, or MAX_EAPOL_VER on 
+ *         error/unknown.
+ **/
 uint8_t eapol_get_eapol_ver(context * ctx)
 {
 	uint8_t eapolver;

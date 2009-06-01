@@ -11,7 +11,7 @@
 #include <windows.h>
   
 #include "stdintwin.h"
-#else	/* */
+#else	
 #include <string.h>
 #endif // WINDOWS
   
@@ -826,11 +826,10 @@ pmksa_apply_cache (context * ctx)
   pmksa_list * apply_list = NULL;
   int retval = 0;
   
-  if (!xsup_assert ((ctx != NULL), "ctx != NULL", FALSE))
+  if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
     return;
   
-  if (!xsup_assert 
-	 ((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
+  if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
     return;
   
   wctx = (wireless_ctx *) ctx->intTypeData;
@@ -841,7 +840,7 @@ pmksa_apply_cache (context * ctx)
 		      "No PMKIDs are supported on this interface!  Won't attempt to set any.\n");
       return;
     }
-  apply_list = Malloc (sizeof (pmksa_list) * wctx->pmkids_supported);
+  apply_list = Malloc(sizeof (pmksa_list) * wctx->pmkids_supported);
   if (apply_list == NULL)
     {
       debug_printf (DEBUG_NORMAL,
@@ -850,30 +849,31 @@ pmksa_apply_cache (context * ctx)
     }
   if (wctx->cur_essid == NULL)
     {
-      debug_printf (DEBUG_NORMAL,
+      debug_printf(DEBUG_NORMAL,
 		      "Our current SSID is unknown on interface '%s'!  Can't generate PMKID list!\n",
 		      ctx->desc);
       return;
     }
   
   while (ssids != NULL)
-  {
-	  // If the SSID matches our current list.
-	  if ((ssids->ssid_name != NULL) 
-		  &&(strcmp (wctx->cur_essid, ssids->ssid_name) == 0))
-	  {
-		  // We only care about SSIDs we have a PMKID for. Ignore the rest.
-		  if (pmksa_sa_exists (ctx, ssids->mac) != NULL)
-		  {
-			  if ((lowest == NULL) ||(config_ssid_best_signal (ssids, lowest) == ssids))
-			  {
-				  lowest = pmksa_add_to_int_cache_list (ctx, ssids, apply_list,
-					  wctx->pmkids_supported);
-			  }
-		  }
-	  }
-	  ssids = ssids->next;
-  }
+    {
+	// If the SSID matches our current list.
+	if ((ssids->ssid_name != NULL) 
+	    &&(strcmp (wctx->cur_essid, ssids->ssid_name) == 0))
+	{
+	    // We only care about SSIDs we have a PMKID for. Ignore the rest.
+	    if (pmksa_sa_exists (ctx, ssids->mac) != NULL)
+	    {
+	      if ((lowest == NULL) 
+		    ||(config_ssid_best_signal (ssids, lowest) == ssids))
+		{
+		  lowest = pmksa_add_to_int_cache_list (ctx, ssids, apply_list,
+						  wctx->pmkids_supported);
+		}
+	    }
+	}
+      ssids = ssids->next;
+    }
   
 #ifdef WINDOWS
 	cardif_apply_pmkid_data(ctx, apply_list);   
@@ -887,7 +887,7 @@ pmksa_apply_cache (context * ctx)
                         wctx->pmksa_add_ioctl_supported = FALSE;
         }
 #else
-	#warning Need to implement PMK on Mac OS X
+#warning Need to implement for OS X!
 #endif
 //      pmksa_dump_cache(ctx);
     

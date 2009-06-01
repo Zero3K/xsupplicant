@@ -45,7 +45,7 @@ static uint8_t packetid = 1;
 
 int cardif_init(context * ctx, char driver)
 {
-	int *sock;
+	int *sock = NULL;
 
 	ctx->sockData = Malloc(sizeof(int));
 	if (ctx->sockData == NULL) {
@@ -111,7 +111,7 @@ void build_rad_avp(uint8_t * packet, uint16_t * offset, uint8_t type,
 void build_rad_header(uint8_t * packet, uint16_t size)
 {
 	struct radius_pkt *pkt;
-	int i;
+	unsigned int i;
 
 	pkt = (struct radius_pkt *)packet;
 
@@ -127,13 +127,19 @@ void build_rad_header(uint8_t * packet, uint16_t size)
 
 int cardif_sendframe(context * ctx)
 {
-	uint8_t *packet, blksiz;
-	uint16_t offset = 0, eaplen, i, o;
-	struct config_network *netdata;
+	uint8_t *packet = NULL, blksiz;
+	uint16_t offset = 0, eaplen, o;
+	unsigned int i = 0;
 	uint16_t blocks;
-	int *sock;
+	int *sock = NULL;
 	char authhmac[16];
-	char *temp;
+	char *temp = NULL;
+
+	if(!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+	  return -1;
+
+	if (!xsup_assert((ctx->prof != NULL), "ctx->prof != NULL", FALSE))
+	  return -1;
 
 	debug_printf(DEBUG_NORMAL, "Preparing to send to RADIUS server.\n");
 
@@ -149,12 +155,10 @@ int cardif_sendframe(context * ctx)
 		return XEMALLOC;
 	}
 
-	netdata = config_get_network_config();
-
 	offset = sizeof(struct radius_pkt);
 
 	build_rad_avp(packet, &offset, RADIUS_AVP_USERNAME,
-		      strlen(netdata->identity), netdata->identity);
+		      strlen(ctx->prof->identity), (uint8_t *)ctx->prof->identity);
 
 	eaplen = eap_type_common_get_eap_length(&ctx->sendframe[OFFSET_TO_EAP]);
 
@@ -185,14 +189,14 @@ int cardif_sendframe(context * ctx)
 
 	memset(&authhmac, 0x00, 16);
 
-	build_rad_avp(packet, &offset, 80, 16, &authhmac);
+	build_rad_avp(packet, &offset, 80, 16, (uint8_t *)&authhmac);
 
 	build_rad_header(packet, offset);
 
 	printf("offset = %d\n", offset);
 	temp = strdup(RAD_SECRET);
 	o = offset;
-	HMAC(EVP_md5(), temp, strlen(temp), packet, offset, authhmac, &i);
+	HMAC(EVP_md5(), temp, strlen(temp), packet, offset, (unsigned char *)&authhmac, &i);
 
 #warning Fix this correctly!
 	offset = o;
@@ -328,8 +332,7 @@ int cardif_getframe(context * ctx)
 	eapolhdr->frame_type = htons(EAPOL_FRAME);
 	eapolhdr->eapol_version = 1;
 	eapolhdr->eapol_type = EAP_PACKET;
-	eapolhdr->eapol_length =
-	    htons(sizeof(struct eapol_header) + sizeof(struct eap_header));
+	eapolhdr->eapol_length = htons(sizeof(struct eapol_header) + sizeof(struct eap_header));
 
 	debug_printf(DEBUG_INT, "EAP Packet Dump : \n");
 	debug_hex_dump(DEBUG_INT, ctx->recvframe, eapptr);
@@ -339,14 +342,14 @@ int cardif_getframe(context * ctx)
 
 uint8_t cardif_radius_eap_sm(context * ctx)
 {
-	struct eap_header *eaphdr;
-	struct eapol_header *eapolhdr;
+	struct eap_header *eaphdr = NULL;
+	struct eapol_header *eapolhdr = NULL;
 
 	if (send_eap_id < TO_SEND_IDS) {
 		// We need to fake an EAP request ID.
 		debug_printf(DEBUG_NORMAL, "Building fake EAP request ID.\n");
 
-		if (config_build("radius") != TRUE) {
+		if (config_build(ctx, "radius") != TRUE) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't build config for network "
 				     "\"radius\"!\n");

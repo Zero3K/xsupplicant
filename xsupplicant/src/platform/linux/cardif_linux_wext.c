@@ -298,8 +298,6 @@ int cardif_linux_wext_get_wpa2_ie(context * thisint, uint8_t * iedata,
 				  uint8_t * ielen)
 {
 	wireless_ctx *wctx = NULL;
-	char *pmkid_ptr = NULL;
-	int pmkid_count = 0;
 	char *bssid = NULL;
 	double freq = 0;
 	pmksa_cache_element *cur = NULL;
@@ -331,7 +329,9 @@ int cardif_linux_wext_get_wpa2_ie(context * thisint, uint8_t * iedata,
 	  
 	  freq = config_ssid_get_best_freq(wctx);
 	  
-	  if (freq) bssid = config_ssid_get_mac_with_freq(wctx, freq);
+	  if (freq) 
+	    bssid = config_ssid_get_mac_with_freq(wctx, freq);
+
 	  cur = wctx->pmksa_cache;
 	  while (cur != NULL) {
 	    if (wctx->state == ASSOCIATING) {
@@ -358,8 +358,6 @@ int cardif_linux_wext_get_wpa2_ie(context * thisint, uint8_t * iedata,
 	      iedata[22] = 0x01;
 	      iedata[23] = 0x00;
 	      *ielen = 40;
-	      //FREE(wctx->pmkid_ptr);
-	      //wctx->ielen = 0;
 	    }
 	  }
 	  

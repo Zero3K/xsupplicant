@@ -242,7 +242,7 @@ typedef struct {
 	int okc;
     int ielen;
     uint8_t *pmkid_ptr;
-    uint8_t *pmksa_add_ioctl_supported;
+    uint8_t pmksa_add_ioctl_supported;
 #endif
 
 } wireless_ctx;

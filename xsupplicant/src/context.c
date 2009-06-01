@@ -87,8 +87,7 @@ int context_init(context * work, char *intname)
 		return XEMALLOC;
 	}
 
-	if (Strncpy
-	    (work->intName, (strlen(intname) + 1), intname,
+	if (Strncpy(work->intName, (strlen(intname) + 1), intname,
 	     strlen(intname) + 1) != 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't make a copy of the interface name in %s() at "
@@ -295,16 +294,12 @@ char config_build(context * ctx, char *network_name)
 
 				if (ctx->intType == ETH_802_11_INT) {
 					if (pGlobals->wirelessMachineAuthConnection != NULL)
-						result =
-						    config_find_connection
-						    (CONFIG_LOAD_GLOBAL,
+						result = config_find_connection(CONFIG_LOAD_GLOBAL,
 						     pGlobals->wirelessMachineAuthConnection);
 				} else {
 					if (pGlobals->wiredMachineAuthConnection
 					    != NULL)
-						result =
-						    config_find_connection
-						    (CONFIG_LOAD_GLOBAL,
+						result = config_find_connection(CONFIG_LOAD_GLOBAL,
 						     pGlobals->wiredMachineAuthConnection);
 				}
 
@@ -323,9 +318,7 @@ char config_build(context * ctx, char *network_name)
 #endif
 			// Only use a default connection if we are managing the interface.
 			if ((result != NULL)
-			    &&
-			    (!TEST_FLAG
-			     (myint->flags, CONFIG_INTERFACE_DONT_MANAGE))) {
+			    && (!TEST_FLAG(myint->flags, CONFIG_INTERFACE_DONT_MANAGE))) {
 				debug_printf(DEBUG_CONFIG_PARSE,
 					     "Setting default network to : %s\n",
 					     result->name);
@@ -335,14 +328,11 @@ char config_build(context * ctx, char *network_name)
 					FREE(ctx->conn_name);
 					ctx->conn_name = _strdup(result->name);
 
-					ctx->prof =
-					    config_find_profile
-					    (CONFIG_LOAD_USER,
+					ctx->prof = config_find_profile(CONFIG_LOAD_USER,
 					     ctx->conn->profile);
+
 					if (ctx->prof == NULL)
-						ctx->prof =
-						    config_find_profile
-						    (CONFIG_LOAD_GLOBAL,
+						ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL,
 						     ctx->conn->profile);
 					return TRUE;
 				} else {
@@ -381,22 +371,17 @@ char config_build(context * ctx, char *network_name)
 			FREE(ctx->conn_name);
 			ctx->conn_name = _strdup(network_name);	// XXX This shouldn't be network name.  (Need to leave it broken for now.  Clean up later.)
 
-			ctx->prof =
-			    config_find_profile(CONFIG_LOAD_GLOBAL,
+			ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL,
 						ctx->conn->profile);
 			if (ctx->prof == NULL) {
-				ctx->prof =
-				    config_find_profile(CONFIG_LOAD_USER,
+				ctx->prof = config_find_profile(CONFIG_LOAD_USER,
 							ctx->conn->profile);
 			}
 		} else {
-			result =
-			    config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL,
+			result = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL,
 							     network_name);
 			if (result == NULL) {
-				result =
-				    config_find_connection_from_ssid
-				    (CONFIG_LOAD_USER, network_name);
+				result = config_find_connection_from_ssid(CONFIG_LOAD_USER, network_name);
 			}
 
 			if (result != NULL) {
@@ -404,13 +389,10 @@ char config_build(context * ctx, char *network_name)
 				FREE(ctx->conn_name);
 				ctx->conn_name = _strdup(network_name);	// XXX This shouldn't be network_name.  (Need to leave it broken for now.  Clean up later.)
 
-				ctx->prof =
-				    config_find_profile(CONFIG_LOAD_GLOBAL,
+				ctx->prof = config_find_profile(CONFIG_LOAD_GLOBAL,
 							ctx->conn->profile);
 				if (ctx->prof == NULL) {
-					ctx->prof =
-					    config_find_profile
-					    (CONFIG_LOAD_USER,
+					ctx->prof = config_find_profile(CONFIG_LOAD_USER,
 					     ctx->conn->profile);
 				}
 			}
@@ -661,8 +643,7 @@ int context_init_interface(context ** ctx, char *desc, char *device,
 		return XEMALLOC;
 	}
 
-	retval =
-	    context_init_interface_hdwr(ctx, desc, device, driveridx, flags);
+	retval = context_init_interface_hdwr(ctx, desc, device, driveridx, flags);
 	if (retval != XENONE) {
 		debug_printf(DEBUG_NORMAL, "Couldn't init interface!\n");
 		return retval;
@@ -727,16 +708,14 @@ void context_init_ints_from_conf(context ** ctx)
 
 		intname = interfaces_get_name_from_mac((char *)ints->mac);
 		if (intname != NULL) {
-			if (TEST_FLAG
-			    (ints->flags, CONFIG_INTERFACE_DONT_MANAGE)) {
+			if (TEST_FLAG(ints->flags, CONFIG_INTERFACE_DONT_MANAGE)) {
 				debug_printf(DEBUG_NORMAL,
 					     "Not managing interface '%s'.\n",
 					     ints->description);
 				flags = INT_IGNORE;
 			}
 
-			if (context_init_interface
-			    (ctx, ints->description, intname, NULL, 0) != 0) {
+			if (context_init_interface(ctx, ints->description, intname, NULL, 0) != 0) {
 				debug_printf(DEBUG_NORMAL,
 					     "Couldn't initialize interface '%s'!\n",
 					     ints->description);
@@ -744,8 +723,7 @@ void context_init_ints_from_conf(context ** ctx)
 #ifdef WINDOWS
 			if ((globals != NULL)
 			    &&
-			    (TEST_FLAG
-			     (globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY))) {
+			    (TEST_FLAG(globals->flags, CONFIG_GLOBALS_WIRELESS_ONLY))) {
 				if ((*ctx)->intType != ETH_802_11_INT) {
 					cardif_cancel_io((*ctx));
 				}

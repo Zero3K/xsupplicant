@@ -68,7 +68,7 @@ typedef struct _pemfl_list {
 /////////////////////// GLOBALS ///////////////////////
 char gStorePath[300];
 char gUserStorePath[300];
-PEMFL_LIST *pl_ca_list;
+PEMFL_LIST *pl_list = NULL;
 X509 *cur_X509_Obj = NULL;
 ///////////////////////////////////////////////////////
 
@@ -159,62 +159,35 @@ int cert_handler_init()
 }
 
 /**
- * \brief Close the certificate store handle.
+ * \brief Free the linked list of PEMFL items.
  **/
-void cert_handler_deinit()
+void lin_cert_handler_free_pemfl_list()
 {
 	PEMFL_LIST *t = NULL;
 
-	while (pl_ca_list) {
-		t = pl_ca_list->next;
-		if (pl_ca_list->filename)
-			FREE(pl_ca_list->filename);
-		FREE(pl_ca_list);
-		pl_ca_list = t;
+	while (pl_list) {
+		t = pl_list->next;
+		if (pl_list->filename)
+			FREE(pl_list->filename);
+		FREE(pl_list);
+		pl_list = t;
 	}
 }
 
 /**
- * \brief Parse the ASN.1 Encoded Subject information, and pull out things like the CN, 
- *        OU, O, etc.
- *
- * @param[in] pCertContext   A pointer to the certificate context for the certificate we want
- *                           to gather the data for.
- * @param[in,out] certinfo   A pointer to the structure that we will populate with the 
- *                           certificate information.
- *
- * \note Not all of the values listed in the structure will be present in all of the 
- *       certificates that we are looking at.   The caller should be prepared to deal
- *       with some (or perhaps all) of the fields being NULL.
- *
- * \retval 0 on success
- * \retval -1 on failure
+ * \brief Close the certificate store handle.
  **/
-// XXX Not needed? (ch)
-#if 0
-int cert_handler_get_info(PCCERT_CONTEXT pCertContext, cert_info * certinfo)
+void cert_handler_deinit()
 {
-	return -1;
+  lin_cert_handler_free_pemfl_list();
 }
-#endif
 
 /**
- * \brief Given the certificate name, get the information about it.
- *
- * @param[in] certname   The certificate's "friendly" name that we want to use.
- * @param[in,out] certinfo   A pointer to the structure that will contain all
- *                           of the certificate information requested.
- *
- * \retval 0 on success
- * \retval -1 on error
+ * \brief Close the certificate store handle.
  **/
-/////////////////////////////////////////////////////////////////////////
-//      THIS FUNCTION IS NOT USED
-/////////////////////////////////////////////////////////////////////////
-// XXX Clean out? (ch)
-int cert_handler_get_info_from_name(char *certname, cert_info * certinfo)
+void cert_handler_user_deinit()
 {
-	return -1;
+  lin_cert_handler_free_pemfl_list();
 }
 
 /**
@@ -317,9 +290,9 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 
 	get_pemfl_count_and_build_list(gStorePath);
 	debug_printf(DEBUG_INT, "TRACE-2:gStorePath[%s]\n", gStorePath);
-	if (!pl_ca_list)
+	if (!pl_list)
 		return EMPTY_CERT_LIST;
-	tmp_ca_list = pl_ca_list;
+	tmp_ca_list = pl_list;
 	casa = (cert_enum *) malloc(sizeof(cert_enum) * (*numcas + 1));
 	if (!casa)
 		return ERROR_ALLOC;	// Unable to allocate memory.
@@ -327,7 +300,7 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 	while (tmp_ca_list && cert_index <= *numcas) {
 		i = 0;
 		time_t ctm;
-		struct tm *tm_local;
+		struct tm *tm_local = NULL;
 
 		casa[cert_index].storetype = strdup("LINUX");
 		casa[cert_index].location = tmp_ca_list->filename;
@@ -336,8 +309,7 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 
 		cert_handler_get_info_from_store(NULL, tmp_ca_list->filename,
 						 &ci);
-		casa[cert_index].friendlyname =
-		    getFriendlyname(ci.O, tmp_ca_list->fl_index);
+		casa[cert_index].friendlyname = getFriendlyname(ci.O, tmp_ca_list->fl_index);
 		casa[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(casa[cert_index].friendlyname)));
 		strcpy(casa[cert_index].certname, casa[cert_index].friendlyname);
 		casa[cert_index].commonname = ci.CN;
@@ -609,19 +581,20 @@ char *getToken(char *s_str, char *lbuff)
 
 int get_pemfl_count(const char *pathname)
 {
-	struct dirent *d;
+	struct dirent *d = NULL;
 	struct stat f_info;
 	char abs_flpath[100];
 	int pemcnt = 0;
 	X509 *cert = NULL;
 	BIO *bio_cert = NULL;
-	char *tmp_str;
+	char *tmp_str = NULL;
 
 	debug_printf(DEBUG_INT, "Store pathname is [%s]\n", pathname);
 	DIR *dirp = opendir(pathname);
 	if (dirp) {
 		debug_printf(DEBUG_INT, "Store pathname is opened[%s]\n",
 			     pathname);
+
 		for (d = readdir(dirp); d != NULL; d = readdir(dirp)) {
 			//Don't consider '.' and '..'
 			if (strcmp(".", d->d_name) && strcmp("..", d->d_name)) {
@@ -689,10 +662,7 @@ int get_pemfl_count_and_build_list(const char *pathname)
 	BIO *bio_cert = NULL;
 
 	// We need to build list afresh
-	if (pl_ca_list) {
-		free(pl_ca_list);
-		pl_ca_list = NULL;
-	}
+	lin_cert_handler_free_pemfl_list();
 
 	if (dirp) {
 		for (d = readdir(dirp); d != NULL; d = readdir(dirp)) {
@@ -720,12 +690,12 @@ int get_pemfl_count_and_build_list(const char *pathname)
 								     NULL);
 								if (cert) {
 									pemcnt++;
-									tmp_pl = pl_ca_list;
+									tmp_pl = pl_list;
 									if (!tmp_pl) {
-										pl_ca_list = (PEMFL_LIST *) malloc(sizeof(PEMFL_LIST));
-										pl_ca_list->filename = strdup(abs_flpath);
-										pl_ca_list->fl_index = pemcnt;
-										pl_ca_list->next = NULL;
+										pl_list = (PEMFL_LIST *) malloc(sizeof(PEMFL_LIST));
+										pl_list->filename = strdup(abs_flpath);
+										pl_list->fl_index = pemcnt;
+										pl_list->next = NULL;
 									} else {
 										while (tmp_pl->next)
 											tmp_pl = tmp_pl->next;
@@ -830,7 +800,6 @@ char *getIssuername(char *location)
  ** \retval NULL on error
  ** \retval Valid string on success
  **/
-
 char *getFriendlyname(char *sO, int iI)
 {
 	char *sFN = NULL;
@@ -853,12 +822,78 @@ char *getFriendlyname(char *sO, int iI)
  **/
 int cert_handler_num_user_certs()
 {
-#warning Implement!
-	return 0;
+	int cnt = 0;
+
+	debug_printf(DEBUG_INT, "NUM_USER_CERTS:cnt[%s]\n", gUserStorePath);
+	cnt = get_pemfl_count(gUserStorePath);
+	debug_printf(DEBUG_INT, "NUM_USER_CERTS:cnt[%d]\n", cnt);
+
+	return cnt;
 }
 
+/**
+ * \brief Enumerate user certificates that are in the store that
+ *        can be used for authentication.
+ *
+ * @param[in] numcer   An integer the specifies the number of user certificates we are expected to
+ *                     return.  This value should come from the cert_handler_num_user_certs().
+ *                     On return, this will contain the number of certificates that are actually in
+ *                     the array.
+ *
+ * @param[in,out] cer   An array of certificates that contains the number of certificates defined
+ *                      by numcer.
+ *
+ * \retval -1 on error
+ * \retval 0 on success
+ **/
 int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 {
-#warning Implement!
-	return -1;
+	cert_enum *cers = NULL;
+	PEMFL_LIST *tmp_cer_list = NULL;;
+	int cert_index = 0, sz = 0, i = 0;
+	char tmp_str[300];
+	cert_info ci;
+
+	debug_printf(DEBUG_INT, "TRACE-1:numcerts[%d]\n", *numcer);
+	if (!(*numcer))
+		return NO_CERTS_IN_STORE;	// No certs in store
+
+	get_pemfl_count_and_build_list(gUserStorePath);
+	debug_printf(DEBUG_INT, "TRACE-2:gUserStorePath[%s]\n", gUserStorePath);
+	if (!pl_list)
+		return EMPTY_CERT_LIST;
+	tmp_cer_list = pl_list;
+	cers = (cert_enum *) malloc(sizeof(cert_enum) * (*numcer + 1));
+	if (!cers)
+		return ERROR_ALLOC;	// Unable to allocate memory.
+
+	while (tmp_cer_list && cert_index <= *numcer) {
+		i = 0;
+		time_t ctm;
+		struct tm *tm_local = NULL;
+
+		cers[cert_index].storetype = strdup("LINUX");
+		cers[cert_index].location = tmp_cer_list->filename;
+		strcpy(tmp_str, tmp_cer_list->filename);
+		sz = strlen(tmp_cer_list->filename);
+
+		cert_handler_get_info_from_store(NULL, tmp_cer_list->filename,
+						 &ci);
+		cers[cert_index].friendlyname = getFriendlyname(ci.O, tmp_cer_list->fl_index);
+		cers[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(cers[cert_index].friendlyname)));
+		strcpy(cers[cert_index].certname, cers[cert_index].friendlyname);
+		cers[cert_index].commonname = ci.CN;
+		cers[cert_index].issuer = getIssuername(tmp_cer_list->filename);
+		ctm = time(NULL);
+		ctm -= ctm % (60 * 60 * 24);
+		ctm = ASN1_UTCTIME_get(X509_get_notAfter(cur_X509_Obj));
+		tm_local = localtime(&ctm);
+		cers[cert_index].day = tm_local->tm_mday;
+		cers[cert_index].month = tm_local->tm_mon + 1;	// Add 1, as month count starts from 0.
+		cers[cert_index].year = tm_local->tm_year + 1900;	// Add 1900, as year count starts from 1900.
+		cert_index++;
+		tmp_cer_list = tmp_cer_list->next;
+	}
+	*cer = cers;
+	return 0;
 }

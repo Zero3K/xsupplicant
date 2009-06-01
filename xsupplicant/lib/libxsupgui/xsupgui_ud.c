@@ -97,8 +97,6 @@ int xsupgui_ud_connect_event_listener()
 {
 	int sockErr = 0;
 	struct sockaddr_un sa;
-	char *result = NULL;
-	int ressize = 0;
 
 	ipc_event_sock = socket(PF_UNIX, SOCK_STREAM, 0);
 	if (ipc_event_sock < 0) {
@@ -124,18 +122,6 @@ int xsupgui_ud_connect_event_listener()
 	}
 
 
-#if 0	
-	if (xsupgui_request_set_as_event(&result, &ressize) == REQUEST_FAILURE)
-		return -1;
-	
-	if (xsupgui_ud_send_to_event((unsigned char *)result, ressize) == REQUEST_FAILURE) {
-		free(result);
-		result = NULL;
-		return -1;
-	}
-
-	free(result);
-#endif
 	return 0;
 }
 

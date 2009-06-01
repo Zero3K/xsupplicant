@@ -34,6 +34,7 @@
 #endif
 
 #define MACADDR(x)  x[0],x[1],x[2],x[3],x[4],x[5]
+
 /**
  * \brief Search through our list of known SSIDs, and see if we know the one
  *        specified in the wireless context.
@@ -109,11 +110,11 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
   int two_signal_dblevel = 0;
   int two_noise_dblevel = 0;
 
-	if (!xsup_assert((one != NULL), "one != NULL", FALSE))
-		return NULL;
-
-	if (!xsup_assert((two != NULL), "two != NULL", FALSE))
-		return NULL;
+  if (!xsup_assert((one != NULL), "one != NULL", FALSE))
+    return NULL;
+  
+  if (!xsup_assert((two != NULL), "two != NULL", FALSE))
+    return NULL;
 
 	
    printf("FIND BEST SIGNAL\n"); 
@@ -129,10 +130,7 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
          
  		one_snr = one_signal_dblevel - one_noise_dblevel;
  		two_snr = two_signal_dblevel - two_noise_dblevel;
- 		/*
- 		printf(" AP one, ssid = %s,MAC = %02x:%02x:%02x:%02x:%02x:%02x,signal = %d,noise = %d,snr = %d \n",one->ssid_name,MACADDR(one->mac),one_signal_dblevel,one_noise_dblevel,one_snr);
- 		printf(" AP two, ssid = %s,MAC = %02x:%02x:%02x:%02x:%02x:%02x,signal = %d,noise = %d,snr = %d \n\n",two->ssid_name,MACADDR(two->mac),two_signal_dblevel,two_noise_dblevel,two_snr);
- 		*/
+
        	if ( one_snr > two_snr )
  			return one;
        	else
@@ -183,7 +181,7 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
  **/
 struct found_ssids *config_ssid_init_new_node(wireless_ctx * wctx)
 {
-  struct found_ssids *ssids = NULL, *working = NULL;
+  struct found_ssids *working = NULL;
   char invalid_bssid[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 	working = (struct found_ssids *)Malloc(sizeof(struct found_ssids));
@@ -305,9 +303,9 @@ void config_ssid_add_rsn_ie(wireless_ctx * wctx, uint8_t * rsn_ie, uint8_t len)
  **/
 void config_ssid_add_wme_ie(wireless_ctx *wctx, uint8_t *wme_ie, uint8_t len)
 {
-	struct found_ssids *working = NULL;
+  struct found_ssids *working = NULL;
 
-	working = wctx->temp_ssid;
+  working = wctx->temp_ssid;
 
   if ((!working) || (working->wme_ie))
     {
@@ -325,6 +323,7 @@ void config_ssid_add_wme_ie(wireless_ctx *wctx, uint8_t *wme_ie, uint8_t len)
 	  ipc_events_malloc_failed(NULL);
       return;
     }
+
   memcpy(working->wme_ie, wme_ie, len);
   working->wme_ie_len = len;
 }
@@ -339,7 +338,7 @@ void config_ssid_add_wme_ie(wireless_ctx *wctx, uint8_t *wme_ie, uint8_t len)
  **/
 void config_ssid_add_bssid(wireless_ctx * wctx, char *newmac)
 {
-  char invalid_bssid[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+        char invalid_bssid[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 	struct found_ssids *working = NULL;
 
 	if (!xsup_assert((newmac != NULL), "newmac != NULL", FALSE))
@@ -740,12 +739,10 @@ struct found_ssids *config_ssid_find_best_ssid(context * ctx)
 			     "    Signal : %d   Noise : %d   Quality : " "%d\n",
 			     best->signal, best->noise, best->quality);
 
-		conf =
-		    config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL,
+		conf = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL,
 						     best->ssid_name);
 		if (conf == NULL) {
-			conf =
-			    config_find_connection_from_ssid(CONFIG_LOAD_USER,
+			conf = config_find_connection_from_ssid(CONFIG_LOAD_USER,
 							     best->ssid_name);
 		}
 
@@ -1152,7 +1149,7 @@ double config_ssid_get_best_freq(wireless_ctx * wctx)
 				best = cur;
 				first = 0;
 			} else {
-			  if (temp = config_ssid_best_signal(best, cur)) {
+			  if (temp == config_ssid_best_signal(best, cur)) {
 			    best = temp;
 			  }
 			}
@@ -1221,7 +1218,7 @@ uint8_t *config_ssid_get_mac_with_curssid_next_best_freq(wireless_ctx *wctx, dou
   return (uint8_t *)&cur->mac;
 }
 
-/*
+/**
  * \brief Return the best frequency we can associate with AP, checks if there are muiltiple 
  *  radios scanned for a given SSID and returns the best one considering the current BSSID, 
  *  used while roaming
@@ -1231,7 +1228,7 @@ uint8_t *config_ssid_get_mac_with_curssid_next_best_freq(wireless_ctx *wctx, dou
  *
  * \retval 0 on error
  * \retval frequency
- **/
+ */
 double config_ssid_get_next_best_freq_with_curssid(wireless_ctx *wctx)
 {
   struct found_ssids *cur = NULL;

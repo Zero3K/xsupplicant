@@ -35,7 +35,7 @@
     5. add the code to have it written to a file in libxsupconfwrite.
     6. if it is a required piece to make an authentication work, add it to
         libxsupconfcheck.
-	7. add password return to config_get_pwd_from_profile().
+    7. add password return to config_get_pwd_from_profile().
 */
 
 // Values used for the 'type' member of the config_ip_data structure.

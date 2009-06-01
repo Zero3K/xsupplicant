@@ -42,12 +42,22 @@
 #endif
 
 /**
- *  Write keydata into a logfile
+ * \brief Write keydata into a logfile
+ *
+ * The purpose of this function is mainly for debugging during development.
+ * It dumps the EAPoL key header data out to whatever the current logging
+ * target is.
+ *
+ * @param[in] inframe   A properly formatted EAPoL Key frame.
+ * @param[in] framesize   The size of the key frame that was passed in.
+ *
+ * \retval XENONE on success
+ * \retval XEMALLOC if a NULL frame is passed in.
  */
 int eapol_dump_keydata(char *inframe, int framesize)
 {
-	struct key_packet *keydata;
-	uint16_t length;
+	struct key_packet *keydata = NULL;
+	uint16_t length = 0;
 
 	if (!xsup_assert((inframe != NULL), "inframe != NULL", FALSE))
 		return XEMALLOC;
@@ -71,10 +81,20 @@ int eapol_dump_keydata(char *inframe, int framesize)
 }
 
 /**
- * Check the HMAC on the key packet we got.  If we can't validate the
+ * \brief Check the HMAC on the key packet we got.  If we can't validate the
  * HMAC, then we return FALSE, indicating an error.
+ *
+ * @param[in] ctx   The context for the interface we want to check the HMAC on
+ *        the frame for.
+ * @param[in] inframe   A pointer to the frame that we want to check the HMAC 
+ *                       on.
+ * @param[in] framesize   The size of the frame pointed to by 'inframe'.
+ *
+ * \retval TRUE if the HMAC on the frame is valid.
+ * \retval FALSE if the HMAC on the frame is invalid.
+ * \retval XEMALLOC on bad data passed in.
  **/
-int eapol_key_type1_check_hmac(context * thisint, char *inframe, int framesize)
+int eapol_key_type1_check_hmac(context * ctx, char *inframe, int framesize)
 {
 	struct key_packet *keydata = NULL;
 	char *framecpy = NULL;
@@ -83,22 +103,23 @@ int eapol_key_type1_check_hmac(context * thisint, char *inframe, int framesize)
 	int retVal = 0;
 	int length = 0;
 
-	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((inframe != NULL), "inframe != NULL", FALSE))
 		return XEMALLOC;
 
-	if (thisint->eap_state->eapKeyData == NULL) {
+	if (ctx->eap_state->eapKeyData == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "No keying material available!  Ignoring "
 			     "key frame!\n");
 		return XEMALLOC;
 	}
+
 	// First, make a copy of the frame.
 	framecpy = (char *)Malloc(framesize);
 	if (framecpy == NULL) {
-		ipc_events_malloc_failed(thisint);
+	        ipc_events_malloc_failed(ctx);
 		return XEMALLOC;
 	}
 
@@ -114,12 +135,12 @@ int eapol_key_type1_check_hmac(context * thisint, char *inframe, int framesize)
 	// Once we have done that, we need to calculate the HMAC.
 	calchmac = (char *)Malloc(16);	// The resulting MAC is 16 bytes long.
 	if (calchmac == NULL) {
-		ipc_events_malloc_failed(thisint);
+		ipc_events_malloc_failed(ctx);
 		return XEMALLOC;
 	}
 
-	HMAC(EVP_md5(), thisint->eap_state->eapKeyData + 32,
-	     thisint->eap_state->eapKeyLen, (uint8_t *) framecpy, framesize,
+	HMAC(EVP_md5(), ctx->eap_state->eapKeyData + 32,
+	     ctx->eap_state->eapKeyLen, (uint8_t *) framecpy, framesize,
 	     (uint8_t *) calchmac, (unsigned int *)&outlen);
 
 	// Now, we need to compare the calculated HMAC to the one sent to us.
@@ -141,14 +162,33 @@ int eapol_key_type1_check_hmac(context * thisint, char *inframe, int framesize)
 	return retVal;
 }
 
-int eapol_key_type1_get_rc4(context * thisint, uint8_t * enckey,
+/**
+ * \brief Get the RC4 key needed to do WEP.
+ *
+ * @param[in] ctx   The context for the interface we want to do WEP on.
+ * @param[in] enckey   The encrypted key that was passed to us via the EAPoL
+ *                     keyframe.
+ * @param[out] deckey   The buffer to store the decrypted key that will be 
+ *                      returned from this funciton.  (NOTE: This buffer should
+ *                      be at least the same size as the buffer that 'enckey'
+ *                      points to.)
+ * @param[in] keylen   The length of the key passed in via 'enckey', and the 
+ *                     length of the buffer that 'deckey' should point to.
+ * @param[in] iv   The IV used in the decryption of the key.
+ * @param[in] ivlen   The length of the IV pointed to by 'iv'.
+ *
+ * \retval XENONE if the key was properly decrypted and returned in 'deckey'.
+ * \retval XEMALLOC if a memory allocation failed, or invalid data was passed
+ *                  in to the function.
+ **/
+int eapol_key_type1_get_rc4(context * ctx, uint8_t * enckey,
 			    uint8_t * deckey, int keylen, uint8_t * iv,
 			    int ivlen)
 {
 	uint8_t *wholekey = NULL;
 	RC4_KEY key;
 
-	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((enckey != NULL), "enckey != NULL", FALSE))
@@ -161,15 +201,15 @@ int eapol_key_type1_get_rc4(context * thisint, uint8_t * enckey,
 		return XEMALLOC;
 
 	wholekey = (uint8_t *) Malloc(sizeof(uint8_t) *
-				      (ivlen + thisint->eap_state->eapKeyLen));
+				      (ivlen + ctx->eap_state->eapKeyLen));
 	if (wholekey == NULL) {
-		ipc_events_malloc_failed(thisint);
+		ipc_events_malloc_failed(ctx);
 		return XEMALLOC;
 	}
 
 	memcpy(wholekey, iv, ivlen);
 
-	if (!thisint->eap_state->eapKeyData) {
+	if (!ctx->eap_state->eapKeyData) {
 		debug_printf(DEBUG_NORMAL,
 			     "Invalid keying material!  Keys will not be "
 			     "handled correctly!\n");
@@ -177,10 +217,10 @@ int eapol_key_type1_get_rc4(context * thisint, uint8_t * enckey,
 		return XEMALLOC;
 	}
 
-	memcpy(wholekey + ivlen, thisint->eap_state->eapKeyData,
-	       thisint->eap_state->eapKeyLen);
+	memcpy(wholekey + ivlen, ctx->eap_state->eapKeyData,
+	       ctx->eap_state->eapKeyLen);
 
-	RC4_set_key(&key, ivlen + thisint->eap_state->eapKeyLen, wholekey);
+	RC4_set_key(&key, ivlen + ctx->eap_state->eapKeyLen, wholekey);
 	RC4(&key, keylen, enckey, deckey);
 
 	FREE(wholekey);
@@ -189,9 +229,14 @@ int eapol_key_type1_get_rc4(context * thisint, uint8_t * enckey,
 }
 
 /**
+ * \brief Clear the WEP rekey problem timer.
+ *
  * If our rekey timer expires, we should quietly remove it.  In the case of
  * this timer, we WANT it to expire with no events!  (Otherwise, the card
  * in use may have issues.)
+ *
+ * @param[in] ctx   The context that contains the timer used to determine if
+ *                  the wireless interface resets when the WEP key is set.
  **/
 void eapol_key_type1_clear_timer(context * ctx)
 {
@@ -204,8 +249,19 @@ void eapol_key_type1_clear_timer(context * ctx)
 }
 
 /**
- * Set up our timer to warn if the driver may have the card reset issue.
- */
+ * \brief Set up our timer to warn if the driver may have the card reset issue.
+ *
+ * In the early days of wireless on Linux, it was common for a wireless
+ *  interface to reset when the WEP keys were applied to the interface.  This
+ *  reset would drop the association, causing a new authentication, which 
+ *  in turn caused new keys to be set.  (And on, and on.)  We set this timer
+ *  to a fairly short timeout value so that we know if we are changing keys
+ *  rapidly.  If we appear to be, we can scream so the user knows there is a
+ *  problem with their card driver.
+ *
+ * @param[in] ctx   The context for the interface that we want to set up the
+ *                  rekey timer on.
+ **/
 void eapol_key_type1_set_rekey_prob_timer(context * ctx)
 {
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
@@ -230,11 +286,20 @@ void eapol_key_type1_set_rekey_prob_timer(context * ctx)
 }
 
 /**
- * Display the stale key warning, and disable the timer that was running.
+ * \brief Display the stale key warning, and disable the timer that was running.
+ *
+ * The purpose of the stale key warning is purely cosmetic.  The idea is to 
+ *  provide a way for a user to know if the length of time their key has been in
+ *  use makes it more likely to be compromised.  Based on the advances in 
+ *  breaking WEP keys, this timer is largely pointless.  People just shouldn't
+ *  use WEP unless they have no other choice!
+ *
+ * @param[in] ctx   The interface that we want to display the stale key 
+ *                  warning on, and then clear the timer.
  **/
 void eapol_key_type1_stale_key_warn(context * ctx)
 {
-	struct config_globals *globals;
+	struct config_globals *globals = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
@@ -256,14 +321,18 @@ void eapol_key_type1_stale_key_warn(context * ctx)
 }
 
 /**
+ * \brief Establish the stale key timer.
+ *
  * Set a timer that watches how long a key has been in use.  (Should only
  * be used for unicast keys, since broadcast keys aren't very secure to
  * begin with!)  If the timer expires, then we need to warn the user that
  * their security may be weaker than it used to be.
+ *
+ * @param[in] ctx   The context that we want to set up the warning timer on.
  */
 void eapol_key_type1_set_stale_key_warn_timer(context * ctx)
 {
-	struct config_globals *globals;
+	struct config_globals *globals = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
@@ -285,25 +354,38 @@ void eapol_key_type1_set_stale_key_warn_timer(context * ctx)
 }
 
 /**
- * Decrypt the key, and set it on the interface.  If there isn't a key to
+ * \brief Decrypt the key, and set it on the interface.  If there isn't a key to
  * decrypt, then use the peer key.
+ *
+ * @param[in] ctx   The context that points to the interface we want to use
+ *                  the new key with.
+ * @param[in] inframe   The EAPoL key frame that contains the encrypted key that
+ *                      we need to decrypt and apply.
+ * @param[in] framesize   The size (in bytes) of the EAPoL key frame that we 
+ *                        need to process.
+ *
+ * \retval TRUE if the key was successfully set.
+ * \retval FALSE if the key couldn't be set.
+ * \retval XEMALLOC if a memory allocation error occurred, or invalid parameters
+ *                    were passed in.
+ * \retval XEBADKEY if the key data in the key frame was invalid.
  **/
-int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
+int eapol_key_type1_decrypt(context * ctx, char *inframe, int framesize)
 {
 	struct key_packet *keydata = NULL;
 	int keylen, rc = 0;
 	uint16_t length;
 	uint8_t *newkey = NULL, *enckey = NULL;
-	struct config_globals *globals;
-	wireless_ctx *wctx;
+	struct config_globals *globals = NULL;
+	wireless_ctx *wctx = NULL;
 
-	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((inframe != NULL), "inframe != NULL", FALSE))
 		return XEMALLOC;
 
-	wctx = (wireless_ctx *) thisint->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
 		return FALSE;
@@ -321,7 +403,7 @@ int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
 	if ((keylen != 0) && ((framesize) - sizeof(*keydata) >= keylen)) {
 		newkey = (uint8_t *) Malloc(sizeof(uint8_t) * keylen);
 		if (newkey == NULL) {
-			ipc_events_malloc_failed(thisint);
+			ipc_events_malloc_failed(ctx);
 			return XEMALLOC;
 		}
 
@@ -330,7 +412,7 @@ int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
 		debug_printf(DEBUG_KEY, "Key before decryption : ");
 		debug_hex_printf(DEBUG_KEY, enckey, keylen);
 
-		if (eapol_key_type1_get_rc4(thisint, enckey, newkey, keylen,
+		if (eapol_key_type1_get_rc4(ctx, enckey, newkey, keylen,
 					    keydata->key_iv, 16) != XENONE) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't decrypt new key!\n");
@@ -340,9 +422,7 @@ int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
 		debug_printf(DEBUG_KEY, "Key after decryption : ");
 		debug_hex_printf(DEBUG_KEY, newkey, keylen);
 
-		if (cardif_set_wep_key
-		    (thisint, newkey, keylen, keydata->key_index)
-		    != 0) {
+		if (cardif_set_wep_key(ctx, newkey, keylen, keydata->key_index) != 0) {
 			rc = FALSE;
 		} else {
 
@@ -351,9 +431,8 @@ int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
 				debug_printf(DEBUG_NORMAL,
 					     "Set unicast WEP key. (%d bits)\n",
 					     (keylen * 8));
-				eapol_key_type1_set_rekey_prob_timer(thisint);
-				eapol_key_type1_set_stale_key_warn_timer
-				    (thisint);
+				eapol_key_type1_set_rekey_prob_timer(ctx);
+				eapol_key_type1_set_stale_key_warn_timer(ctx);
 
 				if ((keylen * 8) == 104) {
 					wctx->pairwiseKeyType = CIPHER_WEP104;
@@ -387,8 +466,7 @@ int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
 		globals = config_get_globals();
 
 		if (globals) {
-			if (TEST_FLAG
-			    (globals->flags,
+			if (TEST_FLAG(globals->flags,
 			     CONFIG_GLOBALS_FRIENDLY_WARNINGS)) {
 				debug_printf(DEBUG_NORMAL,
 					     "*WARNING* This AP uses the key "
@@ -398,8 +476,7 @@ int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
 			}
 		}
 
-		if (cardif_set_wep_key
-		    (thisint, thisint->eap_state->eapKeyData, keylen,
+		if (cardif_set_wep_key(ctx, ctx->eap_state->eapKeyData, keylen,
 		     keydata->key_index) != 0) {
 			rc = FALSE;
 		} else {
@@ -407,9 +484,8 @@ int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
 
 			//  If the unicast flag is set, start the warning timer.
 			if (keydata->key_index & 0x80) {
-				eapol_key_type1_set_rekey_prob_timer(thisint);
-				eapol_key_type1_set_stale_key_warn_timer
-				    (thisint);
+				eapol_key_type1_set_rekey_prob_timer(ctx);
+				eapol_key_type1_set_stale_key_warn_timer(ctx);
 			}
 		}
 	}
@@ -426,24 +502,29 @@ int eapol_key_type1_decrypt(context * thisint, char *inframe, int framesize)
 }
 
 /**
+ * \brief Process an EAPoL key frame.
+ *
  * We are handed in an EAPoL key frame.  From that frame, we check the frame
  * to make sure it hasn't been changed in transit.  We then determine the 
  * correct key, and make the call to set it.
+ *
+ * @param[in] ctx   The context for the interface that has the frame we want
+ *                  to process and set the key from.
  **/
-void eapol_key_type1_process(context * thisint)
+void eapol_key_type1_process(context * ctx)
 {
-	struct key_packet *keydata;
-	struct eapol_header *eapolheader;
-	uint8_t *inframe;
-	int framesize;
-	int framelen;
-	struct config_globals *globals;
-	wireless_ctx *wctx;
+	struct key_packet *keydata = NULL;
+	struct eapol_header *eapolheader = NULL;
+	uint8_t *inframe = NULL;
+	int framesize = 0;
+	int framelen = 0;
+	struct config_globals *globals = NULL;
+	wireless_ctx *wctx = NULL;
 
-	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
 
-	wctx = (wireless_ctx *) thisint->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL", FALSE))
 		return;
@@ -453,8 +534,8 @@ void eapol_key_type1_process(context * thisint)
 	if (!xsup_assert((globals != NULL), "globals != NULL", FALSE))
 		return;
 
-	inframe = thisint->recvframe;
-	framesize = thisint->recv_size;
+	inframe = ctx->recvframe;
+	framesize = ctx->recv_size;
 
 	eapolheader = (struct eapol_header *)&inframe[OFFSET_PAST_MAC];
 
@@ -467,16 +548,14 @@ void eapol_key_type1_process(context * thisint)
 		return;
 	}
 
-	if (eapol_key_type1_check_hmac
-	    (thisint, (char *)&inframe[OFFSET_TO_EAPOL],
+	if (eapol_key_type1_check_hmac(ctx, (char *)&inframe[OFFSET_TO_EAPOL],
 	     framelen + 4) == FALSE) {
 		debug_printf(DEBUG_NORMAL,
 			     "HMAC failed on key data!  This key will be discarded.\n");
 		return;
 	}
 
-	if (eapol_key_type1_decrypt
-	    (thisint, (char *)&inframe[OFFSET_TO_EAPOL + 4],
+	if (eapol_key_type1_decrypt(ctx, (char *)&inframe[OFFSET_TO_EAPOL + 4],
 	     (framelen)) != TRUE) {
 		debug_printf(DEBUG_NORMAL, "Failed to set wireless key!\n");
 		return;
@@ -492,5 +571,5 @@ void eapol_key_type1_process(context * thisint)
 				     "not like this combination!\n");
 		}
 	}
-	thisint->recv_size = 0;
+	ctx->recv_size = 0;
 }

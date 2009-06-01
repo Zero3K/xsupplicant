@@ -1951,7 +1951,6 @@ int check_freq_to_switch_ap(context *ctx, double freq)
 int connect_to_next_best(context *ctx)
 {
   	uint8_t *mac = NULL;
-  	char *ssid = NULL;
   	double freq=0;
   	wireless_ctx *wctx = NULL;
   	struct config_globals *globals = NULL;
@@ -2031,9 +2030,6 @@ int connect_to_next_best(context *ctx)
 void cardif_passive_scan_timeout(context * ctx)
 {
 	struct config_globals *globals = NULL;
-	uint8_t *mac = NULL;
-	char *ssid = NULL;
-	double freq=0;
 	wireless_ctx *wctx = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
@@ -2285,8 +2281,8 @@ void cardif_enum_ints()
 {
 	struct if_nameindex *ifnames = NULL;
 	int i = 0;
-        char nomac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        char mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	//        char nomac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+	//        char mac[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 	ifnames = if_nameindex();
 	if (ifnames == NULL) {
