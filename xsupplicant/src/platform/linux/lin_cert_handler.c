@@ -151,10 +151,6 @@ int cert_handler_init()
 
 	strcpy(gStorePath, "/root/xsupplicant/certs");
 
-	// XXX Does this really make sense?  This should have already been inited. (ch)
-	SSL_library_init();
-	SSL_load_error_strings();
-
 	return cert_handler_user_init();
 }
 
@@ -309,10 +305,34 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 
 		cert_handler_get_info_from_store(NULL, tmp_ca_list->filename,
 						 &ci);
-		casa[cert_index].friendlyname = getFriendlyname(ci.O, tmp_ca_list->fl_index);
-		casa[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(casa[cert_index].friendlyname)));
-		strcpy(casa[cert_index].certname, casa[cert_index].friendlyname);
-		casa[cert_index].commonname = ci.CN;
+
+		if (ci.O != NULL)
+		  {
+		    casa[cert_index].friendlyname = getFriendlyname(ci.O, tmp_ca_list->fl_index);
+		    casa[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(casa[cert_index].friendlyname)));
+		    strcpy(casa[cert_index].certname, casa[cert_index].friendlyname);
+		  }
+		else if (ci.CN != NULL)
+		  {
+		    casa[cert_index].friendlyname = getFriendlyname(ci.CN, tmp_ca_list->fl_index);
+		    casa[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(casa[cert_index].friendlyname)));
+		    strcpy(casa[cert_index].certname, casa[cert_index].friendlyname);
+		  }
+		else
+		  {
+		    casa[cert_index].friendlyname = NULL;
+		    casa[cert_index].certname = NULL;
+		  }
+
+		if (ci.CN != NULL)
+		  {
+		    casa[cert_index].commonname = strdup(ci.CN);
+		  }
+		else
+		  {
+		    casa[cert_index].commonname = NULL;
+		  }
+
 		casa[cert_index].issuer = getIssuername(tmp_ca_list->filename);
 		ctm = time(NULL);
 		ctm -= ctm % (60 * 60 * 24);
@@ -321,6 +341,9 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
 		casa[cert_index].day = tm_local->tm_mday;
 		casa[cert_index].month = tm_local->tm_mon + 1;	// Add 1, as month count starts from 0.
 		casa[cert_index].year = tm_local->tm_year + 1900;	// Add 1900, as year count starts from 1900.
+
+		cert_handler_free_cert_info(&ci);
+
 		cert_index++;
 		tmp_ca_list = tmp_ca_list->next;
 	}
@@ -366,17 +389,19 @@ int cert_handler_get_info_from_store(char *storetype, char *location,
 		if (!cert_buff)
 			return INVALID_CERT;
 	} else {
+	  X509_free(cert);
 	  BIO_free(bio_cert);
 	  return ERROR_X509_READ;	//Error:Unable to fetch App-Data.
 	}
 
-	debug_printf(DEBUG_INT, "Getting tokens. (%s)\n", cert_buff);
 	certinfo->C = getToken("C", cert_buff);
 	certinfo->O = getToken("O", cert_buff);
 	certinfo->OU = getToken("OU", cert_buff);
 	certinfo->CN = getToken("CN", cert_buff);
 	certinfo->S = getToken("ST", cert_buff);
 	certinfo->L = getToken("L", cert_buff);
+
+	FREE(cert_buff);
 
 	if (cur_X509_Obj != NULL)
 	  {
@@ -442,6 +467,9 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 						FREE(tmp_str);
 					if (outfl)
 						fclose(outfl);
+
+					BIO_free(bio_cert);
+
 					return ERROR_X509_WRITE;
 				}
 			} else {
@@ -452,6 +480,9 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 					FREE(tmp_str);
 				if (outfl)
 					fclose(outfl);
+
+				BIO_free(bio_cert);
+
 				return ERROR_FILE_OPEN;
 			}
 		} else {
@@ -460,6 +491,8 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 				FREE(tmp_str);
 			if (outfl)
 				fclose(outfl);
+
+			BIO_free(bio_cert);
 			return ERROR_BIO_READ;	//Error:cannot read bio_cert.
 		}
 	} else {
@@ -469,6 +502,8 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 			FREE(tmp_str);
 		if (outfl)
 			fclose(outfl);
+
+		BIO_free(bio_cert);
 		return NO_CERT_PATH;	// ERROR:NO cert path
 	}
 
@@ -477,6 +512,9 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 		FREE(tmp_str);
 	if (outfl)
 		fclose(outfl);
+	
+	BIO_free(bio_cert);
+
 	return 0;
 }
 
@@ -531,9 +569,6 @@ char *X509_NAME_to_str(X509_NAME * name, int fmt)
 	BIO_write(membuf, &i, 1);
 	size = BIO_get_mem_data(membuf, &sp);
 
-	// XXX Memory leak?
-	//BIO_free(membuf);
-
 	return sp;
 }
 
@@ -567,7 +602,7 @@ char *getToken(char *s_str, char *srcbuff)
 
 	// Make sure the requested token is in the string.
 	sprintf((char *)&matchStr, "%s=", s_str);
-	if (strstr(matchStr, srcbuff) == NULL)
+	if (strstr(srcbuff, matchStr) == NULL)
 	  return NULL;
 
 	sContent = (char *)malloc(250);
@@ -634,8 +669,7 @@ int get_pemfl_count(const char *pathname)
 					// Exclude directories, consider only files.
 					if (S_ISREG(f_info.st_mode)) {
 						tmp_str = strdup(d->d_name);
-						while (*tmp_str
-						       && *tmp_str != '.')
+						while (*tmp_str && *tmp_str != '.')
 							tmp_str++;
 						// Count only files with .pem extension.
 						if (!strcmp(tmp_str, ".pem")) {
@@ -657,6 +691,9 @@ int get_pemfl_count(const char *pathname)
 									     "TRACE-8:Valid PEM cert\n");
 									pemcnt++;
 								}
+
+								X509_free(cert);
+								BIO_free(bio_cert);
 							}
 						}
 					}
@@ -664,6 +701,9 @@ int get_pemfl_count(const char *pathname)
 			}
 		}
 	}
+
+	closedir(dirp);
+
 	return pemcnt;
 }
 
@@ -704,8 +744,7 @@ int get_pemfl_count_and_build_list(const char *pathname)
 				if (!stat(abs_flpath, &f_info)) {
 					if (S_ISREG(f_info.st_mode)) {
 						tmp_str = strdup(d->d_name);
-						while (*tmp_str
-						       && *tmp_str != '.')
+						while (*tmp_str && *tmp_str != '.')
 							tmp_str++;
 						if (!strcmp(tmp_str, ".pem")) {
 							bio_cert = NULL;
@@ -733,8 +772,11 @@ int get_pemfl_count_and_build_list(const char *pathname)
 										new_pemfl->next = NULL;
 										tmp_pl->next = new_pemfl;
 									}
+									
+									X509_free(cert);
 								} else
 									cert = NULL;
+								BIO_free(bio_cert);
 							} else
 								bio_cert = NULL;
 						}
@@ -744,6 +786,9 @@ int get_pemfl_count_and_build_list(const char *pathname)
 		}
 	} else
 		return 0;	//ERROR:Unable to open dir.
+
+	closedir(dirp);
+
 	return pemcnt;
 }
 
@@ -803,10 +848,18 @@ char *getIssuername(char *location)
 	if (bio_cert)
 		PEM_read_bio_X509(bio_cert, &cert, NULL, NULL);
 	else
-		//Error:cannot read bio_cert.
-		return NULL;
+	  {
+	    BIO_free(bio_cert);
+
+	    //Error:cannot read bio_cert.
+	    return NULL;
+	  }
+
+	BIO_free(bio_cert);
 
 	name = X509_get_subject_name(cert);
+
+	X509_free(cert);
 
 	if (name)
 		cert_buff = X509_NAME_to_str(name, ISSUER);
@@ -840,6 +893,7 @@ char *getFriendlyname(char *sO, int iI)
 	sprintf(sI, "_%d", iI);
 	strcpy(sFN, sO);
 	strcat(sFN, sI);
+	FREE(sI);
 
 	return sFN;
 }
@@ -909,18 +963,16 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 
 		cert_handler_get_info_from_store(NULL, tmp_cer_list->filename,
 						 &ci);
-		debug_printf(DEBUG_NORMAL, "Getting friendly name\n");
-		// XXX Finish from here.  getFriendlyname isn't happening.  
-		// Also need to fix the root CA cert code.
-		if (ci.O != NULL)
+
+		if (ci.CN != NULL)
 		  {
-		    cers[cert_index].friendlyname = getFriendlyname(ci.O, tmp_cer_list->fl_index);
+		    cers[cert_index].friendlyname = getFriendlyname(ci.CN, tmp_cer_list->fl_index);
 		    cers[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(cers[cert_index].friendlyname)));
 		    strcpy(cers[cert_index].certname, cers[cert_index].friendlyname);
 		  }
-		else if (ci.CN != NULL)
+		else if (ci.O != NULL)
 		  {
-		    cers[cert_index].friendlyname = getFriendlyname(ci.CN, tmp_cer_list->fl_index);
+		    cers[cert_index].friendlyname = getFriendlyname(ci.O, tmp_cer_list->fl_index);
 		    cers[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(cers[cert_index].friendlyname)));
 		    strcpy(cers[cert_index].certname, cers[cert_index].friendlyname);   
 		  }
@@ -930,8 +982,15 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 		    cers[cert_index].certname = NULL;
 		  }
 
-		// XXX Memory leak?  ci.CN should get freed later, shouldn't it? (ch)
-		cers[cert_index].commonname = ci.CN;
+		if (ci.CN != NULL)
+		  {
+		    cers[cert_index].commonname = strdup(ci.CN);
+		  }
+		else
+		  {
+		    cers[cert_index].commonname = NULL;
+		  }
+
 		cers[cert_index].issuer = getIssuername(tmp_cer_list->filename);
 		ctm = time(NULL);
 		ctm -= ctm % (60 * 60 * 24);
@@ -940,6 +999,9 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 		cers[cert_index].day = tm_local->tm_mday;
 		cers[cert_index].month = tm_local->tm_mon + 1;	// Add 1, as month count starts from 0.
 		cers[cert_index].year = tm_local->tm_year + 1900;	// Add 1900, as year count starts from 1900.
+
+		cert_handler_free_cert_info(&ci);
+
 		cert_index++;
 		tmp_cer_list = tmp_cer_list->next;
 	}
