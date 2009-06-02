@@ -302,6 +302,7 @@ int global_init()
 void global_sigseg()
 {
 	fprintf(stderr, "[FATAL] SIGSEGV  (Segmentation Fault)!!!\n");
+	debug_printf(DEBUG_NORMAL, "!!!!  Segmentation Fault  !!!!\n");
 	xsup_ipc_cleanup(intiface);
 	fflush(stderr);
 	fflush(stdout);

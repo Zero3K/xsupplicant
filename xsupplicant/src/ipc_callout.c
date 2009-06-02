@@ -8637,8 +8637,7 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr * outnode)
 							outnode);
 		}
 
-		if (xmlNewChild
-		    (b, NULL, (xmlChar *) "Store_Type",
+		if (xmlNewChild(b, NULL, (xmlChar *) "Store_Type",
 		     (xmlChar *) temp) == NULL) {
 			xmlFreeNode(n);
 			FREE(temp);
@@ -8682,8 +8681,7 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr * outnode)
 							outnode);
 		}
 
-		if (xmlNewChild
-		    (b, NULL, (xmlChar *) "Friendly_Name",
+		if (xmlNewChild(b, NULL, (xmlChar *) "Friendly_Name",
 		     (xmlChar *) temp) == NULL) {
 			xmlFreeNode(n);
 			FREE(temp);
@@ -8727,8 +8725,7 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr * outnode)
 							outnode);
 		}
 
-		if (xmlNewChild
-		    (b, NULL, (xmlChar *) "CommonName",
+		if (xmlNewChild(b, NULL, (xmlChar *) "CommonName",
 		     (xmlChar *) temp) == NULL) {
 			xmlFreeNode(n);
 			FREE(temp);
@@ -8750,8 +8747,7 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr * outnode)
 							outnode);
 		}
 
-		if (xmlNewChild
-		    (b, NULL, (xmlChar *) "Location",
+		if (xmlNewChild(b, NULL, (xmlChar *) "Location",
 		     (xmlChar *) temp) == NULL) {
 			xmlFreeNode(n);
 			FREE(temp);
@@ -8798,6 +8794,7 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr * outnode)
 
 	cert_handler_free_cert_enum(numcas, &casa);
 
+	debug_printf(DEBUG_NORMAL, "********************** Done!\n");
 	(*outnode) = n;
 
 	return IPC_SUCCESS;

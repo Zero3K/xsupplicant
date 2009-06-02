@@ -340,7 +340,6 @@ int cert_handler_enum_root_ca_certs(int *numcas, cert_enum ** cas)
  ** \retval -1 on error
  ** \retval 0 on success
  ***/
-
 int cert_handler_get_info_from_store(char *storetype, char *location,
 				     cert_info * certinfo)
 {
@@ -363,11 +362,15 @@ int cert_handler_get_info_from_store(char *storetype, char *location,
 
 	if (name) {
 		cert_buff = X509_NAME_to_str(name, SUBJECT);
+
 		if (!cert_buff)
 			return INVALID_CERT;
-	} else
-		return ERROR_X509_READ;	//Error:Unable to fetch App-Data.
+	} else {
+	  BIO_free(bio_cert);
+	  return ERROR_X509_READ;	//Error:Unable to fetch App-Data.
+	}
 
+	debug_printf(DEBUG_INT, "Getting tokens. (%s)\n", cert_buff);
 	certinfo->C = getToken("C", cert_buff);
 	certinfo->O = getToken("O", cert_buff);
 	certinfo->OU = getToken("OU", cert_buff);
@@ -375,7 +378,16 @@ int cert_handler_get_info_from_store(char *storetype, char *location,
 	certinfo->S = getToken("ST", cert_buff);
 	certinfo->L = getToken("L", cert_buff);
 
+	if (cur_X509_Obj != NULL)
+	  {
+	    X509_free(cur_X509_Obj);
+	    cur_X509_Obj = NULL;
+	  }
+
 	cur_X509_Obj = cert;
+
+	BIO_free(bio_cert);
+
 	return 0;
 }
 
@@ -530,19 +542,35 @@ char *X509_NAME_to_str(X509_NAME * name, int fmt)
  **
  ** @param[in] s_str Specifies the field-string for which the content has to be fetched.
  **                      
- ** @param[in] lbuff It is the buffer from which the tokens will be extracted.
+ ** @param[in] srcbuff It is the buffer from which the tokens will be extracted.
  **                      
  ** \retval NULL on error
  ** \retval a valid string on success
  **/
 
-char *getToken(char *s_str, char *lbuff)
+char *getToken(char *s_str, char *srcbuff)
 {
 	char tag_str[20], sarg[50];
 	int not_done = 1, i = 0;
 	char *sContent = NULL;
+	char *lbuff = NULL;
+	char matchStr[10];
 
-	sContent = (char *)malloc(50);
+	if (!xsup_assert((s_str != NULL), "s_str != NULL", FALSE)) 
+	  return NULL;
+	
+	if (!xsup_assert((srcbuff != NULL), "srcbuff != NULL", FALSE)) 
+	  return NULL;
+
+	// Make sure we don't change the source pointer.
+	lbuff = srcbuff;
+
+	// Make sure the requested token is in the string.
+	sprintf((char *)&matchStr, "%s=", s_str);
+	if (strstr(matchStr, srcbuff) == NULL)
+	  return NULL;
+
+	sContent = (char *)malloc(250);
 	while (not_done) {
 		while (*lbuff && *lbuff != '/')
 			lbuff++;
@@ -805,6 +833,8 @@ char *getFriendlyname(char *sO, int iI)
 	char *sFN = NULL;
 	char *sI = NULL;
 
+	if (sO == NULL) return NULL;    // No friendly name to be had.
+
 	sFN = (char *)malloc(strlen(sO) + 6);
 	sI = (char *)malloc(6);
 	sprintf(sI, "_%d", iI);
@@ -879,9 +909,28 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 
 		cert_handler_get_info_from_store(NULL, tmp_cer_list->filename,
 						 &ci);
-		cers[cert_index].friendlyname = getFriendlyname(ci.O, tmp_cer_list->fl_index);
-		cers[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(cers[cert_index].friendlyname)));
-		strcpy(cers[cert_index].certname, cers[cert_index].friendlyname);
+		debug_printf(DEBUG_NORMAL, "Getting friendly name\n");
+		// XXX Finish from here.  getFriendlyname isn't happening.  
+		// Also need to fix the root CA cert code.
+		if (ci.O != NULL)
+		  {
+		    cers[cert_index].friendlyname = getFriendlyname(ci.O, tmp_cer_list->fl_index);
+		    cers[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(cers[cert_index].friendlyname)));
+		    strcpy(cers[cert_index].certname, cers[cert_index].friendlyname);
+		  }
+		else if (ci.CN != NULL)
+		  {
+		    cers[cert_index].friendlyname = getFriendlyname(ci.CN, tmp_cer_list->fl_index);
+		    cers[cert_index].certname = (char*)malloc(sizeof(char) * (strlen(cers[cert_index].friendlyname)));
+		    strcpy(cers[cert_index].certname, cers[cert_index].friendlyname);   
+		  }
+		else
+		  {
+		    cers[cert_index].friendlyname = NULL;
+		    cers[cert_index].certname = NULL;
+		  }
+
+		// XXX Memory leak?  ci.CN should get freed later, shouldn't it? (ch)
 		cers[cert_index].commonname = ci.CN;
 		cers[cert_index].issuer = getIssuername(tmp_cer_list->filename);
 		ctm = time(NULL);
@@ -894,6 +943,7 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 		cert_index++;
 		tmp_cer_list = tmp_cer_list->next;
 	}
+	debug_printf(DEBUG_NORMAL, "Enum user certs done.\n");
 	*cer = cers;
 	return 0;
 }
