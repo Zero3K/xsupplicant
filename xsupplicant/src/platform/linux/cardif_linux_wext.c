@@ -969,13 +969,11 @@ int cardif_linux_wext_wep_associate(context * intdata, int zero_keys)
 					 alg, "802.11 auth. alg to open") < 0) {
 		debug_printf(DEBUG_NORMAL, "Couldn't set 802.11 auth. alg.\n");
 	}
-	/*OPEN FIX: Below condition added */
+
 	if (config_ssid_get_ssid_abilities(wctx) == 0) {
-		debug_printf(DEBUG_INT, "Its OPEN, so disable ENC \n");
 		cardif_linux_wext_enc_disable(intdata);
 	}
 
-	/*OPEN FIX: the below statement was at the beginning of the function, has been moved here */
 	cardif_linux_wext_wpa_state(intdata, 0);
 
 #endif
@@ -1362,14 +1360,11 @@ int cardif_linux_wext_wpa_state(context * intdata, char state)
 		cardif_linux_wext_wpa(intdata, FALSE);
 
 		if (config_ssid_get_ssid_abilities(wctx) == 0) {
-			debug_printf(DEBUG_NORMAL,
-				     "Its OPEN, so don't drop UNENC \n");
 			cardif_linux_wext_drop_unencrypted(intdata, FALSE);
 		}
 		// Otherwise, make sure we don't have an IE set.
 		memset(wpaie, 0x00, sizeof(wpaie));
-		if (cardif_linux_wext_set_wpa_ie
-		    (intdata, (unsigned char *)wpaie, 0) < 0) {
+		if (cardif_linux_wext_set_wpa_ie(intdata, (unsigned char *)wpaie, 0) < 0) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't clear WPA IE on device %s!\n",
 				     intdata->intName);
@@ -1399,10 +1394,8 @@ int cardif_linux_wext_set_iwauth(context * intdata,
 	xsup_assert((sockData != NULL), "sockData != NULL", TRUE);
 
 	memset(&wrq, 0x00, sizeof(wrq));
-	//Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
-//        sizeof(intdata->intName)+1);
-	strncpy((char *)&wrq.ifr_name, intdata->intName,
-		sizeof(intdata->intName) + 1);
+	Strncpy((char *)&wrq.ifr_name, sizeof(wrq.ifr_name), intdata->intName, 
+		strlen(intdata->intName)+1);
 
 	if (strlen(wrq.ifr_name) == 0) {
 		debug_printf(DEBUG_NORMAL,
@@ -1663,16 +1656,9 @@ void cardif_linux_wext_associate(context * ctx)
 	freq = cardif_linux_wext_set_freq(ctx);
 	cardif_linux_wext_set_ssid(ctx, wctx->cur_essid);
 
-	//Patch for associating with best Frequency radio if there are multiple radios on one AP
-	//If we are able to set the frequency then search for the BSSID of that particular radio
 	if (freq) {
-#warning Test and clean up!
-	  //	  if(reason) {
-	      bssid = config_ssid_get_mac_with_freq(wctx, freq);
-	      /*	  } else {
-			  bssid = wctx->cur_bssid; 
-	  }*/
-
+	  bssid = config_ssid_get_mac_with_freq(wctx, freq);
+	      
 	  wctx->freq = freq;
 	} 
 

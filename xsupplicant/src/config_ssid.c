@@ -150,13 +150,13 @@ struct found_ssids *config_ssid_best_signal(struct found_ssids *one,
        	if ((one->quality != 0) && (two->quality != 0))
  		{
  	  		if (one->quality > two->quality)
- 	    	{
- 	      		return one;
- 	    	}
+			  {
+			    return one;
+			  }
  	  		else
- 	    	{
- 	      		return two;
- 	    	}
+			  {
+			    return two;
+			  }
  		}
       }
    }
@@ -472,6 +472,7 @@ void config_ssid_dump(wireless_ctx * wctx)
 		if (cur->ssid_name != NULL) {
 			debug_printf(DEBUG_PHYSICAL_STATE, "ESSID : %s\n",
 				     cur->ssid_name);
+			debug_printf(DEBUG_PHYSICAL_STATE, "BSSID : %02X:%02X:%02X:%02X:%02X:%02X\n", MACADDR(cur->mac));
 			debug_printf(DEBUG_PHYSICAL_STATE, "Abilities : %02X\n",
 				     cur->abilities);
 			debug_printf(DEBUG_PHYSICAL_STATE, "Quality : %d     ",
@@ -583,14 +584,6 @@ struct found_ssids *config_ssid_find_by_name(wireless_ctx * wctx,
 	cur = wctx->ssid_cache;
 
 	while (cur != NULL) {
-	  /*
-		if ((cur->ssid_name != NULL)
-		    && (strcmp(ssid_name, cur->ssid_name) != 0)) {
-			cur = cur->next;
-		} else {
-			break;
-		}
-	  */
 	  if ((cur->ssid_name != NULL) &&
 	      (strcmp(ssid_name, cur->ssid_name) == 0))
 	    break;
@@ -673,8 +666,7 @@ struct found_ssids *config_ssid_find_best_ssid(context * ctx)
 	if ((globals != NULL)
 	    && (globals->wirelessMachineAuthConnection != NULL)
 	    && (win_impersonate_is_user_on_console() == FALSE)) {
-		conn =
-		    config_find_connection(CONFIG_LOAD_GLOBAL,
+		conn = config_find_connection(CONFIG_LOAD_GLOBAL,
 					   globals->wirelessMachineAuthConnection);
 		if (conn != NULL) {
 			machineAuth_wireless = _strdup(conn->ssid);
@@ -702,20 +694,17 @@ struct found_ssids *config_ssid_find_best_ssid(context * ctx)
 			     "Checking %s with Priority %d\n", cur->ssid_name,
 			     cur_pri);
 
-		conf =
-		    config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL,
+		conf = config_find_connection_from_ssid(CONFIG_LOAD_GLOBAL,
 						     cur->ssid_name);
 		if (conf == NULL) {
-			conf =
-			    config_find_connection_from_ssid(CONFIG_LOAD_USER,
+			conf = config_find_connection_from_ssid(CONFIG_LOAD_USER,
 							     cur->ssid_name);
 		}
 
 		if (conf != NULL) {
 			if ((best != NULL)
 			    && (strcmp(cur->ssid_name, best->ssid_name) == 0)) {
-				if ((temp =
-				     config_ssid_best_signal(best,
+				if ((temp = config_ssid_best_signal(best,
 							     cur)) != NULL) {
 					// We found the same SSID with a better signal, so select that
 					// one.
@@ -1085,6 +1074,7 @@ uint8_t *config_ssid_get_mac_with_freq(wireless_ctx * wctx, double freq)
 	if (!xsup_assert((wctx->cur_essid != NULL), "ssid_name != NULL", FALSE))
 		return NULL;
 
+	config_ssid_dump(wctx);
 	// Start at the top of the list.
 	cur = wctx->ssid_cache;
 
@@ -1093,6 +1083,7 @@ uint8_t *config_ssid_get_mac_with_freq(wireless_ctx * wctx, double freq)
 			debug_printf(DEBUG_PHYSICAL_STATE,
 				     "Found hidden SSID\n");
 		}
+
 		if ((cur->ssid_name == NULL)
 		    || ((strcmp(wctx->cur_essid, cur->ssid_name) == 0) && (freq == cur->freq))
 		    || (freq != cur->freq)) {

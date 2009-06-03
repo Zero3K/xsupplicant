@@ -636,23 +636,17 @@ void cardif_linux_rtnetlink_parse_ies(context * ctx,
 	if (!xsup_assert((ielen > 0), "ielen > 0", FALSE))
 		return;
 
-	if (!xsup_assert((ielen < 256), "ielen < 256", FALSE))
-		return;
-
 	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	while (i < ielen) {
 		if (iedata[i] == WPA_EID) {
 			if (wpa_parse_ie((char *)&iedata[i]) > 0) {
-				authtypes =
-				    wpa_parse_auth_type((char *)&iedata[i]);
+				authtypes = wpa_parse_auth_type((char *)&iedata[i]);
 				if (authtypes != 0xff) {
 					if (TEST_FLAG(authtypes, WPA_PSK))
-						config_ssid_update_abilities
-						    (wctx, ABIL_WPA_PSK);
+						config_ssid_update_abilities(wctx, ABIL_WPA_PSK);
 					if (TEST_FLAG(authtypes, WPA_DOT1X))
-						config_ssid_update_abilities
-						    (wctx, ABIL_WPA_DOT1X);
+						config_ssid_update_abilities(wctx, ABIL_WPA_DOT1X);
 				}
 				// We have a valid IE, save it.
 				config_ssid_update_abilities(wctx, ABIL_WPA_IE);
@@ -664,15 +658,12 @@ void cardif_linux_rtnetlink_parse_ies(context * ctx,
 
 		if (iedata[i] == WPA2_EID) {
 			if (wpa2_parse_ie((char *)&iedata[i]) > 0) {
-				authtypes =
-				    wpa2_parse_auth_type((char *)&iedata[i]);
+				authtypes = wpa2_parse_auth_type((char *)&iedata[i]);
 				if (authtypes != 0xff) {
 					if (TEST_FLAG(authtypes, RSN_PSK))
-						config_ssid_update_abilities
-						    (wctx, ABIL_RSN_PSK);
+						config_ssid_update_abilities(wctx, ABIL_RSN_PSK);
 					if (TEST_FLAG(authtypes, RSN_DOT1X))
-						config_ssid_update_abilities
-						    (wctx, ABIL_RSN_DOT1X);
+						config_ssid_update_abilities(wctx, ABIL_RSN_DOT1X);
 				}
 				// We have a valid IE, save it.
 				config_ssid_update_abilities(wctx, ABIL_RSN_IE);

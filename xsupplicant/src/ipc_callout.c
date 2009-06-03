@@ -8794,7 +8794,6 @@ int ipc_callout_enum_user_certs(xmlNodePtr innode, xmlNodePtr * outnode)
 
 	cert_handler_free_cert_enum(numcas, &casa);
 
-	debug_printf(DEBUG_NORMAL, "********************** Done!\n");
 	(*outnode) = n;
 
 	return IPC_SUCCESS;

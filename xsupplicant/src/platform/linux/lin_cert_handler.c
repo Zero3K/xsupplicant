@@ -389,8 +389,19 @@ int cert_handler_get_info_from_store(char *storetype, char *location,
 		if (!cert_buff)
 			return INVALID_CERT;
 	} else {
-	  X509_free(cert);
-	  BIO_free(bio_cert);
+	  /* XXX
+	  if (cert)
+	    {
+	      X509_free(cert);
+	      cert = NULL;
+	    }
+	  
+	  if (bio_cert) 
+	    {
+	      BIO_free(bio_cert);
+	      bio_cert = NULL;
+	    }
+	  */
 	  return ERROR_X509_READ;	//Error:Unable to fetch App-Data.
 	}
 
@@ -401,8 +412,6 @@ int cert_handler_get_info_from_store(char *storetype, char *location,
 	certinfo->S = getToken("ST", cert_buff);
 	certinfo->L = getToken("L", cert_buff);
 
-	FREE(cert_buff);
-
 	if (cur_X509_Obj != NULL)
 	  {
 	    X509_free(cur_X509_Obj);
@@ -411,8 +420,13 @@ int cert_handler_get_info_from_store(char *storetype, char *location,
 
 	cur_X509_Obj = cert;
 
-	BIO_free(bio_cert);
-
+	/* XXX
+	if (bio_cert)
+	  {
+	    BIO_free(bio_cert);
+	    bio_cert = NULL;
+	  }
+	*/
 	return 0;
 }
 
@@ -467,9 +481,13 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 						FREE(tmp_str);
 					if (outfl)
 						fclose(outfl);
-
-					BIO_free(bio_cert);
-
+					/* XXX
+					if (bio_cert) 
+					  {
+					    BIO_free(bio_cert);
+					    bio_cert = NULL;
+					  }
+					*/
 					return ERROR_X509_WRITE;
 				}
 			} else {
@@ -480,9 +498,13 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 					FREE(tmp_str);
 				if (outfl)
 					fclose(outfl);
-
-				BIO_free(bio_cert);
-
+				/* XXX
+				if (bio_cert)
+				  {
+				    BIO_free(bio_cert);
+				    bio_cert = NULL;
+				  }
+				*/
 				return ERROR_FILE_OPEN;
 			}
 		} else {
@@ -491,8 +513,13 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 				FREE(tmp_str);
 			if (outfl)
 				fclose(outfl);
-
-			BIO_free(bio_cert);
+			/* XXX
+			if (bio_cert)
+			  {
+			    BIO_free(bio_cert);
+			    bio_cert = NULL;
+			  }
+			*/
 			return ERROR_BIO_READ;	//Error:cannot read bio_cert.
 		}
 	} else {
@@ -502,8 +529,13 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 			FREE(tmp_str);
 		if (outfl)
 			fclose(outfl);
-
-		BIO_free(bio_cert);
+		/* XXX
+		if (bio_cert)
+		  {
+		    BIO_free(bio_cert);
+		    bio_cert = NULL;
+		  }
+		*/
 		return NO_CERT_PATH;	// ERROR:NO cert path
 	}
 
@@ -512,9 +544,13 @@ int cert_handler_add_cert_to_store(char *path_to_cert)
 		FREE(tmp_str);
 	if (outfl)
 		fclose(outfl);
-	
-	BIO_free(bio_cert);
-
+	/* XXX
+	if (bio_cert)
+	  {
+	    bio_cert = NULL;
+	    BIO_free(bio_cert);
+	  }
+	*/
 	return 0;
 }
 
@@ -568,7 +604,13 @@ char *X509_NAME_to_str(X509_NAME * name, int fmt)
 	i = 0;
 	BIO_write(membuf, &i, 1);
 	size = BIO_get_mem_data(membuf, &sp);
-
+	/* XXX
+	if (membuf)
+	  {
+	    BIO_free(membuf);
+	    membuf = NULL;
+	  }
+	*/
 	return sp;
 }
 
@@ -691,9 +733,19 @@ int get_pemfl_count(const char *pathname)
 									     "TRACE-8:Valid PEM cert\n");
 									pemcnt++;
 								}
+								/* XXX
+								if (cert)
+								  {
+								    X509_free(cert);
+								    cert = NULL;
+								  }
 
-								X509_free(cert);
-								BIO_free(bio_cert);
+								if (bio_cert)
+								  {
+								    BIO_free(bio_cert);
+								    bio_cert = NULL;
+								  }
+								*/
 							}
 						}
 					}
@@ -772,11 +824,22 @@ int get_pemfl_count_and_build_list(const char *pathname)
 										new_pemfl->next = NULL;
 										tmp_pl->next = new_pemfl;
 									}
-									
-									X509_free(cert);
+									/* XXX
+									if (cert)
+									  {
+									    X509_free(cert);
+									    cert = NULL;
+									  }
+									*/
 								} else
 									cert = NULL;
-								BIO_free(bio_cert);
+								/* XXX
+								if (bio_cert)
+								  {
+								    BIO_free(bio_cert);
+								    bio_cert = NULL;
+								  }
+								*/
 							} else
 								bio_cert = NULL;
 						}
@@ -839,7 +902,7 @@ time_t ASN1_UTCTIME_get(const ASN1_UTCTIME * s)
 char *getIssuername(char *location)
 {
 	X509 *cert = NULL;
-	BIO *bio_cert;
+	BIO *bio_cert = NULL;
 	X509_NAME *name = NULL;
 	char *cert_buff = NULL;
 
@@ -848,25 +911,44 @@ char *getIssuername(char *location)
 	if (bio_cert)
 		PEM_read_bio_X509(bio_cert, &cert, NULL, NULL);
 	else
-	  {
-	    BIO_free(bio_cert);
-
 	    //Error:cannot read bio_cert.
 	    return NULL;
-	  }
-
-	BIO_free(bio_cert);
 
 	name = X509_get_subject_name(cert);
-
-	X509_free(cert);
 
 	if (name)
 		cert_buff = X509_NAME_to_str(name, ISSUER);
 	else
+	  {
+	    /* XXX
+	        if (cert) 
+		  {
+		    X509_free(cert);
+		    cert = NULL;
+		  }
+
+	        if (bio_cert) 
+		  {
+		    BIO_free(bio_cert);
+		    bio_cert = NULL;
+		  }
+	    */
 		//Error:Unable to fetch App-Data.
 		return NULL;
+	  }
+	/* XXX
+	if (cert) 
+	  {
+	    X509_free(cert);
+	    cert = NULL;
+	  }
 
+	if (bio_cert) 
+	  {
+	    BIO_free(bio_cert);
+	    bio_cert = NULL;
+	  }
+	*/
 	return cert_buff;
 }
 
@@ -889,7 +971,13 @@ char *getFriendlyname(char *sO, int iI)
 	if (sO == NULL) return NULL;    // No friendly name to be had.
 
 	sFN = (char *)malloc(strlen(sO) + 6);
+	if (sFN == NULL)
+	  return NULL;
+
 	sI = (char *)malloc(6);
+	if (sI == NULL) 
+	  return NULL;
+
 	sprintf(sI, "_%d", iI);
 	strcpy(sFN, sO);
 	strcat(sFN, sI);
@@ -946,12 +1034,13 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 	debug_printf(DEBUG_INT, "TRACE-2:gUserStorePath[%s]\n", gUserStorePath);
 	if (!pl_list)
 		return EMPTY_CERT_LIST;
+
 	tmp_cer_list = pl_list;
-	cers = (cert_enum *) malloc(sizeof(cert_enum) * (*numcer + 1));
+	cers = (cert_enum *) Malloc(sizeof(cert_enum) * ((*numcer) + 1));
 	if (!cers)
 		return ERROR_ALLOC;	// Unable to allocate memory.
 
-	while (tmp_cer_list && cert_index <= *numcer) {
+	while ((tmp_cer_list) && (cert_index <= *numcer)) {
 		i = 0;
 		time_t ctm;
 		struct tm *tm_local = NULL;
@@ -1005,7 +1094,10 @@ int cert_handler_enum_user_certs(int *numcer, cert_enum ** cer)
 		cert_index++;
 		tmp_cer_list = tmp_cer_list->next;
 	}
-	debug_printf(DEBUG_NORMAL, "Enum user certs done.\n");
+
+	debug_printf(DEBUG_NORMAL, "Enum user certs done. (%d)\n", cert_index);
+	(*numcer) = cert_index;
 	*cer = cers;
+
 	return 0;
 }

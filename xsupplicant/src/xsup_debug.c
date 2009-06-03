@@ -1138,218 +1138,170 @@ void debug_printf(uint32_t level, char *fmt, ...)
 		// Print out a tag that identifies the type of debug message being used.
 		if (TEST_FLAG(level, DEBUG_NORMAL)) {
 		} else if (TEST_FLAG(level, DEBUG_PHYSICAL_STATE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[PHYS_STATE ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_DOT1X_STATE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[DOT1X_STATE] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_1X_BE_STATE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[1X_BE_STATE] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_EAP_STATE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[EAP_STATE  ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_KEY_STATE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[KEY_STATE  ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_KEY)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[KEY        ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_CONFIG_PARSE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[CONF_PARSE ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_CONFIG_WRITE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[CONF_WRITE ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_SMARTCARD)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[SMARTCARD  ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_SNMP)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[SNMP       ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_IPC)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[IPC        ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_INIT)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[INIT       ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_DEINIT)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[DEINIT     ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_AUTHTYPES)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[AUTHTYPES  ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_INT)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[INTERFACE  ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_CONTEXT)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[CONTEXT    ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_EVENT_CORE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[EVENT_CORE ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_TLS_CORE)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[TLS_CORE   ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_TIMERS)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[TIMERS     ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_CERTS)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[CERTS      ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_TNC)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[TNC        ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_TNC_IMC)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[TNC IMC    ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_PLUGINS)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[PLUGIN HOOK] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}
 		} else if (TEST_FLAG(level, DEBUG_NULL)) {
-			if (xsup_common_strcpy
-			    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+			if (xsup_common_strcpy((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 			     "[DEBUG NULL ] ") != 0) {
-				printf
-				    ("Attempt to overflow a buffer in %s() at %d!\n",
+				printf("Attempt to overflow a buffer in %s() at %d!\n",
 				     __FUNCTION__, __LINE__);
 				return;
 			}

@@ -615,9 +615,6 @@ int xsup_ipc_new_socket(context * ctx, int sock)
 			close(newsock);
 		}
 
-		debug_printf(DEBUG_NORMAL,
-			     "Xsupplicant %s has connected a new client." "\n",
-			     VERSION);
 	}
 
 	return XENONE;
