@@ -503,7 +503,11 @@ bool ConnectionWizardData::toProfileEAP_TLSProtocol(config_profiles *
 					else
 					{
 						mytls->user_cert = _strdup(m_userCert.toAscii());
+#ifdef WINDOWS
 						mytls->store_type =	_strdup("WINDOWS");
+#else
+						mytls->store_type = _strdup("LINUX");
+#endif
 					}
 				}
 			}

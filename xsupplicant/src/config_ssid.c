@@ -1074,7 +1074,6 @@ uint8_t *config_ssid_get_mac_with_freq(wireless_ctx * wctx, double freq)
 	if (!xsup_assert((wctx->cur_essid != NULL), "ssid_name != NULL", FALSE))
 		return NULL;
 
-	config_ssid_dump(wctx);
 	// Start at the top of the list.
 	cur = wctx->ssid_cache;
 
@@ -1085,8 +1084,7 @@ uint8_t *config_ssid_get_mac_with_freq(wireless_ctx * wctx, double freq)
 		}
 
 		if ((cur->ssid_name == NULL)
-		    || ((strcmp(wctx->cur_essid, cur->ssid_name) == 0) && (freq == cur->freq))
-		    || (freq != cur->freq)) {
+		    || ((strcmp(wctx->cur_essid, cur->ssid_name) == 0) && (freq == cur->freq)) ) {
 		  break;
 		} else {
 			cur = cur->next;
