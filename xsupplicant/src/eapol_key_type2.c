@@ -52,20 +52,24 @@
 uint8_t wpa2_group_key_ver = 0, wpa2_pairwise_key_ver = 0;
 
 /**
- * Given a frame, parse all of the data that is contained in it, and
- * provide a human readable output that is useful for debugging.
+ * \brief Given a frame, parse all of the data that is contained in it, and
+ *        provide a human readable output that is useful for debugging.
+ *
+ * @param[in] ctx  The context for the interface that the frame came in on.
+ * @param[in] framedata   The frame that we want to parse and dump the key
+ *                        data for.
  **/
-void eapol_key_type2_dump(context * intdata, char *framedata)
+void eapol_key_type2_dump(context * ctx, char *framedata)
 {
 	int value16 = 0;
 	int need_comma = 0, encdata = 0;
 	uint16_t keylen, version = 0;
-	struct wpa2_key_packet *keydata;
+	struct wpa2_key_packet *keydata = NULL;
 	uint8_t *keypayload = NULL;
 	uint8_t *key = NULL;
 	uint8_t rc4_ek[32];
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
 
 	if (!xsup_assert((framedata != NULL), "framedata != NULL", FALSE))
@@ -171,6 +175,7 @@ void eapol_key_type2_dump(context * intdata, char *framedata)
 		debug_printf(DEBUG_KEY, "Key Data : (%d)\n", value16);
 		debug_hex_dump(DEBUG_KEY, keydata->keydata, value16);
 	}
+
 	// nothing to do!
 	if (encdata == 0)
 		return;
@@ -183,13 +188,13 @@ void eapol_key_type2_dump(context * intdata, char *framedata)
 		debug_printf(DEBUG_NORMAL,
 			     "Error with malloc of keypayload in %s()!\n",
 			     __FUNCTION__);
-		ipc_events_malloc_failed(intdata);
+		ipc_events_malloc_failed(ctx);
 		return;
 	}
 
 	memcpy(keypayload, keydata->keydata, keylen);
 
-	if (!intdata->statemachine->PTK) {
+	if (!ctx->statemachine->PTK) {
 		debug_printf(DEBUG_NORMAL,
 			     "PTK is NULL!  Can't decrypt data!\n");
 		FREE(keypayload);
@@ -200,7 +205,7 @@ void eapol_key_type2_dump(context * intdata, char *framedata)
 	case 1:
 		memset(rc4_ek, 0x00, 32);
 		memcpy(rc4_ek, keydata->key_iv, 16);
-		memcpy(&rc4_ek[16], &intdata->statemachine->PTK[16], 16);
+		memcpy(&rc4_ek[16], &ctx->statemachine->PTK[16], 16);
 		rc4_skip(rc4_ek, 32, 256, keypayload, keylen);
 		break;
 
@@ -210,28 +215,28 @@ void eapol_key_type2_dump(context * intdata, char *framedata)
 			debug_printf(DEBUG_NORMAL,
 				     "Error with malloc of key in %s()!\n",
 				     __FUNCTION__);
-			ipc_events_malloc_failed(intdata);
+			ipc_events_malloc_failed(ctx);
 			FREE(keypayload);
 			return;
 		}
 
 		debug_printf(DEBUG_KEY, "PTK : ");
 		debug_hex_printf(DEBUG_KEY,
-				 (uint8_t *) intdata->statemachine->PTK, 32);
+				 (uint8_t *) ctx->statemachine->PTK, 32);
 		debug_printf(DEBUG_KEY, "\n");
 
-		if (aes_unwrap((uint8_t *) & intdata->statemachine->PTK[16],
+		if (aes_unwrap((uint8_t *) & ctx->statemachine->PTK[16],
 			       (keylen - 8) / 8, keypayload, key) != 0) {
 			debug_printf(DEBUG_NORMAL,
 				     "Failed AES unwrap. (Data will be"
 				     " invalid!)\n");
-			if (intdata->statemachine->PTK == NULL)
+			if (ctx->statemachine->PTK == NULL)
 				debug_printf(DEBUG_NORMAL,
 					     "Unwrap failed because PTK is NULL!\n");
-			ipc_events_error(intdata,
+			ipc_events_error(ctx,
 					 IPC_EVENT_ERROR_FAILED_AES_UNWRAP,
-					 intdata->desc);
-			cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT);
+					 ctx->desc);
+			cardif_disassociate(ctx, DISASSOC_CIPHER_REJECT);
 		}
 
 		FREE(keypayload);
@@ -252,16 +257,22 @@ void eapol_key_type2_dump(context * intdata, char *framedata)
 }
 
 /**
- * Generate the pre-Temporal key. (PTK) Using the authenticator, and 
+ * \brief Generate the pre-Temporal key. (PTK) Using the authenticator, and 
  * supplicant nonces.  (Anonce, and Snonce.)  The PTK is used for keying
  * when we are ready.
+ *
+ * @param[in] ctx   The context for the interface that we need to generate the
+ *                  PTK on.
+ *
+ * \retval NULL on error.
+ * \retval char* pointer to PTK.
  **/
-char *eapol_key_type2_gen_ptk(context * intdata, char *Anonce)
+char *eapol_key_type2_gen_ptk(context * ctx, char *Anonce)
 {
 	char prfdata[76];	// 6*2 (MAC addrs) + 32*2 (nonces)
 	char *retval = NULL;
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return NULL;
 
 	if (!xsup_assert((Anonce != NULL), "Anonce != NULL", FALSE))
@@ -271,25 +282,24 @@ char *eapol_key_type2_gen_ptk(context * intdata, char *Anonce)
 
 	debug_printf(DEBUG_INT, "Checking MAC data :\n");
 	debug_printf(DEBUG_INT, "Source MAC : \n");
-	debug_hex_printf(DEBUG_INT, (uint8_t *) intdata->source_mac, 6);
+	debug_hex_printf(DEBUG_INT, (uint8_t *) ctx->source_mac, 6);
 	debug_printf(DEBUG_INT, "Dest MAC :\n");
-	debug_hex_printf(DEBUG_INT, (uint8_t *) intdata->dest_mac, 6);
-	if (memcmp((char *)&intdata->source_mac, (char *)&intdata->dest_mac, 6)
+	debug_hex_printf(DEBUG_INT, (uint8_t *) ctx->dest_mac, 6);
+	if (memcmp((char *)&ctx->source_mac, (char *)&ctx->dest_mac, 6)
 	    < 0) {
-		memcpy((char *)&prfdata[0], (char *)&intdata->source_mac, 6);
-		memcpy((char *)&prfdata[6], (char *)&intdata->dest_mac, 6);
+		memcpy((char *)&prfdata[0], (char *)&ctx->source_mac, 6);
+		memcpy((char *)&prfdata[6], (char *)&ctx->dest_mac, 6);
 	} else
-	    if (memcmp
-		((char *)&intdata->source_mac, (char *)&intdata->dest_mac,
+	  if (memcmp((char *)&ctx->source_mac, (char *)&ctx->dest_mac,
 		 6) > 0) {
-		memcpy((char *)&prfdata[0], (char *)&intdata->dest_mac, 6);
-		memcpy((char *)&prfdata[6], (char *)&intdata->source_mac, 6);
+		memcpy((char *)&prfdata[0], (char *)&ctx->dest_mac, 6);
+		memcpy((char *)&prfdata[6], (char *)&ctx->source_mac, 6);
 	} else {
 		debug_printf(DEBUG_NORMAL,
 			     "Source and Destination MAC addresses "
 			     "match!  The PTK won't be valid!\n");
-		ipc_events_error(intdata, IPC_EVENT_ERROR_INVALID_PTK,
-				 intdata->desc);
+		ipc_events_error(ctx, IPC_EVENT_ERROR_INVALID_PTK,
+				 ctx->desc);
 		return NULL;
 	}
 
@@ -297,19 +307,19 @@ char *eapol_key_type2_gen_ptk(context * intdata, char *Anonce)
 	debug_printf(DEBUG_INT, "Anonce : \n");
 	debug_hex_printf(DEBUG_INT, (uint8_t *) Anonce, 32);
 	debug_printf(DEBUG_INT, "Snonce :\n");
-	debug_hex_printf(DEBUG_INT, intdata->statemachine->SNonce, 32);
-	if (memcmp(intdata->statemachine->SNonce, Anonce, 32) < 0) {
-		memcpy((char *)&prfdata[12], intdata->statemachine->SNonce, 32);
+	debug_hex_printf(DEBUG_INT, ctx->statemachine->SNonce, 32);
+	if (memcmp(ctx->statemachine->SNonce, Anonce, 32) < 0) {
+		memcpy((char *)&prfdata[12], ctx->statemachine->SNonce, 32);
 		memcpy((char *)&prfdata[44], Anonce, 32);
-	} else if (memcmp(intdata->statemachine->SNonce, Anonce, 32) > 0) {
+	} else if (memcmp(ctx->statemachine->SNonce, Anonce, 32) > 0) {
 		memcpy((char *)&prfdata[12], Anonce, 32);
-		memcpy((char *)&prfdata[44], intdata->statemachine->SNonce, 32);
+		memcpy((char *)&prfdata[44], ctx->statemachine->SNonce, 32);
 	} else {
 		debug_printf(DEBUG_NORMAL,
 			     "ANonce and SNonce match!  The PTK won't"
 			     " be valid!\n");
-		ipc_events_error(intdata, IPC_EVENT_ERROR_INVALID_PTK,
-				 intdata->desc);
+		ipc_events_error(ctx, IPC_EVENT_ERROR_INVALID_PTK,
+				 ctx->desc);
 		return NULL;
 	}
 
@@ -318,16 +328,16 @@ char *eapol_key_type2_gen_ptk(context * intdata, char *Anonce)
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't allocate memory for retval in %s "
 			     "at %d!\n", __FUNCTION__, __LINE__);
-		ipc_events_malloc_failed(intdata);
+		ipc_events_malloc_failed(ctx);
 		return NULL;
 	}
 
-	if (intdata->statemachine->PMK == NULL)
+	if (ctx->statemachine->PMK == NULL)
 		return NULL;
 
 	debug_printf(DEBUG_KEY, "PMK : ");
-	debug_hex_printf(DEBUG_KEY, (uint8_t *) intdata->statemachine->PMK, 32);
-	wpa_PRF((uint8_t *) intdata->statemachine->PMK, 32,
+	debug_hex_printf(DEBUG_KEY, (uint8_t *) ctx->statemachine->PMK, 32);
+	wpa_PRF((uint8_t *) ctx->statemachine->PMK, 32,
 		(uint8_t *) "Pairwise key expansion", 22, (uint8_t *) & prfdata,
 		76, (uint8_t *) retval, 64);
 
@@ -338,23 +348,25 @@ char *eapol_key_type2_gen_ptk(context * intdata, char *Anonce)
 }
 
 /**
- * When a MIC failure occures, we need to send the AP a request for
- * a new key. (Reference 802.11i-D3.0.pdf page 43, line 8)
+ * \brief When a MIC failure occures, we need to send the AP a request for
+ *        a new key. (Reference 802.11i-D3.0.pdf page 43, line 8)
+ *
+ * @param[in] ctx   The context that we need to request a new key on.
+ * @param[in] unicast   TRUE if we need to request a new unicast key.
  **/
-void eapol_key_type2_request_new_key(context * intdata, char unicast)
+void eapol_key_type2_request_new_key(context * ctx, char unicast)
 {
-	struct wpa2_key_packet *outkeydata;
-	uint16_t value16, keyindex, len;
+	struct wpa2_key_packet *outkeydata = NULL;
+	uint16_t value16 = 0, keyindex = 0, len = 0;
 	char key[16];
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
 
-	outkeydata =
-	    (struct wpa2_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL + 4];
+	outkeydata = (struct wpa2_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL + 4];
 
 	// Clear everything out.
-	memset(&intdata->sendframe[OFFSET_TO_EAPOL + 4], 0x00,
+	memset(&ctx->sendframe[OFFSET_TO_EAPOL + 4], 0x00,
 	       sizeof(struct wpa2_key_packet));
 
 	outkeydata->key_descriptor = WPA2_KEY_TYPE;
@@ -377,37 +389,49 @@ void eapol_key_type2_request_new_key(context * intdata, char unicast)
 
 	// Build the response.
 	len = sizeof(struct wpa2_key_packet);
-	intdata->send_size = len + OFFSET_TO_EAPOL + 4;
+	ctx->send_size = len + OFFSET_TO_EAPOL + 4;
 
-	eapol_build_header(intdata, EAPOL_KEY,
-			   (intdata->send_size - OFFSET_TO_EAPOL - 4),
-			   (char *)intdata->sendframe);
+	eapol_build_header(ctx, EAPOL_KEY,
+			   (ctx->send_size - OFFSET_TO_EAPOL - 4),
+			   (char *)ctx->sendframe);
 
-	if (!intdata->statemachine->PTK) {
+	if (!ctx->statemachine->PTK) {
 		debug_printf(DEBUG_NORMAL,
 			     "No valid PTK available!  We will not "
 			     "be able to request a new key!\n");
 		return;
 	}
 
-	memcpy(key, intdata->statemachine->PTK, 16);
-	mic_wpa_populate((char *)intdata->sendframe, intdata->send_size + 4,
+	memcpy(key, ctx->statemachine->PTK, 16);
+	mic_wpa_populate((char *)ctx->sendframe, ctx->send_size + 4,
 			 key, 16);
 
-	cardif_sendframe(intdata);
-	intdata->statemachine->eapolEap = FALSE;
+	cardif_sendframe(ctx);
+	ctx->statemachine->eapolEap = FALSE;
 }
 
 /**
- * Process a GTK KDE, and set the keys as needed.
+ * \brief Process a GTK KDE, and set the keys as needed.
+ *
+ * @param[in] ctx   The context for the interface that we want to process the
+ *                   group KDE on.
+ * @param[in] key   The KDE that contains the group key that we want to set.
+ * @param[in] kdelen   The length of the KDE that was passed in via 'key'.
+ * @param[in] keylen   The length of the key we want to set.
+ * @param[in] keyrsc   The RSC value for this key.
+ * @param[in] version   The version value that tells us what type of key this 
+ *                      is.
+ *
+ * \retval XENONE on success
+ * \retval XEMALLOC on bad parameter passed in.
  **/
-char eapol_key_type2_do_gtk_kde(context * intdata, uint8_t * key,
+char eapol_key_type2_do_gtk_kde(context * ctx, uint8_t * key,
 				uint16_t kdelen, uint8_t keylen,
 				uint8_t * keyrsc, char version)
 {
 	char keyindex = 0, txkey = 0;
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((key != NULL), "key != NULL", FALSE))
@@ -420,8 +444,6 @@ char eapol_key_type2_do_gtk_kde(context * intdata, uint8_t * key,
 	debug_hex_dump(DEBUG_KEY, key, kdelen);
 
 	keyindex = WPA2_KEY_INDEX_MASK & key[0];
-
-//  if (WPA2_TX_KEY_MASK & key[0]) txkey = 1;
 
 	kdelen -= 2;
 	key += 2;
@@ -437,34 +459,46 @@ char eapol_key_type2_do_gtk_kde(context * intdata, uint8_t * key,
 
 	switch (version) {
 	case 1:
-		wpa_common_set_key(intdata, NULL, keyindex, txkey, (char *)key,
+		wpa_common_set_key(ctx, NULL, keyindex, txkey, (char *)key,
 				   keylen);
 		break;
 
 	case 2:
-		wpa_common_set_key(intdata, NULL, keyindex, txkey, (char *)key,
+		wpa_common_set_key(ctx, NULL, keyindex, txkey, (char *)key,
 				   keylen);
 		break;
 
 	default:
 		debug_printf(DEBUG_NORMAL, "Unknown encryption/MAC type %d.\n",
 			     version);
-		ipc_events_error(intdata, IPC_EVENT_ERROR_UNKNOWN_KEY_REQUEST,
-				 intdata->desc);
+		ipc_events_error(ctx, IPC_EVENT_ERROR_UNKNOWN_KEY_REQUEST,
+				 ctx->desc);
 		break;
 	}
 
 	debug_printf(DEBUG_NORMAL,
 		     "Interface '%s' set new group IEEE 802.11i/WPA2 key.\n",
-		     intdata->desc);
+		     ctx->desc);
 
 	return XENONE;
 }
 
 /**
- * Process an STAKey KDE and set keys as needed.
+ * \brief Process an STAKey KDE and set keys as needed.
+ *
+ * \note This is just a stub for if we want to implement STA keys later.
+ *
+ * @param[in] ctx   The context for the interface that we want to set the 
+ *                  STAKey on.
+ * @param[in] key   The key we want to set.
+ * @param[in] keylen   The length of the key we want to set.
+ * @param[in] keyrsc   The RSC for the key we want to set.
+ * @param[in] version   The version number that tells us what type of key 
+ *                      should be set.
+ *
+ * \retval XENONE is always returned.
  **/
-char eapol_key_type2_do_stakey_kde(context * intdata,
+char eapol_key_type2_do_stakey_kde(context * ctx,
 				   uint8_t * key, uint16_t keylen,
 				   uint8_t * keyrsc, char version)
 {
@@ -474,9 +508,18 @@ char eapol_key_type2_do_stakey_kde(context * intdata,
 }
 
 /**
- * Process a MAC address KDE.
+ * \brief Process a MAC address KDE.
+ *
+ * \note This is a stub for a function that is not yet implemented.
+ *
+ * @param[in] ctx   The context that we want to process a MAC address KDE on.
+ * @param[in] key   The KDE that we want to process.
+ * @param[in] keylen   The length of the KDE to process.
+ * @param[in] version   (Probably wouldn't be used in a real implementation.)
+ *
+ * \retval XENONE is always returned.
  **/
-char eapol_key_type2_do_mac_kde(context * intdata, uint8_t * key,
+char eapol_key_type2_do_mac_kde(context * ctx, uint8_t * key,
 				uint16_t keylen, char version)
 {
 	debug_printf(DEBUG_NORMAL, "MAC KDEs are not supported at this time! "
@@ -485,7 +528,16 @@ char eapol_key_type2_do_mac_kde(context * intdata, uint8_t * key,
 }
 
 /**
- * Process a PMKID KDE.
+ * \brief Process a PMKID KDE.
+ * 
+ * @param[in] ctx   The context for the interface that we want to process a
+ *                  PMKID KDE on.
+ * @param[in] key   The PMKID KDE that we want to process.
+ * @param[in] kdelen   The length of the KDE passed in to 'key'.
+ * @param[in] version  (Unused.)
+ *
+ * \retval XENONE on success
+ * \retval XEMALLOC on bad parameters passed, or memory allocation failures.
  **/
 char eapol_key_type2_do_pmkid_kde(context * ctx,
 				  uint8_t * key, uint16_t kdelen, char version)
@@ -503,7 +555,6 @@ char eapol_key_type2_do_pmkid_kde(context * ctx,
 
 	if (wctx->pmkid_used) {
 		if (memcmp(wctx->pmkid_used, key, 16) == 0) {
-			//wctx->okc = 1;
 			debug_printf(DEBUG_INT, "PMKID MATCH\n");
 			debug_hex_printf(DEBUG_INT, wctx->pmkid_used, kdelen);
 		}
@@ -542,28 +593,36 @@ char eapol_key_type2_do_pmkid_kde(context * ctx,
 }
 
 /**
- * Given the IE from the decrypted data, verify that it matches what
- * the AP originally told us.  If not, we should fail, and send a deauth.
+ * \brief Given the IE from the decrypted data, verify that it matches what
+ *        the AP originally told us.  If not, we should fail, and send a deauth.
+ *
+ * @param[in] ctx   The context for the interface that we want to compare the
+ *                  WPA 2 IE on.
+ * @param[in] iedata   The IE that was in the decrypted data.
+ * @param[in] len   The length of the IE that was passed in via 'iedata'.
+ *
+ * \retval XENONE on success
+ * \retval -1 on failure
+ * \retval XEMALLOC if a parameter was incorrect, or a memory allocation failed.
  **/
-int eapol_key_type2_cmp_ie(context * intdata, uint8_t * iedata, int len)
+int eapol_key_type2_cmp_ie(context * ctx, uint8_t * iedata, int len)
 {
-	uint8_t *apie, ielen;
+	uint8_t *apie = NULL, ielen = 0;
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((iedata != NULL), "iedata != NULL", FALSE))
 		return XEMALLOC;
 
-	if (!xsup_assert
-	    ((intdata->conn != NULL), "intdata->conn != NULL", FALSE))
+	if (!xsup_assert((ctx->conn != NULL), "ctx->conn != NULL", FALSE))
 		return XEMALLOC;
 
-	if (intdata->conn->flags & CONFIG_NET_IS_HIDDEN) {
+	if (ctx->conn->flags & CONFIG_NET_IS_HIDDEN) {
 		debug_printf(DEBUG_NORMAL,
 			     "Interface '%s' connected to a hidden SSID.  We don't know the IE that was used, so we won't check.  (Man-in-the-middle checks have been weakened.)\n",
-			     intdata->desc);
-		return 0;
+			     ctx->desc);
+		return XENONE;
 	}
 
 	if (iedata[0] != WPA2_EID) {
@@ -577,7 +636,7 @@ int eapol_key_type2_cmp_ie(context * intdata, uint8_t * iedata, int len)
 	debug_hex_dump(DEBUG_KEY, (uint8_t *) iedata, len);
 
 	// Be sure *NOT* to free apie, as it is a reference pointer only!!!
-	config_ssid_get_rsn_ie(intdata->intTypeData, &apie, &ielen);
+	config_ssid_get_rsn_ie(ctx->intTypeData, &apie, &ielen);
 
 	debug_printf(DEBUG_KEY, "AP sent us an IE of (%d) : \n", ielen);
 	debug_hex_dump(DEBUG_KEY, (uint8_t *) apie, ielen);
@@ -606,7 +665,7 @@ int eapol_key_type2_cmp_ie(context * intdata, uint8_t * iedata, int len)
  * for different Key Data Encapsulations (KDEs).  Depending on the KDE that
  * we find, we will pass the data on for further processing.
  *
- * @param[in] intdata   The context for the interface that we are working with.
+ * @param[in] ctx       The context for the interface that we are working with.
  * @param[in] keydata   The keydata field from the WPA2 key frame.  (This is the undefined length field at the end of the frame.)
  * @param[in] len		The number of bytes in the keydata
  * @param[in] keylen	The length of the keys that we are using.  (May be 0 if we are processing a frame that isn't expected to have a GTK KDE.)
@@ -617,7 +676,7 @@ int eapol_key_type2_cmp_ie(context * intdata, uint8_t * iedata, int len)
  *
  * \retval XENONE on success
  **/
-char eapol_key_type2_process_keydata(context * intdata,
+char eapol_key_type2_process_keydata(context * ctx,
 				     uint8_t * keydata, uint16_t len,
 				     uint8_t keylen, uint8_t * keyrsc,
 				     char version, char cmpies)
@@ -626,7 +685,7 @@ char eapol_key_type2_process_keydata(context * intdata,
 	int i = 0, done = 0;
 	uint8_t *p, kdelen;
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((keydata != NULL), "keydata != NULL", FALSE))
@@ -638,17 +697,16 @@ char eapol_key_type2_process_keydata(context * intdata,
 	while ((i < len) && (!done)) {
 		if ((keydata[i] == 0x30) && (cmpies == TRUE)) {
 			// We are testing the IE to see if it matches what the AP gave us.
-			if (eapol_key_type2_cmp_ie
-			    (intdata, &keydata[i], (keydata[i + 1] + 2))
+			if (eapol_key_type2_cmp_ie(ctx, &keydata[i], (keydata[i + 1] + 2))
 			    != XENONE) {
 				debug_printf(DEBUG_NORMAL,
 					     "IE presented by the AP doesn't "
 					     "match the IE in the key message!  Assuming "
 					     "an active attack is in progress!\n");
-				ipc_events_error(intdata,
+				ipc_events_error(ctx,
 						 IPC_EVENT_ERROR_IES_DONT_MATCH,
-						 intdata->desc);
-				cardif_disassociate(intdata,
+						 ctx->desc);
+				cardif_disassociate(ctx,
 						    DISASSOC_INVALID_IE);
 				return -1;
 			}
@@ -676,8 +734,8 @@ char eapol_key_type2_process_keydata(context * intdata,
 				case WPA2_EXTENDED_GTK_KEY:
 					debug_printf(DEBUG_KEY,
 						     "KDE : GTK KDE\n");
-					if (eapol_key_type2_do_gtk_kde
-					    (intdata, p, kdelen - 4, keylen,
+					if (eapol_key_type2_do_gtk_kde(ctx, 
+								       p, kdelen - 4, keylen,
 					     keyrsc, version) != XENONE) {
 						debug_printf(DEBUG_NORMAL,
 							     "Couldn't set the GTK! "
@@ -689,8 +747,10 @@ char eapol_key_type2_process_keydata(context * intdata,
 				case WPA2_EXTENDED_STA_KEY:
 					debug_printf(DEBUG_KEY,
 						     "KDE : STAKey KDE\n");
-					if (eapol_key_type2_do_stakey_kde
-					    (intdata, p, kdelen - 4, keyrsc,
+					if (eapol_key_type2_do_stakey_kde(ctx, 
+									  p, 
+									  kdelen - 4, 
+									  keyrsc,
 					     version) != XENONE) {
 						debug_printf(DEBUG_NORMAL,
 							     "Couldn't set STAKey!\n");
@@ -701,8 +761,7 @@ char eapol_key_type2_process_keydata(context * intdata,
 				case WPA2_EXTENDED_MAC_ADDRESS:
 					debug_printf(DEBUG_KEY,
 						     "KDE : MAC address KDE\n");
-					if (eapol_key_type2_do_mac_kde
-					    (intdata, p, kdelen - 4,
+					if (eapol_key_type2_do_mac_kde(ctx, p, kdelen - 4,
 					     version) != XENONE) {
 						debug_printf(DEBUG_NORMAL,
 							     "Couldn't processing MAC "
@@ -714,8 +773,7 @@ char eapol_key_type2_process_keydata(context * intdata,
 				case WPA2_EXTENDED_PMKID:
 					debug_printf(DEBUG_KEY,
 						     "KDE : PMKID KDE\n");
-					if (eapol_key_type2_do_pmkid_kde
-					    (intdata, p, kdelen - 4,
+					if (eapol_key_type2_do_pmkid_kde(ctx, p, kdelen - 4,
 					     version) != XENONE) {
 						debug_printf(DEBUG_NORMAL,
 							     "Couldn't process PMKID!\n");
@@ -742,40 +800,39 @@ char eapol_key_type2_process_keydata(context * intdata,
 }
 
 /**
- * When we have completed the PTK piece, and the pairwise key has been
+ * \brief When we have completed the PTK piece, and the pairwise key has been
  * applied to the interface, we need to get the group key.  The authenticator
  * will send us a group key that is encrypted.  We should decrypt it, apply
  * it to our interface, and send the authenticator a message to let it know
  * that we have a group key.
+ *
+ * @param[in] ctx   The context for the interface that we want to get the GTK
+ *                  for.
  **/
-void eapol_key_type2_do_gtk(context * intdata)
+void eapol_key_type2_do_gtk(context * ctx)
 {
-	struct wpa2_key_packet *inkeydata, *outkeydata;
-	uint16_t value16, keyflags, version, len;
+	struct wpa2_key_packet *inkeydata = NULL, *outkeydata = NULL;
+	uint16_t value16 = 0, keyflags = 0, version = 0, len = 0;
 	unsigned char *keydata = NULL;
 	char key[48], rc4_ek[48];
 	char zeros[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	wireless_ctx *wctx = NULL;
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((intdata->intType == ETH_802_11_INT),
-	     "intdata->intType == ETH_802_11_INT", FALSE))
+	if (!xsup_assert((ctx->intType == ETH_802_11_INT),
+	     "ctx->intType == ETH_802_11_INT", FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((intdata->intTypeData != NULL), "intdata->intTypeData != NULL",
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL",
 	     FALSE))
 		return;
 
-	wctx = intdata->intTypeData;
+	wctx = ctx->intTypeData;
 
-	inkeydata =
-	    (struct wpa2_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL + 4];
-	outkeydata =
-	    (struct wpa2_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL + 4];
+	inkeydata = (struct wpa2_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL + 4];
+	outkeydata = (struct wpa2_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL + 4];
 
 	// First, make sure that the inkeydata replay counter is higher than
 	// the last counter we saw.
@@ -783,11 +840,11 @@ void eapol_key_type2_do_gtk(context * intdata)
 	     0) && (memcmp(inkeydata->key_replay_counter, zeros, 8) != 0)) {
 		debug_printf(DEBUG_NORMAL,
 			     "Invalid replay counter!  Discarding!\n");
-		intdata->recv_size = 0;
+		ctx->recv_size = 0;
 		return;
 	}
 	// Clear everything out.
-	memset(&intdata->sendframe[OFFSET_TO_EAPOL + 4], 0x00,
+	memset(&ctx->sendframe[OFFSET_TO_EAPOL + 4], 0x00,
 	       sizeof(struct wpa2_key_packet));
 
 	outkeydata->key_descriptor = WPA2_KEY_TYPE;
@@ -815,7 +872,7 @@ void eapol_key_type2_do_gtk(context * intdata)
 	if (keydata == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't allocate memory for key data!\n");
-		ipc_events_malloc_failed(intdata);
+		ipc_events_malloc_failed(ctx);
 		return;
 	}
 
@@ -824,7 +881,7 @@ void eapol_key_type2_do_gtk(context * intdata)
 	debug_printf(DEBUG_KEY, "Setting GTK! (Version : %d  Length : %d)\n",
 		     version, value16);
 
-	if (!intdata->statemachine->PTK) {
+	if (!ctx->statemachine->PTK) {
 		debug_printf(DEBUG_NORMAL,
 			     "No valid PTK available!  We won't be able"
 			     " to continue.\n");
@@ -837,13 +894,13 @@ void eapol_key_type2_do_gtk(context * intdata)
 		// Decrypt the GTK.
 		memset(rc4_ek, 0x00, 32);
 		memcpy(rc4_ek, inkeydata->key_iv, 16);
-		memcpy(&rc4_ek[16], &intdata->statemachine->PTK[16], 16);
+		memcpy(&rc4_ek[16], &ctx->statemachine->PTK[16], 16);
 		rc4_skip((uint8_t *) rc4_ek, 32, 256, keydata, value16);
 
 		debug_printf(DEBUG_KEY, "Decrypted data : (%d)\n", value16);
 		debug_hex_dump(DEBUG_KEY, keydata, value16);
 
-		if (eapol_key_type2_process_keydata(intdata, keydata, value16,
+		if (eapol_key_type2_process_keydata(ctx, keydata, value16,
 						    ntohs
 						    (inkeydata->key_length),
 						    inkeydata->key_rsc, version,
@@ -857,31 +914,29 @@ void eapol_key_type2_do_gtk(context * intdata)
 	case 2:
 		// First, decrypt the GTK
 		memset(key, 0x00, 32);
-		if (aes_unwrap((uint8_t *) & intdata->statemachine->PTK[16],
+		if (aes_unwrap((uint8_t *) & ctx->statemachine->PTK[16],
 			       (value16 - 8) / 8, keydata,
 			       (uint8_t *) key) != 0) {
 			debug_printf(DEBUG_NORMAL, "Failed AES unwrap.\n");
-			if (intdata->statemachine->PTK == NULL)
+			if (ctx->statemachine->PTK == NULL)
 				debug_printf(DEBUG_NORMAL,
 					     "Unwrap failed because PTK is NULL!\n");
-			ipc_events_error(intdata,
+			ipc_events_error(ctx,
 					 IPC_EVENT_ERROR_FAILED_AES_UNWRAP,
-					 intdata->desc);
-			cardif_disassociate(intdata, DISASSOC_CIPHER_REJECT);
+					 ctx->desc);
+			cardif_disassociate(ctx, DISASSOC_CIPHER_REJECT);
 		}
 
 		debug_printf(DEBUG_KEY, "Result : ");
 		debug_hex_printf(DEBUG_KEY, (uint8_t *) key, value16);
 
-		if (eapol_key_type2_process_keydata
-		    (intdata, (uint8_t *) key, value16,
+		if (eapol_key_type2_process_keydata(ctx, (uint8_t *) key, value16,
 		     ntohs(inkeydata->key_length), inkeydata->key_rsc, version,
-		     TRUE)
-		    != XENONE) {
+		     TRUE) != XENONE) {
 			FREE(keydata);
 			debug_printf(DEBUG_NORMAL,
 				     "Unable to process key data!\n");
-			cardif_disassociate(intdata, 0);	// Fix this to be a valid reason.
+			cardif_disassociate(ctx, 0);	// Fix this to be a valid reason.
 			return;
 		}
 		break;
@@ -901,25 +956,25 @@ void eapol_key_type2_do_gtk(context * intdata)
 	memcpy(&outkeydata->key_replay_counter, &inkeydata->key_replay_counter,
 	       8);
 
-	eapol_build_header(intdata, EAPOL_KEY,
-			   (intdata->send_size - OFFSET_TO_EAPOL - 4),
-			   (char *)intdata->sendframe);
+	eapol_build_header(ctx, EAPOL_KEY,
+			   (ctx->send_size - OFFSET_TO_EAPOL - 4),
+			   (char *)ctx->sendframe);
 
-	memcpy(key, intdata->statemachine->PTK, 16);
-	mic_wpa_populate((char *)intdata->sendframe, intdata->send_size + 4,
+	memcpy(key, ctx->statemachine->PTK, 16);
+	mic_wpa_populate((char *)ctx->sendframe, ctx->send_size + 4,
 			 key, 16);
 
 	// Dump what we built.
-	eapol_key_type2_dump(intdata, (char *)intdata->sendframe);
+	eapol_key_type2_dump(ctx, (char *)ctx->sendframe);
 
-	if (intdata->conn->association.auth_type == AUTH_PSK) {
+	if (ctx->conn->association.auth_type == AUTH_PSK) {
 		// If we are using PSK, and we made it here, then we are in 
 		// FORCED AUTHENTICATED state.
-		statemachine_change_state(intdata, S_FORCE_AUTH);
-		cardif_drop_unencrypted(intdata, FALSE);
+		statemachine_change_state(ctx, S_FORCE_AUTH);
+		cardif_drop_unencrypted(ctx, FALSE);
 	} else {
 		// Drop unencrypted frames.
-		cardif_drop_unencrypted(intdata, TRUE);
+		cardif_drop_unencrypted(ctx, TRUE);
 	}
 
 	// We need to let the event core know that we are done doing the PSK handshake.  This allows it to
@@ -927,55 +982,55 @@ void eapol_key_type2_do_gtk(context * intdata)
 	// it is a pretty sure indication that our PSK is invalid.  If it didn't, then we should be good.
 	// Note that sometimes APs will drop us a few seconds after the association, even if the PSK is
 	// valid.  This is *NOT* an indication that the key is wrong!
-	if (TEST_FLAG
-	    (((wireless_ctx *) intdata->intTypeData)->flags,
+	if (TEST_FLAG(((wireless_ctx *) ctx->intTypeData)->flags,
 	     WIRELESS_SM_DOING_PSK)) {
-		UNSET_FLAG(((wireless_ctx *) intdata->intTypeData)->flags,
+		UNSET_FLAG(((wireless_ctx *) ctx->intTypeData)->flags,
 			   WIRELESS_SM_DOING_PSK);
-		timer_cancel(intdata, PSK_DEATH_TIMER);
-		ipc_events_ui(intdata, IPC_EVENT_PSK_SUCCESS, intdata->intName);
+		timer_cancel(ctx, PSK_DEATH_TIMER);
+		ipc_events_ui(ctx, IPC_EVENT_PSK_SUCCESS, ctx->intName);
 	}
 
 	FREE(keydata);
 }
 
 /**
- * Handle the first packet in the four-way handshake.
+ * \brief Handle the first packet in the four-way handshake.
+ *
+ * @param[in] ctx   The context for the interface that we want to process the
+ *                  first packet on.
  **/
-void eapol_key_type2_do_type1(context * intdata)
+void eapol_key_type2_do_type1(context * ctx)
 {
-	struct wpa2_key_packet *inkeydata, *outkeydata;
-	uint16_t keyflags, len, value16;
-	int version;
-	uint8_t ielen;
+	struct wpa2_key_packet *inkeydata = NULL, *outkeydata = NULL;
+	uint16_t keyflags = 0, len = 0, value16 = 0;
+	int version = 0;
+	uint8_t ielen = 0;
 	char key[16];
 	unsigned char wpa_ie[256];
 	char zeros[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	wireless_ctx *wctx = NULL;
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
 
-	if (intdata->intType != ETH_802_11_INT) {
+	if (ctx->intType != ETH_802_11_INT) {
 		debug_printf(DEBUG_NORMAL,
 			     "Attempted to process a key message on non-802.11 interface '%s'.\n",
-			     intdata->desc);
+			     ctx->desc);
 		return;
 	}
 
-	if (intdata->intTypeData == NULL) {
+	if (ctx->intTypeData == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Interface '%s' claims to be 802.11, but it doesn't have a wireless context!?\n",
-			     intdata->desc);
+			     ctx->desc);
 		return;
 	}
 
-	wctx = intdata->intTypeData;
+	wctx = ctx->intTypeData;
 
-	inkeydata =
-	    (struct wpa2_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL + 4];
-	outkeydata =
-	    (struct wpa2_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL + 4];
+	inkeydata = (struct wpa2_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL + 4];
+	outkeydata = (struct wpa2_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL + 4];
 
 	if ((memcmp(inkeydata->key_replay_counter, wctx->replay_counter, 8) <=
 	     0) && (memcmp(inkeydata->key_replay_counter, zeros, 8) != 0)) {

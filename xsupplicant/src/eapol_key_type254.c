@@ -664,17 +664,19 @@ char eapol_key_type254_cmp_ie(context * ctx, uint8_t * wpaie, char wpaielen)
 	return XENONE;
 }
 
-/********************************************************
+/**
+ * \brief Handle the third packet in the 4 way handshake.  We should be able to
+ *        generate the pairwise key at this point.
  *
- * Handle the third packet in the 4 way handshake.  We should be able to
- * generate the pairwise key at this point.
+ * @param[in] ctx   The context for the interface that we want to process the
+ *                  third packet on.
  *
- ********************************************************/
+ **/
 void eapol_key_type254_do_type3(context * ctx)
 {
 	struct wpa_key_packet *inkeydata = NULL, *outkeydata = NULL;
-	uint16_t keyflags, len, value16, keyindex;
-	int version;
+	uint16_t keyflags = 0, len = 0, value16 = 0, keyindex = 0;
+	int version = 0;
 	char key[32];
 	char zeros[8] = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 	wireless_ctx *wctx = NULL;
@@ -682,23 +684,19 @@ void eapol_key_type254_do_type3(context * ctx)
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((ctx->intType == ETH_802_11_INT), "ctx->intType == ETH_802_11_INT",
+	if (!xsup_assert((ctx->intType == ETH_802_11_INT), "ctx->intType == ETH_802_11_INT",
 	     FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
+	if (!xsup_assert((ctx->intTypeData != NULL), "ctx->intTypeData != NULL", FALSE))
 		return;
 
 	wctx = ctx->intTypeData;
 
 	memset(key, 0x00, 32);
 
-	inkeydata =
-	    (struct wpa_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL + 4];
-	outkeydata =
-	    (struct wpa_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL + 4];
+	inkeydata = (struct wpa_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL + 4];
+	outkeydata = (struct wpa_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL + 4];
 
 	// First, make sure that the inkeydata replay counter is higher than
 	// the last counter we saw.
@@ -785,6 +783,7 @@ void eapol_key_type254_do_type3(context * ctx)
 		ipc_events_error(ctx, IPC_EVENT_ERROR_INVALID_PTK, ctx->desc);
 		return;
 	}
+
 	// Get TK1
 	value16 = ntohs(inkeydata->key_length);
 	memcpy(key, (char *)&ctx->statemachine->PTK[32], value16);
@@ -815,6 +814,12 @@ void eapol_key_type254_do_type3(context * ctx)
 		     ctx->desc);
 }
 
+/**
+ * \brief Determine the type of key packet that we were handed, based on the
+ *        flags that are presented in the key header.
+ *
+ * @param[in] ctx   The context for the interface that the packet came in on.
+ **/
 void eapol_key_type254_determine_key(context * ctx)
 {
 	struct wpa_key_packet *keydata = NULL;
@@ -823,8 +828,7 @@ void eapol_key_type254_determine_key(context * ctx)
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return;
 
-	if (!xsup_assert
-	    ((ctx->recvframe != NULL), "ctx->recvframe != NULL", FALSE))
+	if (!xsup_assert((ctx->recvframe != NULL), "ctx->recvframe != NULL", FALSE))
 		return;
 
 	keydata = (struct wpa_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL + 4];
@@ -881,6 +885,10 @@ void eapol_key_type254_determine_key(context * ctx)
 
 /**
  * \brief If we are doing PSK, and this is called, then the handshake stalled.
+ *
+ * @param[in] ctx   The context that the PSK timer expired on.
+ *
+ * \retval 0 on success. 
  **/
 int8_t eapol_key_type254_psk_timeout(context * ctx)
 {
@@ -899,14 +907,14 @@ int8_t eapol_key_type254_psk_timeout(context * ctx)
 }
 
 /**
+ * \brief Process a WPA frame that we get from the authenticator.
  *
- * Process a WPA frame that we get from the authenticator.
- *
+ * @param[in] ctx   The context for the interface that we got the WPA frame on.
  **/
 void eapol_key_type254_process(context * ctx)
 {
 	uint8_t *inframe = NULL;
-	int insize;
+	int insize = 0;
 	char tpmk[254];
 	wireless_ctx *wctx = NULL;
 	char *pskptr = NULL;
@@ -1045,3 +1053,5 @@ void eapol_key_type254_process(context * ctx)
 	}
 
 }
+
+

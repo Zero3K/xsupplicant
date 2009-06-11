@@ -161,8 +161,7 @@ void xsup_driver_init_config(char *config)
 {
 	struct config_globals *globals = NULL;
 #ifdef WINDOWS
-	char *default_cfg =
-	    "c:\\windows\\system32\\drivers\\etc\\xsupplicant.conf";
+	char *default_cfg = "c:\\windows\\system32\\drivers\\etc\\xsupplicant.conf";
 	char *global_conf_path = NULL;
 #else
 	char *default_cfg = "/etc/xsupplicant.conf";
@@ -213,8 +212,7 @@ void xsup_driver_init_config(char *config)
 
 		conf_globals = Malloc(sizeof(struct config_globals));
 		if (conf_globals == NULL) {
-			printf
-			    ("Couldn't allocate memory to store configuration globals.\n");
+			printf("Couldn't allocate memory to store configuration globals.\n");
 			exit(255);
 		}
 		xsupconfig_defaults_set_globals(conf_globals);
@@ -448,7 +446,7 @@ void global_config_reload()
  **/
 void usage(char *prog, struct options opts[])
 {
-	debug_printf(DEBUG_NORMAL, "\n\nXsupplicant %s.%s\n", VERSION,
+	debug_printf(DEBUG_NORMAL, "\n\nXSupplicant %s.%s\n", VERSION,
 		     BUILDNUM);
 
 	debug_printf(DEBUG_NORMAL,
@@ -516,7 +514,7 @@ int xsup_driver_basic_init(char *config, int xdaemon)
  * \brief Initialize the supplicant.
  *
  **/
-int xsup_driver_init(uint8_t clear_ipc, char *device, char *drivername,
+int xsup_driver_init(char *device, char *drivername,
 		     FDEPTH flags)
 {
 	snmp_init();		// This needs to be moved to support multiple interfaces.
@@ -556,8 +554,7 @@ int xsup_driver_init(uint8_t clear_ipc, char *device, char *drivername,
 	if (device != NULL) {
 		debug_printf(DEBUG_INIT,
 			     "Initing interface passed on the command line.\n");
-		if (context_init_interface
-		    (&intiface, NULL, device, drivername, flags) != 0) {
+		if (context_init_interface(&intiface, NULL, device, drivername, flags) != 0) {
 			printf
 			    ("Couldn't initialize the interface passed on the command line!  Terminating!\n");
 			return -1;
@@ -569,7 +566,7 @@ int xsup_driver_init(uint8_t clear_ipc, char *device, char *drivername,
 	cert_handler_init();
 
 	// Init IPC
-	if (xsup_ipc_init(clear_ipc) != 0) {
+	if (xsup_ipc_init() != 0) {
 		printf("Couldn't initalize daemon socket!\n");
 		global_deinit();
 		return -2;
@@ -621,10 +618,6 @@ int main(int argc, char *argv[])
 		 "a", 0},
 #endif
 
-#ifndef WINDOWS
-		{PARAM_CLEAR_CTRL, "socket",
-		 "Remove existing control socket, if found", "s", 0},
-#endif
 		{PARAM_HELP, "help", "Display this help", "h", 0},
 		{PARAM_CONNECTION, "connection",
 		 "Force the connection to use (not implemented yet)", "C", 1},
@@ -642,7 +635,6 @@ int main(int argc, char *argv[])
 	int numsupps = 0;	// This is only being used by Windows right now.
 #endif
 	FDEPTH flags = 0;
-	uint8_t clear_ipc = FALSE;
 
 #ifdef WINDOWS
 	crashdump_init("\\xsupcrashdmp-" BUILDNUM ".zip");
@@ -691,7 +683,7 @@ int main(int argc, char *argv[])
 	numsupps += retval;
 
 	if (retval >= 2) {
-		printf("You already have a copy of Xsupplicant running!\n");
+		printf("You already have a copy of XSupplicant running!\n");
 #ifdef BUILD_SERVICE
 		win_svc_error_dup();
 #else
@@ -700,7 +692,7 @@ int main(int argc, char *argv[])
 	}
 #else
 	if (supdetect_numinstances("xsupplicant") >= 2) {
-		printf("You already have a copy of Xsupplicant running!\n");
+		printf("You already have a copy of XSupplicant running!\n");
 		return 255;
 	}
 #endif
@@ -770,11 +762,6 @@ int main(int argc, char *argv[])
 //                SET_FLAG(flags, ONEDOWN);
 			break;
 
-		case PARAM_CLEAR_CTRL:
-			// Clear the IPC socket file, if it still exists.
-			clear_ipc = TRUE;
-			break;
-
 		case PARAM_HELP:
 			usage(argv[0], opts);
 			return -2;
@@ -818,7 +805,7 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	retval = xsup_driver_init(clear_ipc, device, drivername, flags);
+	retval = xsup_driver_init(device, drivername, flags);
 	if (retval < 0) {
 #ifdef BUILD_SERVICE
 		win_svc_init_failed(retval);

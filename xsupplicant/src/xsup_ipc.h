@@ -44,7 +44,7 @@ typedef struct _struct_ipc_header ipc_header;
 
 #define CMD_VERSION  "1.0"
 
-int xsup_ipc_init(uint8_t);
+int xsup_ipc_init();
 int xsup_ipc_send_all(char *, int);
 void xsup_ipc_send_eap_notify(char *);
 void xsup_ipc_send_log(int, char *);

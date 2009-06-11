@@ -137,7 +137,7 @@ int xsup_ipc_get_group_num(char *grp_name)
  * \retval XENONE on success
  * \retval <0 on failure
  **/
-int xsup_ipc_init(uint8_t clear)
+int xsup_ipc_init()
 {
         int sockErr = 0, ctrlSockErr = 0, ipc_gid = 0;
 	char *error = NULL;
@@ -165,14 +165,13 @@ int xsup_ipc_init(uint8_t clear)
 	Strncpy(sb.sun_path, sizeof(ctrlsocknamestr), ctrlsocknamestr,
 		sizeof(sb.sun_path));
 
-	if (clear == TRUE) {
-		// We need to clear the socket file if it exists.
+	// We need to clear the socket file if it exists.
+	
+	debug_printf(DEBUG_INT, "Clearing control socket %s \t ctrlsocknamestr.\n",
+		     socknamestr, ctrlsocknamestr);
+	remove(socknamestr);
+	remove(ctrlsocknamestr);
 
-		debug_printf(DEBUG_INT, "Clearing control socket %s \t ctrlsocknamestr.\n",
-			     socknamestr, ctrlsocknamestr);
-		remove(socknamestr);
-		remove(ctrlsocknamestr);
-	}
 	// Socket we will be using to communicate.
 	ipc_sock = socket(PF_UNIX, SOCK_STREAM, 0);
 	ipc_ctrl_sock = socket(PF_UNIX, SOCK_STREAM, 0);
