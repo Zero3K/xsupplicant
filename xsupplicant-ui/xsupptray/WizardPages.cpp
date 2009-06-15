@@ -3729,15 +3729,13 @@ void WizardPageDot1XUserCert::init(const ConnectionWizardData & data)
 		m_numCerts = 0;
 
 
-		while (m_pCertArray[m_numCerts].certname != NULL)
-
+		while ((m_pCertArray != NULL) && 
+		       (m_pCertArray[m_numCerts].certname != NULL))
 			++m_numCerts;
 
 
 		for (int i = 0; i < nRows; i++)
-
 		{
-
 			QTableWidgetItem * item = m_pCertTable->item(i, 0);
 
 			if (item != NULL)
