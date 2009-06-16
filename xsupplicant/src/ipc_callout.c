@@ -2041,8 +2041,7 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr * outnode)
 								outnode);
 			}
 		} else if ((conn != NULL) && (conn->association.psk == NULL)) {
-			if (xmlNewChild
-			    (n, NULL, (xmlChar *) "Password",
+			if (xmlNewChild(n, NULL, (xmlChar *) "Password",
 			     (xmlChar *) conn->association.psk_hex) == NULL) {
 				xmlFreeNode(n);
 				return ipc_callout_create_error(NULL,
@@ -2051,8 +2050,7 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr * outnode)
 								outnode);
 			}
 		} else {
-			if (xmlNewChild
-			    (n, NULL, (xmlChar *) "Password",
+			if (xmlNewChild(n, NULL, (xmlChar *) "Password",
 			     (xmlChar *) conn->association.psk) == NULL) {
 				xmlFreeNode(n);
 				return ipc_callout_create_error(NULL,
@@ -2064,6 +2062,8 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr * outnode)
 	} else {
 		username = config_get_inner_user_from_profile(prof->method);
 		if (username == NULL) {
+		  if (prof->identity != NULL)
+		    {
 			username = _strdup(prof->identity);
 			if (username != NULL) {
 				xsup_common_upcase(username);
@@ -2076,10 +2076,10 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr * outnode)
 					username = prof->identity;
 				}
 			}
+		    }
 		}
 
-		if (xmlNewChild
-		    (n, NULL, (xmlChar *) "Username",
+		if (xmlNewChild(n, NULL, (xmlChar *) "Username",
 		     (xmlChar *) username) == NULL) {
 			xmlFreeNode(n);
 			return ipc_callout_create_error(NULL,
@@ -2088,8 +2088,7 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr * outnode)
 							outnode);
 		}
 
-		if (xmlNewChild
-		    (n, NULL, (xmlChar *) "Password",
+		if (xmlNewChild(n, NULL, (xmlChar *) "Password",
 		     (xmlChar *) config_get_pwd_from_profile(prof->method)) ==
 		    NULL) {
 			xmlFreeNode(n);

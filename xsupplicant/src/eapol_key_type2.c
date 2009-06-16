@@ -946,7 +946,7 @@ void eapol_key_type2_do_gtk(context * ctx)
 
 	// Build the response.
 	len = sizeof(struct wpa2_key_packet);
-	intdata->send_size = len + OFFSET_TO_EAPOL + 4;
+	ctx->send_size = len + OFFSET_TO_EAPOL + 4;
 
 	value16 = (version | WPA2_KEY_MIC_FLAG | WPA2_SECURE_FLAG);
 	value16 = htons(value16);
@@ -1029,59 +1029,56 @@ void eapol_key_type2_do_type1(context * ctx)
 
 	wctx = ctx->intTypeData;
 
-	inkeydata = (struct wpa2_key_packet *)&intdata->recvframe[OFFSET_TO_EAPOL + 4];
-	outkeydata = (struct wpa2_key_packet *)&intdata->sendframe[OFFSET_TO_EAPOL + 4];
+	inkeydata = (struct wpa2_key_packet *)&ctx->recvframe[OFFSET_TO_EAPOL + 4];
+	outkeydata = (struct wpa2_key_packet *)&ctx->sendframe[OFFSET_TO_EAPOL + 4];
 
 	if ((memcmp(inkeydata->key_replay_counter, wctx->replay_counter, 8) <=
 	     0) && (memcmp(inkeydata->key_replay_counter, zeros, 8) != 0)) {
 		debug_printf(DEBUG_NORMAL,
 			     "Invalid replay counter!  Discarding!\n");
-		intdata->recv_size = 0;
+		ctx->recv_size = 0;
 		return;
 	}
 	// Clear everything out.
-	memset(&intdata->sendframe[OFFSET_TO_EAPOL + 4], 0x00,
+	memset(&ctx->sendframe[OFFSET_TO_EAPOL + 4], 0x00,
 	       sizeof(struct wpa2_key_packet));
 
 	RAND_bytes((uint8_t *) & outkeydata->key_nonce[0], 32);
 
-	FREE(intdata->statemachine->SNonce);
+	FREE(ctx->statemachine->SNonce);
 
-	intdata->statemachine->SNonce = (uint8_t *) Malloc(32);
-	if (intdata->statemachine->SNonce == NULL) {
+	ctx->statemachine->SNonce = (uint8_t *) Malloc(32);
+	if (ctx->statemachine->SNonce == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't allocate memory for SNonce in "
 			     "%s at %d!\n", __FUNCTION__, __LINE__);
-		ipc_events_malloc_failed(intdata);
+		ipc_events_malloc_failed(ctx);
 		return;
 	}
-	memcpy(intdata->statemachine->SNonce, (char *)&outkeydata->key_nonce[0],
+	memcpy(ctx->statemachine->SNonce, (char *)&outkeydata->key_nonce[0],
 	       32);
 
 	value16 = ntohs(inkeydata->key_material_len);
 
-	version =
-	    ntohs((uint16_t) (*inkeydata->key_information)) | WPA2_KEYTYPE_MASK;
+	version = ntohs((uint16_t) (*inkeydata->key_information)) | WPA2_KEYTYPE_MASK;
 
 	// Check the IE field to see if we have any KDEs to parse.
 	// We can discard the result field because the only thing we can possibly expect is a PMKID KDE, and
 	// if it isn't there, then it is okay.
-	if (eapol_key_type2_process_keydata
-	    (intdata, inkeydata->keydata, value16, ntohs(inkeydata->key_length),
+	if (eapol_key_type2_process_keydata(ctx, inkeydata->keydata, value16, ntohs(inkeydata->key_length),
 	     inkeydata->key_rsc, version, FALSE) != XENONE) {
 		return;
 	}
 	// Calculate the PTK.
-	FREE(intdata->statemachine->PTK);
+	FREE(ctx->statemachine->PTK);
 
-	intdata->statemachine->PTK =
-	    (uint8_t *) eapol_key_type2_gen_ptk(intdata,
+	ctx->statemachine->PTK = (uint8_t *) eapol_key_type2_gen_ptk(ctx,
 						(char *)&inkeydata->key_nonce);
 
-	if (intdata->statemachine->PTK == NULL) {
+	if (ctx->statemachine->PTK == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Unable to generate the PTK for interface '%s'!\n",
-			     intdata->desc);
+			     ctx->desc);
 		return;
 	}
 
@@ -1100,17 +1097,17 @@ void eapol_key_type2_do_type1(context * ctx)
 	memcpy(&outkeydata->key_information, &keyflags, 2);
 
 	len = sizeof(struct wpa2_key_packet);
-	intdata->send_size = len + OFFSET_TO_EAPOL + 4;
+	ctx->send_size = len + OFFSET_TO_EAPOL + 4;
 
 	outkeydata->key_length = inkeydata->key_length;
 
 	memcpy(&outkeydata->key_replay_counter, &inkeydata->key_replay_counter,
 	       8);
 
-	if (cardif_get_wpa2_ie(intdata, wpa_ie, &ielen) < 0) {
+	if (cardif_get_wpa2_ie(ctx, wpa_ie, &ielen) < 0) {
 		debug_printf(DEBUG_NORMAL,
 			     "Couldn't locate WPA2 information element!\n");
-		intdata->send_size = 0;
+		ctx->send_size = 0;
 		return;
 	}
 
@@ -1118,25 +1115,25 @@ void eapol_key_type2_do_type1(context * ctx)
 	wctx->okc = 0;
 #endif
 
-	memcpy(&intdata->sendframe
+	memcpy(&ctx->sendframe
 	       [OFFSET_TO_EAPOL + 4 + sizeof(struct wpa2_key_packet)], &wpa_ie,
 	       ielen);
 	value16 = ielen;
 	value16 = htons(value16);
-	intdata->send_size += ielen;
+	ctx->send_size += ielen;
 
 	outkeydata->key_material_len = value16;
 
-	eapol_build_header(intdata, EAPOL_KEY,
-			   (intdata->send_size - OFFSET_TO_EAPOL - 4),
-			   (char *)intdata->sendframe);
+	eapol_build_header(ctx, EAPOL_KEY,
+			   (ctx->send_size - OFFSET_TO_EAPOL - 4),
+			   (char *)ctx->sendframe);
 
-	memcpy(key, intdata->statemachine->PTK, 16);
-	mic_wpa_populate((char *)intdata->sendframe, intdata->send_size + 4,
+	memcpy(key, ctx->statemachine->PTK, 16);
+	mic_wpa_populate((char *)ctx->sendframe, ctx->send_size + 4,
 			 key, 16);
 
 	// Dump what we built.
-	eapol_key_type2_dump(intdata, (char *)intdata->sendframe);
+	eapol_key_type2_dump(ctx, (char *)ctx->sendframe);
 }
 
 /**

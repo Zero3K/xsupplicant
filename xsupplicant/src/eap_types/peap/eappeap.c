@@ -462,16 +462,14 @@ void eappeap_set_key_const(struct tls_vars *mytls_vars, uint8_t ver)
 	case PEAP_VERSION0:
 		debug_printf(DEBUG_AUTHTYPES,
 			     "Setting Key Constant for PEAP v0!\n");
-		mytls_vars->sessionkeyconst =
-		    (uint8_t *) _strdup(PEAP_SESSION_KEY_CONST);
+		mytls_vars->sessionkeyconst = (uint8_t *) _strdup(PEAP_SESSION_KEY_CONST);
 		mytls_vars->sessionkeylen = PEAP_SESSION_KEY_CONST_SIZE;
 		break;
 
 	case PEAP_VERSION1:
 		debug_printf(DEBUG_AUTHTYPES,
 			     "Setting Key Constant for PEAP v1!\n");
-		mytls_vars->sessionkeyconst =
-		    (uint8_t *) _strdup(PEAPv1_SESSION_KEY_CONST);
+		mytls_vars->sessionkeyconst = (uint8_t *) _strdup(PEAPv1_SESSION_KEY_CONST);
 		mytls_vars->sessionkeylen = PEAPv1_SESSION_KEY_CONST_SIZE;
 		break;
 
@@ -543,14 +541,13 @@ uint8_t eappeap_isKeyAvailable(eap_type_data * eapdata)
  ************************************************************************/
 uint8_t *eappeap_getKey(eap_type_data * eapdata)
 {
-	struct tls_vars *mytls_vars;
-	uint8_t *keydata;
+	struct tls_vars *mytls_vars = NULL;
+	uint8_t *keydata = NULL;
 
 	if (!xsup_assert((eapdata != NULL), "eapdata != NULL", FALSE))
 		return NULL;
 
-	if (!xsup_assert
-	    ((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
+	if (!xsup_assert((eapdata->eap_data != NULL), "eapdata->eap_data != NULL", FALSE))
 		return NULL;
 
 	mytls_vars = (struct tls_vars *)eapdata->eap_data;
