@@ -1985,8 +1985,7 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr * outnode)
 
 	switch (authtype) {
 	case AUTH_PSK:
-		if (xmlNewChild
-		    (n, NULL, (xmlChar *) "Authentication",
+		if (xmlNewChild(n, NULL, (xmlChar *) "Authentication",
 		     (xmlChar *) "PSK") == NULL) {
 			xmlFreeNode(n);
 			return ipc_callout_create_error(NULL,
@@ -1997,8 +1996,7 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr * outnode)
 		break;
 
 	case AUTH_EAP:
-		if (xmlNewChild
-		    (n, NULL, (xmlChar *) "Authentication",
+		if (xmlNewChild(n, NULL, (xmlChar *) "Authentication",
 		     (xmlChar *) "EAP") == NULL) {
 			xmlFreeNode(n);
 			return ipc_callout_create_error(NULL,
@@ -2010,8 +2008,7 @@ int ipc_callout_get_connection_upw(xmlNodePtr innode, xmlNodePtr * outnode)
 
 	case AUTH_NONE:
 	default:
-		if (xmlNewChild
-		    (n, NULL, (xmlChar *) "Authentication",
+		if (xmlNewChild(n, NULL, (xmlChar *) "Authentication",
 		     (xmlChar *) "NONE") == NULL) {
 			xmlFreeNode(n);
 			return ipc_callout_create_error(NULL,

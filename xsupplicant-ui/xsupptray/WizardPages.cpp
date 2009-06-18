@@ -68,8 +68,7 @@ WizardPageNetworkType::WizardPageNetworkType(QWidget * parent, QWidget * parentW
 bool WizardPageNetworkType::create(void) 
 {
 
-	m_pRealForm =
-		FormLoader::buildform("wizardPageNetworkType.ui", m_pParentWidget);
+	m_pRealForm = FormLoader::buildform("wizardPageNetworkType.ui", m_pParentWidget);
 
 	if (m_pRealForm == NULL)
 
@@ -77,26 +76,21 @@ bool WizardPageNetworkType::create(void)
 
 
 	// dynamically populate text
-	QLabel * pMsgLabel =
-		qFindChild < QLabel * >(m_pRealForm, "labelMessage");
+	QLabel * pMsgLabel = qFindChild < QLabel * >(m_pRealForm, "labelMessage");
 
 	if (pMsgLabel != NULL)
 
-		pMsgLabel->
-		setText(tr
-		("Please indicate the type of network you would like to connect to:"));
+		pMsgLabel->setText(tr("Please indicate the type of network you would like to connect to:"));
 
 
-	m_pRadioButtonWired =
-		qFindChild < QRadioButton * >(m_pRealForm, "radioWired");
+	m_pRadioButtonWired = qFindChild < QRadioButton * >(m_pRealForm, "radioWired");
 
 	if (m_pRadioButtonWired != NULL)
 
 		m_pRadioButtonWired->setText(tr("Wired"));
 
 
-	m_pRadioButtonWireless =
-		qFindChild < QRadioButton * >(m_pRealForm, "radioWireless");
+	m_pRadioButtonWireless = qFindChild < QRadioButton * >(m_pRealForm, "radioWireless");
 
 	if (m_pRadioButtonWireless != NULL)
 
@@ -295,8 +289,7 @@ WizardPageWiredSecurity::WizardPageWiredSecurity(QWidget * parent, QWidget * par
 bool WizardPageWiredSecurity::create(void)
 {
 
-	m_pRealForm =
-		FormLoader::buildform("wizardPageWiredSecurity.ui",
+	m_pRealForm = FormLoader::buildform("wizardPageWiredSecurity.ui",
 		m_pParentWidget);
 
 	if (m_pRealForm == NULL)
@@ -2115,8 +2108,7 @@ WizardPageDot1XInnerProtocol::WizardPageDot1XInnerProtocol(QWidget * parent, QWi
 bool WizardPageDot1XInnerProtocol::create(void)
 {
 
-	m_pRealForm =
-		FormLoader::buildform("wizardPageDot1XInnerProtocol.ui",
+	m_pRealForm = FormLoader::buildform("wizardPageDot1XInnerProtocol.ui",
 		m_pParentWidget);
 
 	if (m_pRealForm == NULL)
@@ -2125,45 +2117,36 @@ bool WizardPageDot1XInnerProtocol::create(void)
 
 
 	// cache off pointers to objects        
-	m_pProtocol =
-		qFindChild < QComboBox * >(m_pRealForm, "comboBoxProtocol");
+	m_pProtocol = qFindChild < QComboBox * >(m_pRealForm, "comboBoxProtocol");
 
-	m_pOuterID =
-		qFindChild < QLineEdit * >(m_pRealForm, "dataFieldOuterID");
+	m_pOuterID = qFindChild < QLineEdit * >(m_pRealForm, "dataFieldOuterID");
 
-	m_pValidateCert =
-		qFindChild < QCheckBox * >(m_pRealForm, "checkBoxValidateCert");
+	m_pValidateCert = qFindChild < QCheckBox * >(m_pRealForm, "checkBoxValidateCert");
 
 
 	// dynamically populate text
-	QLabel * pMsgLabel =
-		qFindChild < QLabel * >(m_pRealForm, "labelMessage");
+	QLabel * pMsgLabel = qFindChild < QLabel * >(m_pRealForm, "labelMessage");
 
 	if (pMsgLabel != NULL)
 
-		pMsgLabel->
-		setText(tr
-		("Enter your PEAP settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
+		pMsgLabel->setText(tr("Enter your PEAP settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
 
 
-	QLabel * pProtocolLabel =
-		qFindChild < QLabel * >(m_pRealForm, "labelProtocol");
+	QLabel * pProtocolLabel = qFindChild < QLabel * >(m_pRealForm, "labelProtocol");
 
 	if (pProtocolLabel != NULL)
 
 		pProtocolLabel->setText(tr("Tunnel Protocol:"));
 
 
-	QLabel * pOuterIDLabel =
-		qFindChild < QLabel * >(m_pRealForm, "labelOuterID");
+	QLabel * pOuterIDLabel = qFindChild < QLabel * >(m_pRealForm, "labelOuterID");
 
 	if (pOuterIDLabel != NULL)
 
 		pOuterIDLabel->setText(tr("Outer Identity:"));
 
 
-	QLabel * pOptionalLabel =
-		qFindChild < QLabel * >(m_pRealForm, "labelOptional");
+	QLabel * pOptionalLabel = qFindChild < QLabel * >(m_pRealForm, "labelOptional");
 
 	if (pOptionalLabel != NULL)
 
@@ -2192,13 +2175,11 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData & data)
 	m_curData = data;
 
 
-	m_pSessionResume =
-		qFindChild < QCheckBox * >(m_pRealForm, "checkBoxSessionResume");
+	m_pSessionResume = qFindChild < QCheckBox * >(m_pRealForm, "checkBoxSessionResume");
 
 
 	// populate this label dynamically because the text references the outer protocol used
-	QLabel * pMsgLabel =
-		qFindChild < QLabel * >(m_pRealForm, "labelMessage");
+	QLabel * pMsgLabel = qFindChild < QLabel * >(m_pRealForm, "labelMessage");
 
 	if (pMsgLabel != NULL)
 
@@ -2208,30 +2189,23 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData & data)
 
 		{
 
-			pMsgLabel->
-				setText(tr
-				("Enter your PEAP settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
+			pMsgLabel->setText(tr("Enter your PEAP settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
 
 			if (m_pSessionResume != NULL)
 
-				m_pSessionResume->
-				setText(tr("Use Fast Reconnect"));
+				m_pSessionResume->setText(tr("Use Fast Reconnect"));
 
 		}
 
-		else if (m_curData.m_eapProtocol ==
-			ConnectionWizardData::eap_ttls)
+		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
 
 		{
 
-			pMsgLabel->
-				setText(tr
-				("Enter your TTLS settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
+			pMsgLabel->setText(tr("Enter your TTLS settings for 802.1X authentication below.  The Outer Identity will be sent unencrypted."));
 
 			if (m_pSessionResume != NULL)
 
-				m_pSessionResume->
-				setText(tr("Use Session Resumption"));
+				m_pSessionResume->setText(tr("Use Session Resumption"));
 
 		}
 
@@ -2268,13 +2242,11 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData & data)
 			m_pProtocol->addItem("EAP-GTC");
 
 
-			if (m_curData.m_innerPEAPProtocol ==
-				ConnectionWizardData::inner_eap_mschapv2)
+			if (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_mschapv2)
 
 				m_pProtocol->setCurrentIndex(0);
 
-			else if (m_curData.m_innerPEAPProtocol ==
-				ConnectionWizardData::inner_eap_gtc)
+			else if (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)
 
 				m_pProtocol->setCurrentIndex(1);
 
@@ -2285,8 +2257,7 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData & data)
 			}	// error
 		}
 
-		else if (m_curData.m_eapProtocol ==
-			ConnectionWizardData::eap_ttls)
+		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
 
 		{
 
@@ -2301,28 +2272,23 @@ void WizardPageDot1XInnerProtocol::init(const ConnectionWizardData & data)
 			m_pProtocol->addItem("EAP-MD5");
 
 
-			if (m_curData.m_innerTTLSProtocol ==
-				ConnectionWizardData::inner_pap)
+			if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_pap)
 
 				m_pProtocol->setCurrentIndex(0);
 
-			else if (m_curData.m_innerTTLSProtocol ==
-				ConnectionWizardData::inner_chap)
+			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_chap)
 
 				m_pProtocol->setCurrentIndex(1);
 
-			else if (m_curData.m_innerTTLSProtocol ==
-				ConnectionWizardData::inner_mschap)
+			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_mschap)
 
 				m_pProtocol->setCurrentIndex(2);
 
-			else if (m_curData.m_innerTTLSProtocol ==
-				ConnectionWizardData::inner_mschapv2)
+			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_mschapv2)
 
 				m_pProtocol->setCurrentIndex(3);
 
-			else if (m_curData.m_innerTTLSProtocol ==
-				ConnectionWizardData::inner_eap_md5)
+			else if (m_curData.m_innerTTLSProtocol == ConnectionWizardData::inner_eap_md5)
 
 				m_pProtocol->setCurrentIndex(4);
 
@@ -2343,9 +2309,7 @@ const ConnectionWizardData & WizardPageDot1XInnerProtocol::wizardData(void)
 {
 
 	if (m_pOuterID != NULL)
-
 		m_curData.m_outerIdentity = m_pOuterID->text();
-
 
 	if (m_pValidateCert != NULL)
 
@@ -2367,13 +2331,11 @@ const ConnectionWizardData & WizardPageDot1XInnerProtocol::wizardData(void)
 
 			if (m_pProtocol->currentIndex() == 0)
 
-				m_curData.m_innerPEAPProtocol =
-				ConnectionWizardData::inner_eap_mschapv2;
+				m_curData.m_innerPEAPProtocol =	ConnectionWizardData::inner_eap_mschapv2;
 
 			else if (m_pProtocol->currentIndex() == 1)
 
-				m_curData.m_innerPEAPProtocol =
-				ConnectionWizardData::inner_eap_gtc;
+				m_curData.m_innerPEAPProtocol =	ConnectionWizardData::inner_eap_gtc;
 
 			else
 
@@ -2382,35 +2344,29 @@ const ConnectionWizardData & WizardPageDot1XInnerProtocol::wizardData(void)
 			}	// error
 		}
 
-		else if (m_curData.m_eapProtocol ==
-			ConnectionWizardData::eap_ttls)
+		else if (m_curData.m_eapProtocol == ConnectionWizardData::eap_ttls)
 
 		{
 
 			if (m_pProtocol->currentIndex() == 0)
 
-				m_curData.m_innerTTLSProtocol =
-				ConnectionWizardData::inner_pap;
+				m_curData.m_innerTTLSProtocol =	ConnectionWizardData::inner_pap;
 
 			else if (m_pProtocol->currentIndex() == 1)
 
-				m_curData.m_innerTTLSProtocol =
-				ConnectionWizardData::inner_chap;
+				m_curData.m_innerTTLSProtocol =	ConnectionWizardData::inner_chap;
 
 			else if (m_pProtocol->currentIndex() == 2)
 
-				m_curData.m_innerTTLSProtocol =
-				ConnectionWizardData::inner_mschap;
+				m_curData.m_innerTTLSProtocol =	ConnectionWizardData::inner_mschap;
 
 			else if (m_pProtocol->currentIndex() == 3)
 
-				m_curData.m_innerTTLSProtocol =
-				ConnectionWizardData::inner_mschapv2;
+				m_curData.m_innerTTLSProtocol =	ConnectionWizardData::inner_mschapv2;
 
 			else if (m_pProtocol->currentIndex() == 4)
 
-				m_curData.m_innerTTLSProtocol =
-				ConnectionWizardData::inner_eap_md5;
+				m_curData.m_innerTTLSProtocol =	ConnectionWizardData::inner_eap_md5;
 
 			else
 
@@ -3112,8 +3068,7 @@ bool WizardPageDot1XCert::validate(void)
 
 			QMessageBox::warning(m_pRealForm,
 				tr("No Certificates Selected"),
-				tr
-				("Please select at least one certificate to use for validation."));
+			        tr("Please select at least one certificate to use for validation."));
 
 			return false;
 
@@ -3136,10 +3091,8 @@ bool WizardPageDot1XCert::validate(void)
 			{
 
 				QMessageBox::warning(m_pRealForm,
-					tr
-					("Invalid Common Name String"),
-					tr
-					("You must enter a valid common name string if common name verification is enabled."));
+					tr("Invalid Common Name String"),
+					tr("You must enter a valid common name string if common name verification is enabled."));
 
 				return false;
 
@@ -3151,10 +3104,8 @@ bool WizardPageDot1XCert::validate(void)
 			{
 
 				QMessageBox::warning(m_pRealForm,
-					tr
-					("Invalid Common Name String"),
-					tr
-					("Please input a valid common name string.  Domain names must be of the form \"subdomain.domain\" or \"*.subdomain.domain\" if using wildcards."));
+					tr("Invalid Common Name String"),
+					tr("Please input a valid common name string.  Domain names must be of the form \"subdomain.domain\" or \"*.subdomain.domain\" if using wildcards."));
 
 				return false;
 
@@ -3193,10 +3144,8 @@ bool WizardPageDot1XCert::validate(void)
 				{
 
 					QMessageBox::warning(m_pRealForm,
-						tr
-						("Invalid Common Name String"),
-						tr
-						("Please ensure each domain name you entered has 255 or fewer characters."));
+						tr("Invalid Common Name String"),
+						tr("Please ensure each domain name you entered has 255 or fewer characters."));
 
 					return false;
 
@@ -3449,8 +3398,7 @@ bool WizardPageSCReader::validate(void)
 	{
 
 		QMessageBox::warning(this, tr("Invalid Reader"),
-			tr
-			("Please select a valid smart card reader.  If none are listed, then you will be unable to use this EAP type."));
+			tr("Please select a valid smart card reader.  If none are listed, then you will be unable to use this EAP type."));
 
 		return false;
 
@@ -3462,8 +3410,7 @@ bool WizardPageSCReader::validate(void)
 	{
 
 		QMessageBox::warning(this, tr("Invalid Reader"),
-			tr
-			("Please select a valid smart card reader.  If none are listed, then you will be unable to use this EAP type."));
+			tr("Please select a valid smart card reader.  If none are listed, then you will be unable to use this EAP type."));
 
 		return false;
 
@@ -3792,8 +3739,7 @@ bool WizardPageDot1XUserCert::validate(void)
 
 		QMessageBox::warning(m_pRealForm,
 			tr("No Certificate Selected"),
-			tr
-			("Please select a user certificate to use."));
+			tr("Please select a user certificate to use."));
 
 		return false;
 

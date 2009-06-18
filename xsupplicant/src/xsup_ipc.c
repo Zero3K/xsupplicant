@@ -418,8 +418,13 @@ void xsup_ipc_send_message(int skfd, char *tosend, int tolen)
 			memcpy(&frag[sizeof(ipc_header)], &tosend[offset],
 			       frag_size);
 
-			debug_hex_dump(DEBUG_IPC, frag,
-				       (frag_size + sizeof(ipc_header)));
+#ifdef UNSAFE_DUMPS		// This could leave passwords in the log file, so only have it in debug builds!
+		debug_printf(DEBUG_IPC,
+			     "Sending complete packet of %d byte(s).\n",
+			     (tolen + sizeof(ipc_header)));
+		debug_hex_dump(DEBUG_IPC, (uint8_t *) frag,
+			       (tolen + sizeof(ipc_header)));
+#endif
 
 			if (send(skfd, frag, (frag_size + sizeof(ipc_header)),
 			     0) <= 0) {
@@ -522,6 +527,10 @@ int xsup_ipc_event(context * ctx, int sock)
 		FREE(buf);
 		return -1;
 	}
+
+#ifdef UNSAFE_DUMPS
+	debug_hex_dump(DEBUG_IPC, buf, result);
+#endif
 
 	retval = ipc_callout_process(buf, result, &resbuf, &resbufsize);
 

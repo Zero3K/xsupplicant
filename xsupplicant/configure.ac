@@ -140,6 +140,11 @@ AC_ARG_ENABLE(static-iwlib,
   	       [enable_static_iwlib="yes" ],
 	       [AC_MSG_ERROR("You must use --with-iwlib-lib-path and --with-iwlib-headers to use static Linux wireless library support.")])])
 
+AC_ARG_ENABLE(unsafe-dumps,
+  AS_HELP_STRING([--enable-unsafe-dumps],
+    [enable dumpping of data that may contain things such as passwords and private keys.  (This is *REALLY* unsafe and should only be used for debugging!)]),
+  [AC_DEFINE(UNSAFE_DUMPS)])
+
 AC_ARG_ENABLE(static-libxml,
   AS_HELP_STRING([--enable-static-libxml],
     [statically link libxml2 libraries]),

@@ -196,8 +196,7 @@ int xsup_ipc_win_event(context * ctx, HANDLE hdl)
 
 		if (HasOverlappedIoCompleted(lovr) == TRUE) {
 			// And set up a read handler.
-			if (ReadFile
-			    (pipes[i].hdl, &pipes[i].buffer, BUFSIZE,
+			if (ReadFile(pipes[i].hdl, &pipes[i].buffer, BUFSIZE,
 			     (LPDWORD) & pipes[i].inbuf, lovr) == 0) {
 				resulterr = GetLastError();
 
@@ -284,8 +283,7 @@ int xsup_ipc_win_event(context * ctx, HANDLE hdl)
 #endif
 
 			// Process it.
-			retval =
-			    ipc_callout_process(pipes[i].buffer, pipes[i].inbuf,
+			retval = ipc_callout_process(pipes[i].buffer, pipes[i].inbuf,
 						&result, &ressize);
 			switch (retval) {
 			case IPC_CHANGE_TO_EVENT_ONLY:
@@ -488,8 +486,7 @@ void xsup_ipc_send_message(HANDLE pipehdl, char *tosend, int tolen)
 			       (tolen + sizeof(ipc_header)));
 #endif
 
-		if (WriteFile
-		    (pipehdl, frag, (tolen + sizeof(ipc_header)), &totalbytes,
+		if (WriteFile(pipehdl, frag, (tolen + sizeof(ipc_header)), &totalbytes,
 		     NULL) == 0) {
 			debug_printf(DEBUG_NORMAL | DEBUG_IPC,
 				     "Couldn't send response document to IPC client!\n");
