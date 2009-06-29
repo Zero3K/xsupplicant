@@ -592,12 +592,10 @@ uint8_t ipc_callout_process(uint8_t * buffer, int size, uint8_t ** retbuf,
 				debug_printf(DEBUG_NORMAL,
 					     "Couldn't locate a handler for request '%s'!\n",
 					     cur_node->name);
-				if (ipc_callout_create_error
-				    (NULL, (char *)cur_node->name,
+				if (ipc_callout_create_error(NULL, (char *)cur_node->name,
 				     IPC_ERROR_UNKNOWN_REQUEST,
 				     &newChild) == 0) {
-					if (xmlAddChild(newRoot, newChild) ==
-					    NULL) {
+					if (xmlAddChild(newRoot, newChild) == NULL) {
 						debug_printf(DEBUG_NORMAL,
 							     "Couldn't add child node to response document!\n");
 						xmlFreeNode(newChild);
