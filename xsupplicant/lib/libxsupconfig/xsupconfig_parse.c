@@ -54,9 +54,8 @@ long xsupconfig_parse_get_line_num()
  **/
 xmlDocPtr loadConfig(char *filename)
 {
-	xmlDocPtr doc;
+	xmlDocPtr doc = NULL;
 	FILE *fp = NULL;
-	char *errstr = NULL;
 
 	if (filename == NULL) {
 		printf("Unable to parse NULL file!\n");
@@ -66,19 +65,6 @@ xmlDocPtr loadConfig(char *filename)
 	}
 	if ((fp = fopen(filename, "r")) == NULL) {
 		printf("File %s can't be accessed\n", filename);
-
-#ifndef WINDOWS
-		errstr = malloc(128);
-		if (errstr == NULL)
-			return NULL;
-
-		sprintf(errstr,
-			"File %s can't be opened.  Do you have rights to it?",
-			filename);
-		error_prequeue_add(errstr);
-		free(errstr);
-		errstr = NULL;
-#endif
 
 		return NULL;
 	}

@@ -34,6 +34,10 @@
             <programArguments>start</programArguments>
             <workingDirectory>${installdir}</workingDirectory>
         </runProgram>
+        <showText>
+            <text>Please disable any instances of wpa_supplicant or NetworkManager that may be running, or may be started after reboot.  They will interfere with the operation of XSupplicant.</text>
+            <title>Please Disable</title>
+        </showText>
     </postInstallationActionList>
     <preUninstallationActionList>
         <removeUnixService>
