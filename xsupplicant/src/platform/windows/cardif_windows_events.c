@@ -195,6 +195,22 @@ void cardif_windows_events_delay_link_up_thread(void *ctxptr)
 void cardif_windows_check_unexpected_change(context * ctx, char *ssid) 
 {
 	wireless_ctx * wctx = NULL;
+	config_globals *globals = NULL;
+
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE)) return;
+	
+	globals = config_get_globals();
+	if (globals == NULL)
+	{
+		// We don't know, so bail out.
+		return;
+	}
+
+	if (!TEST_FLAG(globals->flags, CONFIG_GLOBALS_INT_CTRL))
+	{
+		// We aren't supposed to manage any interfaces, so ignore the event.
+		return;
+	}
 
 	if (!TEST_FLAG(ctx->flags, INT_IGNORE))
 	{

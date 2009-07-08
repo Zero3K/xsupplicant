@@ -129,8 +129,7 @@ void *xsupconfig_parse_build_globals(void **attr, uint8_t config_type,
 
 	conf_globals = malloc(sizeof(struct config_globals));
 	if (conf_globals == NULL) {
-		printf
-		    ("Couldn't allocate memory to store global setting configuration!"
+		printf("Couldn't allocate memory to store global setting configuration!"
 		     "  (Line %ld)\n", xsupconfig_parse_get_line_num());
 		exit(1);
 	}
@@ -405,8 +404,7 @@ void *xsupconfig_parse_idle_while(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to Idle_While is not a number!  (Line %ld)   "
+		xsupconfig_common_log("Value assigned to Idle_While is not a number!  (Line %ld)   "
 		     "Using default!\n", xsupconfig_parse_get_line_num());
 	} else {
 		myglobals->idleWhile_timeout = atoi(value);
@@ -495,8 +493,7 @@ void *xsupconfig_parse_stale_key_timeout(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Invalid value for Stale_Key_Timeout.  (Line %ld)  Using "
+		xsupconfig_common_log("Invalid value for Stale_Key_Timeout.  (Line %ld)  Using "
 		     "default!\n", xsupconfig_parse_get_line_num());
 	} else {
 		myglobals->stale_key_timeout = atoi(value);
@@ -522,8 +519,7 @@ void *xsupconfig_parse_max_starts(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Invalid value for Max_Starts.  (Line %ld)   Using default!\n",
+		xsupconfig_common_log("Invalid value for Max_Starts.  (Line %ld)   Using default!\n",
 		     xsupconfig_parse_get_line_num());
 	} else {
 		myglobals->max_starts = atoi(value);
@@ -556,8 +552,7 @@ void *xsupconfig_parse_allmulti(void **attr, uint8_t config_type,
 	} else if (result == 0) {
 		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_ALLMULTI);
 	} else {
-		xsupconfig_common_log
-		    ("Unknown value for Allmulti. (Line %ld)   Using default of "
+		xsupconfig_common_log("Unknown value for Allmulti. (Line %ld)   Using default of "
 		     "'YES'.\n", xsupconfig_parse_get_line_num());
 		SET_FLAG(myglobals->flags, CONFIG_GLOBALS_ALLMULTI);
 	}
@@ -656,8 +651,7 @@ void *xsupconfig_parse_passive_scanning(void **attr, uint8_t config_type,
 	} else if (result == 0) {
 		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_PASSIVE_SCAN);
 	} else {
-		xsupconfig_common_log
-		    ("Unknown value for Passive_Scan.  (Line %ld)   Using default "
+		xsupconfig_common_log("Unknown value for Passive_Scan.  (Line %ld)   Using default "
 		     "of 'YES'.\n", xsupconfig_parse_get_line_num());
 		SET_FLAG(myglobals->flags, CONFIG_GLOBALS_PASSIVE_SCAN);
 	}
@@ -682,8 +676,7 @@ void *xsupconfig_parse_passive_timer(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to Passive_Timeout is not a number! (Line %ld)"
+		xsupconfig_common_log("Value assigned to Passive_Timeout is not a number! (Line %ld)"
 		     "   Using default!\n", xsupconfig_parse_get_line_num());
 	} else {
 		myglobals->passive_timeout = atoi(value);
@@ -709,8 +702,7 @@ void *xsupconfig_parse_assoc_timeout(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to Association_Timeout is not a number!  (Line "
+		xsupconfig_common_log("Value assigned to Association_Timeout is not a number!  (Line "
 		     "%ld)   Using default!\n",
 		     xsupconfig_parse_get_line_num());
 	} else {
@@ -737,8 +729,7 @@ void *xsupconfig_parse_scan_timeout(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to Scan_Timeout is not a number!  (Line %ld)"
+		xsupconfig_common_log("Value assigned to Scan_Timeout is not a number!  (Line %ld)"
 		     "   Using default!\n", xsupconfig_parse_get_line_num());
 	} else {
 		myglobals->active_timeout = atoi(value);
@@ -764,8 +755,7 @@ void *xsupconfig_parse_logs_to_keep(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to Logs_To_Keep is not a number!  (Line %ld)"
+		xsupconfig_common_log("Value assigned to Logs_To_Keep is not a number!  (Line %ld)"
 		     "   Using default!\n", xsupconfig_parse_get_line_num());
 		myglobals->logs_to_keep = OLD_LOGS_TO_KEEP;
 	} else {
@@ -792,8 +782,7 @@ void *xsupconfig_parse_log_size_to_roll(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to Logs_To_Keep is not a number!  (Line %ld)"
+		xsupconfig_common_log("Value assigned to Logs_To_Keep is not a number!  (Line %ld)"
 		     "   Using default!\n", xsupconfig_parse_get_line_num());
 		myglobals->size_to_roll = LOG_SIZE_TO_ROLL;
 	} else {
@@ -820,8 +809,7 @@ void *xsupconfig_parse_pmksa_age_out(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to PMKSA_Age_Out is not a number!  (Line %ld)"
+		xsupconfig_common_log("Value assigned to PMKSA_Age_Out is not a number!  (Line %ld)"
 		     "   Using default!\n", xsupconfig_parse_get_line_num());
 		myglobals->pmksa_age_out = PMKSA_DEFAULT_AGEOUT_TIME;
 	} else {
@@ -848,8 +836,7 @@ void *xsupconfig_parse_pmksa_refresh_time(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to PMKSA_Refresh_Time is not a number!  (Line %ld)"
+		xsupconfig_common_log("Value assigned to PMKSA_Refresh_Time is not a number!  (Line %ld)"
 		     "   Using default!\n", xsupconfig_parse_get_line_num());
 		myglobals->pmksa_cache_check = PMKSA_CACHE_REFRESH;
 	} else {
@@ -883,8 +870,7 @@ void *xsupconfig_parse_use_eap_hints(void **attr, uint8_t config_type,
 	} else if (result == 0) {
 		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_EAP_HINTS);
 	} else {
-		xsupconfig_common_log
-		    ("Unknown value for Use_EAP_Hints.  (Line %ld)   Using "
+		xsupconfig_common_log("Unknown value for Use_EAP_Hints.  (Line %ld)   Using "
 		     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
 		SET_FLAG(myglobals->flags, CONFIG_GLOBALS_EAP_HINTS);
 	}
@@ -943,8 +929,7 @@ void *xsupconfig_disconnect_at_logoff(void **attr, uint8_t config_type,
 		UNSET_FLAG(myglobals->flags,
 			   CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF);
 	} else {
-		xsupconfig_common_log
-		    ("Unknown value for Disconnect_at_Logoff.  (Line %ld)    Using "
+		xsupconfig_common_log("Unknown value for Disconnect_at_Logoff.  (Line %ld)    Using "
 		     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
 		SET_FLAG(myglobals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF);
 	}
@@ -976,8 +961,7 @@ void *xsupconfig_parse_detect_on_startup(void **attr, uint8_t config_type,
 	} else if (result == 0) {
 		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP);
 	} else {
-		xsupconfig_common_log
-		    ("Unknown value for Detect_on_startup.  (Line %ld)    Using "
+		xsupconfig_common_log("Unknown value for Detect_on_startup.  (Line %ld)    Using "
 		     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
 		SET_FLAG(myglobals->flags, CONFIG_GLOBALS_DETECT_ON_STARTUP);
 	}
@@ -1009,8 +993,7 @@ void *xsupconfig_parse_roll_logs(void **attr, uint8_t config_type,
 	} else if (result == 0) {
 		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_ROLL_LOGS);
 	} else {
-		xsupconfig_common_log
-		    ("Unknown value for Roll_Logs.  (Line %ld)    Using "
+		xsupconfig_common_log("Unknown value for Roll_Logs.  (Line %ld)    Using "
 		     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
 		SET_FLAG(myglobals->flags, CONFIG_GLOBALS_ROLL_LOGS);
 	}
@@ -1042,8 +1025,7 @@ void *xsupconfig_parse_wireless_only(void **attr, uint8_t config_type,
 	} else if (result == 0) {
 		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_WIRELESS_ONLY);
 	} else {
-		xsupconfig_common_log
-		    ("Unknown value for Wireless_Only.  (Line %ld)    Using "
+		xsupconfig_common_log("Unknown value for Wireless_Only.  (Line %ld)    Using "
 		     "default of 'NO'.\n", xsupconfig_parse_get_line_num());
 		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_WIRELESS_ONLY);
 	}
@@ -1074,8 +1056,7 @@ void *xsupconfig_control_ints(void **attr, uint8_t config_type, xmlNodePtr node)
 	} else if (result == 0) {
 		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_INT_CTRL);
 	} else {
-		xsupconfig_common_log
-		    ("Unknown value for Control_Interfaces.  (Line %ld)    Using "
+		xsupconfig_common_log("Unknown value for Control_Interfaces.  (Line %ld)    Using "
 		     "default of 'YES'.\n", xsupconfig_parse_get_line_num());
 		SET_FLAG(myglobals->flags, CONFIG_GLOBALS_INT_CTRL);
 	}
@@ -1100,8 +1081,7 @@ void *xsupconfig_parse_dead_connection_timeout(void **attr, uint8_t config_type,
 	myglobals = (*attr);
 
 	if (xsupconfig_common_is_number(value) == 0) {
-		xsupconfig_common_log
-		    ("Value assigned to Dead_Connection_Timeout is not a number!  (Line %ld)"
+		xsupconfig_common_log("Value assigned to Dead_Connection_Timeout is not a number!  (Line %ld)"
 		     "   Using default!\n", xsupconfig_parse_get_line_num());
 		myglobals->dead_connection_timeout = DEAD_CONN_TIMEOUT;
 	} else {
