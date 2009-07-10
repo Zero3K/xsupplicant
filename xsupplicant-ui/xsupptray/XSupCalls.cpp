@@ -3309,13 +3309,10 @@ bool XSupCalls::isOnlyInstance(char *exeName)
 		return false;
 	}
 #else
-#warning FIX!
-	/*
-	   if (supdetect_numinstance(exeName) >= 2)
-	   {
-	   return false;
-	   }
-	 */
+	if (supdetect_numinstances(exeName) >= 2)
+	  {
+	    return false;
+	  }
 #endif
 	return true;
 }
