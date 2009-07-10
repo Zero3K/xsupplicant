@@ -112,13 +112,6 @@ void eappsk_check(eap_type_data * eapdata)
 		return;
 	}
 
-	if (myeap->eap_identifier == 0)
-	{
-		debug_printf(DEBUG_NORMAL, "Invalid EAP identifier!\n");
-		eap_type_common_fail(eapdata);
-		return;
-	}
-
 	pskconf = (struct config_pwd_only *)eapdata->eap_conf_data;
 	if (pskconf == NULL)
 	{

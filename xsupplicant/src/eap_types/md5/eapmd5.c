@@ -104,12 +104,6 @@ void eapmd5_check(eap_type_data * eapdata)
 		return;
 	}
 
-	if (myeap->eap_identifier == 0) {
-		debug_printf(DEBUG_NORMAL, "Invalid EAP identifier!\n");
-		eap_type_common_fail(eapdata);
-		return;
-	}
-
 	if (ntohs(myeap->eap_length) < (17 + sizeof(struct eap_header))) {
 		debug_printf(DEBUG_NORMAL,
 			     "Not enough data for valid EAP method.\n");
