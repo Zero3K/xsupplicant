@@ -298,16 +298,15 @@ void event_core()
 	}
 
 #ifdef USE_DIRECT_RADIUS
-	if (cardif_radius_eap_sm(ctx) == TRUE) {
+	if (cardif_radius_eap_sm(events[i].ctx) == TRUE) {
 		debug_printf(DEBUG_NORMAL, "Got a fake ID request!\n");
-		result = cardif_get_socket(ctx);
+		result = cardif_get_socket(events[i].ctx);
 
 		for (i = 0; i < MAX_EVENTS; i++) {
 			if (events[i].socket == result) {
 				if (events[i].func_to_call) {
-					events[i].func_to_call(ctx,
-							       events
-							       [i].socket);
+					events[i].func_to_call(events[i].ctx,
+							       events[i].socket);
 				}
 			}
 		}
@@ -430,8 +429,7 @@ void event_core()
 			active_ctx = NULL;
 		}
 #ifdef USE_DIRECT_RADIUS
-		// XXX This is broken!
-		statemachine_run(ctx);
+		statemachine_run(events[i].ctx);
 #endif
 	}
 }
