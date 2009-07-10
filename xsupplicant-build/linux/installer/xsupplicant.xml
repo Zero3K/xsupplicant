@@ -56,7 +56,6 @@
             <path>/opt/xsupplicant</path>
         </deleteFile>
     </postUninstallationActionList>
-    <a2555a>1</a2555a>
     <allowComponentSelection>1</allowComponentSelection>
     <compressionAlgorithm>lzma</compressionAlgorithm>
     <enableRollback>1</enableRollback>
@@ -147,6 +146,46 @@
                         </distributionFile>
                     </distributionFileList>
                 </folder>
+                <folder>
+                    <description>Program Files</description>
+                    <destination>${installdir}</destination>
+                    <name>programfileslinuxx64</name>
+                    <platforms>linux-x64</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant_plugin_installer/src/xsupplicant_plugin_installer</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/src/xsupplicant</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant-ui/build-debug/XSupplicantUI</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../scripts/open1x.org.xsupplicant</origin>
+                        </distributionFile>
+                        <distributionDirectory>
+                            <origin>../../../xsupplicant-ui/Skins</origin>
+                        </distributionDirectory>
+                    </distributionFileList>
+                </folder>
+                <folder>
+                    <description>Modules</description>
+                    <destination>${installdir}/Modules</destination>
+                    <name>modulesx64</name>
+                    <platforms>linux-x64</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/.libs/libbirddog.so</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/.libs/libbirddog.so.0</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/.libs/libbirddog.so.0.0.0</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
             </folderList>
             <startMenuShortcutList>
                 <startMenuShortcut>
@@ -196,6 +235,23 @@
                         </distributionFile>
                     </distributionFileList>
                 </folder>
+                <folder>
+                    <description>Modules</description>
+                    <destination>${installdir}/Modules</destination>
+                    <name>modulesx64</name>
+                    <platforms>linux-x64</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM2G/.libs/libsoftsim2g.so</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM2G/.libs/libsoftsim2g.so.0</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM2G/.libs/libsoftsim2g.so.0.0.0</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
             </folderList>
             <postInstallationActionList>
                 <runProgram>
@@ -237,6 +293,23 @@
                     <distributionFileList>
                         <distributionFile>
                             <origin>../../../xsupplicant-ui/Doc/Using the 3G Soft SIM.pdf</origin>
+                        </distributionFile>
+                    </distributionFileList>
+                </folder>
+                <folder>
+                    <description>Modules</description>
+                    <destination>${installdir}/Modules</destination>
+                    <name>modulesx64</name>
+                    <platforms>linux-x64</platforms>
+                    <distributionFileList>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM3G/.libs/libsoftsim3g.so</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM3G/.libs/libsoftsim3g.so.0</origin>
+                        </distributionFile>
+                        <distributionFile>
+                            <origin>../../../xsupplicant/plugins/SoftSIM3G/.libs/libsoftsim3g.so.0.0.0</origin>
                         </distributionFile>
                     </distributionFileList>
                 </folder>
