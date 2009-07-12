@@ -455,7 +455,8 @@ bool ConnectionWizardData::toProfileEAP_TLSProtocol(config_profiles *
 		return false;
 
 	if (m_eapProtocol == ConnectionWizardData::eap_tls) {
-		// We don't want to set the outer username here because it is the only username.  (So we want to prompt.)
+		this->toProfileOuterIdentity(pProfile);
+
 		if (pProfile->method == NULL)
 		{
 			pProfile->method = (struct config_eap_method *)malloc(sizeof(struct config_eap_method));

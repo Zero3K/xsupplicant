@@ -4195,6 +4195,26 @@ void WizardPageCredentials::init(const ConnectionWizardData & data)
 		if (m_pPasswordEdit != NULL)
 			m_pPasswordEdit->setEnabled(false);
 	}
+	else if ((m_curData.m_eapProtocol == ConnectionWizardData::eap_tls) &&
+		(!m_curData.m_outerIdentity.isEmpty()))
+	{
+		if (m_pRadioButtonStore != NULL)
+			m_pRadioButtonStore->setChecked(true);
+
+		if (m_pUsernameLabel != NULL)
+			m_pUsernameLabel->setEnabled(true);
+
+		if (m_pUsernameEdit != NULL)
+			m_pUsernameEdit->setEnabled(true);
+
+		m_pUsernameEdit->setText(m_curData.m_outerIdentity);
+
+		if (m_pPasswordLabel != NULL)
+			m_pPasswordLabel->setEnabled(false);
+
+		if (m_pPasswordEdit != NULL)
+			m_pPasswordEdit->setEnabled(false);
+	}
 	else
 	{
 		if (m_pRadioButtonStore != NULL)
@@ -4249,8 +4269,16 @@ bool WizardPageCredentials::validate(void)
 	if ((m_pRadioButtonStore != NULL)
 		&& (m_pRadioButtonStore->isChecked()))
 	{
-		if ((m_curData.m_eapProtocol != ConnectionWizardData::eap_tls)
-			|| !((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
+		if (m_curData.m_eapProtocol == ConnectionWizardData::eap_tls)
+		{
+			if (m_pUsernameEdit->text() == "")
+			{
+				QMessageBox::critical(this, tr("Error"),
+					tr("You need to provide a username, or select the 'Prompt for credentials' option."));
+				return false;
+			}
+		}
+		else if (!((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
 			&& (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)))
 		{
 			// We need to make sure that we have values stored.
@@ -4302,8 +4330,14 @@ void WizardPageCredentials::slotToggled(bool checked)
 		if (m_pUsernameEdit != NULL)
 			m_pUsernameEdit->setEnabled(true);
 
-		if ((m_curData.m_eapProtocol != ConnectionWizardData::eap_tls)
-			|| !((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
+		if (m_curData.m_eapProtocol == ConnectionWizardData::eap_tls)
+		{
+			if (m_pPasswordLabel != NULL)
+				m_pPasswordLabel->setEnabled(false);
+
+			if (m_pPasswordEdit != NULL)
+				m_pPasswordLabel->setEnabled(false);
+		} else if (!((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
 			&& (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)))
 		{
 			if (m_pPasswordLabel != NULL)
