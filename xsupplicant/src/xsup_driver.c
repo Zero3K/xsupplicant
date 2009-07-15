@@ -791,6 +791,10 @@ int main(int argc, char *argv[])
 
 		// Otherwise, keep going.
 	}
+	else
+	  {
+	    printf("Starting XSupplicant v. %s.%s\n", VERSION, BUILDNUM);
+	  }
 
 	retval = xsup_driver_basic_init(config, xdaemon);
 	if (retval < 0) {
@@ -812,6 +816,7 @@ int main(int argc, char *argv[])
 #endif
 		return -1;
 	}
+
 	// When we quit, cleanup.  For Windows, we handle this a different way.  That method is
 	// set up in the event_core_init() call for Windows.
 #ifndef WINDOWS

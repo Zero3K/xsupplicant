@@ -372,8 +372,7 @@ static int rotate_log_files()
 		}
 #ifdef WINDOWS
 		if (strlen(temp) != 0) {
-			if (globals->logpath[strlen(globals->logpath) - 1] ==
-			    '\\') {
+			if (globals->logpath[strlen(globals->logpath) - 1] == '\\') {
 				sprintf(full_filename, "%s%s_%s.%s",
 					globals->logpath, DEFAULT_LOG_NAME,
 					temp, DEFAULT_LOG_EXT);
@@ -383,8 +382,7 @@ static int rotate_log_files()
 					temp, DEFAULT_LOG_EXT);
 			}
 		} else {
-			if (globals->logpath[strlen(globals->logpath) - 1] ==
-			    '\\') {
+			if (globals->logpath[strlen(globals->logpath) - 1] == '\\') {
 				sprintf(full_filename, "%s%s.%s",
 					globals->logpath, DEFAULT_LOG_NAME,
 					DEFAULT_LOG_EXT);
@@ -569,15 +567,9 @@ int logpath_changed(char *newpath)
 
 	if ((newpath == NULL) || (strlen(newpath) == 0)) {
 		// Turn off the log file if we are using it.
-/*		if (logfile != NULL)
-		{
-			debug_printf(DEBUG_NORMAL, "Logging to a file has been disabled.\n");
-			fclose(logfile);
-			FREE(active_logpath);
-		}  */
-
 		return TRUE;
 	}
+
 	// If we aren't logging to a file right now, then it doesn't matter if the logpath changed.
 	if (logfile == NULL)
 		return TRUE;
@@ -1312,7 +1304,7 @@ void debug_printf(uint32_t level, char *fmt, ...)
 		}
 
 		vsnprintf((char *)&temp, TEMP_LOG_BUF_SIZE - 2, fmt, ap);
-
+	   
 		tdstring = xsup_debug_system_time();
 		if (tdstring != NULL) {
 			_snprintf((char *)&fullstr, TEMP_LOG_BUF_SIZE - 2,
@@ -1334,8 +1326,7 @@ void debug_printf(uint32_t level, char *fmt, ...)
 			}
 		}
 
-		if (Strcat
-		    ((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
+		if (Strcat((char *)&dumpstr, TEMP_LOG_BUF_SIZE,
 		     (char *)&fullstr) != 0) {
 			fprintf(stderr, "Refusing to overflow the string!\n");
 			return;
@@ -1348,8 +1339,8 @@ void debug_printf(uint32_t level, char *fmt, ...)
 			va_end(ap);
 			return;
 		}
-		if (logfile != NULL)
-			ufprintf(logfile, dumpstr, level);
+
+		ufprintf(logfile, dumpstr, level);
 
 		va_end(ap);
 	}
