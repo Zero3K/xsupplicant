@@ -4178,7 +4178,7 @@ void WizardPageCredentials::init(const ConnectionWizardData & data)
 {
 	m_curData = data;
 
-	if ((m_curData.m_username == "") && (m_curData.m_password == ""))
+	if ((m_curData.m_username.isEmpty()) && (m_curData.m_password.isEmpty()))
 	{
 		if (m_pRadioButtonPrompt != NULL)
 			m_pRadioButtonPrompt->setChecked(true);
@@ -4226,8 +4226,8 @@ void WizardPageCredentials::init(const ConnectionWizardData & data)
 		if (m_pUsernameEdit != NULL)
 			m_pUsernameEdit->setEnabled(true);
 
-		if ((m_curData.m_eapProtocol != ConnectionWizardData::eap_tls)
-			|| !((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
+		if ((m_curData.m_eapProtocol == ConnectionWizardData::eap_tls)
+			|| ((m_curData.m_eapProtocol == ConnectionWizardData::eap_peap)
 			&& (m_curData.m_innerPEAPProtocol == ConnectionWizardData::inner_eap_gtc)))
 		{
 			if (m_pPasswordLabel != NULL)
