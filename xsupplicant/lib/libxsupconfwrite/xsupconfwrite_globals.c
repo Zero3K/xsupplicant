@@ -378,7 +378,7 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 		return NULL;
 	}
 
-	if ((write_all == TRUE) || (conf_globals->destination != DEST_AUTO)) {
+	if ((write_all == TRUE) || (conf_globals->destination != DEST_MULTICAST)) {
 		switch (conf_globals->destination) {
 		default:
 		case DEST_AUTO:

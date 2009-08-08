@@ -45,6 +45,7 @@ void xsupconfig_defaults_set_globals(config_globals * toset)
 	toset->size_to_roll = LOG_SIZE_TO_ROLL;	// Roll logs when they reach 10 megs.
 	toset->dead_connection_timeout = DEAD_CONN_TIMEOUT;
 	toset->logtype = LOGGING_FILE;
+	toset->destination = DEST_MULTICAST;
 #ifndef WINDOWS
 	pathptr = (char *)malloc(15);
 	if (pathptr != NULL) {
