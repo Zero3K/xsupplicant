@@ -310,6 +310,42 @@ void *xsupconfig_parse_allow_ma_remain(void **attr, uint8_t config_type,
 	return myglobals;
 }
 
+/**
+ * \brief Enable/disable forcing reprompting of user credentials when a wired link drops.
+ **/
+void *xsupconfig_parse_wired_link_reprompt(void **attr, uint8_t config_type,
+				       xmlNodePtr node)
+{
+	struct config_globals *myglobals = NULL;
+	uint8_t result = 0;
+	char *value = NULL;
+
+	value = (char *)xmlNodeGetContent(node);
+
+#ifdef PARSE_DEBUG
+	printf("Wired reprompt on link drop : %s\n", value);
+#endif
+
+	myglobals = (*attr);
+
+	result = xsupconfig_common_yesno(value);
+
+	if (result == 1) {
+		SET_FLAG(myglobals->flags, CONFIG_GLOBALS_REPROMPT_WIRED);
+	} else if (result == 0) {
+		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_REPROMPT_WIRED);
+	} else {
+		xsupconfig_common_log
+		    ("Unknown value for Wired_Link_Drop_Reprompt.  (Line %ld)   Using default "
+		     "of 'NO'.\n", xsupconfig_parse_get_line_num());
+		UNSET_FLAG(myglobals->flags, CONFIG_GLOBALS_REPROMPT_WIRED);
+	}
+
+	xmlFree(value);
+
+	return myglobals;
+}
+
 void *xsupconfig_parse_ipc_group(void **attr, uint8_t config_type,
 				 xmlNodePtr node)
 {
@@ -1194,6 +1230,9 @@ parser globals[] = {
 	,
 	{"Allow_Machine_Authentication_to_Remain", NULL, FALSE,
 	 OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_allow_ma_remain}
+	,
+	{"Wired_Link_Drop_Reprompt", NULL, FALSE,
+	 OPTION_GLOBAL_CONFIG_ONLY, &xsupconfig_parse_wired_link_reprompt}
 	,
 	{NULL, NULL, FALSE, 0, NULL}
 };

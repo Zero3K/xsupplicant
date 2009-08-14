@@ -304,6 +304,7 @@ struct config_connection {
 #define CONFIG_GLOBALS_WIRELESS_ONLY        BIT(11)	// Only manage wireless interfaces.
 #define CONFIG_GLOBALS_INT_CTRL          BIT(12)	// Should we allow the underlying OS to control the interfaces?
 #define CONFIG_GLOBALS_ALLOW_MA_REMAIN	    BIT(13)	// Should we allow a machine authentication to remain connected even after a user has logged on?
+#define CONFIG_GLOBALS_REPROMPT_WIRED		BIT(14) // When link drops on a wired interface, should we force the user to enter their credentials again?
 
 #define LOGGING_NONE					0	// Don't log anything.
 #define LOGGING_FILE					1	// Log to a file.  (Default)

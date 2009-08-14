@@ -232,6 +232,13 @@ xmlNodePtr xsupconfwrite_globals_create_tree(struct config_globals *
 		return NULL;
 	}
 
+	if (xsupconfwrite_common_write_bool(globalnode, "Wired_Link_Drop_Reprompt",
+	     TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_REPROMPT_WIRED),
+	     FALSE, write_all, FALSE) == NULL) {
+		xmlFreeNode(globalnode);
+		return NULL;
+	}
+
 	if (xsupconfwrite_common_write_bool(globalnode, "Disconnect_at_Logoff",
 					    TEST_FLAG(conf_globals->flags, CONFIG_GLOBALS_DISCONNECT_AT_LOGOFF),
 					    TRUE, write_all, FALSE) == NULL) {

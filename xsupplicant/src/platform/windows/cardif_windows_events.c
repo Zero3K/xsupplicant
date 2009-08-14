@@ -141,6 +141,7 @@ void cardif_windows_ip_update_cleanup()
 void cardif_windows_events_delay_link_up_thread(void *ctxptr) 
 {
 	context * ctx = NULL;
+	config_globals *globals = NULL;
 
 	if (!xsup_assert((ctxptr != NULL), "ctxptr != NULL", FALSE))
 	{
@@ -160,6 +161,23 @@ void cardif_windows_events_delay_link_up_thread(void *ctxptr)
 		_endthread();
 		return;
 	}
+
+	globals = config_get_globals();
+	if (TEST_FLAG(globals->flags, CONFIG_GLOBALS_REPROMPT_WIRED))
+	{
+		// We want to flush our credentials on this interface.
+		if (ctx->prof != NULL) {
+			debug_printf(DEBUG_NORMAL,
+				     "Flushing credentials on '%s' per the configuration file.\n",
+				     ctx->desc);
+			FREE(ctx->prof->temp_username);
+			FREE(ctx->prof->temp_password);
+				// Ask the UI to give us new credentials.
+			ipc_events_ui(ctx, IPC_EVENT_8021X_FAILED,
+				      ctx->conn_name);
+		}
+	}
+
 
 	debug_printf(DEBUG_INT, "Enabling wired port.\n");
 	debug_printf(DEBUG_NORMAL, "Interface '%s' now has link.\n",
