@@ -49,9 +49,9 @@
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				ErrorReporting="0"
 			/>
 			<Tool
@@ -261,7 +261,8 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -466,9 +467,9 @@
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				ErrorReporting="0"
 			/>
 			<Tool
@@ -678,7 +679,8 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -881,7 +883,8 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -1088,10 +1091,10 @@
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfig\vc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				ErrorReporting="0"
 			/>
 			<Tool
@@ -1305,9 +1308,9 @@
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				ErrorReporting="0"
 			/>
 			<Tool
@@ -1520,9 +1523,9 @@
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				ErrorReporting="0"
 			/>
 			<Tool
@@ -1734,7 +1737,8 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -1941,9 +1945,9 @@
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				ErrorReporting="0"
 			/>
 			<Tool
@@ -2157,9 +2161,9 @@
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
-				DebugInformationFormat="3"
+				DebugInformationFormat="4"
 				ErrorReporting="0"
 			/>
 			<Tool
@@ -2371,7 +2375,8 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;&quot;$(OPENSSLDIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

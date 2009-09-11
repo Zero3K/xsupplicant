@@ -177,6 +177,7 @@
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -366,6 +367,7 @@
 				ExecutionBucket="7"
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -562,6 +564,7 @@
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -751,6 +754,7 @@
 				ExecutionBucket="7"
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -940,6 +944,7 @@
 				ExecutionBucket="7"
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				EnableFloatingPointEmulation="false"
 			/>
 			<Tool
@@ -1140,6 +1145,7 @@
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 				EnableFloatingPointEmulation="false"
 			/>
@@ -1338,6 +1344,7 @@
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -1536,6 +1543,7 @@
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 				EnableFloatingPointEmulation="false"
 			/>
@@ -1727,6 +1735,7 @@
 				ExecutionBucket="7"
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				EnableFloatingPointEmulation="false"
 			/>
 			<Tool
@@ -1925,6 +1934,7 @@
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 				EnableFloatingPointEmulation="false"
 			/>
@@ -2124,6 +2134,7 @@
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 				EnableFloatingPointEmulation="false"
 			/>
@@ -2315,6 +2326,7 @@
 				ExecutionBucket="7"
 				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				EnableFloatingPointEmulation="false"
 			/>
 			<Tool

@@ -46,6 +46,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
 				DebugInformationFormat="3"
 			/>
@@ -246,6 +247,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -437,6 +439,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
 				DebugInformationFormat="3"
 			/>
@@ -637,6 +640,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -828,6 +832,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -1022,7 +1027,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
-				ProgramDataBaseFileName="$(IntDir)\libxsupconfigwrite\vc80.pdb"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
@@ -1226,6 +1231,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
 				DebugInformationFormat="3"
 			/>
@@ -1427,6 +1433,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
 				DebugInformationFormat="3"
 			/>
@@ -1629,6 +1636,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -1823,6 +1831,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
 				DebugInformationFormat="3"
 			/>
@@ -2026,6 +2035,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				BrowseInformation="0"
 				DebugInformationFormat="3"
 			/>
@@ -2228,6 +2238,7 @@
 				AdditionalIncludeDirectories="..\..\lib;..\..;&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

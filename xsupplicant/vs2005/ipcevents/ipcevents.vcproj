@@ -46,6 +46,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -259,6 +260,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -462,6 +464,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -675,6 +678,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -880,6 +884,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -1083,6 +1088,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -1303,6 +1309,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -1517,6 +1524,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -1736,6 +1744,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -1939,6 +1948,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -2159,6 +2169,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -2378,6 +2389,7 @@
 				AdditionalIncludeDirectories="&quot;$(ICONVDIR)\include&quot;;&quot;$(LIBXML2DIR)\include&quot;;..\..\lib\libxsupgui;..\..;..\..\lib"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
+				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
