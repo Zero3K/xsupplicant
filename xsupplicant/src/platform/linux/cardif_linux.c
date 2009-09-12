@@ -307,8 +307,6 @@ int cardif_init(context * ctx, char driver)
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
-	wctx = (wireless_ctx *) ctx->intTypeData;
-
 	// Get the information about the global settings from the config file.
 	globals = config_get_globals();
 
@@ -423,7 +421,7 @@ int cardif_init(context * ctx, char driver)
 		ctx->intType = ETH_802_11_INT;
 
 		if (context_create_wireless_ctx
-		    ((wireless_ctx **) & ctx->intTypeData, 0) != XENONE) {
+		    ((wireless_ctx **)&ctx->intTypeData, 0) != XENONE) {
 			debug_printf(DEBUG_NORMAL,
 				     "Couldn't create wireless context for "
 				     "interface!\n");
