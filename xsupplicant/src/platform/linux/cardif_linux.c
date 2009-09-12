@@ -303,10 +303,11 @@ int cardif_init(context * ctx, char driver)
 	int retval;
 	struct config_globals *globals;
 	wireless_ctx *wctx = NULL;
-	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
+
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	// Get the information about the global settings from the config file.
 	globals = config_get_globals();
