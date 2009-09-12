@@ -534,8 +534,6 @@ int cardif_do_wireless_scan(context * ctx, char passive)
  **/
 int cardif_disassociate(context * ctx, int reason_code)
 {
-	wireless_ctx *wctx = NULL;
-	wctx = (wireless_ctx *) ctx->intTypeData;
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
@@ -566,6 +564,9 @@ int cardif_get_socket(context * ctx)
 	struct lin_sock_data *sockData;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
+		return XEMALLOC;
+
+	if (!xsup_assert((ctx->sockData != NULL), "ctx->sockData != NULL", FALSE))
 		return XEMALLOC;
 
 	sockData = ctx->sockData;
@@ -909,31 +910,31 @@ int cardif_GetSSID(context * ctx, char *ssid_name, unsigned int ssid_buf_size)
  * we should return an error.
  *
  ******************************************/
-int cardif_GetBSSID(context * thisint, char *bssid_dest)
+int cardif_GetBSSID(context * ctx, char *bssid_dest)
 {
-	if (!xsup_assert((thisint != NULL), "thisint != NULL", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
 
 	if (!xsup_assert((bssid_dest != NULL), "bssid_dest != NULL", FALSE))
 		return XEMALLOC;
 
 	if (wireless == NULL)
-		return -1;
+		return XEMALLOC;
 
-	if (thisint == NULL) {
+	if (ctx == NULL) {
 		debug_printf(DEBUG_NORMAL,
 			     "Invalid interface data structure passed to %s!\n",
 			     __FUNCTION__);
-		return -1;
+		return XEMALLOC;
 	}
 
 	if (bssid_dest == NULL) {
 		debug_printf(DEBUG_NORMAL, "Invalid bssid_dest in %s!\n",
 			     __FUNCTION__);
-		return -1;
+		return XEMALLOC;
 	}
 
-	return wireless->get_bssid(thisint, bssid_dest);
+	return wireless->get_bssid(ctx, bssid_dest);
 }
 
 /**
@@ -1334,7 +1335,7 @@ int cardif_enable_wpa(context * ctx)
  **/
 int cardif_wep_associate(context * ctx, int zeros)
 {
-	wireless_ctx *wctx;
+	wireless_ctx *wctx = NULL;
 
 	if (!xsup_assert((ctx != NULL), "ctx != NULL", FALSE))
 		return XEMALLOC;
@@ -2436,17 +2437,17 @@ int cardif_apply_pmkid_data(context * ctx, pmksa_list * list)
 
 }
 
-int cardif_validate_connection(context * intdata)
+int cardif_validate_connection(context * ctx)
 {
 	wireless_ctx *wctx = NULL;
 	struct found_ssids *working = NULL;
 	uint16_t abilities = 0;
 	int retVal = FALSE;
 
-	if (!xsup_assert((intdata != NULL), "intdata != NULL ", FALSE))
+	if (!xsup_assert((ctx != NULL), "ctx != NULL ", FALSE))
 		return FALSE;
 
-	wctx = (wireless_ctx *) intdata->intTypeData;
+	wctx = (wireless_ctx *) ctx->intTypeData;
 
 	if (!xsup_assert((wctx != NULL), "wctx != NULL ", FALSE))
 		return FALSE;
@@ -2457,24 +2458,24 @@ int cardif_validate_connection(context * intdata)
 
 	abilities = config_ssid_get_ssid_abilities(wctx);
 
-	if(intdata->conn == NULL) {
+	if(ctx->conn == NULL) {
 	  debug_printf(DEBUG_NORMAL, "Connection data is null in %s:%d.\n", __FUNCTION__, __LINE__);
 	  return retVal;
 	}
 
-	switch (intdata->conn->association.auth_type) {
+	switch (ctx->conn->association.auth_type) {
 	case AUTH_NONE:
 		debug_printf(DEBUG_NORMAL, "Checking AUTH_NONE.\n");
-		if ((abilities & ABIL_ENC) && (intdata->conn->association.association_type == ASSOC_OPEN)) {
-			if (intdata->conn->association.txkey != 0) {
+		if ((abilities & ABIL_ENC) && (ctx->conn->association.association_type == ASSOC_OPEN)) {
+			if (ctx->conn->association.txkey != 0) {
 				debug_printf(DEBUG_NORMAL,
 					     "WEP  Connection \n");
 				retVal = TRUE;
 			}
 
 		} else if ((abilities == 0)
-			   && (intdata->conn->association.txkey == 0)) {
-			if (intdata->conn->association.txkey == 0) {
+			   && (ctx->conn->association.txkey == 0)) {
+			if (ctx->conn->association.txkey == 0) {
 				debug_printf(DEBUG_NORMAL,
 					     "OPEN  Connection \n");
 				retVal = TRUE;
@@ -2512,9 +2513,9 @@ int cardif_validate_connection(context * intdata)
 			debug_printf(DEBUG_NORMAL,
 				     " WPA_DOT1X connection with WPA2\n");
 			retVal = TRUE;
-		} else if ((abilities & ABIL_ENC) && (intdata->prof != NULL) && (intdata->conn->association.association_type == ASSOC_OPEN) &&
+		} else if ((abilities & ABIL_ENC) && (ctx->prof != NULL) && (ctx->conn->association.association_type == ASSOC_OPEN) &&
 			   !(abilities & ABIL_RSN_DOT1X ) && !(abilities & ABIL_WPA_DOT1X)) {
-		  //if (intdata->prof->name != NULL) {
+		  //if (ctx->prof->name != NULL) {
 				debug_printf(DEBUG_NORMAL,
 					     "DYNAMIC WEP Connection \n");
 				retVal = TRUE;
