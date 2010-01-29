@@ -5790,8 +5790,7 @@ int ipc_callout_enum_known_ssids(xmlNodePtr innode, xmlNodePtr * outnode)
 		}
 
 		sprintf((char *)&res, "%d", cur->strength);
-		if (xmlNewChild
-		    (t, NULL, (xmlChar *) "Signal_Strength",
+		if (xmlNewChild(t, NULL, (xmlChar *) "Signal_Strength",
 		     (xmlChar *) res) == NULL) {
 			xmlFreeNode(n);
 			return ipc_callout_create_error(NULL,
