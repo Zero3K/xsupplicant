@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug as Service with TNC|Win32">
+      <Configuration>Debug as Service with TNC</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug SmartPhone 2003 (ARM)|Win32">
+      <Configuration>Debug SmartPhone 2003 (ARM)</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug with FAST|Win32">
+      <Configuration>Debug with FAST</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug with TNC and FAST|Win32">
+      <Configuration>Debug with TNC and FAST</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug With TNC|Win32">
+      <Configuration>Debug With TNC</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug, TNC, Experimental|Win32">
+      <Configuration>Debug, TNC, Experimental</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Rel. as Service, TNC, Experimental|Win32">
+      <Configuration>Rel. as Service, TNC, Experimental</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Rel. as Svc. with TNC and FAST|Win32">
+      <Configuration>Rel. as Svc. with TNC and FAST</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release as Service with TNC|Win32">
+      <Configuration>Release as Service with TNC</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release with TNC|Win32">
+      <Configuration>Release with TNC</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>XSupplicant</ProjectName>
+    <ProjectGuid>{21A1CEF9-4A8F-4262-8D41-519ABB4D32F7}</ProjectGuid>
+    <RootNamespace>Xsupplicant</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel. as Service, TNC, Experimental|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug, TNC, Experimental|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug with FAST|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel. as Svc. with TNC and FAST|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug with TNC and FAST|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug SmartPhone 2003 (ARM)|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release as Service with TNC|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with TNC|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug as Service with TNC|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug With TNC|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Rel. as Service, TNC, Experimental|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug, TNC, Experimental|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug with FAST|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Rel. as Svc. with TNC and FAST|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug with TNC and FAST|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug SmartPhone 2003 (ARM)|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release as Service with TNC|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release with TNC|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug as Service with TNC|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug With TNC|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>16.0.29911.84</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)build-debug\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)build-release\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug With TNC|Win32'">
+    <OutDir>$(SolutionDir)build-debug\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug as Service with TNC|Win32'">
+    <OutDir>$(SolutionDir)build-debug\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release with TNC|Win32'">
+    <OutDir>$(SolutionDir)build-release\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release as Service with TNC|Win32'">
+    <OutDir>$(SolutionDir)build-release\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug SmartPhone 2003 (ARM)|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug with TNC and FAST|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel. as Svc. with TNC and FAST|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug with FAST|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug, TNC, Experimental|Win32'">
+    <OutDir>$(SolutionDir)build-debug\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel. as Service, TNC, Experimental|Win32'">
+    <OutDir>$(SolutionDir)build-release\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;UNSAFE_DUMPS;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug With TNC|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;IMC_EXPORTS;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/FIXED:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(LIBTNCDIR)\vs2005\libtnc\Debug;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>false</GenerateMapFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug as Service with TNC|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName)_service.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(LIBTNCDIR)\vs2005\libtnc\Debug;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release with TNC|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;IMC_EXPORTS;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(LIBTNCDIR)\vs2005\libtnc\Release;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release as Service with TNC|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS;EAP_SIM_ENABLE;DEBUG_LOG_PLUGINS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;libxsupconfcheck.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName)_service.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(LIBTNCDIR)\vs2005\libtnc\Release;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug SmartPhone 2003 (ARM)|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Program Files\Microsoft SDKs\Windows\v6.0\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;LOCK_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib;..\..\..\libtnc-1.10\vs2005\libtnc\Debug;..\..\..\openssl-0.9.8d.win32\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug with TNC and FAST|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;IMC_EXPORTS;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/FIXED:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(LIBTNCDIR)\vs2005\libtnc\Debug;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>false</GenerateMapFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel. as Svc. with TNC and FAST|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS;EAP_SIM_ENABLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;libxsupconfcheck.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName)_service.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(LIBTNCDIR)\vs2005\libtnc\Release;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug with FAST|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Program Files\Microsoft SDKs\Windows\v6.0\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;EAP_FAST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/FIXED:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Microsoft SDKs\Windows\v6.0\Lib;$(LIBTNCDIR)\vs2005\libtnc\Debug;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>false</GenerateMapFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug, TNC, Experimental|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;STATE_DEBUG;HAVE_TNC;IMC_EXPORTS;UNSAFE_DUMPS;LOCK_DEBUG;EAP_SIM_ENABLE;EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/FIXED:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(LIBTNCDIR)\vs2005\libtnc\Debug;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>MSVCRT;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>false</GenerateMapFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel. as Service, TNC, Experimental|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSPLATFORMSDK)\Include;$(LIBTNCDIR)\src\libtnc;..\..\lib\libxsupconfwrite;$(ICONVDIR)\include;$(LIBXML2DIR)\include;C:\WinDDK\3790.1830\inc\wxp;$(OPENSSLDIR)\include;..\src;..\..\lib\libxsupconfig;..\..;..\..\lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WINDOWS;ssize_t=long;WINDOWS_FRAMER;WIN32;LILENDIAN;TOTAL_WIRELESS_CONTROL;HAVE_TNC;BUILD_SERVICE;IMC_EXPORTS;EAP_SIM_ENABLE;EXPERIMENTAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;ws2_32.lib;wbemuuid.lib;libtnc.lib;crypt32.lib;libsupdetect.lib;liblist.lib;libxsupconfcheck.lib;iphlpapi.lib;shlwapi.lib;setupapi.lib;wtsapi32.lib;winscard.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName)_service.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(MSPLATFORMSDK)\Lib;$(LIBTNCDIR)\vs2005\libtnc\Release;$(OPENSSLDIR)\lib;$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\backend_sm.c" />
+    <ClCompile Include="..\..\src\config_ssid.c" />
+    <ClCompile Include="..\..\src\context.c" />
+    <ClCompile Include="..\..\src\eapol.c" />
+    <ClCompile Include="..\..\src\eapol_key_type1.c" />
+    <ClCompile Include="..\..\src\eapol_key_type2.c" />
+    <ClCompile Include="..\..\src\eapol_key_type254.c" />
+    <ClCompile Include="..\..\src\eap_sm.c" />
+    <ClCompile Include="..\..\src\eap_types\aka\aka.c" />
+    <ClCompile Include="..\..\src\eap_types\aka\eapaka.c" />
+    <ClCompile Include="..\..\src\eap_types\eap_type_common.c" />
+    <ClCompile Include="..\..\src\eap_types\fast\eapfast.c" />
+    <ClCompile Include="..\..\src\eap_types\fast\eapfast_phase2.c" />
+    <ClCompile Include="..\..\src\eap_types\fast\eapfast_xml.c" />
+    <ClCompile Include="..\..\src\eap_types\leap\eapleap.c" />
+    <ClCompile Include="..\..\src\eap_types\md5\eapmd5.c" />
+    <ClCompile Include="..\..\src\eap_types\md5\md5.c" />
+    <ClCompile Include="..\..\src\eap_types\mschapv2\eapmschapv2.c" />
+    <ClCompile Include="..\..\src\eap_types\mschapv2\mschapv2.c" />
+    <ClCompile Include="..\..\src\eap_types\otp\eapotp.c" />
+    <ClCompile Include="..\..\src\eap_types\peap\eappeap.c" />
+    <ClCompile Include="..\..\src\eap_types\peap\peap_extensions.c" />
+    <ClCompile Include="..\..\src\eap_types\peap\peap_phase2.c" />
+    <ClCompile Include="..\..\src\eap_types\psk\eappsk.c" />
+    <ClCompile Include="..\..\src\eap_types\psk\psk_crypt.c" />
+    <ClCompile Include="..\..\src\eap_types\sim\eapsim.c" />
+    <ClCompile Include="..\..\src\eap_types\sim\fips.c" />
+    <ClCompile Include="..\..\src\eap_types\sim\sha1.c" />
+    <ClCompile Include="..\..\src\eap_types\sim\sim.c" />
+    <ClCompile Include="..\..\src\eap_types\sim\simd11.c" />
+    <ClCompile Include="..\..\src\eap_types\sim\simd5.c" />
+    <ClCompile Include="..\..\src\eap_types\sim\sim_reader_plugin_hook.c" />
+    <ClCompile Include="..\..\src\eap_types\sim\sm_handler.c" />
+    <ClCompile Include="..\..\src\eap_types\tls\certificates.c" />
+    <ClCompile Include="..\..\src\eap_types\tls\eaptls.c" />
+    <ClCompile Include="..\..\src\eap_types\tls\gnu_tls_funcs.c" />
+    <ClCompile Include="..\..\src\eap_types\tls\ossl_tls_funcs.c" />
+    <ClCompile Include="..\..\src\eap_types\tnc\eaptnc.c" />
+    <ClCompile Include="..\..\src\eap_types\tnc\tnc_compliance_callbacks.c" />
+    <ClCompile Include="..\..\src\eap_types\tnc\tnc_compliance_funcs.c" />
+    <ClCompile Include="..\..\src\eap_types\ttls\chap.c" />
+    <ClCompile Include="..\..\src\eap_types\ttls\eapttls.c" />
+    <ClCompile Include="..\..\src\eap_types\ttls\mschap.c" />
+    <ClCompile Include="..\..\src\eap_types\ttls\p2mschapv2.c" />
+    <ClCompile Include="..\..\src\eap_types\ttls\pap.c" />
+    <ClCompile Include="..\..\src\eap_types\ttls\phase2_common.c" />
+    <ClCompile Include="..\..\src\eap_types\ttls\ttlsphase2.c" />
+    <ClCompile Include="..\..\src\eap_types\ttls\ttls_eap.c" />
+    <ClCompile Include="..\..\src\error_prequeue.c" />
+    <ClCompile Include="..\..\src\event_core_win.c" />
+    <ClCompile Include="..\..\src\getopts.c" />
+    <ClCompile Include="..\..\src\interfaces.c" />
+    <ClCompile Include="..\..\src\ipaddr_common.c" />
+    <ClCompile Include="..\..\src\ipc_callout.c" />
+    <ClCompile Include="..\..\src\ipc_callout_helper.c" />
+    <ClCompile Include="..\..\src\ipc_events.c" />
+    <ClCompile Include="..\..\src\key_statemachine.c" />
+    <ClCompile Include="..\..\src\logon_creds.c" />
+    <ClCompile Include="..\..\src\mic.c" />
+    <ClCompile Include="..\..\src\platform\windows\cardif_windows.c" />
+    <ClCompile Include="..\..\src\platform\windows\cardif_windows_dot11.c" />
+    <ClCompile Include="..\..\src\platform\windows\cardif_windows_events.c" />
+    <ClCompile Include="..\..\src\platform\windows\cardif_windows_wireless.c" />
+    <ClCompile Include="..\..\src\platform\windows\cardif_windows_wmi.c" />
+    <ClCompile Include="..\..\src\platform\windows\cardif_windows_wmi_async.c" />
+    <ClCompile Include="..\..\src\platform\windows\lsa_calls.c" />
+    <ClCompile Include="..\..\src\platform\windows\platform.c" />
+    <ClCompile Include="..\..\src\platform\windows\plugin_handler_windows.c" />
+    <ClCompile Include="..\..\src\platform\windows\tthandler.c" />
+    <ClCompile Include="..\..\src\platform\windows\windows_eapol_ctrl.cpp">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug SmartPhone 2003 (ARM)|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug With TNC|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug as Service with TNC|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug with FAST|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug with TNC and FAST|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug, TNC, Experimental|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Rel. as Service, TNC, Experimental|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Rel. as Svc. with TNC and FAST|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release as Service with TNC|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release with TNC|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\src\platform\windows\windows_int_ctrl.c" />
+    <ClCompile Include="..\..\src\platform\windows\win_cert_handler.c" />
+    <ClCompile Include="..\..\src\platform\windows\win_impersonate.c" />
+    <ClCompile Include="..\..\src\platform\windows\win_ip_manip.c" />
+    <ClCompile Include="..\..\src\platform\windows\wlanapi_interface.c" />
+    <ClCompile Include="..\..\src\platform\windows\wzc_ctrl.c" />
+    <ClCompile Include="..\..\src\plugins.c" />
+    <ClCompile Include="..\..\src\pmksa.c" />
+    <ClCompile Include="..\..\src\psk.c" />
+    <ClCompile Include="..\..\src\snmp.c" />
+    <ClCompile Include="..\..\src\statemachine.c" />
+    <ClCompile Include="..\..\src\timer.c" />
+    <ClCompile Include="..\..\src\win_svc.c" />
+    <ClCompile Include="..\..\src\wireless_sm.c" />
+    <ClCompile Include="..\..\src\wpa.c" />
+    <ClCompile Include="..\..\src\wpa2.c" />
+    <ClCompile Include="..\..\src\wpa_common.c" />
+    <ClCompile Include="..\..\src\xsup_common.c" />
+    <ClCompile Include="..\..\src\xsup_debug.c" />
+    <ClCompile Include="..\..\src\xsup_driver.c" />
+    <ClCompile Include="..\..\src\xsup_ipc_win.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\lib\libxsupconfig\xsupconfig.h" />
+    <ClInclude Include="..\..\lib\libxsupconfig\xsupconfig_devices.h" />
+    <ClInclude Include="..\..\src\backend_sm.h" />
+    <ClInclude Include="..\..\src\buildnum.h" />
+    <ClInclude Include="..\..\src\config_ssid.h" />
+    <ClInclude Include="..\..\src\context.h" />
+    <ClInclude Include="..\..\src\eapol.h" />
+    <ClInclude Include="..\..\src\eapol_key_type1.h" />
+    <ClInclude Include="..\..\src\eapol_key_type2.h" />
+    <ClInclude Include="..\..\src\eapol_key_type254.h" />
+    <ClInclude Include="..\..\src\eap_sm.h" />
+    <ClInclude Include="..\..\src\eap_types\aka\aka.h" />
+    <ClInclude Include="..\..\src\eap_types\aka\eapaka.h" />
+    <ClInclude Include="..\..\src\eap_types\eap_type_common.h" />
+    <ClInclude Include="..\..\src\eap_types\fast\eapfast.h" />
+    <ClInclude Include="..\..\src\eap_types\fast\eapfast_phase2.h" />
+    <ClInclude Include="..\..\src\eap_types\fast\eapfast_xml.h" />
+    <ClInclude Include="..\..\src\eap_types\leap\eapleap.h" />
+    <ClInclude Include="..\..\src\eap_types\md5\eapmd5.h" />
+    <ClInclude Include="..\..\src\eap_types\md5\md5.h" />
+    <ClInclude Include="..\..\src\eap_types\mschapv2\eapmschapv2.h" />
+    <ClInclude Include="..\..\src\eap_types\mschapv2\mschapv2.h" />
+    <ClInclude Include="..\..\src\eap_types\otp\eapotp.h" />
+    <ClInclude Include="..\..\src\eap_types\peap\eappeap.h" />
+    <ClInclude Include="..\..\src\eap_types\peap\peap_extensions.h" />
+    <ClInclude Include="..\..\src\eap_types\peap\peap_phase2.h" />
+    <ClInclude Include="..\..\src\eap_types\psk\eappsk.h" />
+    <ClInclude Include="..\..\src\eap_types\psk\psk_crypt.h" />
+    <ClInclude Include="..\..\src\eap_types\sim\eapsim.h" />
+    <ClInclude Include="..\..\src\eap_types\sim\fips.h" />
+    <ClInclude Include="..\..\src\eap_types\sim\sha1.h" />
+    <ClInclude Include="..\..\src\eap_types\sim\sim.h" />
+    <ClInclude Include="..\..\src\eap_types\sim\simd11.h" />
+    <ClInclude Include="..\..\src\eap_types\sim\simd5.h" />
+    <ClInclude Include="..\..\src\eap_types\sim\sim_reader_plugin_hook.h" />
+    <ClInclude Include="..\..\src\eap_types\sim\sm_handler.h" />
+    <ClInclude Include="..\..\src\eap_types\tls\certificates.h" />
+    <ClInclude Include="..\..\src\eap_types\tls\eaptls.h" />
+    <ClInclude Include="..\..\src\eap_types\tls\tls_funcs.h" />
+    <ClInclude Include="..\..\src\eap_types\tnc\eaptnc.h" />
+    <ClInclude Include="..\..\src\eap_types\tnc\tnc_compliance_callbacks.h" />
+    <ClInclude Include="..\..\src\eap_types\tnc\tnc_compliance_funcs.h" />
+    <ClInclude Include="..\..\src\eap_types\tnc\tnc_compliance_options.h" />
+    <ClInclude Include="..\..\src\eap_types\ttls\chap.h" />
+    <ClInclude Include="..\..\src\eap_types\ttls\eapttls.h" />
+    <ClInclude Include="..\..\src\eap_types\ttls\mschap.h" />
+    <ClInclude Include="..\..\src\eap_types\ttls\p2mschapv2.h" />
+    <ClInclude Include="..\..\src\eap_types\ttls\pap.h" />
+    <ClInclude Include="..\..\src\eap_types\ttls\phase2_common.h" />
+    <ClInclude Include="..\..\src\eap_types\ttls\ttlsphase2.h" />
+    <ClInclude Include="..\..\src\eap_types\ttls\ttls_eap.h" />
+    <ClInclude Include="..\..\src\error_prequeue.h" />
+    <ClInclude Include="..\..\src\event_core_win.h" />
+    <ClInclude Include="..\..\src\frame_structs.h" />
+    <ClInclude Include="..\..\src\getopts.h" />
+    <ClInclude Include="..\..\src\hmac.h" />
+    <ClInclude Include="..\..\src\interfaces.h" />
+    <ClInclude Include="..\..\src\ipaddr_common.h" />
+    <ClInclude Include="..\..\src\ipc_callout.h" />
+    <ClInclude Include="..\..\src\ipc_callout_helper.h" />
+    <ClInclude Include="..\..\src\ipc_events.h" />
+    <ClInclude Include="..\..\src\ipc_events_catalog.h" />
+    <ClInclude Include="..\..\src\ipc_events_index.h" />
+    <ClInclude Include="..\..\src\key_statemachine.h" />
+    <ClInclude Include="..\..\src\logon_creds.h" />
+    <ClInclude Include="..\..\src\mic.h" />
+    <ClInclude Include="..\..\src\platform\cardif.h" />
+    <ClInclude Include="..\..\src\platform\cert_handler.h" />
+    <ClInclude Include="..\..\src\platform\platform.h" />
+    <ClInclude Include="..\..\src\platform\plugin_handler.h" />
+    <ClInclude Include="..\..\src\platform\windows\cardif_windows.h" />
+    <ClInclude Include="..\..\src\platform\windows\cardif_windows_dot11.h" />
+    <ClInclude Include="..\..\src\platform\windows\cardif_windows_events.h" />
+    <ClInclude Include="..\..\src\platform\windows\cardif_windows_wireless.h" />
+    <ClInclude Include="..\..\src\platform\windows\cardif_windows_wmi.h" />
+    <ClInclude Include="..\..\src\platform\windows\cardif_windows_wmi_async.h" />
+    <ClInclude Include="..\..\src\platform\windows\lsa_calls.h" />
+    <ClInclude Include="..\..\src\platform\windows\tthandler.h" />
+    <ClInclude Include="..\..\src\platform\windows\windows_eapol_ctrl.h" />
+    <ClInclude Include="..\..\src\platform\windows\win_cert_handler.h" />
+    <ClInclude Include="..\..\src\platform\windows\win_impersonate.h" />
+    <ClInclude Include="..\..\src\platform\windows\win_ip_manip.h" />
+    <ClInclude Include="..\..\src\platform\windows\wlanapi_interface.h" />
+    <ClInclude Include="..\..\src\platform\windows\wzc_ctrl.h" />
+    <ClInclude Include="..\..\src\plugins.h" />
+    <ClInclude Include="..\..\src\pmksa.h" />
+    <ClInclude Include="..\..\src\psk.h" />
+    <ClInclude Include="..\..\src\snmp.h" />
+    <ClInclude Include="..\..\src\statemachine.h" />
+    <ClInclude Include="..\..\src\stdintwin.h" />
+    <ClInclude Include="..\..\src\timer.h" />
+    <ClInclude Include="..\..\src\version.h" />
+    <ClInclude Include="..\..\src\win_svc.h" />
+    <ClInclude Include="..\..\src\wireless_sm.h" />
+    <ClInclude Include="..\..\src\wpa.h" />
+    <ClInclude Include="..\..\src\wpa2.h" />
+    <ClInclude Include="..\..\src\wpa_common.h" />
+    <ClInclude Include="..\..\src\xsup_common.h" />
+    <ClInclude Include="..\..\src\xsup_debug.h" />
+    <ClInclude Include="..\..\src\xsup_err.h" />
+    <ClInclude Include="..\..\src\xsup_ipc.h" />
+    <ClInclude Include="resource3.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="open1x.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="xsupplicant.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libcrashdump\libcrashdump.vcxproj">
+      <Project>{73f5c2cc-0889-4fa2-89ee-797a83bbaf0d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\liblist\liblist.vcxproj">
+      <Project>{1383dccd-eaf7-4901-a9bb-c2576b31b577}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\libsupdetect\libsupdetect.vcxproj">
+      <Project>{308d6aa3-77aa-4413-88fc-418afefddfe6}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\libxsupconfcheck\libxsupconfcheck.vcxproj">
+      <Project>{62012537-5221-4990-a0a6-a374644d176f}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\libxsupconfig\libxsupconfig.vcxproj">
+      <Project>{cd56d61f-52f5-40df-b8f8-ae3aec78c003}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\libxsupconfwrite\libxsupconfwrite.vcxproj">
+      <Project>{5c4ce4cd-2f50-4ac3-8cec-c38037a1b00a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
