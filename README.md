@@ -12,7 +12,7 @@ Technology Critical Infrastructure Grants Program.
 
 GENERAL OVERVIEW:
 =================
-This software allows a GNU/Linux or BSD workstation to authenticate with
+This software allows a GNU/Linux/BSD/Windows workstation to authenticate with
 a RADIUS server using 802.1x and various EAP protocols.  The intended 
 use is for computers with wireless LAN connections to complete a strong
 authentication before joining the network.
