@@ -2,10 +2,10 @@
 
 AUTHORS:
 ========
-Bryan D. Payne (bdpayne@cs.umd.edu)
-Nick L. Petroni Jr. (npetroni@cs.umd.edu)
-Chris Hessing  (chris@open1x.org)
-Terry Simons   (Terry.Simons@open1x.org)
+Bryan D. Payne (bdpayne@cs.umd.edu)    
+Nick L. Petroni Jr. (npetroni@cs.umd.edu)    
+Chris Hessing  (chris@open1x.org)    
+Terry Simons   (Terry.Simons@open1x.org)    
 
 This work funded by a grant from National Institute of Standards and
 Technology Critical Infrastructure Grants Program.
@@ -31,9 +31,9 @@ INSTALLATION:
 
 For a basic, no frills installation :
 
-1. ./configure
-2. make
-3. make install
+1. ./configure    
+2. make    
+3. make install    
 
 DEPENDENCIES:
 =============
