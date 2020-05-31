@@ -1,19 +1,15 @@
 This directory contains a project file to build Xsupplicant using Microsoft's
-Visual Studio.  The project file was developed using Visual Studio 2005 Standard.
+Visual Studio.  The project file was developed using Visual Studio 2019.
 
-If you would like to compile XSupplicant with Visual C++ Express 2005, please read "README.VisualC++Express" for instructions on setting up your development environment.
 
 In order to build using Visual Studio, a few dependencies must be met.
 Specifically, the following libraries must be installed in the listed
 directories.  (Or modify the project to point to the proper locations.)
 
-It is likely that Xsupplicant will build with newer versions of these
-libraries.  However, you will need to modify the project to point to the
-directories where the newer versions are.
 
-libxml2 2.6.27  installed in c:\xsup_dev\libxml2-2.6.27.win32
-iconv   1.9.2   installed in c:\xsup_dev\iconv-1.9.2.win32
-openssl 0.9.8d  installed in c:\xsup_dev\openssl-0.9.8d.win32
-zlib    1.2.3   installed in c:\xsup_dev\zlib-1.2.3.win32
+libxml2         installed in c:\xsup_dev\libxml
+iconv           installed in c:\xsup_dev\iconv
+openssl         installed in c:\xsup_dev\openssl
+zlib            installed in c:\xsup_dev\zlib
 
 The above libraries must be present in the same top-level directory that the xsupplicant sources exist in.  So in the examples given, the 'xsupplicant' directory would be located in c:\xsup_dev\xsupplicant.

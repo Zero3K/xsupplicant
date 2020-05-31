@@ -105,7 +105,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -174,7 +174,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
@@ -299,7 +299,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 			/>
 			<Tool
@@ -365,7 +365,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
@@ -492,7 +492,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -561,7 +561,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
@@ -686,7 +686,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 			/>
 			<Tool
@@ -752,7 +752,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 			/>
@@ -875,7 +875,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				EnableFloatingPointEmulation="false"
 			/>
@@ -942,7 +942,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				EnableFloatingPointEmulation="false"
@@ -1072,7 +1072,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1142,7 +1142,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
@@ -1272,7 +1272,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1341,7 +1341,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
@@ -1470,7 +1470,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1540,7 +1540,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
@@ -1666,7 +1666,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				EnableFloatingPointEmulation="false"
 			/>
@@ -1733,7 +1733,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				EnableFloatingPointEmulation="false"
@@ -1861,7 +1861,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1931,7 +1931,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
@@ -2061,7 +2061,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -2131,7 +2131,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
@@ -2257,7 +2257,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				EnableFloatingPointEmulation="false"
 			/>
@@ -2324,7 +2324,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				ProgramDataBaseFileName="$(TargetDir)$(TargetName).pdb"
 				EnableFloatingPointEmulation="false"

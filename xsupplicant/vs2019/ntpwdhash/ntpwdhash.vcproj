@@ -110,7 +110,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -126,7 +126,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -178,7 +178,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -194,7 +194,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -312,7 +312,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -328,7 +328,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -380,7 +380,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -396,7 +396,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -514,7 +514,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -530,7 +530,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -582,7 +582,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -598,7 +598,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -716,7 +716,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -732,7 +732,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -784,7 +784,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -800,7 +800,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -919,7 +919,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -935,7 +935,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -987,7 +987,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -1003,7 +1003,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1122,7 +1122,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -1139,7 +1139,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1191,7 +1191,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -1208,7 +1208,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1326,7 +1326,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -1342,7 +1342,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1394,7 +1394,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -1410,7 +1410,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1529,7 +1529,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -1546,7 +1546,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1598,7 +1598,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -1615,7 +1615,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1734,7 +1734,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -1750,7 +1750,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1802,7 +1802,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -1818,7 +1818,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1937,7 +1937,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -1954,7 +1954,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -2006,7 +2006,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -2023,7 +2023,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -2142,7 +2142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -2159,7 +2159,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -2211,7 +2211,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 			/>
@@ -2228,7 +2228,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -2347,7 +2347,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -2363,7 +2363,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -2415,7 +2415,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\openssl-0.9.8d.win32\include&quot;"
+				AdditionalIncludeDirectories="&quot;..\..\..\openssl\include&quot;"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -2431,7 +2431,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libeay32.lib ssleay32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\openssl-0.9.8d.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;..\..\..\openssl\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool

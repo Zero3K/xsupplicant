@@ -119,7 +119,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -137,7 +137,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -193,7 +193,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -211,7 +211,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -333,7 +333,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -349,7 +349,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -401,7 +401,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -417,7 +417,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -543,7 +543,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -561,7 +561,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -617,7 +617,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -635,7 +635,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -757,7 +757,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -773,7 +773,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -825,7 +825,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -841,7 +841,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -960,7 +960,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -976,7 +976,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1028,7 +1028,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -1044,7 +1044,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1170,7 +1170,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1188,7 +1188,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -1244,7 +1244,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1262,7 +1262,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -1391,7 +1391,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1409,7 +1409,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -1465,7 +1465,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1483,7 +1483,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -1612,7 +1612,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1630,7 +1630,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -1686,7 +1686,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -1704,7 +1704,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -1826,7 +1826,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -1842,7 +1842,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -1894,7 +1894,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -1910,7 +1910,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -2036,7 +2036,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -2054,7 +2054,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -2110,7 +2110,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -2128,7 +2128,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -2257,7 +2257,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -2275,7 +2275,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -2331,7 +2331,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="3"
 				DebugInformationFormat="3"
@@ -2349,7 +2349,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				TargetMachine="0"
@@ -2471,7 +2471,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -2487,7 +2487,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool
@@ -2539,7 +2539,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="&quot;..\..\..\iconv-1.9.2.win32\include&quot;;&quot;..\..\..\libxml2-2.6.27.win32\include&quot;;..\..\lib\libxsupgui"
+				AdditionalIncludeDirectories="&quot;..\..\..\iconv\include&quot;;&quot;..\..\..\libxml\include&quot;;..\..\lib\libxsupgui"
 				PreprocessorDefinitions="WINDOWS"
 				RuntimeLibrary="2"
 			/>
@@ -2555,7 +2555,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="libxsupgui.lib libxml2_a.lib iconv_a.lib ws2_32.lib zlib.lib"
-				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib-1.2.3.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\debug&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;;&quot;..\..\..\zlib\lib&quot;;&quot;..\..\..\libxml\lib\debug&quot;;&quot;..\..\..\iconv\lib&quot;"
 				TargetMachine="0"
 			/>
 			<Tool

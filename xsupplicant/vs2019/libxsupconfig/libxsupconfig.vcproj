@@ -113,7 +113,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -132,7 +132,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -187,7 +187,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -206,7 +206,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -322,7 +322,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -339,7 +339,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -393,7 +393,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -410,7 +410,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -531,7 +531,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -550,7 +550,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -605,7 +605,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -624,7 +624,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -740,7 +740,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -757,7 +757,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -811,7 +811,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -828,7 +828,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -944,7 +944,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -962,7 +962,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1016,7 +1016,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1034,7 +1034,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1156,7 +1156,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1176,7 +1176,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1231,7 +1231,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1251,7 +1251,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1372,7 +1372,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1392,7 +1392,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1447,7 +1447,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1466,7 +1466,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1587,7 +1587,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1607,7 +1607,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1662,7 +1662,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1682,7 +1682,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1798,7 +1798,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1816,7 +1816,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -1870,7 +1870,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -1888,7 +1888,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -2009,7 +2009,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -2029,7 +2029,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -2084,7 +2084,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -2104,7 +2104,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -2225,7 +2225,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -2245,7 +2245,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -2300,7 +2300,7 @@
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="3"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -2320,7 +2320,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Debug&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -2436,7 +2436,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -2454,7 +2454,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
@@ -2508,7 +2508,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="7"
-				AdditionalIncludeDirectories="..\..\..\iconv-1.9.2.win32\include;..\..\..\libxml2-2.6.27.win32\include"
+				AdditionalIncludeDirectories="..\..\..\iconv\include;..\..\..\libxml\include"
 				PreprocessorDefinitions="WINDOWS;ssize_t=long;EXTERNAL_USE"
 				RuntimeLibrary="2"
 				ProgramDataBaseFileName="$(IntDir)\libxsupconfigvc80.pdb"
@@ -2526,7 +2526,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				AdditionalDependencies="libxml2_a.lib iconv_a.lib zlib.lib crypt32.lib"
-				AdditionalLibraryDirectories="&quot;..\..\..\zlib-1.2.3.win32\lib\&quot;;&quot;..\..\..\iconv-1.9.2.win32\lib&quot;;&quot;..\..\..\libxml2-2.6.27.win32\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
+				AdditionalLibraryDirectories="&quot;..\..\..\zlib\lib\&quot;;&quot;..\..\..\iconv\lib&quot;;&quot;..\..\..\libxml\lib\Release&quot;;c:\Program Files\Microsoft SDKs\Windows\v6.0\Lib"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 			/>
