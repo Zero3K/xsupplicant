@@ -358,3 +358,10 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+build-debug/
+zlib/
+iconv/
+openssl/
+libxml2/
+
