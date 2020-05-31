@@ -363,5 +363,5 @@ build-debug/
 zlib/
 iconv/
 openssl/
-libxml2/
+libxml/
 
