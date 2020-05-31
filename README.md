@@ -38,8 +38,8 @@ For a basic, no frills installation :
 DEPENDENCIES:
 =============
 The following packages must be installed before configuring and building
-this software package:
-Openssl 0.9.7 (or greater) http://www.openssl.org
+this software package:    
+Openssl 0.9.7 (or greater) http://www.openssl.org    
 
 OS SPECIFIC DEPENDENCIES:
 =========================
@@ -54,20 +54,20 @@ Mac OS X - For wireless support, libdarwinwireless is required.  (As of this
 
 PROGRAM USAGE:
 ==============
-xsupplicant [-i <interface>] [-c <config file> ]
-	    [-d <debug_level>] [-w] [-f] [-D <driver name>] [-z] [-t]
-            [-q] [-a]
+xsupplicant [-i <interface>] [-c <config file> ]    
+	    [-d <debug_level>] [-w] [-f] [-D <driver name>] [-z] [-t]    
+            [-q] [-a]    
 
-   -i provide the interface on which to listen for EAPOL packets
-   -c configuration file to use (/etc/xsupplicant.conf default)
-   -d display different levels of debug information.
-   -w don't attempt to use WPA support
-   -f run in the forground
-   -D use WPA support for driver <driver name>
-   -z zero WEP keys on roam (Needed for Orinoco and some other drivers)
-   -t don't use IW_ENCODE_TEMP when setting keys
-   -q terminate when defaulting to authenticated state
-   -a what (interface index)-1 for wireless events (needed for hostap driver)
+   -i provide the interface on which to listen for EAPOL packets    
+   -c configuration file to use (/etc/xsupplicant.conf default)    
+   -d display different levels of debug information.    
+   -w don't attempt to use WPA support    
+   -f run in the forground    
+   -D use WPA support for driver <driver name>    
+   -z zero WEP keys on roam (Needed for Orinoco and some other drivers)    
+   -t don't use IW_ENCODE_TEMP when setting keys    
+   -q terminate when defaulting to authenticated state    
+   -a what (interface index)-1 for wireless events (needed for hostap driver)    
 
 While the program can be started from the command line directly,
 it will most commonly be used as part of a script to bring up
@@ -102,9 +102,9 @@ script takes a single argument of a pkcs#12 file, containing the user's
 certificate and private key, and produces the files key.pem and cert.cer
 to be used by xsupplicant. The following are the required formats:
 
-User Certificate:       DER format
-User Private Key:       PEM format
-Root Certificate store: PEM format
+User Certificate:       DER format    
+User Private Key:       PEM format    
+Root Certificate store: PEM format    
 
 PROTOCOL SPECIFIC INFORMATION :
 ===============================
@@ -129,5 +129,3 @@ WPA/WPA2/802.11i:  Wireless extensions 18, or special driver support is
 EAP-TNC: Requires that the libtnc library be installed to work properly.
          Please download this from the libtnc web page at 
 	 http://sourceforge.net/projects/libtnc
-
-
