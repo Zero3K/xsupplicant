@@ -1,20 +1,13 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XSupplicantUI", "xsupptray\xsupptray.vcproj", "{13FDE0DA-1B16-3ACC-9642-B07CD020C66E}"
-	GlobalSection(Qt) = preSolution
-		Integration = True
-	EndGlobalSection
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30011.22
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XSupplicantUI", "xsupptray\xsupptray.vcxproj", "{13FDE0DA-1B16-3ACC-9642-B07CD020C66E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "softsim_ui_plugin", "softsim_ui_plugin\softsim_ui_plugin.vcproj", "{9C795771-EC38-485D-B81E-442D5EC70C85}"
-	GlobalSection(Qt) = preSolution
-		Integration = True
-	EndGlobalSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "softsim_ui_plugin", "softsim_ui_plugin\softsim_ui_plugin.vcxproj", "{9C795771-EC38-485D-B81E-442D5EC70C85}"
 EndProject
 Global
-	GlobalSection(Qt) = preSolution
-		Integration = True
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
@@ -31,5 +24,17 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {45804C93-2674-45F3-9D4A-3AEE31DF9608}
+	EndGlobalSection
+	GlobalSection(Qt) = preSolution
+		Integration = True
+	EndGlobalSection
+	GlobalSection(Qt) = preSolution
+		Integration = True
+	EndGlobalSection
+	GlobalSection(Qt) = preSolution
+		Integration = True
 	EndGlobalSection
 EndGlobal
